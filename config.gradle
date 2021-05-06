@@ -1,0 +1,48 @@
+ext {
+    android = [
+            compileSdkVersion: 30,
+            buildToolsVersion: "30.0.2",
+            applicationId    : "com.example.fragment.project",
+            minSdkVersion    : 21,
+            targetSdkVersion : 26,
+            versionCode      : 1,
+            versionName      : "1.0",
+    ]
+
+    def lifecycle_version = "2.2.0"
+    def retrofit_version = "2.9.0"
+    def okhttp_version = "4.9.0"
+    def gson_version = "2.8.6"
+    def room_version = "2.2.5"
+
+    dependencies = [
+            "appcompat"                     : 'androidx.appcompat:appcompat:1.2.0',
+            "constraintlayout"              : 'androidx.constraintlayout:constraintlayout:2.0.4',
+            "material"                      : 'com.google.android.material:material:1.2.0',
+            "multidex"                      : "androidx.multidex:multidex:2.0.1",
+
+            "kotlin-stdlib"                 : "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
+            "kotlinx-coroutines-android"    : 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7',
+            "core-ktx"                      : 'androidx.core:core-ktx:1.3.2',
+            "activity-ktx"                  : "androidx.activity:activity-ktx:1.1.0",
+            "fragment-ktx"                  : 'androidx.fragment:fragment-ktx:1.2.5',
+
+            "lifecycle-compiler"            : "androidx.lifecycle:lifecycle-compiler:$lifecycle_version",
+            "lifecycle-livedata-ktx"        : "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version",
+            "lifecycle-runtime"             : "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version",
+            "lifecycle-viewmodel-ktx"       : "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version",
+            "lifecycle-viewmodel-savedstate": "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version",
+
+            "retrofit"                      : "com.squareup.retrofit2:retrofit:$retrofit_version",
+            "okhttp"                        : "com.squareup.okhttp3:okhttp:$okhttp_version",
+            "okhttp-logging-interceptor"    : "com.squareup.okhttp3:logging-interceptor:$okhttp_version",
+            "gson"                          : "com.google.code.gson:gson:$gson_version",
+
+            "room-runtime"                  : "androidx.room:room-runtime:$room_version",
+            "room-compiler"                 : "androidx.room:room-compiler:$room_version",
+            "room-ktx"                      : "androidx.room:room-ktx:$room_version",
+
+            "glide"                         : "com.github.bumptech.glide:glide:4.11.0",
+            "glide-compiler"                : 'com.github.bumptech.glide:compiler:4.11.0',
+    ]
+}

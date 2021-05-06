@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dialog_bg">#aa000000</color>
+    <color name="toast_bg">#000000</color>
+    <color name="ripple_dark">#11000000</color>
+    <color name="ripple_light">#11ffffff</color>
+
+    <!--通用颜色-->
+    <color name="main">#4282f4</color>
+    <color name="main_alpha">#994282f4</color>
+    <color name="assist">#3cdc86</color>
+    <color name="accent">#f86734</color>
+    <color name="transparent">#00000000</color>
+    <color name="line">#f5f5f5</color>
+    <color name="background">#f5f5f5</color>
+    <color name="background_alpha">#ccf5f5f5</color>
+    <color name="background_mask">#11000000</color>
+    <color name="foreground">#ffffff</color>
+    <color name="foreground_alpha">#ccffffff</color>
+    <color name="foreground_mask">#ccffffff</color>
+    <color name="foreground_top">#f5f5f5</color>
+    <color name="surface">#ffffff</color>
+    <color name="surface_alpha">#ccffffff</color>
+    <color name="surface_mask">#ccffffff</color>
+    <color name="surface_top">#f5f5f5</color>
+    <color name="surface_top_alpha">#ccf5f5f5</color>
+    <color name="surface_top_mask">#11000000</color>
+    <color name="invert">#333333</color>
+    <color name="invert_alpha">#11000000</color>
+    <color name="second">#666666</color>
+    <color name="third">#999999</color>
+    <color name="fourth">#cccccc</color>
+    <!--文字颜色-->
+    <color name="text_main">@color/main</color>
+    <color name="text_main_alpha">@color/main_alpha</color>
+    <color name="text_accent">@color/accent</color>
+    <color name="text_surface">#333333</color>
+    <color name="text_surface_alpha">#88333333</color>
+    <color name="text_second">#666666</color>
+    <color name="text_third">#999999</color>
+    <color name="text_fourth">#cccccc</color>
+    <color name="text_invert">#ffffff</color>
+    <color name="text_invert_alpha">#88ffffff</color>
+    <color name="text_on_main">#ffffff</color>
+</resources>

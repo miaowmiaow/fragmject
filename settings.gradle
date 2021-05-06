@@ -1,0 +1,9 @@
+include ':module_user'
+include ':module_setup'
+include ':module_faq'
+include ':module_home'
+include ':module_personal'
+include ':library_base'
+include ':library_common'
+include ':app'
+rootProject.name = "FragmentProject"

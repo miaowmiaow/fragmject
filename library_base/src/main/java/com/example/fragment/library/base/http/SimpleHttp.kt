@@ -1,6 +1,7 @@
 package com.example.fragment.library.base.http
 
 import android.annotation.SuppressLint
+import android.text.TextUtils
 import com.example.fragment.library.base.utils.FileUtils
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -20,8 +21,12 @@ import java.net.URLEncoder
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import javax.net.ssl.*
+import kotlin.collections.HashMap
+import kotlin.collections.set
 
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     request: HttpRequest = HttpRequest()
@@ -129,9 +134,10 @@ class SimpleHttp private constructor() {
         type: Class<T>
     ): T {
         return withContext(Dispatchers.IO) {
+            request.baseUrl(getRetrofit().baseUrl().toString())
             try {
                 converter.converter(
-                    getService().get(request.url, request.header), type
+                    getService().get(request.getUrl(), request.getHeader()), type
                 )
             } catch (e: Exception) {
                 val t = type.newInstance()
@@ -147,8 +153,14 @@ class SimpleHttp private constructor() {
     ): T {
         return withContext(Dispatchers.IO) {
             try {
-                val body = getService().post(request.url, request.header, request.params)
-                converter.converter(body, type)
+                request.baseUrl(getRetrofit().baseUrl().toString())
+                converter.converter(
+                    getService().post(
+                        request.getUrl(),
+                        request.getHeader(),
+                        request.getParam()
+                    ), type
+                )
             } catch (e: Exception) {
                 val t = type.newInstance()
                 t.errorMsg = e.message.toString()
@@ -162,10 +174,10 @@ class SimpleHttp private constructor() {
         type: Class<T>
     ): T {
         val body = MultipartBody.Builder().setType(MultipartBody.FORM)
-        request.params.forEach { map ->
+        request.getParam().forEach { map ->
             body.addFormDataPart(map.key, map.value)
         }
-        request.files.forEach { map ->
+        request.getFile().forEach { map ->
             map.value.apply {
                 val lastIndex = absolutePath.lastIndexOf("/")
                 val fileName = absolutePath.substring(lastIndex)
@@ -180,10 +192,11 @@ class SimpleHttp private constructor() {
         }
         return withContext(Dispatchers.IO) {
             try {
+                request.baseUrl(getRetrofit().baseUrl().toString())
                 converter.converter(
                     getService().form(
-                        request.url,
-                        request.header,
+                        request.getUrl(),
+                        request.getHeader(),
                         body.build()
                     ), type
                 )
@@ -259,13 +272,67 @@ class SimpleHttp private constructor() {
 }
 
 open class HttpRequest @JvmOverloads constructor(
-    var url: String = "",
-    var header: MutableMap<String, String> = HashMap(),
-    var params: MutableMap<String, String> = HashMap(),
-    var files: MutableMap<String, File> = HashMap()
+    private var url: String = "",
+    private var path: MutableMap<String, String> = HashMap(),
+    private var query: MutableMap<String, String> = HashMap(),
+    private var header: MutableMap<String, String> = HashMap(),
+    private var params: MutableMap<String, String> = HashMap(),
+    private var files: MutableMap<String, File> = HashMap()
 ) {
-    fun appendUrl(url: String): HttpRequest {
+    companion object {
+        private const val PARAM = "[a-zA-Z][a-zA-Z0-9_-]*"
+        private var PARAM_URL_REGEX = Pattern.compile("\\{($PARAM)\\}")
+    }
+
+    private var baseUrl: String = ""
+
+    fun baseUrl(baseUrl: String): HttpRequest {
+        this.baseUrl = baseUrl
+        return this
+    }
+
+    fun setUrl(url: String): HttpRequest {
         this.url = url
+        return this
+    }
+
+    fun getUrl(): String {
+        val m = PARAM_URL_REGEX.matcher(url)
+        val patterns: MutableSet<String> = LinkedHashSet()
+        while (m.find()) {
+            patterns.add(m.group(1))
+        }
+        patterns.forEach {
+            if (path.contains(it)) {
+                url = url.replace("{$it}", path[it].toString())
+            }
+        }
+        val urlStringBuilder = StringBuilder(url)
+        val absoluteUrl = StringBuilder(baseUrl).append(url)
+        if (!absoluteUrl.contains("?")) {
+            urlStringBuilder.append("?")
+        }
+        if (!urlStringBuilder.endsWith("?")) {
+            urlStringBuilder.append("&")
+        }
+        query.forEach { (key, value) ->
+            urlStringBuilder.append(key).append("=").append(value).append("&")
+        }
+        urlStringBuilder.setLength(urlStringBuilder.length - 1)
+        return urlStringBuilder.toString()
+    }
+
+    fun putPath(key: String, value: String): HttpRequest {
+        if (!TextUtils.isEmpty(value)) {
+            this.path[key] = value
+        }
+        return this
+    }
+
+    fun putQuery(key: String, value: String): HttpRequest {
+        if (!TextUtils.isEmpty(value)) {
+            this.query[key] = value
+        }
         return this
     }
 
@@ -274,15 +341,28 @@ open class HttpRequest @JvmOverloads constructor(
         return this
     }
 
+    fun getHeader(): MutableMap<String, String> {
+        return header
+    }
+
     fun putParam(key: String, value: String): HttpRequest {
         this.params[key] = value
         return this
+    }
+
+    fun getParam(): MutableMap<String, String> {
+        return params
     }
 
     fun putFile(key: String, file: File): HttpRequest {
         this.files[key] = file
         return this
     }
+
+    fun getFile(): MutableMap<String, File> {
+        return files
+    }
+
 }
 
 open class HttpResponse @JvmOverloads constructor(

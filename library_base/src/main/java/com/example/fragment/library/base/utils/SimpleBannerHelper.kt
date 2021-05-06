@@ -1,32 +1,24 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.utils
 
 import android.content.Context
-import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 
-class SimpleBannerView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : ViewGroup(context, attrs, defStyleAttr) {
-
-    private var recyclerView = RecyclerView(context)
-    private var repeatLayoutManager = RepeatLayoutManager(context)
-
+class SimpleBannerHelper(
+    private val recyclerView: RecyclerView,
     @RecyclerView.Orientation
-    private var orientation = RecyclerView.VERTICAL
+    private val orientation: Int = RecyclerView.HORIZONTAL
+) {
+
+    private var repeatLayoutManager = RepeatLayoutManager(recyclerView.context)
+
     private var smoothScrollDuration = 500
     private var bannerDelay = 5000L
     private var offsetX = 0
     private var offsetY = 0
     private var isUp = false
     private var isSettling = false
-    private var touchEnable = false
-
     private val timerTask = Runnable {
         recyclerView.post {
             if (repeatLayoutManager.itemCount > 1) {
@@ -48,33 +40,8 @@ class SimpleBannerView @JvmOverloads constructor(
     }
 
     init {
-        recyclerView.layoutManager = repeatLayoutManager
-        addView(recyclerView)
-    }
-
-    fun findLastVisibleItemPosition(): Int {
-        return repeatLayoutManager.findLastVisibleItemPosition()
-    }
-
-    fun setSmoothScrollDuration(duration: Int) {
-        this.smoothScrollDuration = duration
-    }
-
-    fun setBannerDelay(delay: Long) {
-        this.bannerDelay = delay
-    }
-
-    fun setTouchEnable(enable: Boolean) {
-        this.touchEnable = enable
-    }
-
-    fun setOrientation(@RecyclerView.Orientation orientation: Int) {
-        this.orientation = orientation
         repeatLayoutManager.orientation = orientation
-    }
-
-    fun setAdapter(adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>) {
-        recyclerView.adapter = adapter
+        recyclerView.layoutManager = repeatLayoutManager
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -140,43 +107,15 @@ class SimpleBannerView @JvmOverloads constructor(
     }
 
     fun startTimerTask() {
-        postDelayed(timerTask, bannerDelay)
+        recyclerView.postDelayed(timerTask, bannerDelay)
     }
 
     fun stopTimerTask() {
-        removeCallbacks(timerTask)
-    }
-
-    fun start() {
-        stopTimerTask()
-        startTimerTask()
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        startTimerTask()
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        stopTimerTask()
-    }
-
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        val width = measuredWidth
-        val height = measuredHeight
-        val childLeft = paddingLeft
-        val childTop = paddingTop
-        val childWidth = width - paddingLeft - paddingRight
-        val childHeight = height - paddingTop - paddingBottom
-        recyclerView.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight)
-    }
-
-    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
-        return !touchEnable
+        recyclerView.removeCallbacks(timerTask)
     }
 
 }
+
 
 /**
  * 修改自jiarWang的RepeatLayoutManager

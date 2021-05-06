@@ -13,9 +13,9 @@ data class ConfigDataBean(
     val actionBarBgColor: String? = null,
     val actionBarBgImageUrl: String? = null,
     val enableAtDate: List<String>? = null,
-    val grayFilter: Boolean = false,
+    val grayFilter: Boolean? = null,
     val homeTitle: String? = null,
-    val secondFloorBgImageBlurPercent: Double = 0.0,
+    val secondFloorBgImageBlurPercent: Double? = null,
     val secondFloorBgImageUrl: String? = null,
     val theme: String? = null
 )

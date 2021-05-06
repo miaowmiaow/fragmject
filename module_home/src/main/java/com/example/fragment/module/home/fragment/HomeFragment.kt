@@ -4,8 +4,9 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
+import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.base.utils.ImageLoader
+import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.home.R
 import com.example.fragment.module.home.adapter.BannerAdapter
@@ -15,6 +16,7 @@ import com.example.fragment.module.home.model.HomeViewModel
 class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private val bannerAdapter = BannerAdapter()
+    private lateinit var bannerHelper: SimpleBannerHelper
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater)
@@ -26,6 +28,17 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         update()
         viewModel.getConfig()
         viewModel.getBanner()
+        viewModel.getArticleList()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bannerHelper.startTimerTask()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bannerHelper.stopTimerTask()
     }
 
     private fun setupView() {
@@ -36,8 +49,20 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
 
         }
         binding.titleBar.setCenter(text = "首页")
-        binding.banner.setOrientation(RecyclerView.HORIZONTAL)
-        binding.banner.setAdapter(bannerAdapter as RecyclerView.Adapter<RecyclerView.ViewHolder>)
+        bannerHelper = SimpleBannerHelper(binding.banner)
+        binding.banner.adapter = bannerAdapter
+        binding.pullRefresh.setOnRefreshListener(object :
+            SimplePullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+
+            }
+        })
+        binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
+            SimplePullRefreshLayout.OnLoadMoreListener {
+            override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
+
+            }
+        })
     }
 
     private fun update() {
@@ -61,7 +86,11 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         viewModel.bannerResult.observe(viewLifecycleOwner, {
             it.data?.apply {
                 bannerAdapter.setNewData(this)
+                bannerHelper.startTimerTask()
             }
+        })
+        viewModel.articleResult.observe(viewLifecycleOwner, {
+
         })
     }
 

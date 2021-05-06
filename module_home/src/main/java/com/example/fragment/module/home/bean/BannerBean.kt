@@ -8,11 +8,11 @@ data class BannerBean(
 
 data class BannerDataBean(
     val desc: String? = null,
-    val id: Int = 0,
+    val id: Int? = null,
     val imagePath: String? = null,
-    val isVisible: Int = 0,
-    val order: Int = 0,
+    val isVisible: Int? = null,
+    val order: Int? = null,
     val title: String? = null,
-    val type: Int = 0,
+    val type: Int? = null,
     val url: String? = null
 )

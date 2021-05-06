@@ -308,17 +308,19 @@ open class HttpRequest @JvmOverloads constructor(
             }
         }
         val urlStringBuilder = StringBuilder(url)
-        val absoluteUrl = StringBuilder(baseUrl).append(url)
-        if (!absoluteUrl.contains("?")) {
-            urlStringBuilder.append("?")
+        if(query.isNotEmpty()){
+            val absoluteUrl = StringBuilder(baseUrl).append(url)
+            if (!absoluteUrl.contains("?")) {
+                urlStringBuilder.append("?")
+            }
+            if (!urlStringBuilder.endsWith("?")) {
+                urlStringBuilder.append("&")
+            }
+            query.forEach { (key, value) ->
+                urlStringBuilder.append(key).append("=").append(value).append("&")
+            }
+            urlStringBuilder.setLength(urlStringBuilder.length - 1)
         }
-        if (!urlStringBuilder.endsWith("?")) {
-            urlStringBuilder.append("&")
-        }
-        query.forEach { (key, value) ->
-            urlStringBuilder.append(key).append("=").append(value).append("&")
-        }
-        urlStringBuilder.setLength(urlStringBuilder.length - 1)
         return urlStringBuilder.toString()
     }
 

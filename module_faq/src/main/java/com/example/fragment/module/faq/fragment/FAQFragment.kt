@@ -1,11 +1,17 @@
 package com.example.fragment.module.faq.fragment
 
+import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.faq.databinding.FragmentFaqBinding
+import com.example.fragment.module.faq.model.FAQViewModel
 
-class FAQFragment : ViewModelFragment<FragmentFaqBinding, BaseViewModel>() {
+class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
 
     companion object {
         @JvmStatic
@@ -14,7 +20,53 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, BaseViewModel>() {
         }
     }
 
+    private val articleAdapter = ArticleAdapter()
+
     override fun setViewBinding(inflater: LayoutInflater): FragmentFaqBinding {
         return FragmentFaqBinding.inflate(inflater)
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupView()
+        update()
+        viewModel.getUserArticleList(true)
+    }
+
+    private fun setupView() {
+        binding.list.layoutManager = LinearLayoutManager(binding.list.context)
+        binding.list.adapter = articleAdapter
+        binding.pullRefresh.setOnRefreshListener(object :
+            SimplePullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+                viewModel.getUserArticleList(true)
+            }
+        })
+        binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
+            SimplePullRefreshLayout.OnLoadMoreListener {
+            override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
+                viewModel.getUserArticleList(false)
+            }
+        })
+    }
+
+    private fun update() {
+        viewModel.wendaResult.observe(viewLifecycleOwner, { result ->
+            result.data?.datas?.let { list ->
+                if (viewModel.isRefresh) {
+                    articleAdapter.setNewData(list)
+                } else {
+                    articleAdapter.addData(list)
+                    binding.pullRefresh.setLoadMore(true)
+                }
+            }
+            if (binding.pullRefresh.isRefresh()) {
+                binding.pullRefresh.finishRefresh()
+            }
+            if (viewModel.page >= viewModel.pageCont) {
+                binding.pullRefresh.setLoadMore(false)
+            }
+        })
+    }
+
 }

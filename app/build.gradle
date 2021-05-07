@@ -57,7 +57,7 @@ dependencies {
     implementation project(path: ':library_common')
     implementation project(path: ':module_home')
     implementation project(path: ':module_faq')
-    implementation project(path: ':module_setup')
-    implementation project(path: ':module_personal')
+    implementation project(path: ':module_system')
+    implementation project(path: ':module_project')
     implementation project(path: ':module_user')
 }

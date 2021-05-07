@@ -8,5 +8,5 @@
     android:includeFontPadding="false"
     android:lines="1"
     android:singleLine="true"
-    android:textColor="@color/text_invert"
+    android:textColor="@color/white"
     android:textSize="12sp" />

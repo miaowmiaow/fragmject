@@ -13,15 +13,9 @@
             android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/banner"
-                android:layout_width="match_parent"
-                android:layout_height="225dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/banner" />
+                android:layout_height="match_parent" />
         </RelativeLayout>
     </com.example.fragment.library.base.component.view.SimplePullRefreshLayout>
 

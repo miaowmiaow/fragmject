@@ -14,8 +14,8 @@ import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
-import com.example.fragment.module.personal.fragment.PersonalFragment
-import com.example.fragment.module.setup.fragment.SetupFragment
+import com.example.fragment.module.project.fragment.ProjectFragment
+import com.example.fragment.module.system.fragment.SystemFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanAndroidBinding
 
@@ -30,17 +30,18 @@ class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseView
 
     private val tabDrawable = intArrayOf(
         R.drawable.ic_bottom_bar_home,
-        R.drawable.ic_bottom_bar_wechat,
-        R.drawable.ic_bottom_bar_navi,
-        R.drawable.ic_bottom_bar_mine
+        R.drawable.ic_bottom_bar_faq,
+        R.drawable.ic_bottom_bar_system,
+        R.drawable.ic_bottom_bar_project
     )
-    private val tabTexts = arrayOf("首页", "问答", "体系", "我的")
+
+    private val tabTexts = arrayOf("首页", "问答", "体系", "项目")
 
     private val fragments = arrayListOf(
         HomeFragment.newInstance(),
         FAQFragment.newInstance(),
-        SetupFragment.newInstance(),
-        PersonalFragment.newInstance()
+        SystemFragment.newInstance(),
+        ProjectFragment.newInstance()
     )
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentWanAndroidBinding {
@@ -57,7 +58,7 @@ class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseView
             window.decorView.setBackgroundColor(
                 ContextCompat.getColor(
                     this,
-                    R.color.background
+                    R.color.white
                 )
             )
         }
@@ -65,6 +66,10 @@ class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupView(savedInstanceState)
+    }
+
+    private fun setupView(savedInstanceState: Bundle?){
         binding.viewpager.offscreenPageLimit = 1
         binding.viewpager.adapter = object :
             FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -86,7 +91,7 @@ class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseView
             val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
             val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
             imgTab.setImageDrawable(ContextCompat.getDrawable(imgTab.context, tabDrawable[i]))
-            imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.third))
+            imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
             txtTab.text = tabTexts[i]
             binding.tab.addTab(tabView)
         }
@@ -95,15 +100,15 @@ class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseView
             override fun onTabSelected(tabView: View, position: Int, isRefresh: Boolean) {
                 val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
                 val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.main))
-                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.main))
+                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.white))
+                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.white))
             }
 
             override fun onTabUnselected(tabView: View, position: Int) {
                 val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
                 val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.third))
-                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.third))
+                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
+                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
             }
         })
         if (savedInstanceState == null) {

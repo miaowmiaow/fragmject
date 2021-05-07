@@ -22,7 +22,9 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     OnBackPressedListener {
 
     private lateinit var bannerHelper: SimpleBannerHelper
+
     private val hotKeyAdapter = HotKeyAdapter()
+
     private val fragments = arrayListOf(
         SquareFragment.newInstance(),
         WanAndroidFragment.newInstance()
@@ -42,7 +44,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
             window.decorView.setBackgroundColor(
                 ContextCompat.getColor(
                     this,
-                    R.color.background
+                    R.color.white
                 )
             )
         }

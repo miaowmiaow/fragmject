@@ -10,7 +10,7 @@
         android:padding="15dp"
         android:background="#fff"
         android:text="广场  •  近期分享"
-        android:textColor="@color/text_surface"
+        android:textColor="@color/text_333"
         android:textSize="16sp" />
 
     <com.example.fragment.library.base.component.view.SimplePullRefreshLayout

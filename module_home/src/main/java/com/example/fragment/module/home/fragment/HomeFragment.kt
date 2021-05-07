@@ -5,10 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
-import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.module.home.adapter.ArticleAdapter
-import com.example.fragment.module.home.adapter.BannerAdapter
+import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.module.home.databinding.FragmentHomeBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
@@ -21,8 +19,6 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
-    private lateinit var bannerHelper: SimpleBannerHelper
-    private val bannerAdapter = BannerAdapter()
     private val articleAdapter = ArticleAdapter()
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentHomeBinding {
@@ -37,19 +33,8 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         viewModel.getArticleList(true)
     }
 
-    override fun onResume() {
-        super.onResume()
-        bannerHelper.startTimerTask()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        bannerHelper.stopTimerTask()
-    }
-
     private fun setupView() {
-        bannerHelper = SimpleBannerHelper(binding.banner)
-        binding.banner.adapter = bannerAdapter
+
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -69,8 +54,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun update() {
         viewModel.bannerResult.observe(viewLifecycleOwner, { result ->
             result.data?.apply {
-                bannerAdapter.setNewData(this)
-                bannerHelper.startTimerTask()
+                articleAdapter.setBannerData(this)
             }
         })
         viewModel.articleTopResult.observe(viewLifecycleOwner, { result ->

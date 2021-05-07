@@ -55,7 +55,6 @@ dependencies {
     api rootProject.ext.dependencies["glide"]
     annotationProcessor rootProject.ext.dependencies["glide-compiler"]
     api rootProject.ext.dependencies["photoView"]
-    api rootProject.ext.dependencies["roundedimageview"]
     api rootProject.ext.dependencies["tbs"]
 
     api 'junit:junit:4.13'

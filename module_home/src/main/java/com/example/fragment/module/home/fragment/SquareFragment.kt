@@ -6,8 +6,7 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.module.home.R
-import com.example.fragment.module.home.adapter.ArticleAdapter
+import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.module.home.databinding.FragmentSquareBinding
 import com.example.fragment.module.home.model.SquareViewModel
 

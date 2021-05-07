@@ -16,8 +16,8 @@
             <option value="$PROJECT_DIR$/library_common" />
             <option value="$PROJECT_DIR$/module_faq" />
             <option value="$PROJECT_DIR$/module_home" />
-            <option value="$PROJECT_DIR$/module_personal" />
-            <option value="$PROJECT_DIR$/module_setup" />
+            <option value="$PROJECT_DIR$/module_project" />
+            <option value="$PROJECT_DIR$/module_system" />
             <option value="$PROJECT_DIR$/module_user" />
           </set>
         </option>

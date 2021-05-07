@@ -21,36 +21,35 @@
             android:layout_height="50dp"
             android:layout_below="@id/status_bar"
             android:layout_alignParentStart="true"
-            android:padding="10dp"
+            android:padding="15dp"
             android:src="@drawable/ic_menu" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="26dp"
             android:layout_below="@id/status_bar"
-            android:layout_marginStart="5dp"
             android:layout_marginTop="12dp"
-            android:layout_marginEnd="5dp"
             android:layout_marginBottom="12dp"
             android:layout_toStartOf="@id/add"
             android:layout_toEndOf="@id/menu"
-            android:alpha="0.5"
+            android:alpha="0.7"
             android:background="@drawable/shape_search_bg">
 
             <ImageView
-                android:layout_width="15dp"
-                android:layout_height="15dp"
+                android:id="@+id/iv_search"
+                android:layout_width="13dp"
+                android:layout_height="13dp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="15dp"
-
+                android:layout_marginEnd="10dp"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_search" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/hot_key"
                 android:layout_width="match_parent"
+                android:layout_toEndOf="@id/iv_search"
                 android:layout_height="match_parent"
-                android:layout_marginStart="45dp"
                 android:layout_marginEnd="15dp" />
 
         </RelativeLayout>

@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.model.BaseViewModel
-import com.example.fragment.module.home.bean.ArticleBean
-import com.example.fragment.module.home.bean.BannerBean
-import com.example.fragment.module.home.bean.TopArticleBean
+import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.bean.BannerBean
+import com.example.fragment.library.common.bean.TopArticleBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

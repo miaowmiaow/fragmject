@@ -3,17 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.example.fragment.library.base.component.view.SimpleTitleBar
-        android:id="@+id/title_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/main" />
-
     <com.example.fragment.library.base.component.view.SimplePullRefreshLayout
         android:id="@+id/pull_refresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/title_bar">
+        android:layout_height="match_parent">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -22,7 +15,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/banner"
                 android:layout_width="match_parent"
-                android:layout_height="175dp" />
+                android:layout_height="225dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"

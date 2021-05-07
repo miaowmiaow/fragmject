@@ -1,20 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.example.fragment.library.base.component.view.SimpleTabLayout
-        android:id="@+id/tab"
+    <RelativeLayout
+        android:id="@+id/title_bar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/layer_while_top"
-        android:clipChildren="false" />
+        android:layout_height="wrap_content"
+        android:background="@color/main">
 
-    <FrameLayout
-        android:id="@+id/main"
+        <com.example.fragment.library.base.component.view.SimpleStatusBar
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/menu"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/status_bar"
+            android:layout_alignParentStart="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_menu" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="26dp"
+            android:layout_below="@id/status_bar"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="12dp"
+            android:layout_toStartOf="@id/add"
+            android:layout_toEndOf="@id/menu"
+            android:alpha="0.5"
+            android:background="@drawable/shape_search_bg">
+
+            <ImageView
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="15dp"
+
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_search" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/hot_key"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="45dp"
+                android:layout_marginEnd="15dp" />
+
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/add"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/status_bar"
+            android:layout_alignParentEnd="true"
+            android:padding="15dp"
+            android:src="@drawable/ic_add" />
+
+    </RelativeLayout>
+
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/tab" />
+        android:layout_below="@id/title_bar"
+        tools:openDrawer="start">
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <RelativeLayout
+            android:layout_width="275dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="@drawable/bg"
+            android:clickable="true"
+            android:focusable="true">
+
+        </RelativeLayout>
+    </androidx.drawerlayout.widget.DrawerLayout>
+
 
 </RelativeLayout>

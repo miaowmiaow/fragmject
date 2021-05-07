@@ -1,6 +1,7 @@
 package com.example.fragment.library.base.component.adapter
 
 import android.view.View
+import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 
@@ -31,6 +32,11 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         notifyItemRangeChanged(data.size - newData.size, newData.size)
     }
 
+    fun addData(index: Int, newData: List<T>) {
+        this.data.addAll(index, newData)
+        notifyItemRangeChanged(index, newData.size)
+    }
+
     fun remove(position: Int) {
         if (position < 0 || position >= data.size) return
         data.removeAt(position)
@@ -59,6 +65,10 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         return if (position >= 0 && position < data.size) data[position] else null
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
+        return ViewBindHolder(onCreateViewBinding(parent, viewType))
+    }
+
     override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
         holder.itemView.setOnClickListener {
             onItemClickListener?.onItemClick(holder, position)
@@ -76,6 +86,8 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     override fun getItemCount(): Int {
         return data.size
     }
+
+    abstract fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding
 
     abstract fun onItemView(holder: ViewBindHolder, position: Int, item: T)
 

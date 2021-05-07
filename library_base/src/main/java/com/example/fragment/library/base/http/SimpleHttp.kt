@@ -134,8 +134,8 @@ class SimpleHttp private constructor() {
         type: Class<T>
     ): T {
         return withContext(Dispatchers.IO) {
-            request.baseUrl(getRetrofit().baseUrl().toString())
             try {
+                request.setBaseUrl(baseUrl.toString())
                 converter.converter(
                     getService().get(request.getUrl(), request.getHeader()), type
                 )
@@ -153,7 +153,7 @@ class SimpleHttp private constructor() {
     ): T {
         return withContext(Dispatchers.IO) {
             try {
-                request.baseUrl(getRetrofit().baseUrl().toString())
+                request.setBaseUrl(baseUrl.toString())
                 converter.converter(
                     getService().post(
                         request.getUrl(),
@@ -192,7 +192,7 @@ class SimpleHttp private constructor() {
         }
         return withContext(Dispatchers.IO) {
             try {
-                request.baseUrl(getRetrofit().baseUrl().toString())
+                request.setBaseUrl(baseUrl.toString())
                 converter.converter(
                     getService().form(
                         request.getUrl(),
@@ -286,7 +286,7 @@ open class HttpRequest @JvmOverloads constructor(
 
     private var baseUrl: String = ""
 
-    fun baseUrl(baseUrl: String): HttpRequest {
+    fun setBaseUrl(baseUrl: String): HttpRequest {
         this.baseUrl = baseUrl
         return this
     }
@@ -308,7 +308,7 @@ open class HttpRequest @JvmOverloads constructor(
             }
         }
         val urlStringBuilder = StringBuilder(url)
-        if(query.isNotEmpty()){
+        if (query.isNotEmpty()) {
             val absoluteUrl = StringBuilder(baseUrl).append(url)
             if (!absoluteUrl.contains("?")) {
                 urlStringBuilder.append("?")

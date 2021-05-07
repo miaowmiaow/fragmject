@@ -1,13 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="ic_launcher_background_start">@color/main</color>
+    <color name="ic_launcher_background_end">@color/main</color>
+
+    <color name="login_bg">@color/basic_ui_action_bar_bg</color>
+    <color name="bottom_bar_overlay">@color/background_alpha</color>
+    <color name="mine_blur_overlay">@color/background_mask</color>
+    <color name="about_me_blur_overlay">@color/background_mask</color>
+    <color name="scrollbar">#22000000</color>
+    <color name="heart_center">#FFA07C</color>
+
+    <color name="basic_ui_action_bar_bg">@color/main</color>
+    <color name="basic_ui_action_bar_icon">@color/text_invert</color>
+    <color name="basic_ui_action_bar_text">@color/text_invert</color>
+    <color name="basic_ui_action_bar_text_alpha">@color/text_invert_alpha</color>
+    <color name="basic_ui_action_bar_bottom_line">@color/line</color>
+    <!--loading dialog背景颜色-->
+    <color name="basic_ui_dialog_loading_rectangle">@color/transparent</color>
+    <!--loading dialog圆圈颜色-->
+    <color name="basic_ui_dialog_loading_circle">@color/main</color>
+
     <color name="dialog_bg">#aa000000</color>
     <color name="toast_bg">#000000</color>
     <color name="ripple_dark">#11000000</color>
     <color name="ripple_light">#11ffffff</color>
 
     <!--通用颜色-->
-    <color name="main">#4282f4</color>
-    <color name="main_alpha">#994282f4</color>
+    <color name="main">#272a36</color>
+    <color name="main_alpha">#99272a36</color>
     <color name="assist">#3cdc86</color>
     <color name="accent">#f86734</color>
     <color name="transparent">#00000000</color>
@@ -33,6 +53,8 @@
     <!--文字颜色-->
     <color name="text_main">@color/main</color>
     <color name="text_main_alpha">@color/main_alpha</color>
+    <color name="text_new">#4282f4</color>
+    <color name="text_new_alpha">#994282f4</color>
     <color name="text_accent">@color/accent</color>
     <color name="text_surface">#333333</color>
     <color name="text_surface_alpha">#88333333</color>

@@ -20,7 +20,7 @@ class SimpleStatusBar @JvmOverloads constructor(
     init {
         val activity = context as Activity
         setTranslucentStatus(activity)
-        setStatusBarTheme(activity, true)
+        setStatusBarTheme(activity, false)
     }
 
     fun setStatusBarTheme(activity: Activity, darkTheme: Boolean): Boolean {

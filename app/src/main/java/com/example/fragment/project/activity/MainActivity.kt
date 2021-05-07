@@ -1,12 +1,12 @@
-package com.example.fragment.project
+package com.example.fragment.project.activity
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
+import com.example.fragment.project.fragment.MainFragment
+import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
-import java.util.*
-import kotlin.concurrent.schedule
 
 class MainActivity : RouterActivity() {
 
@@ -32,8 +32,7 @@ class MainActivity : RouterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
-        val binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
-        setContentView(binding.root)
+        setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
         navigation(Router.MAIN)
     }
 }

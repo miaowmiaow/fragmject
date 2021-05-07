@@ -11,7 +11,7 @@ import androidx.viewbinding.ViewBinding
 import java.lang.reflect.ParameterizedType
 
 abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
-    NavigationFragment() {
+    RouterFragment() {
 
     lateinit var binding: VB
     lateinit var viewModel: VM

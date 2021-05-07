@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--==========================通用============================-->
+    <dimen name="action_bar_height">44dp</dimen>
+    <dimen name="action_bar_bottom_line_height">0dp</dimen>
+    <dimen name="bottom_bar_height">49dp</dimen>
+    <dimen name="button_height">44dp</dimen>
+    <dimen name="action_bar_bottom_tab_height">36dp</dimen>
+
+    <dimen name="line">1dp</dimen>
+
+    <dimen name="round_radius">12dp</dimen>
+    <dimen name="round_radius_small">3dp</dimen>
+
+    <dimen name="margin_thin">6dp</dimen>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_common">10dp</dimen>
+    <dimen name="margin_def">16dp</dimen>
+    <dimen name="margin_middle">32dp</dimen>
+    <dimen name="margin_big">48dp</dimen>
+
+    <!--==========================文字大小============================-->
+    <dimen name="text_headline">22sp</dimen>
+    <dimen name="text_title">18sp</dimen>
+    <dimen name="text_subtitle">17sp</dimen>
+    <dimen name="text_content">15sp</dimen>
+    <dimen name="text_auxiliary">13sp</dimen>
+    <dimen name="text_notes">12sp</dimen>
+    <dimen name="text_time">11sp</dimen>
+
+</resources>

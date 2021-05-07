@@ -1,4 +1,4 @@
-package com.example.fragment.project
+package com.example.fragment.project.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,19 +8,25 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentPagerAdapter
 import com.example.fragment.library.base.component.view.SimpleTabLayout
-import com.example.fragment.library.base.utils.FragmentUtils
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
 import com.example.fragment.module.personal.fragment.PersonalFragment
 import com.example.fragment.module.setup.fragment.SetupFragment
-import com.example.fragment.project.databinding.FragmentMainBinding
+import com.example.fragment.project.R
+import com.example.fragment.project.databinding.FragmentWanAndroidBinding
 
-class MainFragment : ViewModelFragment<FragmentMainBinding, BaseViewModel>() {
+class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseViewModel>(){
 
-    private var curFragment: Class<out Fragment>? = null
+    companion object {
+        @JvmStatic
+        fun newInstance(): WanAndroidFragment {
+            return WanAndroidFragment()
+        }
+    }
 
     private val tabDrawable = intArrayOf(
         R.drawable.ic_bottom_bar_home,
@@ -30,8 +36,15 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, BaseViewModel>() {
     )
     private val tabTexts = arrayOf("首页", "问答", "体系", "我的")
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentMainBinding {
-        return FragmentMainBinding.inflate(inflater)
+    private val fragments = arrayListOf(
+        HomeFragment.newInstance(),
+        FAQFragment.newInstance(),
+        SetupFragment.newInstance(),
+        PersonalFragment.newInstance()
+    )
+
+    override fun setViewBinding(inflater: LayoutInflater): FragmentWanAndroidBinding {
+        return FragmentWanAndroidBinding.inflate(inflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,8 +65,20 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, BaseViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.viewpager.offscreenPageLimit = 1
+        binding.viewpager.adapter = object :
+            FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+
+            override fun getItem(position: Int): Fragment {
+                return fragments[position]
+            }
+
+            override fun getCount(): Int {
+                return fragments.size
+            }
+        }
         binding.tab.setTabMod(SimpleTabLayout.MODE.AUTO)
-        for (i in tabDrawable.indices) {
+        for (i in fragments.indices) {
             val tabView: View = LayoutInflater.from(binding.root.context).inflate(
                 R.layout.tab_item_main,
                 null
@@ -65,18 +90,13 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, BaseViewModel>() {
             txtTab.text = tabTexts[i]
             binding.tab.addTab(tabView)
         }
+        binding.tab.setupWithViewPager(binding.viewpager)
         binding.tab.setOnTabSelectedListener(object : SimpleTabLayout.OnTabSelectedListener {
             override fun onTabSelected(tabView: View, position: Int, isRefresh: Boolean) {
                 val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
                 val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
                 imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.main))
                 txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.main))
-                when (position) {
-                    0 -> switcherFragment(HomeFragment::class.java)
-                    1 -> switcherFragment(FAQFragment::class.java)
-                    2 -> switcherFragment(SetupFragment::class.java)
-                    3 -> switcherFragment(PersonalFragment::class.java)
-                }
             }
 
             override fun onTabUnselected(tabView: View, position: Int) {
@@ -85,25 +105,10 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, BaseViewModel>() {
                 imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.third))
                 txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.third))
             }
-
         })
         if (savedInstanceState == null) {
             binding.tab.selectTab(0)
         }
     }
 
-    fun switcherFragment(
-        fragment: Class<out Fragment>,
-        bundle: Bundle? = null,
-        addToBackStack: Boolean = false
-    ) {
-        curFragment = FragmentUtils.switcher(
-            childFragmentManager,
-            R.id.main,
-            curFragment,
-            fragment,
-            bundle,
-            addToBackStack
-        )
-    }
 }

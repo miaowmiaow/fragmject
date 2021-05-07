@@ -7,6 +7,13 @@ import com.example.fragment.module.faq.databinding.FragmentFaqBinding
 
 class FAQFragment : ViewModelFragment<FragmentFaqBinding, BaseViewModel>() {
 
+    companion object {
+        @JvmStatic
+        fun newInstance(): FAQFragment {
+            return FAQFragment()
+        }
+    }
+
     override fun setViewBinding(inflater: LayoutInflater): FragmentFaqBinding {
         return FragmentFaqBinding.inflate(inflater)
     }

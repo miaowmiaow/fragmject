@@ -2,9 +2,9 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item>
-        <shape>
-            <solid android:color="@color/ic_launcher_background" />
-        </shape>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/bg" />
     </item>
 
     <item>

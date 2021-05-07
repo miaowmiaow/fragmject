@@ -7,6 +7,13 @@ import com.example.fragment.module.setup.databinding.FragmentSetupBinding
 
 class SetupFragment : ViewModelFragment<FragmentSetupBinding, BaseViewModel>() {
 
+    companion object {
+        @JvmStatic
+        fun newInstance(): SetupFragment {
+            return SetupFragment()
+        }
+    }
+
     override fun setViewBinding(inflater: LayoutInflater): FragmentSetupBinding {
         return FragmentSetupBinding.inflate(inflater)
     }

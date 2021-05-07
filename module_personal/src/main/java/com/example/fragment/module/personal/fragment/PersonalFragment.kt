@@ -7,6 +7,13 @@ import com.example.fragment.module.personal.databinding.FragmentPersonalBinding
 
 class PersonalFragment : ViewModelFragment<FragmentPersonalBinding, BaseViewModel>() {
 
+    companion object {
+        @JvmStatic
+        fun newInstance(): PersonalFragment {
+            return PersonalFragment()
+        }
+    }
+
     override fun setViewBinding(inflater: LayoutInflater): FragmentPersonalBinding {
         return FragmentPersonalBinding.inflate(inflater)
     }

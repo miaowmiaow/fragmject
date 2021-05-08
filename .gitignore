@@ -4,8 +4,8 @@
 /.idea
 .DS_Store
 /build
-/src/androidTest
-/src/test
 /captures
 .externalNativeBuild
 .cxx
+/module_navigation/src/androidTest/java/com/example/fragment/module/navigation/
+/module_navigation/src/test/java/com/example/fragment/module/navigation/

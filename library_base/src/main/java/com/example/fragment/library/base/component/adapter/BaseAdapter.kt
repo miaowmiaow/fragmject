@@ -7,18 +7,44 @@ import androidx.viewbinding.ViewBinding
 
 abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>() {
 
+
+    companion object {
+        private const val INVALID_POSITION = -1
+    }
+
+    private var currentPosition = INVALID_POSITION
+
     private val ids: MutableList<Int> = ArrayList()
     private var data: MutableList<T> = ArrayList()
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemChildClickListener: OnItemChildClickListener? = null
+    private var onItemSelectedListener: OnItemSelectedListener? = null
 
     fun addOnClickListener(id: Int) {
         ids.add(id)
     }
 
-    fun setNewData(newData: List<T>) {
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        onItemClickListener = listener
+    }
+
+    fun setOnItemChildClickListener(listener: OnItemChildClickListener) {
+        onItemChildClickListener = listener
+    }
+
+    fun setOnItemSelectedListener(listener: OnItemSelectedListener) {
+        onItemSelectedListener = listener
+    }
+
+    fun selectItem(position: Int) {
+        currentPosition = position
+    }
+
+    fun setNewData(newData: List<T>? = null) {
         this.data.clear()
-        this.data.addAll(newData)
+        if (newData != null) {
+            this.data.addAll(newData)
+        }
         notifyDataSetChanged()
     }
 
@@ -37,7 +63,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         notifyItemRangeChanged(index, newData.size)
     }
 
-    fun remove(position: Int) {
+    fun removeData(position: Int) {
         if (position < 0 || position >= data.size) return
         data.removeAt(position)
         notifyItemRemoved(position)
@@ -47,14 +73,6 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     fun clearData() {
         this.data.clear()
         notifyDataSetChanged()
-    }
-
-    fun setOnItemClickListener(listener: OnItemClickListener) {
-        onItemClickListener = listener
-    }
-
-    fun setOnItemChildClickListener(listener: OnItemChildClickListener) {
-        onItemChildClickListener = listener
     }
 
     fun getData(): MutableList<T> {
@@ -72,6 +90,15 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
         holder.itemView.setOnClickListener {
             onItemClickListener?.onItemClick(holder, position)
+            if (position != INVALID_POSITION) {
+                onItemSelectedListener?.onItemSelected(holder, position)
+            }
+            if (currentPosition != INVALID_POSITION && currentPosition != position) {
+                onItemSelectedListener?.onItemUnselected(holder, currentPosition)
+            }
+            if (currentPosition != position) {
+                currentPosition = position
+            }
         }
         onItemChildClickListener?.let { listener ->
             for (id in ids) {
@@ -103,5 +130,10 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
 
     interface OnItemChildClickListener {
         fun onItemChildClick(view: View, holder: ViewBindHolder, position: Int)
+    }
+
+    interface OnItemSelectedListener {
+        fun onItemSelected(holder: ViewBindHolder, position: Int)
+        fun onItemUnselected(holder: ViewBindHolder, position: Int)
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
+import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.fragment.MainFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
@@ -24,7 +25,8 @@ class MainActivity : RouterActivity() {
             Router.MAIN -> {
                 switcher(MainFragment::class.java, bundle, onBack, navMode)
             }
-            Router.LOGIN -> {
+            Router.SYSTEM -> {
+                switcher(SystemListFragment::class.java, bundle, onBack, navMode)
             }
         }
     }

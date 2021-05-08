@@ -4,18 +4,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
+import com.example.fragment.library.common.bean.*
 import com.example.fragment.library.common.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.bean.BannerBean
-import com.example.fragment.library.common.bean.TopArticleBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class HomeViewModel : BaseViewModel() {
 
-    val bannerResult = MutableLiveData<BannerBean>()
+    val bannerResult = MutableLiveData<BannerDataBean>()
     val articleTopResult = MutableLiveData<TopArticleBean>()
-    val articleResult = MutableLiveData<ArticleBean>()
+    val articleListResult = MutableLiveData<ArticleListBean>()
     var page = 0
     var pageCont = 1
     var isRefresh = true
@@ -38,9 +36,9 @@ class HomeViewModel : BaseViewModel() {
             if (page <= pageCont) {
                 val request = HttpRequest("article/list/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<ArticleBean>(request)
+                val result = get<ArticleListBean>(request)
                 result.data?.pageCount?.let { pageCont = it.toInt() }
-                articleResult.postValue(result)
+                articleListResult.postValue(result)
             }
         }
     }

@@ -34,7 +34,6 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun setupView() {
-
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -65,7 +64,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                 articleAdapter.addData(0, list)
             }
         })
-        viewModel.articleResult.observe(viewLifecycleOwner, { result ->
+        viewModel.articleListResult.observe(viewLifecycleOwner, { result ->
             result.data?.datas?.let { list ->
                 if (viewModel.isRefresh) {
                     articleAdapter.setNewData(list)

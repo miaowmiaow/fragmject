@@ -14,38 +14,41 @@ import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
-import com.example.fragment.module.project.fragment.ProjectFragment
+import com.example.fragment.module.navigation.fragment.NavigationFragment
+import com.example.fragment.module.project.fragment.ProjectListFragment
 import com.example.fragment.module.system.fragment.SystemFragment
 import com.example.fragment.project.R
-import com.example.fragment.project.databinding.FragmentWanAndroidBinding
+import com.example.fragment.project.databinding.FragmentWanBinding
 
-class WanAndroidFragment : ViewModelFragment<FragmentWanAndroidBinding, BaseViewModel>(){
+class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>(){
 
     companion object {
         @JvmStatic
-        fun newInstance(): WanAndroidFragment {
-            return WanAndroidFragment()
+        fun newInstance(): WanFragment {
+            return WanFragment()
         }
     }
 
     private val tabDrawable = intArrayOf(
         R.drawable.ic_bottom_bar_home,
+        R.drawable.ic_bottom_bar_navigation,
         R.drawable.ic_bottom_bar_faq,
         R.drawable.ic_bottom_bar_system,
         R.drawable.ic_bottom_bar_project
     )
 
-    private val tabTexts = arrayOf("首页", "问答", "体系", "项目")
+    private val tabTexts = arrayOf("首页", "导航", "问答", "体系", "项目")
 
     private val fragments = arrayListOf(
         HomeFragment.newInstance(),
+        NavigationFragment.newInstance(),
         FAQFragment.newInstance(),
         SystemFragment.newInstance(),
-        ProjectFragment.newInstance()
+        ProjectListFragment.newInstance()
     )
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentWanAndroidBinding {
-        return FragmentWanAndroidBinding.inflate(inflater)
+    override fun setViewBinding(inflater: LayoutInflater): FragmentWanBinding {
+        return FragmentWanBinding.inflate(inflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

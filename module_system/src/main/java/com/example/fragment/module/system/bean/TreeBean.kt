@@ -1,0 +1,22 @@
+package com.example.fragment.module.system.bean
+
+import android.os.Parcelable
+import com.example.fragment.library.base.http.HttpResponse
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
+data class TreeListBean(
+    val data: List<TreeBean>? = null,
+) : HttpResponse(), Parcelable
+
+@Parcelize
+data class TreeBean(
+    val children: List<TreeBean>? = null,
+    val courseId: String = "",
+    val id: String = "",
+    val name: String = "",
+    val order: String = "",
+    val parentChapterId: String = "",
+    val userControlSetTop: String = "",
+    val visible: String = ""
+) : Parcelable

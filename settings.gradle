@@ -1,3 +1,4 @@
+include ':module_navigation'
 include ':app'
 include ':module_home'
 include ':module_faq'

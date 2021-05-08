@@ -2,6 +2,7 @@
 <resources>
     <!--通用颜色-->
     <color name="main">#272a36</color>
+    <color name="background">#f5f5f5</color>
     <color name="main_alpha">#99272a36</color>
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>

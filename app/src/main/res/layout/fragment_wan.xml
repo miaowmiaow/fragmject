@@ -7,19 +7,15 @@
         android:id="@+id/tab"
         android:layout_width="match_parent"
         android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/main"
         android:clipChildren="false" />
 
-    <com.example.fragment.library.base.component.view.SimplePullRefreshLayout
-        android:id="@+id/pull_refresh"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tab">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/banner" />
-    </com.example.fragment.library.base.component.view.SimplePullRefreshLayout>
+        android:layout_above="@id/tab"
+        android:background="@color/background" />
 
 </RelativeLayout>

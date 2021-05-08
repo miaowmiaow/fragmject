@@ -6,12 +6,13 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.bean.ArticleListBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SquareViewModel : BaseViewModel() {
 
-    val userArticleResult = MutableLiveData<ArticleBean>()
+    val userArticleResult = MutableLiveData<ArticleListBean>()
     var page = 0
     var pageCont = 1
     var isRefresh = true
@@ -27,7 +28,7 @@ class SquareViewModel : BaseViewModel() {
             if (page <= pageCont) {
                 val request = HttpRequest("user_article/list/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<ArticleBean>(request)
+                val result = get<ArticleListBean>(request)
                 result.data?.pageCount?.let { pageCont = it.toInt() }
                 userArticleResult.postValue(result)
             }

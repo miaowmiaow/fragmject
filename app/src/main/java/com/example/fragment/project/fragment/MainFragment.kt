@@ -27,7 +27,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
 
     private val fragments = arrayListOf(
         SquareFragment.newInstance(),
-        WanAndroidFragment.newInstance()
+        WanFragment.newInstance()
     )
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentMainBinding {

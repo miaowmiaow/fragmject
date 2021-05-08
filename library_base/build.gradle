@@ -35,6 +35,7 @@ dependencies {
     api rootProject.ext.dependencies["constraintlayout"]
     api rootProject.ext.dependencies["multidex"]
     api rootProject.ext.dependencies["material"]
+    api rootProject.ext.dependencies["flexbox"]
     api rootProject.ext.dependencies["kotlin-stdlib"]
     api rootProject.ext.dependencies["kotlinx-coroutines-android"]
     api rootProject.ext.dependencies["core-ktx"]

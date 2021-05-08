@@ -11,14 +11,13 @@ import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.R
+import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.bean.BannerBean
 import com.example.fragment.library.common.databinding.ItemArticleBannerBinding
 import com.example.fragment.library.common.databinding.ItemArticleBinding
 import com.example.fragment.library.common.utils.StringUtils
-import com.example.fragment.library.common.bean.ArticleDataBean
-import com.example.fragment.library.common.bean.BannerDataBean
 
-
-class ArticleAdapter : BaseAdapter<ArticleDataBean>() {
+class ArticleAdapter : BaseAdapter<ArticleBean>() {
 
     companion object {
         private const val ITEM_TYPE_BANNER = 0
@@ -27,7 +26,7 @@ class ArticleAdapter : BaseAdapter<ArticleDataBean>() {
 
     private var bannerHelper: SimpleBannerHelper? = null
     private val bannerAdapter = BannerAdapter()
-    private var bannerData: MutableList<BannerDataBean> = ArrayList()
+    private var bannerData: MutableList<BannerBean> = ArrayList()
 
     override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
         return if (viewType == 0) {
@@ -37,7 +36,7 @@ class ArticleAdapter : BaseAdapter<ArticleDataBean>() {
         }
     }
 
-    override fun onItemView(holder: ViewBindHolder, position: Int, item: ArticleDataBean) {
+    override fun onItemView(holder: ViewBindHolder, position: Int, item: ArticleBean) {
         if (getItemViewType(position) == ITEM_TYPE_BANNER) {
             val binding = holder.binding as ItemArticleBannerBinding
             binding.banner.adapter = bannerAdapter
@@ -110,7 +109,7 @@ class ArticleAdapter : BaseAdapter<ArticleDataBean>() {
         return format.toString()
     }
 
-    fun setBannerData(data: List<BannerDataBean>) {
+    fun setBannerData(data: List<BannerBean>) {
         bannerData.addAll(data)
         bannerAdapter.setNewData(bannerData)
         notifyItemChanged(0)

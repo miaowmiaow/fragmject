@@ -2,17 +2,17 @@ package com.example.fragment.library.common.bean
 
 import com.example.fragment.library.base.http.HttpResponse
 
-data class ArticleBean(
-    val data: ArticleListBean? = null
+data class ArticleListBean(
+    val data: ArticleDataBean? = null
 ) : HttpResponse()
 
 data class TopArticleBean(
-    val data: List<ArticleDataBean>? = null
+    val data: List<ArticleBean>? = null
 ) : HttpResponse()
 
-data class ArticleListBean(
+data class ArticleDataBean(
     val curPage: String = "",
-    val datas: List<ArticleDataBean>? = null,
+    val datas: List<ArticleBean>? = null,
     val offset: String = "",
     val over: Boolean = false,
     val pageCount: String = "",
@@ -20,7 +20,7 @@ data class ArticleListBean(
     val total: String = ""
 )
 
-data class ArticleDataBean(
+data class ArticleBean(
     val apkLink: String = "",
     val audit: String = "",
     val author: String = "",

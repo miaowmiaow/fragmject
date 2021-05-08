@@ -30,7 +30,7 @@
                 android:layout_marginEnd="5dp"
                 android:text="新"
                 android:textColor="@color/blue"
-                android:textSize="@dimen/text_notes" />
+                android:textSize="13sp" />
 
         </LinearLayout>
 
@@ -41,7 +41,7 @@
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/ll_new"
             android:textColor="@color/selector_text_color_article_author"
-            android:textSize="@dimen/text_notes" />
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/tv_tag"
@@ -57,7 +57,7 @@
             android:paddingLeft="3dp"
             android:paddingRight="3dp"
             android:textColor="@color/selector_text_color_article_tag"
-            android:textSize="@dimen/text_time" />
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/tv_time"
@@ -68,7 +68,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:textColor="@color/text_999"
-            android:textSize="@dimen/text_notes" />
+            android:textSize="13sp" />
 
     </RelativeLayout>
 
@@ -106,7 +106,7 @@
                 android:maxLines="3"
                 android:singleLine="false"
                 android:textColor="@color/text_333"
-                android:textSize="@dimen/text_content" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/tv_desc"
@@ -119,7 +119,7 @@
                 android:lineSpacingExtra="3dp"
                 android:maxLines="3"
                 android:textColor="@color/text_666"
-                android:textSize="@dimen/text_auxiliary"
+                android:textSize="13sp"
                 android:visibility="gone" />
 
         </LinearLayout>
@@ -144,7 +144,7 @@
             android:layout_marginEnd="5dp"
             android:text="置顶"
             android:textColor="@color/orange"
-            android:textSize="@dimen/text_notes" />
+            android:textSize="13sp" />
 
     </LinearLayout>
 
@@ -162,7 +162,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/selector_text_color_article_chapter"
-            android:textSize="@dimen/text_notes" />
+            android:textSize="13sp" />
 
     </LinearLayout>
 

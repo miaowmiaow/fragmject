@@ -4,16 +4,17 @@
     <item>
         <shape android:shape="rectangle" >
             <gradient
-                android:endColor="#e5e5e5"
-                android:startColor="#e5e5e5" />
+                android:endColor="@color/line"
+                android:startColor="@color/line" />
         </shape>
     </item>
     <item
-        android:top="1dp">
+        android:top="1dp"
+        android:bottom="1dp">
         <shape android:shape="rectangle" >
             <gradient
-                android:endColor="#ffffff"
-                android:startColor="#ffffff" />
+                android:endColor="@color/white"
+                android:startColor="@color/white" />
         </shape>
     </item>
 

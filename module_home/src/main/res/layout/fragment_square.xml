@@ -8,7 +8,7 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/layer_while_top_bottom"
+        android:background="@drawable/layer_while_item_top_bottom"
         android:padding="15dp"
         android:text="广场  •  近期分享"
         android:textColor="@color/text_333"

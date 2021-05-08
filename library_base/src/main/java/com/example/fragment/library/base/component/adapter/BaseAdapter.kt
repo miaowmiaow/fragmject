@@ -28,6 +28,10 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         onItemClickListener = listener
     }
 
+    fun getOnItemClickListener(): OnItemClickListener? {
+        return onItemClickListener
+    }
+
     fun setOnItemChildClickListener(listener: OnItemChildClickListener) {
         onItemChildClickListener = listener
     }

@@ -19,21 +19,15 @@
                 android:layout_width="150dp"
                 android:layout_height="match_parent" />
 
-            <View
-                android:id="@+id/line"
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:layout_toEndOf="@id/menu"
-                android:background="@color/text_line" />
-
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="11dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="11dp"
-                android:layout_marginBottom="11dp"
-                android:layout_toEndOf="@id/line">
+                android:paddingLeft="11dp"
+                android:paddingTop="5dp"
+                android:paddingRight="11dp"
+                android:background="@color/white"
+                android:paddingBottom="11dp"
+                android:layout_toEndOf="@id/menu">
 
                 <com.google.android.flexbox.FlexboxLayout
                     android:id="@+id/fbl"

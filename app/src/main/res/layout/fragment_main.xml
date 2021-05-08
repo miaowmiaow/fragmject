@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -8,7 +9,7 @@
         android:id="@+id/title_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/main">
+        android:background="@color/theme">
 
         <com.example.fragment.library.base.component.view.SimpleStatusBar
             android:id="@+id/status_bar"
@@ -33,7 +34,7 @@
             android:layout_toStartOf="@id/add"
             android:layout_toEndOf="@id/menu"
             android:alpha="0.7"
-            android:background="@drawable/shape_search_bg">
+            android:background="@drawable/shape_corners_solid_gray_alpha">
 
             <ImageView
                 android:id="@+id/iv_search"
@@ -48,9 +49,9 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/hot_key"
                 android:layout_width="match_parent"
-                android:layout_toEndOf="@id/iv_search"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="15dp" />
+                android:layout_marginEnd="15dp"
+                android:layout_toEndOf="@id/iv_search" />
 
         </RelativeLayout>
 
@@ -75,7 +76,8 @@
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewpager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:background="@color/background" />
 
         <RelativeLayout
             android:layout_width="275dp"
@@ -84,6 +86,83 @@
             android:background="@drawable/bg"
             android:clickable="true"
             android:focusable="true">
+
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/logo" />
+
+            <TextView
+                android:id="@+id/my_points"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/logo"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="我的积分"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:drawableEndCompat="@drawable/ic_right" />
+
+            <TextView
+                android:id="@+id/my_share"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/my_points"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="我的分享"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:drawableEndCompat="@drawable/ic_right" />
+
+            <TextView
+                android:id="@+id/my_collection"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/my_share"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="我的收藏"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:drawableEndCompat="@drawable/ic_right" />
+
+            <TextView
+                android:id="@+id/about_author"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/my_collection"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="关于作者"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:drawableEndCompat="@drawable/ic_right" />
+
+            <TextView
+                android:id="@+id/setting"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/about_author"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="系统设置"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:drawableEndCompat="@drawable/ic_right" />
 
         </RelativeLayout>
     </androidx.drawerlayout.widget.DrawerLayout>

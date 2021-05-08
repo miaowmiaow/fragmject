@@ -12,6 +12,7 @@ data class TreeListBean(
 @Parcelize
 data class TreeBean(
     val children: List<TreeBean>? = null,
+    var childrenSelectPosition: Int = 0,
     val courseId: String = "",
     val id: String = "",
     val name: String = "",

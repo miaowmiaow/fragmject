@@ -2,8 +2,10 @@ package com.example.fragment.module.navigation.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.module.navigation.R
 import com.example.fragment.module.navigation.bean.NavigationBean
 import com.example.fragment.module.navigation.databinding.ItemNavigationMenuBinding
 
@@ -16,7 +18,11 @@ class NavigationMenuAdapter : BaseAdapter<NavigationBean>() {
     override fun onItemView(holder: ViewBindHolder, position: Int, item: NavigationBean) {
         val binding = holder.binding as ItemNavigationMenuBinding
         binding.tv.text = item.name
-        binding.tv.isSelected = item.isSelected
+        holder.itemView.background = if (item.isSelected) {
+            ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_while_item_top)
+        } else {
+            ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_gray_item_top)
+        }
     }
 
 }

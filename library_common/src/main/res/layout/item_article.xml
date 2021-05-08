@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/selector_article_bg"
+    android:background="@drawable/selector_white"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/ll_new"
-            android:textColor="@color/selector_text_color_article_author"
+            android:textColor="@color/text_666"
             android:textSize="13sp" />
 
         <TextView
@@ -52,11 +52,11 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/tv_author"
-            android:background="@drawable/selector_article_tag_bg"
+            android:background="@drawable/shape_corners_stroke_blue"
             android:gravity="center"
             android:paddingLeft="3dp"
             android:paddingRight="3dp"
-            android:textColor="@color/selector_text_color_article_tag"
+            android:textColor="@color/blue"
             android:textSize="13sp" />
 
         <TextView
@@ -161,7 +161,7 @@
             android:id="@+id/tv_chapter_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/selector_text_color_article_chapter"
+            android:textColor="@color/text_999"
             android:textSize="13sp" />
 
     </LinearLayout>

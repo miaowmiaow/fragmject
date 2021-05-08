@@ -8,7 +8,7 @@
         android:id="@+id/tab"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@drawable/layer_while_top_bottom"
+        android:background="@drawable/layer_while_item_top_bottom"
         android:clipChildren="false" />
 
     <androidx.viewpager.widget.ViewPager

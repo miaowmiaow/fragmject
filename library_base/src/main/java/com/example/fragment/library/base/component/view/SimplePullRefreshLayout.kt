@@ -244,7 +244,9 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
                 override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                     if (getItemViewType(position) == TYPE_LOAD_MORE) {
                         val loadView = holder.itemView.findViewById<LoadMoreView>(TYPE_LOAD_MORE)
-                        loadView.setLoadMore(loadMoreText)
+                        if (itemCount > 1) {
+                            loadView.setLoadMore(loadMoreText)
+                        }
                     } else {
                         adapter.onBindViewHolder(holder, position)
                     }

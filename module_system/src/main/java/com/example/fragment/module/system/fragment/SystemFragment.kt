@@ -9,6 +9,7 @@ import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.system.adapter.SystemAdapter
+import com.example.fragment.module.system.bean.TreeBean
 import com.example.fragment.module.system.databinding.FragmentSystemBinding
 import com.example.fragment.module.system.model.SystemViewModel
 

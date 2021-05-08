@@ -8,7 +8,6 @@ import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.module.system.R
 import com.example.fragment.module.system.bean.TreeBean
 import com.example.fragment.module.system.databinding.ItemSystemBinding
-import com.google.android.flexbox.FlexboxLayout
 
 class SystemAdapter : BaseAdapter<TreeBean>() {
 
@@ -19,17 +18,17 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
     override fun onItemView(holder: ViewBindHolder, position: Int, item: TreeBean) {
         val binding = holder.binding as ItemSystemBinding
         binding.name.text = item.name
-        fillFlexboxLayout(binding.fbl, item.children)
-    }
-
-    private fun fillFlexboxLayout(fbl: FlexboxLayout, data: List<TreeBean>? = null) {
-        fbl.removeAllViews()
-        data?.forEach {
-            val inflater = LayoutInflater.from(fbl.context)
+        binding.fbl.removeAllViews()
+        item.children?.forEachIndexed { index, treeBean ->
+            val inflater = LayoutInflater.from(binding.fbl.context)
             val tv: TextView =
-                inflater.inflate(R.layout.item_system_children, fbl, false) as TextView
-            tv.text = it.name
-            fbl.addView(tv)
+                inflater.inflate(R.layout.item_system_children, binding.fbl, false) as TextView
+            tv.text = treeBean.name
+            tv.setOnClickListener {
+                item.childrenSelectPosition = index
+                getOnItemClickListener()?.onItemClick(holder, position)
+            }
+            binding.fbl.addView(tv)
         }
     }
 

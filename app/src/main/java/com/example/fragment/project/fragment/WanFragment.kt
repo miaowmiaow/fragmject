@@ -88,13 +88,14 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>(){
         binding.tab.setTabMod(SimpleTabLayout.MODE.AUTO)
         for (i in fragments.indices) {
             val tabView: View = LayoutInflater.from(binding.root.context).inflate(
-                R.layout.tab_item_main,
+                R.layout.item_tab_main,
                 null
             )
             val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
             val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
             imgTab.setImageDrawable(ContextCompat.getDrawable(imgTab.context, tabDrawable[i]))
             imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
+            txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
             txtTab.text = tabTexts[i]
             binding.tab.addTab(tabView)
         }

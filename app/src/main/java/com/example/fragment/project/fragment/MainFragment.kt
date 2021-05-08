@@ -83,8 +83,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     }
 
     private fun setupView() {
-        bannerHelper = SimpleBannerHelper(binding.hotKey, RecyclerView.VERTICAL)
-        binding.hotKey.adapter = hotKeyAdapter
         binding.menu.setOnClickListener {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
                 binding.drawer.closeDrawer(GravityCompat.START)
@@ -92,6 +90,13 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 binding.drawer.openDrawer(GravityCompat.START)
             }
         }
+        binding.myPoints.setOnClickListener {  }
+        binding.myShare.setOnClickListener {  }
+        binding.myCollection.setOnClickListener {  }
+        binding.aboutAuthor.setOnClickListener {  }
+        binding.setting.setOnClickListener {  }
+        bannerHelper = SimpleBannerHelper(binding.hotKey, RecyclerView.VERTICAL)
+        binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
         binding.viewpager.adapter = object :
             FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {

@@ -44,37 +44,37 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
         binding.black.setOnClickListener {
             getBaseActivity().onBackPressed()
         }
-        tree?.apply {
-            binding.title.text = name
-        }
         binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
-        binding.tab.setSelectedIndicatorColor(R.color.main)
+        binding.tab.setSelectedIndicatorColor(R.color.black)
         binding.tab.setSelectedIndicatorHeight(10)
     }
 
     private fun update(savedInstanceState: Bundle?) {
         binding.viewpager.offscreenPageLimit = 1
-        tree?.children?.let { data ->
-            binding.viewpager.adapter = object :
-                FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+        tree?.let {tree->
+            binding.title.text = tree.name
+            tree.children?.let { data ->
+                binding.viewpager.adapter = object :
+                    FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
-                override fun getItem(position: Int): Fragment {
-                    return SystemArticleFragment.newInstance(data[position].id)
-                }
+                    override fun getItem(position: Int): Fragment {
+                        return SystemArticleFragment.newInstance(data[position].id)
+                    }
 
-                override fun getCount(): Int {
-                    return data.size
+                    override fun getCount(): Int {
+                        return data.size
+                    }
                 }
+                data.forEach {
+                    val tabView: View = LayoutInflater.from(binding.root.context)
+                        .inflate(R.layout.tab_item_top, null)
+                    tabView.findViewById<TextView>(R.id.tv_tab).text = it.name
+                    binding.tab.addTab(tabView)
+                }
+                binding.tab.setupWithViewPager(binding.viewpager)
             }
-            data.forEach {
-                val tabView: View = LayoutInflater.from(binding.root.context)
-                    .inflate(R.layout.tab_item_top, null)
-                tabView.findViewById<TextView>(R.id.tv_tab).text = it.name
-                binding.tab.addTab(tabView)
-            }
-            binding.tab.setupWithViewPager(binding.viewpager)
             if (savedInstanceState == null) {
-                binding.tab.selectTab(0)
+                binding.tab.selectTab(tree.childrenSelectPosition)
             }
         }
     }

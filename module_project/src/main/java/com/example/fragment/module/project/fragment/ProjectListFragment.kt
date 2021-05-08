@@ -34,7 +34,7 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
 
     private fun setupView() {
         binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
-        binding.tab.setSelectedIndicatorColor(R.color.main)
+        binding.tab.setSelectedIndicatorColor(R.color.black)
         binding.tab.setSelectedIndicatorHeight(10)
     }
 

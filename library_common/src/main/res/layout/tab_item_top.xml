@@ -10,7 +10,7 @@
         android:id="@+id/tv_tab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@drawable/selector_project_tab_text"
+        android:textColor="@drawable/selector_theme"
         android:textSize="16sp" />
 
 </RelativeLayout>

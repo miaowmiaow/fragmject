@@ -335,6 +335,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
             moveToEnd(interpolatedTime)
             if (interpolatedTime >= DRAG_RATE && !refreshing) {
                 refreshing = true
+                refreshDrawable.start()
                 refreshListener?.let {
                     it.onRefresh(this@SimplePullRefreshLayout)
                     loadMore = true

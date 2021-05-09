@@ -26,8 +26,6 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
                 inflater.inflate(R.layout.item_system_children, binding.fbl, false) as TextView
             tv.text = treeBean.name
             tv.setOnClickListener {
-                binding.fbl[item.childrenSelectPosition].isSelected = false
-                tv.isSelected = true
                 item.childrenSelectPosition = index
                 getOnItemClickListener()?.onItemClick(holder, position)
             }

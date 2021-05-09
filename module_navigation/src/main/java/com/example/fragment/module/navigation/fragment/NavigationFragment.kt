@@ -33,7 +33,6 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
-        viewModel.getNavigation()
     }
 
     private fun setupView() {
@@ -63,6 +62,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
                 viewModel.getNavigation()
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

@@ -1,9 +1,7 @@
 package com.example.fragment.library.base.http
 
-import android.annotation.SuppressLint
-import android.text.TextUtils
 import com.example.fragment.library.base.utils.FileUtils
-import com.google.gson.Gson
+import com.example.fragment.library.base.utils.ToastUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,20 +11,13 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.http.*
-import java.io.File
 import java.io.InputStream
 import java.io.UnsupportedEncodingException
 import java.net.URLConnection
 import java.net.URLEncoder
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
-import javax.net.ssl.*
-import kotlin.collections.HashMap
-import kotlin.collections.set
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
 
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     request: HttpRequest = HttpRequest()
@@ -91,8 +82,8 @@ class SimpleHttp private constructor() {
     }
 
     private fun buildHttpClient(): OkHttpClient {
-        val keyManagers = HttpsUtil.prepareKeyManager(clientCertificate, clientCertificatePassword)
-        val trustManager = HttpsUtil.prepareX509TrustManager(serverCertificates)
+        val keyManagers = HttpsHelper.prepareKeyManager(clientCertificate, clientCertificatePassword)
+        val trustManager = HttpsHelper.prepareX509TrustManager(serverCertificates)
         val sslContext = SSLContext.getInstance("TLS")
         sslContext.init(keyManagers, arrayOf(trustManager), null)
         val interceptor = HttpLoggingInterceptor()
@@ -102,6 +93,7 @@ class SimpleHttp private constructor() {
             .readTimeout(15000L, TimeUnit.MILLISECONDS)
             .writeTimeout(15000L, TimeUnit.MILLISECONDS)
             .connectTimeout(15000L, TimeUnit.MILLISECONDS)
+            .cookieJar(SimpleCookieJar())
             .hostnameVerifier { hostname, session ->
                 if (hostNames != null) {
                     listOf(*hostNames!!)
@@ -109,7 +101,7 @@ class SimpleHttp private constructor() {
                 } else HttpsURLConnection.getDefaultHostnameVerifier().verify(hostname, session)
             }
             .sslSocketFactory(sslContext.socketFactory, trustManager)
-            .addInterceptor(interceptor)
+            .addNetworkInterceptor(interceptor)
             .cache(Cache(FileUtils.getDir("http_cache"), 50 * 1024 * 1024))
             .build()
     }
@@ -140,8 +132,10 @@ class SimpleHttp private constructor() {
                     getService().get(request.getUrl(), request.getHeader()), type
                 )
             } catch (e: Exception) {
+                val msg = e.message.toString()
+                ToastUtil.show(msg)
                 val t = type.newInstance()
-                t.errorMsg = e.message.toString()
+                t.errorMsg = msg
                 t
             }
         }
@@ -162,8 +156,10 @@ class SimpleHttp private constructor() {
                     ), type
                 )
             } catch (e: Exception) {
+                val msg = e.message.toString()
+                ToastUtil.show(msg)
                 val t = type.newInstance()
-                t.errorMsg = e.message.toString()
+                t.errorMsg = msg
                 t
             }
         }
@@ -201,8 +197,10 @@ class SimpleHttp private constructor() {
                     ), type
                 )
             } catch (e: Exception) {
+                val msg = e.message.toString()
+                ToastUtil.show(msg)
                 val t = type.newInstance()
-                t.errorMsg = e.message.toString()
+                t.errorMsg = msg
                 t
             }
         }
@@ -213,7 +211,7 @@ class SimpleHttp private constructor() {
         var contentTypeFor = "application/octet-stream"
         try {
             fileNameMap.getContentTypeFor(URLEncoder.encode(path, "UTF-8")).also {
-                if (!it.isNotBlank()) {
+                if (it.isBlank()) {
                     contentTypeFor = it
                 }
             }
@@ -223,201 +221,33 @@ class SimpleHttp private constructor() {
         return contentTypeFor.toMediaType()
     }
 
-    class GSonConverter : Converter {
-
-        companion object {
-            fun create(): GSonConverter {
-                return GSonConverter()
-            }
-        }
-
-        private val gSon = Gson()
-
-        override fun <T> converter(responseBody: ResponseBody, type: Class<T>): T {
-            val jsonReader = gSon.newJsonReader(responseBody.charStream())
-            val adapter = gSon.getAdapter(type)
-            return responseBody.use {
-                adapter.read(jsonReader)
-            }
-        }
-    }
-
     interface Converter {
         fun <T> converter(responseBody: ResponseBody, type: Class<T>): T
     }
 
-    interface ApiService {
-
-        @POST
-        suspend fun form(
-            @Url url: String = "",
-            @HeaderMap header: Map<String, String>,
-            @Body body: MultipartBody
-        ): ResponseBody
-
-        @FormUrlEncoded
-        @POST
-        suspend fun post(
-            @Url url: String = "",
-            @HeaderMap header: Map<String, String>,
-            @FieldMap params: Map<String, String>
-        ): ResponseBody
-
-        @GET
-        suspend fun get(
-            @Url url: String = "",
-            @HeaderMap header: Map<String, String>
-        ): ResponseBody
-    }
 }
 
-open class HttpRequest @JvmOverloads constructor(
-    private var url: String = "",
-    private var path: MutableMap<String, String> = HashMap(),
-    private var query: MutableMap<String, String> = HashMap(),
-    private var header: MutableMap<String, String> = HashMap(),
-    private var params: MutableMap<String, String> = HashMap(),
-    private var files: MutableMap<String, File> = HashMap()
-) {
-    companion object {
-        private const val PARAM = "[a-zA-Z][a-zA-Z0-9_-]*"
-        private var PARAM_URL_REGEX = Pattern.compile("\\{($PARAM)\\}")
-    }
+interface ApiService {
 
-    private var baseUrl: String = ""
+    @POST
+    suspend fun form(
+        @Url url: String = "",
+        @HeaderMap header: Map<String, String>,
+        @Body body: MultipartBody
+    ): ResponseBody
 
-    fun setBaseUrl(baseUrl: String): HttpRequest {
-        this.baseUrl = baseUrl
-        return this
-    }
+    @FormUrlEncoded
+    @POST
+    suspend fun post(
+        @Url url: String = "",
+        @HeaderMap header: Map<String, String>,
+        @FieldMap params: Map<String, String>
+    ): ResponseBody
 
-    fun setUrl(url: String): HttpRequest {
-        this.url = url
-        return this
-    }
-
-    fun getUrl(): String {
-        val m = PARAM_URL_REGEX.matcher(url)
-        val patterns: MutableSet<String> = LinkedHashSet()
-        while (m.find()) {
-            patterns.add(m.group(1))
-        }
-        patterns.forEach {
-            if (path.contains(it)) {
-                url = url.replace("{$it}", path[it].toString())
-            }
-        }
-        val urlStringBuilder = StringBuilder(url)
-        if (query.isNotEmpty()) {
-            val absoluteUrl = StringBuilder(baseUrl).append(url)
-            if (!absoluteUrl.contains("?")) {
-                urlStringBuilder.append("?")
-            }
-            if (!urlStringBuilder.endsWith("?")) {
-                urlStringBuilder.append("&")
-            }
-            query.forEach { (key, value) ->
-                urlStringBuilder.append(key).append("=").append(value).append("&")
-            }
-            urlStringBuilder.setLength(urlStringBuilder.length - 1)
-        }
-        return urlStringBuilder.toString()
-    }
-
-    fun putPath(key: String, value: String): HttpRequest {
-        if (!TextUtils.isEmpty(value)) {
-            this.path[key] = value
-        }
-        return this
-    }
-
-    fun putQuery(key: String, value: String): HttpRequest {
-        if (!TextUtils.isEmpty(value)) {
-            this.query[key] = value
-        }
-        return this
-    }
-
-    fun putHeader(key: String, value: String): HttpRequest {
-        this.header[key] = value
-        return this
-    }
-
-    fun getHeader(): MutableMap<String, String> {
-        return header
-    }
-
-    fun putParam(key: String, value: String): HttpRequest {
-        this.params[key] = value
-        return this
-    }
-
-    fun getParam(): MutableMap<String, String> {
-        return params
-    }
-
-    fun putFile(key: String, file: File): HttpRequest {
-        this.files[key] = file
-        return this
-    }
-
-    fun getFile(): MutableMap<String, File> {
-        return files
-    }
-
+    @GET
+    suspend fun get(
+        @Url url: String = "",
+        @HeaderMap header: Map<String, String>
+    ): ResponseBody
 }
 
-open class HttpResponse @JvmOverloads constructor(
-    var errorCode: String = "",
-    var errorMsg: String = ""
-)
-
-object HttpsUtil {
-
-    @Throws(Exception::class)
-    fun prepareX509TrustManager(certificates: Array<InputStream>?): X509TrustManager {
-        if (certificates == null) {
-            return UnSafeTrustManager()
-        }
-        val certificateFactory = CertificateFactory.getInstance("X.509")
-        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
-        keyStore.load(null)
-        for ((index, certificate) in certificates.withIndex()) {
-            val certificateAlias = (index).toString()
-            keyStore.setCertificateEntry(
-                certificateAlias,
-                certificateFactory.generateCertificate(certificate)
-            )
-            certificate.close()
-        }
-        val trustManagerFactory =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-        trustManagerFactory.init(keyStore)
-        val trustManagers = trustManagerFactory.trustManagers
-        return if (!trustManagers.isNullOrEmpty() && trustManagers[0] is X509TrustManager) {
-            trustManagers[0] as X509TrustManager
-        } else {
-            UnSafeTrustManager()
-        }
-    }
-
-    @Throws(Exception::class)
-    fun prepareKeyManager(bksFile: InputStream?, password: String?): Array<KeyManager>? {
-        if (bksFile == null || password == null) return null
-        val clientKeyStore = KeyStore.getInstance("PKCS12")
-        clientKeyStore.load(bksFile, password.toCharArray())
-        val keyManagerFactory =
-            KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-        keyManagerFactory.init(clientKeyStore, password.toCharArray())
-        return keyManagerFactory.keyManagers
-    }
-
-    @SuppressLint("TrustAllX509TrustManager")
-    class UnSafeTrustManager : X509TrustManager {
-        override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
-        override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}
-        override fun getAcceptedIssuers(): Array<X509Certificate> {
-            return arrayOf()
-        }
-    }
-}

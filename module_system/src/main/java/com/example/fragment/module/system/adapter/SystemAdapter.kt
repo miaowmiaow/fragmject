@@ -3,6 +3,7 @@ package com.example.fragment.module.system.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.get
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.module.system.R
@@ -25,6 +26,8 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
                 inflater.inflate(R.layout.item_system_children, binding.fbl, false) as TextView
             tv.text = treeBean.name
             tv.setOnClickListener {
+                binding.fbl[item.childrenSelectPosition].isSelected = false
+                tv.isSelected = true
                 item.childrenSelectPosition = index
                 getOnItemClickListener()?.onItemClick(holder, position)
             }

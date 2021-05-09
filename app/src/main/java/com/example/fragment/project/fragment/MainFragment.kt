@@ -3,8 +3,6 @@ package com.example.fragment.project.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
@@ -13,7 +11,6 @@ import com.example.fragment.library.base.component.activity.OnBackPressedListene
 import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.home.fragment.SquareFragment
-import com.example.fragment.project.R
 import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
@@ -32,22 +29,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentMainBinding {
         return FragmentMainBinding.inflate(inflater)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.apply {
-            val lp = window.attributes
-            lp.flags = lp.flags and WindowManager.LayoutParams.FLAG_FULLSCREEN.inv()
-            window.attributes = lp
-            window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-            window.decorView.setBackgroundColor(
-                ContextCompat.getColor(
-                    this,
-                    R.color.white
-                )
-            )
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -90,11 +71,11 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 binding.drawer.openDrawer(GravityCompat.START)
             }
         }
-        binding.myPoints.setOnClickListener {  }
-        binding.myShare.setOnClickListener {  }
-        binding.myCollection.setOnClickListener {  }
-        binding.aboutAuthor.setOnClickListener {  }
-        binding.setting.setOnClickListener {  }
+        binding.myPoints.setOnClickListener { }
+        binding.myShare.setOnClickListener { }
+        binding.myCollection.setOnClickListener { }
+        binding.aboutAuthor.setOnClickListener { }
+        binding.setting.setOnClickListener { }
         bannerHelper = SimpleBannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1

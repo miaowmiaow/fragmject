@@ -40,7 +40,6 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
         }
         setupView()
         update()
-        viewModel.getTreeList(true, cid)
     }
 
     private fun setupView() {
@@ -58,6 +57,7 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
                 viewModel.getTreeList(false, cid)
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

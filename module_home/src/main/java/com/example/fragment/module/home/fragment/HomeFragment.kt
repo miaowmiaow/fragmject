@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
-import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.home.databinding.FragmentHomeBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
@@ -30,7 +30,6 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         setupView()
         update()
         viewModel.getBanner()
-        viewModel.getArticleList(true)
     }
 
     private fun setupView() {
@@ -48,6 +47,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                 viewModel.getArticleList(false)
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

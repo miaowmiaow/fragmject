@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
-import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.home.databinding.FragmentSquareBinding
 import com.example.fragment.module.home.model.SquareViewModel
 
@@ -29,7 +29,6 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, SquareViewModel>
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
-        viewModel.getUserArticleList(true)
     }
 
     private fun setupView() {
@@ -47,6 +46,7 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, SquareViewModel>
                 viewModel.getUserArticleList(false)
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

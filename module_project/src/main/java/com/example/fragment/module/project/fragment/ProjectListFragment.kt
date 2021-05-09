@@ -35,13 +35,13 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
     private fun setupView() {
         binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)
-        binding.tab.setSelectedIndicatorHeight(10)
+        binding.tab.setSelectedIndicatorHeight(5)
     }
 
     private fun update(savedInstanceState: Bundle?) {
         viewModel.projectTreeResult.observe(viewLifecycleOwner, { result ->
             result.data?.also { data ->
-                binding.viewpager.offscreenPageLimit = 1
+                binding.viewpager.offscreenPageLimit = 2
                 binding.viewpager.adapter = object :
                     FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 

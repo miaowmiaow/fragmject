@@ -32,7 +32,6 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
-        viewModel.getTree()
     }
 
     private fun setupView() {
@@ -54,6 +53,7 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
                 viewModel.getTree()
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

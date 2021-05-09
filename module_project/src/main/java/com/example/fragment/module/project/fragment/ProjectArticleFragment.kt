@@ -39,7 +39,6 @@ class ProjectArticleFragment :
         }
         setupView()
         update()
-        viewModel.getProjectList(true, cid)
     }
 
     private fun setupView() {
@@ -57,6 +56,7 @@ class ProjectArticleFragment :
                 viewModel.getProjectList(false, cid)
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

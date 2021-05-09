@@ -18,8 +18,8 @@ ext {
     dependencies = [
             "appcompat"                     : 'androidx.appcompat:appcompat:1.2.0',
             "constraintlayout"              : 'androidx.constraintlayout:constraintlayout:2.0.4',
-            "material"                      : 'com.google.android.material:material:1.2.0',
             "flexbox"                       : "com.google.android:flexbox:2.0.1",
+            "material"                      : 'com.google.android.material:material:1.2.0',
             "multidex"                      : "androidx.multidex:multidex:2.0.1",
 
             "kotlin-stdlib"                 : "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",

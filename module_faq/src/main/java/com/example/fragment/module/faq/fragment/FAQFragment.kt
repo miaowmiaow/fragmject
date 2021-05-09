@@ -30,7 +30,6 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
-        viewModel.getUserArticleList(true)
     }
 
     private fun setupView() {
@@ -48,6 +47,7 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
                 viewModel.getUserArticleList(false)
             }
         })
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {

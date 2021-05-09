@@ -60,7 +60,7 @@ abstract class BaseActivity : AppCompatActivity() {
         if (supportFragmentManager.backStackEntryCount > 1) {
             supportFragmentManager.popBackStackImmediate()
         } else {
-            if (System.currentTimeMillis() - exitTime > 2000) {
+            if (System.currentTimeMillis() - exitTime < 2000) {
                 Toast.makeText(this, getString(R.string.one_more_press_2_back), Toast.LENGTH_SHORT)
                     .show()
             } else {

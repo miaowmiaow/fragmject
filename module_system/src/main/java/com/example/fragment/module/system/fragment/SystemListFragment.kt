@@ -46,11 +46,11 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
         }
         binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)
-        binding.tab.setSelectedIndicatorHeight(10)
+        binding.tab.setSelectedIndicatorHeight(5)
     }
 
     private fun update(savedInstanceState: Bundle?) {
-        binding.viewpager.offscreenPageLimit = 1
+        binding.viewpager.offscreenPageLimit = 2
         tree?.let {tree->
             binding.title.text = tree.name
             tree.children?.let { data ->

@@ -3,7 +3,6 @@ package com.example.fragment.project.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -20,7 +19,7 @@ import com.example.fragment.module.system.fragment.SystemFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanBinding
 
-class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>(){
+class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
 
     companion object {
         @JvmStatic
@@ -51,29 +50,13 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>(){
         return FragmentWanBinding.inflate(inflater)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.apply {
-            val lp = window.attributes
-            lp.flags = lp.flags and WindowManager.LayoutParams.FLAG_FULLSCREEN.inv()
-            window.attributes = lp
-            window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-            window.decorView.setBackgroundColor(
-                ContextCompat.getColor(
-                    this,
-                    R.color.white
-                )
-            )
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupView(savedInstanceState)
     }
 
-    private fun setupView(savedInstanceState: Bundle?){
-        binding.viewpager.offscreenPageLimit = 1
+    private fun setupView(savedInstanceState: Bundle?) {
+        binding.viewpager.offscreenPageLimit = 4
         binding.viewpager.adapter = object :
             FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 

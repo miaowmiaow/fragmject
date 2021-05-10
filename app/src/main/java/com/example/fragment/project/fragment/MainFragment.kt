@@ -40,13 +40,13 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
 
     override fun onResume() {
         super.onResume()
-        getRouterActivity().registerOnBackPressedListener(this::class.java.simpleName, this)
+        baseActivity.registerOnBackPressedListener(this::class.java.simpleName, this)
         bannerHelper.startTimerTask()
     }
 
     override fun onPause() {
         super.onPause()
-        getRouterActivity().removerOnBackPressedListener(this::class.java.simpleName)
+        baseActivity.removerOnBackPressedListener(this::class.java.simpleName)
         bannerHelper.stopTimerTask()
     }
 

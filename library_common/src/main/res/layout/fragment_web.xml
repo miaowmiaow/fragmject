@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_below="@id/status_bar"
-            android:layout_toStartOf="@id/search"
+            android:layout_toStartOf="@id/collect"
             android:layout_toEndOf="@id/black"
             android:ellipsize="end"
             android:gravity="center_vertical"
@@ -40,33 +40,33 @@
             android:textSize="16sp" />
 
         <ImageView
-            android:id="@+id/search"
+            android:id="@+id/collect"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_below="@id/status_bar"
-            android:layout_toStartOf="@id/publish"
+            android:layout_toStartOf="@id/more"
             android:paddingStart="15dp"
-            android:paddingTop="15dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="15dp"
-            android:src="@drawable/ic_search" />
+            android:paddingEnd="1dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:src="@drawable/ic_collect_unchecked" />
 
         <ImageView
-            android:id="@+id/publish"
+            android:id="@+id/more"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_below="@id/status_bar"
             android:layout_alignParentEnd="true"
-            android:paddingStart="8dp"
-            android:paddingTop="15dp"
+            android:paddingTop="16dp"
+            android:paddingStart="1dp"
             android:paddingEnd="15dp"
-            android:paddingBottom="15dp"
-            android:src="@drawable/ic_add" />
+            android:paddingBottom="16dp"
+            android:src="@drawable/ic_more_v" />
 
     </RelativeLayout>
 
-    <com.tencent.smtt.sdk.WebView
-        android:id="@+id/web_view"
+    <FrameLayout
+        android:id="@+id/web_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/title_bar" />

@@ -3,7 +3,6 @@ package com.example.fragment.module.system.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.view.get
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.module.system.R

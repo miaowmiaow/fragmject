@@ -73,7 +73,7 @@ class FragmentHelper {
                 try {
                     fragment = clazz.newInstance()
                     transaction.add(resId, fragment, tag)
-                    transaction.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
+                    transaction.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
                 } catch (e: java.lang.Exception) {
                     e.printStackTrace()
                 }

@@ -4,13 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.module.system.adapter.SystemAdapter
-import com.example.fragment.module.system.bean.TreeBean
 import com.example.fragment.module.system.databinding.FragmentSystemArticleBinding
-import com.example.fragment.module.system.databinding.FragmentSystemBinding
 import com.example.fragment.module.system.model.SystemViewModel
 
 class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, SystemViewModel>() {
@@ -20,7 +20,7 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
         fun newInstance(cid: String): SystemArticleFragment {
             val fragment = SystemArticleFragment()
             val args = Bundle()
-            args.putString("cid", cid)
+            args.putString(Argument.CID, cid)
             fragment.arguments = args
             return fragment
         }
@@ -36,13 +36,22 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            cid = this.getString("cid").toString()
+            cid = this.getString(Argument.CID).toString()
         }
         setupView()
         update()
     }
 
     private fun setupView() {
+        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+                articleAdapter.getItem(position)?.let { article ->
+                    val args = Bundle()
+                    args.putString(Argument.URL, article.link)
+                    getRouterActivity().navigation(Router.WEB, args)
+                }
+            }
+        })
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :

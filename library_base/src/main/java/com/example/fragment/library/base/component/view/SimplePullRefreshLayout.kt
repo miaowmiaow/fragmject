@@ -56,9 +56,6 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
     private var refreshing = false
     private var loadMore = true
     private var loadMoreText = true
-    private var isBeingDragged = false
-    private var initialMotionY = 0f
-    private var initialDownY = 0f
 
     private val nestedScrollingParentHelper = NestedScrollingParentHelper(this)
     private val nestedScrollingChildHelper = NestedScrollingChildHelper(this)
@@ -370,14 +367,6 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
         } else targetView.canScrollVertically(-1)
     }
 
-    private fun startDragging(y: Float) {
-        val yDiff = y - initialDownY
-        if (yDiff > touchSlop && !isBeingDragged) {
-            initialMotionY = initialDownY + touchSlop
-            isBeingDragged = true
-        }
-    }
-
     override fun getChildDrawingOrder(childCount: Int, i: Int): Int {
         return when {
             refreshViewIndex < 0 -> {
@@ -530,7 +519,6 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
                     consumed[1] = dy
                 }
             } else {
-                refreshing = false
                 if (currentTargetOffsetTop > 0) {
                     totalUnconsumed = (currentTargetOffsetTop * 2).toFloat()
                     totalUnconsumed -= dy.toFloat()
@@ -604,7 +592,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
         dxUnconsumed: Int, dyUnconsumed: Int, @ViewCompat.NestedScrollType type: Int,
         consumed: IntArray
     ) {
-        if (type != ViewCompat.TYPE_TOUCH || refreshing) {
+        if (type != ViewCompat.TYPE_TOUCH) {
             return
         }
         val consumedBeforeParents = consumed[1]

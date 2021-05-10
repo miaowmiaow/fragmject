@@ -95,7 +95,7 @@
                 android:src="@drawable/logo" />
 
             <TextView
-                android:id="@+id/my_points"
+                android:id="@+id/points"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_below="@id/logo"
@@ -109,10 +109,10 @@
                 app:drawableEndCompat="@drawable/ic_right" />
 
             <TextView
-                android:id="@+id/my_share"
+                android:id="@+id/share"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/my_points"
+                android:layout_below="@id/points"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
@@ -123,10 +123,10 @@
                 app:drawableEndCompat="@drawable/ic_right" />
 
             <TextView
-                android:id="@+id/my_collection"
+                android:id="@+id/collection"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/my_share"
+                android:layout_below="@id/share"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
@@ -137,24 +137,10 @@
                 app:drawableEndCompat="@drawable/ic_right" />
 
             <TextView
-                android:id="@+id/about_author"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/my_collection"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="关于作者"
-                android:textColor="@color/white"
-                android:textSize="13sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-            <TextView
                 android:id="@+id/setting"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/about_author"
+                android:layout_below="@id/collection"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
@@ -162,6 +148,21 @@
                 android:text="系统设置"
                 android:textColor="@color/white"
                 android:textSize="14sp"
+                app:drawableEndCompat="@drawable/ic_right" />
+
+
+            <TextView
+                android:id="@+id/feedback"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/setting"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="问题反馈"
+                android:textColor="@color/white"
+                android:textSize="13sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 
         </RelativeLayout>

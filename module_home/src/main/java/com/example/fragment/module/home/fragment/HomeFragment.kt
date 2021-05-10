@@ -4,8 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.home.databinding.FragmentHomeBinding
 import com.example.fragment.module.home.model.HomeViewModel
@@ -33,6 +36,15 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun setupView() {
+        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+                articleAdapter.getItem(position)?.let { article ->
+                    val args = Bundle()
+                    args.putString(Argument.URL, article.link)
+                    getRouterActivity().navigation(Router.WEB, args)
+                }
+            }
+        })
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :

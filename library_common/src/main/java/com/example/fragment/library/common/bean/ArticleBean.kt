@@ -1,15 +1,20 @@
 package com.example.fragment.library.common.bean
 
+import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
+import kotlinx.android.parcel.Parcelize
 
+@Parcelize
 data class ArticleListBean(
     val data: ArticleDataBean? = null
-) : HttpResponse()
+) : HttpResponse(), Parcelable
 
+@Parcelize
 data class TopArticleBean(
     val data: List<ArticleBean>? = null
-) : HttpResponse()
+) : HttpResponse(), Parcelable
 
+@Parcelize
 data class ArticleDataBean(
     val curPage: String = "",
     val datas: List<ArticleBean>? = null,
@@ -18,8 +23,9 @@ data class ArticleDataBean(
     val pageCount: String = "",
     val size: String = "",
     val total: String = ""
-)
+) : Parcelable
 
+@Parcelize
 data class ArticleBean(
     val apkLink: String = "",
     val audit: String = "",
@@ -55,9 +61,10 @@ data class ArticleBean(
     val userId: String = "",
     val visible: String = "",
     val zan: String = ""
-)
+) : Parcelable
 
+@Parcelize
 data class ArticleTagBean(
     val name: String = "",
     val url: String = ""
-)
+) : Parcelable

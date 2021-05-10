@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 
-class FragmentUtils {
+class FragmentHelper {
 
     companion object {
 
@@ -61,7 +61,7 @@ class FragmentUtils {
 //        );
             if (curClazz != null) {
                 val tag = curClazz.simpleName
-                var curFragment = manager.findFragmentByTag(tag)
+                val curFragment = manager.findFragmentByTag(tag)
                 if(curFragment != null){
                     transaction.hide(curFragment)
                     transaction.setMaxLifecycle(curFragment, Lifecycle.State.STARTED)

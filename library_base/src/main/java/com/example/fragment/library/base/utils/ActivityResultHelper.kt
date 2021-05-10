@@ -11,7 +11,7 @@ import android.provider.Settings
 import androidx.annotation.RequiresApi
 import com.example.fragment.library.base.component.activity.BaseActivity
 
-object ActivityResult {
+object ActivityResultHelper {
     /**
      * 忽略电池优化,保持后台常驻
      */

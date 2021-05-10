@@ -3,7 +3,7 @@ package com.example.fragment.library.common.activity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.example.fragment.library.base.component.activity.BaseActivity
-import com.example.fragment.library.base.utils.FragmentUtils
+import com.example.fragment.library.base.utils.FragmentHelper
 import com.example.fragment.library.common.constant.Router
 
 
@@ -30,7 +30,7 @@ abstract class RouterActivity : BaseActivity() {
     ) {
         if (navMode == NavMode.SWITCH) {
             curFragment =
-                FragmentUtils.switcher(
+                FragmentHelper.switcher(
                     supportFragmentManager,
                     frameLayoutId(),
                     curFragment,
@@ -39,7 +39,7 @@ abstract class RouterActivity : BaseActivity() {
                     addToBackStack
                 )
         } else if (navMode == NavMode.POP_BACK_STACK) {
-            curFragment = FragmentUtils.pop(supportFragmentManager, clazz)
+            curFragment = FragmentHelper.pop(supportFragmentManager, clazz)
         }
     }
 

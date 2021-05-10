@@ -33,7 +33,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        getBaseActivity().registerOnBackPressedListener(MainFragment::class.java.simpleName, this)
         setupView()
         update()
         viewModel.getHotKey()
@@ -41,11 +40,13 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
 
     override fun onResume() {
         super.onResume()
+        getRouterActivity().registerOnBackPressedListener(this::class.java.simpleName, this)
         bannerHelper.startTimerTask()
     }
 
     override fun onPause() {
         super.onPause()
+        getRouterActivity().removerOnBackPressedListener(this::class.java.simpleName)
         bannerHelper.stopTimerTask()
     }
 
@@ -58,11 +59,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        getBaseActivity().removerOnBackPressedListener(MainFragment::class.java.simpleName)
-    }
-
     private fun setupView() {
         binding.menu.setOnClickListener {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
@@ -71,11 +67,11 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 binding.drawer.openDrawer(GravityCompat.START)
             }
         }
-        binding.myPoints.setOnClickListener { }
-        binding.myShare.setOnClickListener { }
-        binding.myCollection.setOnClickListener { }
-        binding.aboutAuthor.setOnClickListener { }
+        binding.points.setOnClickListener { }
+        binding.share.setOnClickListener { }
+        binding.collection.setOnClickListener { }
         binding.setting.setOnClickListener { }
+        binding.feedback.setOnClickListener { }
         bannerHelper = SimpleBannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1

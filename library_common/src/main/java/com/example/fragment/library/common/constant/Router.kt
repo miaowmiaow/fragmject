@@ -4,4 +4,7 @@ enum class Router {
     MAIN,
     LOGIN,
     SYSTEM,
+    SEARCH,
+    PUBLISH,
+    WEB,
 }

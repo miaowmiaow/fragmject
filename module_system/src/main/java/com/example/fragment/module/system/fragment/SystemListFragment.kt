@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.fragment.library.base.component.view.SimpleTabLayout
+import com.example.fragment.library.common.constant.Argument
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.system.R
 import com.example.fragment.module.system.bean.TreeBean
@@ -14,16 +15,6 @@ import com.example.fragment.module.system.databinding.FragmentSystemListBinding
 import com.example.fragment.module.system.model.SystemViewModel
 
 class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemViewModel>() {
-
-    companion object {
-
-        const val KEY = "tree"
-
-        @JvmStatic
-        fun newInstance(): SystemListFragment {
-            return SystemListFragment()
-        }
-    }
 
     private var tree: TreeBean? = null
 
@@ -34,7 +25,7 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            tree = this.getParcelable(KEY)
+            tree = this.getParcelable(Argument.BEAN)
         }
         setupView()
         update(savedInstanceState)
@@ -42,7 +33,7 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
 
     private fun setupView() {
         binding.black.setOnClickListener {
-            getBaseActivity().onBackPressed()
+            getRouterActivity().onBackPressed()
         }
         binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)

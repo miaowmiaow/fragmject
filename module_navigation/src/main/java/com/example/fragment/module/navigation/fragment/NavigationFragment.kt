@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.navigation.R
 import com.example.fragment.module.navigation.adapter.NavigationMenuAdapter
@@ -83,13 +85,15 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
 
     private fun fillFlexboxLayout(data: List<ArticleBean>? = null) {
         binding.fbl.removeAllViews()
-        data?.forEach {
+        data?.forEach { article ->
             val inflater = LayoutInflater.from(binding.fbl.context)
             val tv: TextView =
                 inflater.inflate(R.layout.item_navigation, binding.fbl, false) as TextView
-            tv.text = it.title
+            tv.text = article.title
             tv.setOnClickListener {
-
+                val args = Bundle()
+                args.putString(Argument.URL, article.link)
+                getRouterActivity().navigation(Router.WEB, args)
             }
             binding.fbl.addView(tv)
         }

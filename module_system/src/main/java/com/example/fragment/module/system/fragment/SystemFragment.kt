@@ -6,10 +6,10 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.common.constant.Argument
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.system.adapter.SystemAdapter
-import com.example.fragment.module.system.bean.TreeBean
 import com.example.fragment.module.system.databinding.FragmentSystemBinding
 import com.example.fragment.module.system.model.SystemViewModel
 
@@ -41,7 +41,7 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 systemAdapter.getItem(position)?.let { tree ->
                     val args = Bundle()
-                    args.putParcelable(SystemListFragment.KEY, tree)
+                    args.putParcelable(Argument.BEAN, tree)
                     getRouterActivity().navigation(Router.SYSTEM, args)
                 }
             }

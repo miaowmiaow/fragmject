@@ -16,16 +16,17 @@ abstract class SimpleDBHelper : RoomDatabase() {
                 BaseProvider.mContext.applicationContext,
                 SimpleDBHelper::class.java,
                 SimpleDBHelper::class.java.simpleName
-            ).build().also { db ->
-                database = db
-            }
+            ).allowMainThreadQueries()
+                .build().also { db ->
+                    database = db
+                }
         }
 
-        suspend fun set(key: String, value: String) {
+        fun set(key: String, value: String) {
             getDatabase().set(key, value)
         }
 
-        suspend fun get(key: String): String? {
+        fun get(key: String): String? {
             return getDatabase().get(key)
         }
     }
@@ -33,7 +34,7 @@ abstract class SimpleDBHelper : RoomDatabase() {
     abstract fun getDao(): KVDao
 
     @Synchronized
-    suspend fun set(key: String, value: String) {
+    fun set(key: String, value: String) {
         getDatabase().also { db ->
             val dao = db.getDao()
             val kv = dao.findByKey(key)
@@ -48,7 +49,7 @@ abstract class SimpleDBHelper : RoomDatabase() {
     }
 
     @Synchronized
-    suspend fun get(key: String): String? {
+    fun get(key: String): String? {
         return getDatabase().let { db ->
             val dao = db.getDao()
             val value = dao.findByKey(key)?.value
@@ -70,25 +71,25 @@ abstract class SimpleDBHelper : RoomDatabase() {
     interface KVDao {
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        suspend fun insert(kv: KVEntity): Long
+        fun insert(kv: KVEntity): Long
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        suspend fun insertAll(vararg kvs: KVEntity): Array<Long>
+        fun insertAll(vararg kvs: KVEntity): Array<Long>
 
         @Update
-        suspend fun update(vararg kv: KVEntity): Int
+        fun update(vararg kv: KVEntity): Int
 
         @Query("SELECT * FROM kv WHERE `key` = :key ORDER BY id DESC LIMIT 1")
-        suspend fun findByKey(key: String): KVEntity?
+        fun findByKey(key: String): KVEntity?
 
         @Query("SELECT * FROM kv")
-        suspend fun findAll(): Array<KVEntity>?
+        fun findAll(): Array<KVEntity>?
 
         @Delete
-        suspend fun delete(kv: KVEntity): Int
+        fun delete(kv: KVEntity): Int
 
         @Delete
-        suspend fun deleteAll(vararg kvs: KVEntity): Int
+        fun deleteAll(vararg kvs: KVEntity): Int
 
     }
 

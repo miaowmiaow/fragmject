@@ -63,7 +63,7 @@ class WebFragment : ViewModelFragment<FragmentWebBinding, BaseViewModel>(),
 
     private fun setupView() {
         binding.black.setOnClickListener {
-            getRouterActivity().onBackPressed()
+            baseActivity.onBackPressed()
         }
         binding.collect.setOnClickListener {
 

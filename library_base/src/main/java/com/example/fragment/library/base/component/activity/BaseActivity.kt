@@ -13,6 +13,7 @@ import com.example.fragment.library.base.component.dialog.FullDialog
 import com.example.fragment.library.base.component.view.TipsView
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.PermissionsCallback
+import com.example.fragment.library.base.utils.StatusBarUtils
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -35,7 +36,9 @@ abstract class BaseActivity : AppCompatActivity() {
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
-            )
+            ).also {
+                it.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
+            }
         )
         super.setContentView(frameLayout)
     }

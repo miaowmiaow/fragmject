@@ -9,8 +9,8 @@
         </shape>
     </item>
     <item
-        android:top="1dp"
-        android:bottom="1dp">
+        android:top="0.5dp"
+        android:bottom="0.5dp">
         <shape android:shape="rectangle" >
             <gradient
                 android:endColor="@color/white"

@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import com.example.fragment.library.base.utils.StatusBarUtils
 
 class SimpleStatusBar @JvmOverloads constructor(
     context: Context,
@@ -83,25 +84,10 @@ class SimpleStatusBar @JvmOverloads constructor(
         }
     }
 
-    fun getStatusBarHeight(context: Context): Int {
-        var result = 0
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            val resourceId = context.resources.getIdentifier(
-                "status_bar_height",
-                "dimen",
-                "android"
-            )
-            if (resourceId > 0) {
-                result = context.resources.getDimensionPixelSize(resourceId)
-            }
-        }
-        return result
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val widthSpecSize = MeasureSpec.getSize(widthMeasureSpec)
-        setMeasuredDimension(widthSpecSize, getStatusBarHeight(context))
+        setMeasuredDimension(widthSpecSize, StatusBarUtils.getStatusBarHeight(context))
     }
 
 }

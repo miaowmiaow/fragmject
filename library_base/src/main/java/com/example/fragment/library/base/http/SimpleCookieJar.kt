@@ -5,7 +5,6 @@ import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
 
-
 class SimpleCookieJar : CookieJar {
 
     //Http发送请求前回调，Request中设置Cookie

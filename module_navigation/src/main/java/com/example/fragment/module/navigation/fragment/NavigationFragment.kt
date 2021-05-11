@@ -93,7 +93,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
             tv.setOnClickListener {
                 val args = Bundle()
                 args.putString(Argument.URL, article.link)
-                getRouterActivity().navigation(Router.WEB, args)
+                baseActivity.navigation(Router.WEB, args)
             }
             binding.fbl.addView(tv)
         }

@@ -40,7 +40,7 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, SquareViewModel>
                 articleAdapter.getItem(position)?.let { article ->
                     val args = Bundle()
                     args.putString(Argument.URL, article.link)
-                    getRouterActivity().navigation(Router.WEB, args)
+                    baseActivity.navigation(Router.WEB, args)
                 }
             }
         })

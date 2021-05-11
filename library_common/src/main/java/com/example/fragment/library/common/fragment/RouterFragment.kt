@@ -7,16 +7,13 @@ import com.example.fragment.library.common.activity.RouterActivity
 
 open class RouterFragment : BaseFragment() {
 
-    lateinit var baseActivity: BaseActivity
+    lateinit var baseActivity: RouterActivity
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        baseActivity = activity as BaseActivity
+        baseActivity = activity as RouterActivity
     }
 
     override fun onFirstLoad() {}
 
-    fun getRouterActivity(): RouterActivity {
-        return baseActivity as RouterActivity
-    }
 }

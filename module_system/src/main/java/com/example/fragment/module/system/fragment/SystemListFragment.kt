@@ -33,7 +33,7 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
 
     private fun setupView() {
         binding.black.setOnClickListener {
-            getRouterActivity().onBackPressed()
+            baseActivity.onBackPressed()
         }
         binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)

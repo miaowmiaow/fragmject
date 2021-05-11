@@ -69,7 +69,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
             }
         }
         binding.logo.setOnClickListener {
-            getRouterActivity().navigation(Router.LOGIN)
+            baseActivity.navigation(Router.LOGIN)
         }
         binding.points.setOnClickListener { }
         binding.share.setOnClickListener { }

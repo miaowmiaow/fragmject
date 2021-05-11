@@ -49,7 +49,7 @@ class ProjectArticleFragment :
                 articleAdapter.getItem(position)?.let { article ->
                     val args = Bundle()
                     args.putString(Argument.URL, article.link)
-                    getRouterActivity().navigation(Router.WEB, args)
+                    baseActivity.navigation(Router.WEB, args)
                 }
             }
         })

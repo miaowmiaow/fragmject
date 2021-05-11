@@ -7,52 +7,53 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="125dp"
+        android:layout_height="125dp"
         android:layout_centerHorizontal="true"
         android:src="@drawable/ic_logo" />
 
     <com.example.fragment.library.base.component.view.SimpleEditText
         android:id="@+id/username"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="50dp"
         android:layout_below="@id/logo"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="50dp"
         android:background="@null"
         android:hint="请输入用户名"
         android:textColor="@color/text_fff"
         android:textColorHint="@color/text_ccc"
-        android:textSize="18sp" />
+        android:textSize="14sp" />
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="0.5dp"
         android:layout_below="@id/username"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:background="@color/white" />
 
     <com.example.fragment.library.base.component.view.SimpleEditText
         android:id="@+id/password"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="50dp"
         android:layout_below="@id/username"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="50dp"
         android:background="@null"
         android:hint="请输入密码"
         android:textColor="@color/text_fff"
         android:textColorHint="@color/text_ccc"
-        android:textSize="18sp" />
+        android:textSize="14sp" />
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="0.5dp"
         android:layout_below="@id/password"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:background="@color/white" />
 
     <TextView
@@ -61,52 +62,25 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/password"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="50dp"
         android:layout_marginTop="25dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginEnd="50dp"
         android:text="去注册"
         android:textColor="@color/white"
-        android:textSize="16sp" />
+        android:textSize="14sp" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/login"
+        android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_below="@id/register"
-        android:layout_marginStart="30dp"
+        android:layout_centerInParent="true"
         android:layout_marginTop="25dp"
-        android:layout_marginEnd="30dp">
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:background="@color/white" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignParentTop="true"
-            android:background="@color/white" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:background="@color/white" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/white" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="登录"
-            android:textColor="@color/text_fff"
-            android:textSize="18sp" />
-    </RelativeLayout>
+        android:background="@drawable/shape_corners_solid_stroke_white"
+        android:paddingStart="100dp"
+        android:paddingEnd="100dp"
+        android:text="登录"
+        android:textColor="@color/text_fff"
+        android:textSize="16sp" />
 
 </RelativeLayout>

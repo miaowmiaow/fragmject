@@ -80,7 +80,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             if (item.collect) {
                 binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
             } else {
-                binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked)
+                binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
             }
         }
     }

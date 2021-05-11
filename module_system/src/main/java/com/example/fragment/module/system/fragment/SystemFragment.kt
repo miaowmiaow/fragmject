@@ -42,7 +42,7 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
                 systemAdapter.getItem(position)?.let { tree ->
                     val args = Bundle()
                     args.putParcelable(Argument.BEAN, tree)
-                    getRouterActivity().navigation(Router.SYSTEM, args)
+                    baseActivity.navigation(Router.SYSTEM, args)
                 }
             }
         })

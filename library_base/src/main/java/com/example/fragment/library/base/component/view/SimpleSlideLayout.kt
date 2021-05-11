@@ -106,11 +106,12 @@ open class SimpleSlideLayout @JvmOverloads constructor(
     fun show() {
         visibility = VISIBLE
         scrollOrigin()
+        postDelayed({ dismiss() }, 3000)
     }
 
     fun dismiss() {
-        postDelayed({ visibility = GONE }, ANIMATION_TIME.toLong())
         scrollTop()
+        postDelayed({ visibility = GONE }, ANIMATION_TIME.toLong())
     }
 
     @Override

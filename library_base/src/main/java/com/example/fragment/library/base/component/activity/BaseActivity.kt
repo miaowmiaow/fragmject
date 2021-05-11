@@ -3,27 +3,46 @@ package com.example.fragment.library.base.component.activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.view.View
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.component.dialog.FullDialog
-import com.example.fragment.library.base.utils.ActivityResultHelper
+import com.example.fragment.library.base.component.view.TipsView
+import com.example.fragment.library.base.utils.ActivityCallback
+import com.example.fragment.library.base.utils.PermissionsCallback
 import java.util.*
 import kotlin.collections.HashMap
 
 abstract class BaseActivity : AppCompatActivity() {
 
-    private val activityCallbacks: MutableMap<Int, ActivityResultHelper.ActivityCallback?> = HashMap()
-    private val permissionsCallbacks: MutableMap<Int, ActivityResultHelper.PermissionsCallback?> =
-        HashMap()
+    private lateinit var tipsView: TipsView
+
+    private val activityCallbacks: MutableMap<Int, ActivityCallback?> = HashMap()
+    private val permissionsCallbacks: MutableMap<Int, PermissionsCallback?> = HashMap()
     private val listeners: MutableMap<String, OnBackPressedListener> = HashMap()
 
     private var exitTime = 0L
 
+    override fun setContentView(view: View) {
+        tipsView = TipsView(view.context)
+        val frameLayout = FrameLayout(view.context)
+        frameLayout.addView(view)
+        frameLayout.addView(
+            tipsView,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
+        super.setContentView(frameLayout)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val callback: ActivityResultHelper.ActivityCallback? = activityCallbacks[requestCode]
+        val callback: ActivityCallback? = activityCallbacks[requestCode]
         callback?.onActivityResult(resultCode, data)
     }
 
@@ -33,7 +52,7 @@ abstract class BaseActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val callback: ActivityResultHelper.PermissionsCallback? = permissionsCallbacks[requestCode]
+        val callback: PermissionsCallback? = permissionsCallbacks[requestCode]
         val length: Int = grantResults.size
         for (i in 0 until length) {
             if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
@@ -62,14 +81,15 @@ abstract class BaseActivity : AppCompatActivity() {
         } else {
             if (System.currentTimeMillis() - exitTime > 2000) {
                 exitTime = System.currentTimeMillis()
-                Toast.makeText(this, getString(R.string.one_more_press_2_back), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.one_more_press_2_back), Toast.LENGTH_SHORT)
+                    .show()
             } else {
                 moveTaskToBack(true)
             }
         }
     }
 
-    fun startForResult(intent: Intent, callback: ActivityResultHelper.ActivityCallback?) {
+    fun startForResult(intent: Intent, callback: ActivityCallback?) {
         val requestCode: Int = Random().nextInt(0x0000FFFF)
         activityCallbacks[requestCode] = callback
         startActivityForResult(intent, requestCode)
@@ -78,7 +98,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun requestForPermissions(
         permissions: Array<String>,
-        callback: ActivityResultHelper.PermissionsCallback?
+        callback: PermissionsCallback?
     ) {
         for (permission in permissions) {
             if (ActivityCompat.checkSelfPermission(this, permission)
@@ -93,6 +113,16 @@ abstract class BaseActivity : AppCompatActivity() {
             }
         }
         callback?.allow()
+    }
+
+    fun showTips(text: String?) {
+        tipsView.setMessage(text)
+        tipsView.show()
+    }
+
+    fun dismissTips() {
+        tipsView.setMessage("")
+        tipsView.dismiss()
     }
 
     /**

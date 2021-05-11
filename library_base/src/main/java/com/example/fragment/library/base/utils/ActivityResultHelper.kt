@@ -165,13 +165,14 @@ object ActivityResultHelper {
         activity.requestForPermissions(permissions, callback)
     }
 
-    interface ActivityCallback {
-        fun onActivityResult(resultCode: Int, data: Intent?)
-    }
+}
 
-    interface PermissionsCallback {
-        fun allow()
-        fun deny()
-        fun denyAndNotAskAgain()
-    }
+interface ActivityCallback {
+    fun onActivityResult(resultCode: Int, data: Intent?)
+}
+
+interface PermissionsCallback {
+    fun allow()
+    fun deny()
+    fun denyAndNotAskAgain()
 }

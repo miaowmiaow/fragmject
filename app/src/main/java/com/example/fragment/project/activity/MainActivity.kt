@@ -11,6 +11,7 @@ import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
 import com.example.fragment.project.fragment.MainFragment
+import com.example.fragment.user.fragment.LoginFragment
 
 
 class MainActivity : RouterActivity() {
@@ -40,6 +41,7 @@ class MainActivity : RouterActivity() {
             Router.PUBLISH -> {
             }
             else -> {
+                switcher(LoginFragment::class.java, bundle, onBack, navMode)
             }
         }
     }

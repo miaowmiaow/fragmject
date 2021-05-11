@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.component.activity.OnBackPressedListener
 import com.example.fragment.library.base.utils.SimpleBannerHelper
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.home.fragment.SquareFragment
 import com.example.fragment.project.adapter.HotKeyAdapter
@@ -66,6 +67,9 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
             } else {
                 binding.drawer.openDrawer(GravityCompat.START)
             }
+        }
+        binding.logo.setOnClickListener {
+            getRouterActivity().navigation(Router.LOGIN)
         }
         binding.points.setOnClickListener { }
         binding.share.setOnClickListener { }

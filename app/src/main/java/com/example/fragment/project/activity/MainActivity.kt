@@ -54,13 +54,13 @@ class MainActivity : RouterActivity() {
                 return
             }
         }
-        if(id != null && id.toString().isNotBlank()){
+        if (id != null && id.toString().isNotBlank()) {
             when (name) {
                 Router.MY_COIN -> {
                     switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
                 }
             }
-        }else{
+        } else {
             switcher(LoginFragment::class.java, bundle, onBack, navMode)
         }
     }
@@ -72,7 +72,7 @@ class MainActivity : RouterActivity() {
         setTheme(R.style.AppTheme)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
         navigation(Router.MAIN)
-        UserHelper.user.observe(this, { userBean ->
+        UserHelper.getUser().observe(this, { userBean ->
             id = userBean.id
         })
     }

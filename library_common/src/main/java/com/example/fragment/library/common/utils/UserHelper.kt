@@ -13,15 +13,15 @@ object UserHelper {
     private const val USER = "user"
     private const val COIN = "coin"
 
-    val user = MutableLiveData<UserBean>()
+    val userUpdate = MutableLiveData<Boolean>()
 
     fun setUser(userBean: UserBean) {
         SimpleDBHelper.set(USER, userBean.toJson())
-        user.postValue(userBean)
+        userUpdate.postValue(true)
     }
 
-    fun getUser(): LiveData<UserBean>  {
-         val userBean = Transformations.map(SimpleDBHelper.get(USER)) {
+    fun getUser(): LiveData<UserBean> {
+        return Transformations.map(SimpleDBHelper.get(USER)) {
             try {
                 Gson().fromJson(it.toString(), UserBean::class.java)
             } catch (e: Exception) {
@@ -29,8 +29,6 @@ object UserHelper {
                 UserBean::class.java.newInstance()
             }
         }
-        user.postValue(userBean.value)
-        return userBean
     }
 
     fun setCoin(coinBean: CoinBean) {

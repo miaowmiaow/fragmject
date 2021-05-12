@@ -110,7 +110,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 }
             }
         })
-        UserHelper.user.observe(viewLifecycleOwner, { userBean ->
+        UserHelper.getUser().observe(viewLifecycleOwner, { userBean ->
             if (userBean.id.isNotEmpty()) {
                 binding.logo.setOnClickListener(null)
                 binding.username.setOnClickListener(null)

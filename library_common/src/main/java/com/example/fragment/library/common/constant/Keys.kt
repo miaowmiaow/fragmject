@@ -1,5 +1,5 @@
 package com.example.fragment.library.common.constant
- class Argument {
+ class Keys {
 
      companion object {
          const val URL = "URL"

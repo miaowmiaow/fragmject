@@ -89,16 +89,31 @@
 
             <ImageView
                 android:id="@+id/logo"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_marginTop="50dp"
                 android:layout_centerHorizontal="true"
-                android:src="@drawable/logo" />
+                android:src="@drawable/ic_logo" />
 
             <TextView
-                android:id="@+id/points"
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/logo"
+                android:layout_marginTop="5dp"
+                android:text="去登录"
+                android:layout_marginBottom="25dp"
+                android:gravity="center"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/coin"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/logo"
+                android:layout_below="@id/username"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
@@ -112,7 +127,7 @@
                 android:id="@+id/share"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/points"
+                android:layout_below="@id/coin"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"

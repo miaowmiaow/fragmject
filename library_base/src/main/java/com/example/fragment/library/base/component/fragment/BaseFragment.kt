@@ -4,7 +4,7 @@ import androidx.fragment.app.Fragment
 
 abstract class BaseFragment : Fragment() {
 
-    var firstLoadFragment = true
+    private var firstLoadFragment = true
     var hiddenFragment = false
 
     abstract fun onFirstLoad()

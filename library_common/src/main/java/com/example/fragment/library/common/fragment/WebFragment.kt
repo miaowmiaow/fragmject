@@ -5,8 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import com.example.fragment.library.base.component.activity.OnBackPressedListener
 import com.example.fragment.library.base.utils.WebHelper
-import com.example.fragment.library.common.constant.Argument
-import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
 import com.example.fragment.library.common.model.BaseViewModel
 import com.tencent.smtt.sdk.*
@@ -31,7 +30,7 @@ class WebFragment : ViewModelFragment<FragmentWebBinding, BaseViewModel>(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            url = this.getString(Argument.URL).toString()
+            url = this.getString(Keys.URL).toString()
         }
         setupView()
         webViewSetting()

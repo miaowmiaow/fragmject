@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.fragment.library.base.component.view.SimpleTabLayout
-import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.system.R
 import com.example.fragment.module.system.bean.TreeBean
@@ -25,7 +25,7 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            tree = this.getParcelable(Argument.BEAN)
+            tree = this.getParcelable(Keys.BEAN)
         }
         setupView()
         update(savedInstanceState)

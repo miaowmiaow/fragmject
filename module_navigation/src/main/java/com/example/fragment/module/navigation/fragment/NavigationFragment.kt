@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.navigation.R
@@ -92,7 +92,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
             tv.text = article.title
             tv.setOnClickListener {
                 val args = Bundle()
-                args.putString(Argument.URL, article.link)
+                args.putString(Keys.URL, article.link)
                 baseActivity.navigation(Router.WEB, args)
             }
             binding.fbl.addView(tv)

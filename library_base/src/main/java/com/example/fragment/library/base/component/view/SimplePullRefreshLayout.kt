@@ -54,7 +54,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
     private var from = 0
 
     private var refreshing = false
-    private var loadMore = true
+    private var loadMore = false
     private var loadMoreText = true
 
     private val nestedScrollingParentHelper = NestedScrollingParentHelper(this)

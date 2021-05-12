@@ -1,4 +1,4 @@
-package com.example.fragment.user.bean
+package com.example.fragment.library.common.bean
 
 import com.example.fragment.library.base.http.HttpResponse
 import com.google.gson.Gson
@@ -7,10 +7,14 @@ data class LoginBean(
     val data: UserBean? = null
 ) : HttpResponse()
 
+data class RegisterBean(
+    val data: UserBean? = null
+) : HttpResponse()
+
 data class UserBean(
     val admin: String = "",
     val chapterTops: List<Any>? = null,
-    val coinCount: String = "",
+    var coinCount: String = "",
     val collectIds: List<Int>? = null,
     val email: String = "",
     val icon: String = "",

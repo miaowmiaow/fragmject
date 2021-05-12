@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <RelativeLayout
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/theme">
+
+        <com.example.fragment.library.base.component.view.SimpleStatusBar
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:id="@+id/black"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/status_bar"
+            android:layout_alignParentStart="true"
+            android:padding="18dp"
+            android:src="@drawable/ic_back" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_below="@id/status_bar"
+            android:layout_centerInParent="true"
+            android:layout_toStartOf="@id/rank"
+            android:layout_toEndOf="@id/black"
+            android:gravity="center"
+            android:text="我的积分"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/rank"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/status_bar"
+            android:layout_alignParentEnd="true"
+            android:padding="16dp"
+            android:src="@drawable/ic_rank" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/coin"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_below="@id/title_bar"
+        android:background="@color/theme">
+
+        <TextView
+            android:id="@+id/coinCount"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@color/theme"
+            android:gravity="center"
+            android:lines="1"
+            android:text="---"
+            android:textColor="@color/white"
+            android:textSize="80sp" />
+
+        <ImageView
+            android:id="@+id/rule"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:padding="15dp"
+            android:src="@drawable/ic_rule" />
+    </RelativeLayout>
+
+    <com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+        android:id="@+id/pull_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/coin">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.example.fragment.library.base.component.view.SimplePullRefreshLayout>
+
+</RelativeLayout>

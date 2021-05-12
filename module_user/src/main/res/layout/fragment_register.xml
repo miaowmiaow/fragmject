@@ -59,31 +59,54 @@
         android:layout_marginEnd="50dp"
         android:background="@color/white" />
 
+    <com.example.fragment.library.base.component.view.SimpleEditText
+        android:id="@+id/repassword"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/password"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:background="@null"
+        android:hint="请确认密码"
+        android:inputType="textPassword"
+        android:singleLine="true"
+        android:textColor="@color/text_fff"
+        android:textColorHint="@color/text_ccc"
+        android:textSize="14sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_below="@id/repassword"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:background="@color/white" />
+
     <TextView
-        android:id="@+id/register"
+        android:id="@+id/login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/password"
+        android:layout_below="@id/repassword"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="75dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="50dp"
-        android:text="去注册"
+        android:text="去登录"
         android:textColor="@color/white"
         android:textSize="14sp" />
 
     <Button
-        android:id="@+id/login"
+        android:id="@+id/register"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_below="@id/register"
+        android:layout_below="@id/login"
         android:layout_centerInParent="true"
         android:layout_marginTop="25dp"
         android:layout_marginBottom="25dp"
         android:background="@drawable/shape_corners_solid_stroke_white"
         android:paddingStart="100dp"
         android:paddingEnd="100dp"
-        android:text="登录"
+        android:text="注册"
         android:textColor="@color/text_fff"
         android:textSize="16sp" />
 

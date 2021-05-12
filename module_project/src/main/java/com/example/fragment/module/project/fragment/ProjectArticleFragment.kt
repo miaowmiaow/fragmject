@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.project.databinding.FragmentProjectArticleBinding
@@ -21,7 +21,7 @@ class ProjectArticleFragment :
         fun newInstance(cid: String): ProjectArticleFragment {
             val fragment = ProjectArticleFragment()
             val args = Bundle()
-            args.putString(Argument.CID, cid)
+            args.putString(Keys.CID, cid)
             fragment.arguments = args
             return fragment
         }
@@ -37,7 +37,7 @@ class ProjectArticleFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            cid = this.getString(Argument.CID).toString()
+            cid = this.getString(Keys.CID).toString()
         }
         setupView()
         update()
@@ -48,7 +48,7 @@ class ProjectArticleFragment :
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 articleAdapter.getItem(position)?.let { article ->
                     val args = Bundle()
-                    args.putString(Argument.URL, article.link)
+                    args.putString(Keys.URL, article.link)
                     baseActivity.navigation(Router.WEB, args)
                 }
             }

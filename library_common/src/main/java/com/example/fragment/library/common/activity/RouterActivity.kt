@@ -4,12 +4,10 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.example.fragment.library.base.component.activity.BaseActivity
 import com.example.fragment.library.base.utils.FragmentHelper
+import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 
-
 abstract class RouterActivity : BaseActivity() {
-
-    enum class NavMode { SWITCH, POP_BACK_STACK }
 
     private var curFragment: Class<out Fragment>? = null
 

@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.constant.Argument
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.system.databinding.FragmentSystemArticleBinding
@@ -20,7 +20,7 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
         fun newInstance(cid: String): SystemArticleFragment {
             val fragment = SystemArticleFragment()
             val args = Bundle()
-            args.putString(Argument.CID, cid)
+            args.putString(Keys.CID, cid)
             fragment.arguments = args
             return fragment
         }
@@ -36,18 +36,18 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            cid = this.getString(Argument.CID).toString()
+            cid = this.getString(Keys.CID).toString()
         }
         setupView()
         update()
     }
 
     private fun setupView() {
-        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 articleAdapter.getItem(position)?.let { article ->
                     val args = Bundle()
-                    args.putString(Argument.URL, article.link)
+                    args.putString(Keys.URL, article.link)
                     baseActivity.navigation(Router.WEB, args)
                 }
             }
@@ -71,19 +71,23 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
 
     private fun update() {
         viewModel.treeListResult.observe(viewLifecycleOwner, { result ->
-            result.data?.datas?.let { list ->
-                if (viewModel.isRefresh) {
-                    articleAdapter.setNewData(list)
-                } else {
-                    articleAdapter.addData(list)
-                    binding.pullRefresh.setLoadMore(true)
+            if (result.errorCode == "0") {
+                result.data?.datas?.let { list ->
+                    if (viewModel.isRefresh) {
+                        articleAdapter.setNewData(list)
+                    } else {
+                        articleAdapter.addData(list)
+                        binding.pullRefresh.setLoadMore(true)
+                    }
                 }
-            }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
-            if (viewModel.page >= viewModel.pageCont) {
-                binding.pullRefresh.setLoadMore(false)
+                if (binding.pullRefresh.isRefresh()) {
+                    binding.pullRefresh.finishRefresh()
+                }
+                if (viewModel.page >= viewModel.pageCont) {
+                    binding.pullRefresh.setLoadMore(false)
+                }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
         })
     }

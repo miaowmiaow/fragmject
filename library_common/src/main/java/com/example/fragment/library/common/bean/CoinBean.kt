@@ -1,6 +1,7 @@
-package com.example.fragment.user.bean
+package com.example.fragment.library.common.bean
 
 import com.example.fragment.library.base.http.HttpResponse
+import com.google.gson.Gson
 
 data class UserCoinBean(
     val data: CoinBean? = null
@@ -31,11 +32,17 @@ data class MyCoinBean(
     val username: String = ""
 )
 
-data class CoinBean(
+data class CoinBean @JvmOverloads constructor(
     val coinCount: String = "",
     val level: String = "",
     val nickname: String = "",
     val rank: String = "",
     val userId: String = "",
     val username: String = ""
-)
+) {
+
+    fun toJson(): String {
+        return Gson().toJson(this)
+    }
+
+}

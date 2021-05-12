@@ -69,13 +69,17 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
 
     private fun update() {
         viewModel.navigationResult.observe(viewLifecycleOwner, { result ->
-            result.data?.let { menu ->
-                if (menu.isNotEmpty()) {
-                    menu[0].isSelected = true
-                    navigationMenuAdapter.selectItem(0)
-                    navigationMenuAdapter.setNewData(menu)
-                    fillFlexboxLayout(menu[0].articles)
+            if (result.errorCode == "0") {
+                result.data?.let { menu ->
+                    if (menu.isNotEmpty()) {
+                        menu[0].isSelected = true
+                        navigationMenuAdapter.selectItem(0)
+                        navigationMenuAdapter.setNewData(menu)
+                        fillFlexboxLayout(menu[0].articles)
+                    }
                 }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {
                 binding.pullRefresh.finishRefresh()

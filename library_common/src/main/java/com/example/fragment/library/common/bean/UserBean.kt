@@ -11,7 +11,7 @@ data class RegisterBean(
     val data: UserBean? = null
 ) : HttpResponse()
 
-data class UserBean(
+data class UserBean @JvmOverloads constructor(
     val admin: String = "",
     val chapterTops: List<Any>? = null,
     var coinCount: String = "",

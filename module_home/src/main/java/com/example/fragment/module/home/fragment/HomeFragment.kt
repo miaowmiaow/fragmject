@@ -64,26 +64,38 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun update() {
         viewModel.bannerResult.observe(viewLifecycleOwner, { result ->
-            result.data?.apply {
-                articleAdapter.setBannerData(this)
+            if (result.errorCode == "0") {
+                result.data?.apply {
+                    articleAdapter.setBannerData(this)
+                }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
         })
         viewModel.articleTopResult.observe(viewLifecycleOwner, { result ->
-            result.data?.let { list ->
-                list.forEach {
-                    it.top = true
+            if (result.errorCode == "0") {
+                result.data?.let { list ->
+                    list.forEach {
+                        it.top = true
+                    }
+                    articleAdapter.addData(0, list)
                 }
-                articleAdapter.addData(0, list)
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
         })
         viewModel.articleListResult.observe(viewLifecycleOwner, { result ->
-            result.data?.datas?.let { list ->
-                if (viewModel.isRefresh) {
-                    articleAdapter.setNewData(list)
-                } else {
-                    articleAdapter.addData(list)
-                    binding.pullRefresh.setLoadMore(true)
+            if (result.errorCode == "0") {
+                result.data?.datas?.let { list ->
+                    if (viewModel.isRefresh) {
+                        articleAdapter.setNewData(list)
+                    } else {
+                        articleAdapter.addData(list)
+                        binding.pullRefresh.setLoadMore(true)
+                    }
                 }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {
                 binding.pullRefresh.finishRefresh()

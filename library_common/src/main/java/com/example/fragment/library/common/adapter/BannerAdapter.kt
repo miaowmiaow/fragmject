@@ -17,7 +17,9 @@ class BannerAdapter : BaseAdapter<BannerBean>() {
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
         val binding = holder.binding as ItemBannerBinding
-        ImageLoader.with(binding.banner.context).load(item.imagePath).into(binding.banner)
+        if(item.imagePath.isNotEmpty()){
+            ImageLoader.with(binding.banner.context).load(item.imagePath).into(binding.banner)
+        }
     }
 
 }

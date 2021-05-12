@@ -6,7 +6,7 @@ import android.view.View
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.library.common.utils.UserInfoManager
+import com.example.fragment.library.common.utils.UserHelper
 import com.example.fragment.module.user.databinding.FragmentRegisterBinding
 import com.example.fragment.user.model.UserModel
 
@@ -44,7 +44,7 @@ class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserModel>()
         viewModel.registerResult.observe(viewLifecycleOwner, {
             if (it.errorCode == "0") {
                 it.data?.apply {
-                    UserInfoManager.setUser(this)
+                    UserHelper.setUser(this)
                 }
                 baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
             } else {

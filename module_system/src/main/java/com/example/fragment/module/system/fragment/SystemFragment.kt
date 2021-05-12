@@ -58,8 +58,12 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
 
     private fun update() {
         viewModel.treeResult.observe(viewLifecycleOwner, { result ->
-            result.data?.apply {
-                systemAdapter.setNewData(this)
+            if (result.errorCode == "0") {
+                result.data?.apply {
+                    systemAdapter.setNewData(this)
+                }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {
                 binding.pullRefresh.finishRefresh()

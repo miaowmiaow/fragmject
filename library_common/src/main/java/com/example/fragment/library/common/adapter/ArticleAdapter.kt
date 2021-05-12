@@ -54,7 +54,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                 binding.tvTag.visibility = View.GONE
             }
             binding.tvTime.text = item.niceDate
-            if (!TextUtils.isEmpty(item.envelopePic)) {
+            if (item.envelopePic.isNotEmpty()) {
                 ImageLoader.with(binding.ivImg.context).load(item.envelopePic).into(binding.ivImg)
                 binding.ivImg.visibility = View.VISIBLE
             } else {

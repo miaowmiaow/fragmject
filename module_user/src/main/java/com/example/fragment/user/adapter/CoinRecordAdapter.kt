@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.module.user.databinding.ItemCoinRecordBinding
-import com.example.fragment.user.bean.MyCoinBean
+import com.example.fragment.library.common.bean.MyCoinBean
 
 class CoinRecordAdapter : BaseAdapter<MyCoinBean>(){
 

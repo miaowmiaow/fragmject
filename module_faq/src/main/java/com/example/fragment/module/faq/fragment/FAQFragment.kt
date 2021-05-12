@@ -63,19 +63,23 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
 
     private fun update() {
         viewModel.wendaResult.observe(viewLifecycleOwner, { result ->
-            result.data?.datas?.let { list ->
-                if (viewModel.isRefresh) {
-                    articleAdapter.setNewData(list)
-                } else {
-                    articleAdapter.addData(list)
-                    binding.pullRefresh.setLoadMore(true)
+            if (result.errorCode == "0") {
+                result.data?.datas?.let { list ->
+                    if (viewModel.isRefresh) {
+                        articleAdapter.setNewData(list)
+                    } else {
+                        articleAdapter.addData(list)
+                        binding.pullRefresh.setLoadMore(true)
+                    }
                 }
-            }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
-            if (viewModel.page >= viewModel.pageCont) {
-                binding.pullRefresh.setLoadMore(false)
+                if (binding.pullRefresh.isRefresh()) {
+                    binding.pullRefresh.finishRefresh()
+                }
+                if (viewModel.page >= viewModel.pageCont) {
+                    binding.pullRefresh.setLoadMore(false)
+                }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
         })
     }

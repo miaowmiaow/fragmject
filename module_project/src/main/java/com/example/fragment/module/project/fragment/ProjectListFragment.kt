@@ -40,29 +40,34 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
 
     private fun update(savedInstanceState: Bundle?) {
         viewModel.projectTreeResult.observe(viewLifecycleOwner, { result ->
-            result.data?.also { data ->
-                binding.viewpager.offscreenPageLimit = 2
-                binding.viewpager.adapter = object :
-                    FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+            if (result.errorCode == "0") {
+                result.data?.also { data ->
+                    binding.viewpager.offscreenPageLimit = 2
+                    binding.viewpager.adapter = object : FragmentPagerAdapter(
+                        childFragmentManager,
+                        BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+                    ) {
+                        override fun getItem(position: Int): Fragment {
+                            return ProjectArticleFragment.newInstance(data[position].id)
+                        }
 
-                    override fun getItem(position: Int): Fragment {
-                        return ProjectArticleFragment.newInstance(data[position].id)
+                        override fun getCount(): Int {
+                            return data.size
+                        }
                     }
-
-                    override fun getCount(): Int {
-                        return data.size
+                    data.forEach {
+                        val tabView: View = LayoutInflater.from(binding.root.context)
+                            .inflate(R.layout.tab_item_top, null)
+                        tabView.findViewById<TextView>(R.id.tv_tab).text = it.name
+                        binding.tab.addTab(tabView)
+                    }
+                    binding.tab.setupWithViewPager(binding.viewpager)
+                    if (savedInstanceState == null) {
+                        binding.tab.selectTab(0)
                     }
                 }
-                data.forEach {
-                    val tabView: View = LayoutInflater.from(binding.root.context)
-                        .inflate(R.layout.tab_item_top, null)
-                    tabView.findViewById<TextView>(R.id.tv_tab).text = it.name
-                    binding.tab.addTab(tabView)
-                }
-                binding.tab.setupWithViewPager(binding.viewpager)
-                if (savedInstanceState == null) {
-                    binding.tab.selectTab(0)
-                }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
         })
     }

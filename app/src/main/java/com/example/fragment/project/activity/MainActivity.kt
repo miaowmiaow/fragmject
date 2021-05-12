@@ -8,6 +8,7 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.WebFragment
+import com.example.fragment.library.common.utils.UserHelper
 import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
@@ -18,6 +19,8 @@ import com.example.fragment.user.fragment.RegisterFragment
 
 
 class MainActivity : RouterActivity() {
+
+    private var id: String? = null
 
     override fun frameLayoutId(): Int {
         return R.id.frame_layout
@@ -30,24 +33,35 @@ class MainActivity : RouterActivity() {
         navMode: NavMode
     ) {
         when (name) {
+            Router.MAIN -> {
+                switcher(MainFragment::class.java, bundle, onBack, navMode)
+                return
+            }
             Router.LOGIN -> {
                 switcher(LoginFragment::class.java, bundle, onBack, navMode)
+                return
             }
             Router.REGISTER -> {
                 switcher(RegisterFragment::class.java, bundle, onBack, navMode)
+                return
             }
             Router.WEB -> {
                 switcher(WebFragment::class.java, bundle, onBack, navMode)
+                return
             }
             Router.SYSTEM -> {
                 switcher(SystemListFragment::class.java, bundle, onBack, navMode)
+                return
             }
-            Router.MY_COIN -> {
-                switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
+        }
+        if(id != null && id.toString().isNotBlank()){
+            when (name) {
+                Router.MY_COIN -> {
+                    switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
+                }
             }
-            else -> {
-                switcher(MainFragment::class.java, bundle, onBack, navMode)
-            }
+        }else{
+            switcher(LoginFragment::class.java, bundle, onBack, navMode)
         }
     }
 
@@ -58,7 +72,9 @@ class MainActivity : RouterActivity() {
         setTheme(R.style.AppTheme)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
         navigation(Router.MAIN)
-
+        UserHelper.user.observe(this, { userBean ->
+            id = userBean.id
+        })
     }
 
 }

@@ -80,14 +80,14 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-                if (binding.pullRefresh.isRefresh()) {
-                    binding.pullRefresh.finishRefresh()
-                }
-                if (viewModel.page >= viewModel.pageCont) {
-                    binding.pullRefresh.setLoadMore(false)
-                }
             } else {
                 baseActivity.showTips(result.errorMsg)
+            }
+            if (binding.pullRefresh.isRefresh()) {
+                binding.pullRefresh.finishRefresh()
+            }
+            if (viewModel.page >= viewModel.pageCont) {
+                binding.pullRefresh.setLoadMore(false)
             }
         })
     }

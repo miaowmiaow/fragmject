@@ -133,7 +133,6 @@ class SimpleHttp private constructor() {
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()
-                ToastUtil.show(msg)
                 val t = type.newInstance()
                 t.errorMsg = msg
                 t
@@ -157,7 +156,6 @@ class SimpleHttp private constructor() {
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()
-                ToastUtil.show(msg)
                 val t = type.newInstance()
                 t.errorMsg = msg
                 t
@@ -198,7 +196,6 @@ class SimpleHttp private constructor() {
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()
-                ToastUtil.show(msg)
                 val t = type.newInstance()
                 t.errorMsg = msg
                 t

@@ -10,6 +10,7 @@ import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.utils.UserHelper
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.user.adapter.CoinRecordAdapter
 import com.example.fragment.user.model.CoinModel
@@ -62,17 +63,9 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
         viewModel.userCoinResult.observe(viewLifecycleOwner, { result ->
             if (result.errorCode == "0") {
                 result.data?.let { coinBean ->
-                    val fromStr = binding.coinCount.text.toString()
-                    val from = try {
-                        fromStr.toInt()
-                    } catch (e: NumberFormatException) {
-                        0
-                    }
-                    val to = try {
-                        coinBean.coinCount.toInt()
-                    } catch (e: Exception) {
-                        0
-                    }
+                    UserHelper.setCoin(coinBean)
+                    val from = binding.coinCount.text.toString().toInt()
+                    val to = coinBean.coinCount.toInt()
                     val animator = ValueAnimator.ofInt(from, to)
                     animator.addUpdateListener { animation ->
                         val value = animation.animatedValue as Int
@@ -96,14 +89,14 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-                if (binding.pullRefresh.isRefresh()) {
-                    binding.pullRefresh.finishRefresh()
-                }
-                if (viewModel.page >= viewModel.pageCont) {
-                    binding.pullRefresh.setLoadMore(false)
-                }
             } else {
                 baseActivity.showTips(result.errorMsg)
+            }
+            if (binding.pullRefresh.isRefresh()) {
+                binding.pullRefresh.finishRefresh()
+            }
+            if (viewModel.page >= viewModel.pageCont) {
+                binding.pullRefresh.setLoadMore(false)
             }
         })
     }

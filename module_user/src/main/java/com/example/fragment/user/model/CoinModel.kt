@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.model.BaseViewModel
-import com.example.fragment.user.bean.MyCoinListBean
-import com.example.fragment.user.bean.UserCoinBean
+import com.example.fragment.library.common.bean.MyCoinListBean
+import com.example.fragment.library.common.bean.UserCoinBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

@@ -11,7 +11,7 @@ import com.example.fragment.library.base.component.activity.OnBackPressedListene
 import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.library.common.utils.UserInfoManager
+import com.example.fragment.library.common.utils.UserHelper
 import com.example.fragment.module.home.fragment.SquareFragment
 import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
@@ -67,28 +67,16 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 binding.drawer.closeDrawer(GravityCompat.START)
             } else {
                 binding.drawer.openDrawer(GravityCompat.START)
-                UserInfoManager.getUser().observe(viewLifecycleOwner, { userBean ->
-                    if (userBean.nickname.isNotEmpty()) {
-                        binding.logo.setOnClickListener(null)
-                        binding.username.text = "欢迎回来！" + userBean.nickname
-                        binding.username.setOnClickListener(null)
-                        binding.coin.text = "我的积分： " + userBean.coinCount
-                        binding.coin.setOnClickListener {
-                            baseActivity.navigation(Router.MY_COIN)
-                        }
-                    } else {
-                        binding.logo.setOnClickListener {
-                            baseActivity.navigation(Router.LOGIN)
-                        }
-                        binding.username.text = "去登录"
-                        binding.username.setOnClickListener {
-                            baseActivity.navigation(Router.LOGIN)
-                        }
-                        binding.coin.text = "我的积分"
-                        binding.coin.setOnClickListener(null)
-                    }
-                })
             }
+        }
+        binding.logo.setOnClickListener {
+            baseActivity.navigation(Router.LOGIN)
+        }
+        binding.username.setOnClickListener {
+            baseActivity.navigation(Router.LOGIN)
+        }
+        binding.coin.setOnClickListener {
+            baseActivity.navigation(Router.MY_COIN)
         }
         binding.share.setOnClickListener { }
         binding.collection.setOnClickListener { }
@@ -114,8 +102,27 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     private fun update() {
         viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
             result.data?.apply {
-                hotKeyAdapter.setNewData(this)
-                bannerHelper.startTimerTask()
+                if (result.errorCode == "0") {
+                    hotKeyAdapter.setNewData(this)
+                    bannerHelper.startTimerTask()
+                } else {
+                    baseActivity.showTips(result.errorMsg)
+                }
+            }
+        })
+        UserHelper.user.observe(viewLifecycleOwner, { userBean ->
+            if (userBean.id.isNotEmpty()) {
+                binding.logo.setOnClickListener(null)
+                binding.username.setOnClickListener(null)
+                binding.username.text = "欢迎回来！${userBean.nickname}"
+            } else {
+                binding.logo.setOnClickListener {
+                    baseActivity.navigation(Router.LOGIN)
+                }
+                binding.username.setOnClickListener {
+                    baseActivity.navigation(Router.LOGIN)
+                }
+                binding.username.text = "去登录"
             }
         })
     }

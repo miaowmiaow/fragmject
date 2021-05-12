@@ -72,13 +72,17 @@ class ProjectArticleFragment :
 
     private fun update() {
         viewModel.projectListResult.observe(viewLifecycleOwner, { result ->
-            result.data?.datas?.let { list ->
-                if (viewModel.isRefresh) {
-                    articleAdapter.setNewData(list)
-                } else {
-                    articleAdapter.addData(list)
-                    binding.pullRefresh.setLoadMore(true)
+            if (result.errorCode == "0") {
+                result.data?.datas?.let { list ->
+                    if (viewModel.isRefresh) {
+                        articleAdapter.setNewData(list)
+                    } else {
+                        articleAdapter.addData(list)
+                        binding.pullRefresh.setLoadMore(true)
+                    }
                 }
+            } else {
+                baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {
                 binding.pullRefresh.finishRefresh()

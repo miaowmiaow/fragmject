@@ -30,9 +30,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            val key = this.getString(Keys.TITLE).toString()
-            viewModel.search(true, key)
-            saveHistorySearch(key)
+            binding.search.setText(this.getString(Keys.TITLE).toString())
         }
         setupView()
         update()
@@ -43,11 +41,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
         binding.search.setOnClickListener { initHistorySearch() }
         binding.search.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                val key = binding.search.text.toString()
-                if(checkParameter(key)){
-                    viewModel.search(true, key)
-                    saveHistorySearch(key)
-                }
+                search(binding.search.text.toString())
                 return@setOnEditorActionListener true
             }
             false
@@ -55,9 +49,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
         historySearchAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 historySearchAdapter.getItem(position)?.apply {
-                    binding.search.setText(this)
-                    viewModel.search(true, this)
-                    saveHistorySearch(this)
+                    search(this)
                 }
             }
         })
@@ -115,9 +107,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
                 val tv = inflater.inflate(R.layout.fbl_hot_key, binding.fbl, false) as TextView
                 tv.text = hotKey.name
                 tv.setOnClickListener {
-                    binding.search.setText(hotKey.name)
-                    viewModel.search(true, hotKey.name)
-                    saveHistorySearch(hotKey.name)
+                    search(hotKey.name)
                 }
                 binding.fbl.addView(tv)
             }
@@ -145,15 +135,19 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
         })
     }
 
-    private fun saveHistorySearch(key: String) {
-        binding.history.visibility = View.GONE
-        binding.pullRefresh.visibility = View.VISIBLE
-        val list = historySearchAdapter.getData()
-        if (list.contains(key)) {
-            list.remove(key)
+    private fun search(key: String) {
+        if (checkParameter(key)) {
+            binding.history.visibility = View.GONE
+            binding.pullRefresh.visibility = View.VISIBLE
+            binding.search.setText(key)
+            viewModel.search(true, key)
+            val list = historySearchAdapter.getData()
+            if (list.contains(key)) {
+                list.remove(key)
+            }
+            list.add(0, key)
+            WanHelper.setHistorySearch(list)
         }
-        list.add(0, key)
-        WanHelper.setHistorySearch(list)
     }
 
     private fun initHistorySearch() {

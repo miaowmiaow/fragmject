@@ -87,8 +87,8 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
             override fun onTabSelected(tabView: View, position: Int, isRefresh: Boolean) {
                 val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
                 val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.white))
-                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.white))
+                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.text_fff))
+                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.text_fff))
             }
 
             override fun onTabUnselected(tabView: View, position: Int) {

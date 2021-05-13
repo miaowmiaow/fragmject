@@ -87,7 +87,6 @@
             android:layout_width="120dp"
             android:layout_height="80dp"
             android:layout_marginEnd="10dp"
-            android:background="@color/white"
             android:scaleType="centerCrop"
             android:visibility="gone" />
 
@@ -180,6 +179,6 @@
         android:layout_height="0.5dp"
         android:layout_below="@+id/ll_chapter"
         android:layout_marginTop="16dp"
-        android:background="#f0f0f0" />
+        android:background="@color/line" />
 
 </RelativeLayout>

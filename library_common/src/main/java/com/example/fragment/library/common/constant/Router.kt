@@ -5,6 +5,7 @@ enum class Router {
     REGISTER,
     SEARCH,
     MAIN,
+    SETTING,
     SYSTEM,
     WEB,
     MY_COIN,

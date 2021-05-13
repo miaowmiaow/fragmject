@@ -34,7 +34,7 @@
             android:layout_toEndOf="@id/black"
             android:gravity="center"
             android:text="积分排行榜"
-            android:textColor="@color/white"
+            android:textColor="@color/text_fff"
             android:textSize="16sp" />
 
         <ImageView
@@ -87,7 +87,7 @@
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:text="暂无上榜"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="15sp" />
 
             <TextView
@@ -99,7 +99,7 @@
                 android:layout_marginTop="2dp"
                 android:gravity="center"
                 android:text="0"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="15sp" />
         </RelativeLayout>
 
@@ -131,7 +131,7 @@
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:text="暂无上榜"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="16sp" />
 
             <TextView
@@ -143,7 +143,7 @@
                 android:layout_marginTop="2dp"
                 android:gravity="center"
                 android:text="0"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="16sp" />
         </RelativeLayout>
 
@@ -176,7 +176,7 @@
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:text="暂无上榜"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="14sp" />
 
             <TextView
@@ -188,7 +188,7 @@
                 android:layout_marginTop="2dp"
                 android:gravity="center"
                 android:text="0"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="14sp" />
         </RelativeLayout>
     </LinearLayout>

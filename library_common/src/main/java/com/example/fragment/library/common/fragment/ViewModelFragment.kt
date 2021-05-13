@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -32,6 +34,18 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
         viewModel = ViewModelProvider(this as ViewModelStoreOwner).get(clazz)
         binding = setViewBinding(inflater)
         return binding.root
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hideInputMethod()
+    }
+
+    fun hideInputMethod() {
+        val inputMethodManager =
+            baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val view = baseActivity.currentFocus ?: return
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
 }

@@ -16,11 +16,7 @@ import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
 import com.example.fragment.project.fragment.MainFragment
-import com.example.fragment.user.fragment.CoinRankFragment
-import com.example.fragment.user.fragment.LoginFragment
-import com.example.fragment.user.fragment.MyCoinFragment
-import com.example.fragment.user.fragment.RegisterFragment
-
+import com.example.fragment.user.fragment.*
 
 class MainActivity : RouterActivity() {
 
@@ -48,6 +44,9 @@ class MainActivity : RouterActivity() {
             }
             Router.MAIN -> {
                 switcher(MainFragment::class.java, bundle, onBack, navMode)
+            }
+            Router.SETTING -> {
+                switcher(SettingFragment::class.java, bundle, onBack, navMode)
             }
             Router.SYSTEM -> {
                 switcher(SystemListFragment::class.java, bundle, onBack, navMode)

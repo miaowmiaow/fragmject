@@ -20,22 +20,13 @@ abstract class SimpleDBHelper : RoomDatabase() {
                 BaseProvider.mContext.applicationContext,
                 SimpleDBHelper::class.java,
                 "SimpleDatabase"
-            ).allowMainThreadQueries()
-                .build().also { db ->
-                    database = db
-                }
+            ).build().also { db ->
+                database = db
+            }
         }
 
-        fun setInMain(key: String, value: String) {
-            getDatabase().setInMain(key, value)
-        }
-        
         fun set(key: String, value: String) {
             getDatabase().set(key, value)
-        }
-
-        fun getInMain(key: String): String? {
-            return getDatabase().getInMain(key)
         }
 
         fun get(key: String): MutableLiveData<String> {
@@ -46,53 +37,41 @@ abstract class SimpleDBHelper : RoomDatabase() {
     abstract fun getDao(): KVDao
 
     @Synchronized
-    fun setInMain(key: String, value: String) {
-        database?.apply {
-            try {
-                val dao = getDao()
-                val kv = dao.findByKey(key)
-                if (kv == null) {
-                    dao.insert(KVEntity(key = key, value = value))
-                } else {
-                    kv.value = value
-                    dao.update(kv)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                closeDatabase() //关闭策略待优化!!!
-            }
-        }
-    }
-
-    @Synchronized
     fun set(key: String, value: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            setInMain(key, value)
-        }
-    }
-
-    @Synchronized
-    fun getInMain(key: String): String? {
-        database?.apply {
-            return try {
-                val dao = getDao()
-                dao.findByKey(key)?.value
-            } catch (e: Exception) {
-                e.printStackTrace()
-                e.message
-            } finally {
-                closeDatabase() //关闭策略待优化!!!
+            database?.apply {
+                try {
+                    val dao = getDao()
+                    val kv = dao.findByKey(key)
+                    if (kv == null) {
+                        dao.insert(KVEntity(key = key, value = value))
+                    } else {
+                        kv.value = value
+                        dao.update(kv)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    closeDatabase() //关闭策略待优化!!!
+                }
             }
         }
-        return null
     }
 
     @Synchronized
     fun get(key: String): MutableLiveData<String> {
         val value = MutableLiveData<String>()
         CoroutineScope(Dispatchers.IO).launch {
-            value.postValue(getInMain(key))
+            database?.apply {
+                try {
+                    val dao = getDao()
+                    value.postValue(dao.findByKey(key)?.value)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    closeDatabase() //关闭策略待优化!!!
+                }
+            }
         }
         return value
     }
@@ -110,25 +89,25 @@ abstract class SimpleDBHelper : RoomDatabase() {
     interface KVDao {
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        fun insert(kv: KVEntity): Long
+        suspend fun insert(kv: KVEntity): Long
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        fun insertAll(vararg kvs: KVEntity): Array<Long>
+        suspend fun insertAll(vararg kvs: KVEntity): Array<Long>
 
         @Update
-        fun update(vararg kv: KVEntity): Int
+        suspend fun update(vararg kv: KVEntity): Int
 
         @Query("SELECT * FROM kv WHERE `key` = :key ORDER BY id DESC LIMIT 1")
-        fun findByKey(key: String): KVEntity?
+        suspend fun findByKey(key: String): KVEntity?
 
         @Query("SELECT * FROM kv")
-        fun findAll(): Array<KVEntity>?
+        suspend fun findAll(): Array<KVEntity>?
 
         @Delete
-        fun delete(kv: KVEntity): Int
+        suspend fun delete(kv: KVEntity): Int
 
         @Delete
-        fun deleteAll(vararg kvs: KVEntity): Int
+        suspend fun deleteAll(vararg kvs: KVEntity): Int
 
     }
 

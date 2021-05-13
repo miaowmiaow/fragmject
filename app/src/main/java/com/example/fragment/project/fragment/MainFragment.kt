@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.bus.SimpleLiveBus
 import com.example.fragment.library.base.component.activity.OnBackPressedListener
+import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.LiveBus
@@ -79,14 +80,18 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         binding.coin.setOnClickListener { baseActivity.navigation(Router.MY_COIN) }
         binding.share.setOnClickListener { }
         binding.collection.setOnClickListener { }
-        binding.setting.setOnClickListener { }
+        binding.setting.setOnClickListener { baseActivity.navigation(Router.SETTING) }
         binding.feedback.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, "https://github.com/miaowmiaow/FragmentProject/issues")
             baseActivity.navigation(Router.WEB, args)
         }
         binding.search.setOnClickListener { search() }
-        binding.hotKey.setOnTouchListener { _, event -> binding.search.onTouchEvent(event) }
+        hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+                search()
+            }
+        })
         bannerHelper = SimpleBannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
@@ -135,7 +140,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         val title = hotKeyAdapter.getItem(bannerHelper.findLastVisibleItemPosition())?.name
         val args = Bundle()
         args.putString(Keys.TITLE, title)
-        baseActivity.navigation(Router.SEARCH)
+        baseActivity.navigation(Router.SEARCH, args)
     }
 
 }

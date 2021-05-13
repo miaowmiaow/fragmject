@@ -52,9 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
-                android:layout_toEndOf="@id/iv_search"
-                android:clickable="false"
-                android:focusable="false" />
+                android:layout_toEndOf="@id/iv_search" />
 
         </RelativeLayout>
 
@@ -109,7 +107,7 @@
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
                 android:text="去登录"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="16sp" />
 
             <TextView
@@ -122,7 +120,7 @@
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
                 android:text="我的积分"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="13sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 
@@ -136,7 +134,7 @@
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
                 android:text="我的分享"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="13sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 
@@ -150,7 +148,7 @@
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
                 android:text="我的收藏"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="13sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 
@@ -164,7 +162,7 @@
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
                 android:text="系统设置"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="14sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 
@@ -179,7 +177,7 @@
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
                 android:text="问题反馈"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="13sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 

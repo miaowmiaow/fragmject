@@ -27,9 +27,9 @@ import com.google.android.material.animation.AnimationUtils
 import kotlin.math.roundToInt
 
 class SimpleTabLayout @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
 ) : HorizontalScrollView(context, attrs, defStyleAttr) {
 
     companion object {
@@ -62,6 +62,7 @@ class SimpleTabLayout @JvmOverloads constructor(
     private var pageChangeListener: CustomOnPageChangeListener? = null
     private var adapterChangeListener: CustomAdapterChangeListener? = null
     private var pagerAdapterObserver: DataSetObserver? = null
+    private var pagerAdapter: PagerAdapter? = null
 
     private var mod = MODE.FIXED
 
@@ -169,17 +170,21 @@ class SimpleTabLayout @JvmOverloads constructor(
         }
     }
 
-    fun setPagerAdapter(pagerAdapter: PagerAdapter?) {
-        pagerAdapter?.let { adapter ->
+    fun setPagerAdapter(adapter: PagerAdapter?) {
+
+        pagerAdapter?.let { pagerAdapter ->
             pagerAdapterObserver?.let { observer ->
-                adapter.unregisterDataSetObserver(observer)
+                pagerAdapter.unregisterDataSetObserver(observer)
             }
-            if (pagerAdapterObserver == null) {
-                pagerAdapterObserver = CustomPagerAdapterObserver(this)
-            }
-            pagerAdapterObserver?.let { observer ->
-                adapter.registerDataSetObserver(observer)
-            }
+        }
+
+        pagerAdapter = adapter
+
+        if (pagerAdapterObserver == null) {
+            pagerAdapterObserver = CustomPagerAdapterObserver(this)
+        }
+        pagerAdapterObserver?.let { observer ->
+            adapter?.registerDataSetObserver(observer)
         }
         populateFromPagerAdapter()
     }
@@ -196,11 +201,10 @@ class SimpleTabLayout @JvmOverloads constructor(
 
     private class CustomAdapterChangeListener(val tabLayout: SimpleTabLayout) :
             ViewPager.OnAdapterChangeListener {
-
         override fun onAdapterChanged(
-                viewPager: ViewPager,
-                oldAdapter: PagerAdapter?,
-                newAdapter: PagerAdapter?
+            viewPager: ViewPager,
+            oldAdapter: PagerAdapter?,
+            newAdapter: PagerAdapter?
         ) {
             if (tabLayout.viewPager == viewPager) {
                 tabLayout.setPagerAdapter(newAdapter)
@@ -215,9 +219,9 @@ class SimpleTabLayout @JvmOverloads constructor(
         private var scrollState = 0
 
         override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
+            position: Int,
+            positionOffset: Float,
+            positionOffsetPixels: Int
         ) {
             val updateIndicator =
                     !(scrollState == ViewPager.SCROLL_STATE_SETTLING && previousScrollState == ViewPager.SCROLL_STATE_IDLE)
@@ -320,9 +324,9 @@ class SimpleTabLayout @JvmOverloads constructor(
     }
 
     private fun setScrollPosition(
-            position: Int,
-            positionOffset: Float,
-            updateIndicatorPosition: Boolean
+        position: Int,
+        positionOffset: Float,
+        updateIndicatorPosition: Boolean
     ) {
         val roundedPosition = (position.toFloat() + positionOffset).roundToInt()
         if (roundedPosition < 0 || roundedPosition >= slidingTabIndicator.childCount) {
@@ -342,7 +346,7 @@ class SimpleTabLayout @JvmOverloads constructor(
         selectedChild?.let {
             val nextChild =
                     if (position + 1 < slidingTabIndicator.childCount) slidingTabIndicator.getChildAt(
-                            position + 1
+                        position + 1
                     ) else null
             val selectedWidth = selectedChild.width
             val nextWidth = nextChild?.width ?: 0
@@ -458,9 +462,9 @@ class SimpleTabLayout @JvmOverloads constructor(
 
         @SuppressLint("RestrictedApi")
         private fun updateOrRecreateIndicatorAnimation(
-                recreateAnimation: Boolean,
-                position: Int,
-                duration: Long
+            recreateAnimation: Boolean,
+            position: Int,
+            duration: Long
         ) {
             val targetView = getChildAt(position)
             if (targetView == null) {
@@ -494,8 +498,8 @@ class SimpleTabLayout @JvmOverloads constructor(
                     ValueAnimator.AnimatorUpdateListener { valueAnimator ->
                         val fraction = valueAnimator.animatedFraction
                         setIndicatorPosition(
-                                AnimationUtils.lerp(animationStartLeft, finalTargetLeft, fraction),
-                                AnimationUtils.lerp(animationStartRight, finalTargetRight, fraction)
+                            AnimationUtils.lerp(animationStartLeft, finalTargetLeft, fraction),
+                            AnimationUtils.lerp(animationStartRight, finalTargetRight, fraction)
                         )
                     }
             if (recreateAnimation) {
@@ -504,16 +508,16 @@ class SimpleTabLayout @JvmOverloads constructor(
                 indicatorAnimator.setFloatValues(0f, 1f)
                 indicatorAnimator.addUpdateListener(updateListener)
                 indicatorAnimator.addListener(
-                        object : AnimatorListenerAdapter() {
-                            override fun onAnimationStart(animator: Animator) {
-                                selectedPosition = position
-                            }
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animator: Animator) {
+                            selectedPosition = position
+                        }
 
-                            override fun onAnimationEnd(animator: Animator) {
-                                selectedPosition = position
-                                selectionOffset = 0f
-                            }
-                        })
+                        override fun onAnimationEnd(animator: Animator) {
+                            selectedPosition = position
+                            selectionOffset = 0f
+                        }
+                    })
                 indicatorAnimator.start()
             } else {
                 indicatorAnimator.removeAllUpdateListeners()
@@ -560,15 +564,15 @@ class SimpleTabLayout @JvmOverloads constructor(
                     indicatorRight = indicatorCenter + (selectedIndicatorWidth / 2)
                 }
                 selectedIndicator.setBounds(
-                        indicatorLeft,
-                        indicatorTop,
-                        indicatorRight,
-                        indicatorBottom
+                    indicatorLeft,
+                    indicatorTop,
+                    indicatorRight,
+                    indicatorBottom
                 )
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
                     selectedIndicator.setColorFilter(
-                            selectedIndicatorPaint.color,
-                            PorterDuff.Mode.SRC_IN
+                        selectedIndicatorPaint.color,
+                        PorterDuff.Mode.SRC_IN
                     )
                 } else {
                     DrawableCompat.setTint(selectedIndicator, selectedIndicatorPaint.color)

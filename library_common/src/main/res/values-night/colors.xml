@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="theme">#000000</color>
+    <color name="background">#222222</color>
+    <color name="line">#888888</color>
+    <color name="line_alpha">#69888888</color>
+
+    <!--通用颜色-->
+    <color name="black">#000000</color>
+    <color name="white">#444444</color>
+    <color name="blue">#508cee</color>
+    <color name="yellow">#ffb636</color>
+    <color name="orange">#ff7800</color>
+    <color name="green">#33cc99</color>
+    <color name="gray">#3D3D3D</color>
+    <color name="gray_alpha">#88F6F6F6</color>
+    <color name="transparent">#00000000</color>
+
+    <!--文字颜色-->
+    <color name="text_theme">@color/theme</color>
+    <color name="text_333">#666</color>
+    <color name="text_666">#999</color>
+    <color name="text_999">#ccc</color>
+    <color name="text_ccc">#fff</color>
+    <color name="text_fff">#fff</color>
+</resources>

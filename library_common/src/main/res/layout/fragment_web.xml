@@ -36,7 +36,7 @@
             android:includeFontPadding="false"
             android:lines="1"
             android:singleLine="true"
-            android:textColor="@color/white"
+            android:textColor="@color/text_fff"
             android:textSize="16sp" />
 
         <ImageView

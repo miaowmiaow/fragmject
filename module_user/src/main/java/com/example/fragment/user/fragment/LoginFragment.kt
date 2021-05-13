@@ -22,6 +22,7 @@ class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserModel>() {
     }
 
     private fun setupView() {
+        binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.login.setOnClickListener {

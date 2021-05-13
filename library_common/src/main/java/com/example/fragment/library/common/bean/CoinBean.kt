@@ -11,6 +11,10 @@ data class MyCoinListBean(
     val data: MyCoinDataBean? = null
 ) : HttpResponse()
 
+data class CoinRankBean(
+    val data: CoinRankDataBean? = null
+) : HttpResponse()
+
 data class MyCoinDataBean(
     val curPage: String = "",
     val datas: List<MyCoinBean>? = null,
@@ -30,6 +34,16 @@ data class MyCoinBean(
     val type: String = "",
     val userId: String = "",
     val username: String = ""
+)
+
+data class CoinRankDataBean(
+    val curPage: String = "",
+    val datas: List<CoinBean>? = null,
+    val offset: String = "",
+    val over: Boolean = false,
+    val pageCount: String = "",
+    val size: String = "",
+    val total: String = ""
 )
 
 data class CoinBean @JvmOverloads constructor(

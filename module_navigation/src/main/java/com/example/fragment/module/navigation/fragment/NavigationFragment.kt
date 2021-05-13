@@ -78,7 +78,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
                         fillFlexboxLayout(menu[0].articles)
                     }
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {
@@ -91,8 +91,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
         binding.fbl.removeAllViews()
         data?.forEach { article ->
             val inflater = LayoutInflater.from(binding.fbl.context)
-            val tv: TextView =
-                inflater.inflate(R.layout.item_navigation, binding.fbl, false) as TextView
+            val tv = inflater.inflate(R.layout.fbl_navigation, binding.fbl, false) as TextView
             tv.text = article.title
             tv.setOnClickListener {
                 val args = Bundle()

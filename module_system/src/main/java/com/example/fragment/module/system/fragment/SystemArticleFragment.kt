@@ -80,7 +80,7 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

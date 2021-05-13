@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white"
+    android:background="@drawable/layer_while_item_top"
     android:padding="16dp">
 
     <TextView
@@ -13,7 +13,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:includeFontPadding="false"
-        android:textColor="@color/blue"
+        android:textColor="@color/orange"
         android:textSize="15sp"
         tools:text="+31" />
 

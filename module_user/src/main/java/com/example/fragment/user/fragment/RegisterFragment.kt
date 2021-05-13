@@ -6,10 +6,9 @@ import android.view.View
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.library.common.utils.UserHelper
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentRegisterBinding
 import com.example.fragment.user.model.UserModel
-
 
 class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserModel>() {
 
@@ -41,28 +40,28 @@ class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserModel>()
     }
 
     private fun update() {
-        viewModel.registerResult.observe(viewLifecycleOwner, {
-            if (it.errorCode == "0") {
-                it.data?.apply {
-                    UserHelper.setUser(this)
+        viewModel.registerResult.observe(viewLifecycleOwner, { result ->
+            if (result.errorCode == "0") {
+                result.data?.apply {
+                    WanHelper.setUser(this)
                 }
                 baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
-            } else {
-                baseActivity.showTips(it.errorMsg)
+            } else if (result.errorCode.isNotBlank()) {
+                baseActivity.showTips(result.errorMsg)
             }
         })
     }
 
     private fun checkParameter(username: String, password: String, repassword: String): Boolean {
-        if (username.isEmpty()) {
+        if (username.isBlank()) {
             baseActivity.showTips("用户名不能为空")
             return false
         }
-        if (password.isEmpty()) {
+        if (password.isBlank()) {
             baseActivity.showTips("密码不能为空")
             return false
         }
-        if (repassword.isEmpty()) {
+        if (repassword.isBlank()) {
             baseActivity.showTips("确认密码不能为空")
             return false
         }

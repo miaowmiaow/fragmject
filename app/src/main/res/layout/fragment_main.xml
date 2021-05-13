@@ -26,6 +26,7 @@
             android:src="@drawable/ic_menu" />
 
         <RelativeLayout
+            android:id="@+id/search"
             android:layout_width="match_parent"
             android:layout_height="26dp"
             android:layout_below="@id/status_bar"
@@ -48,10 +49,12 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/hot_key"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
-                android:layout_toEndOf="@id/iv_search" />
+                android:layout_toEndOf="@id/iv_search"
+                android:clickable="false"
+                android:focusable="false" />
 
         </RelativeLayout>
 
@@ -91,8 +94,8 @@
                 android:id="@+id/logo"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
-                android:layout_marginTop="50dp"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="50dp"
                 android:src="@drawable/ic_logo" />
 
             <TextView
@@ -101,11 +104,11 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/logo"
                 android:layout_marginTop="5dp"
-                android:text="去登录"
                 android:layout_marginBottom="25dp"
                 android:gravity="center"
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
+                android:text="去登录"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
 

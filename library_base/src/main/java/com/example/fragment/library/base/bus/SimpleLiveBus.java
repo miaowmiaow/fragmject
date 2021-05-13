@@ -4,14 +4,14 @@ import androidx.annotation.NonNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * LiveData 只会将更新通知给活跃的观察者，
+ * 所以观察者生命周期要处于 STARTED 或 RESUMED 状态。
+ */
 public class SimpleLiveBus {
 
     private static final class SingleHolder {
         private static final SimpleLiveBus INSTANCE = new SimpleLiveBus();
-    }
-
-    public static SimpleLiveBus get() {
-        return SingleHolder.INSTANCE;
     }
 
     private final ConcurrentHashMap<Object, LiveEvent<Object>> mEventMap;
@@ -20,12 +20,12 @@ public class SimpleLiveBus {
         mEventMap = new ConcurrentHashMap<>();
     }
 
-    public <T> LiveEvent<T> with(@NonNull final String key, @NonNull final Class<T> clazz) {
-        return realWith(key, clazz);
+    public static <T> LiveEvent<T> with(@NonNull final String key) {
+        return SingleHolder.INSTANCE.realWith(key, null);
     }
 
-    public <T> LiveEvent<T> with(@NonNull final Class<T> clazz) {
-        return realWith(null, clazz);
+    public static <T> LiveEvent<T> with(@NonNull final Class<T> clazz) {
+        return SingleHolder.INSTANCE.realWith(null, clazz);
     }
 
     @SuppressWarnings("unchecked")

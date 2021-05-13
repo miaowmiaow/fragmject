@@ -106,6 +106,10 @@ class SimpleBannerHelper(
         }
     }
 
+    fun findLastVisibleItemPosition(): Int {
+        return repeatLayoutManager.findLastVisibleItemPosition()
+    }
+
     fun startTimerTask() {
         recyclerView.postDelayed(timerTask, bannerDelay)
     }

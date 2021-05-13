@@ -123,4 +123,9 @@ class SimpleEditText @JvmOverloads constructor(
         )
     }
 
+    fun setText(text: String) {
+        setText(text, BufferType.NORMAL)
+        setSelection(text.length)
+    }
+
 }

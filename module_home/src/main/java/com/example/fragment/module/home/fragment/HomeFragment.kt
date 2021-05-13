@@ -32,7 +32,6 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
-        viewModel.getBanner()
     }
 
     private fun setupView() {
@@ -50,6 +49,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.pullRefresh.setOnRefreshListener(object :
             SimplePullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+                viewModel.getBanner()
                 viewModel.getArticleList(true)
             }
         })
@@ -68,7 +68,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                 result.data?.apply {
                     articleAdapter.setBannerData(this)
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })
@@ -80,7 +80,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                     }
                     articleAdapter.addData(0, list)
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })
@@ -94,7 +94,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

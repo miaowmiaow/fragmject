@@ -62,7 +62,7 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
                 result.data?.apply {
                     systemAdapter.setNewData(this)
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

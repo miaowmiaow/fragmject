@@ -66,7 +66,7 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
                         binding.tab.selectTab(0)
                     }
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

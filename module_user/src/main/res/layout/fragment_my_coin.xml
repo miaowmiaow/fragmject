@@ -66,13 +66,6 @@
             android:textColor="@color/white"
             android:textSize="80sp" />
 
-        <ImageView
-            android:id="@+id/rule"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_rule" />
     </RelativeLayout>
 
     <com.example.fragment.library.base.component.view.SimplePullRefreshLayout

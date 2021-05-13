@@ -7,10 +7,9 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
-import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.library.common.utils.UserHelper
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.user.adapter.CoinRecordAdapter
 import com.example.fragment.user.model.CoinModel
@@ -30,17 +29,8 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
     }
 
     private fun setupView() {
-        binding.black.setOnClickListener {
-            baseActivity.onBackPressed()
-        }
-        binding.rank.setOnClickListener {
-
-        }
-        binding.rule.setOnClickListener {
-            val args = Bundle()
-            args.putString(Keys.URL, "https://www.wanandroid.com/blog/show/2653")
-            baseActivity.navigation(Router.WEB, args)
-        }
+        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+        binding.rank.setOnClickListener { baseActivity.navigation(Router.COIN_RANK) }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRecordAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -63,7 +53,7 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
         viewModel.userCoinResult.observe(viewLifecycleOwner, { result ->
             if (result.errorCode == "0") {
                 result.data?.let { coinBean ->
-                    UserHelper.setCoin(coinBean)
+                    WanHelper.setCoin(coinBean)
                     val from = binding.coinCount.text.toString().toInt()
                     val to = coinBean.coinCount.toInt()
                     val animator = ValueAnimator.ofInt(from, to)
@@ -89,7 +79,7 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

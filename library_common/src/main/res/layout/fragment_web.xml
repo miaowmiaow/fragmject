@@ -46,8 +46,8 @@
             android:layout_below="@id/status_bar"
             android:layout_toStartOf="@id/more"
             android:paddingStart="15dp"
-            android:paddingEnd="1dp"
             android:paddingTop="16dp"
+            android:paddingEnd="1dp"
             android:paddingBottom="16dp"
             android:src="@drawable/ic_collect_unchecked" />
 
@@ -57,8 +57,8 @@
             android:layout_height="50dp"
             android:layout_below="@id/status_bar"
             android:layout_alignParentEnd="true"
-            android:paddingTop="16dp"
             android:paddingStart="1dp"
+            android:paddingTop="16dp"
             android:paddingEnd="15dp"
             android:paddingBottom="16dp"
             android:src="@drawable/ic_more_v" />
@@ -70,5 +70,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/title_bar" />
+
+    <com.example.fragment.library.base.component.view.SnailBar
+        android:id="@+id/snail_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title_bar"
+        android:visibility="gone" />
 
 </RelativeLayout>

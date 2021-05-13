@@ -22,7 +22,7 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
         item.children?.forEachIndexed { index, treeBean ->
             val inflater = LayoutInflater.from(binding.fbl.context)
             val tv: TextView =
-                inflater.inflate(R.layout.item_system_children, binding.fbl, false) as TextView
+                inflater.inflate(R.layout.fbl_system_children, binding.fbl, false) as TextView
             tv.text = treeBean.name
             tv.setOnClickListener {
                 item.childrenSelectPosition = index

@@ -35,7 +35,7 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
     }
 
     private fun setupView() {
-        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 articleAdapter.getItem(position)?.let { article ->
                     val args = Bundle()
@@ -72,14 +72,14 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-                if (binding.pullRefresh.isRefresh()) {
-                    binding.pullRefresh.finishRefresh()
-                }
-                if (viewModel.page >= viewModel.pageCont) {
-                    binding.pullRefresh.setLoadMore(false)
-                }
-            } else {
+            } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
+            }
+            if (binding.pullRefresh.isRefresh()) {
+                binding.pullRefresh.finishRefresh()
+            }
+            if (viewModel.page >= viewModel.pageCont) {
+                binding.pullRefresh.setLoadMore(false)
             }
         })
     }

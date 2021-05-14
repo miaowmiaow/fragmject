@@ -28,13 +28,17 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
     private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener { view, isChecked ->
-            WanHelper.setUIMode(if (isChecked) -1 else 1)
+            val uiMode = if (isChecked) -1 else 1
+            updateSwitchButton(uiMode)
+            WanHelper.setUIMode(uiMode)
             view.postDelayed({
                 baseActivity.initUIMode()
-            }, 300)
+            }, 200)
         }
         binding.darkTheme.setOnCheckedChangeListener { view, isChecked ->
-            WanHelper.setUIMode(if (isChecked) 2 else 1)
+            val uiMode = if (isChecked) 2 else 1
+            updateSwitchButton(uiMode)
+            WanHelper.setUIMode(uiMode)
             view.postDelayed({
                 baseActivity.initUIMode()
             }, 300)
@@ -99,26 +103,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
 
     private fun update() {
         WanHelper.getUIMode().observe(viewLifecycleOwner, {
-            when (it) {
-                1 -> {
-                    binding.systemTheme.isChecked = false
-                    binding.systemTheme.isEnabled = true
-                    binding.darkTheme.isChecked = false
-                    binding.darkTheme.isEnabled = true
-                }
-                2 -> {
-                    binding.systemTheme.isChecked = false
-                    binding.systemTheme.isEnabled = false
-                    binding.darkTheme.isChecked = true
-                    binding.darkTheme.isEnabled = true
-                }
-                else -> {
-                    binding.systemTheme.isChecked = true
-                    binding.systemTheme.isEnabled = true
-                    binding.darkTheme.isChecked = false
-                    binding.darkTheme.isEnabled = false
-                }
-            }
+            updateSwitchButton(it)
         })
         viewModel.logoutResult.observe(viewLifecycleOwner, {
             if (it.errorCode == "0") {
@@ -126,6 +111,29 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
                 baseActivity.onBackPressed()
             }
         })
+    }
+
+    private fun updateSwitchButton(uiMode: Int) {
+        when (uiMode) {
+            1 -> {
+                binding.systemTheme.isChecked = false
+                binding.systemTheme.isEnabled = true
+                binding.darkTheme.isChecked = false
+                binding.darkTheme.isEnabled = true
+            }
+            2 -> {
+                binding.systemTheme.isChecked = false
+                binding.systemTheme.isEnabled = false
+                binding.darkTheme.isChecked = true
+                binding.darkTheme.isEnabled = true
+            }
+            else -> {
+                binding.systemTheme.isChecked = true
+                binding.systemTheme.isEnabled = true
+                binding.darkTheme.isChecked = false
+                binding.darkTheme.isEnabled = false
+            }
+        }
     }
 
 }

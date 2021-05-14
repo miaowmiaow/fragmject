@@ -41,7 +41,7 @@ object WanHelper {
                 it.toInt()
             } catch (e: Exception) {
                 e.printStackTrace()
-                -1
+                1
             }
         }
     }

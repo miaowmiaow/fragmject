@@ -89,14 +89,18 @@ class MainActivity : RouterActivity() {
         update()
     }
 
+    override fun onStart() {
+        super.onStart()
+        WanHelper.getUser().observe(this, { userBean ->
+            SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
+        })
+    }
+
     private fun setupView() {
         navigation(Router.MAIN)
     }
 
     private fun update() {
-        WanHelper.getUser().observe(this, { userBean ->
-            id = userBean.id
-        })
         SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             id = userBean.id
         })

@@ -8,6 +8,7 @@ import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.library.common.bean.HotKeyBean
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
+import com.example.fragment.module.system.bean.TreeBean
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -18,6 +19,7 @@ object WanHelper {
     private const val COIN = "coin"
     private const val HOT_KEY = "hot_key"
     private const val HISTORY_SEARCH = "history_search"
+    private const val TREE_LIST = "tree_list"
 
     /**
      * mode :
@@ -100,6 +102,21 @@ object WanHelper {
         return Transformations.map(SimpleDBHelper.get(HISTORY_SEARCH)) {
             try {
                 Gson().fromJson(it.toString(), object : TypeToken<List<String>>() {}.type)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ArrayList()
+            }
+        }
+    }
+
+    fun setTreeList(list: List<TreeBean>) {
+        SimpleDBHelper.set(TREE_LIST, Gson().toJson(list))
+    }
+
+    fun getTreeList(): LiveData<List<TreeBean>> {
+        return Transformations.map(SimpleDBHelper.get(TREE_LIST)) {
+            try {
+                Gson().fromJson(it.toString(), object : TypeToken<List<TreeBean>>() {}.type)
             } catch (e: Exception) {
                 e.printStackTrace()
                 ArrayList()

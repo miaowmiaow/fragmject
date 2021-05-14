@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.component.adapter
 
+import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -83,8 +84,12 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         return data
     }
 
-    fun getItem(position: Int): T? {
-        return if (position >= 0 && position < data.size) data[position] else null
+    fun getItem(position: Int): T {
+        return data[position]
+    }
+
+    fun <T> contextToActivity(context: Context): T {
+        return context as T
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {

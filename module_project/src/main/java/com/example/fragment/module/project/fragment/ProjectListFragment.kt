@@ -33,6 +33,11 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
         viewModel.getProjectTree()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
+    }
+
     override fun onUserStatusUpdate(userBean: UserBean) {
         viewModel.getProjectTree()
     }
@@ -60,6 +65,7 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
                             return data.size
                         }
                     }
+                    binding.tab.removeAllTabs()
                     data.forEach {
                         val tabView: View = LayoutInflater.from(binding.root.context)
                             .inflate(R.layout.tab_item_top, null)
@@ -67,9 +73,7 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
                         binding.tab.addTab(tabView)
                     }
                     binding.tab.setupWithViewPager(binding.viewpager)
-                    if (savedInstanceState == null) {
-                        binding.tab.selectTab(0)
-                    }
+                    binding.tab.selectTab(savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 0)
                 }
             } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)

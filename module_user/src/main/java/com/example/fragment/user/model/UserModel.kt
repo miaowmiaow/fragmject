@@ -6,9 +6,9 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.http.post
-import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.library.common.bean.LoginBean
 import com.example.fragment.library.common.bean.RegisterBean
+import com.example.fragment.library.common.model.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -17,6 +17,7 @@ class UserModel : BaseViewModel() {
     val loginResult = MutableLiveData<LoginBean>()
     val registerResult = MutableLiveData<RegisterBean>()
     val logoutResult = MutableLiveData<HttpResponse>()
+    val shareArticleResult = MutableLiveData<HttpResponse>()
 
     fun login(username: String, password: String) {
         viewModelScope.launch(Dispatchers.Main) {
@@ -43,9 +44,21 @@ class UserModel : BaseViewModel() {
         }
     }
 
-    fun logout(){
+    fun logout() {
         viewModelScope.launch(Dispatchers.Main) {
             logoutResult.postValue(get(HttpRequest("user/logout/json")))
+        }
+    }
+
+    fun shareArticle(title: String, link: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            registerResult.postValue(
+                post(
+                    HttpRequest("lg/user_article/add/json")
+                        .putParam("title", title)
+                        .putParam("link", link)
+                )
+            )
         }
     }
 

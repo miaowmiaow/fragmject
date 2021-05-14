@@ -31,6 +31,11 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
         update(savedInstanceState)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
+    }
+
     private fun setupView() {
         binding.black.setOnClickListener {
             baseActivity.onBackPressed()
@@ -42,11 +47,14 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
 
     private fun update(savedInstanceState: Bundle?) {
         binding.viewpager.offscreenPageLimit = 2
-        tree?.let {tree->
+        tree?.let { tree ->
             binding.title.text = tree.name
             tree.children?.let { data ->
                 binding.viewpager.adapter = object :
-                    FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+                    FragmentPagerAdapter(
+                        childFragmentManager,
+                        BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+                    ) {
 
                     override fun getItem(position: Int): Fragment {
                         return SystemArticleFragment.newInstance(data[position].id)
@@ -64,9 +72,9 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
                 }
                 binding.tab.setupWithViewPager(binding.viewpager)
             }
-            if (savedInstanceState == null) {
-                binding.tab.selectTab(tree.childrenSelectPosition)
-            }
+            binding.tab.selectTab(
+                savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: tree.childrenSelectPosition
+            )
         }
     }
 }

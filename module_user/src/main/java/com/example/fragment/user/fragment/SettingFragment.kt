@@ -3,9 +3,11 @@ package com.example.fragment.user.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import com.example.fragment.library.base.bus.SimpleLiveBus
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.LiveBus
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.ViewModelFragment
@@ -61,9 +63,12 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
         binding.update.setOnClickListener {
             StandardDialog.newInstance()
                 .setTitle("感谢使用")
-                .setContent("作者不知道跑哪里去了，可能再也不会更新了")
+                .setContent("喜欢的话，请给颗♥哈")
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
+                        val args = Bundle()
+                        args.putString(Keys.URL, "https://github.com/miaowmiaow/FragmentProject")
+                        baseActivity.navigation(Router.WEB, args)
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -102,6 +107,9 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
     }
 
     private fun update() {
+        WanHelper.getUser().observe(viewLifecycleOwner, { userBean ->
+            binding.logout.visibility = if(userBean.id.isNotBlank()) View.VISIBLE else View.GONE
+        })
         WanHelper.getUIMode().observe(viewLifecycleOwner, {
             updateSwitchButton(it)
         })
@@ -109,6 +117,8 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
             if (it.errorCode == "0") {
                 WanHelper.setUser(UserBean())
                 baseActivity.onBackPressed()
+            } else if (it.errorCode.isNotBlank()) {
+                baseActivity.showTips(it.errorMsg)
             }
         })
     }

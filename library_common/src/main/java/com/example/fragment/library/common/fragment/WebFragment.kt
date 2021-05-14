@@ -64,12 +64,6 @@ class WebFragment : ViewModelFragment<FragmentWebBinding, BaseViewModel>(),
         binding.black.setOnClickListener {
             baseActivity.onBackPressed()
         }
-        binding.collect.setOnClickListener {
-
-        }
-        binding.more.setOnClickListener {
-
-        }
     }
 
     private fun webViewSetting() {

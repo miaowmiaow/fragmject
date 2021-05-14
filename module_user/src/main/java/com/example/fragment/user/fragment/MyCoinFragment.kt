@@ -51,36 +51,50 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
 
     private fun update() {
         viewModel.userCoinResult.observe(viewLifecycleOwner, { result ->
-            if (result.errorCode == "0") {
-                result.data?.let { coinBean ->
-                    WanHelper.setCoin(coinBean)
-                    val from = binding.coinCount.text.toString().toInt()
-                    val to = coinBean.coinCount.toInt()
-                    val animator = ValueAnimator.ofInt(from, to)
-                    animator.addUpdateListener { animation ->
-                        val value = animation.animatedValue as Int
-                        binding.coinCount.text = String.format("%d", value)
+            when {
+                result.errorCode == "0" -> {
+                    result.data?.let { coinBean ->
+                        WanHelper.setCoin(coinBean)
+                        val from = binding.coinCount.text.toString().toInt()
+                        val to = coinBean.coinCount.toInt()
+                        val animator = ValueAnimator.ofInt(from, to)
+                        animator.addUpdateListener { animation ->
+                            val value = animation.animatedValue as Int
+                            binding.coinCount.text = String.format("%d", value)
+                        }
+                        animator.duration = 1000
+                        animator.interpolator = DecelerateInterpolator()
+                        animator.start()
                     }
-                    animator.duration = 1000
-                    animator.interpolator = DecelerateInterpolator()
-                    animator.start()
                 }
-            } else {
-                baseActivity.showTips(result.errorMsg)
+                result.errorCode == "-1001" -> {
+                    baseActivity.showTips(result.errorMsg)
+                    baseActivity.navigation(Router.LOGIN)
+                }
+                result.errorCode.isNotBlank() -> {
+                    baseActivity.showTips(result.errorMsg)
+                }
             }
         })
         viewModel.myCoinListResult.observe(viewLifecycleOwner, { result ->
-            if (result.errorCode == "0") {
-                result.data?.datas?.let { list ->
-                    if (viewModel.isRefresh) {
-                        coinRecordAdapter.setNewData(list)
-                    } else {
-                        coinRecordAdapter.addData(list)
-                        binding.pullRefresh.setLoadMore(true)
+            when {
+                result.errorCode == "0" -> {
+                    result.data?.datas?.let { list ->
+                        if (viewModel.isRefresh) {
+                            coinRecordAdapter.setNewData(list)
+                        } else {
+                            coinRecordAdapter.addData(list)
+                            binding.pullRefresh.setLoadMore(true)
+                        }
                     }
                 }
-            } else if (result.errorCode.isNotBlank()) {
-                baseActivity.showTips(result.errorMsg)
+                result.errorCode == "-1001" -> {
+                    baseActivity.showTips(result.errorMsg)
+                    baseActivity.navigation(Router.LOGIN)
+                }
+                result.errorCode.isNotBlank() -> {
+                    baseActivity.showTips(result.errorMsg)
+                }
             }
             if (binding.pullRefresh.isRefresh()) {
                 binding.pullRefresh.finishRefresh()

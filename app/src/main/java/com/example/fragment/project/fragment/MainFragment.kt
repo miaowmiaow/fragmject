@@ -42,6 +42,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         setupView()
         update()
         viewModel.getHotKey()
+        viewModel.getTree()
     }
 
     override fun onResume() {
@@ -86,11 +87,12 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 binding.drawer.openDrawer(GravityCompat.START)
             }
         }
+        binding.add.setOnClickListener { baseActivity.navigation(Router.SHARE_ARTICLE) }
         binding.logo.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
         binding.username.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
         binding.coin.setOnClickListener { baseActivity.navigation(Router.MY_COIN) }
-        binding.share.setOnClickListener { }
-        binding.collection.setOnClickListener { }
+        binding.myShare.setOnClickListener {}
+        binding.myCollection.setOnClickListener { }
         binding.setting.setOnClickListener { baseActivity.navigation(Router.SETTING) }
         binding.search.setOnClickListener { search() }
         hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {

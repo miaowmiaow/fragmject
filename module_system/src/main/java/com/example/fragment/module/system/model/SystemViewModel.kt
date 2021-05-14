@@ -6,6 +6,7 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.model.BaseViewModel
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.system.bean.TreeListBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +22,11 @@ class SystemViewModel : BaseViewModel(){
     fun getTree() {
         viewModelScope.launch(Dispatchers.Main) {
             val request = HttpRequest("tree/json")
-            treeResult.postValue(get(request))
+            val response = get<TreeListBean>(request)
+            treeResult.postValue(response)
+            response.data?.apply {
+                WanHelper.setTreeList(this)
+            }
         }
     }
 

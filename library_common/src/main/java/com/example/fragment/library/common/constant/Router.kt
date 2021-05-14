@@ -6,10 +6,10 @@ enum class Router {
     SEARCH,
     MAIN,
     SETTING,
-    SYSTEM,
+    SYSTEM_LIST,
     WEB,
     MY_COIN,
+    SHARE_ARTICLE,
     COIN_RANK,
-    PUBLISH,
 }
 

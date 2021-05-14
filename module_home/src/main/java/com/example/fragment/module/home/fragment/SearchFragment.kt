@@ -4,13 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.R
@@ -37,6 +37,32 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
     }
 
     private fun setupView() {
+        articleAdapter.setOnItemChildClickListener(object : BaseAdapter.OnItemChildClickListener {
+            override fun onItemChildClick(
+                view: View,
+                holder: BaseAdapter.ViewBindHolder,
+                position: Int
+            ) {
+                val item = articleAdapter.getItem(position)
+                if (view.id == R.id.iv_collect) {
+                    if (item.collect) {
+                        viewModel.unCollect(item.id).observe(viewLifecycleOwner, { result ->
+                            if (result.errorCode == "0") {
+                                (view as ImageView).setImageResource(R.drawable.ic_collect_unchecked_stroke)
+                                item.collect = false
+                            }
+                        })
+                    } else {
+                        viewModel.collect(item.id).observe(viewLifecycleOwner, { result ->
+                            if (result.errorCode == "0") {
+                                (view as ImageView).setImageResource(R.drawable.ic_collect_checked)
+                                item.collect = true
+                            }
+                        })
+                    }
+                }
+            }
+        })
         binding.cancel.setOnClickListener { baseActivity.onBackPressed() }
         binding.search.setOnClickListener { initHistorySearch() }
         binding.search.setOnEditorActionListener { _, actionId, _ ->
@@ -71,15 +97,6 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
         })
         binding.historyList.layoutManager = LinearLayoutManager(binding.list.context)
         binding.historyList.adapter = historySearchAdapter
-        articleAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
-            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                articleAdapter.getItem(position)?.let { article ->
-                    val args = Bundle()
-                    args.putString(Keys.URL, article.link)
-                    baseActivity.navigation(Router.WEB, args)
-                }
-            }
-        })
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :

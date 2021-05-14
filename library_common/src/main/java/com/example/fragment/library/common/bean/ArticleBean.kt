@@ -33,7 +33,7 @@ data class ArticleBean(
     val canEdit: Boolean = false,
     val chapterId: String = "",
     val chapterName: String = "",
-    val collect: Boolean = false,
+    var collect: Boolean = false,
     val courseId: String = "",
     val desc: String = "",
     val descMd: String = "",

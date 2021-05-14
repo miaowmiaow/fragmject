@@ -89,6 +89,10 @@ class SimpleTabLayout @JvmOverloads constructor(
         }
     }
 
+    fun removeAllTabs(){
+        slidingTabIndicator.removeAllViews()
+    }
+
     fun getCurrentPosition(): Int {
         return currentPosition
     }

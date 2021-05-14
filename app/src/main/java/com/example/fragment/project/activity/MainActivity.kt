@@ -49,7 +49,7 @@ class MainActivity : RouterActivity() {
             Router.SETTING -> {
                 switcher(SettingFragment::class.java, bundle, onBack, navMode)
             }
-            Router.SYSTEM -> {
+            Router.SYSTEM_LIST -> {
                 switcher(SystemListFragment::class.java, bundle, onBack, navMode)
             }
             Router.WEB -> {
@@ -64,8 +64,8 @@ class MainActivity : RouterActivity() {
                         Router.MY_COIN -> {
                             switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
                         }
-                        Router.PUBLISH -> {
-
+                        Router.SHARE_ARTICLE -> {
+                            switcher(ShareArticleFragment::class.java, bundle, onBack, navMode)
                         }
                         else -> {
                             switcher(MainFragment::class.java, bundle, onBack, navMode)

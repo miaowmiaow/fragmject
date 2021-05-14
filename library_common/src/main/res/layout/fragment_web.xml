@@ -48,6 +48,7 @@
             android:paddingStart="15dp"
             android:paddingTop="16dp"
             android:paddingEnd="1dp"
+            android:visibility="gone"
             android:paddingBottom="16dp"
             android:src="@drawable/ic_collect_unchecked" />
 
@@ -59,6 +60,7 @@
             android:layout_alignParentEnd="true"
             android:paddingStart="1dp"
             android:paddingTop="16dp"
+            android:visibility="invisible"
             android:paddingEnd="15dp"
             android:paddingBottom="16dp"
             android:src="@drawable/ic_more_v" />

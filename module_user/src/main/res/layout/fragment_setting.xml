@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -59,16 +59,175 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:singleLine="true"
+                    android:text="跟随系统暗色模式"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp" />
+
+                <com.example.fragment.library.base.component.view.SwitchButton
+                    android:id="@+id/system_theme"
+                    android:layout_width="45dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:singleLine="true"
                     android:text="暗色模式"
                     android:textColor="@color/text_666"
                     android:textSize="14sp" />
 
                 <com.example.fragment.library.base.component.view.SwitchButton
                     android:id="@+id/dark_theme"
-                    android:layout_width="50dp"
+                    android:layout_width="45dp"
                     android:layout_height="30dp"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/clear_cache"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:singleLine="true"
+                    android:text="清楚缓存"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/cache_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
+                    android:layout_marginEnd="5dp"
+                    android:singleLine="true"
+                    android:text="0KB"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/update"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:singleLine="true"
+                    android:text="版本更新"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="5dp"
+                    android:singleLine="true"
+                    android:text="已是最新版本"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="关于玩Android"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/privacy_policy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="隐私政策"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/feedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="问题反馈"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="退出登录"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
 
             </RelativeLayout>
         </LinearLayout>

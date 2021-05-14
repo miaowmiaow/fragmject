@@ -10,6 +10,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.viewbinding.ViewBinding
+import com.example.fragment.library.base.bus.SimpleLiveBus
+import com.example.fragment.library.common.bean.UserBean
+import com.example.fragment.library.common.constant.LiveBus
 import java.lang.reflect.ParameterizedType
 
 abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
@@ -36,12 +39,23 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+            onUserStatusUpdate(userBean)
+        })
+    }
+
     override fun onPause() {
         super.onPause()
         hideInputMethod()
     }
 
-    fun hideInputMethod() {
+    open fun onUserStatusUpdate(userBean: UserBean) {
+
+    }
+
+    private fun hideInputMethod() {
         val inputMethodManager =
             baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = baseActivity.currentFocus ?: return

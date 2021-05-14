@@ -79,7 +79,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 return
             }
         }
-        if (supportFragmentManager.backStackEntryCount > 1) {
+        if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStackImmediate()
         } else {
             if (System.currentTimeMillis() - exitTime > 2000) {

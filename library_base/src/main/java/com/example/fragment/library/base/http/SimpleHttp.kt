@@ -1,7 +1,6 @@
 package com.example.fragment.library.base.http
 
 import com.example.fragment.library.base.utils.FileUtils
-import com.example.fragment.library.base.utils.ToastUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -82,7 +81,8 @@ class SimpleHttp private constructor() {
     }
 
     private fun buildHttpClient(): OkHttpClient {
-        val keyManagers = HttpsHelper.prepareKeyManager(clientCertificate, clientCertificatePassword)
+        val keyManagers =
+            HttpsHelper.prepareKeyManager(clientCertificate, clientCertificatePassword)
         val trustManager = HttpsHelper.prepareX509TrustManager(serverCertificates)
         val sslContext = SSLContext.getInstance("TLS")
         sslContext.init(keyManagers, arrayOf(trustManager), null)
@@ -102,7 +102,6 @@ class SimpleHttp private constructor() {
             }
             .sslSocketFactory(sslContext.socketFactory, trustManager)
             .addNetworkInterceptor(interceptor)
-            .cache(Cache(FileUtils.getDir("http_cache"), 50 * 1024 * 1024))
             .build()
     }
 

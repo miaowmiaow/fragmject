@@ -5,16 +5,15 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import com.example.fragment.library.base.R
 
 open class BaseDialog : DialogFragment() {
+
+    private lateinit var manager: FragmentManager
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         dialog?.window?.apply {
-//            attributes.gravity = Gravity.BOTTOM
             setDimAmount(0.5F)
-            setWindowAnimations(R.style.AnimBottom)
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
@@ -48,6 +47,7 @@ open class BaseDialog : DialogFragment() {
     }
 
     fun show(manager: FragmentManager) {
+        this.manager = manager
         show(manager, this::class.java.canonicalName)
     }
 

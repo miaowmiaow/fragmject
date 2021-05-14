@@ -55,6 +55,11 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
         setupView(savedInstanceState)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
+    }
+
     private fun setupView(savedInstanceState: Bundle?) {
         binding.viewpager.offscreenPageLimit = 4
         binding.viewpager.adapter = object :
@@ -98,9 +103,7 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
                 txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
             }
         })
-        if (savedInstanceState == null) {
-            binding.tab.selectTab(0)
-        }
+        binding.tab.selectTab(savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 0)
     }
 
 }

@@ -124,8 +124,6 @@ class SimpleBannerHelper(
 /**
  * 修改自jiarWang的RepeatLayoutManager
  * https://github.com/jiarWang/RepeatLayoutManager
- * 并通过继承LinearLayoutManager这种取巧的方式来
- * 解决软键盘弹出或收起导致onLayoutChildren()方法被重新调用的问题
  */
 open class RepeatLayoutManager(val context: Context) : LinearLayoutManager(context) {
 

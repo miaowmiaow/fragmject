@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
@@ -32,6 +33,10 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
+    }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun setupView() {

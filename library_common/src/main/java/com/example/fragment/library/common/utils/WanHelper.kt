@@ -13,14 +13,42 @@ import com.google.gson.reflect.TypeToken
 
 object WanHelper {
 
+    private const val UI_MODE = "ui_mode"
     private const val USER = "user"
     private const val COIN = "coin"
     private const val HOT_KEY = "hot_key"
     private const val HISTORY_SEARCH = "history_search"
 
+    /**
+     * mode :
+     *      -1 : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+     *       1 : AppCompatDelegate.MODE_NIGHT_NO,
+     *       2 : AppCompatDelegate.MODE_NIGHT_YES
+     */
+    fun setUIMode(mode: Int) {
+        SimpleDBHelper.set(UI_MODE, mode.toString())
+    }
+
+    /**
+     * return
+     *      -1 : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+     *       1 : AppCompatDelegate.MODE_NIGHT_NO,
+     *       2 : AppCompatDelegate.MODE_NIGHT_YES
+     */
+    fun getUIMode(): LiveData<Int> {
+        return Transformations.map(SimpleDBHelper.get(UI_MODE)) {
+            try {
+                it.toInt()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                -1
+            }
+        }
+    }
+
     fun setUser(userBean: UserBean) {
+        SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
         SimpleDBHelper.set(USER, userBean.toJson())
-        SimpleLiveBus.with<Boolean>(LiveBus.USER_STATUS_UPDATE).postEvent(true)
     }
 
     fun getUser(): LiveData<UserBean> {

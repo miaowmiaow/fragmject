@@ -17,7 +17,7 @@
     <color name="transparent">#00000000</color>
 
     <!--文字颜色-->
-    <color name="text_theme">@color/theme</color>
+    <color name="text_theme">#333</color>
     <color name="text_333">#666</color>
     <color name="text_666">#999</color>
     <color name="text_999">#ccc</color>

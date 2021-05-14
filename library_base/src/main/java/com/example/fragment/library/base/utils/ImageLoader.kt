@@ -51,11 +51,11 @@ class ImageLoader private constructor() {
     private var height = 0
 
     fun into(view: ImageView) {
-        context?.also { context ->
-            if (viewDestroyed(context)) {
+        context?.apply {
+            if (viewDestroyed(this)) {
                 return
             }
-            val requestManager = Glide.with(context)
+            val requestManager = Glide.with(this)
             if (path.isBlank()) {
                 return
             }
@@ -64,11 +64,11 @@ class ImageLoader private constructor() {
     }
 
     fun into(target: DrawableTarget) {
-        context?.also { context ->
-            if (viewDestroyed(context)) {
+        context?.apply {
+            if (viewDestroyed(this)) {
                 return
             }
-            val requestManager = Glide.with(context)
+            val requestManager = Glide.with(this)
             if (path.isBlank()) {
                 return
             }

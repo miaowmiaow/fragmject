@@ -24,7 +24,9 @@ ext {
 
             "kotlin-stdlib"                 : "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
             "kotlinx-coroutines-android"    : 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.7',
-            "core-ktx"                      : 'androidx.core:core-ktx:1.3.2',
+            "androidx"                      : "androidx.core:core:1.3.2",
+            "androidx-ktx"                  : 'androidx.core:core-ktx:1.3.2',
+            "androidx-webkit"               : 'androidx.webkit:webkit:1.2.0',
             "activity-ktx"                  : "androidx.activity:activity-ktx:1.1.0",
             "fragment-ktx"                  : 'androidx.fragment:fragment-ktx:1.2.5',
 

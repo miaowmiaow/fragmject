@@ -18,27 +18,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textColor="#333"
+            android:visibility="gone"
+            android:textColor="@color/text_333"
             android:textSize="16sp" />
-
-        <View
-            android:id="@+id/interval"
-            android:layout_width="wrap_content"
-            android:layout_height="10dp" />
 
         <TextView
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:gravity="center"
-            android:textColor="#666"
+            android:visibility="gone"
+            android:textColor="@color/text_666"
             android:textSize="14sp" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="#f0f0f0" />
+        android:layout_height="1dp"
+        android:background="@color/line" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -51,15 +50,15 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="取消"
             android:padding="12dp"
-            android:textColor="#333"
+            android:text="取消"
+            android:textColor="@color/text_333"
             android:textSize="16sp" />
 
         <View
-            android:layout_width="0.5dp"
+            android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:background="#f0f0f0" />
+            android:background="@color/line" />
 
         <TextView
             android:id="@+id/confirm"
@@ -67,9 +66,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="确定"
             android:padding="12dp"
-            android:textColor="#007AFF"
+            android:text="确定"
+            android:textColor="@color/blue"
             android:textSize="16sp" />
     </LinearLayout>
 

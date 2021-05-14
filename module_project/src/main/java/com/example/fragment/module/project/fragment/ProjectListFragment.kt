@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.fragment.library.base.component.view.SimpleTabLayout
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.project.R
 import com.example.fragment.module.project.databinding.FragmentProjectListBinding
@@ -29,6 +30,10 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update(savedInstanceState)
+        viewModel.getProjectTree()
+    }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
         viewModel.getProjectTree()
     }
 

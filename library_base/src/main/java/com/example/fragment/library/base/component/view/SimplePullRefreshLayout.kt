@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
@@ -16,6 +15,7 @@ import android.view.animation.Transformation
 import android.widget.ImageView
 import android.widget.ListView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -41,7 +41,6 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
         private const val PRELOADING_NUMBER = 5
     }
 
-    private var touchSlop = ViewConfiguration.get(context).scaledTouchSlop
     private val decelerateInterpolator = DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR)
 
     private var refreshViewIndex = -1
@@ -394,7 +393,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
             }
         }
         addView(refreshView)
-        refreshView.setBackgroundColor(Color.parseColor("#F0F0F0"))
+        refreshView.setBackgroundColor(ContextCompat.getColor(context, R.color.background))
         refreshView.setImageDrawable(refreshDrawable)
     }
 
@@ -772,6 +771,7 @@ class LoadMoreView(context: Context) : AppCompatTextView(context) {
 
     init {
         setPadding(20, 20, 20, 20)
+        setTextColor(ContextCompat.getColor(context, R.color.text_666))
         gravity = Gravity.CENTER
     }
 

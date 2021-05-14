@@ -16,6 +16,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Checkable;
 
+import androidx.core.content.ContextCompat;
+
+import com.example.fragment.library.base.R;
+
 /**
  * SwitchButton.
  */
@@ -94,16 +98,16 @@ public class SwitchButton extends View implements Checkable {
         uncheckColor = 0XffDDDDDD;//0XffDDDDDD;
         checkedColor = 0Xff51d367;//0Xff51d367;
         borderWidth = dp2pxInt(1);//dp2pxInt(1);
-        checkLineColor = Color.WHITE;//Color.WHITE;
+        checkLineColor = ContextCompat.getColor(context, R.color.white);//Color.WHITE;
         checkLineWidth = dp2pxInt(1f);//dp2pxInt(1.0f);
         checkLineLength = dp2px(6);
-        int buttonColor = Color.WHITE;//Color.WHITE;
+        int buttonColor = ContextCompat.getColor(context, R.color.white);//Color.WHITE;
         uncheckButtonColor = buttonColor;
         checkedButtonColor = buttonColor;
         int effectDuration = 300;//300;
         isChecked = false;
         showIndicator = false;
-        background = Color.WHITE;//Color.WHITE;
+        background = ContextCompat.getColor(context, R.color.background);//Color.WHITE;
         enableEffect = true;
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         buttonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -372,7 +376,7 @@ public class SwitchButton extends View implements Checkable {
         canvas.drawCircle(x, y, buttonRadius, buttonPaint);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1);
-        paint.setColor(0XffDDDDDD);
+        paint.setColor(uncheckColor);
         canvas.drawCircle(x, y, buttonRadius, paint);
     }
 

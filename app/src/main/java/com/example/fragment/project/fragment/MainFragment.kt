@@ -8,12 +8,11 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.fragment.library.base.bus.SimpleLiveBus
 import com.example.fragment.library.base.component.activity.OnBackPressedListener
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.utils.SimpleBannerHelper
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.LiveBus
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
@@ -66,6 +65,18 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        if (userBean.id.isNotEmpty()) {
+            binding.logo.setOnClickListener(null)
+            binding.username.setOnClickListener(null)
+            binding.username.text = "欢迎回来！${userBean.username}"
+        } else {
+            binding.logo.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
+            binding.username.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
+            binding.username.text = "去登录"
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupView() {
         binding.menu.setOnClickListener {
@@ -81,13 +92,8 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         binding.share.setOnClickListener { }
         binding.collection.setOnClickListener { }
         binding.setting.setOnClickListener { baseActivity.navigation(Router.SETTING) }
-        binding.feedback.setOnClickListener {
-            val args = Bundle()
-            args.putString(Keys.URL, "https://github.com/miaowmiaow/FragmentProject/issues")
-            baseActivity.navigation(Router.WEB, args)
-        }
         binding.search.setOnClickListener { search() }
-        hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+        hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 search()
             }
@@ -120,19 +126,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                     baseActivity.showTips(result.errorMsg)
                 }
             }
-        })
-        SimpleLiveBus.with<Boolean>(LiveBus.USER_STATUS_UPDATE).observe(this, {
-            WanHelper.getUser().observe(viewLifecycleOwner, { userBean ->
-                if (userBean.id.isNotEmpty()) {
-                    binding.logo.setOnClickListener(null)
-                    binding.username.setOnClickListener(null)
-                    binding.username.text = "欢迎回来！${userBean.username}"
-                } else {
-                    binding.logo.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
-                    binding.username.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
-                    binding.username.text = "去登录"
-                }
-            })
         })
     }
 

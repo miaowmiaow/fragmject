@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import com.example.fragment.library.base.bus.SimpleLiveBus
 import com.example.fragment.library.common.activity.RouterActivity
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
@@ -43,7 +44,7 @@ class MainActivity : RouterActivity() {
                 switcher(SearchFragment::class.java, bundle, onBack, navMode)
             }
             Router.MAIN -> {
-                switcher(MainFragment::class.java, bundle, onBack, navMode)
+                switcher(MainFragment::class.java, bundle, false, navMode)
             }
             Router.SETTING -> {
                 switcher(SettingFragment::class.java, bundle, onBack, navMode)
@@ -80,20 +81,25 @@ class MainActivity : RouterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFormat(PixelFormat.TRANSLUCENT)
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setTheme(R.style.AppTheme)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
-        navigation(Router.MAIN)
-        SimpleLiveBus.with<Boolean>(LiveBus.USER_STATUS_UPDATE).observe(this, {
-            WanHelper.getUser().observe(this, { userBean ->
-                id = userBean.id
-            })
-        })
+        initUIMode()
+        setupView()
+        update()
     }
 
-    override fun onStart() {
-        super.onStart()
-        SimpleLiveBus.with<Boolean>(LiveBus.USER_STATUS_UPDATE).postEvent(true)
+    private fun setupView() {
+        navigation(Router.MAIN)
+    }
+
+    private fun update() {
+        WanHelper.getUser().observe(this, { userBean ->
+            id = userBean.id
+        })
+        SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+            id = userBean.id
+        })
     }
 
 }

@@ -32,6 +32,7 @@ abstract class SimpleDBHelper : RoomDatabase() {
         fun get(key: String): MutableLiveData<String> {
             return getDatabase().get(key)
         }
+
     }
 
     abstract fun getDao(): KVDao
@@ -77,13 +78,12 @@ abstract class SimpleDBHelper : RoomDatabase() {
     }
 
     @Synchronized
-    private fun closeDatabase() {
+    fun closeDatabase() {
         if (isOpen) {
             close()
         }
         database = null
     }
-
 
     @Dao
     interface KVDao {

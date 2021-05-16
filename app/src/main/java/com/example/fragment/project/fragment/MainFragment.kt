@@ -25,7 +25,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     OnBackPressedListener {
 
     private lateinit var bannerHelper: SimpleBannerHelper
-
     private val hotKeyAdapter = HotKeyAdapter()
 
     private val fragments = arrayListOf(
@@ -91,8 +90,8 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         binding.logo.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
         binding.username.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
         binding.coin.setOnClickListener { baseActivity.navigation(Router.MY_COIN) }
-        binding.myShare.setOnClickListener {}
-        binding.myCollection.setOnClickListener { }
+        binding.myCollection.setOnClickListener { baseActivity.navigation(Router.MY_COLLECT_ARTICLE) }
+        binding.myShare.setOnClickListener { baseActivity.navigation(Router.MY_SHARE_ARTICLE) }
         binding.setting.setOnClickListener { baseActivity.navigation(Router.SETTING) }
         binding.search.setOnClickListener { search() }
         hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {

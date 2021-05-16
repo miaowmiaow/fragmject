@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
+import com.example.fragment.library.base.R
 
 class FragmentHelper {
 
@@ -53,16 +54,16 @@ class FragmentHelper {
             addToBackStack: Boolean
         ): Class<out Fragment>? {
             val transaction = manager.beginTransaction()
-            //        transaction.setCustomAnimations(
-//                R.anim.slide_right_in,
-//                R.anim.slide_left_out,
-//                R.anim.slide_left_in,
-//                R.anim.slide_right_out
-//        );
+            transaction.setCustomAnimations(
+                R.anim.slide_right_in,
+                0,
+                0,
+                R.anim.slide_right_out
+            )
             if (curClazz != null) {
                 val tag = curClazz.simpleName
                 val curFragment = manager.findFragmentByTag(tag)
-                if(curFragment != null){
+                if (curFragment != null) {
                     transaction.hide(curFragment)
                     transaction.setMaxLifecycle(curFragment, Lifecycle.State.STARTED)
                 }

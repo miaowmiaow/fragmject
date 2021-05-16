@@ -125,24 +125,11 @@
                 app:drawableEndCompat="@drawable/ic_right" />
 
             <TextView
-                android:id="@+id/my_share"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/coin"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="我的分享"
-                android:textColor="@color/text_fff"
-                android:textSize="13sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-            <TextView
                 android:id="@+id/my_collection"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/my_share"
+                android:layout_below="@id/coin"
+
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
@@ -153,10 +140,25 @@
                 app:drawableEndCompat="@drawable/ic_right" />
 
             <TextView
-                android:id="@+id/setting"
+                android:id="@+id/my_share"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_below="@id/my_collection"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="我的分享"
+                android:textColor="@color/text_fff"
+                android:textSize="13sp"
+                app:drawableEndCompat="@drawable/ic_right" />
+
+
+            <TextView
+                android:id="@+id/setting"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/my_share"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"

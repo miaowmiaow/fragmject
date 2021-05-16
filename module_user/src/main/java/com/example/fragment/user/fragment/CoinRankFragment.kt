@@ -13,9 +13,9 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
 import com.example.fragment.user.adapter.CoinRankAdapter
-import com.example.fragment.user.model.CoinModel
+import com.example.fragment.user.model.UserModel
 
-class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, CoinModel>() {
+class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, UserModel>() {
 
     private val coinRankAdapter = CoinRankAdapter()
 
@@ -43,13 +43,13 @@ class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, CoinModel>()
         binding.pullRefresh.setOnRefreshListener(object :
             SimplePullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getCoinRank(true)
+                viewModel.coinRank(true)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
             SimplePullRefreshLayout.OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getCoinRank(false)
+                viewModel.coinRank(false)
             }
         })
         binding.pullRefresh.setRefreshing()

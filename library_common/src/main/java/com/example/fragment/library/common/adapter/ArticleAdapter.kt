@@ -7,9 +7,13 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.http.HttpRequest
+import com.example.fragment.library.base.http.HttpResponse
+import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.R
@@ -22,6 +26,10 @@ import com.example.fragment.library.common.databinding.ItemArticleBannerBinding
 import com.example.fragment.library.common.databinding.ItemArticleBinding
 import com.example.fragment.library.common.utils.StringUtils
 import com.example.fragment.library.common.utils.WanHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class ArticleAdapter : BaseAdapter<ArticleBean>() {
 
@@ -30,13 +38,12 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         private const val ITEM_TYPE_ARTICLE = 1
     }
 
+    private var collectJob: Job? = null
+    private var unCollectJob: Job? = null
+
     private var bannerHelper: SimpleBannerHelper? = null
     private val bannerAdapter = BannerAdapter()
     private var bannerData: MutableList<BannerBean> = ArrayList()
-
-    init {
-        addOnClickListener(R.id.iv_collect)
-    }
 
     override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
         return if (viewType == 0) {
@@ -73,77 +80,56 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             }
             binding.tvTitle.text = Html.fromHtml(item.title)
             if (TextUtils.isEmpty(item.desc)) {
-                binding.tvDesc.visibility = View.GONE
                 binding.tvTitle.isSingleLine = false
+                binding.tvDesc.visibility = View.GONE
             } else {
-                binding.tvDesc.visibility = View.VISIBLE
                 binding.tvTitle.isSingleLine = true
                 var desc = Html.fromHtml(item.desc).toString()
                 desc = StringUtils.removeAllBank(desc, 2)
                 binding.tvDesc.text = desc
+                binding.tvDesc.visibility = View.VISIBLE
             }
             binding.tvChapterName.text = Html.fromHtml(
-                formatChapterName(
-                    item.superChapterName,
-                    item.chapterName
-                )
+                formatChapterName(item.superChapterName, item.chapterName)
             )
+            val activity: RouterActivity = contextToActivity(binding.root.context)
             if (item.collect) {
                 binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
             } else {
                 binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
             }
-            val baseActivity: RouterActivity = contextToActivity(binding.root.context)
+            binding.ivCollect.setOnClickListener {
+                if (item.collect) {
+                    unCollect(item.id).observe(activity, { result ->
+                        if (result.errorCode == "0") {
+                            binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
+                            item.collect = false
+                        }
+                    })
+                } else {
+                    collect(item.id).observe(activity, { result ->
+                        if (result.errorCode == "0") {
+                            binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
+                            item.collect = true
+                        }
+                    })
+                }
+            }
             binding.root.setOnClickListener {
                 val args = Bundle()
                 args.putString(Keys.URL, item.link)
-                baseActivity.navigation(Router.WEB, args)
+                activity.navigation(Router.WEB, args)
             }
             binding.tvTag.setOnClickListener {
-                try {
-                    val uri = Uri.parse("https://www.wanandroid.com/" + binding.tvTag.tag)
-                    var chapterId = uri.getQueryParameter("cid")
-                    if (chapterId.isNullOrBlank()) {
-                        val paths = uri.pathSegments
-                        if (paths != null && paths.size >= 3) {
-                            chapterId = paths[2]
-                        }
-                    }
-                    if (chapterId != null) {
-                        WanHelper.getTreeList().observe(baseActivity, { list ->
-                            list.forEach { treeBean ->
-                                treeBean.children?.forEachIndexed { index, childrenTreeBean ->
-                                    if (childrenTreeBean.id == chapterId) {
-                                        treeBean.childrenSelectPosition = index
-                                        val args = Bundle()
-                                        args.putParcelable(Keys.BEAN, treeBean)
-                                        baseActivity.navigation(Router.SYSTEM_LIST, args)
-                                        return@forEach
-                                    }
-                                }
-                            }
-                        })
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                urlToSystemList(activity, binding.tvTag.tag.toString())
             }
             binding.tvChapterName.setOnClickListener {
-                WanHelper.getTreeList().observe(baseActivity, { list ->
-                    list.forEach { treeBean ->
-                        if (treeBean.id == item.realSuperChapterId) {
-                            treeBean.children?.forEachIndexed { index, childrenTreeBean ->
-                                if (childrenTreeBean.id == item.chapterId) {
-                                    treeBean.childrenSelectPosition = index
-                                }
-                            }
-                            val args = Bundle()
-                            args.putParcelable(Keys.BEAN, treeBean)
-                            baseActivity.navigation(Router.SYSTEM_LIST, args)
-                            return@forEach
-                        }
-                    }
-                })
+                chapterIdToSystemList(activity, item.realSuperChapterId, item.chapterId)
+            }
+            binding.tvAuthor.setOnClickListener {
+                val args = Bundle()
+                args.putString(Keys.ID, item.userId)
+                activity.navigation(Router.USER_SHARE, args)
             }
         }
     }
@@ -156,6 +142,8 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         bannerHelper?.apply {
             stopTimerTask()
         }
+        collectJob?.cancel()
+        unCollectJob?.cancel()
         super.onDetachedFromRecyclerView(recyclerView)
     }
 
@@ -176,5 +164,75 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         bannerData.addAll(data)
         bannerAdapter.setNewData(bannerData)
         notifyItemChanged(0)
+    }
+
+    private fun urlToSystemList(activity: RouterActivity, url: String) {
+        try {
+            val uri = Uri.parse("https://www.wanandroid.com/$url")
+            var chapterId = uri.getQueryParameter("cid")
+            if (chapterId.isNullOrBlank()) {
+                val paths = uri.pathSegments
+                if (paths != null && paths.size >= 3) {
+                    chapterId = paths[2]
+                }
+            }
+            if (chapterId != null) {
+                WanHelper.getTreeList().observe(activity, { list ->
+                    list.forEach { treeBean ->
+                        treeBean.children?.forEachIndexed { index, childrenTreeBean ->
+                            if (childrenTreeBean.id == chapterId) {
+                                treeBean.childrenSelectPosition = index
+                                val args = Bundle()
+                                args.putParcelable(Keys.BEAN, treeBean)
+                                activity.navigation(Router.SYSTEM_LIST, args)
+                                return@forEach
+                            }
+                        }
+                    }
+                })
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun chapterIdToSystemList(
+        activity: RouterActivity,
+        realSuperChapterId: String,
+        chapterId: String
+    ) {
+        WanHelper.getTreeList().observe(activity, { list ->
+            list.forEach { treeBean ->
+                if (treeBean.id == realSuperChapterId) {
+                    treeBean.children?.forEachIndexed { index, childrenTreeBean ->
+                        if (childrenTreeBean.id == chapterId) {
+                            treeBean.childrenSelectPosition = index
+                        }
+                    }
+                    val args = Bundle()
+                    args.putParcelable(Keys.BEAN, treeBean)
+                    activity.navigation(Router.SYSTEM_LIST, args)
+                    return@forEach
+                }
+            }
+        })
+    }
+
+    private fun collect(id: String): MutableLiveData<HttpResponse> {
+        val result = MutableLiveData<HttpResponse>()
+        collectJob = CoroutineScope(Dispatchers.Main).launch {
+            result.postValue(post(HttpRequest("lg/collect/{id}/json").putPath("id", id)))
+        }
+        return result
+    }
+
+    private fun unCollect(id: String): MutableLiveData<HttpResponse> {
+        val result = MutableLiveData<HttpResponse>()
+        unCollectJob = CoroutineScope(Dispatchers.Main).launch {
+            val request = HttpRequest("lg/uncollect_originId/{id}/json")
+            request.putPath("id", id)
+            result.postValue(post(request))
+        }
+        return result
     }
 }

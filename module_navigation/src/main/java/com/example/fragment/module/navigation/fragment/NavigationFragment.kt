@@ -48,7 +48,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
         navigationMenuAdapter.setOnItemSelectedListener(object :
             BaseAdapter.OnItemSelectedListener {
             override fun onItemSelected(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                navigationMenuAdapter.getItem(position)?.let { item ->
+                navigationMenuAdapter.getItem(position).let { item ->
                     item.isSelected = true
                     navigationMenuAdapter.notifyItemRangeChanged(position, 1)
                     fillFlexboxLayout(item.articles)
@@ -56,7 +56,7 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
             }
 
             override fun onItemUnselected(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                navigationMenuAdapter.getItem(position)?.let { item ->
+                navigationMenuAdapter.getItem(position).let { item ->
                     item.isSelected = false
                     navigationMenuAdapter.notifyItemRangeChanged(position, 1)
                 }

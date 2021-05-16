@@ -23,18 +23,11 @@ class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserModel>()
     }
 
     private fun setupView() {
-        binding.black.setOnClickListener {
-            baseActivity.navigation(
-                Router.MAIN,
-                navMode = NavMode.POP_BACK_STACK
-            )
-        }
+        binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.repassword.addKeyboardListener(binding.root)
-        binding.login.setOnClickListener {
-            baseActivity.onBackPressed()
-        }
+        binding.login.setOnClickListener { baseActivity.onBackPressed() }
         binding.register.setOnClickListener {
             val username = binding.username.text.toString()
             val password = binding.password.text.toString()

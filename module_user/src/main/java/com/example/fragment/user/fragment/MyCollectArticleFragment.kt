@@ -1,4 +1,4 @@
-package com.example.fragment.module.home.fragment
+package com.example.fragment.user.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,23 +6,17 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.module.home.databinding.FragmentSquareBinding
-import com.example.fragment.module.home.model.HomeViewModel
+import com.example.fragment.module.user.databinding.FragmentMyCollectArticleBinding
+import com.example.fragment.user.model.UserModel
 
-class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>() {
-
-    companion object {
-        @JvmStatic
-        fun newInstance(): SquareFragment {
-            return SquareFragment()
-        }
-    }
+class MyCollectArticleFragment : ViewModelFragment<FragmentMyCollectArticleBinding, UserModel>() {
 
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSquareBinding {
-        return FragmentSquareBinding.inflate(inflater)
+    override fun setViewBinding(inflater: LayoutInflater): FragmentMyCollectArticleBinding {
+        return FragmentMyCollectArticleBinding.inflate(inflater)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -32,36 +26,44 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>()
     }
 
     private fun setupView() {
+        binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
             SimplePullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getUserArticleList(true)
+                viewModel.myCollectArticle(true)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
             SimplePullRefreshLayout.OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getUserArticleList(false)
+                viewModel.myCollectArticle(false)
             }
         })
         binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {
-        viewModel.userArticleResult.observe(viewLifecycleOwner, { result ->
-            if (result.errorCode == "0") {
-                result.data?.datas?.let { list ->
-                    if (viewModel.isRefresh) {
-                        articleAdapter.setNewData(list)
-                    } else {
-                        articleAdapter.addData(list)
-                        binding.pullRefresh.setLoadMore(true)
+        viewModel.myCollectArticleResult.observe(viewLifecycleOwner, { result ->
+            when {
+                result.errorCode == "0" -> {
+                    result.data?.datas?.let { list ->
+                        if (viewModel.isRefresh) {
+                            articleAdapter.setNewData(list)
+                        } else {
+                            articleAdapter.addData(list)
+                            binding.pullRefresh.setLoadMore(true)
+                        }
                     }
                 }
-            } else if (result.errorCode.isNotBlank()) {
-                baseActivity.showTips(result.errorMsg)
+                result.errorCode == "-1001" -> {
+                    baseActivity.showTips(result.errorMsg)
+                    baseActivity.navigation(Router.LOGIN)
+                }
+                result.errorCode.isNotBlank() -> {
+                    baseActivity.showTips(result.errorMsg)
+                }
             }
             if (binding.pullRefresh.isRefresh()) {
                 binding.pullRefresh.finishRefresh()

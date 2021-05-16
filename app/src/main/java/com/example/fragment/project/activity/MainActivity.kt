@@ -27,49 +27,25 @@ class MainActivity : RouterActivity() {
         return R.id.frame_layout
     }
 
-    override fun navigation(
-        name: Router,
-        bundle: Bundle?,
-        onBack: Boolean,
-        navMode: NavMode
-    ) {
+    override fun navigation(name: Router,  bundle: Bundle?, onBack: Boolean, navMode: NavMode) {
         when (name) {
-            Router.LOGIN -> {
-                switcher(LoginFragment::class.java, bundle, onBack, navMode)
-            }
-            Router.REGISTER -> {
-                switcher(RegisterFragment::class.java, bundle, onBack, navMode)
-            }
-            Router.SEARCH -> {
-                switcher(SearchFragment::class.java, bundle, onBack, navMode)
-            }
-            Router.MAIN -> {
-                switcher(MainFragment::class.java, bundle, false, navMode)
-            }
-            Router.SETTING -> {
-                switcher(SettingFragment::class.java, bundle, onBack, navMode)
-            }
-            Router.SYSTEM_LIST -> {
-                switcher(SystemListFragment::class.java, bundle, onBack, navMode)
-            }
-            Router.WEB -> {
-                switcher(WebFragment::class.java, bundle, onBack, navMode)
-            }
-            Router.COIN_RANK -> {
-                switcher(CoinRankFragment::class.java, bundle, onBack, navMode)
-            }
+            Router.MAIN -> switcher(MainFragment::class.java, bundle, false, navMode)
+            Router.LOGIN -> switcher(LoginFragment::class.java, bundle, onBack, navMode)
+            Router.REGISTER -> switcher(RegisterFragment::class.java, bundle, onBack, navMode)
+            Router.WEB -> switcher(WebFragment::class.java, bundle, onBack, navMode)
+            Router.SEARCH -> switcher(SearchFragment::class.java, bundle, onBack, navMode)
+            Router.SYSTEM_LIST -> switcher(SystemListFragment::class.java, bundle, onBack, navMode)
+            Router.COIN_RANK -> switcher(CoinRankFragment::class.java, bundle, onBack, navMode)
+            Router.USER_SHARE -> switcher(UserShareFragment::class.java, bundle, onBack, navMode)
+            Router.SETTING -> switcher(SettingFragment::class.java, bundle, onBack, navMode)
             else -> {
                 if (id != null && id.toString().isNotBlank()) {
                     when (name) {
-                        Router.MY_COIN -> {
-                            switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
-                        }
-                        Router.SHARE_ARTICLE -> {
-                            switcher(ShareArticleFragment::class.java, bundle, onBack, navMode)
-                        }
-                        else -> {
-                            switcher(MainFragment::class.java, bundle, onBack, navMode)
-                        }
+                        Router.MY_COIN -> switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
+                        Router.MY_COLLECT_ARTICLE -> switcher(MyCollectArticleFragment::class.java, bundle, onBack, navMode)
+                        Router.MY_SHARE_ARTICLE -> switcher(MyShareArticleFragment::class.java, bundle, onBack, navMode)
+                        Router.SHARE_ARTICLE -> switcher(ShareArticleFragment::class.java, bundle, onBack, navMode)
+                        else -> switcher(MainFragment::class.java, bundle, onBack, navMode)
                     }
                 } else {
                     switcher(LoginFragment::class.java, bundle, onBack, navMode)

@@ -3,15 +3,12 @@ package com.example.fragment.module.project.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.module.project.R
 import com.example.fragment.module.project.databinding.FragmentProjectArticleBinding
 import com.example.fragment.module.project.model.ProjectViewModel
 
@@ -50,32 +47,6 @@ class ProjectArticleFragment :
     }
 
     private fun setupView() {
-        articleAdapter.setOnItemChildClickListener(object : BaseAdapter.OnItemChildClickListener {
-            override fun onItemChildClick(
-                view: View,
-                holder: BaseAdapter.ViewBindHolder,
-                position: Int
-            ) {
-                val item = articleAdapter.getItem(position)
-                if (view.id == R.id.iv_collect) {
-                    if (item.collect) {
-                        viewModel.unCollect(item.id).observe(viewLifecycleOwner, { result ->
-                            if (result.errorCode == "0") {
-                                (view as ImageView).setImageResource(R.drawable.ic_collect_unchecked_stroke)
-                                item.collect = false
-                            }
-                        })
-                    } else {
-                        viewModel.collect(item.id).observe(viewLifecycleOwner, { result ->
-                            if (result.errorCode == "0") {
-                                (view as ImageView).setImageResource(R.drawable.ic_collect_checked)
-                                item.collect = true
-                            }
-                        })
-                    }
-                }
-            }
-        })
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :

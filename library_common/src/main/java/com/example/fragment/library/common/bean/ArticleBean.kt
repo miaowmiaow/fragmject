@@ -5,6 +5,16 @@ import com.example.fragment.library.base.http.HttpResponse
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
+data class ShareArticleListBean(
+    val data: ShareArticleBean? = null
+) : HttpResponse(), Parcelable
+
+@Parcelize
+data class ShareArticleBean(
+    val shareArticles: ArticleDataBean? = null,
+) : Parcelable
+
+@Parcelize
 data class ArticleListBean(
     val data: ArticleDataBean? = null
 ) : HttpResponse(), Parcelable

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
@@ -16,9 +15,9 @@ import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.R
 import com.example.fragment.module.home.adapter.HistorySearchAdapter
 import com.example.fragment.module.home.databinding.FragmentSearchBinding
-import com.example.fragment.module.home.model.SearchViewModel
+import com.example.fragment.module.home.model.HomeViewModel
 
-class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>() {
+class SearchFragment : ViewModelFragment<FragmentSearchBinding, HomeViewModel>() {
 
     private val historySearchAdapter = HistorySearchAdapter()
     private val articleAdapter = ArticleAdapter()
@@ -37,34 +36,11 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
     }
 
     private fun setupView() {
-        articleAdapter.setOnItemChildClickListener(object : BaseAdapter.OnItemChildClickListener {
-            override fun onItemChildClick(
-                view: View,
-                holder: BaseAdapter.ViewBindHolder,
-                position: Int
-            ) {
-                val item = articleAdapter.getItem(position)
-                if (view.id == R.id.iv_collect) {
-                    if (item.collect) {
-                        viewModel.unCollect(item.id).observe(viewLifecycleOwner, { result ->
-                            if (result.errorCode == "0") {
-                                (view as ImageView).setImageResource(R.drawable.ic_collect_unchecked_stroke)
-                                item.collect = false
-                            }
-                        })
-                    } else {
-                        viewModel.collect(item.id).observe(viewLifecycleOwner, { result ->
-                            if (result.errorCode == "0") {
-                                (view as ImageView).setImageResource(R.drawable.ic_collect_checked)
-                                item.collect = true
-                            }
-                        })
-                    }
-                }
-            }
-        })
         binding.cancel.setOnClickListener { baseActivity.onBackPressed() }
-        binding.search.setOnClickListener { initHistorySearch() }
+        binding.search.setOnTouchListener { _, _ ->
+            initHistorySearch()
+            false
+        }
         binding.search.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 search(binding.search.text.toString())
@@ -157,7 +133,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, SearchViewModel>
             binding.history.visibility = View.GONE
             binding.pullRefresh.visibility = View.VISIBLE
             binding.search.setText(key)
-            viewModel.search(true, key)
+            binding.pullRefresh.setRefreshing()
             val list = historySearchAdapter.getData()
             if (list.contains(key)) {
                 list.remove(key)

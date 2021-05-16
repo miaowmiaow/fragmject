@@ -211,25 +211,20 @@
 
             </RelativeLayout>
 
-            <RelativeLayout
+            <Button
                 android:id="@+id/logout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
-                android:padding="15dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/selector_transparent"
-                    android:drawableEnd="@drawable/ic_right"
-                    android:gravity="center_vertical"
-                    android:text="退出登录"
-                    android:textColor="@color/text_666"
-                    android:textSize="14sp"
-                    tools:ignore="UseCompatTextViewDrawableXml" />
-
-            </RelativeLayout>
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/layer_corner_theme"
+                android:paddingStart="100dp"
+                android:paddingEnd="100dp"
+                android:text="退出登录"
+                android:textColor="@color/text_fff"
+                android:textSize="16sp"
+                android:visibility="gone" />
         </LinearLayout>
 
     </ScrollView>

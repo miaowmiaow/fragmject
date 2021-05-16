@@ -15,8 +15,7 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
 import java.lang.reflect.ParameterizedType
 
-abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
-    RouterFragment() {
+abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragment() {
 
     lateinit var binding: VB
     lateinit var viewModel: VM
@@ -36,6 +35,8 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
         }
         viewModel = ViewModelProvider(this as ViewModelStoreOwner).get(clazz)
         binding = setViewBinding(inflater)
+        binding.root.isClickable = true
+        binding.root.isFocusable = true
         return binding.root
     }
 
@@ -51,13 +52,10 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> :
         hideInputMethod()
     }
 
-    open fun onUserStatusUpdate(userBean: UserBean) {
-
-    }
+    open fun onUserStatusUpdate(userBean: UserBean) {}
 
     private fun hideInputMethod() {
-        val inputMethodManager =
-            baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager = baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = baseActivity.currentFocus ?: return
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }

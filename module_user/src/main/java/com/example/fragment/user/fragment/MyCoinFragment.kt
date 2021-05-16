@@ -12,9 +12,9 @@ import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.user.adapter.CoinRecordAdapter
-import com.example.fragment.user.model.CoinModel
+import com.example.fragment.user.model.UserModel
 
-class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
+class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserModel>() {
 
     private val coinRecordAdapter = CoinRecordAdapter()
 
@@ -36,14 +36,14 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
         binding.pullRefresh.setOnRefreshListener(object :
             SimplePullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getUserCoin()
-                viewModel.getMyCoinList(true)
+                viewModel.userCoin()
+                viewModel.myCoin(true)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
             SimplePullRefreshLayout.OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getMyCoinList(false)
+                viewModel.myCoin(false)
             }
         })
         binding.pullRefresh.setRefreshing()
@@ -76,7 +76,7 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, CoinModel>() {
                 }
             }
         })
-        viewModel.myCoinListResult.observe(viewLifecycleOwner, { result ->
+        viewModel.myCoinResult.observe(viewLifecycleOwner, { result ->
             when {
                 result.errorCode == "0" -> {
                     result.data?.datas?.let { list ->

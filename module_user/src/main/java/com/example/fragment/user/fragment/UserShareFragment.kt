@@ -1,4 +1,4 @@
-package com.example.fragment.module.home.fragment
+package com.example.fragment.user.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,53 +6,58 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.ViewModelFragment
-import com.example.fragment.module.home.databinding.FragmentSquareBinding
-import com.example.fragment.module.home.model.HomeViewModel
+import com.example.fragment.module.user.databinding.FragmentUserShareBinding
+import com.example.fragment.user.model.UserModel
 
-class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>() {
-
-    companion object {
-        @JvmStatic
-        fun newInstance(): SquareFragment {
-            return SquareFragment()
-        }
-    }
+class UserShareFragment : ViewModelFragment<FragmentUserShareBinding, UserModel>() {
 
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSquareBinding {
-        return FragmentSquareBinding.inflate(inflater)
+    private var id: String = ""
+
+    override fun setViewBinding(inflater: LayoutInflater): FragmentUserShareBinding {
+        return FragmentUserShareBinding.inflate(inflater)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        arguments?.apply {
+            id = this.getString(Keys.ID).toString()
+        }
         setupView()
         update()
     }
 
     private fun setupView() {
+        binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
             SimplePullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getUserArticleList(true)
+                viewModel.userShare(true, id)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
             SimplePullRefreshLayout.OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
-                viewModel.getUserArticleList(false)
+                viewModel.userShare(false, id)
             }
         })
         binding.pullRefresh.setRefreshing()
     }
 
     private fun update() {
-        viewModel.userArticleResult.observe(viewLifecycleOwner, { result ->
+        viewModel.userShareResult.observe(viewLifecycleOwner, { result ->
             if (result.errorCode == "0") {
-                result.data?.datas?.let { list ->
+                result.data?.coinInfo?.let { coin ->
+                    binding.title.text = coin.username
+                    binding.id.text = coin.userId
+                    binding.coinCount.text = coin.coinCount
+                }
+                result.data?.shareArticles?.datas?.let { list ->
                     if (viewModel.isRefresh) {
                         articleAdapter.setNewData(list)
                     } else {

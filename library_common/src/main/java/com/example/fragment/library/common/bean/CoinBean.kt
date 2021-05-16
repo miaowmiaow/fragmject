@@ -1,7 +1,9 @@
 package com.example.fragment.library.common.bean
 
+import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
 import com.google.gson.Gson
+import kotlinx.android.parcel.Parcelize
 
 data class UserCoinBean(
     val data: CoinBean? = null
@@ -46,6 +48,7 @@ data class CoinRankDataBean(
     val total: String = ""
 )
 
+@Parcelize
 data class CoinBean @JvmOverloads constructor(
     val coinCount: String = "",
     val level: String = "",
@@ -53,7 +56,7 @@ data class CoinBean @JvmOverloads constructor(
     val rank: String = "",
     val userId: String = "",
     val username: String = ""
-) {
+) : Parcelable {
 
     fun toJson(): String {
         return Gson().toJson(this)

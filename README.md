@@ -12,6 +12,10 @@
 - [google/gson](https://github.com/google/gson)
 - [bumptech/glide](https://github.com/bumptech/glide)
 - [google/flexbox-layout](https://github.com/google/flexbox-layout)
+# Thanks
+  感谢所有优秀的开源项目 ^_^   
+  如果喜欢的话希望给个 Star 或 Fork ^_^  
+  谢谢~~  
 # LICENSE
 ```
 Copyright 2018 iceCola7 

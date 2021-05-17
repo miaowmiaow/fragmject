@@ -21,7 +21,7 @@ import com.example.fragment.user.fragment.*
 
 class MainActivity : RouterActivity() {
 
-    private var id: String? = null
+    private var userId: String? = null
 
     override fun frameLayoutId(): Int {
         return R.id.frame_layout
@@ -39,7 +39,7 @@ class MainActivity : RouterActivity() {
             Router.USER_SHARE -> switcher(UserShareFragment::class.java, bundle, onBack, navMode)
             Router.SETTING -> switcher(SettingFragment::class.java, bundle, onBack, navMode)
             else -> {
-                if (id != null && id.toString().isNotBlank()) {
+                if (isLogin()) {
                     when (name) {
                         Router.MY_COIN -> switcher(MyCoinFragment::class.java, bundle, onBack, navMode)
                         Router.MY_COLLECT_ARTICLE -> switcher(MyCollectArticleFragment::class.java, bundle, onBack, navMode)
@@ -78,8 +78,12 @@ class MainActivity : RouterActivity() {
 
     private fun update() {
         SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
-            id = userBean.id
+            userId = userBean.id
         })
+    }
+
+    private fun isLogin():Boolean{
+        return userId != null && userId.toString().isNotBlank()
     }
 
 }

@@ -6,6 +6,25 @@
 | ![1.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![4.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155439.png) |
+# 利用单activity多fragment的优势做做页面的前置拦截，实现各种登录态等校验
+既然是单activity多fragment设计，那么这个activity的基本作用之一，就是用来控制fragment的切换
+MainActivity有个switcher方法用来切换fragmen不用多说
+主要看navigation方法，页面的前置拦截就是在这个方法里面实现的，原理也很简单就是通过Fragment类名进行拦截在做相应的处理。
+```
+   fun navigation(clazz: Class<out Fragment>, bundle: Bundle?, addToBackStack: Boolean) {
+        if (aspectFragments.contains(clazz) && !isLogin()) {
+            switcher(LoginFragment::class.java, bundle, addToBackStack)
+        } else {
+            switcher(clazz, bundle, addToBackStack)
+        }
+    }
+
+    private val aspectFragments = listOf(
+        MyCoinFragment::class.java,
+        MyCollectArticleFragment::class.java,
+        MyShareArticleFragment::class.java
+    )
+```
 # 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)

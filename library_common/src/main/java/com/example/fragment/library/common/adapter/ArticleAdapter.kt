@@ -104,14 +104,20 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                         if (result.errorCode == "0") {
                             binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
                             item.collect = false
+                        } else if (result.errorCode == "-1001") {
+                            activity.navigation(Router.LOGIN)
                         }
+                        activity.showTips(result.errorMsg)
                     })
                 } else {
                     collect(item.id).observe(activity, { result ->
                         if (result.errorCode == "0") {
                             binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
                             item.collect = true
+                        } else if (result.errorCode == "-1001") {
+                            activity.navigation(Router.LOGIN)
                         }
+                        activity.showTips(result.errorMsg)
                     })
                 }
             }

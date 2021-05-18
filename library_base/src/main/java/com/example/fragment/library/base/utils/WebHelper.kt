@@ -10,7 +10,11 @@ import androidx.webkit.WebViewFeature
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.component.view.SnailBar
 import com.tencent.smtt.export.external.interfaces.IX5WebSettings
+import com.tencent.smtt.export.external.interfaces.WebResourceRequest
+import com.tencent.smtt.export.external.interfaces.WebResourceResponse
 import com.tencent.smtt.sdk.*
+import java.io.ByteArrayInputStream
+import java.util.regex.Pattern
 
 class WebHelper private constructor(val parent: ViewGroup) {
 
@@ -71,6 +75,27 @@ class WebHelper private constructor(val parent: ViewGroup) {
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
                 return false
+            }
+
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                url: String?
+            ): WebResourceResponse? {
+                if (url != null && isImageUrl(url)) {
+                    return webImageResponse(url)
+                }
+                return super.shouldInterceptRequest(view, url)
+            }
+
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val url = request?.url.toString()
+                if (isImageUrl(url)) {
+                    return webImageResponse(url)
+                }
+                return super.shouldInterceptRequest(view, request)
             }
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -134,6 +159,21 @@ class WebHelper private constructor(val parent: ViewGroup) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun isImageUrl(url: String?): Boolean {
+        return if (url == null || url.isBlank())
+            false
+        else
+            Pattern.compile(".*?(jpeg|png|jpg|bmp)").matcher(url).matches()
+    }
+
+    private fun webImageResponse(url: String): WebResourceResponse? {
+        ImageLoader.with(webView.context).load(url).submit()?.let { bytes ->
+            val inputStream = ByteArrayInputStream(bytes)
+            return WebResourceResponse("image/png", "UTF-8", inputStream)
+        }
+        return null
     }
 
     interface OnReceivedTitleListener {

@@ -1,6 +1,5 @@
 package com.example.fragment.library.base.http
 
-import com.example.fragment.library.base.utils.FileUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

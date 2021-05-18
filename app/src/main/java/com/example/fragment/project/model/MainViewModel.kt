@@ -8,7 +8,6 @@ import com.example.fragment.library.common.bean.HotKeyListBean
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.system.bean.TreeListBean
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainViewModel : BaseViewModel() {
@@ -16,13 +15,13 @@ class MainViewModel : BaseViewModel() {
     val hotKeyResult = MutableLiveData<HotKeyListBean>()
 
     fun getHotKey() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             hotKeyResult.postValue(get(HttpRequest("hotkey/json")))
         }
     }
 
     fun getTree() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             val request = HttpRequest("tree/json")
             val response = get<TreeListBean>(request)
             response.data?.apply {

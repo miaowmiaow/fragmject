@@ -6,7 +6,6 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.navigation.bean.NavigationListBean
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NavigationViewModel : BaseViewModel() {
@@ -14,7 +13,7 @@ class NavigationViewModel : BaseViewModel() {
     val navigationResult = MutableLiveData<NavigationListBean>()
 
     fun getNavigation() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             val request = HttpRequest("navi/json")
             navigationResult.postValue(get(request))
         }

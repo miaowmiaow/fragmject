@@ -7,9 +7,9 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentLoginBinding
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserModel>() {
+class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserViewModel>() {
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentLoginBinding {
         return FragmentLoginBinding.inflate(inflater)

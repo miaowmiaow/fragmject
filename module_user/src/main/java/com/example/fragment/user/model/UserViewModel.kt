@@ -12,7 +12,7 @@ import com.example.fragment.user.bean.UserShareBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class UserModel : BaseViewModel() {
+class UserViewModel : BaseViewModel() {
 
     val loginResult = MutableLiveData<LoginBean>()
     val registerResult = MutableLiveData<RegisterBean>()
@@ -30,7 +30,7 @@ class UserModel : BaseViewModel() {
     var isRefresh = true
 
     fun login(username: String, password: String) {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             loginResult.postValue(
                 post(
                     HttpRequest("user/login")
@@ -42,7 +42,7 @@ class UserModel : BaseViewModel() {
     }
 
     fun register(username: String, password: String, repassword: String) {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             registerResult.postValue(
                 post(
                     HttpRequest("user/register")
@@ -55,7 +55,7 @@ class UserModel : BaseViewModel() {
     }
 
     fun logout() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             logoutResult.postValue(get(HttpRequest("user/logout/json")))
         }
     }
@@ -73,16 +73,17 @@ class UserModel : BaseViewModel() {
     }
 
     fun userCoin() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             userCoinResult.postValue(get(HttpRequest("lg/coin/userinfo/json")))
         }
     }
 
     fun myCoin(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 1
+                pageCont = 1
             } else {
                 page++
             }
@@ -98,9 +99,10 @@ class UserModel : BaseViewModel() {
 
     fun coinRank(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 1
+                pageCont = 1
             } else {
                 page++
             }
@@ -116,7 +118,7 @@ class UserModel : BaseViewModel() {
 
     fun myCollectArticle(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 0
             } else {
@@ -134,9 +136,10 @@ class UserModel : BaseViewModel() {
 
     fun myShareArticle(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 1
+                pageCont = 1
             } else {
                 page++
             }
@@ -152,9 +155,10 @@ class UserModel : BaseViewModel() {
 
     fun userShare(isRefresh: Boolean, id: String) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 1
+                pageCont = 1
             } else {
                 page++
             }

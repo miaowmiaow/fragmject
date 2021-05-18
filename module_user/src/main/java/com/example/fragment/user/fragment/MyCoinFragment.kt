@@ -12,9 +12,9 @@ import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.user.adapter.CoinRecordAdapter
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserModel>() {
+class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>() {
 
     private val coinRecordAdapter = CoinRecordAdapter()
 

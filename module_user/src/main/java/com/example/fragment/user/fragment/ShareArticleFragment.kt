@@ -7,9 +7,9 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.user.databinding.FragmentShareArticleBinding
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class ShareArticleFragment : ViewModelFragment<FragmentShareArticleBinding, UserModel>() {
+class ShareArticleFragment : ViewModelFragment<FragmentShareArticleBinding, UserViewModel>() {
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentShareArticleBinding {
         return FragmentShareArticleBinding.inflate(inflater)

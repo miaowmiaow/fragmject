@@ -8,9 +8,9 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentRegisterBinding
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserModel>() {
+class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserViewModel>() {
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentRegisterBinding {
         return FragmentRegisterBinding.inflate(inflater)

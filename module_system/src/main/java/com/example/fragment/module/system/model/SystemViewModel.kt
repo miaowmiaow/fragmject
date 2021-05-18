@@ -8,10 +8,9 @@ import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.system.bean.TreeListBean
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class SystemViewModel : BaseViewModel(){
+class SystemViewModel : BaseViewModel() {
 
     val treeResult = MutableLiveData<TreeListBean>()
     val treeListResult = MutableLiveData<ArticleListBean>()
@@ -20,7 +19,7 @@ class SystemViewModel : BaseViewModel(){
     var isRefresh = true
 
     fun getTree() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             val request = HttpRequest("tree/json")
             val response = get<TreeListBean>(request)
             treeResult.postValue(response)
@@ -32,7 +31,7 @@ class SystemViewModel : BaseViewModel(){
 
     fun getTreeList(isRefresh: Boolean, cid: String) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 0
             } else {

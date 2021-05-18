@@ -6,7 +6,6 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.model.BaseViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class FAQViewModel : BaseViewModel() {
@@ -18,7 +17,7 @@ class FAQViewModel : BaseViewModel() {
 
     fun getUserArticleList(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 0
             } else {

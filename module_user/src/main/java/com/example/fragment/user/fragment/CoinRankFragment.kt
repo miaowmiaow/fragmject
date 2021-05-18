@@ -13,9 +13,9 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
 import com.example.fragment.user.adapter.CoinRankAdapter
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, UserModel>() {
+class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, UserViewModel>() {
 
     private val coinRankAdapter = CoinRankAdapter()
 

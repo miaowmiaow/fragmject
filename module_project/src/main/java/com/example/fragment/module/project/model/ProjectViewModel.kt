@@ -7,7 +7,6 @@ import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.project.bean.ProjectTreeBean
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
@@ -19,7 +18,7 @@ class ProjectViewModel : BaseViewModel() {
     var isRefresh = true
 
     fun getProjectTree() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             val request = HttpRequest("project/tree/json")
             projectTreeResult.postValue(get(request))
         }
@@ -27,7 +26,7 @@ class ProjectViewModel : BaseViewModel() {
 
     fun getProjectList(isRefresh: Boolean, cid: String) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 0
             } else {

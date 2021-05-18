@@ -9,9 +9,9 @@ import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.user.databinding.FragmentMyCollectArticleBinding
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class MyCollectArticleFragment : ViewModelFragment<FragmentMyCollectArticleBinding, UserModel>() {
+class MyCollectArticleFragment : ViewModelFragment<FragmentMyCollectArticleBinding, UserViewModel>() {
 
     private val articleAdapter = ArticleAdapter()
 

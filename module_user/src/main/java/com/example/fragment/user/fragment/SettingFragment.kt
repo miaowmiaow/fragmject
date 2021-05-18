@@ -3,19 +3,17 @@ package com.example.fragment.user.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import com.example.fragment.library.base.bus.SimpleLiveBus
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.LiveBus
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
-import com.example.fragment.user.model.UserModel
+import com.example.fragment.user.model.UserViewModel
 
-class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserModel>() {
+class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>() {
 
     override fun setViewBinding(inflater: LayoutInflater): FragmentSettingBinding {
         return FragmentSettingBinding.inflate(inflater)

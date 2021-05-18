@@ -5,9 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.http.post
-import com.example.fragment.library.common.bean.*
+import com.example.fragment.library.common.bean.ArticleListBean
+import com.example.fragment.library.common.bean.BannerDataBean
+import com.example.fragment.library.common.bean.TopArticleBean
 import com.example.fragment.library.common.model.BaseViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class HomeViewModel : BaseViewModel() {
@@ -23,14 +24,14 @@ class HomeViewModel : BaseViewModel() {
     var isRefresh = true
 
     fun getBanner() {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             bannerResult.postValue(get(HttpRequest("banner/json")))
         }
     }
 
     fun getArticleList(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 articleTopResult.postValue(get(HttpRequest("article/top/json")))
                 page = 0
@@ -49,7 +50,7 @@ class HomeViewModel : BaseViewModel() {
 
     fun search(isRefresh: Boolean, k: String) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 0
             } else {
@@ -68,7 +69,7 @@ class HomeViewModel : BaseViewModel() {
 
     fun getUserArticleList(isRefresh: Boolean) {
         this.isRefresh = isRefresh
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             if (isRefresh) {
                 page = 0
             } else {

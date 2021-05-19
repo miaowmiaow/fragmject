@@ -99,6 +99,9 @@ abstract class BaseActivity : AppCompatActivity() {
         FullDialog().show(supportFragmentManager, null)
     }
 
+    /**
+     * 动态权限申请方法
+     */
     fun requestForPermissions(
         permissions: Array<String>,
         callback: PermissionsCallback?

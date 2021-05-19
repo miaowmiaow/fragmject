@@ -5,6 +5,9 @@ import java.io.File
 import java.util.LinkedHashSet
 import java.util.regex.Pattern
 
+/**
+ * http请求体
+ */
 open class HttpRequest @JvmOverloads constructor(
     private var url: String = "",
     private var path: MutableMap<String, String> = HashMap(),

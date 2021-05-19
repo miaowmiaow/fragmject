@@ -15,6 +15,9 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
 import java.lang.reflect.ParameterizedType
 
+/**
+ * ViewModel和ViewBinding注册Fragment
+ */
 abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragment() {
 
     lateinit var binding: VB
@@ -42,6 +45,7 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //通过LiveDataBus观察UserBean的变化，从而通知页面刷新
         SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             onUserStatusUpdate(userBean)
         })
@@ -52,6 +56,10 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
         hideInputMethod()
     }
 
+    /**
+     * 用户状态更新方法
+     *      当UserBean发生变化时该方法调用
+     */
     open fun onUserStatusUpdate(userBean: UserBean) {}
 
     private fun hideInputMethod() {

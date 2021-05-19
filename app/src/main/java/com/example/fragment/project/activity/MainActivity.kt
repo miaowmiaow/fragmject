@@ -27,7 +27,10 @@ class MainActivity : RouterActivity() {
         return R.id.frame_layout
     }
 
-    override fun navigation(name: Router,  bundle: Bundle?, onBack: Boolean, navMode: NavMode) {
+    /**
+     * 导航方法，根据路由名跳转切换Fragment
+     */
+    override fun navigation(name: Router, bundle: Bundle?, onBack: Boolean, navMode: NavMode) {
         when (name) {
             Router.MAIN -> switcher(MainFragment::class.java, bundle, false, navMode)
             Router.LOGIN -> switcher(LoginFragment::class.java, bundle, onBack, navMode)
@@ -82,7 +85,10 @@ class MainActivity : RouterActivity() {
         })
     }
 
-    private fun isLogin():Boolean{
+    /**
+     * 登录状态校验
+     */
+    private fun isLogin(): Boolean {
         return userId != null && userId.toString().isNotBlank()
     }
 

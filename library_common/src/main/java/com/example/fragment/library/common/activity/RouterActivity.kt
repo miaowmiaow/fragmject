@@ -9,12 +9,18 @@ import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
 
+/**
+ * 路由类，方便模块之间调用
+ */
 abstract class RouterActivity : BaseActivity() {
 
     private var curFragment: Class<out Fragment>? = null
 
     abstract fun frameLayoutId(): Int
 
+    /**
+     * 导航方法，根据路由名跳转切换Fragment
+     */
     abstract fun navigation(
         name: Router,
         bundle: Bundle? = null,
@@ -43,6 +49,9 @@ abstract class RouterActivity : BaseActivity() {
         }
     }
 
+    /**
+     * 设置夜间模式方法
+     */
     fun initUIMode() {
         WanHelper.getUIMode().observe(this, {
             when (it) {

@@ -17,24 +17,42 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 
+/**
+ * get请求
+ *      通过HttpRequest构建请求体
+ *      通过泛型确定返回值
+ */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     request: HttpRequest = HttpRequest()
 ): T {
     return SimpleHttp.instance().get(request, T::class.java)
 }
 
+/**
+ * post请求
+ *      通过HttpRequest构建请求体
+ *      通过泛型确定返回值
+ */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
     request: HttpRequest = HttpRequest()
 ): T {
     return SimpleHttp.instance().post(request, T::class.java)
 }
 
+/**
+ * form请求
+ *      通过HttpRequest构建请求体
+ *      通过泛型确定返回值
+ */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
     request: HttpRequest = HttpRequest()
 ): T {
     return SimpleHttp.instance().form(request, T::class.java)
 }
 
+/**
+ * 基于个人习惯的Retrofit+协程的简单封装
+ */
 class SimpleHttp private constructor() {
 
     companion object {

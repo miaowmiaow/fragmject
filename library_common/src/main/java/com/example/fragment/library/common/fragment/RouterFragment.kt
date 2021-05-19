@@ -7,6 +7,9 @@ import com.example.fragment.library.common.activity.RouterActivity
 
 open class RouterFragment : BaseFragment() {
 
+    /**
+     * 获取baseActivity方便调用navigation方法进行页面切换
+     */
     lateinit var baseActivity: RouterActivity
 
     override fun onAttach(context: Context) {

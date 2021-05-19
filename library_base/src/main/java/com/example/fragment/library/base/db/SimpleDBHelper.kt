@@ -7,6 +7,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+/**
+ * RoomDatabase的简单封装
+ *      存值：SimpleDBHelper.set(key: String, value: String)
+ *      取值：SimpleDBHelper.get(key: String)
+ * 详细使用方法参考WanHelper.kt
+ */
 @Database(entities = [SimpleDBHelper.KVEntity::class], version = 1, exportSchema = false)
 abstract class SimpleDBHelper : RoomDatabase() {
 

@@ -12,6 +12,9 @@ import com.example.fragment.module.system.bean.TreeBean
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
+/**
+ * 数据持久化辅助类
+ */
 object WanHelper {
 
     private const val UI_MODE = "ui_mode"

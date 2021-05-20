@@ -3,9 +3,11 @@ package com.example.fragment.user.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentShareArticleBinding
 import com.example.fragment.user.model.UserViewModel
 
@@ -41,16 +43,19 @@ class ShareArticleFragment : ViewModelFragment<FragmentShareArticleBinding, User
     }
 
     private fun update() {
-        viewModel.shareArticleResult.observe(viewLifecycleOwner, {
-            when (it.errorCode) {
+        viewModel.shareArticleResult.observe(viewLifecycleOwner, { result ->
+            when (result.errorCode) {
                 "0" -> {
                     baseActivity.onBackPressed()
                 }
                 "-1001" -> {
+                    WanHelper.setUser(UserBean())
                     baseActivity.navigation(Router.LOGIN)
                 }
             }
-            baseActivity.showTips(it.errorMsg)
+            if (result.errorMsg.isNotBlank()) {
+                baseActivity.showTips(result.errorMsg)
+            }
         })
     }
 

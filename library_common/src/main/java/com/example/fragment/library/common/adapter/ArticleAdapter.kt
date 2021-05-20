@@ -20,6 +20,7 @@ import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.BannerBean
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.databinding.ItemArticleBannerBinding
@@ -105,9 +106,12 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                             binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
                             item.collect = false
                         } else if (result.errorCode == "-1001") {
+                            WanHelper.setUser(UserBean())
                             activity.navigation(Router.LOGIN)
                         }
-                        activity.showTips(result.errorMsg)
+                        if (result.errorMsg.isNotBlank()) {
+                            activity.showTips(result.errorMsg)
+                        }
                     })
                 } else {
                     collect(item.id).observe(activity, { result ->
@@ -115,9 +119,12 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                             binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
                             item.collect = true
                         } else if (result.errorCode == "-1001") {
+                            WanHelper.setUser(UserBean())
                             activity.navigation(Router.LOGIN)
                         }
-                        activity.showTips(result.errorMsg)
+                        if (result.errorMsg.isNotBlank()) {
+                            activity.showTips(result.errorMsg)
+                        }
                     })
                 }
             }

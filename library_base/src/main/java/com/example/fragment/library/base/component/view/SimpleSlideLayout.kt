@@ -55,8 +55,6 @@ open class SimpleSlideLayout @JvmOverloads constructor(
     @Override
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-            }
             MotionEvent.ACTION_MOVE -> {
                 val moveX = event.rawX.toInt()
                 val moveY = event.rawY.toInt()

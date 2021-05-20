@@ -75,7 +75,8 @@ class ProjectArticleFragment :
                         binding.pullRefresh.setLoadMore(true)
                     }
                 }
-            } else if (result.errorCode.isNotBlank()) {
+            }
+            if (result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

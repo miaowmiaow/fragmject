@@ -7,6 +7,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.library.common.utils.WanHelper
@@ -68,10 +69,11 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>()
                     }
                 }
                 result.errorCode == "-1001" -> {
+                    WanHelper.setUser(UserBean())
                     baseActivity.showTips(result.errorMsg)
                     baseActivity.navigation(Router.LOGIN)
                 }
-                result.errorCode.isNotBlank() -> {
+                result.errorMsg.isNotBlank() -> {
                     baseActivity.showTips(result.errorMsg)
                 }
             }
@@ -89,6 +91,7 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>()
                     }
                 }
                 result.errorCode == "-1001" -> {
+                    WanHelper.setUser(UserBean())
                     baseActivity.showTips(result.errorMsg)
                     baseActivity.navigation(Router.LOGIN)
                 }

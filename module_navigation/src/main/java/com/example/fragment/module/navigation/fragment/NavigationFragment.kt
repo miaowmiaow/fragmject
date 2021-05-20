@@ -83,7 +83,8 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
                         fillFlexboxLayout(menu[0].articles)
                     }
                 }
-            } else if (result.errorCode.isNotBlank()) {
+            }
+            if (result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

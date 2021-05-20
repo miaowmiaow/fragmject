@@ -123,7 +123,8 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                     hotKeyAdapter.setNewData(this)
                     WanHelper.setHotKey(this)
                     bannerHelper.startTimerTask()
-                } else if (result.errorCode.isNotBlank()) {
+                }
+                if (result.errorMsg.isNotBlank()) {
                     baseActivity.showTips(result.errorMsg)
                 }
             }
@@ -131,7 +132,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     }
 
     private fun search() {
-        val title = hotKeyAdapter.getItem(bannerHelper.findLastVisibleItemPosition())?.name
+        val title = hotKeyAdapter.getItem(bannerHelper.findLastVisibleItemPosition()).name
         val args = Bundle()
         args.putString(Keys.TITLE, title)
         baseActivity.navigation(Router.SEARCH, args)

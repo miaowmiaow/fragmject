@@ -75,7 +75,8 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
                     binding.tab.setupWithViewPager(binding.viewpager)
                     binding.tab.selectTab(savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 0)
                 }
-            } else if (result.errorCode.isNotBlank()) {
+            }
+            if (result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

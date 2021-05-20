@@ -6,8 +6,10 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCollectArticleBinding
 import com.example.fragment.user.model.UserViewModel
 
@@ -58,10 +60,11 @@ class MyCollectArticleFragment : ViewModelFragment<FragmentMyCollectArticleBindi
                     }
                 }
                 result.errorCode == "-1001" -> {
+                    WanHelper.setUser(UserBean())
                     baseActivity.showTips(result.errorMsg)
                     baseActivity.navigation(Router.LOGIN)
                 }
-                result.errorCode.isNotBlank() -> {
+                result.errorMsg.isNotBlank() -> {
                     baseActivity.showTips(result.errorMsg)
                 }
             }

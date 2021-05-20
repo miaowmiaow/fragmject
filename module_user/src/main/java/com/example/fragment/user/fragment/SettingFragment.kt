@@ -106,17 +106,18 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
 
     private fun update() {
         WanHelper.getUser().observe(viewLifecycleOwner, { userBean ->
-            binding.logout.visibility = if(userBean.id.isNotBlank()) View.VISIBLE else View.GONE
+            binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         })
-        WanHelper.getUIMode().observe(viewLifecycleOwner, {
-            updateSwitchButton(it)
+        WanHelper.getUIMode().observe(viewLifecycleOwner, { result ->
+            updateSwitchButton(result)
         })
-        viewModel.logoutResult.observe(viewLifecycleOwner, {
-            if (it.errorCode == "0") {
+        viewModel.logoutResult.observe(viewLifecycleOwner, { result ->
+            if (result.errorCode == "0") {
                 WanHelper.setUser(UserBean())
                 baseActivity.onBackPressed()
-            } else if (it.errorCode.isNotBlank()) {
-                baseActivity.showTips(it.errorMsg)
+            }
+            if (result.errorMsg.isNotBlank()) {
+                baseActivity.showTips(result.errorMsg)
             }
         })
     }

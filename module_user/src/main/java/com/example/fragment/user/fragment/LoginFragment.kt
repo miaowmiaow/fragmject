@@ -44,7 +44,8 @@ class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserViewModel>() {
                     WanHelper.setUser(this)
                 }
                 baseActivity.onBackPressed()
-            } else if (result.errorCode.isNotBlank()) {
+            }
+            if (result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

@@ -8,6 +8,7 @@
     <!--通用颜色-->
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
+    <color name="red">#FF0000</color>
     <color name="blue">#508cee</color>
     <color name="yellow">#ffb636</color>
     <color name="orange">#ff7800</color>

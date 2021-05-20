@@ -45,7 +45,8 @@ class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserViewMode
                     WanHelper.setUser(this)
                 }
                 baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
-            } else if (result.errorCode.isNotBlank()) {
+            }
+            if (result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.utils
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import android.view.View
@@ -81,8 +82,15 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 view: WebView?,
                 url: String?
             ): WebResourceResponse? {
-                if (url != null && isImageUrl(url)) {
-                    return webImageResponse(url)
+                if (view != null && url != null) {
+                    if (isImageUrl(url)) {
+                        return webImageResponse(view.context, url)
+                    }
+                    if (url.startsWith("file:///android_asset/")) {
+                        val index = url.lastIndexOf("/")
+                        val filename = url.substring(index)
+                        return assetsResponse(view.context, "css$filename")
+                    }
                 }
                 return super.shouldInterceptRequest(view, url)
             }
@@ -91,27 +99,34 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                val url = request?.url.toString()
-                if (isImageUrl(url)) {
-                    return webImageResponse(url)
+                if (view != null && request != null) {
+                    val url = request.url.toString()
+                    if (isImageUrl(url)) {
+                        return webImageResponse(view.context, url)
+                    }
+                    if (url.startsWith("file:///android_asset/")) {
+                        val index = url.lastIndexOf("/")
+                        val filename = url.substring(index)
+                        return assetsResponse(view.context, "css$filename")
+                    }
                 }
                 return super.shouldInterceptRequest(view, request)
             }
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
+                progressBar.visibility = View.VISIBLE
                 onPageStartedListener?.onPageStarted(view, url, favicon)
                 view?.evaluateJavascript(InjectUtils.injectVConsoleJs(view.context)) {}
                 view?.evaluateJavascript(InjectUtils.newVConsoleJs()) {}
                 view?.evaluateJavascript(InjectUtils.injectDarkModeJs(view.context)) {}
                 view?.evaluateJavascript(InjectUtils.newDarkModeJs()) {}
-                progressBar.visibility = View.VISIBLE
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                onPageFinishedListener?.onPageFinished(view, url)
                 progressBar.visibility = View.GONE
+                onPageFinishedListener?.onPageFinished(view, url)
             }
         }
         webView.webChromeClient = object : WebChromeClient() {
@@ -168,10 +183,34 @@ class WebHelper private constructor(val parent: ViewGroup) {
             Pattern.compile(".*?(jpeg|png|jpg|bmp)").matcher(url).matches()
     }
 
-    private fun webImageResponse(url: String): WebResourceResponse? {
-        ImageLoader.with(webView.context).load(url).submit()?.let { bytes ->
+    private fun webImageResponse(context: Context, url: String): WebResourceResponse? {
+        ImageLoader.with(context).load(url).submit()?.let { bytes ->
             val inputStream = ByteArrayInputStream(bytes)
             return WebResourceResponse("image/png", "UTF-8", inputStream)
+        }
+        return null
+    }
+
+    private fun assetsResponse(context: Context, filename: String): WebResourceResponse? {
+        try {
+            val mimeType = when {
+                filename.endsWith(".css") -> {
+                    "text/css"
+                }
+                filename.endsWith(".html") -> {
+                    "text/html"
+                }
+                filename.endsWith(".js") -> {
+                    "application/x-javascript"
+                }
+                else -> {
+                    "image/png"
+                }
+            }
+            val data = context.resources.assets.open(filename)
+            return WebResourceResponse(mimeType, "UTF-8", data)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return null
     }

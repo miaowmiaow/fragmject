@@ -106,7 +106,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:singleLine="true"
-                    android:text="清楚缓存"
+                    android:text="清除缓存"
                     android:textColor="@color/text_666"
                     android:textSize="14sp" />
 

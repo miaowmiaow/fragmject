@@ -16,7 +16,6 @@ class ScreenRecordService : Service() {
 
     companion object {
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         fun bindService(context: Context, connection: ServiceConnection) {
             context.bindService(
                 Intent(context, ScreenRecordService::class.java),
@@ -25,7 +24,6 @@ class ScreenRecordService : Service() {
             )
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         fun unbindService(context: Context, connection: ServiceConnection) {
             context.unbindService(connection)
         }
@@ -111,7 +109,6 @@ class ScreenRecordService : Service() {
         }
     }
 
-    //停止的方法
     fun stopRecord(): Boolean {
         if (!isRunning) {
             return false

@@ -1,7 +1,11 @@
 package com.example.fragment.project.activity
 
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.PixelFormat
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.WindowManager
 import com.example.fragment.library.base.bus.SimpleLiveBus
@@ -17,11 +21,24 @@ import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
 import com.example.fragment.project.fragment.MainFragment
+import com.example.fragment.project.service.ScreenRecordService
 import com.example.fragment.user.fragment.*
+
 
 class MainActivity : RouterActivity() {
 
     private var userId: String? = null
+    private var screenRecordBinder: ScreenRecordService.ScreenRecordBinder? = null
+    private val screenRecordConnection = object : ServiceConnection {
+
+
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            screenRecordBinder = service as ScreenRecordService.ScreenRecordBinder
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {}
+
+    }
 
     override fun frameLayoutId(): Int {
         return R.id.frame_layout
@@ -63,6 +80,7 @@ class MainActivity : RouterActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setTheme(R.style.AppTheme)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
+        ScreenRecordService.bindService(this, screenRecordConnection)
         initUIMode()
         setupView()
         update()
@@ -73,6 +91,11 @@ class MainActivity : RouterActivity() {
         WanHelper.getUser().observe(this, { userBean ->
             SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ScreenRecordService.unbindService(this, screenRecordConnection)
     }
 
     private fun setupView() {
@@ -90,6 +113,20 @@ class MainActivity : RouterActivity() {
      */
     private fun isLogin(): Boolean {
         return userId != null && userId.toString().isNotBlank()
+    }
+
+    /**
+     * 开始录屏
+     */
+    override fun startRecord(resultCode: Int, resultData: Intent): Boolean {
+        return screenRecordBinder?.startRecord(resultCode, resultData) ?: false
+    }
+
+    /**
+     * 停止录屏
+     */
+    override fun stopRecord(): Boolean {
+        return screenRecordBinder?.stopRecord() ?: false
     }
 
 }

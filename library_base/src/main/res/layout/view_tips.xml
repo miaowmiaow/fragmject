@@ -20,9 +20,9 @@
         android:layout_height="wrap_content"
         android:layout_toStartOf="@id/close"
         android:lineSpacingExtra="5dp"
-        android:paddingStart="15dp"
+        android:paddingStart="18dp"
         android:paddingTop="15dp"
-        android:paddingBottom="15dp"
+        android:paddingBottom="18dp"
         android:textColor="#F87677"
         android:textSize="14sp"
         tools:ignore="RtlSymmetry" />

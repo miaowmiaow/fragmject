@@ -4,12 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import com.example.fragment.library.base.component.activity.BaseActivity
+import com.example.fragment.library.base.component.dialog.PermissionDialog
 
 object ActivityResultHelper {
     /**
@@ -23,7 +25,6 @@ object ActivityResultHelper {
                 return
             }
             val powerManager = activity.getSystemService(Context.POWER_SERVICE) as PowerManager
-                ?: return
             //判断应用是否在白名单中
             if (powerManager.isIgnoringBatteryOptimizations(activity.packageName)) {
                 return
@@ -37,11 +38,38 @@ object ActivityResultHelper {
     }
 
     /**
+     * 申请录屏权限
+     */
+    fun requestScreenRecord(activity: BaseActivity, callback: ActivityCallback? = null) {
+        requestRecordAudio(activity)
+        requestStorage(activity, object : PermissionsCallback {
+            override fun allow() {
+                val mediaProjectionManager =
+                    activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE)
+                mediaProjectionManager as MediaProjectionManager
+                activity.startForResult(
+                    mediaProjectionManager.createScreenCaptureIntent(),
+                    callback
+                )
+            }
+
+            override fun deny() {
+                PermissionDialog.storage(activity)
+            }
+
+            override fun denyAndNotAskAgain() {
+                PermissionDialog.storage(activity)
+            }
+
+        })
+    }
+
+    /**
      * 申请日历权限
      *
      * @param callback 回调
      */
-    fun requestCalendarPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestCalendar(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.READ_CALENDAR,
             Manifest.permission.WRITE_CALENDAR
@@ -54,7 +82,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestCameraPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestCamera(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.CAMERA
         )
@@ -66,7 +94,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestContactsPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestContacts(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.GET_ACCOUNTS,
             Manifest.permission.READ_CONTACTS,
@@ -80,7 +108,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestLocationPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestLocation(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -93,7 +121,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestPhonePermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestPhone(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.CALL_PHONE
         )
@@ -105,7 +133,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestRecordAudioPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestRecordAudio(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.RECORD_AUDIO
         )
@@ -118,7 +146,7 @@ object ActivityResultHelper {
      * @param callback 回调
      */
     @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-    fun requestSensorsPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestSensors(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.BODY_SENSORS
         )
@@ -130,7 +158,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestSMSPermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestSMS(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.READ_SMS,
             Manifest.permission.RECEIVE_MMS,
@@ -145,7 +173,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun requestStoragePermissions(activity: BaseActivity, callback: PermissionsCallback? = null) {
+    fun requestStorage(activity: BaseActivity, callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE

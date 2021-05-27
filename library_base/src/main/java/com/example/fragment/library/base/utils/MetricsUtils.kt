@@ -26,11 +26,11 @@ object MetricsUtils {
         return metrics.heightPixels
     }
 
-    val density: Float
-        get() = getDensity(BaseProvider.mContext)
+    val densityDpi: Int
+        get() = getDensityDpi(BaseProvider.mContext)
 
-    fun getDensity(context: Context): Float {
-        return context.resources.displayMetrics.density
+    fun getDensityDpi(context: Context): Int {
+        return context.resources.displayMetrics.densityDpi
     }
 
     /**

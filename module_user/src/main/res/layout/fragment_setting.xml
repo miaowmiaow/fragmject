@@ -95,6 +95,29 @@
             </RelativeLayout>
 
             <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:singleLine="true"
+                    android:text="屏幕录制"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp" />
+
+                <com.example.fragment.library.base.component.view.SwitchButton
+                    android:id="@+id/screen_record"
+                    android:layout_width="45dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:id="@+id/clear_cache"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

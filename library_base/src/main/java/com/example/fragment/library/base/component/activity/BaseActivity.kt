@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.component.dialog.FullDialog
 import com.example.fragment.library.base.component.view.TipsView
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.PermissionsCallback
@@ -96,7 +95,6 @@ abstract class BaseActivity : AppCompatActivity() {
         val requestCode: Int = Random().nextInt(0x0000FFFF)
         activityCallbacks[requestCode] = callback
         startActivityForResult(intent, requestCode)
-        FullDialog().show(supportFragmentManager, null)
     }
 
     /**

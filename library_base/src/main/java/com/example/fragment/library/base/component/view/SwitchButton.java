@@ -128,9 +128,7 @@ public class SwitchButton extends View implements Checkable {
         valueAnimator.addListener(animatorListener);
         super.setClickable(true);
         this.setPadding(0, 0, 0, 0);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(LAYER_TYPE_SOFTWARE, null);
-        }
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
 
     @Override

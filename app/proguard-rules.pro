@@ -19,15 +19,30 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--optimizationpasses 5                                                           # 指定代码混淆压缩比
--dontusemixedcaseclassnames                                                     # 混淆时不生成大小写混合的类名
--dontskipnonpubliclibraryclasses                                                # 混淆时不跳过非公共的库的类
--dontpreverify                                                                  # 混淆时不做预校验
+-optimizationpasses 5                                                           # 代码混淆的压缩比例，值介于0-7，默认5
 -verbose                                                                        # 混淆时记录日志
--optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 混淆时所采用的算法
--keepattributes *Annotation*                                                    # 保留注解
+-dontshrink                                                                     # 关闭压缩
+-dontpreverify                                                                  # 关闭预校验(作用于Java平台，Android不需要，去掉可加快混淆)
+-dontoptimize                                                                   # 关闭代码优化
+#-dontobfuscate                                                                  # 关闭混淆
+-ignorewarnings                                                                 # 忽略警告
+-dontusemixedcaseclassnames                                                     # 混淆后类型都为小写
+-dontskipnonpubliclibraryclasses                                                # 不跳过非公共的库的类
+-printmapping mapping.txt                                                       # 生成原类名与混淆后类名的映射文件mapping.txt
+-useuniqueclassmembernames                                                      # 把混淆类中的方法名也混淆
+-allowaccessmodification                                                        # 优化时允许访问并修改有修饰符的类及类的成员
+-renamesourcefileattribute SourceFile                                           # 将源码中有意义的类名转换成SourceFile，用于混淆具体崩溃代码
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 指定混淆时采用的算法
+-keepattributes *Annotation*d                                                   # 保留注解
 -keepattributes Signature                                                       # 保留泛型
--dontoptimize                                                                   # 不进行优化
+
+# 指定外部模糊字典
+-obfuscationdictionary ./dictionary
+# 指定class模糊字典
+-classobfuscationdictionary ./dictionary
+# 指定package模糊字典
+-packageobfuscationdictionary ./dictionary
+
 # 保留指定类不被混淆
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
@@ -44,7 +59,7 @@
 -keep public class * extends android.support.v4.*
 -keep public class * extends android.support.v7.*
 -keep public class * extends android.support.annotation.*
-# 保留R文件下面的资源
+# 不混淆资源类
 -keep class **.R$* {*;}
 -keepclassmembers class **.R$* {
     public static <fields>;
@@ -65,7 +80,7 @@
     void *(**On*Event);
     void *(**On*Listener);
 }
-# 保留自定义控件（继承自View）不被混淆
+# 不混淆自定义控件（继承自View）不被混淆
 -keep public class * extends android.view.View{
     *** get*();
     void set*(***);
@@ -73,13 +88,14 @@
     public <init>(android.content.Context, android.util.AttributeSet);
     public <init>(android.content.Context, android.util.AttributeSet, int);
 }
-# 保留enum枚举类不被混淆
+# 不混淆枚举类
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 # 保留Parcelable序列化类不被混淆
 -keepclassmembers class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
 }
 # 保留Serializable序列化的类不被混淆
 -keepclassmembers class * implements java.io.Serializable {
@@ -118,7 +134,15 @@
 -keep class **bean.** {*;}
 -keep interface **bean.** {*;}
 -keep public class * extends com.example.fragment.library.base.http.HttpResponse
-
+#----------------------------- okhttp ---------------------------------
+-keep class **okhttp3.** {*;}
+-keep interface **okhttp3.** {*;}
+#---------------------------- retrofit --------------------------------
+-keep class retrofit2.** {*;}
+-keep interface retrofit2.** {*;}
+#---------------------------- glide --------------------------------
+-keep class **.glide.** {*;}
+-keep interface **.glide.** {*;}
 ##-----------------------------------------腾讯TBS--------------------------------------------
 -dontwarn dalvik.**
 -dontwarn com.tencent.smtt.**

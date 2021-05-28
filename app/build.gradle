@@ -26,8 +26,22 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            debuggable false
+            // 启用代码压缩、优化及混淆
+            minifyEnabled true
+            // 启用资源压缩，需配合 minifyEnabled=true 使用
+            shrinkResources true
+            // 指定混淆保留规则
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled true
+            shrinkResources true
+            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            //应用包名添加.debug后缀
+            applicationIdSuffix ".debug"
         }
     }
 

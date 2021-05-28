@@ -118,6 +118,66 @@
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/privacy_policy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="隐私政策"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/feedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="问题反馈"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/layer_while_item_top"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_transparent"
+                    android:drawableEnd="@drawable/ic_right"
+                    android:gravity="center_vertical"
+                    android:text="关于玩Android"
+                    android:textColor="@color/text_666"
+                    android:textSize="14sp"
+                    tools:ignore="UseCompatTextViewDrawableXml" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:id="@+id/clear_cache"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -171,66 +231,6 @@
                     android:text="已是最新版本"
                     android:textColor="@color/text_666"
                     android:textSize="14sp" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/about"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
-                android:padding="15dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/selector_transparent"
-                    android:drawableEnd="@drawable/ic_right"
-                    android:gravity="center_vertical"
-                    android:text="关于玩Android"
-                    android:textColor="@color/text_666"
-                    android:textSize="14sp"
-                    tools:ignore="UseCompatTextViewDrawableXml" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/privacy_policy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
-                android:padding="15dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/selector_transparent"
-                    android:drawableEnd="@drawable/ic_right"
-                    android:gravity="center_vertical"
-                    android:text="隐私政策"
-                    android:textColor="@color/text_666"
-                    android:textSize="14sp"
-                    tools:ignore="UseCompatTextViewDrawableXml" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/feedback"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
-                android:padding="15dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/selector_transparent"
-                    android:drawableEnd="@drawable/ic_right"
-                    android:gravity="center_vertical"
-                    android:text="问题反馈"
-                    android:textColor="@color/text_666"
-                    android:textSize="14sp"
-                    tools:ignore="UseCompatTextViewDrawableXml" />
 
             </RelativeLayout>
 

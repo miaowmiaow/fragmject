@@ -2,6 +2,7 @@ package com.example.fragment.library.base.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
@@ -37,31 +38,40 @@ object ActivityResultHelper {
         }
     }
 
+    private var screenRecordData: Intent? = null
+
     /**
      * 申请录屏权限
      */
-    fun requestScreenRecord(activity: BaseActivity, callback: ActivityCallback? = null) {
-        requestRecordAudio(activity)
-        requestStorage(activity, object : PermissionsCallback {
-            override fun allow() {
-                val mediaProjectionManager =
-                    activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE)
-                mediaProjectionManager as MediaProjectionManager
-                activity.startForResult(
-                    mediaProjectionManager.createScreenCaptureIntent(),
-                    callback
-                )
-            }
+    fun requestScreenRecord(activity: BaseActivity, onCallback: (Int, Intent?) -> Unit) {
+        if (screenRecordData != null) {
+            onCallback.invoke(Activity.RESULT_OK, screenRecordData)
+        } else {
+            requestRecordAudio(activity) {
+                requestStorage(activity, object : PermissionsCallback {
+                    override fun allow() {
+                        val mediaProjectionManager =
+                            activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                        activity.startForResult(mediaProjectionManager.createScreenCaptureIntent(),
+                            object : ActivityCallback {
+                                override fun onActivityResult(resultCode: Int, data: Intent?) {
+                                    onCallback.invoke(resultCode, data)
+                                    screenRecordData = data
+                                }
+                            }
+                        )
+                    }
 
-            override fun deny() {
-                PermissionDialog.storage(activity)
-            }
+                    override fun deny() {
+                        PermissionDialog.storage(activity)
+                    }
 
-            override fun denyAndNotAskAgain() {
-                PermissionDialog.storage(activity)
+                    override fun denyAndNotAskAgain() {
+                        PermissionDialog.storage(activity)
+                    }
+                })
             }
-
-        })
+        }
     }
 
     /**
@@ -138,6 +148,22 @@ object ActivityResultHelper {
             Manifest.permission.RECORD_AUDIO
         )
         requestPermissions(activity, permissions, callback)
+    }
+
+    private fun requestRecordAudio(activity: BaseActivity, onCallback: () -> Unit) {
+        requestRecordAudio(activity, object : PermissionsCallback {
+            override fun allow() {
+                onCallback.invoke()
+            }
+
+            override fun deny() {
+                onCallback.invoke()
+            }
+
+            override fun denyAndNotAskAgain() {
+                onCallback.invoke()
+            }
+        })
     }
 
     /**

@@ -19,9 +19,9 @@ abstract class RouterActivity : BaseActivity() {
 
     abstract fun frameLayoutId(): Int
 
-    abstract fun startRecord(resultCode: Int, resultData: Intent): Boolean
+    abstract fun startRecord(resultCode:Int, resultData: Intent)
 
-    abstract fun stopRecord(): Boolean
+    abstract fun stopRecord()
 
     /**
      * 导航方法，根据路由名跳转切换Fragment

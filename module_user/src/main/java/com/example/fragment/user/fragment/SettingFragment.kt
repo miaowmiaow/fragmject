@@ -1,11 +1,12 @@
 package com.example.fragment.user.fragment
 
 import android.app.Activity
-import android.content.Intent
+import android.hardware.display.VirtualDisplay
+import android.media.MediaRecorder
+import android.media.projection.MediaProjection
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.common.bean.UserBean
@@ -49,23 +50,19 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         }
         binding.screenRecord.setOnCheckedChangeListener { view, isChecked ->
             if (isChecked) {
-                baseActivity.showTips("3s后开始录制")
+                baseActivity.showTips("3s后开始录屏")
                 view.postDelayed({
-                    ActivityResultHelper.requestScreenRecord(baseActivity, object : ActivityCallback {
-                        override fun onActivityResult(resultCode: Int, data: Intent?) {
-                            if (resultCode == Activity.RESULT_OK && data != null) {
-                                binding.screenRecord.isChecked = baseActivity.startRecord(resultCode, data)
-                            } else {
-                                baseActivity.showTips("没有录屏权限")
-                                binding.screenRecord.isChecked = false
-                            }
+                    ActivityResultHelper.requestScreenRecord(baseActivity) { resultCode, resultData ->
+                        if (resultCode == Activity.RESULT_OK && resultData != null) {
+                            baseActivity.startRecord(resultCode, resultData)
+                        } else {
+                            binding.screenRecord.isChecked = false
+                            baseActivity.showTips("没有录屏权限")
                         }
-                    })
+                    }
                 }, 3000)
             } else {
-                view.postDelayed({
-                    binding.screenRecord.isChecked = !baseActivity.stopRecord()
-                }, 500)
+                baseActivity.stopRecord()
             }
         }
         binding.cacheSize.text = CacheUtils.getTotalCacheSize(baseActivity)

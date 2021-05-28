@@ -26,7 +26,6 @@
             android:label="dexopt"
             android:process=":dexopt" />
 
-        <service android:name=".service.ScreenRecordService" />
     </application>
 
 </manifest>

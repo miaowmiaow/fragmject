@@ -8,7 +8,7 @@
 | ![4.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155439.png) |
 # Fragment + ViewMode + LiveData
 ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者之间的关系：  
-1、ViewModel是一个抽象类通过继承实现我们自己的ViewModel类，代码如下
+1、ViewModel是一个抽象类通过继承实现我们自己的ViewModel类，代码如下:
 ```
    class MyViewModel : ViewModel(){
       // 使用LiveData存放数据
@@ -16,11 +16,11 @@ ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者�
       
       fun getData(){
          val data = "Test" //这里获取数据为示例代码，请根据实际情况从网络或本地获取
-         result.postValue(data)
+         result.postValue(data) //设置Livedata的值，通过Livedata通知Frament刷新界面
       }
    }
 ```
-2、Fragment里面初始化ViewModel，并观察观察Viewmodel的Livedata，如果Livedata的值改变会通知Frament，代码如下
+2、Fragment里面初始化ViewModel，并观察观察Viewmodel的Livedata，如果Livedata的值改变会通知Frament，代码如下:
 ```
    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
       val viewModel = ViewModelProvider(this as ViewModelStoreOwner).get(MyViewModel::class.java)
@@ -29,7 +29,7 @@ ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者�
       })
    }
 ```
-3、ViewModel获取数据（网络、数据库），然后设置Livedata的值，通过Livedata通知Frament刷新界面，代码如下
+3、ViewModel获取数据（网络、数据库），代码如下:
 ```
    viewModel.getData()
 ```
@@ -62,11 +62,13 @@ ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者�
   谢谢~~  
 # LICENSE
 ```
+Copyright 2021 miaowmiaow
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+   https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,

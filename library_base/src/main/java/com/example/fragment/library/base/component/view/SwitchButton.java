@@ -410,9 +410,10 @@ public class SwitchButton extends View implements Checkable {
         if (!isEnabled()) {
             return;
         }
-        if (isEventBroadcast) {
-            throw new RuntimeException("should NOT switch the state in method: [onCheckedChanged]!");
-        }
+        isEventBroadcast = broadcast;
+//        if (isEventBroadcast) {
+//            throw new RuntimeException("should NOT switch the state in method: [onCheckedChanged]!");
+//        }
         if (!isUiInited) {
             isChecked = !isChecked;
             if (broadcast) {
@@ -451,11 +452,9 @@ public class SwitchButton extends View implements Checkable {
      *
      */
     private void broadcastEvent() {
-        if (onCheckedChangeListener != null) {
-            isEventBroadcast = true;
+        if (onCheckedChangeListener != null && isEventBroadcast) {
             onCheckedChangeListener.onCheckedChanged(this, isChecked());
         }
-        isEventBroadcast = false;
     }
 
     @Override

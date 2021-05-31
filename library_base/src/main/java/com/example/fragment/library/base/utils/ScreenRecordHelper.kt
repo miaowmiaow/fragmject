@@ -24,20 +24,24 @@ object ScreenRecordHelper {
     private var virtualDisplay: VirtualDisplay? = null
 
     private var screenRecordData: Intent? = null
+    private var isRunning = false
 
     /**
      * 开始录屏，需要申请录屏权限
      */
     fun FragmentActivity.startScreenRecord(onCallback: (Int, String) -> Unit) {
+        if (isRunning) {
+            onCallback.invoke(Activity.RESULT_OK, "屏幕录制中")
+            return
+        }
         requestScreenRecordPermissions { resultCode, resultData, resultMessage ->
             if (resultCode == Activity.RESULT_OK && resultData != null) {
                 try {
                     if (mediaProjection == null) {
                         //MediaProjectionManager申请权限MediaProjection获取申请结果,防止别人调取隐私
-                        val projectionManager =
+                        val manager =
                             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                        mediaProjection =
-                            projectionManager.getMediaProjection(resultCode, resultData)
+                        mediaProjection = manager.getMediaProjection(resultCode, resultData)
                     }
                     if (mediaRecorder == null) {
                         mediaRecorder = MediaRecorder()
@@ -69,6 +73,7 @@ object ScreenRecordHelper {
                         //设置帧率，该帧率必须是硬件支持的，
                         //可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
                         mediaRecorder?.setVideoFrameRate(24)
+                        mediaRecorder?.prepare()
                     }
                     if (virtualDisplay == null) {
                         //获取录制屏幕的大小,像素,等等一些数据
@@ -83,8 +88,8 @@ object ScreenRecordHelper {
                             null
                         )
                     }
-                    mediaRecorder?.prepare()
                     mediaRecorder?.start()
+                    isRunning = true
                 } catch (e: Exception) {
                     e.printStackTrace()
                     onCallback.invoke(Activity.RESULT_CANCELED, "录屏失败:${e.message}")
@@ -116,11 +121,14 @@ object ScreenRecordHelper {
      * 停止录屏
      */
     fun FragmentActivity.stopScreenRecord() {
+        if (!isRunning) {
+            return
+        }
         try {
             mediaRecorder?.stop()
+            mediaRecorder?.reset()
         } catch (e: Exception) {
             e.printStackTrace()
-            mediaRecorder?.reset()
         } finally {
             mediaRecorder?.release()
             virtualDisplay?.release()
@@ -128,6 +136,7 @@ object ScreenRecordHelper {
             mediaRecorder = null
             virtualDisplay = null
             mediaProjection = null
+            isRunning = false
         }
     }
 

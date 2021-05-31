@@ -18,6 +18,7 @@ import com.google.gson.reflect.TypeToken
 object WanHelper {
 
     private const val UI_MODE = "ui_mode"
+    private const val SCREEN_RECORD = "screen_record"
     private const val USER = "user"
     private const val COIN = "coin"
     private const val HOT_KEY = "hot_key"
@@ -47,6 +48,26 @@ object WanHelper {
             } catch (e: Exception) {
                 e.printStackTrace()
                 1
+            }
+        }
+    }
+
+    /**
+     * status :
+     *       0 : 关闭,
+     *       1 : 开启,
+     */
+    fun setScreenRecordStatus(status: Int){
+        SimpleDBHelper.set(SCREEN_RECORD, status.toString())
+    }
+
+    fun getScreenRecordStatus(): LiveData<Int> {
+        return Transformations.map(SimpleDBHelper.get(SCREEN_RECORD)) {
+            try {
+                it.toInt()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                0
             }
         }
     }

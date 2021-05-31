@@ -40,7 +40,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener { view, isChecked ->
             val uiMode = if (isChecked) -1 else 1
-            updateSwitchButton(uiMode)
+            updateUIMode(uiMode)
             WanHelper.setUIMode(uiMode)
             view.postDelayed({
                 baseActivity.initUIMode()
@@ -48,13 +48,15 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         }
         binding.darkTheme.setOnCheckedChangeListener { view, isChecked ->
             val uiMode = if (isChecked) 2 else 1
-            updateSwitchButton(uiMode)
+            updateUIMode(uiMode)
             WanHelper.setUIMode(uiMode)
             view.postDelayed({
                 baseActivity.initUIMode()
             }, 300)
         }
         binding.screenRecord.setOnCheckedChangeListener { view, isChecked ->
+            val status = if (isChecked) 1 else 0
+            WanHelper.setScreenRecordStatus(status)
             if (isChecked) {
                 countDownTimer = object : CountDownTimer(5 * 1000, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
@@ -76,7 +78,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
                 view.postDelayed({
                     baseActivity.dismissTips()
                     baseActivity.stopScreenRecord()
-                }, 1500)
+                }, 1000)
             }
         }
         binding.cacheSize.text = CacheUtils.getTotalCacheSize(baseActivity)
@@ -145,7 +147,17 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         })
         WanHelper.getUIMode().observe(viewLifecycleOwner, { result ->
-            updateSwitchButton(result)
+            updateUIMode(result)
+        })
+        WanHelper.getScreenRecordStatus().observe(viewLifecycleOwner, { result ->
+            when (result) {
+                0 -> {
+                    binding.screenRecord.isChecked = false
+                }
+                1 -> {
+                    binding.screenRecord.isChecked = true
+                }
+            }
         })
         viewModel.logoutResult.observe(viewLifecycleOwner, { result ->
             if (result.errorCode == "0") {
@@ -158,7 +170,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         })
     }
 
-    private fun updateSwitchButton(uiMode: Int) {
+    private fun updateUIMode(uiMode: Int) {
         when (uiMode) {
             1 -> {
                 binding.systemTheme.isChecked = false

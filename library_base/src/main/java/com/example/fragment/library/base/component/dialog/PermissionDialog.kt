@@ -8,10 +8,10 @@ import kotlin.system.exitProcess
 
 object PermissionDialog {
 
-    fun camera(activity: Activity) {
+    fun alert(activity: Activity, title: String) {
         val alertDialog = AlertDialog.Builder(activity)
         alertDialog.setTitle("帮助")
-        alertDialog.setMessage("当前应用缺少相机权限。\n请点击\"设置\"-\"权限\"打开所需权限。")
+        alertDialog.setMessage("当前应用缺少${title}权限。\n请点击\"设置\"-\"权限\"打开所需权限。")
         alertDialog.setPositiveButton("去设置") { _, _ ->
             SystemUtil.gotoAppDetailsSettings()
         }

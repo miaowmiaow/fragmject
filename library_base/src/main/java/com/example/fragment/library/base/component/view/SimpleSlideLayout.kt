@@ -2,12 +2,10 @@ package com.example.fragment.library.base.component.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
 import android.widget.Scroller
-import androidx.core.view.GestureDetectorCompat
 import kotlin.math.abs
 
 open class SimpleSlideLayout @JvmOverloads constructor(
@@ -105,6 +103,11 @@ open class SimpleSlideLayout @JvmOverloads constructor(
         visibility = VISIBLE
         scrollOrigin()
         postDelayed({ dismiss() }, 3000)
+    }
+
+    fun alwaysShow(){
+        visibility = VISIBLE
+        scrollOrigin()
     }
 
     fun dismiss() {

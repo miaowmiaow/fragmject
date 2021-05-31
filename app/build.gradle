@@ -36,9 +36,8 @@ android {
         }
         debug {
             debuggable true
-            minifyEnabled true
-            shrinkResources true
-            zipAlignEnabled true
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             //应用包名添加.debug后缀
             applicationIdSuffix ".debug"

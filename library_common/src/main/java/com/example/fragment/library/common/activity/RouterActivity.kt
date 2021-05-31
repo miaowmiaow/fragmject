@@ -1,6 +1,5 @@
 package com.example.fragment.library.common.activity
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -18,10 +17,6 @@ abstract class RouterActivity : BaseActivity() {
     private var curFragment: Class<out Fragment>? = null
 
     abstract fun frameLayoutId(): Int
-
-    abstract fun startRecord(resultCode:Int, resultData: Intent)
-
-    abstract fun stopRecord()
 
     /**
      * 导航方法，根据路由名跳转切换Fragment

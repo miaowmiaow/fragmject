@@ -1,14 +1,13 @@
 package com.example.fragment.user.fragment
 
 import android.app.Activity
-import android.hardware.display.VirtualDisplay
-import android.media.MediaRecorder
-import android.media.projection.MediaProjection
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
-import com.example.fragment.library.base.utils.ActivityResultHelper
 import com.example.fragment.library.base.utils.CacheUtils
+import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
+import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
@@ -20,6 +19,8 @@ import com.example.fragment.user.model.UserViewModel
 
 class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>() {
 
+    private var countDownTimer: CountDownTimer? = null
+
     override fun setViewBinding(inflater: LayoutInflater): FragmentSettingBinding {
         return FragmentSettingBinding.inflate(inflater)
     }
@@ -28,6 +29,11 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        countDownTimer?.cancel()
     }
 
     private fun setupView() {
@@ -50,19 +56,27 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         }
         binding.screenRecord.setOnCheckedChangeListener { view, isChecked ->
             if (isChecked) {
-                baseActivity.showTips("3s后开始录屏")
-                view.postDelayed({
-                    ActivityResultHelper.requestScreenRecord(baseActivity) { resultCode, resultData ->
-                        if (resultCode == Activity.RESULT_OK && resultData != null) {
-                            baseActivity.startRecord(resultCode, resultData)
-                        } else {
-                            binding.screenRecord.isChecked = false
-                            baseActivity.showTips("没有录屏权限")
+                countDownTimer = object : CountDownTimer(5 * 1000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        baseActivity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
+                    }
+
+                    override fun onFinish() {
+                        baseActivity.dismissTips()
+                        baseActivity.startScreenRecord { code, message ->
+                            if (code != Activity.RESULT_OK) {
+                                baseActivity.showTips(message)
+                                binding.screenRecord.isChecked = false
+                            }
                         }
                     }
-                }, 3000)
+                }.start()
             } else {
-                baseActivity.stopRecord()
+                countDownTimer?.cancel()
+                view.postDelayed({
+                    baseActivity.dismissTips()
+                    baseActivity.stopScreenRecord()
+                }, 1500)
             }
         }
         binding.cacheSize.text = CacheUtils.getTotalCacheSize(baseActivity)

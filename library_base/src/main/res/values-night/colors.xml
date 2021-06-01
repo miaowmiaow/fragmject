@@ -5,6 +5,13 @@
     <color name="line">#888888</color>
     <color name="line_alpha">#69888888</color>
 
+    <!--SimpleSwitchButton-->
+    <color name="switch_bt">#444444</color>
+    <color name="switch_bt_bg">#222222</color>
+    <color name="switch_bt_check">#51d367</color>
+    <color name="switch_bt_uncheck">#333333</color>
+    <color name="switch_bt_shadow">#33000000</color>
+
     <!--通用颜色-->
     <color name="black">#000000</color>
     <color name="white">#444444</color>

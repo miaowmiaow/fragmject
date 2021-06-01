@@ -3,9 +3,9 @@
 # 简介
 采用 Kotlin 语言编写，单Activity多Fragment，MVVM + ViewModel + LiveData + Retrofit + 协程 + ViewBinding等架构设计的项目，项目结构清晰，代码简介优雅
 # 截图展示
-| ![1.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155387.png) |
+| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/FragmentProject/raw/master/screenshot/Screenshot_1621155439.png) |
+| ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) |
 # Fragment + ViewMode + LiveData
 ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者之间的关系：  
 1、ViewModel是一个抽象类通过继承实现我们自己的ViewModel类，代码如下:

@@ -13,6 +13,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.utils.MetricsUtils
+import kotlin.math.abs
 
 class SimpleSwitchButton @JvmOverloads constructor(
     context: Context,
@@ -20,12 +21,16 @@ class SimpleSwitchButton @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    enum class STATE {
+        OPEN, DRAG, CLOSE
+    }
+
     private val buttonColor = ContextCompat.getColor(context, R.color.switch_bt)
-    private val shadowColor = ContextCompat.getColor(context, R.color.switch_bt_shadow)
-    private val borderColor = ContextCompat.getColor(context, R.color.switch_bt_border)
+    private val buttonShadowColor = ContextCompat.getColor(context, R.color.switch_bt_shadow)
+    private val bgColor = ContextCompat.getColor(context, R.color.switch_bt_bg)
     private val checkColor = ContextCompat.getColor(context, R.color.switch_bt_check)
     private val uncheckColor = ContextCompat.getColor(context, R.color.switch_bt_uncheck)
-    private var bgColor = uncheckColor
+    private var stateColor = uncheckColor
 
     private val argbEvaluator = ArgbEvaluator()
 
@@ -33,6 +38,11 @@ class SimpleSwitchButton @JvmOverloads constructor(
      * 按钮画笔
      */
     private val buttonPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    /**
+     * 背景画笔
+     */
+    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
      * 按钮半径
@@ -50,19 +60,9 @@ class SimpleSwitchButton @JvmOverloads constructor(
     private var buttonY = 0f
 
     /**
-     * 边框画笔
-     */
-    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-    /**
      * 边框宽度px
      */
     private val borderWidth = MetricsUtils.dp2px(1f)
-
-    /**
-     * 背景画笔
-     */
-    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     /**
      * 阴影半径
@@ -74,7 +74,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
      */
     private val shadowOffset = MetricsUtils.dp2px(1.5f)
 
-    private var isOpen = false
+    private var state = STATE.CLOSE
 
     private var moveX = 0f
     private var buttonOffset = 0f
@@ -89,7 +89,77 @@ class SimpleSwitchButton @JvmOverloads constructor(
     private var viewBottom = 0f
 
     private val downAnimator = ValueAnimator.ofFloat(0f, 1f)
-    private val moveAnimator = ValueAnimator.ofFloat(0f, 1f)
+    private val originAnimator = ValueAnimator.ofFloat(0f, 1f)
+    private val toggleAnimator = ValueAnimator.ofFloat(0f, 1f)
+
+    private var dragDistance = 0f
+    private var onCheckedChangeListener: OnCheckedChangeListener? = null
+
+    init {
+        setPadding(
+            borderWidth.toInt(),
+            borderWidth.toInt(),
+            borderWidth.toInt(),
+            borderWidth.toInt()
+        )
+    }
+
+    fun setChecked(checked: Boolean) {
+        if (checked) {
+            state = STATE.OPEN
+            stateColor = checkColor
+            buttonOffset = buttonMaxOffset
+            viewRadiusFraction = 1f
+        } else {
+            state = STATE.CLOSE
+            stateColor = uncheckColor
+            buttonOffset = 0f
+            viewRadiusFraction = 0f
+        }
+        postInvalidate()
+    }
+
+    fun toggle() {
+        if (toggleAnimator.isRunning) {
+            toggleAnimator.cancel()
+        }
+        toggleAnimator.duration = 250
+        toggleAnimator.addUpdateListener { animation ->
+            buttonOffset = if (state == STATE.OPEN) {
+                buttonMaxOffset * (1 - (animation.animatedValue as Float))
+            } else {
+                buttonMaxOffset * animation.animatedValue as Float
+            }
+            val value = buttonOffset / buttonMaxOffset
+            val fraction = 0f.coerceAtLeast(1f.coerceAtMost(value))
+            stateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkColor) as Int
+            postInvalidate()
+        }
+        toggleAnimator.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator?) {
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                if (buttonOffset == 0f) {
+                    state = STATE.CLOSE
+                    downAnimator(false)
+                } else if (buttonOffset == buttonMaxOffset) {
+                    state = STATE.OPEN
+                }
+                onCheckedChangeListener?.onCheckedChanged(
+                    this@SimpleSwitchButton,
+                    state == STATE.OPEN
+                )
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+            }
+
+            override fun onAnimationRepeat(animation: Animator?) {
+            }
+        })
+        toggleAnimator.start()
+    }
 
     private fun downAnimator(isDown: Boolean) {
         if (buttonOffset != 0f) {
@@ -98,7 +168,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
         if (downAnimator.isRunning) {
             downAnimator.cancel()
         }
-        downAnimator.duration = 300
+        downAnimator.duration = 250
         downAnimator.addUpdateListener { animation ->
             viewRadiusFraction = if (isDown) {
                 animation.animatedValue as Float
@@ -107,55 +177,41 @@ class SimpleSwitchButton @JvmOverloads constructor(
             }
             postInvalidate()
         }
-        downAnimator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator?) {
-            }
-
-            override fun onAnimationEnd(animation: Animator?) {
-                bgColor = when {
-                    isOpen -> checkColor
-                    isDown -> borderColor
-                    else -> uncheckColor
-                }
-                viewRadiusFraction = 0f
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-            }
-
-            override fun onAnimationRepeat(animation: Animator?) {
-            }
-
-        })
         downAnimator.start()
     }
 
-    private fun moveAnimator() {
-        if (moveAnimator.isRunning) {
-            moveAnimator.cancel()
+    private fun originAnimator() {
+        if (originAnimator.isRunning) {
+            originAnimator.cancel()
         }
         if (buttonOffset >= buttonMaxOffset * .5f) {
-            isOpen = true
-            moveAnimator.setFloatValues(buttonOffset, buttonMaxOffset)
+            originAnimator.setFloatValues(buttonOffset, buttonMaxOffset)
         } else {
-            isOpen = false
-            moveAnimator.setFloatValues(buttonOffset, 0f)
+            originAnimator.setFloatValues(buttonOffset, 0f)
         }
-        moveAnimator.duration = 300
-        moveAnimator.addUpdateListener { animation ->
+        originAnimator.duration = 250
+        originAnimator.addUpdateListener { animation ->
             buttonOffset = animation.animatedValue as Float
+            val value = buttonOffset / buttonMaxOffset
+            val fraction = 0f.coerceAtLeast(1f.coerceAtMost(value))
+            stateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkColor) as Int
             postInvalidate()
         }
-        moveAnimator.addListener(object : Animator.AnimatorListener {
+        originAnimator.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator?) {
             }
 
             override fun onAnimationEnd(animation: Animator?) {
-                if (buttonOffset == buttonMaxOffset) {
-                    isOpen = true
-                } else if (buttonOffset == 0f) {
-                    isOpen = false
+                if (buttonOffset == 0f) {
+                    state = STATE.CLOSE
+                    downAnimator(false)
+                } else if (buttonOffset == buttonMaxOffset) {
+                    state = STATE.OPEN
                 }
+                onCheckedChangeListener?.onCheckedChanged(
+                    this@SimpleSwitchButton,
+                    state == STATE.OPEN
+                )
             }
 
             override fun onAnimationCancel(animation: Animator?) {
@@ -163,9 +219,8 @@ class SimpleSwitchButton @JvmOverloads constructor(
 
             override fun onAnimationRepeat(animation: Animator?) {
             }
-
         })
-        moveAnimator.start()
+        originAnimator.start()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -173,35 +228,50 @@ class SimpleSwitchButton @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 downAnimator(true)
+                dragDistance = event.x
                 moveX = event.x
             }
             MotionEvent.ACTION_MOVE -> {
-                if (downAnimator.isRunning) {
-                    downAnimator.cancel()
-                }
+                state = STATE.DRAG
                 val x = event.x
                 buttonOffset += x - moveX
                 moveX = x
                 when {
                     buttonOffset <= 0f -> {
-                        isOpen = false
+                        state = STATE.CLOSE
                         buttonOffset = 0f
-                        downAnimator(false)
                     }
                     buttonOffset >= buttonMaxOffset -> {
-                        isOpen = true
+                        state = STATE.OPEN
                         buttonOffset = buttonMaxOffset
                     }
                     else -> {
-                        val value = buttonOffset / buttonMaxOffset
-                        val fraction = 0f.coerceAtLeast(1f.coerceAtMost(value))
-                        bgColor = argbEvaluator.evaluate(fraction, borderColor, checkColor) as Int
-                        postInvalidate()
+                        if (downAnimator.isRunning) {
+                            downAnimator.cancel()
+                        }
                     }
                 }
+                val value = buttonOffset / buttonMaxOffset
+                val fraction = 0f.coerceAtLeast(1f.coerceAtMost(value))
+                stateColor = argbEvaluator.evaluate(fraction, uncheckColor, checkColor) as Int
+                postInvalidate()
             }
             MotionEvent.ACTION_UP -> {
-                moveAnimator()
+                if (abs(event.x - dragDistance) < buttonMaxOffset) {
+                    toggle()
+                } else {
+                    if (state == STATE.DRAG) {
+                        originAnimator()
+                    } else {
+                        onCheckedChangeListener?.onCheckedChanged(
+                            this@SimpleSwitchButton,
+                            state == STATE.OPEN
+                        )
+                    }
+                    if (buttonOffset == 0f) {
+                        downAnimator(false)
+                    }
+                }
             }
         }
         return true
@@ -222,18 +292,32 @@ class SimpleSwitchButton @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        drawCheckState(canvas)
         drawBackground(canvas)
-        drawBorder(canvas)
         drawButton(canvas)
     }
 
-    private fun drawBackground(canvas: Canvas) {
+    private fun drawCheckState(canvas: Canvas) {
         bgPaint.style = Paint.Style.FILL_AND_STROKE
-        bgPaint.color = borderColor
+        bgPaint.color = stateColor
         canvas.drawRoundRect(
             viewLeft, viewTop, viewRight, viewBottom,
             viewRadius, viewRadius, bgPaint
         )
+        bgPaint.style = Paint.Style.STROKE
+        bgPaint.strokeWidth = borderWidth
+        bgPaint.color = stateColor
+        canvas.drawRoundRect(
+            viewLeft, viewTop, viewRight, viewBottom,
+            viewRadius, viewRadius, bgPaint
+        )
+    }
+
+    private fun drawBackground(canvas: Canvas) {
+        if (state == STATE.DRAG) {
+            viewRadiusFraction = 1f
+        }
+        bgPaint.style = Paint.Style.FILL
         bgPaint.color = bgColor
         canvas.drawRoundRect(
             viewLeft + (viewRight * viewRadiusFraction * .5f),
@@ -246,21 +330,19 @@ class SimpleSwitchButton @JvmOverloads constructor(
         )
     }
 
-    private fun drawBorder(canvas: Canvas) {
-        borderPaint.style = Paint.Style.STROKE
-        borderPaint.strokeWidth = borderWidth
-        borderPaint.color = borderColor
-        canvas.drawRoundRect(
-            viewLeft, viewTop, viewRight, viewBottom,
-            viewRadius, viewRadius, borderPaint
-        )
-    }
-
     private fun drawButton(canvas: Canvas) {
         buttonPaint.style = Paint.Style.FILL_AND_STROKE
         buttonPaint.color = buttonColor
-        buttonPaint.setShadowLayer(shadowRadius, 0f, shadowOffset, shadowColor)
+        buttonPaint.setShadowLayer(shadowRadius, 0f, shadowOffset, buttonShadowColor)
         canvas.drawCircle(buttonX + buttonOffset, buttonY, buttonRadius, buttonPaint)
+    }
+
+    fun setOnCheckedChangeListener(l: OnCheckedChangeListener) {
+        onCheckedChangeListener = l
+    }
+
+    interface OnCheckedChangeListener {
+        fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean)
     }
 
 }

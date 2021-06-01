@@ -7,9 +7,9 @@
 
     <!--SimpleSwitchButton-->
     <color name="switch_bt">#ffffff</color>
+    <color name="switch_bt_bg">#f5f5f5</color>
     <color name="switch_bt_check">#51d367</color>
-    <color name="switch_bt_uncheck">#f5f5f5</color>
-    <color name="switch_bt_border">#dddddd</color>
+    <color name="switch_bt_uncheck">#dddddd</color>
     <color name="switch_bt_shadow">#33000000</color>
 
     <!--通用颜色-->

@@ -63,7 +63,7 @@
                     android:textColor="@color/text_666"
                     android:textSize="14sp" />
 
-                <com.example.fragment.library.base.component.view.SwitchButton
+                <com.example.fragment.library.base.component.view.SimpleSwitchButton
                     android:id="@+id/system_theme"
                     android:layout_width="45dp"
                     android:layout_height="30dp"
@@ -86,7 +86,7 @@
                     android:textColor="@color/text_666"
                     android:textSize="14sp" />
 
-                <com.example.fragment.library.base.component.view.SwitchButton
+                <com.example.fragment.library.base.component.view.SimpleSwitchButton
                     android:id="@+id/dark_theme"
                     android:layout_width="45dp"
                     android:layout_height="30dp"
@@ -109,7 +109,7 @@
                     android:textColor="@color/text_666"
                     android:textSize="14sp" />
 
-                <com.example.fragment.library.base.component.view.SwitchButton
+                <com.example.fragment.library.base.component.view.SimpleSwitchButton
                     android:id="@+id/screen_record"
                     android:layout_width="45dp"
                     android:layout_height="30dp"

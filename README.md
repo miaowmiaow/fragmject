@@ -33,6 +33,33 @@ ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者�
 ```
    viewModel.getData()
 ```
+# 基于LiveData封装的消息总线LiveDataBus
+LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。
+```
+   //发送事件
+   SimpleLiveBus.with<String>("key").postEvent("value")
+   
+   //接受事件
+   SimpleLiveBus.with<String>("key").observe(viewLifecycleOwner, { it ->
+        println(it)
+   })
+   
+   //接受粘滞事件
+   SimpleLiveBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
+        println(it)
+   })
+```
+# Retrofit2+Kolin协程
+使用suspend定义Api，无需使用Call类型返回结果，直接返回data class类型，代码如下:
+```
+interface ApiService {
+    @GET
+    suspend fun get(
+        @Url url: String = "",
+        @HeaderMap header: Map<String, String>
+    ): ResponseBody
+}
+```
 # 自定义路由实现页面跳转的前置拦截，从而进行各种登录态等校验
 因为是单activity多fragment设计，所以单activity的作用之一就是用来控制fragment的切换。MainActivity有个switcher方法用来切换fragmen不用多说。  
 重点看navigation方法，页面的前置拦截就是在这个方法里面实现的，原理也很简单就是通过Fragment类名进行拦截在做相应的处理。

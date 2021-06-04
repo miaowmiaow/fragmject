@@ -15,7 +15,8 @@ class NavigationViewModel : BaseViewModel() {
     fun getNavigation() {
         viewModelScope.launch {
             val request = HttpRequest("navi/json")
-            navigationResult.postValue(get(request))
+            val response = get<NavigationListBean>(request)
+            navigationResult.postValue(response)
         }
     }
 

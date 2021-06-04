@@ -35,15 +35,14 @@ abstract class RouterActivity : BaseActivity() {
         navMode: NavMode
     ) {
         if (navMode == NavMode.SWITCH) {
-            curFragment =
-                FragmentHelper.switcher(
-                    supportFragmentManager,
-                    frameLayoutId(),
-                    curFragment,
-                    clazz,
-                    bundle,
-                    addToBackStack
-                )
+            curFragment = FragmentHelper.switcher(
+                supportFragmentManager,
+                frameLayoutId(),
+                curFragment,
+                clazz,
+                bundle,
+                addToBackStack
+            )
         } else if (navMode == NavMode.POP_BACK_STACK) {
             curFragment = FragmentHelper.pop(supportFragmentManager, clazz)
         }

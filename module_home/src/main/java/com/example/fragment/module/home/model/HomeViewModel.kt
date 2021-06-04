@@ -25,7 +25,17 @@ class HomeViewModel : BaseViewModel() {
 
     fun getBanner() {
         viewModelScope.launch {
-            bannerResult.postValue(get(HttpRequest("banner/json")))
+            val request = HttpRequest("banner/json")
+            val response = get<BannerDataBean>(request)
+            bannerResult.postValue(response)
+        }
+    }
+
+    private fun getArticleTop() {
+        viewModelScope.launch {
+            val request = HttpRequest("article/top/json")
+            val response = get<TopArticleBean>(request)
+            articleTopResult.postValue(response)
         }
     }
 
@@ -33,17 +43,15 @@ class HomeViewModel : BaseViewModel() {
         this.isRefresh = isRefresh
         viewModelScope.launch {
             if (isRefresh) {
-                articleTopResult.postValue(get(HttpRequest("article/top/json")))
-                page = 0
-            } else {
-                page++
+                getArticleTop()
             }
+            if (isRefresh) page = 0 else page++
             if (page <= pageCont) {
                 val request = HttpRequest("article/list/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<ArticleListBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                articleListResult.postValue(result)
+                val response = get<ArticleListBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                articleListResult.postValue(response)
             }
         }
     }
@@ -51,11 +59,7 @@ class HomeViewModel : BaseViewModel() {
     fun search(isRefresh: Boolean, k: String) {
         this.isRefresh = isRefresh
         viewModelScope.launch {
-            if (isRefresh) {
-                page = 0
-            } else {
-                page++
-            }
+            if (isRefresh) page = 0 else page++
             if (page <= pageCont) {
                 val request = HttpRequest("article/query/{page}/json")
                 request.putPath("page", page.toString())
@@ -70,11 +74,7 @@ class HomeViewModel : BaseViewModel() {
     fun getUserArticleList(isRefresh: Boolean) {
         this.isRefresh = isRefresh
         viewModelScope.launch {
-            if (isRefresh) {
-                page = 0
-            } else {
-                page++
-            }
+            if (isRefresh) page = 0 else page++
             if (page <= pageCont) {
                 val request = HttpRequest("user_article/list/{page}/json")
                 request.putPath("page", page.toString())

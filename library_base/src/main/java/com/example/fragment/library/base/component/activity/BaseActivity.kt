@@ -25,8 +25,8 @@ abstract class BaseActivity : AppCompatActivity() {
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
-            ).also {
-                it.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
+            ).also { layoutParams ->
+                layoutParams.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
             }
         )
         super.setContentView(frameLayout)
@@ -44,8 +44,8 @@ abstract class BaseActivity : AppCompatActivity() {
         } else {
             if (System.currentTimeMillis() - exitTime > 2000) {
                 exitTime = System.currentTimeMillis()
-                Toast.makeText(this, getString(R.string.one_more_press_2_back), Toast.LENGTH_SHORT)
-                    .show()
+                val msg = getString(R.string.one_more_press_2_back)
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
             } else {
                 moveTaskToBack(true)
             }

@@ -40,8 +40,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         super.onViewCreated(view, savedInstanceState)
         setupView()
         update()
-        viewModel.getHotKey()
-        viewModel.getTree()
     }
 
     override fun onResume() {
@@ -129,6 +127,8 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 }
             }
         })
+        viewModel.getHotKey()
+        viewModel.getTree()
     }
 
     private fun search() {

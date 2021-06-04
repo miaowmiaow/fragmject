@@ -26,7 +26,7 @@ class StandardDialog : BaseDialog() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DialogStandardBinding.inflate(inflater, container, false)
         return binding.root
     }

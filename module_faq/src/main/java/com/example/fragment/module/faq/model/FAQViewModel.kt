@@ -18,17 +18,13 @@ class FAQViewModel : BaseViewModel() {
     fun getUserArticleList(isRefresh: Boolean) {
         this.isRefresh = isRefresh
         viewModelScope.launch {
-            if (isRefresh) {
-                page = 0
-            } else {
-                page++
-            }
+            if (isRefresh) page = 0 else page++
             if (page <= pageCont) {
                 val request = HttpRequest("wenda/list/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<ArticleListBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                wendaResult.postValue(result)
+                val response = get<ArticleListBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                wendaResult.postValue(response)
             }
         }
     }

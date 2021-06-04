@@ -109,6 +109,13 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+# 避免Log打印输出
+-assumenosideeffects class android.util.Log {
+   public static *** v(...);
+   public static *** d(...);
+   public static *** i(...);
+   public static *** w(...);
+ }
 #解决webview和js的交互问题
 #其中的xx.xx.xx.xxx换成自己的完整包名
 #如果是内部类使用了webview与js的交互功能，则需要添加“$”后面跟着的是内部类名

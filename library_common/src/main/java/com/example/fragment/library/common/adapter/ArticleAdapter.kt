@@ -234,7 +234,9 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private fun collect(id: String): MutableLiveData<HttpResponse> {
         val result = MutableLiveData<HttpResponse>()
         collectJob = CoroutineScope(Dispatchers.Main).launch {
-            result.postValue(post(HttpRequest("lg/collect/{id}/json").putPath("id", id)))
+            val request = HttpRequest("lg/collect/{id}/json").putPath("id", id)
+            val response = post<HttpResponse>(request)
+            result.postValue(response)
         }
         return result
     }
@@ -242,9 +244,9 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private fun unCollect(id: String): MutableLiveData<HttpResponse> {
         val result = MutableLiveData<HttpResponse>()
         unCollectJob = CoroutineScope(Dispatchers.Main).launch {
-            val request = HttpRequest("lg/uncollect_originId/{id}/json")
-            request.putPath("id", id)
-            result.postValue(post(request))
+            val request = HttpRequest("lg/uncollect_originId/{id}/json").putPath("id", id)
+            val response = post<HttpResponse>(request)
+            result.postValue(response)
         }
         return result
     }

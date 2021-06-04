@@ -41,9 +41,9 @@ class SystemViewModel : BaseViewModel() {
                 val request = HttpRequest("article/list/{page}/json")
                 request.putPath("page", page.toString())
                 request.putQuery("cid", cid)
-                val result = get<ArticleListBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                treeListResult.postValue(result)
+                val response = get<ArticleListBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                treeListResult.postValue(response)
             }
         }
     }

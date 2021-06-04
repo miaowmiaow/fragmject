@@ -31,50 +31,48 @@ class UserViewModel : BaseViewModel() {
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            loginResult.postValue(
-                post(
-                    HttpRequest("user/login")
-                        .putParam("username", username)
-                        .putParam("password", password)
-                )
-            )
+            val request = HttpRequest("user/login")
+                .putParam("username", username)
+                .putParam("password", password)
+            val response = post<LoginBean>(request)
+            loginResult.postValue(response)
         }
     }
 
     fun register(username: String, password: String, repassword: String) {
         viewModelScope.launch {
-            registerResult.postValue(
-                post(
-                    HttpRequest("user/register")
-                        .putParam("username", username)
-                        .putParam("password", password)
-                        .putParam("repassword", repassword)
-                )
-            )
+            val request = HttpRequest("user/register")
+                .putParam("username", username)
+                .putParam("password", password)
+                .putParam("repassword", repassword)
+            val response = post<RegisterBean>(request)
+            registerResult.postValue(response)
         }
     }
 
     fun logout() {
         viewModelScope.launch {
-            logoutResult.postValue(get(HttpRequest("user/logout/json")))
+            val request = HttpRequest("user/logout/json")
+            val response = get<HttpResponse>(request)
+            logoutResult.postValue(response)
         }
     }
 
     fun shareArticle(title: String, link: String) {
         viewModelScope.launch(Dispatchers.Main) {
-            registerResult.postValue(
-                post(
-                    HttpRequest("lg/user_article/add/json")
-                        .putParam("title", title)
-                        .putParam("link", link)
-                )
-            )
+            val request = HttpRequest("lg/user_article/add/json")
+                .putParam("title", title)
+                .putParam("link", link)
+            val response = post<RegisterBean>(request)
+            registerResult.postValue(response)
         }
     }
 
     fun userCoin() {
         viewModelScope.launch {
-            userCoinResult.postValue(get(HttpRequest("lg/coin/userinfo/json")))
+            val request = HttpRequest("lg/coin/userinfo/jsonn")
+            val response = get<UserCoinBean>(request)
+            userCoinResult.postValue(response)
         }
     }
 
@@ -90,9 +88,9 @@ class UserViewModel : BaseViewModel() {
             if (page <= pageCont) {
                 val request = HttpRequest("lg/coin/list/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<MyCoinListBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                myCoinResult.postValue(result)
+                val response = get<MyCoinListBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                myCoinResult.postValue(response)
             }
         }
     }
@@ -109,9 +107,9 @@ class UserViewModel : BaseViewModel() {
             if (page <= pageCont) {
                 val request = HttpRequest("coin/rank/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<CoinRankBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                coinRankResult.postValue(result)
+                val response = get<CoinRankBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                coinRankResult.postValue(response)
             }
         }
     }
@@ -119,17 +117,13 @@ class UserViewModel : BaseViewModel() {
     fun myCollectArticle(isRefresh: Boolean) {
         this.isRefresh = isRefresh
         viewModelScope.launch {
-            if (isRefresh) {
-                page = 0
-            } else {
-                page++
-            }
+            if (isRefresh) page = 0 else page++
             if (page <= pageCont) {
                 val request = HttpRequest("lg/collect/list/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<ArticleListBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                myCollectArticleResult.postValue(result)
+                val response = get<ArticleListBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                myCollectArticleResult.postValue(response)
             }
         }
     }
@@ -146,9 +140,9 @@ class UserViewModel : BaseViewModel() {
             if (page <= pageCont) {
                 val request = HttpRequest("user/lg/private_articles/{page}/json")
                 request.putPath("page", page.toString())
-                val result = get<ShareArticleListBean>(request)
-                result.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
-                myShareArticleResult.postValue(result)
+                val response = get<ShareArticleListBean>(request)
+                response.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
+                myShareArticleResult.postValue(response)
             }
         }
     }
@@ -166,9 +160,9 @@ class UserViewModel : BaseViewModel() {
                 val request = HttpRequest("user/{id}/share_articles/{page}/json")
                 request.putPath("id", id)
                 request.putPath("page", page.toString())
-                val result = get<UserShareBean>(request)
-                result.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
-                userShareResult.postValue(result)
+                val response = get<UserShareBean>(request)
+                response.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
+                userShareResult.postValue(response)
             }
         }
     }

@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 abstract class BaseFragment : Fragment() {
 
     private var firstLoadFragment = true
-    var hiddenFragment = false
 
     abstract fun onFirstLoad()
 
@@ -15,12 +14,14 @@ abstract class BaseFragment : Fragment() {
             onFirstLoad()
             firstLoadFragment = !firstLoadFragment
         }
-        hiddenFragment = true
+        hiddenFragment(true)
     }
 
     override fun onPause() {
         super.onPause()
-        hiddenFragment = false
+        hiddenFragment(false)
     }
+
+    open fun hiddenFragment(hidden: Boolean){}
 
 }

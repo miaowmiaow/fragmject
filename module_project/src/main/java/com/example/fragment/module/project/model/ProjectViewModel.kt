@@ -20,25 +20,22 @@ class ProjectViewModel : BaseViewModel() {
     fun getProjectTree() {
         viewModelScope.launch {
             val request = HttpRequest("project/tree/json")
-            projectTreeResult.postValue(get(request))
+            val response = get<ProjectTreeBean>(request)
+            projectTreeResult.postValue(response)
         }
     }
 
     fun getProjectList(isRefresh: Boolean, cid: String) {
         this.isRefresh = isRefresh
         viewModelScope.launch {
-            if (isRefresh) {
-                page = 0
-            } else {
-                page++
-            }
+            if (isRefresh) page = 0 else page++
             if (page <= pageCont) {
                 val request = HttpRequest("project/list/{page}/json")
                 request.putPath("page", page.toString())
                 request.putQuery("cid", cid)
-                val result = get<ArticleListBean>(request)
-                result.data?.pageCount?.let { pageCont = it.toInt() }
-                projectListResult.postValue(result)
+                val response = get<ArticleListBean>(request)
+                response.data?.pageCount?.let { pageCont = it.toInt() }
+                projectListResult.postValue(response)
             }
         }
     }

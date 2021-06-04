@@ -51,6 +51,9 @@ class MyCollectArticleFragment : ViewModelFragment<FragmentMyCollectArticleBindi
             when {
                 result.errorCode == "0" -> {
                     result.data?.datas?.let { list ->
+                        list.forEach {
+                            it.collect = true
+                        }
                         if (viewModel.isRefresh) {
                             articleAdapter.setNewData(list)
                         } else {

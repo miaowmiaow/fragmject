@@ -16,7 +16,9 @@ class MainViewModel : BaseViewModel() {
 
     fun getHotKey() {
         viewModelScope.launch {
-            hotKeyResult.postValue(get(HttpRequest("hotkey/json")))
+            val request = HttpRequest("hotkey/json")
+            val response = get<HotKeyListBean>(request)
+            hotKeyResult.postValue(response)
         }
     }
 

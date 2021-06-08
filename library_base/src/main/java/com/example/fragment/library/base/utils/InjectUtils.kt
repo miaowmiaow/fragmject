@@ -1,12 +1,13 @@
 package com.example.fragment.library.base.utils
 
 import android.content.Context
+import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 
 object InjectUtils {
 
-    fun injectDarkModeJs(context: Context): String? {
+    fun Context.injectDarkModeJs(): String? {
         return try {
-            context.resources.assets.open("js/darkmode.js").use {
+            resources.assets.open("js/darkmode.js").use {
                 val buffer = ByteArray(it.available())
                 it.read(buffer)
                 String(buffer)
@@ -17,16 +18,26 @@ object InjectUtils {
         }
     }
 
-    fun newDarkModeJs(): String {
+    fun Context.newDarkModeJs(): String {
+        val forceDarkMode = isNightMode()
         return """
                     const darkmode = new Darkmode();
-                    if(!darkmode.isActivated()){darkmode.toggle();}
+                    if($forceDarkMode){
+                        if(!darkmode.isActivated()){
+                            darkmode.toggle();
+                        }
+                    }else{
+                        if(darkmode.isActivated()){
+                            darkmode.toggle();
+                        }
+                    }
+                    console.log(darkmode.isActivated())
         """.trimIndent()
     }
 
-    fun injectVConsoleJs(context: Context): String? {
+    fun Context.injectVConsoleJs(): String? {
         return try {
-            context.resources.assets.open("js/vconsole.min.js").use {
+            resources.assets.open("js/vconsole.min.js").use {
                 val buffer = ByteArray(it.available())
                 it.read(buffer)
                 String(buffer)
@@ -37,7 +48,7 @@ object InjectUtils {
         }
     }
 
-    fun newVConsoleJs(): String {
+    fun Context.newVConsoleJs(): String {
         return """
                     var vConsole = new VConsole();
         """.trimIndent()

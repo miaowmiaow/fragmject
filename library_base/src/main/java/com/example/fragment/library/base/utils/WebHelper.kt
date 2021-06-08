@@ -10,6 +10,11 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.component.view.SnailBar
+import com.example.fragment.library.base.utils.InjectUtils.injectDarkModeJs
+import com.example.fragment.library.base.utils.InjectUtils.injectVConsoleJs
+import com.example.fragment.library.base.utils.InjectUtils.newDarkModeJs
+import com.example.fragment.library.base.utils.InjectUtils.newVConsoleJs
+import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 import com.tencent.smtt.export.external.interfaces.IX5WebSettings
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest
 import com.tencent.smtt.export.external.interfaces.WebResourceResponse
@@ -39,7 +44,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
             QbSdk.forceSysWebView()
             val view = webView.view
             if (view is android.webkit.WebView) {
-                val forceDarkMode = if (UIModeUtils.isNightMode(parent.context)) {
+                val forceDarkMode = if (parent.context.isNightMode()) {
                     WebSettingsCompat.FORCE_DARK_ON
                 } else {
                     WebSettingsCompat.FORCE_DARK_OFF
@@ -48,7 +53,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
             }
         } else {
             QbSdk.unForceSysWebView()
-            webView.setDayOrNight(!UIModeUtils.isNightMode(parent.context))
+            webView.setDayOrNight(!parent.context.isNightMode())
         }
         val webSetting = webView.settings
         webSetting.allowFileAccess = true
@@ -89,7 +94,9 @@ class WebHelper private constructor(val parent: ViewGroup) {
                     if (url.startsWith("file:///android_asset/")) {
                         val index = url.lastIndexOf("/")
                         val filename = url.substring(index)
-                        return assetsResponse(view.context, "css$filename")
+                        val suffixIndex = url.lastIndexOf(".")
+                        val suffix = url.substring(suffixIndex + 1)
+                        return assetsResponse(view.context, "$suffix$filename")
                     }
                 }
                 return super.shouldInterceptRequest(view, url)
@@ -105,9 +112,11 @@ class WebHelper private constructor(val parent: ViewGroup) {
                         return webImageResponse(view.context, url)
                     }
                     if (url.startsWith("file:///android_asset/")) {
-                        val index = url.lastIndexOf("/")
-                        val filename = url.substring(index)
-                        return assetsResponse(view.context, "css$filename")
+                        val filenameIndex = url.lastIndexOf("/")
+                        val filename = url.substring(filenameIndex)
+                        val suffixIndex = url.lastIndexOf(".")
+                        val suffix = url.substring(suffixIndex + 1)
+                        return assetsResponse(view.context, "$suffix$filename")
                     }
                 }
                 return super.shouldInterceptRequest(view, request)
@@ -117,10 +126,12 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE
                 onPageStartedListener?.onPageStarted(view, url, favicon)
-                view?.evaluateJavascript(InjectUtils.injectVConsoleJs(view.context)) {}
-                view?.evaluateJavascript(InjectUtils.newVConsoleJs()) {}
-                view?.evaluateJavascript(InjectUtils.injectDarkModeJs(view.context)) {}
-                view?.evaluateJavascript(InjectUtils.newDarkModeJs()) {}
+                view?.apply {
+                    evaluateJavascript(context.injectDarkModeJs()) {}
+                    evaluateJavascript(context.newDarkModeJs()) {}
+                    evaluateJavascript(context.injectVConsoleJs()) {}
+                    evaluateJavascript(context.newVConsoleJs()) {}
+                }
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -185,34 +196,31 @@ class WebHelper private constructor(val parent: ViewGroup) {
 
     private fun webImageResponse(context: Context, url: String): WebResourceResponse? {
         ImageLoader.with(context).load(url).submit()?.let { bytes ->
+            val mimeType = getMimeTypeFromUrl(url, "image/png")
             val inputStream = ByteArrayInputStream(bytes)
-            return WebResourceResponse("image/png", "UTF-8", inputStream)
+            return WebResourceResponse(mimeType, "UTF-8", inputStream)
         }
         return null
     }
 
     private fun assetsResponse(context: Context, filename: String): WebResourceResponse? {
         try {
-            val mimeType = when {
-                filename.endsWith(".css") -> {
-                    "text/css"
-                }
-                filename.endsWith(".html") -> {
-                    "text/html"
-                }
-                filename.endsWith(".js") -> {
-                    "application/x-javascript"
-                }
-                else -> {
-                    "image/png"
-                }
-            }
+            val mimeType = getMimeTypeFromUrl(filename)
             val data = context.resources.assets.open(filename)
             return WebResourceResponse(mimeType, "UTF-8", data)
         } catch (e: Exception) {
             e.printStackTrace()
         }
         return null
+    }
+
+    private fun getMimeTypeFromUrl(url: String, defType: String = ""): String {
+        var mimeType = defType
+        val extension = MimeTypeMap.getFileExtensionFromUrl(url)
+        if (extension.isNotBlank()) {
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        }
+        return mimeType
     }
 
     interface OnReceivedTitleListener {

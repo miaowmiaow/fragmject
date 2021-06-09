@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'walle'
 
 android {
     compileSdkVersion rootProject.ext.android["compileSdkVersion"]
@@ -24,6 +25,15 @@ android {
         }
     }
 
+    signingConfigs {
+        sign {
+            storeFile file("../keystore.key")
+            storePassword "111111"
+            keyAlias "zzzzzz"
+            keyPassword "111111"
+        }
+    }
+
     buildTypes {
         release {
             debuggable false
@@ -33,12 +43,14 @@ android {
             shrinkResources true
             // 指定混淆保留规则
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.sign
         }
         debug {
             debuggable true
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.sign
             //应用包名添加.debug后缀
             applicationIdSuffix ".debug"
         }
@@ -66,6 +78,15 @@ android {
     }
 }
 
+walle {
+    // 指定渠道包的输出路径
+    apkOutputFolder = new File("${project.buildDir}/outputs/channels")
+    // 定制渠道包的APK的文件名称
+    apkFileNameFormat = '${appName}-${packageName}-${channel}-${buildType}-v${versionName}-${versionCode}-${buildTime}.apk'
+    // 渠道配置文件
+    channelFile = new File("${project.getProjectDir()}/channel")
+}
+
 dependencies {
     implementation project(path: ':library_common')
     implementation project(path: ':module_home')
@@ -74,4 +95,5 @@ dependencies {
     implementation project(path: ':module_system')
     implementation project(path: ':module_project')
     implementation project(path: ':module_user')
+    implementation rootProject.ext.dependencies["walle"]
 }

@@ -25,12 +25,12 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.databinding.ItemArticleBannerBinding
 import com.example.fragment.library.common.databinding.ItemArticleBinding
-import com.example.fragment.library.common.utils.StringUtils
 import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 class ArticleAdapter : BaseAdapter<ArticleBean>() {
 
@@ -46,11 +46,15 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private val bannerAdapter = BannerAdapter()
     private var bannerData: MutableList<BannerBean> = ArrayList()
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
         return if (viewType == 0) {
-            ItemArticleBannerBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemArticleBannerBinding.inflate(inflater, parent, false)
         } else {
-            ItemArticleBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemArticleBinding.inflate(inflater, parent, false)
         }
     }
 
@@ -86,7 +90,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             } else {
                 binding.tvTitle.isSingleLine = true
                 var desc = Html.fromHtml(item.desc).toString()
-                desc = StringUtils.removeAllBank(desc, 2)
+                desc = removeAllBank(desc, 2)
                 binding.tvDesc.text = desc
                 binding.tvDesc.visibility = View.VISIBLE
             }
@@ -171,6 +175,16 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             }
         }
         return format.toString()
+    }
+
+    private fun removeAllBank(str: String?, count: Int): String {
+        var s = ""
+        if (str != null) {
+            val p = Pattern.compile("\\s{$count,}|\t|\r|\n")
+            val m = p.matcher(str)
+            s = m.replaceAll(" ")
+        }
+        return s
     }
 
     fun setBannerData(data: List<BannerBean>) {

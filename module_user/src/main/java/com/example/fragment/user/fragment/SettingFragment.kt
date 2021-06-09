@@ -52,21 +52,15 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         binding.systemTheme.setOnCheckedChangeListener(object : SimpleSwitchButton.OnCheckedChangeListener {
             override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
                 uiMode = if (isChecked) -1 else 1
-                updateUIMode(uiMode)
                 WanHelper.setUIMode(uiMode)
-                view.postDelayed({
-                    baseActivity.initUIMode()
-                }, 150)
+                baseActivity.initUIMode()
             }
         })
         binding.darkTheme.setOnCheckedChangeListener(object : SimpleSwitchButton.OnCheckedChangeListener {
             override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
                 uiMode = if (isChecked) 2 else 1
-                updateUIMode(uiMode)
                 WanHelper.setUIMode(uiMode)
-                view.postDelayed({
-                    baseActivity.initUIMode()
-                }, 300)
+                baseActivity.initUIMode()
             }
         })
         binding.screenRecord.setOnCheckedChangeListener(object : SimpleSwitchButton.OnCheckedChangeListener {

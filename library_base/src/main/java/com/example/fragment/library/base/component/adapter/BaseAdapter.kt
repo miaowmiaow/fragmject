@@ -1,6 +1,7 @@
 package com.example.fragment.library.base.component.adapter
 
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,7 +11,6 @@ import androidx.viewbinding.ViewBinding
  * Adapter简单封装，使其支持ViewBinding
  */
 abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>() {
-
 
     companion object {
         private const val INVALID_POSITION = -1
@@ -96,7 +96,13 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
-        return ViewBindHolder(onCreateViewBinding(parent, viewType))
+            return ViewBindHolder(
+                onCreateViewBinding(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    viewType
+                )
+            )
     }
 
     override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
@@ -126,7 +132,11 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         return data.size
     }
 
-    abstract fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding
+    abstract fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding
 
     abstract fun onItemView(holder: ViewBindHolder, position: Int, item: T)
 

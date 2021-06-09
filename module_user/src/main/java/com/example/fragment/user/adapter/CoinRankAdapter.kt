@@ -18,8 +18,12 @@ class CoinRankAdapter : BaseAdapter<CoinBean>() {
         R.drawable.ic_medal_lao,
     )
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
-        return ItemCoinRankBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
+        return ItemCoinRankBinding.inflate(inflater, parent, false)
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: CoinBean) {

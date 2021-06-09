@@ -15,8 +15,12 @@ import com.example.fragment.module.system.databinding.ItemSystemBinding
 
 class SystemAdapter : BaseAdapter<TreeBean>() {
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
-        return ItemSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
+        return ItemSystemBinding.inflate(inflater, parent, false)
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: TreeBean) {

@@ -11,8 +11,12 @@ import com.example.fragment.module.navigation.databinding.ItemNavigationMenuBind
 
 class NavigationMenuAdapter : BaseAdapter<NavigationBean>() {
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
-        return ItemNavigationMenuBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
+        return ItemNavigationMenuBinding.inflate(inflater, parent, false)
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: NavigationBean) {

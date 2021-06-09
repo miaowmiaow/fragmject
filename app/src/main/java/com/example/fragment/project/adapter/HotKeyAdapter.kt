@@ -9,8 +9,12 @@ import com.example.fragment.project.databinding.ItemHotKeyBinding
 
 class HotKeyAdapter : BaseAdapter<HotKeyBean>() {
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
-        return ItemHotKeyBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
+        return ItemHotKeyBinding.inflate(inflater, parent, false)
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: HotKeyBean) {

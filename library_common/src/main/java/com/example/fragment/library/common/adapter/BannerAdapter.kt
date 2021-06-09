@@ -14,14 +14,18 @@ import com.example.fragment.library.common.databinding.ItemBannerBinding
 
 class BannerAdapter : BaseAdapter<BannerBean>() {
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
-        return ItemBannerBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
+        return ItemBannerBinding.inflate(inflater, parent, false)
     }
 
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
         val binding = holder.binding as ItemBannerBinding
-        if(item.imagePath.isNotEmpty()){
+        if (item.imagePath.isNotEmpty()) {
             ImageLoader.with(binding.banner.context).load(item.imagePath).into(binding.banner)
         }
         val baseActivity: RouterActivity = contextToActivity(binding.root.context)

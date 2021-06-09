@@ -4,13 +4,17 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
-import com.example.fragment.module.user.databinding.ItemCoinRecordBinding
 import com.example.fragment.library.common.bean.MyCoinBean
+import com.example.fragment.module.user.databinding.ItemCoinRecordBinding
 
-class CoinRecordAdapter : BaseAdapter<MyCoinBean>(){
+class CoinRecordAdapter : BaseAdapter<MyCoinBean>() {
 
-    override fun onCreateViewBinding(parent: ViewGroup, viewType: Int): ViewBinding {
-        return ItemCoinRecordBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    override fun onCreateViewBinding(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewBinding {
+        return ItemCoinRecordBinding.inflate(inflater, parent, false)
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: MyCoinBean) {

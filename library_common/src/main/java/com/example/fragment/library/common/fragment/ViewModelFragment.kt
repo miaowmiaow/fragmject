@@ -20,8 +20,10 @@ import java.lang.reflect.ParameterizedType
  */
 abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragment() {
 
-    lateinit var binding: VB
     lateinit var viewModel: VM
+
+    private var _binding: VB? = null
+    val binding get() = _binding!!
 
     abstract fun setViewBinding(inflater: LayoutInflater): VB
 
@@ -37,7 +39,7 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
             throw Exception("must has ParameterizedTypes")
         }
         viewModel = ViewModelProvider(this as ViewModelStoreOwner).get(clazz)
-        binding = setViewBinding(inflater)
+        _binding = setViewBinding(inflater)
         binding.root.isClickable = true
         binding.root.isFocusable = true
         return binding.root
@@ -54,6 +56,11 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
     override fun onPause() {
         super.onPause()
         hideInputMethod()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     /**

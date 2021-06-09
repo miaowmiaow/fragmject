@@ -267,9 +267,9 @@ class SimpleSwitchButton @JvmOverloads constructor(
                             this@SimpleSwitchButton,
                             state == STATE.OPEN
                         )
-                    }
-                    if (buttonOffset == 0f) {
-                        downAnimator(false)
+                        if (buttonOffset == 0f) {
+                            downAnimator(false)
+                        }
                     }
                 }
             }

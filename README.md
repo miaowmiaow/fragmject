@@ -1,7 +1,7 @@
 # 前言
 学习```Kotlin```有一段时间了，想写一个项目总结收获，就有了这个可能是东半球最简洁的玩安卓客户端，在此感谢[玩Android](https://www.wanandroid.com/) 的开放API。
 # 简介
-采用 Kotlin 语言编写，单Activity多Fragment，MVVM + ViewModel + LiveData + Retrofit + 协程 + ViewBinding等架构设计的项目，项目结构清晰，代码简介优雅
+采用 Kotlin 语言编写，专为新手入门准备的项目。单Activity多Fragment，MVVM，ViewModel + LiveData + Retrofit + 协程， ViewBinding等等。拒绝过度设计和封装，项目结构清晰，代码简洁优雅。
 # 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -83,6 +83,8 @@ interface ApiService {
 - [square/retrofit](https://github.com/square/retrofit)
 - [google/gson](https://github.com/google/gson)
 - [bumptech/glide](https://github.com/bumptech/glide)
+- [x5](https://x5.tencent.com/)
+- [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
 # Thanks
   感谢所有优秀的开源项目 ^_^   
   如果喜欢的话希望给个 Star 或 Fork ^_^  

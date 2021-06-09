@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
  *      取值：SimpleDBHelper.get(key: String)
  * 详细使用方法参考WanHelper.kt
  */
-@Database(entities = [SimpleDBHelper.KVEntity::class], version = 1, exportSchema = false)
+@Database(entities = [SimpleEntity::class], version = 1, exportSchema = false)
 abstract class SimpleDBHelper : RoomDatabase() {
 
     companion object {
@@ -21,18 +21,16 @@ abstract class SimpleDBHelper : RoomDatabase() {
         @Volatile
         private var database: SimpleDBHelper? = null
 
-        private fun getDatabase() = database ?: synchronized(this) {
+        private fun getDatabase() = database ?: synchronized(SimpleDBHelper::class.java) {
             database ?: Room.databaseBuilder(
                 BaseProvider.mContext.applicationContext,
                 SimpleDBHelper::class.java,
-                "SimpleDatabase"
-            ).build().also { db ->
-                database = db
-            }
+                SimpleDBHelper::class.java.simpleName
+            ).build().also { db -> database = db }
         }
 
-        fun set(key: String, value: String) {
-            getDatabase().set(key, value)
+        fun set(key: String, value: String?, expire: Long = Long.MAX_VALUE) {
+            getDatabase().set(key, value, expire)
         }
 
         fun get(key: String): MutableLiveData<String> {
@@ -41,89 +39,86 @@ abstract class SimpleDBHelper : RoomDatabase() {
 
     }
 
-    abstract fun getDao(): KVDao
+    abstract fun getSimpleDao(): SimpleDao
 
     @Synchronized
-    fun set(key: String, value: String) {
+    fun set(key: String, value: String?, expire: Long = Long.MAX_VALUE) {
         CoroutineScope(Dispatchers.IO).launch {
-            database?.apply {
-                try {
-                    val dao = getDao()
-                    val kv = dao.findByKey(key)
-                    if (kv == null) {
-                        dao.insert(KVEntity(key = key, value = value))
-                    } else {
-                        kv.value = value
-                        dao.update(kv)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    closeDatabase() //关闭策略待优化!!!
+            try {
+                val dao = getSimpleDao()
+                var entity = dao.findByKey(key)
+                if (entity == null) {
+                    entity = SimpleEntity(key = key, value = value, expire = expire)
+                    dao.insert(entity)
+                } else {
+                    entity.value = value
+                    entity.expire = expire
+                    dao.update(entity)
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                closeDatabase() //关闭策略待优化!!!
             }
         }
     }
 
     @Synchronized
     fun get(key: String): MutableLiveData<String> {
-        val value = MutableLiveData<String>()
+        val result = MutableLiveData<String>()
         CoroutineScope(Dispatchers.IO).launch {
-            database?.apply {
-                try {
-                    val dao = getDao()
-                    value.postValue(dao.findByKey(key)?.value)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    closeDatabase() //关闭策略待优化!!!
+            try {
+                val dao = getSimpleDao()
+                dao.find()?.forEach {
+                    if (it.expire < System.currentTimeMillis()) {
+                        dao.delete(it)
+                    }
                 }
+                val value = dao.findByKey(key)?.value
+                result.postValue(value)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                closeDatabase() //关闭策略待优化!!!
             }
         }
-        return value
+        return result
     }
 
     @Synchronized
     fun closeDatabase() {
         if (isOpen) {
             close()
+            database = null
         }
-        database = null
     }
 
-    @Dao
-    interface KVDao {
-
-        @Insert(onConflict = OnConflictStrategy.REPLACE)
-        suspend fun insert(kv: KVEntity): Long
-
-        @Insert(onConflict = OnConflictStrategy.REPLACE)
-        suspend fun insertAll(vararg kvs: KVEntity): Array<Long>
-
-        @Update
-        suspend fun update(vararg kv: KVEntity): Int
-
-        @Query("SELECT * FROM kv WHERE `key` = :key ORDER BY id DESC LIMIT 1")
-        suspend fun findByKey(key: String): KVEntity?
-
-        @Query("SELECT * FROM kv")
-        suspend fun findAll(): Array<KVEntity>?
-
-        @Delete
-        suspend fun delete(kv: KVEntity): Int
-
-        @Delete
-        suspend fun deleteAll(vararg kvs: KVEntity): Int
-
-    }
-
-    @Entity(tableName = "kv")
-    data class KVEntity(
-        @PrimaryKey(autoGenerate = true)
-        val id: Long = 0,
-        @ColumnInfo(name = "key")
-        var key: String,
-        @ColumnInfo(name = "value")
-        var value: String
-    )
 }
+
+@Dao
+interface SimpleDao {
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(entity: SimpleEntity): Long
+
+    @Delete
+    suspend fun delete(entity: SimpleEntity): Int
+
+    @Update
+    suspend fun update(entity: SimpleEntity): Int
+
+    @Query("SELECT * FROM simple_table WHERE `key` = :key ORDER BY id DESC LIMIT 1")
+    suspend fun findByKey(key: String): SimpleEntity?
+
+    @Query("SELECT * FROM simple_table")
+    suspend fun find(): Array<SimpleEntity>?
+
+}
+
+@Entity(tableName = "simple_table")
+data class SimpleEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+    @ColumnInfo(name = "key") var key: String,
+    @ColumnInfo(name = "value") var value: String?,
+    @ColumnInfo(name = "expire") var expire: Long = Long.MAX_VALUE
+)

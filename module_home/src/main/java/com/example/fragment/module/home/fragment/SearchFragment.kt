@@ -50,7 +50,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, HomeViewModel>()
         }
         historySearchAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                historySearchAdapter.getItem(position)?.apply {
+                historySearchAdapter.getItem(position).apply {
                     search(this)
                 }
             }

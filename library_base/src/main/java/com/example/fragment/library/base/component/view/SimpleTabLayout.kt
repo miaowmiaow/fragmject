@@ -89,7 +89,7 @@ class SimpleTabLayout @JvmOverloads constructor(
         }
     }
 
-    fun removeAllTabs(){
+    fun removeAllTabs() {
         slidingTabIndicator.removeAllViews()
     }
 
@@ -204,7 +204,7 @@ class SimpleTabLayout @JvmOverloads constructor(
     }
 
     private class CustomAdapterChangeListener(val tabLayout: SimpleTabLayout) :
-            ViewPager.OnAdapterChangeListener {
+        ViewPager.OnAdapterChangeListener {
         override fun onAdapterChanged(
             viewPager: ViewPager,
             oldAdapter: PagerAdapter?,
@@ -217,7 +217,7 @@ class SimpleTabLayout @JvmOverloads constructor(
     }
 
     private class CustomOnPageChangeListener(val tabLayout: SimpleTabLayout) :
-            ViewPager.OnPageChangeListener {
+        ViewPager.OnPageChangeListener {
 
         private var previousScrollState = 0
         private var scrollState = 0
@@ -228,7 +228,7 @@ class SimpleTabLayout @JvmOverloads constructor(
             positionOffsetPixels: Int
         ) {
             val updateIndicator =
-                    !(scrollState == ViewPager.SCROLL_STATE_SETTLING && previousScrollState == ViewPager.SCROLL_STATE_IDLE)
+                !(scrollState == ViewPager.SCROLL_STATE_SETTLING && previousScrollState == ViewPager.SCROLL_STATE_IDLE)
             tabLayout.setScrollPosition(position, positionOffset, updateIndicator)
         }
 
@@ -312,8 +312,8 @@ class SimpleTabLayout @JvmOverloads constructor(
             return
         }
         if (windowToken == null
-                || !ViewCompat.isLaidOut(this)
-                || slidingTabIndicator.childrenNeedLayout()
+            || !ViewCompat.isLaidOut(this)
+            || slidingTabIndicator.childrenNeedLayout()
         ) {
             setScrollPosition(newPosition, 0f, true)
             return
@@ -349,9 +349,9 @@ class SimpleTabLayout @JvmOverloads constructor(
         val selectedChild = slidingTabIndicator.getChildAt(position)
         selectedChild?.let {
             val nextChild =
-                    if (position + 1 < slidingTabIndicator.childCount) slidingTabIndicator.getChildAt(
-                        position + 1
-                    ) else null
+                if (position + 1 < slidingTabIndicator.childCount) slidingTabIndicator.getChildAt(
+                    position + 1
+                ) else null
             val selectedWidth = selectedChild.width
             val nextWidth = nextChild?.width ?: 0
 
@@ -362,8 +362,7 @@ class SimpleTabLayout @JvmOverloads constructor(
         return 0
     }
 
-    private inner class SlidingTabIndicator @JvmOverloads constructor(context: Context) :
-            LinearLayout(context) {
+    private inner class SlidingTabIndicator constructor(context: Context) : LinearLayout(context) {
 
         private var selectedIndicatorPaint: Paint
         private var defaultSelectionIndicator: GradientDrawable
@@ -438,9 +437,9 @@ class SimpleTabLayout @JvmOverloads constructor(
                         nextViewRight = tabViewContentBounds.right.toInt()
                     }
                     left =
-                            (selectionOffset * nextViewLeft + (1.0f - selectionOffset) * left).toInt()
+                        (selectionOffset * nextViewLeft + (1.0f - selectionOffset) * left).toInt()
                     right =
-                            (selectionOffset * nextViewRight + (1.0f - selectionOffset) * right).toInt()
+                        (selectionOffset * nextViewRight + (1.0f - selectionOffset) * right).toInt()
                 }
             } else {
                 left = -1
@@ -499,13 +498,13 @@ class SimpleTabLayout @JvmOverloads constructor(
             }
 
             val updateListener =
-                    ValueAnimator.AnimatorUpdateListener { valueAnimator ->
-                        val fraction = valueAnimator.animatedFraction
-                        setIndicatorPosition(
-                            AnimationUtils.lerp(animationStartLeft, finalTargetLeft, fraction),
-                            AnimationUtils.lerp(animationStartRight, finalTargetRight, fraction)
-                        )
-                    }
+                ValueAnimator.AnimatorUpdateListener { valueAnimator ->
+                    val fraction = valueAnimator.animatedFraction
+                    setIndicatorPosition(
+                        AnimationUtils.lerp(animationStartLeft, finalTargetLeft, fraction),
+                        AnimationUtils.lerp(animationStartRight, finalTargetRight, fraction)
+                    )
+                }
             if (recreateAnimation) {
                 indicatorAnimator.interpolator = AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR
                 indicatorAnimator.duration = duration

@@ -24,14 +24,12 @@ abstract class RouterActivity : BaseActivity() {
     abstract fun navigation(
         name: Router,
         bundle: Bundle? = null,
-        onBack: Boolean = true,
         navMode: NavMode = NavMode.SWITCH,
     )
 
     fun switcher(
         clazz: Class<out Fragment>,
         bundle: Bundle? = null,
-        addToBackStack: Boolean,
         navMode: NavMode
     ) {
         if (navMode == NavMode.SWITCH) {
@@ -41,7 +39,7 @@ abstract class RouterActivity : BaseActivity() {
                 curFragment,
                 clazz,
                 bundle,
-                addToBackStack
+                true
             )
         } else if (navMode == NavMode.POP_BACK_STACK) {
             curFragment = FragmentHelper.pop(supportFragmentManager, clazz)

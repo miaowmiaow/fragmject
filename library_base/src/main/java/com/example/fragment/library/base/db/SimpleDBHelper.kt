@@ -37,6 +37,9 @@ abstract class SimpleDBHelper : RoomDatabase() {
             return getDatabase().get(key)
         }
 
+        fun closeDatabase(){
+            getDatabase().closeDatabase()
+        }
     }
 
     abstract fun getSimpleDao(): SimpleDao
@@ -57,8 +60,7 @@ abstract class SimpleDBHelper : RoomDatabase() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-            } finally {
-                closeDatabase() //关闭策略待优化!!!
+                closeDatabase()
             }
         }
     }
@@ -78,8 +80,7 @@ abstract class SimpleDBHelper : RoomDatabase() {
                 result.postValue(value)
             } catch (e: Exception) {
                 e.printStackTrace()
-            } finally {
-                closeDatabase() //关闭策略待优化!!!
+                closeDatabase()
             }
         }
         return result

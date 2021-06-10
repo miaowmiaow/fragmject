@@ -18,8 +18,12 @@ class SystemListFragment : ViewModelFragment<FragmentSystemListBinding, SystemVi
 
     private var tree: TreeBean? = null
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSystemListBinding {
-        return FragmentSystemListBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentSystemListBinding {
+        return FragmentSystemListBinding::inflate
+    }
+
+    override fun setViewModel(): Class<SystemViewModel> {
+        return SystemViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -17,8 +17,12 @@ class MyShareArticleFragment : ViewModelFragment<FragmentMyShareArticleBinding, 
 
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentMyShareArticleBinding {
-        return FragmentMyShareArticleBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentMyShareArticleBinding {
+        return FragmentMyShareArticleBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

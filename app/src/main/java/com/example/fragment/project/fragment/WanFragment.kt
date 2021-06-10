@@ -46,8 +46,12 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
         ProjectListFragment.newInstance()
     )
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentWanBinding {
-        return FragmentWanBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentWanBinding {
+        return FragmentWanBinding::inflate
+    }
+
+    override fun setViewModel(): Class<BaseViewModel> {
+        return BaseViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

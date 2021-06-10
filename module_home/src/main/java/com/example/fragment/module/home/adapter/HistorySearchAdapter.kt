@@ -13,12 +13,8 @@ class HistorySearchAdapter : BaseAdapter<String>() {
         addOnClickListener(R.id.delete)
     }
 
-    override fun onCreateViewBinding(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        viewType: Int
-    ): ViewBinding {
-        return ItemHistorySearchBinding.inflate(inflater, parent, false)
+    override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return ItemHistorySearchBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: String) {

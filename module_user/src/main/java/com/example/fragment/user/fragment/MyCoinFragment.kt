@@ -19,8 +19,12 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>()
 
     private val coinRecordAdapter = CoinRecordAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentMyCoinBinding {
-        return FragmentMyCoinBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentMyCoinBinding {
+        return FragmentMyCoinBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

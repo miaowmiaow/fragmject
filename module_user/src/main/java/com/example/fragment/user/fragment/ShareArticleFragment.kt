@@ -13,8 +13,12 @@ import com.example.fragment.user.model.UserViewModel
 
 class ShareArticleFragment : ViewModelFragment<FragmentShareArticleBinding, UserViewModel>() {
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentShareArticleBinding {
-        return FragmentShareArticleBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentShareArticleBinding {
+        return FragmentShareArticleBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

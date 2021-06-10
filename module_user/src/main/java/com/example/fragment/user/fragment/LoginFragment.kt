@@ -11,8 +11,12 @@ import com.example.fragment.user.model.UserViewModel
 
 class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserViewModel>() {
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentLoginBinding {
-        return FragmentLoginBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentLoginBinding {
+        return FragmentLoginBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

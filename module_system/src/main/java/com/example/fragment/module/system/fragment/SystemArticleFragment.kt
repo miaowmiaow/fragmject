@@ -27,8 +27,12 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
     private val articleAdapter = ArticleAdapter()
     private var cid = ""
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSystemArticleBinding {
-        return FragmentSystemArticleBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentSystemArticleBinding {
+        return FragmentSystemArticleBinding::inflate
+    }
+
+    override fun setViewModel(): Class<SystemViewModel> {
+        return SystemViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

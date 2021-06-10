@@ -28,8 +28,12 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
 
     private val navigationMenuAdapter = NavigationMenuAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentNavigationBinding {
-        return FragmentNavigationBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentNavigationBinding {
+        return FragmentNavigationBinding::inflate
+    }
+
+    override fun setViewModel(): Class<NavigationViewModel> {
+        return NavigationViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -12,8 +12,12 @@ import com.example.fragment.user.model.UserViewModel
 
 class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserViewModel>() {
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentRegisterBinding {
-        return FragmentRegisterBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentRegisterBinding {
+        return FragmentRegisterBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

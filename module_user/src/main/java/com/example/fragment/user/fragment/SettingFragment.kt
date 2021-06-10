@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.library.base.component.view.SimpleSwitchButton
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
@@ -21,15 +22,18 @@ import com.example.fragment.user.model.UserViewModel
 class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>() {
 
     private var countDownTimer: CountDownTimer? = null
-    private var uiMode = 1
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSettingBinding {
-        return FragmentSettingBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentSettingBinding {
+        return FragmentSettingBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView(savedInstanceState)
+        setupView()
     }
 
     override fun onStart() {
@@ -37,33 +41,45 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
         update()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("UI_MODE", uiMode)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         countDownTimer?.cancel()
     }
 
-    private fun setupView(savedInstanceState: Bundle?) {
+    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
-        binding.systemTheme.setOnCheckedChangeListener(object : SimpleSwitchButton.OnCheckedChangeListener {
+        binding.systemTheme.setOnCheckedChangeListener(object :
+            SimpleSwitchButton.OnCheckedChangeListener {
             override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
-                uiMode = if (isChecked) -1 else 1
-                WanHelper.setUIMode(uiMode)
-                baseActivity.initUIMode()
+                WanHelper.setUIMode(
+                    if (isChecked) {
+                        binding.darkTheme.setChecked(false)
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                        -1
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        1
+                    }
+                )
             }
         })
-        binding.darkTheme.setOnCheckedChangeListener(object : SimpleSwitchButton.OnCheckedChangeListener {
+        binding.darkTheme.setOnCheckedChangeListener(object :
+            SimpleSwitchButton.OnCheckedChangeListener {
             override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
-                uiMode = if (isChecked) 2 else 1
-                WanHelper.setUIMode(uiMode)
-                baseActivity.initUIMode()
+                WanHelper.setUIMode(
+                    if (isChecked) {
+                        binding.systemTheme.setChecked(false)
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        2
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        1
+                    }
+                )
             }
         })
-        binding.screenRecord.setOnCheckedChangeListener(object : SimpleSwitchButton.OnCheckedChangeListener {
+        binding.screenRecord.setOnCheckedChangeListener(object :
+            SimpleSwitchButton.OnCheckedChangeListener {
             override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
                 val status = if (isChecked) 1 else 0
                 WanHelper.setScreenRecordStatus(status)
@@ -151,7 +167,6 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
                 })
                 .show(childFragmentManager)
         }
-        updateUIMode(savedInstanceState?.getInt("UI_MODE") ?: 1)
     }
 
     private fun update() {
@@ -159,8 +174,20 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         })
         WanHelper.getUIMode().observe(viewLifecycleOwner, { result ->
-            uiMode = result
-            updateUIMode(result)
+            when (result) {
+                1 -> {
+                    binding.systemTheme.setChecked(false)
+                    binding.darkTheme.setChecked(false)
+                }
+                2 -> {
+                    binding.systemTheme.setChecked(false)
+                    binding.darkTheme.setChecked(true)
+                }
+                else -> {
+                    binding.systemTheme.setChecked(true)
+                    binding.darkTheme.setChecked(false)
+                }
+            }
         })
         WanHelper.getScreenRecordStatus().observe(viewLifecycleOwner, { result ->
             when (result) {
@@ -181,23 +208,6 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
                 baseActivity.showTips(result.errorMsg)
             }
         })
-    }
-
-    private fun updateUIMode(uiMode: Int) {
-        when (uiMode) {
-            1 -> {
-                binding.systemTheme.setChecked(false)
-                binding.darkTheme.setChecked(false)
-            }
-            2 -> {
-                binding.systemTheme.setChecked(false)
-                binding.darkTheme.setChecked(true)
-            }
-            else -> {
-                binding.systemTheme.setChecked(true)
-                binding.darkTheme.setChecked(false)
-            }
-        }
     }
 
 }

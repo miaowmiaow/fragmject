@@ -29,8 +29,12 @@ class ProjectArticleFragment :
     private val articleAdapter = ArticleAdapter()
     private var cid = ""
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentProjectArticleBinding {
-        return FragmentProjectArticleBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentProjectArticleBinding {
+        return FragmentProjectArticleBinding::inflate
+    }
+
+    override fun setViewModel(): Class<ProjectViewModel> {
+        return ProjectViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

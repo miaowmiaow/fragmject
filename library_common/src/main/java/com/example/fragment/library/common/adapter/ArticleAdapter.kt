@@ -46,15 +46,11 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private val bannerAdapter = BannerAdapter()
     private var bannerData: MutableList<BannerBean> = ArrayList()
 
-    override fun onCreateViewBinding(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        viewType: Int
-    ): ViewBinding {
+    override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return if (viewType == 0) {
-            ItemArticleBannerBinding.inflate(inflater, parent, false)
+            ItemArticleBannerBinding::inflate
         } else {
-            ItemArticleBinding.inflate(inflater, parent, false)
+            ItemArticleBinding::inflate
         }
     }
 

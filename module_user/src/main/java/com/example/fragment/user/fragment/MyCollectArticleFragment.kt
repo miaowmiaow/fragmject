@@ -13,12 +13,17 @@ import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCollectArticleBinding
 import com.example.fragment.user.model.UserViewModel
 
-class MyCollectArticleFragment : ViewModelFragment<FragmentMyCollectArticleBinding, UserViewModel>() {
+class MyCollectArticleFragment :
+    ViewModelFragment<FragmentMyCollectArticleBinding, UserViewModel>() {
 
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentMyCollectArticleBinding {
-        return FragmentMyCollectArticleBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentMyCollectArticleBinding {
+        return FragmentMyCollectArticleBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

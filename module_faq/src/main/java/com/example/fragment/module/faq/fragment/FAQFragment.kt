@@ -22,8 +22,12 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
 
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentFaqBinding {
-        return FragmentFaqBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentFaqBinding {
+        return FragmentFaqBinding::inflate
+    }
+
+    override fun setViewModel(): Class<FAQViewModel> {
+        return FAQViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

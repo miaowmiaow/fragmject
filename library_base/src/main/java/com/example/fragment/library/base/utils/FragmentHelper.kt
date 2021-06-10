@@ -52,12 +52,12 @@ class FragmentHelper {
             clazz: Class<out Fragment>,
             bundle: Bundle?,
             addToBackStack: Boolean
-        ): Class<out Fragment>? {
+        ): Class<out Fragment> {
             val transaction = manager.beginTransaction()
             transaction.setCustomAnimations(
                 R.anim.slide_right_in,
-                0,
-                0,
+                R.anim.slide_left_out,
+                R.anim.slide_left_in,
                 R.anim.slide_right_out
             )
             if (curClazz != null) {
@@ -99,7 +99,7 @@ class FragmentHelper {
             return clazz
         }
 
-        fun pop(manager: FragmentManager, clazz: Class<out Fragment>): Class<out Fragment>? {
+        fun pop(manager: FragmentManager, clazz: Class<out Fragment>): Class<out Fragment> {
             manager.popBackStackImmediate(clazz.simpleName, 0)
             return clazz
         }

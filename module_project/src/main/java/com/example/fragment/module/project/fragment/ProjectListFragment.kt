@@ -22,8 +22,12 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
         }
     }
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentProjectListBinding {
-        return FragmentProjectListBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentProjectListBinding {
+        return FragmentProjectListBinding::inflate
+    }
+
+    override fun setViewModel(): Class<ProjectViewModel> {
+        return ProjectViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

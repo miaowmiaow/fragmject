@@ -9,12 +9,8 @@ import com.example.fragment.module.user.databinding.ItemCoinRecordBinding
 
 class CoinRecordAdapter : BaseAdapter<MyCoinBean>() {
 
-    override fun onCreateViewBinding(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        viewType: Int
-    ): ViewBinding {
-        return ItemCoinRecordBinding.inflate(inflater, parent, false)
+    override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return ItemCoinRecordBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: MyCoinBean) {

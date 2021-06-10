@@ -23,8 +23,12 @@ class WebFragment : ViewModelFragment<FragmentWebBinding, BaseViewModel>(),
     private lateinit var webHelper: WebHelper
     private var url = "https://wanandroid.com/"
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentWebBinding {
-        return FragmentWebBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentWebBinding {
+        return FragmentWebBinding::inflate
+    }
+
+    override fun setViewModel(): Class<BaseViewModel> {
+        return BaseViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

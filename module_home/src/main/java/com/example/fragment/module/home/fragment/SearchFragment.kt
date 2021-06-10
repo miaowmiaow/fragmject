@@ -22,8 +22,12 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, HomeViewModel>()
     private val historySearchAdapter = HistorySearchAdapter()
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSearchBinding {
-        return FragmentSearchBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentSearchBinding {
+        return FragmentSearchBinding::inflate
+    }
+
+    override fun setViewModel(): Class<HomeViewModel> {
+        return HomeViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

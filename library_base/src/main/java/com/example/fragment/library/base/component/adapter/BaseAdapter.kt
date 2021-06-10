@@ -96,13 +96,13 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
-            return ViewBindHolder(
-                onCreateViewBinding(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    viewType
-                )
+        return ViewBindHolder(
+            onCreateViewBinding(viewType).invoke(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
+        )
     }
 
     override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
@@ -132,11 +132,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         return data.size
     }
 
-    abstract fun onCreateViewBinding(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        viewType: Int
-    ): ViewBinding
+    abstract fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding
 
     abstract fun onItemView(holder: ViewBindHolder, position: Int, item: T)
 

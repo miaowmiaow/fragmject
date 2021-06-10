@@ -17,8 +17,12 @@ class UserShareFragment : ViewModelFragment<FragmentUserShareBinding, UserViewMo
 
     private var id: String = ""
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentUserShareBinding {
-        return FragmentUserShareBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentUserShareBinding {
+        return FragmentUserShareBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

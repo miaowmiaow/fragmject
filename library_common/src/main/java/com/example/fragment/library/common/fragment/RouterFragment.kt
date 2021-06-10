@@ -1,7 +1,6 @@
 package com.example.fragment.library.common.fragment
 
 import android.content.Context
-import com.example.fragment.library.base.component.activity.BaseActivity
 import com.example.fragment.library.base.component.fragment.BaseFragment
 import com.example.fragment.library.common.activity.RouterActivity
 

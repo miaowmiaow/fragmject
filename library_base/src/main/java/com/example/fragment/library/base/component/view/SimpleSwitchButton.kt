@@ -119,7 +119,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
         postInvalidate()
     }
 
-    fun toggle() {
+    private fun toggle() {
         if (toggleAnimator.isRunning) {
             toggleAnimator.cancel()
         }

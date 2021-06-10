@@ -22,8 +22,12 @@ class SystemFragment : ViewModelFragment<FragmentSystemBinding, SystemViewModel>
 
     private val systemAdapter = SystemAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSystemBinding {
-        return FragmentSystemBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentSystemBinding {
+        return FragmentSystemBinding::inflate
+    }
+
+    override fun setViewModel(): Class<SystemViewModel> {
+        return SystemViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

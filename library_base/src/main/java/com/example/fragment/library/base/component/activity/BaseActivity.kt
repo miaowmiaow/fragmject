@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.component.view.TipsView
+import com.example.fragment.library.base.db.SimpleDBHelper
 import com.example.fragment.library.base.utils.StatusBarUtils
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -50,6 +51,11 @@ abstract class BaseActivity : AppCompatActivity() {
                 moveTaskToBack(true)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        SimpleDBHelper.closeDatabase()
     }
 
     fun showTips(text: String?) {

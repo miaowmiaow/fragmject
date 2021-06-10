@@ -32,8 +32,12 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         WanFragment.newInstance()
     )
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentMainBinding {
-        return FragmentMainBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentMainBinding {
+        return FragmentMainBinding::inflate
+    }
+
+    override fun setViewModel(): Class<MainViewModel> {
+        return MainViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

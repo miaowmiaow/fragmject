@@ -14,14 +14,9 @@ import com.example.fragment.library.common.databinding.ItemBannerBinding
 
 class BannerAdapter : BaseAdapter<BannerBean>() {
 
-    override fun onCreateViewBinding(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        viewType: Int
-    ): ViewBinding {
-        return ItemBannerBinding.inflate(inflater, parent, false)
+    override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
+        return ItemBannerBinding::inflate
     }
-
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
         val binding = holder.binding as ItemBannerBinding

@@ -13,7 +13,6 @@ import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.bus.SimpleLiveBus
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
-import java.lang.reflect.ParameterizedType
 
 /**
  * ViewModel和ViewBinding注册Fragment
@@ -25,21 +24,17 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
     private var _binding: VB? = null
     val binding get() = _binding!!
 
-    abstract fun setViewBinding(inflater: LayoutInflater): VB
+    abstract fun setViewBinding(): (LayoutInflater) -> VB
+    
+    abstract fun setViewModel(): Class<VM>
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val type = javaClass.genericSuperclass
-        val clazz = if (type is ParameterizedType) {
-            type.actualTypeArguments[1] as Class<VM>
-        } else {
-            throw Exception("must has ParameterizedTypes")
-        }
-        viewModel = ViewModelProvider(this as ViewModelStoreOwner).get(clazz)
-        _binding = setViewBinding(inflater)
+        viewModel = ViewModelProvider(this as ViewModelStoreOwner).get(setViewModel())
+        _binding = setViewBinding().invoke(inflater)
         binding.root.isClickable = true
         binding.root.isFocusable = true
         return binding.root
@@ -70,7 +65,8 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
     open fun onUserStatusUpdate(userBean: UserBean) {}
 
     private fun hideInputMethod() {
-        val inputMethodManager = baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+        val inputMethodManager =
+            baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = baseActivity.currentFocus ?: return
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }

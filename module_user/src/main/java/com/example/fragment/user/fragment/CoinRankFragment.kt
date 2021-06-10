@@ -19,8 +19,12 @@ class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, UserViewMode
 
     private val coinRankAdapter = CoinRankAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentCoinRankBinding {
-        return FragmentCoinRankBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentCoinRankBinding {
+        return FragmentCoinRankBinding::inflate
+    }
+
+    override fun setViewModel(): Class<UserViewModel> {
+        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -21,8 +21,12 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>()
 
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(inflater: LayoutInflater): FragmentSquareBinding {
-        return FragmentSquareBinding.inflate(inflater)
+    override fun setViewBinding(): (LayoutInflater) -> FragmentSquareBinding {
+        return FragmentSquareBinding::inflate
+    }
+
+    override fun setViewModel(): Class<HomeViewModel> {
+        return HomeViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

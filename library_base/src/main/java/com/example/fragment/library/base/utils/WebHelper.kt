@@ -89,14 +89,20 @@ class WebHelper private constructor(val parent: ViewGroup) {
             ): WebResourceResponse? {
                 if (view != null && url != null) {
                     if (isImageUrl(url)) {
-                        return webImageResponse(view.context, url)
+                        val response = webImageResponse(view.context, url)
+                        if(response != null){
+                            return response
+                        }
                     }
                     if (url.startsWith("file:///android_asset/")) {
-                        val index = url.lastIndexOf("/")
-                        val filename = url.substring(index)
+                        val filenameIndex = url.lastIndexOf("/")
+                        val filename = url.substring(filenameIndex)
                         val suffixIndex = url.lastIndexOf(".")
                         val suffix = url.substring(suffixIndex + 1)
-                        return assetsResponse(view.context, "$suffix$filename")
+                        val response = assetsResponse(view.context, "$suffix$filename")
+                        if(response != null){
+                            return response
+                        }
                     }
                 }
                 return super.shouldInterceptRequest(view, url)
@@ -109,14 +115,20 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 if (view != null && request != null) {
                     val url = request.url.toString()
                     if (isImageUrl(url)) {
-                        return webImageResponse(view.context, url)
+                        val response = webImageResponse(view.context, url)
+                        if(response != null){
+                            return response
+                        }
                     }
                     if (url.startsWith("file:///android_asset/")) {
                         val filenameIndex = url.lastIndexOf("/")
                         val filename = url.substring(filenameIndex)
                         val suffixIndex = url.lastIndexOf(".")
                         val suffix = url.substring(suffixIndex + 1)
-                        return assetsResponse(view.context, "$suffix$filename")
+                        val response = assetsResponse(view.context, "$suffix$filename")
+                        if(response != null){
+                            return response
+                        }
                     }
                 }
                 return super.shouldInterceptRequest(view, request)

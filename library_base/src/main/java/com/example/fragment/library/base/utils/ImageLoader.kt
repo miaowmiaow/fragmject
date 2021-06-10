@@ -64,8 +64,8 @@ class ImageLoader private constructor() {
             if (viewDestroyed(this)) {
                 return null
             }
-            val bitmap = Glide.with(this).asBitmap().load(path).submit().get()
             try {
+                val bitmap = Glide.with(this).asBitmap().load(path).submit().get()
                 val baos = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                 return baos.toByteArray()

@@ -129,7 +129,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_below="@id/coin"
-
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
@@ -163,6 +162,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
+                android:tag="bury://onclick?key=setting"
                 android:text="系统设置"
                 android:textColor="@color/text_fff"
                 android:textSize="14sp"

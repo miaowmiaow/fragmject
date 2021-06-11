@@ -65,7 +65,7 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>()
                     }
                 }
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

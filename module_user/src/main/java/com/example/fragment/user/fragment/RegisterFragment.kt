@@ -50,7 +50,7 @@ class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserViewMode
                 }
                 baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

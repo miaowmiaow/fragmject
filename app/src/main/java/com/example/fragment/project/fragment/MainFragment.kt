@@ -126,7 +126,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                     WanHelper.setHotKey(this)
                     bannerHelper.startTimerTask()
                 }
-                if (result.errorMsg.isNotBlank()) {
+                if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                     baseActivity.showTips(result.errorMsg)
                 }
             }

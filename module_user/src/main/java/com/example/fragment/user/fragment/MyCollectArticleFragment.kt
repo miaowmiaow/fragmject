@@ -72,7 +72,7 @@ class MyCollectArticleFragment :
                     baseActivity.showTips(result.errorMsg)
                     baseActivity.navigation(Router.LOGIN)
                 }
-                result.errorMsg.isNotBlank() -> {
+                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
                     baseActivity.showTips(result.errorMsg)
                 }
             }

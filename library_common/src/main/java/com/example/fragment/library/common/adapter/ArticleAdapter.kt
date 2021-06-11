@@ -80,6 +80,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                 binding.ivImg.visibility = View.GONE
             }
             binding.tvTitle.text = Html.fromHtml(item.title)
+            binding.tvTitle.tag = "bury://${item.title}"
             if (TextUtils.isEmpty(item.desc)) {
                 binding.tvTitle.isSingleLine = false
                 binding.tvDesc.visibility = View.GONE
@@ -109,7 +110,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                             WanHelper.setUser(UserBean())
                             activity.navigation(Router.LOGIN)
                         }
-                        if (result.errorMsg.isNotBlank()) {
+                        if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                             activity.showTips(result.errorMsg)
                         }
                     })
@@ -122,7 +123,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                             WanHelper.setUser(UserBean())
                             activity.navigation(Router.LOGIN)
                         }
-                        if (result.errorMsg.isNotBlank()) {
+                        if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                             activity.showTips(result.errorMsg)
                         }
                     })

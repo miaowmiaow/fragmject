@@ -80,7 +80,7 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
                     binding.tab.selectTab(savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 0)
                 }
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

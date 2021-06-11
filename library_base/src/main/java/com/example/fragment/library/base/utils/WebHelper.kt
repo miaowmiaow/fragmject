@@ -38,6 +38,8 @@ class WebHelper private constructor(val parent: ViewGroup) {
     var onPageFinishedListener: OnPageFinishedListener? = null
     var onProgressChangedListener: OnProgressChangedListener? = null
 
+    private var injectJs = false
+
     init {
         webView.setBackgroundColor(ContextCompat.getColor(parent.context, R.color.white))
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
@@ -90,7 +92,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 if (view != null && url != null) {
                     if (isImageUrl(url)) {
                         val response = webImageResponse(view.context, url)
-                        if(response != null){
+                        if (response != null) {
                             return response
                         }
                     }
@@ -100,7 +102,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
                         val suffixIndex = url.lastIndexOf(".")
                         val suffix = url.substring(suffixIndex + 1)
                         val response = assetsResponse(view.context, "$suffix$filename")
-                        if(response != null){
+                        if (response != null) {
                             return response
                         }
                     }
@@ -116,7 +118,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
                     val url = request.url.toString()
                     if (isImageUrl(url)) {
                         val response = webImageResponse(view.context, url)
-                        if(response != null){
+                        if (response != null) {
                             return response
                         }
                     }
@@ -126,7 +128,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
                         val suffixIndex = url.lastIndexOf(".")
                         val suffix = url.substring(suffixIndex + 1)
                         val response = assetsResponse(view.context, "$suffix$filename")
-                        if(response != null){
+                        if (response != null) {
                             return response
                         }
                     }
@@ -138,18 +140,14 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE
                 onPageStartedListener?.onPageStarted(view, url, favicon)
-                view?.apply {
-                    evaluateJavascript(context.injectDarkModeJs()) {}
-                    evaluateJavascript(context.newDarkModeJs()) {}
-                    evaluateJavascript(context.injectVConsoleJs()) {}
-                    evaluateJavascript(context.newVConsoleJs()) {}
-                }
+                injectJs = false
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 progressBar.visibility = View.GONE
                 onPageFinishedListener?.onPageFinished(view, url)
+                injectJs = false
             }
         }
         webView.webChromeClient = object : WebChromeClient() {
@@ -163,6 +161,15 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 super.onProgressChanged(view, newProgress)
                 onProgressChangedListener?.onProgressChanged(view, newProgress)
                 progressBar.progress = newProgress
+                if (!injectJs && newProgress > 80) {
+                    injectJs = true
+                    view?.apply {
+                        evaluateJavascript(context.injectDarkModeJs()) {}
+                        evaluateJavascript(context.newDarkModeJs()) {}
+                        evaluateJavascript(context.injectVConsoleJs()) {}
+                        evaluateJavascript(context.newVConsoleJs()) {}
+                    }
+                }
             }
         }
         parent.addView(

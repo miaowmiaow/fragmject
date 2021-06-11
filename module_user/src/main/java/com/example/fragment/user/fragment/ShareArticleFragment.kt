@@ -57,7 +57,7 @@ class ShareArticleFragment : ViewModelFragment<FragmentShareArticleBinding, User
                     baseActivity.navigation(Router.LOGIN)
                 }
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

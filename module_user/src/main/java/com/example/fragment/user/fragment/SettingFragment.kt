@@ -130,7 +130,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
                         val args = Bundle()
-                        args.putString(Keys.URL, "https://github.com/miaowmiaow/FragmentProject")
+                        args.putString(Keys.URL, "https://www.bilibili.com/")
                         baseActivity.navigation(Router.WEB, args)
                     }
 
@@ -204,7 +204,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
                 WanHelper.setUser(UserBean())
                 baseActivity.onBackPressed()
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

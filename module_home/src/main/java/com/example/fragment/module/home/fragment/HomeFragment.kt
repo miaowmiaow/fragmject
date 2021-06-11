@@ -66,7 +66,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                     articleAdapter.setBannerData(this)
                 }
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })
@@ -79,7 +79,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                     articleAdapter.addData(0, list)
                 }
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })
@@ -94,7 +94,7 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
                     }
                 }
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
             if (binding.pullRefresh.isRefresh()) {

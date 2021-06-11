@@ -78,23 +78,23 @@ class FragmentHelper {
                 } catch (e: java.lang.Exception) {
                     e.printStackTrace()
                 }
+                if (fragment != null) {
+                    if (bundle != null && !bundle.isEmpty) {
+                        val arguments = fragment.arguments
+                        if (arguments != null) {
+                            arguments.putAll(bundle)
+                        } else {
+                            fragment.arguments = bundle
+                        }
+                    }
+                    if (addToBackStack) {
+                        transaction.addToBackStack(tag)
+                    }
+                    transaction.commitAllowingStateLoss()
+                }
             } else {
                 transaction.show(fragment)
                 transaction.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
-            }
-            if (fragment != null) {
-                if (bundle != null && !bundle.isEmpty) {
-                    val arguments = fragment.arguments
-                    if (arguments != null) {
-                        arguments.putAll(bundle)
-                    } else {
-                        fragment.arguments = bundle
-                    }
-                }
-                if (addToBackStack) {
-                    transaction.addToBackStack(tag)
-                }
-                transaction.commitAllowingStateLoss()
             }
             return clazz
         }

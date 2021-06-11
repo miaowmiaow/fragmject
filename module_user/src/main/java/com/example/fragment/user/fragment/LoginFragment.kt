@@ -49,7 +49,7 @@ class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserViewModel>() {
                 }
                 baseActivity.onBackPressed()
             }
-            if (result.errorMsg.isNotBlank()) {
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
         })

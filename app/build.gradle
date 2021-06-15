@@ -55,6 +55,8 @@ android {
             applicationIdSuffix ".debug"
             //禁用PNG压缩。
             crunchPngs false
+            //停用Crashlytics，以提高调试 build 的构建速度
+            ext.enableCrashlytics = false
         }
     }
 

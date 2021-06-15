@@ -53,6 +53,8 @@ android {
             signingConfig signingConfigs.sign
             //应用包名添加.debug后缀
             applicationIdSuffix ".debug"
+            //禁用PNG压缩。
+            crunchPngs false
         }
     }
 

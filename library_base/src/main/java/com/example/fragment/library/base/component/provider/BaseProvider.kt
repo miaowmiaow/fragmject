@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.component.provider
 
+import android.annotation.SuppressLint
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
@@ -10,6 +11,7 @@ class BaseProvider : ContentProvider() {
 
     companion object {
 
+        @SuppressLint("StaticFieldLeak")
         @JvmStatic
         lateinit var mContext: Context
 

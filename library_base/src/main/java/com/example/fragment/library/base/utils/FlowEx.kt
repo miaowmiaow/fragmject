@@ -1,4 +1,4 @@
-package com.example.library.utils
+package com.example.fragment.library.base.utils
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -25,40 +25,3 @@ fun countDownCoroutines(
         .flowOn(Dispatchers.Main)
         .launchIn(scope) //scope.launch { flow.collect() }的缩写, 代表在某个协程上下文环境中去接收释放的值
 }
-
-//
-//private var etLinkJob: Job? = null
-//private val etLinkFlow = MutableStateFlow("")
-//
-//etLink.addTextChangedListener(object : TextWatcher {
-//    override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-//    }
-//
-//    override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-//    }
-//
-//    override fun afterTextChanged(s: Editable) {
-//        etLinkFlow.value = s.toString()
-//    }
-//})
-//
-//etLinkJob = CoroutineScope(Dispatchers.Main).launch {
-//    etLinkFlow.sample(1000)
-//        .filter {
-//            it.isNotEmpty()
-//        }
-//        .flatMapLatest { link ->
-//            flow {
-//                hyperlinkList.forEach { regex ->
-//                    isMatch(link, regex).apply {
-//                        if (this) emit(link)
-//                    }
-//                }
-//            }
-//        }
-//        .distinctUntilChanged()
-//        .collect {
-//            println(it)
-//        }
-//}
-//

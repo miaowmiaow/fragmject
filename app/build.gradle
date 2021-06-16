@@ -18,9 +18,9 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += [
-                        "room.schemaLocation":"$projectDir/schemas".toString(),
-                        "room.incremental":"true",
-                        "room.expandProjection":"true"]
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "true"]
             }
         }
     }
@@ -79,6 +79,21 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    dexOptions {
+        // 声明是否对依赖的库进行 dex 预处理来使你的增量构建更快速
+        preDexLibraries true
+        // 设置最大的线程数量使用当运行 dex-in-process 时,默认值是 4
+        maxProcessCount 8
+    }
+}
+
+kapt {
+    useBuildCache = true
+    // 增加注解处理器的最大错误次数,默认为 100。
+    javacOptions {
+        option("-Xmaxerrs", 500)
     }
 }
 

@@ -7,13 +7,16 @@ import com.example.fragment.library.base.http.SimpleHttp
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
+import kotlin.concurrent.thread
 
 class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        initSimpleHttp()
-        initQbSdk()
+        thread {
+            initSimpleHttp()
+            initQbSdk()
+        }
     }
 
     override fun attachBaseContext(base: Context?) {

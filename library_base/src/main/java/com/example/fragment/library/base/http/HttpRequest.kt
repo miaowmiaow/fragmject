@@ -2,8 +2,12 @@ package com.example.fragment.library.base.http
 
 import android.text.TextUtils
 import java.io.File
-import java.util.LinkedHashSet
+import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.HashMap
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 /**
  * http请求体
@@ -21,19 +25,12 @@ open class HttpRequest @JvmOverloads constructor(
         private var PARAM_URL_REGEX = Pattern.compile("\\{($PARAM)\\}")
     }
 
-    private var baseUrl: String = ""
-
-    fun setBaseUrl(baseUrl: String): HttpRequest {
-        this.baseUrl = baseUrl
-        return this
-    }
-
     fun setUrl(url: String): HttpRequest {
         this.url = url
         return this
     }
 
-    fun getUrl(): String {
+    fun getUrl(baseUrl: String? = null): String {
         val m = PARAM_URL_REGEX.matcher(url)
         val patterns: MutableSet<String> = LinkedHashSet()
         while (m.find()) {
@@ -44,21 +41,23 @@ open class HttpRequest @JvmOverloads constructor(
                 url = url.replace("{$it}", path[it].toString())
             }
         }
-        val urlStringBuilder = StringBuilder(url)
+        val relativeUrl = StringBuilder(url)
         if (query.isNotEmpty()) {
-            val absoluteUrl = StringBuilder(baseUrl).append(url)
+            val absoluteUrl = StringBuilder()
+            baseUrl?.apply { absoluteUrl.append(this) }
+            absoluteUrl.append(url)
             if (!absoluteUrl.contains("?")) {
-                urlStringBuilder.append("?")
+                relativeUrl.append("?")
             }
-            if (!urlStringBuilder.endsWith("?")) {
-                urlStringBuilder.append("&")
+            if (!relativeUrl.endsWith("?")) {
+                relativeUrl.append("&")
             }
             query.forEach { (key, value) ->
-                urlStringBuilder.append(key).append("=").append(value).append("&")
+                relativeUrl.append(key).append("=").append(value).append("&")
             }
-            urlStringBuilder.setLength(urlStringBuilder.length - 1)
+            relativeUrl.setLength(relativeUrl.length - 1)
         }
-        return urlStringBuilder.toString()
+        return relativeUrl.toString()
     }
 
     fun putPath(key: String, value: String): HttpRequest {

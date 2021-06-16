@@ -153,9 +153,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        bannerHelper?.apply {
-            stopTimerTask()
-        }
+        bannerHelper?.stopTimerTask()
         collectJob?.cancel()
         unCollectJob?.cancel()
         super.onDetachedFromRecyclerView(recyclerView)
@@ -177,7 +175,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private fun removeAllBank(str: String?, count: Int): String {
         var s = ""
         if (str != null) {
-            val p = Pattern.compile("\\s{$count,}|\t|\r|\n")
+            val p = Pattern.compile("\\s{"+count+",}|\t|\r|\n")
             val m = p.matcher(str)
             s = m.replaceAll(" ")
         }

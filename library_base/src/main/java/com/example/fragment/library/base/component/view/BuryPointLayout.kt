@@ -12,7 +12,7 @@ import android.widget.FrameLayout
 /**
  * 轻量级无痕埋点布局，使用方式android:tag="bury://埋点信息"
  */
-class BuryLayout @JvmOverloads constructor(
+class BuryPointLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -64,7 +64,7 @@ class BuryLayout @JvmOverloads constructor(
         if (view.tag != null) {
             val tag = view.tag.toString()
             if (tag.startsWith(BURY)) {
-                val buryStr = tag.substring(7)
+                val buryStr = tag.substring(BURY.length)
                 listener?.onBuryPoint(view, buryStr)
                 return true
             }

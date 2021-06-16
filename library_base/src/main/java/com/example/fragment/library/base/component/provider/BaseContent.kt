@@ -1,24 +1,22 @@
 package com.example.fragment.library.base.component.provider
 
-import android.annotation.SuppressLint
 import android.content.ContentProvider
 import android.content.ContentValues
-import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 
-class BaseProvider : ContentProvider() {
+class BaseContent : ContentProvider() {
 
     companion object {
 
-        @SuppressLint("StaticFieldLeak")
-        @JvmStatic
-        lateinit var mContext: Context
+        private lateinit var contentProvider: ContentProvider
 
+        @JvmStatic
+        fun get() = contentProvider.context!!
     }
 
     override fun onCreate(): Boolean {
-        mContext = context!!
+        contentProvider = this
         return false
     }
 

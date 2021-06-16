@@ -2,7 +2,7 @@ package com.example.fragment.library.base.db
 
 import androidx.lifecycle.MutableLiveData
 import androidx.room.*
-import com.example.fragment.library.base.component.provider.BaseProvider
+import com.example.fragment.library.base.component.provider.BaseContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +23,7 @@ abstract class SimpleDBHelper : RoomDatabase() {
 
         private fun getDatabase() = database ?: synchronized(SimpleDBHelper::class.java) {
             database ?: Room.databaseBuilder(
-                BaseProvider.mContext.applicationContext,
+                BaseContent.get().applicationContext,
                 SimpleDBHelper::class.java,
                 SimpleDBHelper::class.java.simpleName
             ).build().also { db -> database = db }

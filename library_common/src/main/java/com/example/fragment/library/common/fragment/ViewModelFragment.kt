@@ -40,8 +40,8 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
         //通过LiveDataBus观察UserBean的变化，从而通知页面刷新
         SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             onUserStatusUpdate(userBean)
@@ -53,8 +53,8 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
         hideInputMethod()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onDestroy() {
+        super.onDestroy()
         _binding = null
     }
 

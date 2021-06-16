@@ -17,7 +17,7 @@ import android.view.View;
 
 import androidx.core.content.ContextCompat;
 
-import com.example.fragment.library.base.component.provider.BaseProvider;
+import com.example.fragment.library.base.component.provider.BaseContent;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
@@ -27,7 +27,7 @@ public class SystemUtil {
      * 获取应用程序名称
      */
     public static synchronized String getAppName() {
-        return getAppName(BaseProvider.mContext);
+        return getAppName(BaseContent.get());
     }
 
     public static synchronized String getAppName(Context context) {
@@ -46,7 +46,7 @@ public class SystemUtil {
      * 获取应用程序版本名称
      */
     public static synchronized String getVersionName() {
-        return getVersionName(BaseProvider.mContext);
+        return getVersionName(BaseContent.get());
     }
 
     public static synchronized String getVersionName(Context context) {
@@ -65,7 +65,7 @@ public class SystemUtil {
      * 获取应用程序版本号
      */
     public static synchronized int getVersionCode() {
-        return getVersionCode(BaseProvider.mContext);
+        return getVersionCode(BaseContent.get());
     }
 
     public static synchronized int getVersionCode(Context context) {
@@ -83,7 +83,7 @@ public class SystemUtil {
      * 获取应用程序包名
      */
     public static synchronized String getPackageName() {
-        return getPackageName(BaseProvider.mContext);
+        return getPackageName(BaseContent.get());
     }
 
     public static synchronized String getPackageName(Context context) {
@@ -101,7 +101,7 @@ public class SystemUtil {
      * 跳转应用详情
      */
     public static void gotoAppDetailsSettings() {
-        gotoAppDetailsSettings(BaseProvider.mContext);
+        gotoAppDetailsSettings(BaseContent.get());
     }
 
     public static void gotoAppDetailsSettings(Context context) {
@@ -125,7 +125,7 @@ public class SystemUtil {
      * @return
      */
     public static boolean isServiceRunning(String serviceName) {
-        return isRunningService(BaseProvider.mContext, serviceName);
+        return isRunningService(BaseContent.get(), serviceName);
     }
 
     public static boolean isRunningService(Context context, String serviceName) {
@@ -144,7 +144,7 @@ public class SystemUtil {
      * @return 本应用已经位于最前端时，返回 true；否则返回 false
      */
     public static boolean isRunningForeground() {
-        return isRunningForeground(BaseProvider.mContext);
+        return isRunningForeground(BaseContent.get());
     }
 
     public static boolean isRunningForeground(Context context) {
@@ -165,7 +165,7 @@ public class SystemUtil {
      * 当本应用位于后台时，则将它切换到最前端
      */
     public static void setTopApp() {
-        setTopApp(BaseProvider.mContext);
+        setTopApp(BaseContent.get());
     }
 
     public static void setTopApp(Context context) {
@@ -188,7 +188,7 @@ public class SystemUtil {
      */
     @SuppressLint("InvalidWakeLockTag")
     public static void acquireWakeLock() {
-        acquireWakeLock(BaseProvider.mContext);
+        acquireWakeLock(BaseContent.get());
     }
 
     @SuppressLint("InvalidWakeLockTag")

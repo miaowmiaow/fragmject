@@ -143,9 +143,8 @@ class SimpleHttp private constructor() {
     ): T {
         return withContext(Dispatchers.IO) {
             try {
-                request.setBaseUrl(baseUrl.toString())
                 converter.converter(
-                    getService().get(request.getUrl(), request.getHeader()), type
+                    getService().get(request.getUrl(baseUrl.toString()), request.getHeader()), type
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()
@@ -162,10 +161,9 @@ class SimpleHttp private constructor() {
     ): T {
         return withContext(Dispatchers.IO) {
             try {
-                request.setBaseUrl(baseUrl.toString())
                 converter.converter(
                     getService().post(
-                        request.getUrl(),
+                        request.getUrl(baseUrl.toString()),
                         request.getHeader(),
                         request.getParam()
                     ), type
@@ -202,10 +200,9 @@ class SimpleHttp private constructor() {
         }
         return withContext(Dispatchers.IO) {
             try {
-                request.setBaseUrl(baseUrl.toString())
                 converter.converter(
                     getService().form(
-                        request.getUrl(),
+                        request.getUrl(baseUrl.toString()),
                         request.getHeader(),
                         body.build()
                     ), type

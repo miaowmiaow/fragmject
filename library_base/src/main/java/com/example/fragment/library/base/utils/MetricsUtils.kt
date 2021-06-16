@@ -1,14 +1,14 @@
 package com.example.fragment.library.base.utils
 
 import android.content.Context
-import com.example.fragment.library.base.component.provider.BaseProvider
+import com.example.fragment.library.base.component.provider.BaseContent
 
 object MetricsUtils {
     /**
      * 获取屏幕宽度
      */
     val screenWidth: Int
-        get() = getScreenWidth(BaseProvider.mContext)
+        get() = getScreenWidth(BaseContent.get())
 
     fun getScreenWidth(context: Context): Int {
         val metrics = context.resources.displayMetrics
@@ -19,7 +19,7 @@ object MetricsUtils {
      * 获取屏幕高度
      */
     val screenHeight: Int
-        get() = getScreenHeight(BaseProvider.mContext)
+        get() = getScreenHeight(BaseContent.get())
 
     fun getScreenHeight(context: Context): Int {
         val metrics = context.resources.displayMetrics
@@ -27,7 +27,7 @@ object MetricsUtils {
     }
 
     val densityDpi: Int
-        get() = getDensityDpi(BaseProvider.mContext)
+        get() = getDensityDpi(BaseContent.get())
 
     fun getDensityDpi(context: Context): Int {
         return context.resources.displayMetrics.densityDpi
@@ -37,7 +37,7 @@ object MetricsUtils {
      * dp转px
      */
     fun dp2px(dp: Float): Float {
-        return dp2px(BaseProvider.mContext, dp)
+        return dp2px(BaseContent.get(), dp)
     }
 
     fun dp2px(context: Context, dp: Float): Float {
@@ -49,7 +49,7 @@ object MetricsUtils {
      * px转dp
      */
     fun px2dp(px: Float): Float {
-        return px2dp(BaseProvider.mContext, px)
+        return px2dp(BaseContent.get(), px)
     }
 
     fun px2dp(context: Context, px: Float): Float {
@@ -61,7 +61,7 @@ object MetricsUtils {
      * px转sp
      */
     fun px2sp(px: Float): Float {
-        return px2sp(BaseProvider.mContext, px)
+        return px2sp(BaseContent.get(), px)
     }
 
     fun px2sp(context: Context, px: Float): Float {
@@ -73,7 +73,7 @@ object MetricsUtils {
      * sp转px
      */
     fun sp2px(sp: Float): Float {
-        return sp2px(BaseProvider.mContext, sp)
+        return sp2px(BaseContent.get(), sp)
     }
 
     fun sp2px(context: Context, sp: Float): Float {

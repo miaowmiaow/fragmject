@@ -55,7 +55,7 @@
 
     <application>
         <provider
-            android:name=".component.provider.BaseProvider"
+            android:name=".component.provider.BaseContent"
             android:authorities="${applicationId}.BaseProvider"
             android:exported="false" />
     </application>

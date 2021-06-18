@@ -1,8 +1,6 @@
 package com.example.fragment.project
 
 import android.app.Application
-import android.content.Context
-import androidx.multidex.MultiDex
 import com.example.fragment.library.base.http.SimpleHttp
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
@@ -17,11 +15,6 @@ class App : Application() {
             initSimpleHttp()
             initQbSdk()
         }
-    }
-
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(base)
     }
 
     private fun initSimpleHttp() {

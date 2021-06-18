@@ -21,7 +21,7 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun setContentView(view: View) {
         //添加埋点布局和顶部提示view
         tipsView = TipsView(view.context)
-        val frameLayout = BuryPointLayout(view.context)
+        val frameLayout = FrameLayout(view.context)
         frameLayout.addView(view)
         frameLayout.addView(
             tipsView,
@@ -32,11 +32,6 @@ abstract class BaseActivity : AppCompatActivity() {
                 layoutParams.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
             }
         )
-        frameLayout.setOnBuryPointListener(object : BuryPointLayout.OnBuryPointListener{
-            override fun onBuryPoint(view: View, buryStr: String) {
-                println("Bury: $buryStr")
-            }
-        })
         super.setContentView(frameLayout)
     }
 

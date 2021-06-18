@@ -162,7 +162,6 @@
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
-                android:tag="bury://onclick?key=setting"
                 android:text="系统设置"
                 android:textColor="@color/text_fff"
                 android:textSize="14sp"

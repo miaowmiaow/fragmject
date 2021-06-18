@@ -4,14 +4,14 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
-    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
+    compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)
+    buildToolsVersion gradle.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion rootProject.ext.android["minSdkVersion"]
-        targetSdkVersion rootProject.ext.android["targetSdkVersion"]
-        versionCode rootProject.ext.android["versionCode"]
-        versionName rootProject.ext.android["versionName"]
+        minSdkVersion Integer.valueOf(gradle.minSdkVersion)
+        targetSdkVersion Integer.valueOf(gradle.targetSdkVersion)
+        versionCode Integer.valueOf(gradle.versionCode)
+        versionName gradle.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -31,33 +31,32 @@ android {
 
 dependencies {
     api fileTree(dir: "libs", include: ["*.jar"])
-    api rootProject.ext.dependencies["appcompat"]
-    api rootProject.ext.dependencies["constraintlayout"]
-    api rootProject.ext.dependencies["flexbox"]
-    api rootProject.ext.dependencies["multidex"]
-    api rootProject.ext.dependencies["material"]
-    api rootProject.ext.dependencies["kotlin-stdlib"]
-    api rootProject.ext.dependencies["kotlinx-coroutines-android"]
-    api rootProject.ext.dependencies["androidx"]
-    api rootProject.ext.dependencies["androidx-ktx"]
+    api rootProject.ext.dependencies["androidx-core"]
+    api rootProject.ext.dependencies["androidx-core-ktx"]
     api rootProject.ext.dependencies["androidx-webkit"]
-    api rootProject.ext.dependencies["activity-ktx"]
-    api rootProject.ext.dependencies["fragment-ktx"]
-    api rootProject.ext.dependencies["lifecycle-livedata-ktx"]
-    api rootProject.ext.dependencies["lifecycle-runtime"]
-    api rootProject.ext.dependencies["lifecycle-viewmodel-ktx"]
-    api rootProject.ext.dependencies["lifecycle-viewmodel-savedstate"]
-    kapt rootProject.ext.dependencies["lifecycle-compiler"]
-    api rootProject.ext.dependencies["retrofit"]
-    api rootProject.ext.dependencies["okhttp"]
-    api rootProject.ext.dependencies["okhttp-logging-interceptor"]
-    api rootProject.ext.dependencies["gson"]
-    api rootProject.ext.dependencies["room-runtime"]
-    kapt rootProject.ext.dependencies["room-compiler"]
-    api rootProject.ext.dependencies["room-ktx"]
-    api rootProject.ext.dependencies["glide"]
-    annotationProcessor rootProject.ext.dependencies["glide-compiler"]
-    api rootProject.ext.dependencies["tbs"]
+    api rootProject.ext.dependencies["androidx-activity-ktx"]
+    api rootProject.ext.dependencies["androidx-fragment-ktx"]
+    kapt rootProject.ext.dependencies["androidx-lifecycle-compiler"]
+    api rootProject.ext.dependencies["androidx-lifecycle-livedata-ktx"]
+    api rootProject.ext.dependencies["androidx-lifecycle-runtime"]
+    api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-ktx"]
+    api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-savedstate"]
+    api rootProject.ext.dependencies["androidx-room-runtime"]
+    kapt rootProject.ext.dependencies["androidx-room-compiler"]
+    api rootProject.ext.dependencies["androidx-room-ktx"]
+    api rootProject.ext.dependencies["androidx-appcompat"]
+    api rootProject.ext.dependencies["androidx-constraintlayout"]
+    api rootProject.ext.dependencies["google-flexbox"]
+    api rootProject.ext.dependencies["google-material"]
+    api rootProject.ext.dependencies["google-gson"]
+    api rootProject.ext.dependencies["jetbrains-kotlin-stdlib"]
+    api rootProject.ext.dependencies["jetbrains-kotlinx-coroutines-android"]
+    api rootProject.ext.dependencies["squareup-retrofit"]
+    api rootProject.ext.dependencies["squareup-okhttp"]
+    api rootProject.ext.dependencies["squareup-okhttp-logging-interceptor"]
+    api rootProject.ext.dependencies["bumptech-glide"]
+    annotationProcessor rootProject.ext.dependencies["bumptech-glide-compiler"]
+    api rootProject.ext.dependencies["tencent-tbs"]
 
     api 'junit:junit:4.13'
     api 'androidx.test.ext:junit:1.1.2'

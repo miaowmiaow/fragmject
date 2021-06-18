@@ -12,7 +12,7 @@ rootProject.name = "FragmentProject"
 def initGradleEnvironment(){
     // 从config.properties获取app配置信息，减少不必要的build
     Properties properties = new Properties()
-    File propertyFile = new File("config.properties")
+    File propertyFile = new File(rootDir.getAbsolutePath()+ "/config.properties")
     properties.load(propertyFile.newDataInputStream())
     /*
       根据Project、Gradle生命周期的介绍，settings对象的创建位于具体Project创建之前，而Gradle底对象已经创建好了。

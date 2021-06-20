@@ -16,7 +16,6 @@
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) |
 # Fragment + ViewMode + LiveData
-ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者之间的关系：  
 1、ViewModel是一个抽象类通过继承实现我们自己的ViewModel类，代码如下:
 ```
    class MyViewModel : ViewModel(){

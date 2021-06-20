@@ -1,7 +1,16 @@
 # 前言
 学习```Kotlin```有一段时间了，想写一个项目总结收获，就有了这个可能是东半球最简洁的玩安卓客户端，在此感谢[玩Android](https://www.wanandroid.com/) 的开放API。
 # 简介
-采用 Kotlin 语言编写，专为新手入门准备的项目。单Activity多Fragment，MVVM，ViewModel + LiveData + Retrofit + 协程， ViewBinding等等。拒绝过度设计和封装，项目结构清晰，代码简洁优雅。
+适合初学者的入门项目，通过对Kotlin的系统运用，实现的一个功能完备符合主流市场标准App。  
+虽然本项目的定位是入门级，但是该有的知识点却一点不少，对理解其他项目设计思想和封装技巧也很有帮助。  
+学习本项目你将有如下收获：  
+- Kotlin函数进阶，泛型，反射，协程的运用
+- ViewBinding的运用
+- ViewModel的运用
+- LiveData的运用
+- Room数据库的运用
+- MVVM开发架构
+- 单Activity多Fragment设计
 # 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -35,16 +44,18 @@ ViewMode和LiveData的概念就不再赘述，这里简单介绍下它们三者�
 ```
 # 基于LiveData封装的消息总线LiveDataBus
 LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。
+ 1、发送事件
 ```
-   //发送事件
    SimpleLiveBus.with<String>("key").postEvent("value")
-   
-   //接受事件
+```
+2、接收事件
+```
    SimpleLiveBus.with<String>("key").observe(viewLifecycleOwner, { it ->
         println(it)
    })
-   
-   //接受粘滞事件
+```
+3、接收粘滞事件
+```
    SimpleLiveBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
         println(it)
    })
@@ -83,7 +94,7 @@ interface ApiService {
 - [square/retrofit](https://github.com/square/retrofit)
 - [google/gson](https://github.com/google/gson)
 - [bumptech/glide](https://github.com/bumptech/glide)
-- [x5](https://x5.tencent.com/)
+- [tencent-x5](https://x5.tencent.com/)
 - [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
 # Thanks
   感谢所有优秀的开源项目 ^_^   

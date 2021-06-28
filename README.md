@@ -10,7 +10,10 @@
 - LiveData的运用
 - Room数据库的运用
 - MVVM开发架构
-- 单Activity多Fragment设计
+- 单Activity多Fragment
+- 字节码插桩
+- 暗夜模式
+- 屏幕录制
 # 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -42,7 +45,7 @@
    viewModel.getData()
 ```
 # 基于LiveData封装的消息总线LiveDataBus
-LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。
+LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。  
  1、发送事件
 ```
    SimpleLiveBus.with<String>("key").postEvent("value")
@@ -70,30 +73,12 @@ interface ApiService {
     ): ResponseBody
 }
 ```
-# 自定义路由实现页面跳转的前置拦截，从而进行各种登录态等校验
-因为是单activity多fragment设计，所以单activity的作用之一就是用来控制fragment的切换。MainActivity有个switcher方法用来切换fragmen不用多说。  
-重点看navigation方法，页面的前置拦截就是在这个方法里面实现的，原理也很简单就是通过Fragment类名进行拦截在做相应的处理。
-```
-   fun navigation(clazz: Class<out Fragment>, bundle: Bundle?, addToBackStack: Boolean) {
-        if (aspectFragments.contains(clazz) && !isLogin()) {
-            switcher(LoginFragment::class.java, bundle, addToBackStack)
-        } else {
-            switcher(clazz, bundle, addToBackStack)
-        }
-    }
-
-    private val aspectFragments = listOf(
-        MyCoinFragment::class.java,
-        MyCollectArticleFragment::class.java,
-        MyShareArticleFragment::class.java
-    )
-```
 # 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
 - [google/gson](https://github.com/google/gson)
 - [bumptech/glide](https://github.com/bumptech/glide)
-- [tencent-x5](https://x5.tencent.com/)
+- [tencent/x5](https://x5.tencent.com/)
 - [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
 # Thanks
   感谢所有优秀的开源项目 ^_^   

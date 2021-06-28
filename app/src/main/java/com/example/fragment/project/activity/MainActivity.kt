@@ -17,6 +17,7 @@ import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
 import com.example.fragment.project.fragment.MainFragment
+import com.example.fragment.project.utils.TestAnnotation
 import com.example.fragment.user.fragment.*
 
 class MainActivity : RouterActivity() {
@@ -61,6 +62,7 @@ class MainActivity : RouterActivity() {
         }
     }
 
+    @TestAnnotation(message= "MainActivity.onCreate", sb = false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)

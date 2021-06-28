@@ -1,0 +1,35 @@
+plugins {
+    id 'groovy'
+    id 'maven'
+}
+
+repositories{
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+
+    implementation 'org.ow2.asm:asm:7.0'
+    implementation 'org.ow2.asm:asm-commons:7.0'
+    implementation 'org.ow2.asm:asm-analysis:7.0'
+    implementation 'org.ow2.asm:asm-util:7.0'
+    implementation 'org.ow2.asm:asm-tree:7.0'
+    compileOnly 'com.android.tools.build:gradle:4.2.1', {
+        exclude group:'org.ow2.asm'
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.groupId = 'com.example.plugin'
+            pom.artifactId = 'statistic'
+            pom.version = '1.0.0'
+            // maven本地仓库的目录
+            repository(url: uri('../repos'))
+        }
+    }
+}

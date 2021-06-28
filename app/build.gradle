@@ -1,8 +1,11 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'walle'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+    id 'walle'
+    id 'statistic'
+}
 
 android {
     compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)
@@ -115,4 +118,46 @@ dependencies {
     implementation project(path: ':module_project')
     implementation project(path: ':module_user')
     implementation rootProject.ext.dependencies["meituan-walle"]
+}
+
+import org.objectweb.asm.Opcodes
+
+buryPoint {
+    hooks = [
+            [
+                    'agentName'   : 'viewOnPageSelected',
+                    'agentDesc'   : '(I)V',
+                    'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation': false,
+                    'methodName'  : 'onPageSelected',
+                    'methodDesc'  : '(I)V',
+                    'methodParent': 'Landroidx/viewpager/widget/ViewPager$OnPageChangeListener;',
+                    'methodParams': [
+                            1: Opcodes.ILOAD
+                    ]
+            ],
+            [
+                    'agentName'   : 'viewOnClick',                                             //采集数据的方法名
+                    'agentDesc'   : '(Landroid/view/View;)V',                                  //采集数据的方法描述
+                    'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',      //采集数据的方法的路径
+                    'isAnnotation': false,
+                    'methodName'  : 'onClick',                                                 //插入的方法名
+                    'methodDesc'  : '(Landroid/view/View;)V',                                  //插入的方法描述
+                    'methodParent': 'Landroid/view/View$OnClickListener;',                     //插入的方法的实现接口
+                    'methodParams': [
+                            1: Opcodes.ALOAD                                                   //采集数据的方法参数起始索引(从1开始) : 参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
+                    ]
+            ],
+            [
+                    'agentName'       : 'testAnnotation',
+                    'agentDesc'       : '(Ljava/lang/String;Z)V',
+                    'agentParent'     : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation'    : true,
+                    'annotationDesc'  : 'Lcom/example/fragment/project/utils/TestAnnotation;', //扫描的方法注解名称
+                    'annotationParams': [
+                            'message': Opcodes.ALOAD,                                          //方法注解的值名称 : 参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
+                            'sb'     : Opcodes.ILOAD
+                    ]
+            ],
+    ]
 }

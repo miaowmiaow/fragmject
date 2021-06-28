@@ -20,6 +20,7 @@ import com.example.fragment.module.home.fragment.SquareFragment
 import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
+import com.example.fragment.project.utils.TestAnnotation
 
 class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     OnBackPressedListener {
@@ -67,6 +68,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onUserStatusUpdate(userBean: UserBean) {
         if (userBean.id.isNotEmpty()) {
             binding.logo.setOnClickListener(null)
@@ -79,7 +81,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     private fun setupView() {
         binding.menu.setOnClickListener {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {

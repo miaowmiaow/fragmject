@@ -13,10 +13,13 @@ class StatisticPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        def extension = project.extensions.create('buryPoint', BuryPointExtension)
         def android = project.extensions.findByType(AppExtension)
+        // 注册BuryPointTransform
         android.registerTransform(new BuryPointTransform())
+        // 获取gradle里面配置的埋点信息
+        def extension = project.extensions.create('buryPoint', BuryPointExtension)
         project.afterEvaluate {
+            // 遍历配置的埋点信息，将其保存在HOOKS方便调用
             extension.hooks.each { Map<String, Object> map ->
                 BuryPointCell cell = new BuryPointCell()
                 boolean isAnnotation = map.get("isAnnotation")

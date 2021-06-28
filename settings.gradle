@@ -1,16 +1,3 @@
-rootProject.name = "FragmentProject"
-
-include ':module_navigation'
-include ':app'
-include ':module_home'
-include ':module_faq'
-include ':module_system'
-include ':module_project'
-include ':module_user'
-include ':library_common'
-include ':library_base'
-include ':plugin_statistic'
-
 def initGradleEnvironment(){
     // 从config.properties获取app配置信息，减少不必要的build
     Properties properties = new Properties()
@@ -31,3 +18,16 @@ def initGradleEnvironment(){
 }
 //初始化
 initGradleEnvironment()
+
+rootProject.name = "FragmentProject"
+
+include ':app'
+include ':library_base'
+include ':library_common'
+include ':module_faq'
+include ':module_home'
+include ':module_navigation'
+include ':module_project'
+include ':module_system'
+include ':module_user'
+include ':plugin_statistic'

@@ -20,6 +20,7 @@ import com.example.fragment.module.home.fragment.SquareFragment
 import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
+import com.example.fragment.project.utils.TestAnnotation
 
 class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     OnBackPressedListener {
@@ -46,6 +47,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         update()
     }
 
+    @TestAnnotation(message= "MainFragment.onResume", sb = true)
     override fun onResume() {
         super.onResume()
         baseActivity.registerOnBackPressedListener(this::class.java.simpleName, this)
@@ -67,6 +69,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onUserStatusUpdate(userBean: UserBean) {
         if (userBean.id.isNotEmpty()) {
             binding.logo.setOnClickListener(null)
@@ -118,6 +121,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         binding.viewpager.currentItem = 1
     }
 
+    @TestAnnotation(message= "MainFragment.update", sb = false)
     private fun update() {
         viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
             result.data?.apply {

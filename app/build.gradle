@@ -1,8 +1,11 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'walle'
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+    id 'walle'
+    id 'statistic'
+}
 
 android {
     compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)
@@ -115,4 +118,46 @@ dependencies {
     implementation project(path: ':module_project')
     implementation project(path: ':module_user')
     implementation rootProject.ext.dependencies["meituan-walle"]
+}
+
+import org.objectweb.asm.Opcodes
+
+buryPoint {
+    hooks = [
+            [
+                    'agentName'   : 'viewOnClick',
+                    'agentDesc'   : '(Landroid/view/View;)V',
+                    'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation': false,
+                    'methodName'  : 'onClick',
+                    'methodDesc'  : '(Landroid/view/View;)V',
+                    'methodParent': 'Landroid/view/View$OnClickListener;',
+                    'methodParams': [
+                            1: Opcodes.ALOAD
+                    ]
+            ],
+            [
+                    'agentName'   : 'viewOnPageSelected',
+                    'agentDesc'   : '(I)V',
+                    'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation': false,
+                    'methodName'  : 'onPageSelected',
+                    'methodDesc'  : '(I)V',
+                    'methodParent': 'Landroidx/viewpager/widget/ViewPager$OnPageChangeListener;',
+                    'methodParams': [
+                            1: Opcodes.ILOAD
+                    ]
+            ],
+            [
+                    'agentName'       : 'testAnnotation',
+                    'agentDesc'       : '(Ljava/lang/String;Z)V',
+                    'agentParent'     : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation'    : true,
+                    'annotationDesc'  : 'Lcom/example/fragment/project/utils/TestAnnotation;',
+                    'annotationParams': [
+                            'message': Opcodes.ALOAD,
+                            'sb'     : Opcodes.ILOAD
+                    ]
+            ],
+    ]
 }

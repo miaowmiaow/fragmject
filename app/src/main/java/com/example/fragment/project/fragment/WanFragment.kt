@@ -65,7 +65,6 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
         outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
     }
 
-    @TestAnnotation(message= "WanFragment.setupView", sb = false)
     private fun setupView(savedInstanceState: Bundle?) {
         binding.viewpager.offscreenPageLimit = 4
         binding.viewpager.adapter = object :

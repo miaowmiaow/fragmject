@@ -15,9 +15,16 @@ class BuryPointMethodVisitor extends AdviceAdapter {
         this.methodDescriptor = desc
     }
 
+    /**
+     * 扫描类的注解时调用
+     * @param descriptor 注解名称
+     * @param visible
+     * @return
+     */
     @Override
     AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
         AnnotationVisitor annotationVisitor = super.visitAnnotation(descriptor, visible)
+        // 通过descriptor判断是否是需要扫描的注解
         BuryPointCell cell = StatisticPlugin.HOOKS.get(descriptor)
         if (cell != null) {
             BuryPointCell newCell = cell.clone()
@@ -25,6 +32,7 @@ class BuryPointMethodVisitor extends AdviceAdapter {
                 @Override
                 void visit(String name, Object value) {
                     super.visit(name, value)
+                    // 保存注解的参数值
                     newCell.annotationData.put(name, value)
                 }
 
@@ -40,6 +48,13 @@ class BuryPointMethodVisitor extends AdviceAdapter {
         return annotationVisitor
     }
 
+    /**
+     * lambda表达式时调用
+     * @param name
+     * @param descriptor
+     * @param bootstrapMethodHandle
+     * @param bootstrapMethodArguments
+     */
     @Override
     void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
         super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments)
@@ -57,12 +72,15 @@ class BuryPointMethodVisitor extends AdviceAdapter {
         }
     }
 
+    /**
+     * 进入方法时调用
+     */
     @Override
     protected void onMethodEnter() {
         super.onMethodEnter()
         BuryPointCell cell = StatisticPlugin.HOOKS.get(methodName + methodDescriptor)
         if (cell != null) {
-            if (cell.isAnnotation) {
+            if (cell.isAnnotation) { // 遍历注解参数并赋值给采集方法
                 def entrySet = cell.annotationParams.entrySet()
                 def size = entrySet.size()
                 for (int i = 0; i < size; i++) {
@@ -73,7 +91,7 @@ class BuryPointMethodVisitor extends AdviceAdapter {
                     mv.visitVarInsn(load, i + 10)
                 }
                 mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
-            } else {
+            } else { // 将扫描方法参数赋值给采集方法
                 for (int key : cell.methodParams.keySet()) {
                     mv.visitVarInsn(cell.methodParams.get(key), key)
                 }
@@ -84,6 +102,9 @@ class BuryPointMethodVisitor extends AdviceAdapter {
 
     /**
      * 推断类型
+     * int ILOAD = 21; int ISTORE = 54;
+     * 33 = ISTORE - ILOAD
+     *
      * @param load
      * @returno
      */

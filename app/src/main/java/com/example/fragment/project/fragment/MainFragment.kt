@@ -47,7 +47,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         update()
     }
 
-    @TestAnnotation(message= "MainFragment.onResume", sb = true)
     override fun onResume() {
         super.onResume()
         baseActivity.registerOnBackPressedListener(this::class.java.simpleName, this)
@@ -82,7 +81,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     private fun setupView() {
         binding.menu.setOnClickListener {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
@@ -121,7 +119,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         binding.viewpager.currentItem = 1
     }
 
-    @TestAnnotation(message= "MainFragment.update", sb = false)
     private fun update() {
         viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
             result.data?.apply {

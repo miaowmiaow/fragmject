@@ -18,8 +18,7 @@ public class DefaultTaskExecutor {
     private static volatile DefaultTaskExecutor sInstance;
 
     private DefaultTaskExecutor() {}
-
-    @NonNull
+    
     public static DefaultTaskExecutor getInstance() {
         if (sInstance != null) {
             return sInstance;

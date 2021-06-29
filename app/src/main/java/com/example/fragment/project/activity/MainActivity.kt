@@ -4,7 +4,7 @@ import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
-import com.example.fragment.library.base.bus.SimpleLiveBus
+import com.example.fragment.library.base.bus.SimpleLiveDataBus
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
@@ -77,7 +77,7 @@ class MainActivity : RouterActivity() {
     override fun onStart() {
         super.onStart()
         WanHelper.getUser().observe(this, { userBean ->
-            SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
+            SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
         })
     }
 
@@ -86,7 +86,7 @@ class MainActivity : RouterActivity() {
     }
 
     private fun update() {
-        SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+        SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             userId = userBean.id
         })
     }

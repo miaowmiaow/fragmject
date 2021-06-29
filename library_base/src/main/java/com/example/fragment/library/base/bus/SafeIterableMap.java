@@ -1,4 +1,5 @@
 package com.example.fragment.library.base.bus;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 

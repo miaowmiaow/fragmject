@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.bus.SimpleLiveBus
+import com.example.fragment.library.base.bus.SimpleLiveDataBus
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
 
@@ -43,7 +43,7 @@ abstract class ViewModelFragment<VB : ViewBinding, VM : ViewModel> : RouterFragm
     override fun onStart() {
         super.onStart()
         //通过LiveDataBus观察UserBean的变化，从而通知页面刷新
-        SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+        SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             onUserStatusUpdate(userBean)
         })
     }

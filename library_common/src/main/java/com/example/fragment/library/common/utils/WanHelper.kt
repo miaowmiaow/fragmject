@@ -2,7 +2,7 @@ package com.example.fragment.library.common.utils
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
-import com.example.fragment.library.base.bus.SimpleLiveBus
+import com.example.fragment.library.base.bus.SimpleLiveDataBus
 import com.example.fragment.library.base.db.SimpleDBHelper
 import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.library.common.bean.HotKeyBean
@@ -73,7 +73,7 @@ object WanHelper {
     }
 
     fun setUser(userBean: UserBean) {
-        SimpleLiveBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
+        SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
         SimpleDBHelper.set(USER, userBean.toJson())
     }
 

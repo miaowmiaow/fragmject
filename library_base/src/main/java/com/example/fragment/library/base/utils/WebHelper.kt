@@ -193,7 +193,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
     }
 
     fun onDestroy() {
-        parent.removeView(webView);
+        parent.removeView(webView)
         try {
             webView.removeAllViews()
             webView.loadDataWithBaseURL(null, "", "text/html", "utf-8", null)

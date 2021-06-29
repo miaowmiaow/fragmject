@@ -1,6 +1,7 @@
 package com.example.fragment.library.common.adapter
 
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.text.TextUtils
@@ -79,18 +80,18 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             } else {
                 binding.ivImg.visibility = View.GONE
             }
-            binding.tvTitle.text = Html.fromHtml(item.title)
+            binding.tvTitle.text = fromHtml(item.title)
             if (TextUtils.isEmpty(item.desc)) {
                 binding.tvTitle.isSingleLine = false
                 binding.tvDesc.visibility = View.GONE
             } else {
                 binding.tvTitle.isSingleLine = true
-                var desc = Html.fromHtml(item.desc).toString()
+                var desc = fromHtml(item.desc).toString()
                 desc = removeAllBank(desc, 2)
                 binding.tvDesc.text = desc
                 binding.tvDesc.visibility = View.VISIBLE
             }
-            binding.tvChapterName.text = Html.fromHtml(
+            binding.tvChapterName.text = fromHtml(
                 formatChapterName(item.superChapterName, item.chapterName)
             )
             val activity: RouterActivity = contextToActivity(binding.root.context)
@@ -158,7 +159,15 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         super.onDetachedFromRecyclerView(recyclerView)
     }
 
-    private fun formatChapterName(vararg names: String): String? {
+    private fun fromHtml(str: String): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
+        } else {
+            Html.fromHtml(str).toString()
+        }
+    }
+
+    private fun formatChapterName(vararg names: String): String {
         val format = StringBuilder()
         for (name in names) {
             if (!TextUtils.isEmpty(name)) {
@@ -174,7 +183,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private fun removeAllBank(str: String?, count: Int): String {
         var s = ""
         if (str != null) {
-            val p = Pattern.compile("\\s{"+count+",}|\t|\r|\n")
+            val p = Pattern.compile("\\s{" + count + ",}|\t|\r|\n")
             val m = p.matcher(str)
             s = m.replaceAll(" ")
         }

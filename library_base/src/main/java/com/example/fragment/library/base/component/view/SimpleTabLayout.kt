@@ -7,10 +7,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.database.DataSetObserver
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.RectF
+import android.graphics.*
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.AttributeSet
@@ -573,7 +570,7 @@ class SimpleTabLayout @JvmOverloads constructor(
                     indicatorBottom
                 )
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-                    selectedIndicator.setColorFilter(
+                    selectedIndicator.colorFilter = PorterDuffColorFilter(
                         selectedIndicatorPaint.color,
                         PorterDuff.Mode.SRC_IN
                     )

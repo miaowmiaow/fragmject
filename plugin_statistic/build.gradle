@@ -17,7 +17,7 @@ dependencies {
     implementation 'org.ow2.asm:asm-analysis:7.0'
     implementation 'org.ow2.asm:asm-util:7.0'
     implementation 'org.ow2.asm:asm-tree:7.0'
-    compileOnly 'com.android.tools.build:gradle:4.2.1', {
+    implementation 'com.android.tools.build:gradle:4.2.1', {
         exclude group:'org.ow2.asm'
     }
 }

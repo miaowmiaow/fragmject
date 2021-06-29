@@ -91,6 +91,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         return data[position]
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> contextToActivity(context: Context): T {
         return context as T
     }

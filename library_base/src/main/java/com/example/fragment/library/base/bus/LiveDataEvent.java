@@ -16,7 +16,7 @@ import java.util.Map;
 import static androidx.lifecycle.Lifecycle.State.CREATED;
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
 
-public class LiveEvent<T> {
+public class LiveDataEvent<T> {
     private static final Object NOT_SET = new Object();
     private final SafeIterableMap<Observer<? super T>, ObserverWrapper> mObservers = new SafeIterableMap<>();
     private volatile Object mData = NOT_SET;
@@ -111,7 +111,7 @@ public class LiveEvent<T> {
     private void realObserveForever(@NonNull Observer<? super T> observer, boolean isStickyMode) {
         AlwaysActiveObserver wrapper = new AlwaysActiveObserver(observer, isStickyMode);
         ObserverWrapper existing = mObservers.putIfAbsent(observer, wrapper);
-        if (existing != null && (existing instanceof LiveEvent.LifecycleBoundObserver)) {
+        if ((existing instanceof LiveDataEvent.LifecycleBoundObserver)) {
             throw new IllegalArgumentException("Cannot add the same observer"
                     + " with different lifecycles");
         }

@@ -34,7 +34,9 @@ open class HttpRequest @JvmOverloads constructor(
         val m = PARAM_URL_REGEX.matcher(url)
         val patterns: MutableSet<String> = LinkedHashSet()
         while (m.find()) {
-            patterns.add(m.group(1))
+            m.group(1)?.let {
+                patterns.add(it)
+            }
         }
         patterns.forEach {
             if (path.contains(it)) {

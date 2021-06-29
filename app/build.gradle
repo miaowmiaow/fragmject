@@ -63,8 +63,8 @@ android {
         }
     }
 
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding = true
     }
 
     androidExtensions {
@@ -110,7 +110,6 @@ walle {
 }
 
 dependencies {
-    implementation project(path: ':library_common')
     implementation project(path: ':module_home')
     implementation project(path: ':module_navigation')
     implementation project(path: ':module_faq')

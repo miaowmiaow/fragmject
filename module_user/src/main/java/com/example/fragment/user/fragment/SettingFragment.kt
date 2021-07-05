@@ -84,7 +84,7 @@ class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>
                 val status = if (isChecked) 1 else 0
                 WanHelper.setScreenRecordStatus(status)
                 if (isChecked) {
-                    countDownTimer = object : CountDownTimer(5 * 1000, 1000) {
+                    countDownTimer = object : CountDownTimer(5000, 1000) {
                         override fun onTick(millisUntilFinished: Long) {
                             baseActivity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
                         }

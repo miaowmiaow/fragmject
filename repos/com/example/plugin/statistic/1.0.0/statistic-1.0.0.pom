@@ -9,37 +9,37 @@
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>7.0</version>
+      <version>7.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-commons</artifactId>
-      <version>7.0</version>
+      <version>7.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-analysis</artifactId>
-      <version>7.0</version>
+      <version>7.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-util</artifactId>
-      <version>7.0</version>
+      <version>7.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-tree</artifactId>
-      <version>7.0</version>
+      <version>7.2</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.android.tools.build</groupId>
       <artifactId>gradle</artifactId>
-      <version>4.2.1</version>
+      <version>4.2.2</version>
       <scope>runtime</scope>
       <exclusions>
         <exclusion>

@@ -6,11 +6,13 @@ import org.objectweb.asm.commons.AdviceAdapter
 
 class BuryPointMethodVisitor extends AdviceAdapter {
 
+    int methodAccess
     String methodName
     String methodDescriptor
 
     BuryPointMethodVisitor(MethodVisitor methodVisitor, int access, String name, String desc) {
         super(Opcodes.ASM7, methodVisitor, access, name, desc)
+        this.methodAccess = access
         this.methodName = name
         this.methodDescriptor = desc
     }
@@ -80,6 +82,9 @@ class BuryPointMethodVisitor extends AdviceAdapter {
         super.onMethodEnter()
         BuryPointCell cell = StatisticPlugin.HOOKS.get(methodName + methodDescriptor)
         if (cell != null) {
+            Type methodType = Type.getMethodType(methodDescriptor)
+            Type[] argumentTypes = methodType.getArgumentTypes() // 获取方法参数
+            int methodArgumentSize = argumentTypes.size()
             if (cell.isAnnotation) { // 遍历注解参数并赋值给采集方法
                 def entrySet = cell.annotationParams.entrySet()
                 def size = entrySet.size()
@@ -87,13 +92,31 @@ class BuryPointMethodVisitor extends AdviceAdapter {
                     def load = entrySet[i].getValue()
                     def store = getVarInsn(load)
                     mv.visitLdcInsn(cell.annotationData.get(entrySet[i].getKey()))
-                    mv.visitVarInsn(store, i + 10)
-                    mv.visitVarInsn(load, i + 10)
+                    mv.visitVarInsn(store, i + methodArgumentSize + 1)
+                    mv.visitVarInsn(load, i + methodArgumentSize + 1)
                 }
                 mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
             } else { // 将扫描方法参数赋值给采集方法
-                for (int key : cell.methodParams.keySet()) {
-                    mv.visitVarInsn(cell.methodParams.get(key), key)
+                int slotIndex = isStatic(methodAccess) ? 0 : 1
+                // 采集数据的方法参数起始索引（ 0：this，1+：普通参数 ），如果是static，则从0开始计算
+                Type agentMethodType = Type.getMethodType(cell.agentDesc)
+                Type[] agentArgumentTypes = agentMethodType.getArgumentTypes() // 获取采集方法参数
+                for (Type argumentType : argumentTypes) { // 技术有限就先这么实现了，希望有更好的方案可以沟通哈
+                    int size = argumentType.getSize()
+                    int opcode = argumentType.getOpcode(ILOAD)
+                    String descriptor = argumentType.getDescriptor()
+                    List<Type> agentArgumentTypeList = new ArrayList<Type>(Arrays.asList(agentArgumentTypes))
+                    Iterator<Type> agentIterator = agentArgumentTypeList.iterator()
+                    while (agentIterator.hasNext()) {
+                        Type agentType = agentIterator.next()
+                        String agentDescriptor = agentType.getDescriptor()
+                        if (agentDescriptor == descriptor) {
+                            mv.visitVarInsn(opcode, slotIndex)
+                            agentIterator.remove()
+                        }
+                        break
+                    }
+                    slotIndex += size
                 }
                 mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
             }
@@ -110,6 +133,10 @@ class BuryPointMethodVisitor extends AdviceAdapter {
      */
     private static int getVarInsn(int load) {
         return load + 33
+    }
+
+    private static boolean isStatic(int access) {
+        return (access & Opcodes.ACC_STATIC) != 0
     }
 
 }

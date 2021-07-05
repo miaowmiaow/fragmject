@@ -3,7 +3,7 @@ package com.example.fragment.library.common.bean
 import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
 import com.google.gson.Gson
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 data class UserCoinBean(
     val data: CoinBean? = null

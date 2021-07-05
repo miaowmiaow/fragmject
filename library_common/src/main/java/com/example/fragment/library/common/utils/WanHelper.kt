@@ -8,7 +8,7 @@ import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.library.common.bean.HotKeyBean
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
-import com.example.fragment.module.system.bean.TreeBean
+import com.example.fragment.library.common.bean.TreeBean
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

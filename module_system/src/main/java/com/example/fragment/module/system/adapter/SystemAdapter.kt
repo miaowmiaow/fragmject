@@ -10,7 +10,7 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.module.system.R
-import com.example.fragment.module.system.bean.TreeBean
+import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.module.system.databinding.ItemSystemBinding
 
 class SystemAdapter : BaseAdapter<TreeBean>() {

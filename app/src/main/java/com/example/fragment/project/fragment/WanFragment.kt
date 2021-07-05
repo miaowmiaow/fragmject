@@ -82,7 +82,6 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
         for (i in fragments.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.item_tab_main, null)
-            tabView.tag = i
             val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
             val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
             imgTab.setImageDrawable(ContextCompat.getDrawable(imgTab.context, tabDrawable[i]))

@@ -2,7 +2,7 @@ package com.example.fragment.library.common.bean
 
 import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class ShareArticleListBean(

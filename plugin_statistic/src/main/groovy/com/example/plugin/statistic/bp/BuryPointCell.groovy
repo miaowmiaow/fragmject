@@ -11,11 +11,6 @@ class BuryPointCell implements Cloneable {
     String methodName
     String methodDesc
     String methodParent
-    /**
-     * Integer:采集数据的方法参数起始索引（ 0：this，1+：普通参数 ）
-     * Integer:参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
-     */
-    Map<Integer, Integer> methodParams = new LinkedHashMap<>()
 
     String annotationDesc
     /**

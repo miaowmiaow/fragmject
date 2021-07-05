@@ -35,7 +35,6 @@ class StatisticPlugin implements Plugin<Project> {
                     cell.methodName = map.get("methodName")
                     cell.methodDesc = map.get("methodDesc")
                     cell.methodParent = map.get("methodParent")
-                    cell.methodParams = map.get("methodParams")
                     HOOKS.put(cell.methodName + cell.methodDesc, cell)
                 }
             }

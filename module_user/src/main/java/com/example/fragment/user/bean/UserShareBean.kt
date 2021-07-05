@@ -4,7 +4,7 @@ import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.common.bean.ArticleDataBean
 import com.example.fragment.library.common.bean.CoinBean
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class UserShareBean(

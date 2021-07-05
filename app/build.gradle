@@ -1,8 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
+    id 'kotlin-parcelize'
     id 'walle'
     id 'statistic'
 }
@@ -67,10 +67,6 @@ android {
         viewBinding = true
     }
 
-    androidExtensions {
-        experimental = true
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -129,9 +125,6 @@ buryPoint {
                     'methodName'  : 'onPageSelected',
                     'methodDesc'  : '(I)V',
                     'methodParent': 'Landroidx/viewpager/widget/ViewPager$OnPageChangeListener;',
-                    'methodParams': [
-                            1: org.objectweb.asm.Opcodes.ILOAD
-                    ]
             ],
             [
                     'agentName'   : 'viewOnClick',                                             //采集数据的方法名
@@ -141,9 +134,6 @@ buryPoint {
                     'methodName'  : 'onClick',                                                 //插入的方法名
                     'methodDesc'  : '(Landroid/view/View;)V',                                  //插入的方法描述
                     'methodParent': 'Landroid/view/View$OnClickListener;',                     //插入的方法的实现接口
-                    'methodParams': [
-                            1: org.objectweb.asm.Opcodes.ALOAD                                                   //采集数据的方法参数起始索引(从1开始) : 参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
-                    ]
             ],
             [
                     'agentName'       : 'testAnnotation',
@@ -152,7 +142,7 @@ buryPoint {
                     'isAnnotation'    : true,
                     'annotationDesc'  : 'Lcom/example/fragment/project/utils/TestAnnotation;', //扫描的方法注解名称
                     'annotationParams': [
-                            'message': org.objectweb.asm.Opcodes.ALOAD,                                          //方法注解的值名称 : 参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
+                            'message': org.objectweb.asm.Opcodes.ALOAD,                        //方法注解的值名称 : 参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
                             'sb'     : org.objectweb.asm.Opcodes.ILOAD
                     ]
             ],

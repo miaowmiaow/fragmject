@@ -162,13 +162,13 @@ class WebHelper private constructor(val parent: ViewGroup) {
                 onProgressChangedListener?.onProgressChanged(view, newProgress)
                 progressBar.progress = newProgress
                 if (!injectJs && newProgress > 80) {
-                    injectJs = true
                     view?.apply {
                         evaluateJavascript(context.injectDarkModeJs()) {}
                         evaluateJavascript(context.newDarkModeJs()) {}
                         evaluateJavascript(context.injectVConsoleJs()) {}
                         evaluateJavascript(context.newVConsoleJs()) {}
                     }
+                    injectJs = true
                 }
             }
         }

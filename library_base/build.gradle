@@ -1,8 +1,8 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -44,6 +44,7 @@ dependencies {
     api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-ktx"]
     api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-savedstate"]
     api rootProject.ext.dependencies["androidx-room-runtime"]
+    annotationProcessor rootProject.ext.dependencies["androidx-room-compiler"]
     kapt rootProject.ext.dependencies["androidx-room-compiler"]
     api rootProject.ext.dependencies["androidx-room-ktx"]
     api rootProject.ext.dependencies["androidx-appcompat"]

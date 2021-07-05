@@ -10,7 +10,7 @@ import com.example.fragment.library.base.component.view.SimpleTabLayout
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.ViewModelFragment
 import com.example.fragment.module.system.R
-import com.example.fragment.module.system.bean.TreeBean
+import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.module.system.databinding.FragmentSystemListBinding
 import com.example.fragment.module.system.model.SystemViewModel
 

@@ -7,7 +7,7 @@ import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.HotKeyListBean
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.system.bean.TreeListBean
+import com.example.fragment.library.common.bean.TreeListBean
 import kotlinx.coroutines.launch
 
 class MainViewModel : BaseViewModel() {

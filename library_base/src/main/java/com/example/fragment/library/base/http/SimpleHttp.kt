@@ -67,6 +67,8 @@ class SimpleHttp private constructor() {
         @JvmStatic
         fun setBaseUrl(baseUrl: String? = null): Companion {
             instance().baseUrl.clear().append(baseUrl)
+            instance().httpClient = null
+            instance().retrofit = null
             return this
         }
 

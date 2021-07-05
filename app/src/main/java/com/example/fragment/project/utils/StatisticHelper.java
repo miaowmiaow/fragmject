@@ -19,6 +19,8 @@ import android.widget.ToggleButton;
 import androidx.annotation.Keep;
 import androidx.appcompat.widget.SwitchCompat;
 
+import com.example.fragment.library.base.component.adapter.BaseAdapter;
+
 public class StatisticHelper {
 
     @Keep
@@ -34,6 +36,15 @@ public class StatisticHelper {
     @Keep
     public static void testAnnotation(String message, boolean sb) {
         Log.i("----------自动埋点:注解", message + ":" + sb);
+    }
+
+    @Keep
+    public static void viewOnItemClick(BaseAdapter.ViewBindHolder holder, int position){
+        Log.i("----------自动埋点", "onItemChildClick:"+" holderViewId:" + getViewId(holder.itemView)+ " holderViewText:" + getElementContent(holder.itemView)+"position:"+position );
+    }
+    @Keep
+    public static void viewOnItemChildClick(View view, BaseAdapter.ViewBindHolder holder, int position){
+        Log.i("----------自动埋点", "onItemChildClick:"+" ViewId:" + getViewId(view)+ " ViewText:" + getElementContent(view)+" holderViewId:" + getViewId(holder.itemView)+ " holderViewText:" + getElementContent(holder.itemView)+"position:"+position );
     }
 
     /**

@@ -118,6 +118,24 @@ dependencies {
 buryPoint {
     hooks = [
             [
+                    'agentName'   : 'viewOnItemClick',
+                    'agentDesc'   : '(Lcom/example/fragment/library/base/component/adapter/BaseAdapter$ViewBindHolder;I)V',
+                    'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation': false,
+                    'methodName'  : 'onItemClick',
+                    'methodDesc'  : '(Lcom/example/fragment/library/base/component/adapter/BaseAdapter$ViewBindHolder;I)V',
+                    'methodParent': 'Lcom/example/fragment/library/base/component/adapter/BaseAdapter$OnItemClickListener;',
+            ],
+            [
+                    'agentName'   : 'viewOnItemChildClick',
+                    'agentDesc'   : '(Landroid/view/View;Lcom/example/fragment/library/base/component/adapter/BaseAdapter$ViewBindHolder;I)V',
+                    'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',
+                    'isAnnotation': false,
+                    'methodName'  : 'onItemChildClick',
+                    'methodDesc'  : '(Landroid/view/View;Lcom/example/fragment/library/base/component/adapter/BaseAdapter$ViewBindHolder;I)V',
+                    'methodParent': 'Lcom/example/fragment/library/base/component/adapter/BaseAdapter$OnItemChildClickListener;',
+            ],
+            [
                     'agentName'   : 'viewOnPageSelected',
                     'agentDesc'   : '(I)V',
                     'agentParent' : 'com/example/fragment/project/utils/StatisticHelper',

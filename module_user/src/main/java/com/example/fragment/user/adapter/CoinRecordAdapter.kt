@@ -5,9 +5,14 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.MyCoinBean
+import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.ItemCoinRecordBinding
 
 class CoinRecordAdapter : BaseAdapter<MyCoinBean>() {
+
+    init {
+        addOnClickListener(R.id.title)
+    }
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return ItemCoinRecordBinding::inflate

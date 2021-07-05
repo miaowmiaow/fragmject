@@ -2,10 +2,12 @@ package com.example.fragment.user.fragment
 
 import android.animation.ValueAnimator
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
@@ -38,6 +40,20 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>()
         binding.rank.setOnClickListener { baseActivity.navigation(Router.COIN_RANK) }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRecordAdapter
+        coinRecordAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+                Log.i("----------", "----------onItemClick")
+            }
+        })
+        coinRecordAdapter.setOnItemChildClickListener(object : BaseAdapter.OnItemChildClickListener{
+            override fun onItemChildClick(
+                view: View,
+                holder: BaseAdapter.ViewBindHolder,
+                position: Int
+            ) {
+                Log.i("----------", "----------onItemChildClick")
+            }
+        })
         binding.pullRefresh.setOnRefreshListener(object :
             SimplePullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {

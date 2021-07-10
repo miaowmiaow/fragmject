@@ -41,6 +41,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         return MainViewModel::class.java
     }
 
+    @TestAnnotation(message= "MainFragment.onViewCreated", sb = false)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupView()

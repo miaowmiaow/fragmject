@@ -62,7 +62,6 @@ class MainActivity : RouterActivity() {
         }
     }
 
-    @TestAnnotation(message= "MainActivity.onCreate", sb = false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)

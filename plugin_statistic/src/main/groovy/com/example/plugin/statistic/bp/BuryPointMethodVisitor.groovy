@@ -97,9 +97,8 @@ class BuryPointMethodVisitor extends AdviceAdapter {
                     mv.visitVarInsn(load, i + methodArgumentSize + 1)
                 }
                 mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
-                println("-----------------------")
                 // 防止其他类重名方法被插入
-                StatisticPlugin.HOOKS.remove(cell)
+                StatisticPlugin.HOOKS.remove(methodName + methodDescriptor, cell)
             } else { // 将扫描方法参数赋值给采集方法
                 // 采集数据的方法参数起始索引（ 0：this，1+：普通参数 ），如果是static，则从0开始计算
                 int slotIndex = isStatic(methodAccess) ? 0 : 1

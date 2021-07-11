@@ -9,7 +9,7 @@ import org.gradle.api.Project
 
 class StatisticPlugin implements Plugin<Project> {
 
-    public final static HashMap<String, BuryPointCell> HOOKS = new HashMap<>()
+    public final static Map<String, BuryPointCell> HOOKS = new HashMap<>()
 
     @Override
     void apply(Project project) {

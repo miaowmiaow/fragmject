@@ -75,60 +75,76 @@ class BuryPointMethodVisitor extends AdviceAdapter {
     }
 
     /**
-     * 进入方法时调用
+     * 方法进入时调用
      */
     @Override
     protected void onMethodEnter() {
         super.onMethodEnter()
-        BuryPointCell cell = StatisticPlugin.HOOKS.get(methodName + methodDescriptor)
-        if (cell != null) {
-            // 获取方法参数
-            Type methodType = Type.getMethodType(methodDescriptor)
-            Type[] methodArguments = methodType.getArgumentTypes()
-            int methodArgumentSize = methodArguments.size()
-            if (cell.isAnnotation) { // 遍历注解参数并赋值给采集方法
-                def entrySet = cell.annotationParams.entrySet()
-                def size = entrySet.size()
-                for (int i = 0; i < size; i++) {
-                    def load = entrySet[i].getValue()
-                    def store = getVarInsn(load)
-                    mv.visitLdcInsn(cell.annotationData.get(entrySet[i].getKey()))
-                    mv.visitVarInsn(store, i + methodArgumentSize + 1)
-                    mv.visitVarInsn(load, i + methodArgumentSize + 1)
-                }
-                mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
-                // 防止其他类重名方法被插入
-                StatisticPlugin.HOOKS.remove(methodName + methodDescriptor, cell)
-            } else { // 将扫描方法参数赋值给采集方法
-                // 采集数据的方法参数起始索引（ 0：this，1+：普通参数 ），如果是static，则从0开始计算
-                int slotIndex = isStatic(methodAccess) ? 0 : 1
-                // 获取采集方法参数
-                Type agentMethodType = Type.getMethodType(cell.agentDesc)
-                Type[] agentArguments = agentMethodType.getArgumentTypes()
-                List<Type> agentArgumentList = new ArrayList<Type>(Arrays.asList(agentArguments))
-                // 遍历方法参数
-                for (Type argument : methodArguments) {
-                    int size = argument.getSize()
-                    int opcode = argument.getOpcode(ILOAD)
-                    String descriptor = argument.getDescriptor()
-                    Iterator<Type> agentIterator = agentArgumentList.iterator()
-                    // 遍历采集方法参数
-                    while (agentIterator.hasNext()) {
-                        Type agentArgument = agentIterator.next()
-                        String agentDescriptor = agentArgument.getDescriptor()
-                        if (agentDescriptor == descriptor) {
-                            mv.visitVarInsn(opcode, slotIndex)
-                            agentIterator.remove()
-                            break
-                        }
-                    }
-                    slotIndex += size
-                }
-                if (agentArgumentList.size() > 0) { // 无法满足采集方法参数则return
-                    return
-                }
-                mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
+        BuryPointCell buryPointCell = StatisticPlugin.HOOKS.get(methodName + methodDescriptor)
+        if (buryPointCell != null && !buryPointCell.isMethodExit) {
+            onMethod(buryPointCell)
+        }
+    }
+
+    /**
+     * 方法退出前调用
+     */
+    @Override
+    protected void onMethodExit(int opcode) {
+        BuryPointCell buryPointCell = StatisticPlugin.HOOKS.get(methodName + methodDescriptor)
+        if (buryPointCell != null && buryPointCell.isMethodExit) {
+            onMethod(buryPointCell)
+        }
+        super.onMethodExit(opcode)
+    }
+
+    private void onMethod(BuryPointCell cell) {
+        // 获取方法参数
+        Type methodType = Type.getMethodType(methodDescriptor)
+        Type[] methodArguments = methodType.getArgumentTypes()
+        int methodArgumentSize = methodArguments.size()
+        if (cell.isAnnotation) { // 遍历注解参数并赋值给采集方法
+            def entrySet = cell.annotationParams.entrySet()
+            def size = entrySet.size()
+            for (int i = 0; i < size; i++) {
+                def load = entrySet[i].getValue()
+                def store = getVarInsn(load)
+                mv.visitLdcInsn(cell.annotationData.get(entrySet[i].getKey()))
+                mv.visitVarInsn(store, i + methodArgumentSize + 1)
+                mv.visitVarInsn(load, i + methodArgumentSize + 1)
             }
+            mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
+            // 防止其他类重名方法被插入
+            StatisticPlugin.HOOKS.remove(methodName + methodDescriptor, cell)
+        } else { // 将扫描方法参数赋值给采集方法
+            // 采集数据的方法参数起始索引（ 0：this，1+：普通参数 ），如果是static，则从0开始计算
+            int slotIndex = isStatic(methodAccess) ? 0 : 1
+            // 获取采集方法参数
+            Type agentMethodType = Type.getMethodType(cell.agentDesc)
+            Type[] agentArguments = agentMethodType.getArgumentTypes()
+            List<Type> agentArgumentList = new ArrayList<Type>(Arrays.asList(agentArguments))
+            // 遍历方法参数
+            for (Type argument : methodArguments) {
+                int size = argument.getSize()
+                int opcode = argument.getOpcode(ILOAD)
+                String descriptor = argument.getDescriptor()
+                Iterator<Type> agentIterator = agentArgumentList.iterator()
+                // 遍历采集方法参数
+                while (agentIterator.hasNext()) {
+                    Type agentArgument = agentIterator.next()
+                    String agentDescriptor = agentArgument.getDescriptor()
+                    if (agentDescriptor == descriptor) {
+                        mv.visitVarInsn(opcode, slotIndex)
+                        agentIterator.remove()
+                        break
+                    }
+                }
+                slotIndex += size
+            }
+            if (agentArgumentList.size() > 0) { // 无法满足采集方法参数则return
+                return
+            }
+            mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
         }
     }
 

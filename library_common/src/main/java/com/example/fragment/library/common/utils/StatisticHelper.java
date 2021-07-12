@@ -1,4 +1,4 @@
-package com.example.fragment.project.utils;
+package com.example.fragment.library.common.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -34,8 +34,8 @@ public class StatisticHelper {
     }
 
     @Keep
-    public static void testAnnotation(String message, boolean sb) {
-        Log.i("----------自动埋点:注解", message + ":" + sb);
+    public static void testAnnotation(int code, String message) {
+        Log.i("----------自动埋点:注解", message + ":" + code);
     }
 
     @Keep

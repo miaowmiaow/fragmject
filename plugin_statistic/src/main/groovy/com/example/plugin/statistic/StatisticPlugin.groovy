@@ -22,19 +22,39 @@ class StatisticPlugin implements Plugin<Project> {
             // 遍历配置的埋点信息，将其保存在HOOKS方便调用
             extension.hooks.each { Map<String, Object> map ->
                 BuryPointCell cell = new BuryPointCell()
-                boolean isAnnotation = map.get("isAnnotation")
-                cell.isAnnotation = isAnnotation
-                cell.agentName = map.get("agentName")
-                cell.agentDesc = map.get("agentDesc")
-                cell.agentParent = map.get("agentParent")
-                if (isAnnotation) {
-                    cell.annotationDesc = map.get("annotationDesc")
-                    cell.annotationParams = map.get("annotationParams")
+                if(map.containsKey("isAnnotation")){
+                    cell.isAnnotation = map.get("isAnnotation")
+                }
+                if(map.containsKey("isMethodExit")){
+                    cell.isMethodExit = map.get("isMethodExit")
+                }
+                if(map.containsKey("agentName")){
+                    cell.agentName = map.get("agentName")
+                }
+                if(map.containsKey("agentDesc")){
+                    cell.agentDesc = map.get("agentDesc")
+                }
+                if(map.containsKey("agentParent")){
+                    cell.agentParent = map.get("agentParent")
+                }
+                if (cell.isAnnotation) {
+                    if(map.containsKey("annotationDesc")){
+                        cell.annotationDesc = map.get("annotationDesc")
+                    }
+                    if(map.containsKey("annotationParams")){
+                        cell.annotationParams = map.get("annotationParams")
+                    }
                     HOOKS.put(cell.annotationDesc, cell)
                 } else {
-                    cell.methodName = map.get("methodName")
-                    cell.methodDesc = map.get("methodDesc")
-                    cell.methodParent = map.get("methodParent")
+                    if(map.containsKey("methodName")){
+                        cell.methodName = map.get("methodName")
+                    }
+                    if(map.containsKey("methodDesc")){
+                        cell.methodDesc = map.get("methodDesc")
+                    }
+                    if(map.containsKey("methodParent")){
+                        cell.methodParent = map.get("methodParent")
+                    }
                     HOOKS.put(cell.methodName + cell.methodDesc, cell)
                 }
             }

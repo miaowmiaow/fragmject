@@ -18,7 +18,6 @@ import com.example.fragment.module.project.fragment.ProjectListFragment
 import com.example.fragment.module.system.fragment.SystemFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanBinding
-import com.example.fragment.project.utils.TestAnnotation
 
 class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
 

@@ -11,13 +11,13 @@ import com.example.fragment.library.common.constant.LiveBus
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.WebFragment
+import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.fragment.SearchFragment
 import com.example.fragment.module.system.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
 import com.example.fragment.project.fragment.MainFragment
-import com.example.fragment.project.utils.TestAnnotation
 import com.example.fragment.user.fragment.*
 
 class MainActivity : RouterActivity() {
@@ -84,6 +84,7 @@ class MainActivity : RouterActivity() {
         navigation(Router.MAIN)
     }
 
+    @TestAnnotation(code = 10000, message = "MainActivity.update")
     private fun update() {
         SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             userId = userBean.id

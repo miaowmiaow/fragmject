@@ -15,12 +15,12 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.fragment.SquareFragment
 import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
-import com.example.fragment.project.utils.TestAnnotation
 
 class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     OnBackPressedListener {
@@ -41,7 +41,6 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         return MainViewModel::class.java
     }
 
-    @TestAnnotation(message= "MainFragment.onViewCreated", sb = false)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupView()
@@ -82,6 +81,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         }
     }
 
+    @TestAnnotation(code = 10086, message = "MainFragment.setupView")
     private fun setupView() {
         binding.menu.setOnClickListener {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {

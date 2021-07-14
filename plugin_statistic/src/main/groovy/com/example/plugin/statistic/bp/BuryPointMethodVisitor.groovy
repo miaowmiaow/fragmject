@@ -110,6 +110,7 @@ class BuryPointMethodVisitor extends AdviceAdapter {
             for (int i = 0; i < size; i++) {
                 def key = entrySet[i].getKey()
                 if (key == "this") {
+                    //所在方法的当前对象的引用
                     mv.visitVarInsn(Opcodes.ALOAD, 0)
                 } else {
                     def load = entrySet[i].getValue()

@@ -147,7 +147,7 @@ buryPoint {
                     //扫描的注解的参数
                     'annotationParams': [
                             //参数名 : 参数类型（对应的ASM指令，加载不同类型的参数需要不同的指令）
-                            //this  : 所在方法的当前对象的引用（可选配置关键字）
+                            //this  : 所在方法的当前对象的引用（默认关键字，按需可选配置）
                             'this'   : org.objectweb.asm.Opcodes.ALOAD,
                             'code'   : org.objectweb.asm.Opcodes.ILOAD,
                             'message': org.objectweb.asm.Opcodes.ALOAD,

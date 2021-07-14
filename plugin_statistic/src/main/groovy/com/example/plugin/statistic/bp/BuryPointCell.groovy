@@ -3,7 +3,7 @@ package com.example.plugin.statistic.bp
 class BuryPointCell implements Cloneable {
 
     /**
-     * 是否注解
+     * 注解标识
      */
     boolean isAnnotation = false
     /**
@@ -12,6 +12,10 @@ class BuryPointCell implements Cloneable {
      * false: 方法进入时
      */
     boolean isMethodExit = false
+    /**
+     * Lambda表达式标识
+     */
+    boolean isLambda = false
     /**
      * 采集数据的方法的路径
      */
@@ -47,6 +51,10 @@ class BuryPointCell implements Cloneable {
      * Integer:参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
      */
     Map<String, Integer> annotationParams = new LinkedHashMap<>()
+    /**
+     * String:注解参数名
+     * Object:参数值
+     */
     Map<String, Object> annotationData = new HashMap<>()
 
     BuryPointCell() {

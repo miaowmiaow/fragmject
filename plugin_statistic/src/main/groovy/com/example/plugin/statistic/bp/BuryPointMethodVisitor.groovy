@@ -67,6 +67,7 @@ class BuryPointMethodVisitor extends AdviceAdapter {
             if (parent == cell.methodParent) {
                 Handle handle = (Handle) bootstrapMethodArguments[1]
                 BuryPointCell newCell = cell.clone()
+                newCell.isLambda = true
                 newCell.methodName = handle.getName()
                 newCell.methodDesc = handle.getDesc()
                 StatisticPlugin.HOOKS.put(newCell.methodName + newCell.methodDesc, newCell)
@@ -107,11 +108,16 @@ class BuryPointMethodVisitor extends AdviceAdapter {
             def entrySet = cell.annotationParams.entrySet()
             def size = entrySet.size()
             for (int i = 0; i < size; i++) {
-                def load = entrySet[i].getValue()
-                def store = getVarInsn(load)
-                mv.visitLdcInsn(cell.annotationData.get(entrySet[i].getKey()))
-                mv.visitVarInsn(store, i + methodArgumentSize + 1)
-                mv.visitVarInsn(load, i + methodArgumentSize + 1)
+                def key = entrySet[i].getKey()
+                if (key == "this") {
+                    mv.visitVarInsn(Opcodes.ALOAD, 0)
+                } else {
+                    def load = entrySet[i].getValue()
+                    def store = getVarInsn(load)
+                    mv.visitLdcInsn(cell.annotationData.get(key))
+                    mv.visitVarInsn(store, i + methodArgumentSize + 1)
+                    mv.visitVarInsn(load, i + methodArgumentSize + 1)
+                }
             }
             mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
             // 防止其他类重名方法被插入
@@ -145,6 +151,9 @@ class BuryPointMethodVisitor extends AdviceAdapter {
                 return
             }
             mv.visitMethodInsn(INVOKESTATIC, cell.agentParent, cell.agentName, cell.agentDesc, false)
+            if(cell.isLambda){
+                StatisticPlugin.HOOKS.remove(methodName + methodDescriptor, cell)
+            }
         }
     }
 

@@ -132,20 +132,23 @@ buryPoint {
                     'methodDesc'  : '(Landroid/view/View;)V',
             ],
             [
-                    //是否注解
+                    //注解标识
                     'isAnnotation'    : true,
-                    //方式插入时机 true:方法退出前; false:方法进入时
+                    //方式插入时机，true方法退出前，false方法进入时
                     'isMethodExit'    : true,
                     //采集数据的方法的路径
                     'agentParent'     : 'com/example/fragment/library/common/utils/StatisticHelper',
                     //采集数据的方法名
                     'agentName'       : 'testAnnotation',
                     //采集数据的方法描述（对照annotationParams，注意参数顺序）
-                    'agentDesc'       : '(ILjava/lang/String;)V',
-                    //扫描的方法注解名称
+                    'agentDesc'       : '(Ljava/lang/Object;ILjava/lang/String;)V',
+                    //扫描的注解名称
                     'annotationDesc'  : 'Lcom/example/fragment/library/common/utils/TestAnnotation;',
-                    //方法注解的值名称 : 参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
+                    //扫描的注解的参数
                     'annotationParams': [
+                            //参数名 : 参数类型（对应的ASM指令，加载不同类型的参数需要不同的指令）
+                            //this  : 所在方法的当前对象的引用（可选配置关键字）
+                            'this'   : org.objectweb.asm.Opcodes.ALOAD,
                             'code'   : org.objectweb.asm.Opcodes.ILOAD,
                             'message': org.objectweb.asm.Opcodes.ALOAD,
                     ]

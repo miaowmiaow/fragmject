@@ -34,8 +34,8 @@ public class StatisticHelper {
     }
 
     @Keep
-    public static void testAnnotation(int code, String message) {
-        Log.i("----------自动埋点:注解", message + ":" + code);
+    public static void testAnnotation(Object object, int code, String message) {
+        Log.i("----------自动埋点:注解", message + ":" + code + ":" + object.getClass().getSimpleName());
     }
 
     @Keep

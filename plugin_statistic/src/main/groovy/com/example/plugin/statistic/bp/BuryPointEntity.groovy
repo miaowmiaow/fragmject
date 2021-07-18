@@ -1,6 +1,6 @@
 package com.example.plugin.statistic.bp
 
-class BuryPointCell implements Cloneable {
+class BuryPointEntity implements Cloneable {
 
     /**
      * 注解标识
@@ -19,7 +19,7 @@ class BuryPointCell implements Cloneable {
     /**
      * 采集数据的方法的路径
      */
-    String agentParent
+    String agentOwner
     /**
      * 插入的方法的实现接口
      */
@@ -31,9 +31,9 @@ class BuryPointCell implements Cloneable {
      */
     String agentDesc
     /**
-     * 扫描的方法注解名称
+     * 插入的方法的路径
      */
-    String methodParent
+    String methodOwner
     /**
      * 插入的方法名
      */
@@ -48,22 +48,22 @@ class BuryPointCell implements Cloneable {
     String annotationDesc
     /**
      * String:注解参数名
-     * Integer:参数类型对应的ASM指令，加载不同类型的参数需要不同的指令
+     * String:参数类型
      */
-    Map<String, Integer> annotationParams = new LinkedHashMap<>()
+    Map<String, String> annotationParams = new LinkedHashMap<>()
     /**
      * String:注解参数名
      * Object:参数值
      */
     Map<String, Object> annotationData = new HashMap<>()
 
-    BuryPointCell() {
+    BuryPointEntity() {
     }
 
     @Override
-    protected BuryPointCell clone() {
+    protected BuryPointEntity clone() {
         try {
-            return (BuryPointCell) super.clone()
+            return (BuryPointEntity) super.clone()
         } catch (CloneNotSupportedException e) {
             e.printStackTrace()
         }

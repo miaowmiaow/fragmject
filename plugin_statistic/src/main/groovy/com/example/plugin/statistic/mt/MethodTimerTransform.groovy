@@ -1,4 +1,4 @@
-package com.example.plugin.statistic.bp
+package com.example.plugin.statistic.mt
 
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
@@ -16,11 +16,11 @@ import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.zip.ZipEntry
 
-class BuryPointTransform extends Transform {
+class MethodTimerTransform extends Transform {
 
     @Override
     String getName() {
-        return "BuryPoint"
+        return "Timer"
     }
 
     /**
@@ -101,7 +101,7 @@ class BuryPointTransform extends Transform {
                 if (filterClass(name)) {
                     ClassReader classReader = new ClassReader(file.bytes)
                     ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)
-                    ClassVisitor classVisitor = new BuryPointClassVisitor(classWriter)
+                    ClassVisitor classVisitor = new MethodTimerClassVisitor(classWriter)
                     classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
                     byte[] code = classWriter.toByteArray()
                     FileOutputStream fos = new FileOutputStream(file.parentFile.absolutePath + File.separator + name)
@@ -152,7 +152,7 @@ class BuryPointTransform extends Transform {
                     jarOutputStream.putNextEntry(zipEntry)
                     ClassReader classReader = new ClassReader(IOUtils.toByteArray(inputStream))
                     ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)
-                    ClassVisitor classVisitor = new BuryPointClassVisitor(classWriter)
+                    ClassVisitor classVisitor = new MethodTimerClassVisitor(classWriter)
                     classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
                     byte[] bytes = classWriter.toByteArray()
                     jarOutputStream.write(bytes)

@@ -25,26 +25,27 @@ public class StatisticHelper {
 
     @Keep
     public static void viewOnClick(View view) {
-        Log.i("----------自动埋点", " ViewId:" + getViewId(view) + " ViewText:" + getElementContent(view));
+        System.out.println("自动埋点 --> ViewId:" + getViewId(view) + " ViewText:" + getElementContent(view));
     }
 
     @Keep
     public static void viewOnPageSelected(int position) {
-        Log.i("----------自动埋点", " OnPageSelected:" + position);
+        System.out.println("自动埋点 --> OnPageSelected:" + position);
     }
 
     @Keep
     public static void testAnnotation(Object object, int code, String message) {
-        Log.i("----------自动埋点:注解", message + ":" + code + ":" + object.getClass().getSimpleName());
+        System.out.println("自动埋点:注解 --> " + message + ":" + code + ":" + object.getClass().getSimpleName());
     }
 
     @Keep
-    public static void viewOnItemClick(BaseAdapter.ViewBindHolder holder, int position){
-        Log.i("----------自动埋点", "onItemChildClick:"+" holderViewId:" + getViewId(holder.itemView)+ " holderViewText:" + getElementContent(holder.itemView)+"position:"+position );
+    public static void viewOnItemClick(BaseAdapter.ViewBindHolder holder, int position) {
+        System.out.println("自动埋点 --> onItemChildClick:" + " holderViewId:" + getViewId(holder.itemView) + " holderViewText:" + getElementContent(holder.itemView) + "position:" + position);
     }
+
     @Keep
-    public static void viewOnItemChildClick(View view, BaseAdapter.ViewBindHolder holder, int position){
-        Log.i("----------自动埋点", "onItemChildClick:"+" ViewId:" + getViewId(view)+ " ViewText:" + getElementContent(view)+" holderViewId:" + getViewId(holder.itemView)+ " holderViewText:" + getElementContent(holder.itemView)+"position:"+position );
+    public static void viewOnItemChildClick(View view, BaseAdapter.ViewBindHolder holder, int position) {
+        System.out.println("自动埋点 --> onItemChildClick:" + " ViewId:" + getViewId(view) + " ViewText:" + getElementContent(view) + " holderViewId:" + getViewId(holder.itemView) + " holderViewText:" + getElementContent(holder.itemView) + "position:" + position);
     }
 
     /**

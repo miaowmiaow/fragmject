@@ -101,7 +101,7 @@ class BuryPointTransform extends Transform {
                 if (filterClass(name)) {
                     ClassReader classReader = new ClassReader(file.bytes)
                     ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)
-                    ClassVisitor classVisitor = new BuryPointVisitor(classWriter)
+                    ClassVisitor classVisitor = new BuryPointClassVisitor(classWriter)
                     classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
                     byte[] code = classWriter.toByteArray()
                     FileOutputStream fos = new FileOutputStream(file.parentFile.absolutePath + File.separator + name)
@@ -152,7 +152,7 @@ class BuryPointTransform extends Transform {
                     jarOutputStream.putNextEntry(zipEntry)
                     ClassReader classReader = new ClassReader(IOUtils.toByteArray(inputStream))
                     ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)
-                    ClassVisitor classVisitor = new BuryPointVisitor(classWriter)
+                    ClassVisitor classVisitor = new BuryPointClassVisitor(classWriter)
                     classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
                     byte[] bytes = classWriter.toByteArray()
                     jarOutputStream.write(bytes)

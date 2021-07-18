@@ -1,13 +1,11 @@
 package com.example.plugin.statistic.bp
 
-import org.objectweb.asm.*
-import org.objectweb.asm.commons.AdviceAdapter
+import org.objectweb.asm.AnnotationVisitor
 
 class BuryPointAnnotationVisitor extends AnnotationVisitor {
 
-
-    BuryPointAnnotationVisitor(AnnotationVisitor annotationVisitor) {
-        super(Opcodes.ASM7, annotationVisitor)
+    BuryPointAnnotationVisitor(int api, AnnotationVisitor annotationVisitor) {
+        super(api, annotationVisitor)
     }
 
 }

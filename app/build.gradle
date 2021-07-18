@@ -115,21 +115,21 @@ dependencies {
     implementation rootProject.ext.dependencies["meituan-walle"]
 }
 
-buryPoint {
-    hooks = [
+statistic {
+    buryPoint = [
             [
                     //采集数据的方法的路径
-                    'agentParent' : 'com/example/fragment/library/common/utils/StatisticHelper',
+                    'agentOwner' : 'com/example/fragment/library/common/utils/StatisticHelper',
                     //采集数据的方法名
-                    'agentName'   : 'viewOnClick',
+                    'agentName'  : 'viewOnClick',
                     //采集数据的方法描述（参数应在methodDesc范围之内）
-                    'agentDesc'   : '(Landroid/view/View;)V',
+                    'agentDesc'  : '(Landroid/view/View;)V',
                     //插入的方法的实现接口
-                    'methodParent': 'Landroid/view/View$OnClickListener;',
+                    'methodOwner': 'Landroid/view/View$OnClickListener;',
                     //插入的方法名
-                    'methodName'  : 'onClick',
+                    'methodName' : 'onClick',
                     //插入的方法描述
-                    'methodDesc'  : '(Landroid/view/View;)V',
+                    'methodDesc' : '(Landroid/view/View;)V',
             ],
             [
                     //注解标识
@@ -137,7 +137,7 @@ buryPoint {
                     //方式插入时机，true方法退出前，false方法进入时
                     'isMethodExit'    : true,
                     //采集数据的方法的路径
-                    'agentParent'     : 'com/example/fragment/library/common/utils/StatisticHelper',
+                    'agentOwner'      : 'com/example/fragment/library/common/utils/StatisticHelper',
                     //采集数据的方法名
                     'agentName'       : 'testAnnotation',
                     //采集数据的方法描述（对照annotationParams，注意参数顺序）
@@ -148,10 +148,20 @@ buryPoint {
                     'annotationParams': [
                             //参数名 : 参数类型（对应的ASM指令，加载不同类型的参数需要不同的指令）
                             //this  : 所在方法的当前对象的引用（默认关键字，按需可选配置）
-                            'this'   : org.objectweb.asm.Opcodes.ALOAD,
-                            'code'   : org.objectweb.asm.Opcodes.ILOAD,
-                            'message': org.objectweb.asm.Opcodes.ALOAD,
+                            'this'   : 'Ljava/lang/Object;',
+                            'code'   : 'I',
+                            'message': 'Ljava/lang/String;',
                     ]
             ],
+    ]
+    methodTimer = [
+            [
+                    'timeFilter'  : 500L,
+                    'ownerFilter': 'com/example/fragment',
+            ],
+            [
+                    'timeFilter'  : 1000L,
+                    'ownerFilter': 'com/google',
+            ]
     ]
 }

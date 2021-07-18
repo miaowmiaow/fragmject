@@ -1,10 +1,13 @@
 package com.example.plugin.statistic.bp
 
-import org.objectweb.asm.*
 
-class BuryPointVisitor extends ClassVisitor {
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
 
-    BuryPointVisitor(ClassVisitor classVisitor) {
+class BuryPointClassVisitor extends ClassVisitor {
+
+    BuryPointClassVisitor(ClassVisitor classVisitor) {
         super(Opcodes.ASM7, classVisitor)
     }
 
@@ -38,7 +41,10 @@ class BuryPointVisitor extends ClassVisitor {
     @Override
     MethodVisitor visitMethod(int methodAccess, String methodName, String methodDescriptor, String signature, String[] exceptions) {
         MethodVisitor methodVisitor = super.visitMethod(methodAccess, methodName, methodDescriptor, signature, exceptions)
-        return new BuryPointMethodVisitor(methodVisitor, methodAccess, methodName, methodDescriptor)
+        if ((methodAccess & Opcodes.ACC_INTERFACE) == 0 && "<init>" != methodName && "<clinit>" != methodName) {
+            methodVisitor = new BuryPointAdviceAdapter(api, methodVisitor, methodAccess, methodName, methodDescriptor)
+        }
+        return methodVisitor
     }
 
 }

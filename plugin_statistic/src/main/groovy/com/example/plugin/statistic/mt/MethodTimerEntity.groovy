@@ -5,11 +5,11 @@ class MethodTimerEntity implements Cloneable {
     /**
      * 时间过滤
      */
-    long timeFilter
+    long time
     /**
      * 扫描的方法过滤
      */
-    String ownerFilter
+    String owner
 
     MethodTimerEntity() {
     }

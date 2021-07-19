@@ -21,8 +21,8 @@ class MethodTimerAdviceAdapter extends AdviceAdapter {
     @Override
     protected void onMethodEnter() {
         super.onMethodEnter()
-        for (MethodTimerEntity entity : StatisticPlugin.METHOD_TIMER) {
-            if (methodOwner.contains(entity.getOwnerFilter())) {
+        for (MethodTimerEntity entity : StatisticPlugin.METHOD_TIMER_LIST) {
+            if (methodOwner.contains(entity.getOwner())) {
                 slotIndex = newLocal(Type.LONG_TYPE)
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J", false)
                 mv.visitVarInsn(LSTORE, slotIndex)
@@ -32,14 +32,14 @@ class MethodTimerAdviceAdapter extends AdviceAdapter {
 
     @Override
     void onMethodExit(int opcode) {
-        for (MethodTimerEntity entity : StatisticPlugin.METHOD_TIMER) {
-            if (methodOwner.contains(entity.getOwnerFilter())) {
+        for (MethodTimerEntity entity : StatisticPlugin.METHOD_TIMER_LIST) {
+            if (methodOwner.contains(entity.getOwner())) {
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J", false)
                 mv.visitVarInsn(LLOAD, slotIndex)
                 mv.visitInsn(LSUB)
                 mv.visitVarInsn(LSTORE, slotIndex)
                 mv.visitVarInsn(LLOAD, slotIndex)
-                mv.visitLdcInsn(new Long(entity.getTimeFilter()))
+                mv.visitLdcInsn(new Long(entity.getTime()))
                 mv.visitInsn(LCMP)
                 Label label0 = new Label()
                 mv.visitJumpInsn(IFLE, label0)

@@ -32,7 +32,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
     AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
         AnnotationVisitor annotationVisitor = super.visitAnnotation(descriptor, visible)
         // 通过descriptor判断是否是需要扫描的注解
-        BuryPointEntity entity = StatisticPlugin.BURY_POINT.get(descriptor)
+        BuryPointEntity entity = StatisticPlugin.BURY_POINT_MAP.get(descriptor)
         if (entity != null) {
             BuryPointEntity newEntity = entity.clone()
             return new BuryPointAnnotationVisitor(api, annotationVisitor) {
@@ -48,7 +48,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
                     super.visitEnd()
                     newEntity.methodName = methodName
                     newEntity.methodDesc = methodDesc
-                    StatisticPlugin.BURY_POINT.put(newEntity.methodName + newEntity.methodDesc, newEntity)
+                    StatisticPlugin.BURY_POINT_MAP.put(newEntity.methodName + newEntity.methodDesc, newEntity)
                 }
             }
         }
@@ -66,7 +66,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
     void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
         super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments)
         String desc = (String) bootstrapMethodArguments[0]
-        BuryPointEntity entity = StatisticPlugin.BURY_POINT.get(name + desc)
+        BuryPointEntity entity = StatisticPlugin.BURY_POINT_MAP.get(name + desc)
         if (entity != null) {
             String parent = Type.getReturnType(descriptor).getDescriptor()
             if (parent == entity.methodOwner) {
@@ -75,7 +75,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
                 newEntity.isLambda = true
                 newEntity.methodName = handle.getName()
                 newEntity.methodDesc = handle.getDesc()
-                StatisticPlugin.BURY_POINT.put(newEntity.methodName + newEntity.methodDesc, newEntity)
+                StatisticPlugin.BURY_POINT_MAP.put(newEntity.methodName + newEntity.methodDesc, newEntity)
             }
         }
     }
@@ -86,7 +86,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
     @Override
     protected void onMethodEnter() {
         super.onMethodEnter()
-        BuryPointEntity entity = StatisticPlugin.BURY_POINT.get(methodName + methodDesc)
+        BuryPointEntity entity = StatisticPlugin.BURY_POINT_MAP.get(methodName + methodDesc)
         if (entity != null && !entity.isMethodExit) {
             onMethod(entity)
         }
@@ -97,7 +97,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
      */
     @Override
     protected void onMethodExit(int opcode) {
-        BuryPointEntity entity = StatisticPlugin.BURY_POINT.get(methodName + methodDesc)
+        BuryPointEntity entity = StatisticPlugin.BURY_POINT_MAP.get(methodName + methodDesc)
         if (entity != null && entity.isMethodExit) {
             onMethod(entity)
         }
@@ -122,7 +122,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
             }
             mv.visitMethodInsn(INVOKESTATIC, entity.agentOwner, entity.agentName, entity.agentDesc, false)
             // 防止其他类重名方法被插入
-            StatisticPlugin.BURY_POINT.remove(methodName + methodDesc, entity)
+            StatisticPlugin.BURY_POINT_MAP.remove(methodName + methodDesc, entity)
         } else {
             // 获取方法参数
             Type methodType = Type.getMethodType(methodDesc)
@@ -156,7 +156,7 @@ class BuryPointAdviceAdapter extends AdviceAdapter {
             }
             mv.visitMethodInsn(INVOKESTATIC, entity.agentOwner, entity.agentName, entity.agentDesc, false)
             if (entity.isLambda) {
-                StatisticPlugin.BURY_POINT.remove(methodName + methodDesc, entity)
+                StatisticPlugin.BURY_POINT_MAP.remove(methodName + methodDesc, entity)
             }
         }
     }

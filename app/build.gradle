@@ -23,7 +23,8 @@ android {
                 arguments += [
                         "room.schemaLocation"  : "$projectDir/schemas".toString(),
                         "room.incremental"     : "true",
-                        "room.expandProjection": "true"]
+                        "room.expandProjection": "true"
+                ]
             }
         }
     }
@@ -156,12 +157,12 @@ statistic {
     ]
     methodTimer = [
             [
-                    'timeFilter'  : 500L,
-                    'ownerFilter': 'com/example/fragment',
+                    'time'  : 50L,
+                    'owner': 'com/example/fragment',
             ],
             [
-                    'timeFilter'  : 1000L,
-                    'ownerFilter': 'com/google',
+                    'time'  : 500L,
+                    'owner': 'com/google',
             ]
     ]
 }

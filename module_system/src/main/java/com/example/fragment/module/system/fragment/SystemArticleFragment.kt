@@ -3,15 +3,17 @@ package com.example.fragment.module.system.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.system.databinding.FragmentSystemArticleBinding
 import com.example.fragment.module.system.model.SystemViewModel
 
-class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, SystemViewModel>() {
+class SystemArticleFragment : ViewBindingFragment<FragmentSystemArticleBinding>() {
 
     companion object {
         @JvmStatic
@@ -24,15 +26,12 @@ class SystemArticleFragment : ViewModelFragment<FragmentSystemArticleBinding, Sy
         }
     }
 
+    private val viewModel: SystemViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
     private var cid = ""
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentSystemArticleBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSystemArticleBinding {
         return FragmentSystemArticleBinding::inflate
-    }
-
-    override fun setViewModel(): Class<SystemViewModel> {
-        return SystemViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

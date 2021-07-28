@@ -3,17 +3,19 @@ package com.example.fragment.module.project.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.component.view.SimpleTabLayout
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.project.R
 import com.example.fragment.module.project.databinding.FragmentProjectListBinding
 import com.example.fragment.module.project.model.ProjectViewModel
 
-class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, ProjectViewModel>() {
+class ProjectListFragment : ViewBindingFragment<FragmentProjectListBinding>() {
 
     companion object {
         @JvmStatic
@@ -22,12 +24,10 @@ class ProjectListFragment : ViewModelFragment<FragmentProjectListBinding, Projec
         }
     }
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentProjectListBinding {
-        return FragmentProjectListBinding::inflate
-    }
+    private val viewModel: ProjectViewModel by viewModels()
 
-    override fun setViewModel(): Class<ProjectViewModel> {
-        return ProjectViewModel::class.java
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentProjectListBinding {
+        return FragmentProjectListBinding::inflate
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

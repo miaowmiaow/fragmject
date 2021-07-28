@@ -3,15 +3,17 @@ package com.example.fragment.module.faq.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.faq.databinding.FragmentFaqBinding
 import com.example.fragment.module.faq.model.FAQViewModel
 
-class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
+class FAQFragment : ViewBindingFragment<FragmentFaqBinding>() {
 
     companion object {
         @JvmStatic
@@ -20,14 +22,11 @@ class FAQFragment : ViewModelFragment<FragmentFaqBinding, FAQViewModel>() {
         }
     }
 
+    private val viewModel: FAQViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentFaqBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentFaqBinding {
         return FragmentFaqBinding::inflate
-    }
-
-    override fun setViewModel(): Class<FAQViewModel> {
-        return FAQViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

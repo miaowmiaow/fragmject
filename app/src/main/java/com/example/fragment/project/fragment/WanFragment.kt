@@ -3,13 +3,15 @@ package com.example.fragment.project.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.component.view.SimpleTabLayout
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
@@ -19,7 +21,7 @@ import com.example.fragment.module.system.fragment.SystemFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanBinding
 
-class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
+class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
 
     companion object {
         @JvmStatic
@@ -35,9 +37,7 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
         R.drawable.ic_bottom_bar_system,
         R.drawable.ic_bottom_bar_project
     )
-
     private val tabTexts = arrayOf("首页", "导航", "问答", "体系", "项目")
-
     private val fragments = arrayListOf(
         HomeFragment.newInstance(),
         NavigationFragment.newInstance(),
@@ -46,12 +46,8 @@ class WanFragment : ViewModelFragment<FragmentWanBinding, BaseViewModel>() {
         ProjectListFragment.newInstance()
     )
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentWanBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentWanBinding {
         return FragmentWanBinding::inflate
-    }
-
-    override fun setViewModel(): Class<BaseViewModel> {
-        return BaseViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

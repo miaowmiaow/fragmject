@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.component.activity.OnBackPressedListener
 import com.example.fragment.library.base.component.adapter.BaseAdapter
@@ -14,7 +16,7 @@ import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.fragment.SquareFragment
@@ -22,9 +24,9 @@ import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
 
-class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
-    OnBackPressedListener {
+class MainFragment : ViewBindingFragment<FragmentMainBinding>(), OnBackPressedListener {
 
+    private val viewModel: MainViewModel by viewModels()
     private lateinit var bannerHelper: SimpleBannerHelper
     private val hotKeyAdapter = HotKeyAdapter()
 
@@ -33,18 +35,19 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
         WanFragment.newInstance()
     )
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentMainBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentMainBinding {
         return FragmentMainBinding::inflate
-    }
-
-    override fun setViewModel(): Class<MainViewModel> {
-        return MainViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
+        setupView(savedInstanceState)
         update()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("TAB_CURRENT_POSITION", binding.viewpager.currentItem)
     }
 
     override fun onResume() {
@@ -82,7 +85,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
     }
 
     @TestAnnotation(code = 10086, message = "MainFragment.setupView")
-    private fun setupView() {
+    private fun setupView(savedInstanceState: Bundle?) {
         binding.menu.setOnClickListener {
             if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
                 binding.drawer.closeDrawer(GravityCompat.START)
@@ -117,7 +120,7 @@ class MainFragment : ViewModelFragment<FragmentMainBinding, MainViewModel>(),
                 return fragments.size
             }
         }
-        binding.viewpager.currentItem = 1
+        binding.viewpager.currentItem = savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 1
     }
 
     private fun update() {

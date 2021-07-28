@@ -3,27 +3,26 @@ package com.example.fragment.user.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCollectArticleBinding
 import com.example.fragment.user.model.UserViewModel
 
 class MyCollectArticleFragment :
-    ViewModelFragment<FragmentMyCollectArticleBinding, UserViewModel>() {
+    ViewBindingFragment<FragmentMyCollectArticleBinding>() {
 
+    private val viewModel: UserViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentMyCollectArticleBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentMyCollectArticleBinding {
         return FragmentMyCollectArticleBinding::inflate
-    }
-
-    override fun setViewModel(): Class<UserViewModel> {
-        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -3,14 +3,14 @@ package com.example.fragment.library.common.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import com.example.fragment.library.base.component.activity.OnBackPressedListener
 import com.example.fragment.library.base.utils.WebHelper
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
-import com.example.fragment.library.common.model.BaseViewModel
 import com.tencent.smtt.sdk.WebView
 
-class WebFragment : ViewModelFragment<FragmentWebBinding, BaseViewModel>(),
+class WebFragment : ViewBindingFragment<FragmentWebBinding>(),
     OnBackPressedListener {
 
     companion object {
@@ -23,12 +23,8 @@ class WebFragment : ViewModelFragment<FragmentWebBinding, BaseViewModel>(),
     private lateinit var webHelper: WebHelper
     private var url = "https://wanandroid.com/"
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentWebBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentWebBinding {
         return FragmentWebBinding::inflate
-    }
-
-    override fun setViewModel(): Class<BaseViewModel> {
-        return BaseViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

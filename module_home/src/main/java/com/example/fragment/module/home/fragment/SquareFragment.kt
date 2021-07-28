@@ -3,14 +3,16 @@ package com.example.fragment.module.home.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.home.databinding.FragmentSquareBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
-class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>() {
+class SquareFragment : ViewBindingFragment<FragmentSquareBinding>() {
 
     companion object {
         @JvmStatic
@@ -19,14 +21,11 @@ class SquareFragment : ViewModelFragment<FragmentSquareBinding, HomeViewModel>()
         }
     }
 
+    private val viewModel: HomeViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentSquareBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSquareBinding {
         return FragmentSquareBinding::inflate
-    }
-
-    override fun setViewModel(): Class<HomeViewModel> {
-        return HomeViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

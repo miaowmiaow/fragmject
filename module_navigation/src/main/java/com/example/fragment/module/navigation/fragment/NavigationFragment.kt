@@ -3,7 +3,9 @@ package com.example.fragment.module.navigation.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
@@ -11,13 +13,13 @@ import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.navigation.R
 import com.example.fragment.module.navigation.adapter.NavigationMenuAdapter
 import com.example.fragment.module.navigation.databinding.FragmentNavigationBinding
 import com.example.fragment.module.navigation.model.NavigationViewModel
 
-class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, NavigationViewModel>() {
+class NavigationFragment : ViewBindingFragment<FragmentNavigationBinding>() {
 
     companion object {
         @JvmStatic
@@ -26,14 +28,11 @@ class NavigationFragment : ViewModelFragment<FragmentNavigationBinding, Navigati
         }
     }
 
+    private val viewModel: NavigationViewModel by viewModels()
     private val navigationMenuAdapter = NavigationMenuAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentNavigationBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentNavigationBinding {
         return FragmentNavigationBinding::inflate
-    }
-
-    override fun setViewModel(): Class<NavigationViewModel> {
-        return NavigationViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

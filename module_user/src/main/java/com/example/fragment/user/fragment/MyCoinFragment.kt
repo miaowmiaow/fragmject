@@ -5,28 +5,27 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.user.adapter.CoinRecordAdapter
 import com.example.fragment.user.model.UserViewModel
 
-class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>() {
+class MyCoinFragment : ViewBindingFragment<FragmentMyCoinBinding>() {
 
+    private val viewModel: UserViewModel by viewModels()
     private val coinRecordAdapter = CoinRecordAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentMyCoinBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentMyCoinBinding {
         return FragmentMyCoinBinding::inflate
-    }
-
-    override fun setViewModel(): Class<UserViewModel> {
-        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -40,12 +39,13 @@ class MyCoinFragment : ViewModelFragment<FragmentMyCoinBinding, UserViewModel>()
         binding.rank.setOnClickListener { baseActivity.navigation(Router.COIN_RANK) }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRecordAdapter
-        coinRecordAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener{
+        coinRecordAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 Log.i("----------", "----------onItemClick")
             }
         })
-        coinRecordAdapter.setOnItemChildClickListener(object : BaseAdapter.OnItemChildClickListener{
+        coinRecordAdapter.setOnItemChildClickListener(object :
+            BaseAdapter.OnItemChildClickListener {
             override fun onItemChildClick(
                 view: View,
                 holder: BaseAdapter.ViewBindHolder,

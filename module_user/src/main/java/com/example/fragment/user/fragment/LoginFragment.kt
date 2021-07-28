@@ -3,20 +3,20 @@ package com.example.fragment.user.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentLoginBinding
 import com.example.fragment.user.model.UserViewModel
 
-class LoginFragment : ViewModelFragment<FragmentLoginBinding, UserViewModel>() {
+class LoginFragment : ViewBindingFragment<FragmentLoginBinding>() {
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentLoginBinding {
+    private val viewModel: UserViewModel by viewModels()
+
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentLoginBinding {
         return FragmentLoginBinding::inflate
-    }
-
-    override fun setViewModel(): Class<UserViewModel> {
-        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

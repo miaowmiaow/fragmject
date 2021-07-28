@@ -5,7 +5,6 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.component.view.BuryPointLayout
 import com.example.fragment.library.base.component.view.TipsView
 import com.example.fragment.library.base.db.SimpleDBHelper
 import com.example.fragment.library.base.utils.StatusBarUtils
@@ -19,7 +18,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private var exitTime = 0L
 
     override fun setContentView(view: View) {
-        //添加埋点布局和顶部提示view
+        //添加顶部提示view
         tipsView = TipsView(view.context)
         val frameLayout = FrameLayout(view.context)
         frameLayout.addView(view)

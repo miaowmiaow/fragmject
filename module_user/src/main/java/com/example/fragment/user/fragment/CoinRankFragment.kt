@@ -4,27 +4,26 @@ import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
 import com.example.fragment.user.adapter.CoinRankAdapter
 import com.example.fragment.user.model.UserViewModel
 
-class CoinRankFragment : ViewModelFragment<FragmentCoinRankBinding, UserViewModel>() {
+class CoinRankFragment : ViewBindingFragment<FragmentCoinRankBinding>() {
 
+    private val viewModel: UserViewModel by viewModels()
     private val coinRankAdapter = CoinRankAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentCoinRankBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentCoinRankBinding {
         return FragmentCoinRankBinding::inflate
-    }
-
-    override fun setViewModel(): Class<UserViewModel> {
-        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

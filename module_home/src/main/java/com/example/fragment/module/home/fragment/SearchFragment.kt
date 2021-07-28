@@ -1,33 +1,33 @@
 package com.example.fragment.module.home.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.R
 import com.example.fragment.module.home.adapter.HistorySearchAdapter
 import com.example.fragment.module.home.databinding.FragmentSearchBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
-class SearchFragment : ViewModelFragment<FragmentSearchBinding, HomeViewModel>() {
+class SearchFragment : ViewBindingFragment<FragmentSearchBinding>() {
 
+    private val viewModel: HomeViewModel by viewModels()
     private val historySearchAdapter = HistorySearchAdapter()
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentSearchBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSearchBinding {
         return FragmentSearchBinding::inflate
-    }
-
-    override fun setViewModel(): Class<HomeViewModel> {
-        return HomeViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -39,6 +39,7 @@ class SearchFragment : ViewModelFragment<FragmentSearchBinding, HomeViewModel>()
         update()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupView() {
         binding.cancel.setOnClickListener { baseActivity.onBackPressed() }
         binding.search.setOnTouchListener { _, _ ->

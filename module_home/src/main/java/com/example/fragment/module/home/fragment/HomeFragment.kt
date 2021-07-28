@@ -3,15 +3,17 @@ package com.example.fragment.module.home.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.module.home.databinding.FragmentHomeBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
-class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
+class HomeFragment : ViewBindingFragment<FragmentHomeBinding>() {
 
     companion object {
         @JvmStatic
@@ -20,14 +22,11 @@ class HomeFragment : ViewModelFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
+    private val viewModel: HomeViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentHomeBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentHomeBinding {
         return FragmentHomeBinding::inflate
-    }
-
-    override fun setViewModel(): Class<HomeViewModel> {
-        return HomeViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

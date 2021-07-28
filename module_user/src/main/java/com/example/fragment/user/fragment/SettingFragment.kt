@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.component.view.SimpleSwitchButton
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
@@ -14,21 +16,18 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
 import com.example.fragment.user.model.UserViewModel
 
-class SettingFragment : ViewModelFragment<FragmentSettingBinding, UserViewModel>() {
+class SettingFragment : ViewBindingFragment<FragmentSettingBinding>() {
 
+    private val viewModel: UserViewModel by viewModels()
     private var countDownTimer: CountDownTimer? = null
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentSettingBinding {
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSettingBinding {
         return FragmentSettingBinding::inflate
-    }
-
-    override fun setViewModel(): Class<UserViewModel> {
-        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -3,21 +3,21 @@ package com.example.fragment.user.fragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewModelFragment
+import com.example.fragment.library.common.fragment.ViewBindingFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentRegisterBinding
 import com.example.fragment.user.model.UserViewModel
 
-class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserViewModel>() {
+class RegisterFragment : ViewBindingFragment<FragmentRegisterBinding>() {
 
-    override fun setViewBinding(): (LayoutInflater) -> FragmentRegisterBinding {
+    private val viewModel: UserViewModel by viewModels()
+
+    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentRegisterBinding {
         return FragmentRegisterBinding::inflate
-    }
-
-    override fun setViewModel(): Class<UserViewModel> {
-        return UserViewModel::class.java
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -31,13 +31,15 @@ class RegisterFragment : ViewModelFragment<FragmentRegisterBinding, UserViewMode
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.repassword.addKeyboardListener(binding.root)
-        binding.login.setOnClickListener { baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK) }
+        binding.login.setOnClickListener {
+            baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
+        }
         binding.register.setOnClickListener {
             val username = binding.username.text.toString()
             val password = binding.password.text.toString()
-            val repassword = binding.repassword.text.toString()
-            if (checkParameter(username, password, repassword)) {
-                viewModel.register(username, password, repassword)
+            val rePassword = binding.repassword.text.toString()
+            if (checkParameter(username, password, rePassword)) {
+                viewModel.register(username, password, rePassword)
             }
         }
     }

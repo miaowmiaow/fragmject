@@ -29,35 +29,71 @@
 - 视图绑定不支持布局变量或布局表达式，因此不能用于直接在 XML 布局文件中声明动态界面内容。
 - 视图绑定不支持双向数据绑定。
 考虑到这些因素，在某些情况下，最好在项目中同时使用视图绑定和数据绑定。您可以在需要高级功能的布局中使用数据绑定，而在不需要高级功能的布局中使用视图绑定。
-[view-binding官方文档](https://developer.android.google.cn/topic/libraries/view-binding)
 # LiveData
 LiveData 是一种可观察的数据存储器类。与常规的可观察类不同，LiveData 具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。这种感知能力可确保 LiveData 仅更新处于活跃生命周期状态的应用组件观察者。
-### 使用 LiveData 的优势
-#### 确保界面符合数据状态
-LiveData 遵循观察者模式。当底层数据发生变化时，LiveData 会通知 Observer 对象。您可以整合代码以在这些 Observer 对象中更新界面。这样一来，您无需在每次应用数据发生变化时更新界面，因为观察者会替您完成更新。
-#### 不会发生内存泄漏
-观察者会绑定到 Lifecycle 对象，并在其关联的生命周期遭到销毁后进行自我清理。
-#### 不会因 Activity 停止而导致崩溃
-如果观察者的生命周期处于非活跃状态（如返回栈中的 Activity），则它不会接收任何 LiveData 事件。
-#### 不再需要手动处理生命周期
-界面组件只是观察相关数据，不会停止或恢复观察。LiveData 将自动管理所有这些操作，因为它在观察时可以感知相关的生命周期状态变化。
-#### 数据始终保持最新状态
-如果生命周期变为非活跃状态，它会在再次变为活跃状态时接收最新的数据。例如，曾经在后台的 Activity 会在返回前台后立即接收最新的数据。
-#### 适当的配置更改
-如果由于配置更改（如设备旋转）而重新创建了 Activity 或 Fragment，它会立即接收最新的可用数据。
-#### 共享资源
-您可以使用单例模式扩展 LiveData 对象以封装系统服务，以便在应用中共享它们。LiveData 对象连接到系统服务一次，然后需要相应资源的任何观察者只需观察 LiveData 对象。
-[livedata官方文档](https://developer.android.google.cn/topic/libraries/architecture/livedata)
+### 使用 LiveData 的优势:
+- 不会发生内存泄漏，观察者会绑定到 Lifecycle 对象，并在其关联的生命周期遭到销毁后进行自我清理。
+- 不会因 Activity 停止而导致崩溃，如果观察者的生命周期处于非活跃状态（如返回栈中的 Activity），则它不会接收任何 LiveData 事件。
+- 不再需要手动处理生命周期，界面组件只是观察相关数据，不会停止或恢复观察。LiveData 将自动管理所有这些操作，因为它在观察时可以感知相关的生命周期状态变化。
+- 数据始终保持最新状态，如果生命周期变为非活跃状态，它会在再次变为活跃状态时接收最新的数据。例如，曾经在后台的 Activity 会在返回前台后立即接收最新的数据。
+- 适当的配置更改，如果由于配置更改（如设备旋转）而重新创建了 Activity 或 Fragment，它会立即接收最新的可用数据。
+- 共享资源，您可以使用单例模式扩展 LiveData 对象以封装系统服务，以便在应用中共享它们。LiveData 对象连接到系统服务一次，然后需要相应资源的任何观察者只需观察 LiveData 对象。
 # ViewModel
 ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的数据。ViewModel 类让数据可在发生屏幕旋转等配置更改后继续留存。
-[viewmodel官方文档](https://developer.android.google.cn/topic/libraries/architecture/viewmodel)
 # 协程
 协程是一种并发设计模式，您可以在 Android 平台上使用它来简化异步执行的代码。
-协程是我们在 Android 上进行异步编程的推荐解决方案。值得关注的特点包括：
+### 协程的特点包括：
 - 轻量：您可以在单个线程上运行多个协程，因为协程支持挂起，不会使正在运行协程的线程阻塞。挂起比阻塞节省内存，且支持多个并行操作。
 - 内存泄漏更少：使用结构化并发机制在一个作用域内执行多项操作。
 - 内置取消支持：取消操作会自动在运行中的整个协程层次结构内传播。
 - Jetpack 集成：许多 Jetpack 库都包含提供全面协程支持的扩展。某些库还提供自己的协程作用域，可供您用于结构化并发。
+# Fragment + LiveData + ViewModel + 协程
+### 以项目中 MainFragment 为例
+#### 1、MainViewModel 代码如下：
+```
+class MainViewModel :  ViewModel() {
+    
+    val hotKeyResult = MutableLiveData<HotKeyListBean>()
+
+    // 获取热词接口
+    fun getHotKey() {
+        // 通过viewModelScope创建一个协程
+        viewModelScope.launch {
+            // 构建请求体，传入请求参数
+            val request = HttpRequest("hotkey/json")
+            // 以get方式发起网络请求
+            val response = get<HotKeyListBean>(request)
+            // 通过LiveData更新数据
+            hotKeyResult.postValue(response)
+        }
+    }
+    
+}
+```
+#### 2、MainFragment 代码如下：
+```
+class MainFragment : Fragment() {
+
+    // 使用by 'by viewModels()' Kotlin属性委托获取 MainViewModel
+    private val viewModel: MainViewModel by viewModels()
+    private val hotKeyAdapter = HotKeyAdapter()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // 观察 hotKeyResult 的变化来更新UI
+        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
+            result.data?.apply {
+                if (result.errorCode == "0") {
+                    hotKeyAdapter.setNewData(this)
+                }
+            }
+        })
+        // 调用获取热词接口
+        viewModel.getHotKey()
+    }
+
+}
+```
 # 基于LiveData封装的消息总线LiveDataBus
 LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。  
  1、发送事件

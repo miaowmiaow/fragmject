@@ -96,7 +96,7 @@ class MainFragment : Fragment() {
 ```
 # 基于LiveData封装的消息总线LiveDataBus
 LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。  
- 1、发送事件
+1、发送事件
 ```
    SimpleLiveBus.with<String>("key").postEvent("value")
 ```
@@ -112,6 +112,19 @@ LiveDataBus具有生命周期感知，在Android系统中使用调用者不需�
         println(it)
    })
 ```
+# 基于RoomDatabase封装的SimpleDBHelper
+1、存储数据
+ ```
+    SimpleDBHelper.set(“key”, "value")
+ ```
+2、获取数据
+  ```
+     SimpleDBHelper.get(“key”)
+  ```
+# 字节码插桩
+相关知识已发布在掘金上，可点击下面链接跳转查看
+- [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
+- [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 自动埋点](https://juejin.cn/post/6985366891447451662)
 # 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)

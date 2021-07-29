@@ -74,7 +74,7 @@ class MainViewModel :  ViewModel() {
 ```
 class MainFragment : Fragment() {
 
-    // 使用by 'by viewModels()' Kotlin属性委托获取 MainViewModel
+    // 使用 'by viewModels()' Kotlin属性委托获取 MainViewModel
     private val viewModel: MainViewModel by viewModels()
     private val hotKeyAdapter = HotKeyAdapter()
 

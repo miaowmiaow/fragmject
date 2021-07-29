@@ -1,6 +1,7 @@
 package com.example.fragment.module.home.model
 
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
@@ -8,10 +9,9 @@ import com.example.fragment.library.base.http.post
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.bean.BannerDataBean
 import com.example.fragment.library.common.bean.TopArticleBean
-import com.example.fragment.library.common.model.BaseViewModel
 import kotlinx.coroutines.launch
 
-class HomeViewModel : BaseViewModel() {
+class HomeViewModel : ViewModel() {
 
     val bannerResult = MutableLiveData<BannerDataBean>()
     val articleTopResult = MutableLiveData<TopArticleBean>()

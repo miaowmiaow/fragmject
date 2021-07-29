@@ -9,10 +9,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.component.view.SimpleTabLayout
 import com.example.fragment.library.common.fragment.ViewBindingFragment
-import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
 import com.example.fragment.module.navigation.fragment.NavigationFragment
@@ -57,7 +55,7 @@ class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
+        outState.putInt("WAN_CURRENT_POSITION", binding.tab.getCurrentPosition())
     }
 
     private fun setupView(savedInstanceState: Bundle?) {
@@ -101,7 +99,7 @@ class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
                 txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
             }
         })
-        binding.tab.selectTab(savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 0)
+        binding.tab.selectTab(savedInstanceState?.getInt("WAN_CURRENT_POSITION") ?: 0)
     }
 
 }

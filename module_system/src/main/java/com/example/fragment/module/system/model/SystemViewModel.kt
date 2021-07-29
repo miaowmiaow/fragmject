@@ -1,16 +1,16 @@
 package com.example.fragment.module.system.model
 
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.library.common.model.BaseViewModel
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.library.common.bean.TreeListBean
 import kotlinx.coroutines.launch
 
-class SystemViewModel : BaseViewModel() {
+class SystemViewModel : ViewModel() {
 
     val treeResult = MutableLiveData<TreeListBean>()
     val treeListResult = MutableLiveData<ArticleListBean>()

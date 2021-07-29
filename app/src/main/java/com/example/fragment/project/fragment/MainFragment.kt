@@ -47,7 +47,7 @@ class MainFragment : ViewBindingFragment<FragmentMainBinding>(), OnBackPressedLi
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("TAB_CURRENT_POSITION", binding.viewpager.currentItem)
+        outState.putInt("MAIN_CURRENT_POSITION", binding.viewpager.currentItem)
     }
 
     override fun onResume() {
@@ -120,7 +120,7 @@ class MainFragment : ViewBindingFragment<FragmentMainBinding>(), OnBackPressedLi
                 return fragments.size
             }
         }
-        binding.viewpager.currentItem = savedInstanceState?.getInt("TAB_CURRENT_POSITION") ?: 1
+        binding.viewpager.currentItem = savedInstanceState?.getInt("MAIN_CURRENT_POSITION") ?: 1
     }
 
     private fun update() {

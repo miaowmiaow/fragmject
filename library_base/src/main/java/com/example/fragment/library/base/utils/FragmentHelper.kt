@@ -48,8 +48,8 @@ class FragmentHelper {
         fun switcher(
             manager: FragmentManager,
             resId: Int,
-            curClazz: Class<out Fragment>?,
-            clazz: Class<out Fragment>,
+            currClazz: Class<out Fragment>?,
+            switchClazz: Class<out Fragment>,
             bundle: Bundle?,
             addToBackStack: Boolean
         ): Class<out Fragment> {
@@ -60,43 +60,41 @@ class FragmentHelper {
                 R.anim.slide_left_in,
                 R.anim.slide_right_out
             )
-            if (curClazz != null) {
-                val tag = curClazz.simpleName
-                val curFragment = manager.findFragmentByTag(tag)
-                if (curFragment != null) {
-                    transaction.hide(curFragment)
-                    transaction.setMaxLifecycle(curFragment, Lifecycle.State.STARTED)
+            if (currClazz != null) {
+                manager.findFragmentByTag(currClazz.simpleName)?.let {
+                    transaction.hide(it)
+                    transaction.setMaxLifecycle(it, Lifecycle.State.STARTED)
                 }
             }
-            val tag = clazz.simpleName
-            var fragment = manager.findFragmentByTag(tag)
-            if (fragment == null) {
+            val tag = switchClazz.simpleName
+            var switchFragment = manager.findFragmentByTag(tag)
+            if (switchFragment == null) {
                 try {
-                    fragment = clazz.newInstance()
-                    transaction.add(resId, fragment, tag)
-                    transaction.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
+                    switchFragment = switchClazz.newInstance()
+                    transaction.add(resId, switchFragment, tag)
+                    transaction.setMaxLifecycle(switchFragment, Lifecycle.State.RESUMED)
                 } catch (e: java.lang.Exception) {
                     e.printStackTrace()
                 }
-                if (fragment != null) {
-                    if (bundle != null && !bundle.isEmpty) {
-                        val arguments = fragment.arguments
-                        if (arguments != null) {
-                            arguments.putAll(bundle)
-                        } else {
-                            fragment.arguments = bundle
-                        }
-                    }
-                    if (addToBackStack) {
-                        transaction.addToBackStack(tag)
-                    }
-                    transaction.commitAllowingStateLoss()
-                }
             } else {
-                transaction.show(fragment)
-                transaction.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
+                transaction.show(switchFragment)
+                transaction.setMaxLifecycle(switchFragment, Lifecycle.State.RESUMED)
             }
-            return clazz
+            if (switchFragment != null) {
+                if (bundle != null) {
+                    val arguments = switchFragment.arguments
+                    if (arguments != null) {
+                        arguments.putAll(bundle)
+                    } else {
+                        switchFragment.arguments = bundle
+                    }
+                }
+                if (addToBackStack) {
+                    transaction.addToBackStack(tag)
+                }
+                transaction.commitAllowingStateLoss()
+            }
+            return switchClazz
         }
 
         fun pop(manager: FragmentManager, clazz: Class<out Fragment>): Class<out Fragment> {

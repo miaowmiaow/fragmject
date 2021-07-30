@@ -170,12 +170,12 @@ object ActivityResultHelper {
     }
 
     private fun FragmentActivity.getResultFragment(): ResultFragment {
-        var fragment =
-            supportFragmentManager.findFragmentByTag(ResultFragment::class.java.simpleName)
+        val tag = ResultFragment::class.java.simpleName
+        var fragment = supportFragmentManager.findFragmentByTag(tag)
         if (fragment == null) {
             fragment = ResultFragment.newInstance()
             val fragmentTransaction = supportFragmentManager.beginTransaction()
-            fragmentTransaction.add(fragment, ResultFragment::class.java.simpleName)
+            fragmentTransaction.add(fragment, tag)
             fragmentTransaction.commitAllowingStateLoss()
             supportFragmentManager.executePendingTransactions()
         }
@@ -206,13 +206,6 @@ class ResultFragment : Fragment() {
     private val activityCallbacks: MutableMap<Int, ActivityCallback?> = HashMap()
     private val permissionsCallbacks: MutableMap<Int, PermissionsCallback?> = HashMap()
 
-    private lateinit var fragmentActivity: FragmentActivity
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        fragmentActivity = activity as FragmentActivity
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         val callback: ActivityCallback? = activityCallbacks[requestCode]
@@ -225,12 +218,12 @@ class ResultFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val callback: PermissionsCallback? = permissionsCallbacks[requestCode]
-        val length: Int = grantResults.size
-        for (i in 0 until length) {
-            if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+        permissionsCallbacks[requestCode]?.apply {
+            val length: Int = grantResults.size
+            for (i in 0 until length) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
 //                if (ActivityCompat.shouldShowRequestPermissionRationale(
-//                        fragmentActivity,
+//                        requireContext(),
 //                        permissions[i]
 //                    )
 //                ) {
@@ -238,12 +231,13 @@ class ResultFragment : Fragment() {
 //                } else {
 //                    callback?.deny()
 //                }
-                callback?.deny()
-                return
+                    deny()
+                    return
+                }
             }
-        }
-        if (length > 0) {
-            callback?.allow()
+            if (length > 0) {
+                allow()
+            }
         }
     }
 
@@ -257,15 +251,15 @@ class ResultFragment : Fragment() {
      * 动态权限申请方法
      */
     fun requestForPermissions(permissions: Array<String>, callback: PermissionsCallback?) {
-        for (permission in permissions) {
-            val permissionResult = ActivityCompat.checkSelfPermission(fragmentActivity, permission)
-            if (permissionResult == PackageManager.PERMISSION_DENIED) {
-                val requestCode: Int = Random().nextInt(0x0000FFFF)
-                permissionsCallbacks[requestCode] = callback
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            for (permission in permissions) {
+                val result = ActivityCompat.checkSelfPermission(requireContext(), permission)
+                if (result == PackageManager.PERMISSION_DENIED) {
+                    val requestCode = Random().nextInt(0x0000FFFF)
+                    permissionsCallbacks[requestCode] = callback
                     requestPermissions(permissions, requestCode)
+                    return
                 }
-                return
             }
         }
         callback?.allow()

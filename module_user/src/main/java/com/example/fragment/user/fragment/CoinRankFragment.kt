@@ -12,18 +12,30 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
 import com.example.fragment.user.adapter.CoinRankAdapter
 import com.example.fragment.user.model.UserViewModel
 
-class CoinRankFragment : ViewBindingFragment<FragmentCoinRankBinding>() {
+class CoinRankFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
     private val coinRankAdapter = CoinRankAdapter()
+    private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentCoinRankBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentCoinRankBinding {
-        return FragmentCoinRankBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCoinRankBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

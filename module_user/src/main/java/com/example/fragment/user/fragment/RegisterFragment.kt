@@ -7,17 +7,29 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentRegisterBinding
 import com.example.fragment.user.model.UserViewModel
 
-class RegisterFragment : ViewBindingFragment<FragmentRegisterBinding>() {
+class RegisterFragment : RouterFragment() {
 
     private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentRegisterBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentRegisterBinding {
-        return FragmentRegisterBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

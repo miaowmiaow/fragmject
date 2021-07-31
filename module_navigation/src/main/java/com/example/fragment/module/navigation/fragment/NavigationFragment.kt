@@ -13,13 +13,13 @@ import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.navigation.R
 import com.example.fragment.module.navigation.adapter.NavigationMenuAdapter
 import com.example.fragment.module.navigation.databinding.FragmentNavigationBinding
 import com.example.fragment.module.navigation.model.NavigationViewModel
 
-class NavigationFragment : ViewBindingFragment<FragmentNavigationBinding>() {
+class NavigationFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -28,11 +28,23 @@ class NavigationFragment : ViewBindingFragment<FragmentNavigationBinding>() {
         }
     }
 
-    private val viewModel: NavigationViewModel by viewModels()
     private val navigationMenuAdapter = NavigationMenuAdapter()
+    private val viewModel: NavigationViewModel by viewModels()
+    private var _binding: FragmentNavigationBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentNavigationBinding {
-        return FragmentNavigationBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentNavigationBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

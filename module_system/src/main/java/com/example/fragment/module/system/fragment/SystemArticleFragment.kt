@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.system.databinding.FragmentSystemArticleBinding
 import com.example.fragment.module.system.model.SystemViewModel
 
-class SystemArticleFragment : ViewBindingFragment<FragmentSystemArticleBinding>() {
+class SystemArticleFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -26,12 +26,24 @@ class SystemArticleFragment : ViewBindingFragment<FragmentSystemArticleBinding>(
         }
     }
 
-    private val viewModel: SystemViewModel by viewModels()
-    private val articleAdapter = ArticleAdapter()
     private var cid = ""
+    private val articleAdapter = ArticleAdapter()
+    private val viewModel: SystemViewModel by viewModels()
+    private var _binding: FragmentSystemArticleBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSystemArticleBinding {
-        return FragmentSystemArticleBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSystemArticleBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

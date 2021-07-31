@@ -6,17 +6,29 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentLoginBinding
 import com.example.fragment.user.model.UserViewModel
 
-class LoginFragment : ViewBindingFragment<FragmentLoginBinding>() {
+class LoginFragment : RouterFragment() {
 
     private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentLoginBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentLoginBinding {
-        return FragmentLoginBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

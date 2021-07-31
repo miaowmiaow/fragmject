@@ -8,12 +8,12 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.system.adapter.SystemAdapter
 import com.example.fragment.module.system.databinding.FragmentSystemBinding
 import com.example.fragment.module.system.model.SystemViewModel
 
-class SystemFragment : ViewBindingFragment<FragmentSystemBinding>() {
+class SystemFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -22,11 +22,23 @@ class SystemFragment : ViewBindingFragment<FragmentSystemBinding>() {
         }
     }
 
-    private val viewModel: SystemViewModel by viewModels()
     private val systemAdapter = SystemAdapter()
+    private val viewModel: SystemViewModel by viewModels()
+    private var _binding: FragmentSystemBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSystemBinding {
-        return FragmentSystemBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSystemBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

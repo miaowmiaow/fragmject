@@ -13,21 +13,33 @@ import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.R
 import com.example.fragment.module.home.adapter.HistorySearchAdapter
 import com.example.fragment.module.home.databinding.FragmentSearchBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
-class SearchFragment : ViewBindingFragment<FragmentSearchBinding>() {
+class SearchFragment : RouterFragment() {
 
-    private val viewModel: HomeViewModel by viewModels()
     private val historySearchAdapter = HistorySearchAdapter()
     private val articleAdapter = ArticleAdapter()
+    private val viewModel: HomeViewModel by viewModels()
+    private var _binding: FragmentSearchBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSearchBinding {
-        return FragmentSearchBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

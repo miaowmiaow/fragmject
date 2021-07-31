@@ -9,19 +9,30 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.databinding.FragmentUserShareBinding
 import com.example.fragment.user.model.UserViewModel
 
-class UserShareFragment : ViewBindingFragment<FragmentUserShareBinding>() {
-
-    private val viewModel: UserViewModel by viewModels()
-    private val articleAdapter = ArticleAdapter()
+class UserShareFragment : RouterFragment() {
 
     private var id: String = ""
+    private val articleAdapter = ArticleAdapter()
+    private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentUserShareBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentUserShareBinding {
-        return FragmentUserShareBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentUserShareBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

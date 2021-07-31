@@ -1,5 +1,7 @@
 package com.example.fragment.library.base.component.fragment
 
+import android.os.Bundle
+import android.view.View
 import androidx.fragment.app.Fragment
 
 abstract class BaseFragment : Fragment() {
@@ -7,6 +9,12 @@ abstract class BaseFragment : Fragment() {
     private var firstLoadFragment = true
 
     abstract fun onFirstLoad()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view.isClickable = true
+        view.isFocusable = true
+    }
 
     override fun onResume() {
         super.onResume()
@@ -22,6 +30,6 @@ abstract class BaseFragment : Fragment() {
         hiddenFragment(false)
     }
 
-    open fun hiddenFragment(hidden: Boolean){}
+    open fun hiddenFragment(hidden: Boolean) {}
 
 }

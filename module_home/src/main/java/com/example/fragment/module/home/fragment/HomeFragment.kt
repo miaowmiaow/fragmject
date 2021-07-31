@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.home.databinding.FragmentHomeBinding
 import com.example.fragment.module.home.model.HomeViewModel
 
-class HomeFragment : ViewBindingFragment<FragmentHomeBinding>() {
+class HomeFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -22,11 +22,23 @@ class HomeFragment : ViewBindingFragment<FragmentHomeBinding>() {
         }
     }
 
-    private val viewModel: HomeViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
+    private val viewModel: HomeViewModel by viewModels()
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentHomeBinding {
-        return FragmentHomeBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

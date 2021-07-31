@@ -10,8 +10,7 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
 import com.tencent.smtt.sdk.WebView
 
-class WebFragment : ViewBindingFragment<FragmentWebBinding>(),
-    OnBackPressedListener {
+class WebFragment : RouterFragment(), OnBackPressedListener {
 
     companion object {
         @JvmStatic
@@ -22,9 +21,22 @@ class WebFragment : ViewBindingFragment<FragmentWebBinding>(),
 
     private lateinit var webHelper: WebHelper
     private var url = "https://wanandroid.com/"
+    private var _binding: FragmentWebBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentWebBinding {
-        return FragmentWebBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentWebBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        webHelper.onDestroy()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,11 +65,6 @@ class WebFragment : ViewBindingFragment<FragmentWebBinding>(),
         } else {
             false
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        webHelper.onDestroy()
     }
 
     private fun setupView() {

@@ -10,18 +10,30 @@ import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyShareArticleBinding
 import com.example.fragment.user.model.UserViewModel
 
-class MyShareArticleFragment : ViewBindingFragment<FragmentMyShareArticleBinding>() {
+class MyShareArticleFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
     private val articleAdapter = ArticleAdapter()
+    private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentMyShareArticleBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentMyShareArticleBinding {
-        return FragmentMyShareArticleBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMyShareArticleBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

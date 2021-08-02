@@ -10,12 +10,11 @@ import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.project.databinding.FragmentProjectArticleBinding
 import com.example.fragment.module.project.model.ProjectViewModel
 
-class ProjectArticleFragment :
-    ViewBindingFragment<FragmentProjectArticleBinding>() {
+class ProjectArticleFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -28,12 +27,24 @@ class ProjectArticleFragment :
         }
     }
 
-    private val viewModel: ProjectViewModel by viewModels()
-    private val articleAdapter = ArticleAdapter()
     private var cid = ""
+    private val articleAdapter = ArticleAdapter()
+    private val viewModel: ProjectViewModel by viewModels()
+    private var _binding: FragmentProjectArticleBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentProjectArticleBinding {
-        return FragmentProjectArticleBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentProjectArticleBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

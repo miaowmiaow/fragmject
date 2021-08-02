@@ -13,19 +13,31 @@ import com.example.fragment.library.base.component.adapter.BaseAdapter
 import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.user.adapter.CoinRecordAdapter
 import com.example.fragment.user.model.UserViewModel
 
-class MyCoinFragment : ViewBindingFragment<FragmentMyCoinBinding>() {
+class MyCoinFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
     private val coinRecordAdapter = CoinRecordAdapter()
+    private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentMyCoinBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentMyCoinBinding {
-        return FragmentMyCoinBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMyCoinBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

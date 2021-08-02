@@ -10,12 +10,12 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.component.view.SimpleTabLayout
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.project.R
 import com.example.fragment.module.project.databinding.FragmentProjectListBinding
 import com.example.fragment.module.project.model.ProjectViewModel
 
-class ProjectListFragment : ViewBindingFragment<FragmentProjectListBinding>() {
+class ProjectListFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -25,9 +25,21 @@ class ProjectListFragment : ViewBindingFragment<FragmentProjectListBinding>() {
     }
 
     private val viewModel: ProjectViewModel by viewModels()
+    private var _binding: FragmentProjectListBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentProjectListBinding {
-        return FragmentProjectListBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentProjectListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

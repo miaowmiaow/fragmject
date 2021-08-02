@@ -14,7 +14,7 @@ import com.example.fragment.library.common.utils.WanHelper
  */
 abstract class RouterActivity : BaseActivity() {
 
-    private var curFragment: Class<out Fragment>? = null
+    private var currFragment: Class<out Fragment>? = null
 
     abstract fun frameLayoutId(): Int
 
@@ -33,16 +33,16 @@ abstract class RouterActivity : BaseActivity() {
         navMode: NavMode
     ) {
         if (navMode == NavMode.SWITCH) {
-            curFragment = FragmentHelper.switcher(
+            currFragment = FragmentHelper.switcher(
                 supportFragmentManager,
                 frameLayoutId(),
-                curFragment,
+                currFragment,
                 clazz,
                 bundle,
                 true
             )
         } else if (navMode == NavMode.POP_BACK_STACK) {
-            curFragment = FragmentHelper.pop(supportFragmentManager, clazz)
+            currFragment = FragmentHelper.pop(supportFragmentManager, clazz)
         }
     }
 

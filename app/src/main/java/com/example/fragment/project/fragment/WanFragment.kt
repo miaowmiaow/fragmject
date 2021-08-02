@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.fragment.library.base.component.view.SimpleTabLayout
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
 import com.example.fragment.module.navigation.fragment.NavigationFragment
@@ -19,7 +19,7 @@ import com.example.fragment.module.system.fragment.SystemFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanBinding
 
-class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
+class WanFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
@@ -28,6 +28,7 @@ class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
         }
     }
 
+    private val tabTexts = arrayOf("首页", "导航", "问答", "体系", "项目")
     private val tabDrawable = intArrayOf(
         R.drawable.ic_bottom_bar_home,
         R.drawable.ic_bottom_bar_navigation,
@@ -35,7 +36,6 @@ class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
         R.drawable.ic_bottom_bar_system,
         R.drawable.ic_bottom_bar_project
     )
-    private val tabTexts = arrayOf("首页", "导航", "问答", "体系", "项目")
     private val fragments = arrayListOf(
         HomeFragment.newInstance(),
         NavigationFragment.newInstance(),
@@ -43,9 +43,21 @@ class WanFragment : ViewBindingFragment<FragmentWanBinding>() {
         SystemFragment.newInstance(),
         ProjectListFragment.newInstance()
     )
+    private var _binding: FragmentWanBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentWanBinding {
-        return FragmentWanBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentWanBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

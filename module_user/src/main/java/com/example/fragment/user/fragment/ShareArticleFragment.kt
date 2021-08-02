@@ -8,17 +8,29 @@ import androidx.fragment.app.viewModels
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentShareArticleBinding
 import com.example.fragment.user.model.UserViewModel
 
-class ShareArticleFragment : ViewBindingFragment<FragmentShareArticleBinding>() {
+class ShareArticleFragment : RouterFragment() {
 
     private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentShareArticleBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentShareArticleBinding {
-        return FragmentShareArticleBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentShareArticleBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

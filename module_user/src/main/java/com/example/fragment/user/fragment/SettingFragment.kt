@@ -16,18 +16,31 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
 import com.example.fragment.user.model.UserViewModel
 
-class SettingFragment : ViewBindingFragment<FragmentSettingBinding>() {
+class SettingFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
     private var countDownTimer: CountDownTimer? = null
+    private val viewModel: UserViewModel by viewModels()
+    private var _binding: FragmentSettingBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSettingBinding {
-        return FragmentSettingBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSettingBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        countDownTimer?.cancel()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -38,11 +51,6 @@ class SettingFragment : ViewBindingFragment<FragmentSettingBinding>() {
     override fun onStart() {
         super.onStart()
         update()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        countDownTimer?.cancel()
     }
 
     private fun setupView() {

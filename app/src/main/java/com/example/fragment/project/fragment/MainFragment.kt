@@ -16,7 +16,7 @@ import com.example.fragment.library.base.utils.SimpleBannerHelper
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.fragment.SquareFragment
@@ -24,19 +24,27 @@ import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
 
-class MainFragment : ViewBindingFragment<FragmentMainBinding>(), OnBackPressedListener {
+class MainFragment : RouterFragment(), OnBackPressedListener {
 
-    private val viewModel: MainViewModel by viewModels()
     private lateinit var bannerHelper: SimpleBannerHelper
     private val hotKeyAdapter = HotKeyAdapter()
+    private val fragments = arrayListOf(SquareFragment.newInstance(), WanFragment.newInstance())
+    private val viewModel: MainViewModel by viewModels()
+    private var _binding: FragmentMainBinding? = null
+    private val binding get() = _binding!!
 
-    private val fragments = arrayListOf(
-        SquareFragment.newInstance(),
-        WanFragment.newInstance()
-    )
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentMainBinding {
-        return FragmentMainBinding::inflate
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

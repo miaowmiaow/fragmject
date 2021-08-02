@@ -17,20 +17,32 @@ class SimpleBannerHelper(
     private var bannerDelay = 5000L
     private var offsetX = 0
     private var offsetY = 0
+    private var predictOffsetX = 0
+    private var predictOffsetY = 0
     private var isUp = false
     private var isSettling = false
     private val timerTask = Runnable {
         recyclerView.post {
             if (repeatLayoutManager.itemCount > 1) {
                 val position = repeatLayoutManager.childCount - 1
+                val firstVisibleItemPosition = repeatLayoutManager.findFirstVisibleItemPosition()
+                val lastVisibleItemPosition = repeatLayoutManager.findLastVisibleItemPosition()
                 if (orientation == RecyclerView.VERTICAL) {
                     repeatLayoutManager.getChildAt(position)?.let { view ->
-                        val dy = view.height
+                        var dy = view.height
+                        predictOffsetY += dy
+                        if (firstVisibleItemPosition != lastVisibleItemPosition) {
+                            dy += predictOffsetY - offsetY
+                        }
                         recyclerView.smoothScrollBy(0, dy, null, smoothScrollDuration)
                     }
                 } else if (orientation == RecyclerView.HORIZONTAL) {
                     repeatLayoutManager.getChildAt(position)?.let { view ->
-                        val dx = view.width
+                        var dx = view.width
+                        predictOffsetX += dx
+                        if (firstVisibleItemPosition != lastVisibleItemPosition) {
+                            dx += predictOffsetX - offsetX
+                        }
                         recyclerView.smoothScrollBy(dx, 0, null, smoothScrollDuration)
                     }
                 }

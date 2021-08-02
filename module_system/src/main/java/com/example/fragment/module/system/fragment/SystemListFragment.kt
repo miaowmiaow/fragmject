@@ -7,22 +7,31 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.component.view.SimpleTabLayout
 import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.fragment.ViewBindingFragment
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.system.R
 import com.example.fragment.module.system.databinding.FragmentSystemListBinding
-import com.example.fragment.module.system.model.SystemViewModel
 
-class SystemListFragment : ViewBindingFragment<FragmentSystemListBinding>() {
+class SystemListFragment : RouterFragment() {
 
-    private val viewModel: SystemViewModel by viewModels()
     private var tree: TreeBean? = null
+    private var _binding: FragmentSystemListBinding? = null
+    private val binding get() = _binding!!
 
-    override fun setViewBinding(): (LayoutInflater, ViewGroup?, Boolean) -> FragmentSystemListBinding {
-        return FragmentSystemListBinding::inflate
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSystemListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

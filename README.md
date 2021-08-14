@@ -14,42 +14,82 @@
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) |
+# 项目目录结构
+├── app                                  app
+|   └── src 
+|       └── main 
+|       |   └── java                     源码目录
+|       |       ├── activity             Activity
+|       |       |   └── MainActivity     项目唯一Activity
+|       |       ├── fragment             Fragment
+|       |       ├── model                ViewModel
+|       |       └── App                  Application
+|       | 
+|       └── build.gradle                 模块构建配置
+|       └── channel                      渠道配置文件
+|       └── dictionary                   自定义混淆字典
+|       └── proguard-rules.pro           代码混淆配置文件
+| 
+├── library_base                         基础library
+|   └── src 
+|       └── main 
+|       |   ├── assets                   原生文件目录
+|       |   └── java                     源码目录
+|       |       ├── bus                  消息总线
+|       |       ├── db                   数据库
+|       |       ├── http                 网络请求
+|       |       └── utils                工具类目录
+|       | 
+|       └── build.gradle                 模块构建配置
+| 
+├── library_common                       公共library（存放各个 module 通用资源文件）
+|   └── src 
+|       └── main 
+|       |   └── java                     源码目录
+|       |       ├── bean                 实体类
+|       |       ├── constant             常量配置
+|       |       └── dialog               dialog
+|       | 
+|       └── build.gradle                 模块构建配置
+| 
+├── module_faq                           问答模块（目录同app，不再展开）
+├── module_home                          首页模块（目录同app，不再展开）
+├── module_navigation                    导航模块（目录同app，不再展开）
+├── module_project                       项目模块（目录同app，不再展开）
+├── module_system                        体系模块（目录同app，不再展开）
+├── module_user                          用户模块（目录同app，不再展开）
+| 
+├── plugin_statistic                     统计插件模块（目录同app，不再展开）
+|   └── src 
+|       └── main 
+|           └── groovy                   源码目录
+|           |   ├── bp                   埋点统计
+|           |   └── mt                   耗时统计
+|           | 
+|           └── resources                资源目录
+|               └── statistic.properties 插件配置
+| 
+├── repos                                统计插件生成目录
+|
+├── build.gradle                         项目构建配置
+├── config.gradle                        gradle编译文件 gradle依赖配置
+├── config.properties                    项目配置
+├── gradle.properties                    gradle配置
+└── settings.gradle                      项目依赖配置
 # ViewBinding
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。在模块中启用视图绑定之后，系统会为该模块中的每个 XML 布局文件生成一个绑定类。绑定类的实例包含对在相应布局中具有 ID 的所有视图的直接引用。
-### 与 findViewById 的区别
-与使用 findViewById 相比，视图绑定具有一些很显著的优点：
-- Null 安全：由于视图绑定会创建对视图的直接引用，因此不存在因视图 ID 无效而引发 Null 指针异常的风险。此外，如果视图仅出现在布局的某些配置中，则绑定类中包含其引用的字段会使用 @Nullable 标记。
-- 类型安全：每个绑定类中的字段均具有与它们在 XML 文件中引用的视图相匹配的类型。这意味着不存在发生类转换异常的风险。
-这些差异意味着布局和代码之间的不兼容将会导致构建在编译时（而非运行时）失败。
-### 与 DataBinding 的对比
-视图绑定和数据绑定均会生成可用于直接引用视图的绑定类。但是，视图绑定旨在处理更简单的用例，与数据绑定相比，具有以下优势：
-- 更快的编译速度：视图绑定不需要处理注释，因此编译时间更短。
-- 易于使用：视图绑定不需要特别标记的 XML 布局文件，因此在应用中采用速度更快。在模块中启用视图绑定后，它会自动应用于该模块的所有布局。
-反过来，与数据绑定相比，视图绑定也具有以下限制：
-- 视图绑定不支持布局变量或布局表达式，因此不能用于直接在 XML 布局文件中声明动态界面内容。
-- 视图绑定不支持双向数据绑定。
-考虑到这些因素，在某些情况下，最好在项目中同时使用视图绑定和数据绑定。您可以在需要高级功能的布局中使用数据绑定，而在不需要高级功能的布局中使用视图绑定。
+- [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 # LiveData
 LiveData 是一种可观察的数据存储器类。与常规的可观察类不同，LiveData 具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。这种感知能力可确保 LiveData 仅更新处于活跃生命周期状态的应用组件观察者。
-### 使用 LiveData 的优势:
-- 不会发生内存泄漏，观察者会绑定到 Lifecycle 对象，并在其关联的生命周期遭到销毁后进行自我清理。
-- 不会因 Activity 停止而导致崩溃，如果观察者的生命周期处于非活跃状态（如返回栈中的 Activity），则它不会接收任何 LiveData 事件。
-- 不再需要手动处理生命周期，界面组件只是观察相关数据，不会停止或恢复观察。LiveData 将自动管理所有这些操作，因为它在观察时可以感知相关的生命周期状态变化。
-- 数据始终保持最新状态，如果生命周期变为非活跃状态，它会在再次变为活跃状态时接收最新的数据。例如，曾经在后台的 Activity 会在返回前台后立即接收最新的数据。
-- 适当的配置更改，如果由于配置更改（如设备旋转）而重新创建了 Activity 或 Fragment，它会立即接收最新的可用数据。
-- 共享资源，您可以使用单例模式扩展 LiveData 对象以封装系统服务，以便在应用中共享它们。LiveData 对象连接到系统服务一次，然后需要相应资源的任何观察者只需观察 LiveData 对象。
+- [轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 # ViewModel
 ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的数据。ViewModel 类让数据可在发生屏幕旋转等配置更改后继续留存。
+- [轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
 # 协程
-协程是一种并发设计模式，您可以在 Android 平台上使用它来简化异步执行的代码。
-### 协程的特点包括：
-- 轻量：您可以在单个线程上运行多个协程，因为协程支持挂起，不会使正在运行协程的线程阻塞。挂起比阻塞节省内存，且支持多个并行操作。
-- 内存泄漏更少：使用结构化并发机制在一个作用域内执行多项操作。
-- 内置取消支持：取消操作会自动在运行中的整个协程层次结构内传播。
-- Jetpack 集成：许多 Jetpack 库都包含提供全面协程支持的扩展。某些库还提供自己的协程作用域，可供您用于结构化并发。
-# Fragment + LiveData + ViewModel + 协程
-### 以项目中 MainFragment 为例
-#### 1、MainViewModel 代码如下：
+协程是一种并发设计模式，您可以使用它来简化异步执行的代码。协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
+- [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
+# Fragment + LiveData + ViewModel + 协程 （以项目中 MainFragment 为例）
+#### MainViewModel 代码如下：
 ```
 class MainViewModel :  ViewModel() {
     
@@ -70,7 +110,7 @@ class MainViewModel :  ViewModel() {
     
 }
 ```
-#### 2、MainFragment 代码如下：
+#### MainFragment 代码如下：
 ```
 class MainFragment : Fragment() {
 

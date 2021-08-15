@@ -1,6 +1,6 @@
-# 前言
+## 前言
 学习```Kotlin```有一段时间了，想写一个项目总结收获，就有了这个可能是东半球最简洁的玩安卓客户端，在此感谢[玩Android](https://www.wanandroid.com/) 的开放API。
-# 简介
+## 简介
 适合初学者入门的项目，通过对Kotlin的系统运用，实现的一个功能完备符合主流市场标准App。  
 虽然本项目的定位是入门级，但是该有的知识点却一点不少，对理解其他项目设计思想和封装技巧也很有帮助。  
 学习本项目你将有如下收获： 
@@ -10,11 +10,11 @@
 - 暗夜模式
 - 屏幕录制
 - 字节码插桩
-# 截图展示
+## 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) |
-# 项目目录结构
+## 项目目录结构
 ```
 ├── app                                  app
 |   └── src 
@@ -80,23 +80,24 @@
 ├── gradle.properties                    gradle配置
 └── settings.gradle                      项目依赖配置
 ```
-# ViewBinding
+## ViewBinding
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。在模块中启用视图绑定之后，系统会为该模块中的每个 XML 布局文件生成一个绑定类。绑定类的实例包含对在相应布局中具有 ID 的所有视图的直接引用。
 与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
-# LiveData
+## LiveData
 LiveData 是一种可观察的数据存储器类，它具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。
 LiveData 的优势：不会发生内存泄漏，不会因 Activity 停止而导致崩溃，不再需要手动处理生命周期，数据始终保持最新状态，适当的配置更改，共享资源。
 - [轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
-# ViewModel
+## ViewModel
 ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的数据。ViewModel 类让数据可在发生屏幕旋转等配置更改后继续留存。
 - [轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
 # 协程
 协程是一种并发设计模式，您可以使用它来简化异步执行的代码。
 协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
-# Fragment + LiveData + ViewModel + 协程 （以项目中 MainFragment 为例）
-#### MainViewModel 代码如下：
+## Fragment + LiveData + ViewModel + 协程
+以项目中 MainFragment 为例
+#### MainViewModel ：
 ```
 class MainViewModel :  ViewModel() {
     
@@ -117,7 +118,7 @@ class MainViewModel :  ViewModel() {
     
 }
 ```
-#### MainFragment 代码如下：
+#### MainFragment ：
 ```
 class MainFragment : Fragment() {
 

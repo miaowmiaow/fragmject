@@ -4,7 +4,7 @@ import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
-import com.example.fragment.library.base.bus.SimpleLiveDataBus
+import com.example.fragment.library.base.bus.LiveDataBus
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
@@ -33,7 +33,7 @@ class MainActivity : RouterActivity() {
      */
     override fun navigation(name: Router, bundle: Bundle?, navMode: NavMode) {
         when (name) {
-            Router.MAIN -> switcher(MainFragment::class.java, bundle, navMode)
+            Router.MAIN -> switcher(MainFragment::class.java, bundle, navMode, false)
             Router.LOGIN -> switcher(LoginFragment::class.java, bundle, navMode)
             Router.REGISTER -> switcher(RegisterFragment::class.java, bundle, navMode)
             Router.WEB -> switcher(WebFragment::class.java, bundle, navMode)
@@ -53,7 +53,7 @@ class MainActivity : RouterActivity() {
                             switcher(MyShareArticleFragment::class.java, bundle, navMode)
                         Router.SHARE_ARTICLE ->
                             switcher(ShareArticleFragment::class.java, bundle, navMode)
-                        else -> switcher(MainFragment::class.java, bundle, navMode)
+                        else -> switcher(MainFragment::class.java, bundle, navMode, false)
                     }
                 } else {
                     switcher(LoginFragment::class.java, bundle, navMode)
@@ -76,7 +76,7 @@ class MainActivity : RouterActivity() {
     override fun onStart() {
         super.onStart()
         WanHelper.getUser().observe(this, { userBean ->
-            SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
+            LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
         })
     }
 
@@ -86,7 +86,7 @@ class MainActivity : RouterActivity() {
 
     @TestAnnotation(code = 10000, message = "MainActivity.update")
     private fun update() {
-        SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+        LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             userId = userBean.id
         })
     }

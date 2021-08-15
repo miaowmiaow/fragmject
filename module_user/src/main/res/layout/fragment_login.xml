@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.example.fragment.library.base.component.view.SimpleStatusBar
+        <com.example.fragment.library.base.view.StatusBar
             android:id="@+id/status_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -39,7 +39,7 @@
             android:layout_centerHorizontal="true"
             android:src="@drawable/ic_logo" />
 
-        <com.example.fragment.library.base.component.view.SimpleEditText
+        <com.example.fragment.library.base.view.ClearEditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -62,7 +62,7 @@
             android:layout_marginEnd="50dp"
             android:background="@color/white" />
 
-        <com.example.fragment.library.base.component.view.SimpleEditText
+        <com.example.fragment.library.base.view.ClearEditText
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="50dp"

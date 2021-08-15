@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
-import com.example.fragment.library.base.component.view.SimpleTabLayout
+import com.example.fragment.library.base.view.TabLayout
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.faq.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
@@ -83,7 +83,7 @@ class WanFragment : RouterFragment() {
                 return fragments.size
             }
         }
-        binding.tab.setTabMod(SimpleTabLayout.MODE.AUTO)
+        binding.tab.setTabMod(TabLayout.MODE.AUTO)
         for (i in fragments.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.item_tab_main, null)
@@ -96,7 +96,7 @@ class WanFragment : RouterFragment() {
             binding.tab.addTab(tabView)
         }
         binding.tab.setupWithViewPager(binding.viewpager)
-        binding.tab.setOnTabSelectedListener(object : SimpleTabLayout.OnTabSelectedListener {
+        binding.tab.setOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tabView: View, position: Int, isRefresh: Boolean) {
                 val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
                 val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)

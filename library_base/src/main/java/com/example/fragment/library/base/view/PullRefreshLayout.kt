@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
 import android.content.Context
 import android.graphics.*
@@ -23,7 +23,7 @@ import com.example.fragment.library.base.R
 import kotlin.math.abs
 import kotlin.math.pow
 
-class SimplePullRefreshLayout @JvmOverloads constructor(
+class PullRefreshLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -149,11 +149,11 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
     }
 
     interface OnRefreshListener {
-        fun onRefresh(refreshLayout: SimplePullRefreshLayout)
+        fun onRefresh(refreshLayout: PullRefreshLayout)
     }
 
     interface OnLoadMoreListener {
-        fun onLoadMore(refreshLayout: SimplePullRefreshLayout)
+        fun onLoadMore(refreshLayout: PullRefreshLayout)
     }
 
     fun isRefresh(): Boolean {
@@ -249,7 +249,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
                     if (itemCount > 1 && position >= itemCount - PRELOADING_NUMBER && loadMore) {
                         loadMore = false
                         recyclerView.post {
-                            loadMoreListener?.onLoadMore(this@SimplePullRefreshLayout)
+                            loadMoreListener?.onLoadMore(this@PullRefreshLayout)
                         }
                     }
                 }
@@ -333,7 +333,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
                 refreshing = true
                 refreshDrawable.start()
                 refreshListener?.let {
-                    it.onRefresh(this@SimplePullRefreshLayout)
+                    it.onRefresh(this@PullRefreshLayout)
                     loadMore = true
                 }
             }
@@ -750,7 +750,7 @@ class SimplePullRefreshLayout @JvmOverloads constructor(
     }
 }
 
-abstract class BaseRefreshView(val parent: SimplePullRefreshLayout) : Drawable(), Animatable {
+abstract class BaseRefreshView(val parent: PullRefreshLayout) : Drawable(), Animatable {
 
     override fun getOpacity(): Int {
         return PixelFormat.TRANSLUCENT

@@ -1,7 +1,7 @@
 package com.example.fragment.library.base.utils
 
 import android.content.Context
-import com.example.fragment.library.base.component.provider.BaseContent
+import com.example.fragment.library.base.provider.BaseContent
 
 object MetricsUtils {
     /**

@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
 import android.content.Context
 import android.graphics.Rect

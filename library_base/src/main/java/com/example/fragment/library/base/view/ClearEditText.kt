@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -15,7 +15,7 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.ContextCompat
 import com.example.fragment.library.base.R
 
-class SimpleEditText @JvmOverloads constructor(
+class ClearEditText @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = android.R.attr.editTextStyle

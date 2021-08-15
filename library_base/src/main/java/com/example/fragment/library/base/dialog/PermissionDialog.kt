@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.dialog
+package com.example.fragment.library.base.dialog
 
 import android.app.Activity
 import android.os.Process

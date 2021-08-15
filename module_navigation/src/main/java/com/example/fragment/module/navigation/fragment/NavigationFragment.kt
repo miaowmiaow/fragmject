@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.component.adapter.BaseAdapter
-import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
@@ -79,8 +79,8 @@ class NavigationFragment : RouterFragment() {
         })
         binding.pullRefresh.setLoadMore(false)
         binding.pullRefresh.setOnRefreshListener(object :
-            SimplePullRefreshLayout.OnRefreshListener {
-            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.getNavigation()
             }
         })

@@ -9,8 +9,8 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.component.adapter.BaseAdapter
-import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -67,15 +67,15 @@ class MyCoinFragment : RouterFragment() {
             }
         })
         binding.pullRefresh.setOnRefreshListener(object :
-            SimplePullRefreshLayout.OnRefreshListener {
-            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.userCoin()
                 viewModel.myCoin(true)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
-            SimplePullRefreshLayout.OnLoadMoreListener {
-            override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnLoadMoreListener {
+            override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.myCoin(false)
             }
         })

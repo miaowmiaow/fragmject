@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router

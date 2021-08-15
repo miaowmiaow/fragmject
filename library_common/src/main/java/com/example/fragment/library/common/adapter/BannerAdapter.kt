@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.BannerBean

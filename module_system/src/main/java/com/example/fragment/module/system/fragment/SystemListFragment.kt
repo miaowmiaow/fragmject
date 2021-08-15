@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
-import com.example.fragment.library.base.component.view.SimpleTabLayout
+import com.example.fragment.library.base.view.TabLayout
 import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -52,7 +52,7 @@ class SystemListFragment : RouterFragment() {
         binding.black.setOnClickListener {
             baseActivity.onBackPressed()
         }
-        binding.tab.setTabMod(SimpleTabLayout.MODE.FIXED)
+        binding.tab.setTabMod(TabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)
         binding.tab.setSelectedIndicatorHeight(5)
     }

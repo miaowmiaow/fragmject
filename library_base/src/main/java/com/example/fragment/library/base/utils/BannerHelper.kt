@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 
-class SimpleBannerHelper(
+class BannerHelper(
     private val recyclerView: RecyclerView,
     @RecyclerView.Orientation
     private val orientation: Int = RecyclerView.HORIZONTAL

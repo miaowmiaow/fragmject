@@ -9,7 +9,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -56,14 +56,14 @@ class CoinRankFragment : RouterFragment() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRankAdapter
         binding.pullRefresh.setOnRefreshListener(object :
-            SimplePullRefreshLayout.OnRefreshListener {
-            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.coinRank(true)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
-            SimplePullRefreshLayout.OnLoadMoreListener {
-            override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnLoadMoreListener {
+            override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.coinRank(false)
             }
         })

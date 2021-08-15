@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+    <com.example.fragment.library.base.view.PullRefreshLayout
         android:id="@+id/pull_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -13,6 +13,6 @@
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.example.fragment.library.base.component.view.SimplePullRefreshLayout>
+    </com.example.fragment.library.base.view.PullRefreshLayout>
 
 </RelativeLayout>

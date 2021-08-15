@@ -1,6 +1,5 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
-import android.R
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
@@ -10,9 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import com.example.fragment.library.base.R
 import com.example.fragment.library.base.utils.StatusBarUtils
 
-class SimpleStatusBar @JvmOverloads constructor(
+class StatusBar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0

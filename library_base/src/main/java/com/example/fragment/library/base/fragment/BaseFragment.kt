@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.fragment
+package com.example.fragment.library.base.fragment
 
 import android.os.Bundle
 import android.view.View

@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.provider
+package com.example.fragment.library.base.provider
 
 import android.content.ContentProvider
 import android.content.ContentValues

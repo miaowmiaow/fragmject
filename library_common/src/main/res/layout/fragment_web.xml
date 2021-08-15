@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:background="@color/theme">
 
-        <com.example.fragment.library.base.component.view.SimpleStatusBar
+        <com.example.fragment.library.base.view.StatusBar
             android:id="@+id/status_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

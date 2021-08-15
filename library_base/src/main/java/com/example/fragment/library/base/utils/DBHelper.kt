@@ -1,31 +1,29 @@
-package com.example.fragment.library.base.db
+package com.example.fragment.library.base.utils
 
 import androidx.lifecycle.MutableLiveData
 import androidx.room.*
-import com.example.fragment.library.base.component.provider.BaseContent
+import com.example.fragment.library.base.provider.BaseContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * RoomDatabase的简单封装
- *      存值：SimpleDBHelper.set(key: String, value: String)
- *      取值：SimpleDBHelper.get(key: String)
+ * 对RoomDatabase进行封装
  * 详细使用方法参考WanHelper.kt
  */
 @Database(entities = [SimpleEntity::class], version = 1, exportSchema = false)
-abstract class SimpleDBHelper : RoomDatabase() {
+abstract class DBHelper : RoomDatabase() {
 
     companion object {
 
         @Volatile
-        private var database: SimpleDBHelper? = null
+        private var database: DBHelper? = null
 
-        private fun getDatabase() = database ?: synchronized(SimpleDBHelper::class.java) {
+        private fun getDatabase() = database ?: synchronized(DBHelper::class.java) {
             database ?: Room.databaseBuilder(
                 BaseContent.get().applicationContext,
-                SimpleDBHelper::class.java,
-                SimpleDBHelper::class.java.simpleName
+                DBHelper::class.java,
+                DBHelper::class.java.simpleName
             ).build().also { db -> database = db }
         }
 

@@ -91,13 +91,12 @@ LiveData 的优势：不会发生内存泄漏，不会因 Activity 停止而导�
 ## ViewModel
 ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的数据。ViewModel 类让数据可在发生屏幕旋转等配置更改后继续留存。
 - [轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
-# 协程
+## 协程
 协程是一种并发设计模式，您可以使用它来简化异步执行的代码。
 协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 ## Fragment + LiveData + ViewModel + 协程
 以项目中 MainFragment 为例
-#### MainViewModel ：
 ```
 class MainViewModel :  ViewModel() {
     
@@ -118,7 +117,6 @@ class MainViewModel :  ViewModel() {
     
 }
 ```
-#### MainFragment ：
 ```
 class MainFragment : Fragment() {
 
@@ -142,7 +140,7 @@ class MainFragment : Fragment() {
 
 }
 ```
-# 基于LiveData封装的消息总线LiveDataBus
+## 基于LiveData封装的消息总线LiveDataBus
 LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。  
 ```
     1、发送事件
@@ -158,7 +156,7 @@ LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且
         println(it)
     })
 ```
-# 基于RoomDatabase封装的DBHelper
+## 基于RoomDatabase封装的DBHelper
 通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
 ```
     1、存储数据
@@ -168,25 +166,25 @@ LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且
 
      DBHelper.get(“key”)
 ```
-# 动态权限申请
+## 动态权限申请
 相关知识已发布在掘金上，可点击下面链接跳转查看
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)
-# 字节码插桩
+## 字节码插桩
 相关知识已发布在掘金上，可点击下面链接跳转查看
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 自动埋点](https://juejin.cn/post/6985366891447451662)
-# 主要开源框架
+## 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
 - [google/gson](https://github.com/google/gson)
 - [bumptech/glide](https://github.com/bumptech/glide)
 - [tencent/x5](https://x5.tencent.com/)
 - [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
-# Thanks
+## Thanks
   感谢所有优秀的开源项目 ^_^   
   如果喜欢的话希望给个 Star 或 Fork ^_^  
   谢谢~~  
-# LICENSE
+## LICENSE
 ```
 Copyright 2021 miaowmiaow
 

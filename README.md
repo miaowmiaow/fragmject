@@ -96,7 +96,7 @@ ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的�
 协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 ## Fragment + LiveData + ViewModel + 协程
-以项目中 MainFragment 为例
+以项目中 MainFragment 为例：
 ```
 class MainViewModel :  ViewModel() {
     
@@ -167,10 +167,8 @@ LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且
      DBHelper.get(“key”)
 ```
 ## 动态权限申请
-相关知识已发布在掘金上，可点击下面链接跳转查看
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)
 ## 字节码插桩
-相关知识已发布在掘金上，可点击下面链接跳转查看
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 自动埋点](https://juejin.cn/post/6985366891447451662)
 ## 主要开源框架

@@ -62,14 +62,14 @@
 ├── module_system                        体系模块（目录同app，不再展开）
 ├── module_user                          用户模块（目录同app，不再展开）
 | 
-├── plugin_statistic                     统计插件模块（目录同app，不再展开）
+├── plugin_statistic                     统计插件模块
 |   └── src 
 |       └── main 
 |           └── groovy                   源码目录
 |           |   ├── bp                   埋点统计目录
 |           |   └── mt                   耗时统计目录
 |           | 
-|           └── resources                资源目录
+|           └── resources                配置目录
 |               └── statistic.properties 插件配置
 | 
 ├── repos                                统计插件生成目录

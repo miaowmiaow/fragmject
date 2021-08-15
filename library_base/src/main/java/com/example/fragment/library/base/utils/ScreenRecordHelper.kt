@@ -11,7 +11,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Environment
 import androidx.fragment.app.FragmentActivity
-import com.example.fragment.library.base.component.dialog.PermissionDialog
+import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestRecordAudioPermissions
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStoragePermissions
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult

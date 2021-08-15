@@ -2,8 +2,8 @@ package com.example.fragment.library.common.utils
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
-import com.example.fragment.library.base.bus.SimpleLiveDataBus
-import com.example.fragment.library.base.db.SimpleDBHelper
+import com.example.fragment.library.base.bus.LiveDataBus
+import com.example.fragment.library.base.utils.DBHelper
 import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.library.common.bean.HotKeyBean
 import com.example.fragment.library.common.bean.UserBean
@@ -32,7 +32,7 @@ object WanHelper {
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
     fun setUIMode(mode: Int) {
-        SimpleDBHelper.set(UI_MODE, mode.toString())
+        DBHelper.set(UI_MODE, mode.toString())
     }
 
     /**
@@ -42,7 +42,7 @@ object WanHelper {
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
     fun getUIMode(): LiveData<Int> {
-        return Transformations.map(SimpleDBHelper.get(UI_MODE)) {
+        return Transformations.map(DBHelper.get(UI_MODE)) {
             try {
                 it.toInt()
             } catch (e: Exception) {
@@ -58,11 +58,11 @@ object WanHelper {
      *       1 : 开启,
      */
     fun setScreenRecordStatus(status: Int){
-        SimpleDBHelper.set(SCREEN_RECORD, status.toString())
+        DBHelper.set(SCREEN_RECORD, status.toString())
     }
 
     fun getScreenRecordStatus(): LiveData<Int> {
-        return Transformations.map(SimpleDBHelper.get(SCREEN_RECORD)) {
+        return Transformations.map(DBHelper.get(SCREEN_RECORD)) {
             try {
                 it.toInt()
             } catch (e: Exception) {
@@ -73,12 +73,12 @@ object WanHelper {
     }
 
     fun setUser(userBean: UserBean) {
-        SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
-        SimpleDBHelper.set(USER, userBean.toJson())
+        LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
+        DBHelper.set(USER, userBean.toJson())
     }
 
     fun getUser(): LiveData<UserBean> {
-        return Transformations.map(SimpleDBHelper.get(USER)) {
+        return Transformations.map(DBHelper.get(USER)) {
             try {
                 Gson().fromJson(it.toString(), UserBean::class.java)
             } catch (e: Exception) {
@@ -89,11 +89,11 @@ object WanHelper {
     }
 
     fun setCoin(coinBean: CoinBean) {
-        SimpleDBHelper.set(COIN, coinBean.toJson())
+        DBHelper.set(COIN, coinBean.toJson())
     }
 
     fun getCoin(): LiveData<CoinBean> {
-        return Transformations.map(SimpleDBHelper.get(COIN)) {
+        return Transformations.map(DBHelper.get(COIN)) {
             try {
                 Gson().fromJson(it.toString(), CoinBean::class.java)
             } catch (e: Exception) {
@@ -104,11 +104,11 @@ object WanHelper {
     }
 
     fun setHotKey(hotKeys: List<HotKeyBean>) {
-        SimpleDBHelper.set(HOT_KEY, Gson().toJson(hotKeys))
+        DBHelper.set(HOT_KEY, Gson().toJson(hotKeys))
     }
 
     fun getHotKey(): LiveData<List<HotKeyBean>> {
-        return Transformations.map(SimpleDBHelper.get(HOT_KEY)) {
+        return Transformations.map(DBHelper.get(HOT_KEY)) {
             try {
                 Gson().fromJson(it.toString(), object : TypeToken<List<HotKeyBean>>() {}.type)
             } catch (e: Exception) {
@@ -119,11 +119,11 @@ object WanHelper {
     }
 
     fun setHistorySearch(list: List<String>) {
-        SimpleDBHelper.set(HISTORY_SEARCH, Gson().toJson(list))
+        DBHelper.set(HISTORY_SEARCH, Gson().toJson(list))
     }
 
     fun getHistorySearch(): LiveData<List<String>> {
-        return Transformations.map(SimpleDBHelper.get(HISTORY_SEARCH)) {
+        return Transformations.map(DBHelper.get(HISTORY_SEARCH)) {
             try {
                 Gson().fromJson(it.toString(), object : TypeToken<List<String>>() {}.type)
             } catch (e: Exception) {
@@ -134,11 +134,11 @@ object WanHelper {
     }
 
     fun setTreeList(list: List<TreeBean>) {
-        SimpleDBHelper.set(TREE_LIST, Gson().toJson(list))
+        DBHelper.set(TREE_LIST, Gson().toJson(list))
     }
 
     fun getTreeList(): LiveData<List<TreeBean>> {
-        return Transformations.map(SimpleDBHelper.get(TREE_LIST)) {
+        return Transformations.map(DBHelper.get(TREE_LIST)) {
             try {
                 Gson().fromJson(it.toString(), object : TypeToken<List<TreeBean>>() {}.type)
             } catch (e: Exception) {

@@ -20,10 +20,11 @@
 |   └── src 
 |       └── main 
 |       |   └── java                     源码目录
-|       |       ├── activity             Activity
+|       |       ├── activity             Activity目录
 |       |       |   └── MainActivity     项目唯一Activity
-|       |       ├── fragment             Fragment
-|       |       ├── model                ViewModel
+|       |       ├── adapter              Adapter目录
+|       |       ├── fragment             Fragment目录
+|       |       ├── model                ViewModel目录
 |       |       └── App                  Application
 |       | 
 |       └── build.gradle                 模块构建配置
@@ -31,25 +32,26 @@
 |       └── dictionary                   自定义混淆字典
 |       └── proguard-rules.pro           代码混淆配置文件
 | 
-├── library_base                         基础library
+├── library_base                         基础library（存放通用的封装源码）
 |   └── src 
 |       └── main 
 |       |   ├── assets                   原生文件目录
 |       |   └── java                     源码目录
-|       |       ├── bus                  消息总线
-|       |       ├── db                   数据库
-|       |       ├── http                 网络请求
-|       |       └── utils                工具类目录
+|       |       ├── bus                  消息总线目录
+|       |       ├── dialog               Dialog目录
+|       |       ├── http                 网络请求目录
+|       |       ├── provider             ContentProvider目录
+|       |       ├── utils                工具类目录
+|       |       └── view                 自定义view目录
 |       | 
 |       └── build.gradle                 模块构建配置
 | 
-├── library_common                       公共library（存放各个 module 通用资源文件）
+├── library_common                       公共library（存放各个 module 公共的源码及资源）
 |   └── src 
 |       └── main 
 |       |   └── java                     源码目录
-|       |       ├── bean                 实体类
-|       |       ├── constant             常量配置
-|       |       └── dialog               dialog
+|       |       ├── bean                 实体类目录
+|       |       └── constant             常量配置目录
 |       | 
 |       └── build.gradle                 模块构建配置
 | 
@@ -64,8 +66,8 @@
 |   └── src 
 |       └── main 
 |           └── groovy                   源码目录
-|           |   ├── bp                   埋点统计
-|           |   └── mt                   耗时统计
+|           |   ├── bp                   埋点统计目录
+|           |   └── mt                   耗时统计目录
 |           | 
 |           └── resources                资源目录
 |               └── statistic.properties 插件配置
@@ -140,32 +142,31 @@ class MainFragment : Fragment() {
 }
 ```
 # 基于LiveData封装的消息总线LiveDataBus
-LiveDataBus具有生命周期感知，在Android系统中使用调用者不需要调用反注册，相比EventBus和RxBus使用更为方便，并且没有内存泄漏风险。  
-1、发送事件
+LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。  
 ```
-   SimpleLiveBus.with<String>("key").postEvent("value")
-```
-2、接收事件
-```
-   SimpleLiveBus.with<String>("key").observe(viewLifecycleOwner, { it ->
+    1、发送事件
+    LiveDataBus.with<String>("key").postEvent("value")
+
+    2、接收事件
+    LiveDataBus.with<String>("key").observe(viewLifecycleOwner, { it ->
         println(it)
-   })
-```
-3、接收粘滞事件
-```
-   SimpleLiveBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
+    })
+
+    3、接收粘滞事件
+    LiveDataBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
         println(it)
-   })
+    })
 ```
-# 基于RoomDatabase封装的SimpleDBHelper
-1、存储数据
- ```
-    SimpleDBHelper.set(“key”, "value")
- ```
-2、获取数据
-  ```
-     SimpleDBHelper.get(“key”)
-  ```
+# 基于RoomDatabase封装的DBHelper
+通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
+```
+    1、存储数据
+    DBHelper.set(“key”, "value")
+
+    2、获取数据
+
+     DBHelper.get(“key”)
+```
 # 动态权限申请
 相关知识已发布在掘金上，可点击下面链接跳转查看
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)

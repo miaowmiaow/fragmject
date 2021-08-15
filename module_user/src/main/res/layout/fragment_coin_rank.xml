@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:background="@color/theme">
 
-        <com.example.fragment.library.base.component.view.SimpleStatusBar
+        <com.example.fragment.library.base.view.StatusBar
             android:id="@+id/status_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -193,7 +193,7 @@
         </RelativeLayout>
     </LinearLayout>
 
-    <com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+    <com.example.fragment.library.base.view.PullRefreshLayout
         android:id="@+id/pull_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -203,6 +203,6 @@
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.example.fragment.library.base.component.view.SimplePullRefreshLayout>
+    </com.example.fragment.library.base.view.PullRefreshLayout>
 
 </RelativeLayout>

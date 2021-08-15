@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
 import android.content.Context
 import android.util.AttributeSet
@@ -10,7 +10,7 @@ class TipsView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : SimpleSlideLayout(context, attrs, defStyleAttr) {
+) : SlideLayout(context, attrs, defStyleAttr) {
 
     private var close: ImageView
     private var message: TextView

@@ -10,9 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
-import com.example.fragment.library.base.component.activity.OnBackPressedListener
-import com.example.fragment.library.base.component.adapter.BaseAdapter
-import com.example.fragment.library.base.utils.SimpleBannerHelper
+import com.example.fragment.library.base.activity.OnBackPressedListener
+import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.utils.BannerHelper
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
@@ -26,7 +26,7 @@ import com.example.fragment.project.model.MainViewModel
 
 class MainFragment : RouterFragment(), OnBackPressedListener {
 
-    private lateinit var bannerHelper: SimpleBannerHelper
+    private lateinit var bannerHelper: BannerHelper
     private val hotKeyAdapter = HotKeyAdapter()
     private val fragments = arrayListOf(SquareFragment.newInstance(), WanFragment.newInstance())
     private val viewModel: MainViewModel by viewModels()
@@ -114,7 +114,7 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
                 search()
             }
         })
-        bannerHelper = SimpleBannerHelper(binding.hotKey, RecyclerView.VERTICAL)
+        bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
         binding.viewpager.adapter = object :

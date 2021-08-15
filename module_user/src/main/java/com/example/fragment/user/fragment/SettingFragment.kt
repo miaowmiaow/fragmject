@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.viewModels
-import com.example.fragment.library.base.component.view.SimpleSwitchButton
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
+import com.example.fragment.library.base.view.SwitchButton
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
@@ -20,6 +20,9 @@ import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
 import com.example.fragment.user.model.UserViewModel
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 
 class SettingFragment : RouterFragment() {
 
@@ -56,8 +59,8 @@ class SettingFragment : RouterFragment() {
     private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener(object :
-            SimpleSwitchButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
+            SwitchButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
                 WanHelper.setUIMode(
                     if (isChecked) {
                         binding.darkTheme.setChecked(false)
@@ -71,8 +74,8 @@ class SettingFragment : RouterFragment() {
             }
         })
         binding.darkTheme.setOnCheckedChangeListener(object :
-            SimpleSwitchButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
+            SwitchButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
                 WanHelper.setUIMode(
                     if (isChecked) {
                         binding.systemTheme.setChecked(false)
@@ -86,8 +89,8 @@ class SettingFragment : RouterFragment() {
             }
         })
         binding.screenRecord.setOnCheckedChangeListener(object :
-            SimpleSwitchButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean) {
+            SwitchButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
                 val status = if (isChecked) 1 else 0
                 WanHelper.setScreenRecordStatus(status)
                 if (isChecked) {
@@ -152,9 +155,22 @@ class SettingFragment : RouterFragment() {
             baseActivity.navigation(Router.WEB, args)
         }
         binding.privacyPolicy.setOnClickListener {
-            val args = Bundle()
-            args.putString(Keys.URL, "file:///android_asset/privacy_policy.html")
-            baseActivity.navigation(Router.WEB, args)
+            var inputStream: InputStream? = null
+            try {
+                inputStream = resources.assets.open("privacy_policy.template")
+                readRawFromStreamToString(inputStream)?.let { template ->
+                    inputStream = resources.assets.open("privacy_policy.html")
+                    readRawFromStreamToString(inputStream)?.let { html ->
+                        val args = Bundle()
+                        args.putString(Keys.HTML, html.replace("{privacy_policy}", template))
+                        baseActivity.navigation(Router.WEB, args)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                inputStream?.close()
+            }
         }
         binding.feedback.setOnClickListener {
             val args = Bundle()
@@ -215,6 +231,20 @@ class SettingFragment : RouterFragment() {
                 baseActivity.showTips(result.errorMsg)
             }
         })
+    }
+
+    @Throws(IOException::class)
+    fun readRawFromStreamToString(inputStream: InputStream?): String? {
+        if (inputStream == null) {
+            return null
+        }
+        val baos = ByteArrayOutputStream()
+        var len: Int
+        val bytes = ByteArray(2048)
+        while (inputStream.read(bytes).also { len = it } != -1) {
+            baos.write(bytes, 0, len)
+        }
+        return baos.toString("UTF-8")
     }
 
 }

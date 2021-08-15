@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.dialog
+package com.example.fragment.library.base.dialog
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable

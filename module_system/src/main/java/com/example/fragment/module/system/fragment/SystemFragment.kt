@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.system.adapter.SystemAdapter
@@ -56,8 +56,8 @@ class SystemFragment : RouterFragment() {
         binding.list.adapter = systemAdapter
         binding.pullRefresh.setLoadMore(false)
         binding.pullRefresh.setOnRefreshListener(object :
-            SimplePullRefreshLayout.OnRefreshListener {
-            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.getTree()
             }
         })

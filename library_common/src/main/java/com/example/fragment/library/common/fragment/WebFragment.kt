@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.fragment.library.base.component.activity.OnBackPressedListener
+import com.example.fragment.library.base.activity.OnBackPressedListener
 import com.example.fragment.library.base.utils.WebHelper
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
@@ -20,7 +20,8 @@ class WebFragment : RouterFragment(), OnBackPressedListener {
     }
 
     private lateinit var webHelper: WebHelper
-    private var url = "https://wanandroid.com/"
+    private var url: String? = null
+    private var html: String? = null
     private var _binding: FragmentWebBinding? = null
     private val binding get() = _binding!!
 
@@ -42,10 +43,11 @@ class WebFragment : RouterFragment(), OnBackPressedListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
-            url = this.getString(Keys.URL).toString()
+            url = this.getString(Keys.URL)
+            html = this.getString(Keys.HTML)
         }
         setupView()
-        webViewSetting()
+        setupWebView()
     }
 
     override fun onResume() {
@@ -73,14 +75,23 @@ class WebFragment : RouterFragment(), OnBackPressedListener {
         }
     }
 
-    private fun webViewSetting() {
+    private fun setupWebView() {
         webHelper = WebHelper.with(binding.webContainer)
         webHelper.onReceivedTitleListener = object : WebHelper.OnReceivedTitleListener {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 binding.title.text = title
             }
         }
-        webHelper.loadUrl(url)
+        html?.let {
+            if (it.isNotBlank()) {
+                webHelper.loadHtml(it)
+            }
+        }
+        url?.let {
+            if (it.isNotBlank()) {
+                webHelper.loadUrl(it)
+            }
+        }
     }
 
 }

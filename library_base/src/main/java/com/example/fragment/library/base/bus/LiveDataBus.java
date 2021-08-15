@@ -8,15 +8,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * LiveData 只会将更新通知给活跃的观察者，
  * 所以观察者生命周期要处于 STARTED 或 RESUMED 状态。
  */
-public class SimpleLiveDataBus {
+public class LiveDataBus {
 
     private static final class SingleHolder {
-        private static final SimpleLiveDataBus INSTANCE = new SimpleLiveDataBus();
+        private static final LiveDataBus INSTANCE = new LiveDataBus();
     }
 
     private final ConcurrentHashMap<Object, LiveDataEvent<Object>> mEventMap;
 
-    private SimpleLiveDataBus() {
+    private LiveDataBus() {
         mEventMap = new ConcurrentHashMap<>();
     }
 

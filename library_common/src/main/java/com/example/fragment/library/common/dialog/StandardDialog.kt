@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.fragment.library.base.component.dialog.BaseDialog
+import com.example.fragment.library.base.dialog.BaseDialog
 import com.example.fragment.library.common.databinding.DialogStandardBinding
 
 class StandardDialog : BaseDialog() {

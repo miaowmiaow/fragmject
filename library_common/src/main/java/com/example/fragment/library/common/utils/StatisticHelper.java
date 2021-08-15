@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -19,7 +18,7 @@ import android.widget.ToggleButton;
 import androidx.annotation.Keep;
 import androidx.appcompat.widget.SwitchCompat;
 
-import com.example.fragment.library.base.component.adapter.BaseAdapter;
+import com.example.fragment.library.base.adapter.BaseAdapter;
 
 public class StatisticHelper {
 

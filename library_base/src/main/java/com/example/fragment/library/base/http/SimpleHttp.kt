@@ -19,8 +19,7 @@ import javax.net.ssl.SSLContext
 
 /**
  * get请求
- *      通过HttpRequest构建请求体
- *      通过泛型确定返回值
+ * @param request http请求体
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     request: HttpRequest = HttpRequest()
@@ -30,8 +29,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
 
 /**
  * post请求
- *      通过HttpRequest构建请求体
- *      通过泛型确定返回值
+ * @param request http请求体
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
     request: HttpRequest = HttpRequest()
@@ -41,8 +39,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
 
 /**
  * form请求
- *      通过HttpRequest构建请求体
- *      通过泛型确定返回值
+ * @param request http请求体
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
     request: HttpRequest = HttpRequest()
@@ -51,7 +48,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
 }
 
 /**
- * 基于个人习惯的Retrofit+协程的简单封装
+ * retrofit + coroutines 封装的Http工具类
  */
 class SimpleHttp private constructor() {
 
@@ -112,7 +109,7 @@ class SimpleHttp private constructor() {
             .readTimeout(15000L, TimeUnit.MILLISECONDS)
             .writeTimeout(15000L, TimeUnit.MILLISECONDS)
             .connectTimeout(15000L, TimeUnit.MILLISECONDS)
-            .cookieJar(SimpleCookieJar())
+            .cookieJar(CookieJar())
             .hostnameVerifier { hostname, session ->
                 if (hostNames != null) {
                     listOf(*hostNames!!)
@@ -146,7 +143,11 @@ class SimpleHttp private constructor() {
         return withContext(Dispatchers.IO) {
             try {
                 converter.converter(
-                    getService().get(request.getUrl(baseUrl.toString()), request.getHeader()), type
+                    getService().get(
+                        request.getUrl(baseUrl.toString()),
+                        request.getHeader()
+                    ),
+                    type
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()
@@ -168,7 +169,8 @@ class SimpleHttp private constructor() {
                         request.getUrl(baseUrl.toString()),
                         request.getHeader(),
                         request.getParam()
-                    ), type
+                    ),
+                    type
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()
@@ -207,7 +209,8 @@ class SimpleHttp private constructor() {
                         request.getUrl(baseUrl.toString()),
                         request.getHeader(),
                         body.build()
-                    ), type
+                    ),
+                    type
                 )
             } catch (e: Exception) {
                 val msg = e.message.toString()

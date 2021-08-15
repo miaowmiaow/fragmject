@@ -1,12 +1,12 @@
-package com.example.fragment.library.base.component.activity
+package com.example.fragment.library.base.activity
 
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.component.view.TipsView
-import com.example.fragment.library.base.db.SimpleDBHelper
+import com.example.fragment.library.base.utils.DBHelper
+import com.example.fragment.library.base.view.TipsView
 import com.example.fragment.library.base.utils.StatusBarUtils
 
 abstract class BaseActivity : AppCompatActivity() {
@@ -41,7 +41,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 return
             }
         }
-        if (supportFragmentManager.backStackEntryCount > 1) {
+        if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStackImmediate()
         } else {
             if (System.currentTimeMillis() - exitTime > 2000) {
@@ -56,7 +56,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        SimpleDBHelper.closeDatabase()
+        DBHelper.closeDatabase()
     }
 
     fun showTips(text: String?) {

@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.adapter
+package com.example.fragment.library.base.adapter
 
 import android.content.Context
 import android.view.LayoutInflater

@@ -44,7 +44,7 @@ class RegisterFragment : RouterFragment() {
         binding.password.addKeyboardListener(binding.root)
         binding.repassword.addKeyboardListener(binding.root)
         binding.login.setOnClickListener {
-            baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
+            baseActivity.navigation(Router.LOGIN, navMode = NavMode.POP_BACK_STACK)
         }
         binding.register.setOnClickListener {
             val username = binding.username.text.toString()

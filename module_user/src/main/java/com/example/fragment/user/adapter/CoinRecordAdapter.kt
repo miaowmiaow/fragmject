@@ -3,7 +3,7 @@ package com.example.fragment.user.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.MyCoinBean
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.ItemCoinRecordBinding
@@ -28,7 +28,7 @@ class CoinRecordAdapter : BaseAdapter<MyCoinBean>() {
             .replace(",", "")
             .replace("：", "")
             .replace(" ", "")
-        binding.coinCount.text = "+" + item.coinCount
+        binding.coinCount.text = "+$item.coinCount"
         binding.title.text = title
         binding.time.text = time
     }

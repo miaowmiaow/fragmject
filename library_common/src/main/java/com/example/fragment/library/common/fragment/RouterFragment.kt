@@ -3,8 +3,8 @@ package com.example.fragment.library.common.fragment
 import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import com.example.fragment.library.base.bus.SimpleLiveDataBus
-import com.example.fragment.library.base.component.fragment.BaseFragment
+import com.example.fragment.library.base.bus.LiveDataBus
+import com.example.fragment.library.base.fragment.BaseFragment
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.LiveBus
@@ -24,7 +24,7 @@ open class RouterFragment : BaseFragment() {
     override fun onStart() {
         super.onStart()
         //通过LiveDataBus观察UserBean的变化，从而通知页面刷新
-        SimpleLiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+        LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
             onUserStatusUpdate(userBean)
         })
     }

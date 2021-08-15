@@ -3,7 +3,7 @@ package com.example.fragment.user.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.ItemCoinRankBinding

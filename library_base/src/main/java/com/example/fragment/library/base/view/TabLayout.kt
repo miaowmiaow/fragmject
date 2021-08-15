@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -23,7 +23,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.animation.AnimationUtils
 import kotlin.math.roundToInt
 
-class SimpleTabLayout @JvmOverloads constructor(
+class TabLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -190,7 +190,7 @@ class SimpleTabLayout @JvmOverloads constructor(
         populateFromPagerAdapter()
     }
 
-    private class CustomPagerAdapterObserver(val tabLayout: SimpleTabLayout) : DataSetObserver() {
+    private class CustomPagerAdapterObserver(val tabLayout: TabLayout) : DataSetObserver() {
         override fun onChanged() {
             tabLayout.populateFromPagerAdapter()
         }
@@ -200,7 +200,7 @@ class SimpleTabLayout @JvmOverloads constructor(
         }
     }
 
-    private class CustomAdapterChangeListener(val tabLayout: SimpleTabLayout) :
+    private class CustomAdapterChangeListener(val tabLayout: TabLayout) :
         ViewPager.OnAdapterChangeListener {
         override fun onAdapterChanged(
             viewPager: ViewPager,
@@ -213,7 +213,7 @@ class SimpleTabLayout @JvmOverloads constructor(
         }
     }
 
-    private class CustomOnPageChangeListener(val tabLayout: SimpleTabLayout) :
+    private class CustomOnPageChangeListener(val tabLayout: TabLayout) :
         ViewPager.OnPageChangeListener {
 
         private var previousScrollState = 0

@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.component.view.SimplePullRefreshLayout
+import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
@@ -47,14 +47,14 @@ class MyCollectArticleFragment : RouterFragment() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
-            SimplePullRefreshLayout.OnRefreshListener {
-            override fun onRefresh(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnRefreshListener {
+            override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.myCollectArticle(true)
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
-            SimplePullRefreshLayout.OnLoadMoreListener {
-            override fun onLoadMore(refreshLayout: SimplePullRefreshLayout) {
+            PullRefreshLayout.OnLoadMoreListener {
+            override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.myCollectArticle(false)
             }
         })

@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.component.view
+package com.example.fragment.library.base.view
 
 import android.animation.Animator
 import android.animation.ArgbEvaluator
@@ -15,7 +15,7 @@ import com.example.fragment.library.base.R
 import com.example.fragment.library.base.utils.MetricsUtils
 import kotlin.math.abs
 
-class SimpleSwitchButton @JvmOverloads constructor(
+class SwitchButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -147,7 +147,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
                     state = STATE.OPEN
                 }
                 onCheckedChangeListener?.onCheckedChanged(
-                    this@SimpleSwitchButton,
+                    this@SwitchButton,
                     state == STATE.OPEN
                 )
             }
@@ -209,7 +209,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
                     state = STATE.OPEN
                 }
                 onCheckedChangeListener?.onCheckedChanged(
-                    this@SimpleSwitchButton,
+                    this@SwitchButton,
                     state == STATE.OPEN
                 )
             }
@@ -264,7 +264,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
                         originAnimator()
                     } else {
                         onCheckedChangeListener?.onCheckedChanged(
-                            this@SimpleSwitchButton,
+                            this@SwitchButton,
                             state == STATE.OPEN
                         )
                         if (buttonOffset == 0f) {
@@ -342,7 +342,7 @@ class SimpleSwitchButton @JvmOverloads constructor(
     }
 
     interface OnCheckedChangeListener {
-        fun onCheckedChanged(view: SimpleSwitchButton, isChecked: Boolean)
+        fun onCheckedChanged(view: SwitchButton, isChecked: Boolean)
     }
 
 }

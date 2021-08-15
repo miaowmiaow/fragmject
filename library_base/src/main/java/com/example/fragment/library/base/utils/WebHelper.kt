@@ -9,12 +9,12 @@ import androidx.core.content.ContextCompat
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.component.view.SnailBar
 import com.example.fragment.library.base.utils.InjectUtils.injectDarkModeJs
 import com.example.fragment.library.base.utils.InjectUtils.injectVConsoleJs
 import com.example.fragment.library.base.utils.InjectUtils.newDarkModeJs
 import com.example.fragment.library.base.utils.InjectUtils.newVConsoleJs
 import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
+import com.example.fragment.library.base.view.SnailBar
 import com.tencent.smtt.export.external.interfaces.IX5WebSettings
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest
 import com.tencent.smtt.export.external.interfaces.WebResourceResponse
@@ -192,6 +192,10 @@ class WebHelper private constructor(val parent: ViewGroup) {
         webView.loadUrl(url)
     }
 
+    fun loadHtml(data: String) {
+        loadData(data,"text/html", "utf-8")
+    }
+
     fun onDestroy() {
         parent.removeView(webView)
         try {
@@ -204,6 +208,10 @@ class WebHelper private constructor(val parent: ViewGroup) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun loadData(data: String, mimeType: String, encoding: String) {
+        webView.loadData(data, mimeType, encoding)
     }
 
     private fun isImageUrl(url: String?): Boolean {

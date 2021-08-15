@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.module.navigation.R
 import com.example.fragment.module.navigation.bean.NavigationBean
 import com.example.fragment.module.navigation.databinding.ItemNavigationMenuBinding

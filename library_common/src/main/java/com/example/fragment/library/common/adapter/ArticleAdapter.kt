@@ -11,12 +11,12 @@ import android.view.ViewGroup
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.example.fragment.library.base.component.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.utils.ImageLoader
-import com.example.fragment.library.base.utils.SimpleBannerHelper
+import com.example.fragment.library.base.utils.BannerHelper
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
@@ -43,7 +43,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private var collectJob: Job? = null
     private var unCollectJob: Job? = null
 
-    private var bannerHelper: SimpleBannerHelper? = null
+    private var bannerHelper: BannerHelper? = null
     private val bannerAdapter = BannerAdapter()
     private var bannerData: MutableList<BannerBean> = ArrayList()
 
@@ -59,7 +59,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         if (getItemViewType(position) == ITEM_TYPE_BANNER) {
             val binding = holder.binding as ItemArticleBannerBinding
             binding.banner.adapter = bannerAdapter
-            bannerHelper = SimpleBannerHelper(binding.banner)
+            bannerHelper = BannerHelper(binding.banner)
             bannerHelper?.startTimerTask()
         } else {
             val binding = holder.binding as ItemArticleBinding

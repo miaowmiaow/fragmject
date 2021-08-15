@@ -17,7 +17,7 @@ import android.view.View;
 
 import androidx.core.content.ContextCompat;
 
-import com.example.fragment.library.base.component.provider.BaseContent;
+import com.example.fragment.library.base.provider.BaseContent;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 

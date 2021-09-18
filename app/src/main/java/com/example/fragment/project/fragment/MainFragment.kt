@@ -107,6 +107,7 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
         binding.coin.setOnClickListener { baseActivity.navigation(Router.MY_COIN) }
         binding.myCollection.setOnClickListener { baseActivity.navigation(Router.MY_COLLECT_ARTICLE) }
         binding.myShare.setOnClickListener { baseActivity.navigation(Router.MY_SHARE_ARTICLE) }
+        binding.avatar.setOnClickListener { baseActivity.navigation(Router.AVATAR) }
         binding.setting.setOnClickListener { baseActivity.navigation(Router.SETTING) }
         binding.search.setOnClickListener { search() }
         hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {

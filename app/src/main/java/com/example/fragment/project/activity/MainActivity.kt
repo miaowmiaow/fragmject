@@ -41,6 +41,7 @@ class MainActivity : RouterActivity() {
             Router.SYSTEM_LIST -> switcher(SystemListFragment::class.java, bundle, navMode)
             Router.COIN_RANK -> switcher(CoinRankFragment::class.java, bundle, navMode)
             Router.USER_SHARE -> switcher(UserShareFragment::class.java, bundle, navMode)
+            Router.AVATAR -> switcher(AvatarFragment::class.java, bundle, navMode)
             Router.SETTING -> switcher(SettingFragment::class.java, bundle, navMode)
             else -> {
                 if (isLogin()) {

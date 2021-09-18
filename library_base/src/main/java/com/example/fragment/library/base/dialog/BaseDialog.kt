@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentManager
 
 open class BaseDialog : DialogFragment() {
 
-    private lateinit var manager: FragmentManager
+    lateinit var manager: FragmentManager
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

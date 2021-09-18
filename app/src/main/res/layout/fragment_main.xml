@@ -152,12 +152,25 @@
                 android:textSize="13sp"
                 app:drawableEndCompat="@drawable/ic_right" />
 
+            <TextView
+                android:id="@+id/avatar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/my_share"
+                android:background="@drawable/selector_transparent"
+                android:gravity="center_vertical"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp"
+                android:text="修改头像"
+                android:textColor="@color/text_fff"
+                android:textSize="14sp"
+                app:drawableEndCompat="@drawable/ic_right" />
 
             <TextView
                 android:id="@+id/setting"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_below="@id/my_share"
+                android:layout_below="@id/avatar"
                 android:background="@drawable/selector_transparent"
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"

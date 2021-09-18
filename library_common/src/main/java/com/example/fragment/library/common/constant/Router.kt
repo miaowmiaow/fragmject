@@ -14,5 +14,6 @@ enum class Router {
     SHARE_ARTICLE,
     COIN_RANK,
     USER_SHARE,
+    AVATAR
 }
 

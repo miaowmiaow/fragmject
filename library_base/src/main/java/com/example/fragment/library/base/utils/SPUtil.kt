@@ -3,7 +3,7 @@ package com.example.fragment.library.base.utils
 import android.content.Context
 import com.example.fragment.library.base.provider.BaseContent
 
-object SharedUtil {
+object SPUtil {
 
     private const val NAME = "shared"
 

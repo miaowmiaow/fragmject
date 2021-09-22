@@ -1,6 +1,7 @@
 package com.example.fragment.project.fragment
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.activity.OnBackPressedListener
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.utils.BannerHelper
+import com.example.fragment.library.base.utils.SPUtil
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
@@ -81,6 +83,10 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
 
     @SuppressLint("SetTextI18n")
     override fun onUserStatusUpdate(userBean: UserBean) {
+        val path = SPUtil.getString(Keys.AVATAR)
+        BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
+            binding.logo.setImageBitmap(bitmap)
+        }
         if (userBean.id.isNotEmpty()) {
             binding.logo.setOnClickListener(null)
             binding.username.setOnClickListener(null)

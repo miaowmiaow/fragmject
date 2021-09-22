@@ -23,8 +23,9 @@ class StickerLayer(private val parentView: View) : ILayer {
     private var bitmapWidth = 0
     private var bitmapHeight = 0
     private val bitmapRectF = RectF()
-    private var bitmap: Bitmap? = null
-    private var contentDescription: String? = null
+
+    private lateinit var bitmap: Bitmap
+    private var contentDescription = ""
 
     private val borderPaint = Paint()
     private val borderRectF = RectF()
@@ -237,16 +238,14 @@ class StickerLayer(private val parentView: View) : ILayer {
     }
 
     private fun drawBitmap(canvas: Canvas) {
-        bitmap?.let {
-            measureBitmap()
-            canvas.drawBitmap(it, null, bitmapRectF, null)
-        }
+        measureBitmap()
+        canvas.drawBitmap(bitmap, null, bitmapRectF, null)
     }
 
     interface OnClickListener {
         fun onClick(
             bitmap: Bitmap?,
-            contentDescription: String?,
+            contentDescription: String,
             parentTouchX: Float,
             parentTouchY: Float
         )

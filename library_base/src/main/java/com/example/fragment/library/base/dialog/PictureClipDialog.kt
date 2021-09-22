@@ -4,10 +4,9 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Environment
 import android.view.*
-import android.widget.ImageView
-import android.widget.TextView
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.picture.editor.PictureClipView
+import com.example.fragment.library.base.databinding.DialogPictureClipBinding
+import com.example.fragment.library.base.utils.AlbumUtil
 import java.io.File
 import java.io.FileOutputStream
 
@@ -20,23 +19,19 @@ class PictureClipDialog : BaseDialog() {
         }
     }
 
-    private lateinit var rotate: ImageView
-    private lateinit var reset: TextView
-    private lateinit var cancel: ImageView
-    private lateinit var confirm: ImageView
-    private lateinit var clip: PictureClipView
+    private var _binding: DialogPictureClipBinding? = null
+    private val binding get() = _binding!!
 
-    private var bitmap: Bitmap? = null
-
-    private var onPictureClipListener: OnPictureClipListener? = null
-
-    fun setOnPictureClipListener(onPictureClipListener: OnPictureClipListener): PictureClipDialog {
-        this.onPictureClipListener = onPictureClipListener
-        return this
-    }
+    private lateinit var bitmap: Bitmap
+    private var callback: ClipFinishCallback? = null
 
     fun setBitmapResource(bitmap: Bitmap): PictureClipDialog {
         this.bitmap = bitmap
+        return this
+    }
+
+    fun setClipFinishCallback(callback: ClipFinishCallback): PictureClipDialog {
+        this.callback = callback
         return this
     }
 
@@ -60,55 +55,55 @@ class PictureClipDialog : BaseDialog() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.dialog_picture_clip, container, false)
-        rotate = view.findViewById(R.id.rotate)
-        reset = view.findViewById(R.id.reset)
-        cancel = view.findViewById(R.id.cancel)
-        confirm = view.findViewById(R.id.confirm)
-        clip = view.findViewById(R.id.clip)
-        return view
+    ): View {
+        _binding = DialogPictureClipBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bitmap?.let {
-            clip.setClipBitmapResource(it)
-        }
-        rotate.setOnClickListener { clip.rotate() }
-        reset.setOnClickListener { clip.reset() }
-        cancel.setOnClickListener { dismiss() }
-        confirm.setOnClickListener {
-            val cacheBmp = clip.conversionBitmap()
+        setupView()
+    }
+
+    private fun setupView() {
+        binding.clip.setClipBitmapResource(bitmap)
+        binding.rotate.setOnClickListener { binding.clip.rotate() }
+        binding.reset.setOnClickListener { binding.clip.reset() }
+        binding.cancel.setOnClickListener { dismiss() }
+        binding.confirm.setOnClickListener { view ->
+            val cacheBmp = binding.clip.conversionBitmap()
+            val type = Environment.DIRECTORY_MOVIES
+            val currentTimeMillis = System.currentTimeMillis()
             var fos: FileOutputStream? = null
-            var imagePath = ""
             try {
-                // 判断手机设备是否有SD卡
-                val isHasSDCard: Boolean = Environment.getExternalStorageState().equals(
-                    Environment.MEDIA_MOUNTED
-                )
-                if (isHasSDCard) {
-                    val moviesPath =
-                        view.context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath
-                    val recordPath =
-                        moviesPath + File.separator + System.currentTimeMillis() + ".png"
+                if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+                    val moviesPath = view.context.getExternalFilesDir(type)?.absolutePath
+                    val recordPath = moviesPath + File.separator + currentTimeMillis + ".png"
                     val file = File(recordPath)
                     fos = FileOutputStream(file)
-                    imagePath = file.absolutePath
-                } else throw Exception("创建文件失败!")
-                cacheBmp.compress(Bitmap.CompressFormat.PNG, 100, fos)
-                fos.flush()
-                fos.close()
+                    cacheBmp.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                    fos.flush()
+                    context?.let {
+                        AlbumUtil.saveSystemAlbum(it, file) { path ->
+                            callback?.onFinish(path)
+                            dismiss()
+                        }
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
                 fos?.close()
             }
-            onPictureClipListener?.onPicture(imagePath)
-            dismiss()
         }
     }
 }
 
-interface OnPictureClipListener {
-    fun onPicture(pathName: String)
+interface ClipFinishCallback {
+    fun onFinish(path: String)
 }

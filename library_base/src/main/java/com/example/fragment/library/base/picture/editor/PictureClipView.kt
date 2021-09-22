@@ -272,48 +272,28 @@ class PictureClipView @JvmOverloads constructor(
                         if (currX > rightTouchRectF.left) {
                             currX = rightTouchRectF.left
                         }
-                        clipRectF.set(
-                            currX,
-                            clipRectF.top,
-                            clipRectF.right,
-                            clipRectF.bottom
-                        )
+                        clipRectF.set(currX, clipRectF.top, clipRectF.right, clipRectF.bottom)
                     }
                     if (!isDragBitmap && topTouchRectF.contains(currX, currY)) {
                         isDragTouchRectF = true
                         if (currY > bottomTouchRectF.top) {
                             currY = bottomTouchRectF.top
                         }
-                        clipRectF.set(
-                            clipRectF.left,
-                            currY,
-                            clipRectF.right,
-                            clipRectF.bottom
-                        )
+                        clipRectF.set(clipRectF.left, currY, clipRectF.right, clipRectF.bottom)
                     }
                     if (!isDragBitmap && rightTouchRectF.contains(currX, currY)) {
                         isDragTouchRectF = true
                         if (currX < leftTouchRectF.right) {
                             currX = leftTouchRectF.right
                         }
-                        clipRectF.set(
-                            clipRectF.left,
-                            clipRectF.top,
-                            currX,
-                            clipRectF.bottom
-                        )
+                        clipRectF.set(clipRectF.left, clipRectF.top, currX, clipRectF.bottom)
                     }
                     if (!isDragBitmap && bottomTouchRectF.contains(currX, currY)) {
                         isDragTouchRectF = true
                         if (currY < topTouchRectF.bottom) {
                             currY = topTouchRectF.bottom
                         }
-                        clipRectF.set(
-                            clipRectF.left,
-                            clipRectF.top,
-                            clipRectF.right,
-                            currY
-                        )
+                        clipRectF.set(clipRectF.left, clipRectF.top, clipRectF.right, currY)
                     }
                     measureTouchRectF()
                 }
@@ -443,23 +423,31 @@ class PictureClipView @JvmOverloads constructor(
         val height = rectF.height()
         paint.color = Color.WHITE
         canvas.drawRect(
-            rectF.left + width / 3, rectF.top,
-            rectF.left + width / 3 + LINE_WIDTH, rectF.bottom,
+            rectF.left + width / 3,
+            rectF.top,
+            rectF.left + width / 3 + LINE_WIDTH,
+            rectF.bottom,
             paint
         )
         canvas.drawRect(
-            rectF.left + width / 3 * 2, rectF.top,
-            rectF.left + width / 3 * 2 + LINE_WIDTH, rectF.bottom,
+            rectF.left + width / 3 * 2,
+            rectF.top,
+            rectF.left + width / 3 * 2 + LINE_WIDTH,
+            rectF.bottom,
             paint
         )
         canvas.drawRect(
-            rectF.left, rectF.top + height / 3,
-            rectF.right, rectF.top + height / 3 + LINE_WIDTH,
+            rectF.left,
+            rectF.top + height / 3,
+            rectF.right,
+            rectF.top + height / 3 + LINE_WIDTH,
             paint
         )
         canvas.drawRect(
-            rectF.left, rectF.top + height / 3 * 2,
-            rectF.right, rectF.top + height / 3 * 2 + LINE_WIDTH,
+            rectF.left,
+            rectF.top + height / 3 * 2,
+            rectF.right,
+            rectF.top + height / 3 * 2 + LINE_WIDTH,
             paint
         )
     }
@@ -488,7 +476,10 @@ class PictureClipView @JvmOverloads constructor(
         paint.color = Color.WHITE
         //左上
         canvas.drawRect(
-            rectF.left - CORNER_WIDTH, rectF.top, rectF.left, rectF.top + CORNER_LENGTH,
+            rectF.left - CORNER_WIDTH,
+            rectF.top,
+            rectF.left,
+            rectF.top + CORNER_LENGTH,
             paint
         )
         canvas.drawRect(
@@ -500,7 +491,10 @@ class PictureClipView @JvmOverloads constructor(
         )
         //右上
         canvas.drawRect(
-            rectF.right, rectF.top, rectF.right + CORNER_WIDTH, rectF.top + CORNER_LENGTH,
+            rectF.right,
+            rectF.top,
+            rectF.right + CORNER_WIDTH,
+            rectF.top + CORNER_LENGTH,
             paint
         )
         canvas.drawRect(
@@ -512,7 +506,10 @@ class PictureClipView @JvmOverloads constructor(
         )
         //左下
         canvas.drawRect(
-            rectF.left - CORNER_WIDTH, rectF.bottom - CORNER_LENGTH, rectF.left, rectF.bottom,
+            rectF.left - CORNER_WIDTH,
+            rectF.bottom - CORNER_LENGTH,
+            rectF.left,
+            rectF.bottom,
             paint
         )
         canvas.drawRect(
@@ -524,7 +521,10 @@ class PictureClipView @JvmOverloads constructor(
         )
         //右下
         canvas.drawRect(
-            rectF.right, rectF.bottom - CORNER_LENGTH, rectF.right + CORNER_WIDTH, rectF.bottom,
+            rectF.right,
+            rectF.bottom - CORNER_LENGTH,
+            rectF.right + CORNER_WIDTH,
+            rectF.bottom,
             paint
         )
         canvas.drawRect(

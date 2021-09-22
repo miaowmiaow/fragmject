@@ -9,6 +9,7 @@ class Keys {
         const val BEAN = "BEAN"
         const val URL = "URL"
         const val HTML = "HTML"
+        const val AVATAR = "Avatar"
     }
 
 }

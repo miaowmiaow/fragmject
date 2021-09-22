@@ -32,18 +32,28 @@
             android:layout_below="@id/status_bar"
             android:layout_centerInParent="true"
             android:gravity="center"
-            android:text="修改头像"
+            android:text="个人头像"
             android:textColor="@color/text_fff"
             android:textSize="16sp" />
 
+        <TextView
+            android:id="@+id/album"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/status_bar"
+            android:layout_alignParentEnd="true"
+            android:gravity="center"
+            android:text="相册"
+            android:textColor="@color/text_fff"
+            android:textSize="12sp" />
+
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/open"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:padding="10dp"
-        android:text="打开相册"/>
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:scaleType="centerCrop"
+        android:layout_centerInParent="true"/>
 
 </RelativeLayout>

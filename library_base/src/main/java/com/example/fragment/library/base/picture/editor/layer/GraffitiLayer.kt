@@ -5,7 +5,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import androidx.annotation.ColorInt
-import com.example.fragment.library.base.picture.editor.bean.Mode
+import com.example.fragment.library.base.picture.editor.bean.EditorMode
 import com.example.fragment.library.base.picture.editor.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
@@ -46,14 +46,18 @@ class GraffitiLayer(private val parentView: View) : ILayer {
         graffitiPaint.strokeCap = Paint.Cap.ROUND
         graffitiPaint.strokeJoin = Paint.Join.ROUND
         graffitiPaint.style = Paint.Style.STROKE
-        setPaintMode(Mode.GRAFFITI)
+        setPaintMode(EditorMode.GRAFFITI)
     }
 
-    fun setPaintMode(mode: Mode) {
-        if (mode == Mode.GRAFFITI) {
+    fun setPaintStrokeWidthScale(scale: Float) {
+        graffitiPaint.strokeWidth = paintSize / scale
+    }
+
+    fun setPaintMode(editorMode: EditorMode) {
+        if (editorMode == EditorMode.GRAFFITI) {
             graffitiPaint.strokeWidth = paintSize
             graffitiPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
-        } else if (mode == Mode.ERASER) {
+        } else if (editorMode == EditorMode.ERASER) {
             graffitiPaint.strokeWidth = eraserSize
             graffitiPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
         }
@@ -119,6 +123,7 @@ class GraffitiLayer(private val parentView: View) : ILayer {
                     graffitiPaintPaths.push(PaintPath(graffitiPath, graffitiPaint))
                 }
             }
+            graffitiCanvas.drawPath(graffitiPath, graffitiPaint)
             parentView.invalidate()
         }
         return isEnabled
@@ -139,7 +144,6 @@ class GraffitiLayer(private val parentView: View) : ILayer {
     }
 
     override fun onDraw(canvas: Canvas) {
-        graffitiCanvas.drawPath(graffitiPath, graffitiPaint)
         canvas.drawBitmap(graffitiBitmap, 0f, 0f, null)
     }
 

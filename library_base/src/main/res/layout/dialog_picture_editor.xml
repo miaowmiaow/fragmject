@@ -12,7 +12,7 @@
         android:src="@drawable/pe_retake" />
 
     <com.example.fragment.library.base.picture.editor.PictureEditorView
-        android:id="@+id/multi_layer"
+        android:id="@+id/picture_editor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/tool_bar"

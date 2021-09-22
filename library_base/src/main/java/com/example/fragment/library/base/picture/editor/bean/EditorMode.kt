@@ -1,5 +1,5 @@
 package com.example.fragment.library.base.picture.editor.bean
 
-enum class Mode {
+enum class EditorMode {
     GRAFFITI, ERASER, MOSAIC, STICKER
 }

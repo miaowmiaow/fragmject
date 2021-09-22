@@ -94,6 +94,7 @@
                 android:layout_height="75dp"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="50dp"
+                android:scaleType="centerCrop"
                 android:src="@drawable/ic_logo" />
 
             <TextView
@@ -161,7 +162,7 @@
                 android:gravity="center_vertical"
                 android:paddingStart="25dp"
                 android:paddingEnd="25dp"
-                android:text="修改头像"
+                android:text="设置头像"
                 android:textColor="@color/text_fff"
                 android:textSize="14sp"
                 app:drawableEndCompat="@drawable/ic_right" />

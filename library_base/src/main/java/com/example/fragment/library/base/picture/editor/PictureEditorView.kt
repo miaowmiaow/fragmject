@@ -11,7 +11,7 @@ import android.view.View
 import android.widget.Scroller
 import androidx.annotation.ColorInt
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.picture.editor.bean.Mode
+import com.example.fragment.library.base.picture.editor.bean.EditorMode
 import com.example.fragment.library.base.picture.editor.layer.GraffitiLayer
 import com.example.fragment.library.base.picture.editor.layer.MosaicLayer
 import com.example.fragment.library.base.picture.editor.layer.StickerLayer
@@ -56,7 +56,6 @@ class PictureEditorView @JvmOverloads constructor(
     private val graffitiLayer = GraffitiLayer(this)
     private val stickerLayers = Stack<StickerLayer>()
     private var stickerLayerIndex = INVALID_ID
-
     private var pointerIndexId0 = INVALID_ID
 
     private val deleteAreaPaint = Paint()
@@ -125,10 +124,7 @@ class PictureEditorView @JvmOverloads constructor(
                 }
                 if (currScaleX * detector.scaleFactor > 1f && currScaleY * detector.scaleFactor > 1f) {
                     layerMatrix.postScale(
-                        detector.scaleFactor,
-                        detector.scaleFactor,
-                        detector.focusX,
-                        detector.focusY
+                        detector.scaleFactor, detector.scaleFactor, detector.focusX, detector.focusY
                     )
                     val maxOffsetX = currOffsetX + bitmapWidth * (currScaleX * detector.scaleFactor)
                     if (maxOffsetX < viewWidth - initTranslateX) {
@@ -141,10 +137,7 @@ class PictureEditorView @JvmOverloads constructor(
                     }
                 } else {
                     layerMatrix.postScale(
-                        1 / currScaleX,
-                        1 / currScaleY,
-                        detector.focusX,
-                        detector.focusY
+                        1 / currScaleX, 1 / currScaleY, detector.focusX, detector.focusY
                     )
                     val maxOffsetX = currOffsetX + bitmapWidth
                     if (maxOffsetX < viewWidth - initTranslateX) {
@@ -173,21 +166,21 @@ class PictureEditorView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun setMode(mode: Mode) {
-        if (mode == Mode.MOSAIC) {
+    fun setMode(editorMode: EditorMode) {
+        if (editorMode == EditorMode.MOSAIC) {
             mosaicLayer.isEnabled = true
             graffitiLayer.isEnabled = false
             stickerLayers.forEach { layer ->
                 layer.isEnabled = false
             }
-        } else if (mode == Mode.GRAFFITI || mode == Mode.ERASER) {
-            graffitiLayer.setPaintMode(mode)
+        } else if (editorMode == EditorMode.GRAFFITI || editorMode == EditorMode.ERASER) {
+            graffitiLayer.setPaintMode(editorMode)
             mosaicLayer.isEnabled = false
             graffitiLayer.isEnabled = true
             stickerLayers.forEach { layer ->
                 layer.isEnabled = false
             }
-        } else if (mode == Mode.STICKER) {
+        } else if (editorMode == EditorMode.STICKER) {
             mosaicLayer.isEnabled = false
             graffitiLayer.isEnabled = false
             stickerLayers.forEach { layer ->
@@ -221,7 +214,7 @@ class PictureEditorView @JvmOverloads constructor(
         stickerLayer.setOnClickListener(object : StickerLayer.OnClickListener {
             override fun onClick(
                 bitmap: Bitmap?,
-                contentDescription: String?,
+                contentDescription: String,
                 parentTouchX: Float,
                 parentTouchY: Float
             ) {
@@ -230,10 +223,7 @@ class PictureEditorView @JvmOverloads constructor(
                 }
                 stickerLayerIndex = INVALID_ID
                 onStickerClick?.onStickerClick(
-                    bitmap,
-                    contentDescription,
-                    parentTouchX,
-                    parentTouchY
+                    bitmap, contentDescription, parentTouchX, parentTouchY
                 )
             }
         })
@@ -390,6 +380,7 @@ class PictureEditorView @JvmOverloads constructor(
         currScaleY = layerMatrixValues[4]
         currOffsetX = layerMatrixValues[2]
         currOffsetY = layerMatrixValues[5]
+        graffitiLayer.setPaintStrokeWidthScale(currScaleX)
         setDeleteArea()
     }
 
@@ -433,7 +424,7 @@ class PictureEditorView @JvmOverloads constructor(
     interface OnStickerClickListener {
         fun onStickerClick(
             bitmap: Bitmap?,
-            contentDescription: String?,
+            contentDescription: String,
             parentTouchX: Float,
             parentTouchY: Float
         )

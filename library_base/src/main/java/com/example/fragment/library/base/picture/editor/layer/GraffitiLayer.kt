@@ -5,12 +5,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import androidx.annotation.ColorInt
-import com.example.fragment.library.base.picture.editor.bean.EditorMode
+import com.example.fragment.library.base.picture.editor.PictureEditorView
 import com.example.fragment.library.base.picture.editor.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
 
-class GraffitiLayer(private val parentView: View) : ILayer {
+class GraffitiLayer(private val parent: View) : ILayer {
 
     companion object {
         private const val DEFAULT_PAINT_SIZE = 25.0f
@@ -18,19 +18,15 @@ class GraffitiLayer(private val parentView: View) : ILayer {
         private const val TOUCH_TOLERANCE = 4f
     }
 
-    private var viewWidth = 0
-    private var viewHeight = 0
-    private val graffitiPaint = Paint()
-    private val graffitiPath = Path()
-    private var paintSize = DEFAULT_PAINT_SIZE
-    private val eraserSize = DEFAULT_ERASER_SIZE
+    private var _bitmap: Bitmap? = null
+    private val bitmap get() = _bitmap!!
+    private var _canvas: Canvas? = null
+    private val canvas get() = _canvas!!
 
-    private var _graffitiBitmap: Bitmap? = null
-    private val graffitiBitmap get() = _graffitiBitmap!!
-    private var _graffitiCanvas: Canvas? = null
-    private val graffitiCanvas get() = _graffitiCanvas!!
+    private val paint = Paint()
+    private val path = Path()
 
-    private val graffitiPaintPaths = Stack<PaintPath>()
+    private val paintPaths = Stack<PaintPath>()
     private val redoPaintPaths = Stack<PaintPath>()
 
     private var touchX = 0f
@@ -40,111 +36,107 @@ class GraffitiLayer(private val parentView: View) : ILayer {
 
     init {
         //禁用硬件加速，使橡皮擦功能正常工作
-        parentView.setLayerType(LAYER_TYPE_HARDWARE, null)
-        graffitiPaint.isAntiAlias = true
-        graffitiPaint.isDither = true
-        graffitiPaint.strokeCap = Paint.Cap.ROUND
-        graffitiPaint.strokeJoin = Paint.Join.ROUND
-        graffitiPaint.style = Paint.Style.STROKE
-        setPaintMode(EditorMode.GRAFFITI)
+        parent.setLayerType(LAYER_TYPE_HARDWARE, null)
+        paint.isAntiAlias = true
+        paint.isDither = true
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeJoin = Paint.Join.ROUND
+        paint.style = Paint.Style.STROKE
+        setPaintMode(PictureEditorView.Mode.GRAFFITI)
     }
 
     fun setPaintStrokeWidthScale(scale: Float) {
-        graffitiPaint.strokeWidth = paintSize / scale
+        paint.strokeWidth = DEFAULT_PAINT_SIZE / scale
     }
 
-    fun setPaintMode(editorMode: EditorMode) {
-        if (editorMode == EditorMode.GRAFFITI) {
-            graffitiPaint.strokeWidth = paintSize
-            graffitiPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
-        } else if (editorMode == EditorMode.ERASER) {
-            graffitiPaint.strokeWidth = eraserSize
-            graffitiPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+    fun setPaintMode(mode: PictureEditorView.Mode) {
+        if (mode == PictureEditorView.Mode.GRAFFITI) {
+            paint.strokeWidth = DEFAULT_PAINT_SIZE
+            paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
+        } else if (mode == PictureEditorView.Mode.ERASER) {
+            paint.strokeWidth = DEFAULT_ERASER_SIZE
+            paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
         }
     }
 
     fun setPaintColor(@ColorInt color: Int) {
-        graffitiPaint.color = color
+        paint.color = color
     }
 
     fun undo(): Boolean {
-        if (graffitiPaintPaths.isNotEmpty()) {
-            graffitiPath.reset()
-            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
-            redoPaintPaths.push(graffitiPaintPaths.pop())
-            for (linePath in graffitiPaintPaths) {
-                graffitiCanvas.drawPath(linePath.path, linePath.paint)
+        if (paintPaths.isNotEmpty()) {
+            path.reset()
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+            redoPaintPaths.push(paintPaths.pop())
+            for (linePath in paintPaths) {
+                canvas.drawPath(linePath.path, linePath.paint)
             }
-            parentView.invalidate()
+            parent.invalidate()
         }
-        return !graffitiPaintPaths.empty()
+        return !paintPaths.empty()
     }
 
     fun redo(): Boolean {
         if (redoPaintPaths.isNotEmpty()) {
-            graffitiPath.reset()
-            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
-            graffitiPaintPaths.push(redoPaintPaths.pop())
-            for (linePath in graffitiPaintPaths) {
-                graffitiCanvas.drawPath(linePath.path, linePath.paint)
+            path.reset()
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+            paintPaths.push(redoPaintPaths.pop())
+            for (linePath in paintPaths) {
+                canvas.drawPath(linePath.path, linePath.paint)
             }
-            parentView.invalidate()
+            parent.invalidate()
         }
         return !redoPaintPaths.empty()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (isEnabled) {
-            val touchX = event.x
-            val touchY = event.y
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    graffitiPath.reset()
-                    graffitiPath.moveTo(touchX, touchY)
-                    this.touchX = touchX
-                    this.touchY = touchY
+                    path.reset()
+                    path.moveTo(event.x, event.y)
+                    this.touchX = event.x
+                    this.touchY = event.y
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    val dx = abs(touchX - this.touchX)
-                    val dy = abs(touchY - this.touchY)
+                    val dx = abs(event.x - this.touchX)
+                    val dy = abs(event.y - this.touchY)
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        graffitiPath.quadTo(
+                        path.quadTo(
                             this.touchX,
                             this.touchY,
-                            (touchX + this.touchX) / 2,
-                            (touchY + this.touchY) / 2
+                            (event.x + this.touchX) / 2,
+                            (event.y + this.touchY) / 2
                         )
-                        this.touchX = touchX
-                        this.touchY = touchY
+                        this.touchX = event.x
+                        this.touchY = event.y
                     }
                 }
                 MotionEvent.ACTION_UP -> {
-                    graffitiPath.lineTo(touchX, touchY)
-                    graffitiPaintPaths.push(PaintPath(graffitiPath, graffitiPaint))
+                    path.lineTo(event.x, event.y)
+                    paintPaths.push(PaintPath(path, paint))
                 }
             }
-            graffitiCanvas.drawPath(graffitiPath, graffitiPaint)
-            parentView.invalidate()
+            canvas.drawPath(path, paint)
+            parent.invalidate()
         }
         return isEnabled
     }
 
     override fun onSizeChanged(w: Int, h: Int) {
-        this.viewWidth = w
-        this.viewHeight = h
-        _graffitiBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        _graffitiCanvas = Canvas(graffitiBitmap)
-        if (graffitiPaintPaths.isNotEmpty()) {
-            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
-            for (linePath in graffitiPaintPaths) {
-                graffitiCanvas.drawPath(linePath.path, linePath.paint)
+        _bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        _canvas = Canvas(bitmap)
+        if (paintPaths.isNotEmpty()) {
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+            for (linePath in paintPaths) {
+                canvas.drawPath(linePath.path, linePath.paint)
             }
-            parentView.invalidate()
+            parent.invalidate()
         }
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBitmap(graffitiBitmap, 0f, 0f, null)
+        canvas.drawBitmap(bitmap, 0f, 0f, null)
     }
 
 }

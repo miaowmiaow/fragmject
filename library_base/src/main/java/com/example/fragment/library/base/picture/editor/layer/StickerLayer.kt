@@ -4,9 +4,14 @@ import android.graphics.*
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import com.example.fragment.library.base.picture.editor.bean.StickerAttrs
 import com.example.fragment.library.base.picture.utils.Vector2D
 
-class StickerLayer(private val parentView: View) : ILayer {
+class StickerLayer(
+    val parent: View,
+    val attrs: StickerAttrs,
+    val listener: OnStickerClickListener? = null
+) : ILayer {
 
     companion object {
         private const val INVALID_POINTER_ID = -1
@@ -15,49 +20,37 @@ class StickerLayer(private val parentView: View) : ILayer {
         private const val RECT_ROUND = 30.0f
     }
 
+    private val bitmapRectF = RectF()
+    private var bitmapWidth = attrs.bitmap.width
+    private var bitmapHeight = attrs.bitmap.height
+    private var currRotation = attrs.rotation
+    private var currScale = attrs.scale
+    private var currTranslateX = attrs.translateX
+    private var currTranslateY = attrs.translateY
+    private var initRotation = 0f
+    private val prevSpanVector = Vector2D(0f, 0f)
+    private val currSpanVector = Vector2D(0f, 0f)
     private var pointerIndexId0 = INVALID_POINTER_ID
     private var pointerIndexId1 = INVALID_POINTER_ID
-
-    private var viewWidth = 0
-    private var viewHeight = 0
-    private var bitmapWidth = 0
-    private var bitmapHeight = 0
-    private val bitmapRectF = RectF()
-
-    private lateinit var bitmap: Bitmap
-    private var contentDescription = ""
-
+    private var downX = 0f
+    private var downY = 0f
     private val borderPaint = Paint()
     private val borderRectF = RectF()
     private var inBorder = false
     private var isInProgress = false
+    private var touchTime = 0L
+    var isEnabled = true
 
-    private var downX = 0f
-    private var downY = 0f
-    private var currTranslateX = 0f
-    private var currTranslateY = 0f
-    private var initRotation = 0f
-    private var currRotation = 0f
-    private val prevSpanVector = Vector2D(0f, 0f)
-    private val currSpanVector = Vector2D(0f, 0f)
-
-    private var currScale = 1f
-    private val scaleGestureDetector = ScaleGestureDetector(parentView.context,
+    private val scaleGestureDetector = ScaleGestureDetector(parent.context,
         object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 adjustScale(detector.scaleFactor)
-                parentView.invalidate()
+                parent.invalidate()
                 return true
             }
 
         })
-
-    private var onClickListener: OnClickListener? = null
-    private var touchTime = 0L
-    var parentTouchX = 0f
-    var parentTouchY = 0f
-    var isEnabled = true
 
     init {
         borderPaint.isAntiAlias = true
@@ -66,28 +59,8 @@ class StickerLayer(private val parentView: View) : ILayer {
         borderPaint.strokeWidth = 3f
     }
 
-    fun setBitmap(
-        bitmap: Bitmap,
-        contentDescription: String,
-        parentTouchX: Float,
-        parentTouchY: Float
-    ) {
-        this.bitmap = bitmap
-        this.contentDescription = contentDescription
-        this.bitmapWidth = bitmap.width
-        this.bitmapHeight = bitmap.height
-        currTranslateX = if (parentTouchX > 0) parentTouchX else viewWidth * 0.5f
-        currTranslateY = if (parentTouchY > 0) parentTouchY else viewHeight * 0.5f
-        measureBitmap()
-        parentView.invalidate()
-    }
-
     fun inTextBounds(x: Float, y: Float): Boolean {
         return borderRectF.contains(x, y)
-    }
-
-    fun setOnClickListener(onClickListener: OnClickListener) {
-        this.onClickListener = onClickListener
     }
 
     private fun measureBitmap() {
@@ -110,15 +83,15 @@ class StickerLayer(private val parentView: View) : ILayer {
             scaleGestureDetector.onTouchEvent(event)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    touchTime = System.currentTimeMillis()
                     isInProgress = false
+                    touchTime = System.currentTimeMillis()
                     val pointerId0 = event.getPointerId(0)
                     pointerIndexId0 = event.findPointerIndex(pointerId0)
                     downX = event.x
                     downY = event.y
                     if (!inBorder) {
                         inBorder = true
-                        parentView.invalidate()
+                        parent.invalidate()
                     }
                 }
                 MotionEvent.ACTION_POINTER_DOWN -> {
@@ -143,7 +116,7 @@ class StickerLayer(private val parentView: View) : ILayer {
                                 downY = currY
                             }
                         }
-                        parentView.invalidate()
+                        parent.invalidate()
                     }
                 }
                 MotionEvent.ACTION_POINTER_UP -> {
@@ -155,13 +128,16 @@ class StickerLayer(private val parentView: View) : ILayer {
                     }
                 }
                 MotionEvent.ACTION_UP -> {
-                    val time = System.currentTimeMillis() - touchTime
-                    if (time < 300L) {
-                        onClickListener?.onClick(
-                            bitmap,
-                            contentDescription,
-                            parentTouchX,
-                            parentTouchY
+                    if (System.currentTimeMillis() - touchTime < 300L) {
+                        listener?.onClick(
+                            StickerAttrs(
+                                attrs.bitmap,
+                                attrs.description,
+                                currRotation,
+                                currScale,
+                                currTranslateX,
+                                currTranslateY
+                            )
                         )
                     }
                     pointerIndexId0 = INVALID_POINTER_ID
@@ -169,7 +145,7 @@ class StickerLayer(private val parentView: View) : ILayer {
                     initRotation = currRotation
                     if (inBorder) {
                         inBorder = false
-                        parentView.invalidate()
+                        parent.invalidate()
                     }
                     return false
                 }
@@ -207,48 +183,37 @@ class StickerLayer(private val parentView: View) : ILayer {
     private fun adjustTranslation(deltaX: Float, deltaY: Float) {
         currTranslateX += deltaX
         currTranslateY += deltaY
+        measureBitmap()
     }
 
     private fun adjustScale(deltaScale: Float) {
         currScale *= deltaScale
         currScale = MINIMUM_SCALE.coerceAtLeast(MAXIMUM_SCALE.coerceAtMost(currScale))
+        measureBitmap()
     }
 
     override fun onSizeChanged(w: Int, h: Int) {
-        this.viewWidth = w
-        this.viewHeight = h
+        if (currTranslateX == 0f) {
+            currTranslateX = w * 0.5f
+        }
+        if (currTranslateY == 0f) {
+            currTranslateY = h * 0.5f
+        }
+        measureBitmap()
     }
 
     override fun onDraw(canvas: Canvas) {
         canvas.save()
-        canvasRotate(canvas)
-        drawBorder(canvas)
-        drawBitmap(canvas)
-        canvas.restore()
-    }
-
-    private fun canvasRotate(canvas: Canvas) {
         canvas.rotate(currRotation, borderRectF.centerX(), borderRectF.centerY())
-    }
-
-    private fun drawBorder(canvas: Canvas) {
         if (inBorder) {
             canvas.drawRect(borderRectF, borderPaint)
         }
+        canvas.drawBitmap(attrs.bitmap, null, bitmapRectF, null)
+        canvas.restore()
     }
 
-    private fun drawBitmap(canvas: Canvas) {
-        measureBitmap()
-        canvas.drawBitmap(bitmap, null, bitmapRectF, null)
-    }
+}
 
-    interface OnClickListener {
-        fun onClick(
-            bitmap: Bitmap?,
-            contentDescription: String,
-            parentTouchX: Float,
-            parentTouchY: Float
-        )
-    }
-
+interface OnStickerClickListener {
+    fun onClick(attrs: StickerAttrs)
 }

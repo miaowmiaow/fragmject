@@ -10,6 +10,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.databinding.DialogPictureTextBinding
+import com.example.fragment.library.base.picture.editor.bean.StickerAttrs
+import com.example.fragment.library.base.utils.ColorUtils
 
 class PictureTextDialog : BaseDialog() {
 
@@ -22,22 +24,14 @@ class PictureTextDialog : BaseDialog() {
 
     private var _binding: DialogPictureTextBinding? = null
     private val binding get() = _binding!!
-    private val textColors: MutableList<RelativeLayout> = arrayListOf()
-    private val colors = arrayListOf(
-        Color.parseColor("#ffffff"),
-        Color.parseColor("#000000"),
-        Color.parseColor("#ff0000"),
-        Color.parseColor("#ffb636"),
-        Color.parseColor("#00FF00"),
-        Color.parseColor("#508cee"),
-        Color.parseColor("#7B68EE"),
-    )
 
-    private var text = ""
+    private val textColors: MutableList<RelativeLayout> = arrayListOf()
+    private var _attrs: StickerAttrs? = null
+    private val attrs get() = _attrs!!
     private var callback: TextFinishCallback? = null
 
-    fun setText(text: String): PictureTextDialog {
-        this.text = text
+    fun setStickerAttrs(attrs: StickerAttrs?): PictureTextDialog {
+        this._attrs = attrs
         return this
     }
 
@@ -82,7 +76,9 @@ class PictureTextDialog : BaseDialog() {
     }
 
     private fun setupView() {
-        binding.editText.setText(text)
+        _attrs?.apply {
+            binding.editText.setText(description)
+        }
         textColors.add(binding.textWhite)
         textColors.add(binding.textBlack)
         textColors.add(binding.textRed)
@@ -95,27 +91,28 @@ class PictureTextDialog : BaseDialog() {
         }, 250)
         binding.textBack.setOnClickListener {
             hideSoftInput(binding.editText)
-            if (text.isNotBlank()) {
-                binding.editText.setText(text)
-                binding.editText.isFocusable = false
-                callback?.onFinish(conversionBitmap(), text)
-            }
+            binding.editText.isFocusable = false
             dismiss()
         }
         binding.textFinish.setOnClickListener {
             hideSoftInput(binding.editText)
-            val text = binding.editText.text.toString()
-            if (text.isNotBlank()) {
-                binding.editText.hint = ""
-                binding.editText.isFocusable = false
-                callback?.onFinish(conversionBitmap(), text)
+            binding.editText.isFocusable = false
+            val description = binding.editText.text.toString()
+            if(description.isNotBlank()){
+                if (_attrs == null) {
+                    _attrs = StickerAttrs(saveBitmap())
+                } else {
+                    attrs.bitmap = saveBitmap()
+                }
+                attrs.description = description
+                callback?.onFinish(attrs)
             }
             dismiss()
         }
         textColors.forEachIndexed { index, view ->
             view.setOnClickListener {
                 selectedColor(view)
-                binding.editText.setTextColor(colors[index])
+                binding.editText.setTextColor(ColorUtils.colorful[index])
             }
         }
     }
@@ -143,7 +140,7 @@ class PictureTextDialog : BaseDialog() {
         }
     }
 
-    private fun conversionBitmap(): Bitmap {
+    private fun saveBitmap(): Bitmap {
         val bitmap = Bitmap.createBitmap(
             binding.editText.width,
             binding.editText.height,
@@ -158,5 +155,5 @@ class PictureTextDialog : BaseDialog() {
 }
 
 interface TextFinishCallback {
-    fun onFinish(bitmap: Bitmap, contentDescription: String)
+    fun onFinish(attrs: StickerAttrs)
 }

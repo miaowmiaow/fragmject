@@ -12,7 +12,7 @@
         android:src="@drawable/pe_retake" />
 
     <com.example.fragment.library.base.picture.editor.PictureEditorView
-        android:id="@+id/picture_editor"
+        android:id="@+id/pic_editor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/tool_bar"
@@ -30,7 +30,7 @@
         android:visibility="gone">
 
         <RelativeLayout
-            android:id="@+id/graffiti_white"
+            android:id="@+id/white"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -43,7 +43,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/graffiti_black"
+            android:id="@+id/black"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -56,7 +56,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/graffiti_red"
+            android:id="@+id/red"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -69,7 +69,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/graffiti_yellow"
+            android:id="@+id/yellow"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -82,7 +82,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/graffiti_green"
+            android:id="@+id/green"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -95,7 +95,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/graffiti_blue"
+            android:id="@+id/blue"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -108,7 +108,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/graffiti_purple"
+            android:id="@+id/purple"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

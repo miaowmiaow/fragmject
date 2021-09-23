@@ -46,7 +46,7 @@
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         android:textCursorDrawable="@null"
-        android:textSize="23sp"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <LinearLayout

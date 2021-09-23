@@ -158,7 +158,7 @@ class PictureClipView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun conversionBitmap(): Bitmap {
+    fun saveBitmap(): Bitmap {
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.isAntiAlias = true
         paint.isDither = true

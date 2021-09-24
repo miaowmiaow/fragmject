@@ -49,7 +49,7 @@ class PictureClipDialog : PictureBaseDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.clip.setClipBitmapResource(bitmap)
+        binding.clip.setBitmapResource(bitmap)
         binding.rotate.setOnClickListener { binding.clip.rotate() }
         binding.reset.setOnClickListener { binding.clip.reset() }
         binding.cancel.setOnClickListener { dismiss() }

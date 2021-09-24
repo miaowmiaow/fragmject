@@ -10,7 +10,7 @@ import com.example.fragment.library.base.picture.editor.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
 
-class GraffitiLayer(private val parent: View) : ILayer {
+class GraffitiLayer(val parent: View) : ILayer {
 
     companion object {
         private const val DEFAULT_PAINT_SIZE = 25.0f
@@ -102,12 +102,9 @@ class GraffitiLayer(private val parent: View) : ILayer {
                     val dx = abs(event.x - this.touchX)
                     val dy = abs(event.y - this.touchY)
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        path.quadTo(
-                            this.touchX,
-                            this.touchY,
-                            (event.x + this.touchX) / 2,
-                            (event.y + this.touchY) / 2
-                        )
+                        val x = (event.x + this.touchX) / 2
+                        val y = (event.y + this.touchY) / 2
+                        path.quadTo(this.touchX, this.touchY, x, y)
                         this.touchX = event.x
                         this.touchY = event.y
                     }

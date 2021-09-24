@@ -1,6 +1,10 @@
 package com.example.fragment.library.common.fragment
 
 import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fragment.library.base.bus.LiveDataBus
@@ -15,23 +19,40 @@ open class RouterFragment : BaseFragment() {
      * 获取baseActivity方便调用navigation方法进行页面切换
      */
     lateinit var baseActivity: RouterActivity
+    var isDestroyView = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         baseActivity = activity as RouterActivity
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        isDestroyView = false
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
     override fun onStart() {
         super.onStart()
         //通过LiveDataBus观察UserBean的变化，从而通知页面刷新
         LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
-            onUserStatusUpdate(userBean)
+            if (!isDestroyView) {
+                onUserStatusUpdate(userBean)
+            }
         })
     }
 
     override fun onPause() {
         super.onPause()
         hideInputMethod()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        isDestroyView = true
     }
 
     override fun onFirstLoad() {}

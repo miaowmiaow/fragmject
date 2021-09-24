@@ -7,7 +7,7 @@ import com.example.fragment.library.base.picture.editor.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
 
-class MosaicLayer(private val parent: View) : ILayer {
+class MosaicLayer(val parent: View) : ILayer {
 
     companion object {
         private const val DEFAULT_PAINT_SIZE = 50.0f
@@ -77,7 +77,7 @@ class MosaicLayer(private val parent: View) : ILayer {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     path.reset()
-                    path.moveTo(touchX, touchY)
+                    path.moveTo(event.x, event.y)
                     this.touchX = event.x
                     this.touchY = event.y
                 }
@@ -85,12 +85,9 @@ class MosaicLayer(private val parent: View) : ILayer {
                     val dx = abs(event.x - this.touchX)
                     val dy = abs(event.y - this.touchY)
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        path.quadTo(
-                            this.touchX,
-                            this.touchY,
-                            (event.x + this.touchX) / 2,
-                            (event.y + this.touchY) / 2
-                        )
+                        val x = (event.x + this.touchX) / 2
+                        val y = (event.y + this.touchY) / 2
+                        path.quadTo(this.touchX, this.touchY, x, y)
                         this.touchX = event.x
                         this.touchY = event.y
                     }

@@ -20,23 +20,24 @@ class PictureClipView @JvmOverloads constructor(
         private const val BORDER_WIDTH = 5f
         private const val CORNER_WIDTH = 10f
         private const val CORNER_LENGTH = 50f
-
+        private const val CORNER_MARGIN = 60f
         private const val MINIMUM_SCALE = 0.1f
-        private const val MAXIMUM_SCALE = 2.5f
+        private const val MAXIMUM_SCALE = 2.0f
     }
 
     private var viewWidth = 0
     private var viewHeight = 0
     private var bitmapWidth = 0
     private var bitmapHeight = 0
+    private lateinit var orgBitmap: Bitmap
+    private lateinit var bitmap: Bitmap
     private val bitmapRectF = RectF()
-    private var orgBitmap: Bitmap? = null
-    private var bitmap: Bitmap? = null
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val clipMatrix = Matrix()
-    private val maxClipRectF = RectF()
     private val clipRectF = RectF()
+    private val maxClipRectF = RectF()
+
     private val leftTouchRectF = RectF()
     private val topTouchRectF = RectF()
     private val rightTouchRectF = RectF()
@@ -47,75 +48,51 @@ class PictureClipView @JvmOverloads constructor(
 
     private var downX = 0f
     private var downY = 0f
+    private var currScale = 0f
     private var currTranslateX = 0f
     private var currTranslateY = 0f
-    private var currScale = 0f
-    private val scaleGestureDetector = ScaleGestureDetector(context,
-        object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                var scaleFactor = detector.scaleFactor
-                if (currScale * scaleFactor <= MINIMUM_SCALE) {
-                    scaleFactor = MINIMUM_SCALE / currScale
-                }
-                if (currScale * scaleFactor >= MAXIMUM_SCALE) {
-                    scaleFactor = MAXIMUM_SCALE / currScale
-                }
-                if (bitmapRectF.height() < clipRectF.height()) {
-                    scaleFactor = clipRectF.height() / bitmapRectF.height()
-                }
-                if (currScale > MINIMUM_SCALE && currScale < MAXIMUM_SCALE) {
-                    clipMatrix.setScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
-                    clipMatrix.mapRect(bitmapRectF)
-                }
-                currScale *= scaleFactor
-                return true
+    private val sgListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
+            var scaleFactor = detector.scaleFactor
+            if (currScale * scaleFactor <= MINIMUM_SCALE) {
+                scaleFactor = MINIMUM_SCALE / currScale
             }
-
+            if (currScale * scaleFactor >= MAXIMUM_SCALE) {
+                scaleFactor = MAXIMUM_SCALE / currScale
+            }
+            if (bitmapRectF.height() < clipRectF.height()) {
+                scaleFactor = clipRectF.height() / bitmapRectF.height()
+            }
+            if (currScale > MINIMUM_SCALE && currScale < MAXIMUM_SCALE) {
+                clipMatrix.setScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
+                clipMatrix.mapRect(bitmapRectF)
+            }
+            currScale *= scaleFactor
+            return true
         }
-    )
 
-    fun setClipBitmapResource(bitmap: Bitmap) {
+    }
+    private val scaleGestureDetector = ScaleGestureDetector(context, sgListener)
+
+    fun setBitmapResource(bitmap: Bitmap) {
         this.orgBitmap = bitmap
         this.bitmap = bitmap
-        bitmap.let {
-            bitmapWidth = it.width
-            bitmapHeight = it.height
-        }
+        bitmapWidth = bitmap.width
+        bitmapHeight = bitmap.height
         invalidate()
     }
 
     fun reset() {
-        bitmap = orgBitmap
-        bitmap?.let {
-            bitmapWidth = it.width
-            bitmapHeight = it.height
-        }
+        this.bitmap = orgBitmap
+        bitmapWidth = bitmap.width
+        bitmapHeight = bitmap.height
         clipMatrix.reset()
         currScale = maxClipRectF.width() / bitmapWidth
-        val leftOffset = (viewWidth - bitmapWidth * currScale) * 0.5f
-        val topOffset = (viewHeight - bitmapHeight * currScale) * 0.5f
-        bitmapRectF.set(
-            leftOffset,
-            topOffset,
-            viewWidth - leftOffset,
-            viewHeight - topOffset
-        )
-        clipRectF.set(bitmapRectF)
-        if (clipRectF.left < maxClipRectF.left) {
-            clipRectF.left = maxClipRectF.left
-        }
-        if (clipRectF.top < maxClipRectF.top) {
-            clipRectF.top = maxClipRectF.top
-        }
-        if (clipRectF.right > maxClipRectF.right) {
-            clipRectF.right = maxClipRectF.right
-        }
-        if (clipRectF.bottom > maxClipRectF.bottom) {
-            clipRectF.bottom = maxClipRectF.bottom
-        }
-        measureTouchRectF()
-        rectFBorder()
+        updateBitmapRectF()
+        updateClipRectF()
+        updateClipBorder()
         invalidate()
     }
 
@@ -124,22 +101,15 @@ class PictureClipView @JvmOverloads constructor(
         clipMatrix.setRotate(-90f, bitmapRectF.centerX(), bitmapRectF.centerY())
         clipMatrix.mapRect(bitmapRectF)
         clipMatrix.mapRect(clipRectF)
-        bitmap?.let {
-            bitmap = Bitmap.createBitmap(it, 0, 0, it.width, it.height, clipMatrix, true)
-        }
-        bitmap?.let {
-            bitmapWidth = it.width
-            bitmapHeight = it.height
-        }
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, clipMatrix, true)
+        bitmapWidth = bitmap.width
+        bitmapHeight = bitmap.height
         currScale = maxClipRectF.width() / bitmapWidth
-        val leftOffset = (viewWidth - bitmapWidth * currScale) * 0.5f
-        val topOffset = (viewHeight - bitmapHeight * currScale) * 0.5f
-        bitmapRectF.set(
-            leftOffset,
-            topOffset,
-            viewWidth - leftOffset,
-            viewHeight - topOffset
-        )
+        val bitmapLeft = (viewWidth - bitmapWidth * currScale) * 0.5f
+        val bitmapTop = (viewHeight - bitmapHeight * currScale) * 0.5f
+        val bitmapRight = viewWidth - bitmapLeft
+        val bitmapBottom = viewHeight - bitmapTop
+        bitmapRectF.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom)
         clipRectF.set(bitmapRectF)
         if (clipRectF.left < maxClipRectF.left) {
             clipRectF.left = maxClipRectF.left
@@ -153,8 +123,7 @@ class PictureClipView @JvmOverloads constructor(
         if (clipRectF.bottom > maxClipRectF.bottom) {
             clipRectF.bottom = maxClipRectF.bottom
         }
-        measureTouchRectF()
-        rectFBorder()
+        updateClipBorder()
         invalidate()
     }
 
@@ -163,96 +132,28 @@ class PictureClipView @JvmOverloads constructor(
         paint.isAntiAlias = true
         paint.isDither = true
         paint.isFilterBitmap = true
-        val clipBitmap = Bitmap.createBitmap(
-            clipRectF.width().toInt(),
-            clipRectF.height().toInt(),
-            Bitmap.Config.ARGB_8888
-        )
+        val width = clipRectF.width().toInt()
+        val height = clipRectF.height().toInt()
+        val clipBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(clipBitmap)
         val left = -clipRectF.left
         val top = -clipRectF.top
         clipRectF.offset(left, top)
         canvas.drawRect(clipRectF, paint)
         paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-        bitmap?.let {
-            bitmapRectF.offset(left, top)
-            canvas.drawBitmap(it, null, bitmapRectF, paint)
-        }
+        bitmapRectF.offset(left, top)
+        canvas.drawBitmap(bitmap, null, bitmapRectF, paint)
         return clipBitmap
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        viewWidth = w
-        viewHeight = h
-        val corner = CORNER_WIDTH + CORNER_LENGTH
-        maxClipRectF.set(corner, corner, viewWidth - corner, viewHeight - corner)
-        currScale = maxClipRectF.width() / bitmapWidth
-        val leftOffset = (viewWidth - bitmapWidth * currScale) * 0.5f
-        val topOffset = (viewHeight - bitmapHeight * currScale) * 0.5f
-        bitmapRectF.set(
-            leftOffset,
-            topOffset,
-            viewWidth - leftOffset,
-            viewHeight - topOffset
-        )
-        clipRectF.set(bitmapRectF)
-        if (clipRectF.top < maxClipRectF.top) {
-            clipRectF.top = maxClipRectF.top
-        }
-        if (clipRectF.bottom > maxClipRectF.bottom) {
-            clipRectF.bottom = maxClipRectF.bottom
-        }
-        measureTouchRectF()
-    }
-
-    private fun measureTouchRectF() {
-        leftTouchRectF.set(
-            clipRectF.left - CORNER_LENGTH,
-            clipRectF.top - CORNER_LENGTH,
-            clipRectF.left + CORNER_LENGTH,
-            clipRectF.bottom + CORNER_LENGTH
-        )
-        topTouchRectF.set(
-            clipRectF.left - CORNER_LENGTH,
-            clipRectF.top - CORNER_LENGTH,
-            clipRectF.right + CORNER_LENGTH,
-            clipRectF.top + CORNER_LENGTH
-        )
-        rightTouchRectF.set(
-            clipRectF.right - CORNER_LENGTH,
-            clipRectF.top - CORNER_LENGTH,
-            clipRectF.right + CORNER_LENGTH,
-            clipRectF.bottom + CORNER_LENGTH
-        )
-        bottomTouchRectF.set(
-            clipRectF.left - CORNER_LENGTH,
-            clipRectF.bottom - CORNER_LENGTH,
-            clipRectF.right + CORNER_LENGTH,
-            clipRectF.bottom + CORNER_LENGTH
-        )
-    }
-
-    private fun rectFBorder() {
-        if (clipRectF.height() < maxClipRectF.height()) {
-            val offsetY = (viewHeight - clipRectF.height()) * 0.5f
-            if (clipRectF.height() < bitmapRectF.height()) {
-                currTranslateY += offsetY - clipRectF.top
-            }
-            clipRectF.offset(0f, offsetY - clipRectF.top)
-        }
-        if (bitmapRectF.left >= clipRectF.left && bitmapRectF.right >= clipRectF.right) {
-            currTranslateX = clipRectF.left - bitmapRectF.left
-        }
-        if (bitmapRectF.left < clipRectF.left && bitmapRectF.right < clipRectF.right) {
-            currTranslateX = clipRectF.right - bitmapRectF.right
-        }
-        if (bitmapRectF.top >= clipRectF.top && bitmapRectF.bottom >= clipRectF.bottom) {
-            currTranslateY = clipRectF.top - bitmapRectF.top
-        }
-        if (bitmapRectF.top < clipRectF.top && bitmapRectF.bottom < clipRectF.bottom) {
-            currTranslateY = clipRectF.bottom - bitmapRectF.bottom
-        }
+        this.viewWidth = w
+        this.viewHeight = h
+        updateMaxClipRectF()
+        updateBitmapRectF()
+        updateClipRectF()
+        updateTouchRectF()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -295,104 +196,150 @@ class PictureClipView @JvmOverloads constructor(
                         }
                         clipRectF.set(clipRectF.left, clipRectF.top, clipRectF.right, currY)
                     }
-                    measureTouchRectF()
-                }
-                if (!isDragTouchRectF) {
-                    isDragBitmap = true
-                    currTranslateX = currX - downX
-                    currTranslateY = currY - downY
-                    if (downX == 0f) {
+                    if (!isDragTouchRectF) {
+                        isDragBitmap = true
+                        currTranslateX = currX - downX
+                        currTranslateY = currY - downY
+                        downX = currX
+                        downY = currY
+                    } else {
                         currTranslateX = 0f
-                    }
-                    if (downY == 0f) {
                         currTranslateY = 0f
+                        bitmapFollowBorder()
                     }
-                    downX = currX
-                    downY = currY
-                } else {
-                    currTranslateX = 0f
-                    currTranslateY = 0f
-                    if (bitmapRectF.height() < clipRectF.height()) {
-                        val scaleFactor = clipRectF.height() / bitmapRectF.height()
-                        clipMatrix.setScale(
-                            scaleFactor,
-                            scaleFactor,
-                            bitmapRectF.centerX(),
-                            bitmapRectF.centerY()
-                        )
-                        clipMatrix.mapRect(bitmapRectF)
-                        currScale *= scaleFactor
-                        rectFBorder()
-                    }
+                    updateTouchRectF()
                 }
-                invalidate()
             }
             MotionEvent.ACTION_UP -> {
                 downX = 0f
                 downY = 0f
                 isDragBitmap = false
                 isDragTouchRectF = false
-                if (bitmapRectF.height() < clipRectF.height()) {
-                    val scaleFactor = clipRectF.height() / bitmapRectF.height()
-                    clipMatrix.setScale(
-                        scaleFactor,
-                        scaleFactor,
-                        bitmapRectF.centerX(),
-                        bitmapRectF.centerY()
-                    )
-                    clipMatrix.mapRect(bitmapRectF)
-                    currScale *= scaleFactor
-                }
-                if (clipRectF.width() < bitmapRectF.width() && clipRectF.width() < maxClipRectF.width()) {
-                    val offsetX = (viewWidth - clipRectF.width()) * 0.5f
-                    if (clipRectF.width() < bitmapRectF.width()) {
-                        currTranslateX += offsetX - clipRectF.left
-                    }
-                    clipRectF.offset(offsetX - clipRectF.left, 0f)
-                    val a = maxClipRectF.height() / clipRectF.height()
-                    val b = maxClipRectF.width() / clipRectF.width()
-                    val minScale = min(a, b)
-                    clipMatrix.setScale(
-                        minScale,
-                        minScale,
-                        clipRectF.centerX(),
-                        clipRectF.centerY()
-                    )
-                    clipMatrix.mapRect(bitmapRectF)
-                    clipMatrix.mapRect(clipRectF)
-                    currScale *= minScale
-                    if (clipRectF.left < maxClipRectF.left) {
-                        clipRectF.left = maxClipRectF.left
-                    }
-                    if (clipRectF.top < maxClipRectF.top) {
-                        clipRectF.top = maxClipRectF.top
-                    }
-                    if (clipRectF.right > maxClipRectF.right) {
-                        clipRectF.right = maxClipRectF.right
-                    }
-                    if (clipRectF.bottom > maxClipRectF.bottom) {
-                        clipRectF.bottom = maxClipRectF.bottom
-                    }
-                    measureTouchRectF()
-                }
-                rectFBorder()
-                invalidate()
+                bitmapFollowBorder()
+                borderCenter()
             }
         }
+        invalidate()
         return true
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        bitmap?.let {
-            canvas.save()
-            bitmapRectF.offset(currTranslateX, currTranslateY)
-            canvas.drawBitmap(it, null, bitmapRectF, null)
-            canvas.restore()
-            drawExterior(canvas, clipRectF)
-            drawLine(canvas, clipRectF)
-            drawBorder(canvas, clipRectF)
-            drawCorner(canvas, clipRectF)
+        canvas.save()
+        bitmapRectF.offset(currTranslateX, currTranslateY)
+        canvas.drawBitmap(bitmap, null, bitmapRectF, null)
+        canvas.restore()
+        drawExterior(canvas, clipRectF)
+        drawLine(canvas, clipRectF)
+        drawBorder(canvas, clipRectF)
+        drawCorner(canvas, clipRectF)
+    }
+
+    private fun updateMaxClipRectF() {
+        val maxClipLift = CORNER_MARGIN
+        val maxClipTop = CORNER_MARGIN
+        val maxClipRight = viewWidth - CORNER_MARGIN
+        val maxClipBottom = viewHeight - CORNER_MARGIN
+        maxClipRectF.set(maxClipLift, maxClipTop, maxClipRight, maxClipBottom)
+        currScale = maxClipRectF.width() / bitmapWidth
+    }
+
+    private fun updateClipRectF() {
+        clipRectF.set(bitmapRectF)
+        if (clipRectF.left < maxClipRectF.left) {
+            clipRectF.left = maxClipRectF.left
+        }
+        if (clipRectF.top < maxClipRectF.top) {
+            clipRectF.top = maxClipRectF.top
+        }
+        if (clipRectF.right > maxClipRectF.right) {
+            clipRectF.right = maxClipRectF.right
+        }
+        if (clipRectF.bottom > maxClipRectF.bottom) {
+            clipRectF.bottom = maxClipRectF.bottom
+        }
+    }
+
+    private fun updateBitmapRectF() {
+        val bitmapLeft = (viewWidth - bitmapWidth * currScale) * 0.5f
+        val bitmapTop = (viewHeight - bitmapHeight * currScale) * 0.5f
+        val bitmapRight = viewWidth - bitmapLeft
+        val bitmapBottom = viewHeight - bitmapTop
+        bitmapRectF.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom)
+    }
+
+    private fun updateTouchRectF() {
+        val left = clipRectF.left - CORNER_LENGTH
+        val top = clipRectF.top - CORNER_LENGTH
+        val right = clipRectF.right + CORNER_LENGTH
+        val bottom = clipRectF.bottom + CORNER_LENGTH
+        leftTouchRectF.set(left, top, clipRectF.left + CORNER_LENGTH, bottom)
+        topTouchRectF.set(left, top, right, clipRectF.top + CORNER_LENGTH)
+        rightTouchRectF.set(clipRectF.right - CORNER_LENGTH, top, right, bottom)
+        bottomTouchRectF.set(left, clipRectF.bottom - CORNER_LENGTH, right, bottom)
+    }
+
+    private fun updateClipBorder() {
+        if (clipRectF.height() < maxClipRectF.height()) {
+            val offsetY = (viewHeight - clipRectF.height()) * 0.5f
+            if (clipRectF.height() < bitmapRectF.height()) {
+                currTranslateY += offsetY - clipRectF.top
+            }
+            clipRectF.offset(0f, offsetY - clipRectF.top)
+        }
+        if (bitmapRectF.left >= clipRectF.left && bitmapRectF.right >= clipRectF.right) {
+            currTranslateX = clipRectF.left - bitmapRectF.left
+        }
+        if (bitmapRectF.left < clipRectF.left && bitmapRectF.right < clipRectF.right) {
+            currTranslateX = clipRectF.right - bitmapRectF.right
+        }
+        if (bitmapRectF.top >= clipRectF.top && bitmapRectF.bottom >= clipRectF.bottom) {
+            currTranslateY = clipRectF.top - bitmapRectF.top
+        }
+        if (bitmapRectF.top < clipRectF.top && bitmapRectF.bottom < clipRectF.bottom) {
+            currTranslateY = clipRectF.bottom - bitmapRectF.bottom
+        }
+    }
+
+    private fun bitmapFollowBorder() {
+        if (bitmapRectF.height() < clipRectF.height()) {
+            val scaleFactor = clipRectF.height() / bitmapRectF.height()
+            val px = clipRectF.centerX() - bitmapRectF.left.coerceAtLeast(0f)
+            val py = bitmapRectF.centerY()
+            clipMatrix.setScale(scaleFactor, scaleFactor, px, py)
+            clipMatrix.mapRect(bitmapRectF)
+            currScale *= scaleFactor
+            updateClipBorder()
+        }
+    }
+
+    private fun borderCenter() {
+        if (clipRectF.width() < bitmapRectF.width() && clipRectF.width() < maxClipRectF.width()) {
+            val offsetX = (viewWidth - clipRectF.width()) * 0.5f
+            if (clipRectF.width() < bitmapRectF.width()) {
+                currTranslateX += offsetX - clipRectF.left
+            }
+            clipRectF.offset(offsetX - clipRectF.left, 0f)
+            val a = maxClipRectF.height() / clipRectF.height()
+            val b = maxClipRectF.width() / clipRectF.width()
+            val minScale = min(a, b)
+            clipMatrix.setScale(minScale, minScale, clipRectF.centerX(), clipRectF.centerY())
+            clipMatrix.mapRect(bitmapRectF)
+            clipMatrix.mapRect(clipRectF)
+            currScale *= minScale
+            if (clipRectF.left < maxClipRectF.left) {
+                clipRectF.left = maxClipRectF.left
+            }
+            if (clipRectF.top < maxClipRectF.top) {
+                clipRectF.top = maxClipRectF.top
+            }
+            if (clipRectF.right > maxClipRectF.right) {
+                clipRectF.right = maxClipRectF.right
+            }
+            if (clipRectF.bottom > maxClipRectF.bottom) {
+                clipRectF.bottom = maxClipRectF.bottom
+            }
+            updateTouchRectF()
         }
     }
 

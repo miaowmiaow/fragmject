@@ -1,6 +1,9 @@
 package com.example.fragment.library.base.picture.editor.layer
 
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -46,6 +49,7 @@ class StickerLayer(
 
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 adjustScale(detector.scaleFactor)
+                measureBitmap()
                 parent.invalidate()
                 return true
             }
@@ -61,21 +65,6 @@ class StickerLayer(
 
     fun inTextBounds(x: Float, y: Float): Boolean {
         return borderRectF.contains(x, y)
-    }
-
-    private fun measureBitmap() {
-        bitmapRectF.set(
-            currTranslateX - (bitmapWidth * currScale * 0.5f),
-            currTranslateY - (bitmapHeight * currScale * 0.5f),
-            currTranslateX + (bitmapWidth * currScale * 0.5f),
-            currTranslateY + (bitmapHeight * currScale * 0.5f),
-        )
-        borderRectF.set(
-            bitmapRectF.left - RECT_ROUND,
-            bitmapRectF.top - RECT_ROUND,
-            bitmapRectF.right + RECT_ROUND,
-            bitmapRectF.bottom + RECT_ROUND
-        )
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -129,16 +118,13 @@ class StickerLayer(
                 }
                 MotionEvent.ACTION_UP -> {
                     if (System.currentTimeMillis() - touchTime < 300L) {
-                        listener?.onClick(
-                            StickerAttrs(
-                                attrs.bitmap,
-                                attrs.description,
-                                currRotation,
-                                currScale,
-                                currTranslateX,
-                                currTranslateY
-                            )
-                        )
+                        val bitmap = attrs.bitmap
+                        val desc = attrs.description
+                        val rotation = currRotation
+                        val scale = currScale
+                        val x = currTranslateX
+                        val y = currTranslateY
+                        listener?.onClick(StickerAttrs(bitmap, desc, rotation, scale, x, y))
                     }
                     pointerIndexId0 = INVALID_POINTER_ID
                     pointerIndexId1 = INVALID_POINTER_ID
@@ -150,46 +136,9 @@ class StickerLayer(
                     return false
                 }
             }
+            measureBitmap()
         }
         return isEnabled
-    }
-
-    private fun adjustAngle(degrees: Float) {
-        var rotation = degrees
-        if (rotation > 180.0f) {
-            rotation -= 360.0f
-        } else if (rotation < -180.0f) {
-            rotation += 360.0f
-        }
-        if (!degrees.isNaN()) {
-            currRotation = initRotation + degrees
-        }
-    }
-
-    private fun computeSpanVector(event: MotionEvent) {
-        if (pointerIndexId0 != INVALID_POINTER_ID && pointerIndexId1 != INVALID_POINTER_ID) {
-            val cx0 = event.getX(pointerIndexId0)
-            val cy0 = event.getY(pointerIndexId0)
-            val cx1 = event.getX(pointerIndexId1)
-            val cy1 = event.getY(pointerIndexId1)
-            val cvx = cx1 - cx0
-            val cvy = cy1 - cy0
-            if (!cvx.isNaN() && !cvy.isNaN()) {
-                currSpanVector.set(cvx, cvy)
-            }
-        }
-    }
-
-    private fun adjustTranslation(deltaX: Float, deltaY: Float) {
-        currTranslateX += deltaX
-        currTranslateY += deltaY
-        measureBitmap()
-    }
-
-    private fun adjustScale(deltaScale: Float) {
-        currScale *= deltaScale
-        currScale = MINIMUM_SCALE.coerceAtLeast(MAXIMUM_SCALE.coerceAtMost(currScale))
-        measureBitmap()
     }
 
     override fun onSizeChanged(w: Int, h: Int) {
@@ -210,6 +159,55 @@ class StickerLayer(
         }
         canvas.drawBitmap(attrs.bitmap, null, bitmapRectF, null)
         canvas.restore()
+    }
+
+    private fun measureBitmap() {
+        val bitmapLeft = currTranslateX - (bitmapWidth * currScale * 0.5f)
+        val bitmapTop = currTranslateY - (bitmapHeight * currScale * 0.5f)
+        val bitmapRight = currTranslateX + (bitmapWidth * currScale * 0.5f)
+        val bitmapBottom = currTranslateY + (bitmapHeight * currScale * 0.5f)
+        bitmapRectF.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom)
+        val borderLeft = bitmapRectF.left - RECT_ROUND
+        val borderTop = bitmapRectF.top - RECT_ROUND
+        val borderRight = bitmapRectF.right + RECT_ROUND
+        val borderBottom = bitmapRectF.bottom + RECT_ROUND
+        borderRectF.set(borderLeft, borderTop, borderRight, borderBottom)
+    }
+
+    private fun computeSpanVector(event: MotionEvent) {
+        if (pointerIndexId0 != INVALID_POINTER_ID && pointerIndexId1 != INVALID_POINTER_ID) {
+            val cx0 = event.getX(pointerIndexId0)
+            val cy0 = event.getY(pointerIndexId0)
+            val cx1 = event.getX(pointerIndexId1)
+            val cy1 = event.getY(pointerIndexId1)
+            val cvx = cx1 - cx0
+            val cvy = cy1 - cy0
+            if (!cvx.isNaN() && !cvy.isNaN()) {
+                currSpanVector.set(cvx, cvy)
+            }
+        }
+    }
+
+    private fun adjustAngle(degrees: Float) {
+        var rotation = degrees
+        if (rotation > 180.0f) {
+            rotation -= 360.0f
+        } else if (rotation < -180.0f) {
+            rotation += 360.0f
+        }
+        if (!degrees.isNaN()) {
+            currRotation = initRotation + degrees
+        }
+    }
+
+    private fun adjustTranslation(deltaX: Float, deltaY: Float) {
+        currTranslateX += deltaX
+        currTranslateY += deltaY
+    }
+
+    private fun adjustScale(deltaScale: Float) {
+        currScale *= deltaScale
+        currScale = MINIMUM_SCALE.coerceAtLeast(MAXIMUM_SCALE.coerceAtMost(currScale))
     }
 
 }

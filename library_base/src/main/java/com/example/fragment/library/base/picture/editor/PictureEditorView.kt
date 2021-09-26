@@ -100,7 +100,7 @@ class PictureEditorView @JvmOverloads constructor(
             distanceX: Float,
             distanceY: Float
         ): Boolean {
-            updateMatrixValues()
+            computeMatrixValues()
             onScroll(-distanceX, -distanceY)
             return true
         }
@@ -113,7 +113,7 @@ class PictureEditorView @JvmOverloads constructor(
             velocityX: Float,
             velocityY: Float
         ): Boolean {
-            updateMatrixValues()
+            computeMatrixValues()
             val startX = (-currTranslateX).toInt()
             val startY = (-currTranslateY).toInt()
             val velX = (-velocityX).toInt()
@@ -127,37 +127,16 @@ class PictureEditorView @JvmOverloads constructor(
     private val sgListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            updateMatrixValues()
+            computeMatrixValues()
+            onScale(detector.scaleFactor, detector.focusX, detector.focusY)
             resetScaleOffset()
-            val scaleFactor = detector.scaleFactor
-            val focusX = detector.focusX
-            val focusY = detector.focusY
-            val maxTranslateX: Float
-            val maxTranslateY: Float
-            if (currScaleX * scaleFactor > 1f && currScaleY * scaleFactor > 1f) {
-                picEditorMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY)
-                maxTranslateX = currTranslateX + bitmapWidth * currScaleX * scaleFactor
-                maxTranslateY = currTranslateY + bitmapHeight * currScaleY * scaleFactor
-            } else {
-                picEditorMatrix.postScale(1 / currScaleX, 1 / currScaleY, focusX, focusY)
-                maxTranslateX = currTranslateX + bitmapWidth
-                maxTranslateY = currTranslateY + bitmapHeight
-            }
-            if (maxTranslateX < viewWidth - initTranslateX) {
-                picEditorMatrix.postTranslate(viewWidth - initTranslateX - maxTranslateX, 0f)
-            }
-            if (maxTranslateY < viewHeight - initTranslateY) {
-                picEditorMatrix.postTranslate(0f, viewHeight - initTranslateY - maxTranslateY)
-            }
-            invalidate()
             return true
         }
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
-            updateMatrixValues()
+            computeMatrixValues()
             resetScaleOffset()
-            invalidate()
         }
 
     }
@@ -317,7 +296,7 @@ class PictureEditorView @JvmOverloads constructor(
             mosaicLayer.onSizeChanged(bitmapWidth, bitmapHeight)
             graffitiLayer.onSizeChanged(bitmapWidth, bitmapHeight)
         }
-        updateMatrixValues()
+        computeMatrixValues()
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -349,19 +328,7 @@ class PictureEditorView @JvmOverloads constructor(
         }
     }
 
-    private fun onScroll(dx: Float, dy: Float) {
-        val distanceX = currTranslateX + dx
-        val distanceY = currTranslateY + dy
-        if (distanceX <= 0 && distanceX >= viewWidth - bitmapWidth * currScaleX) {
-            picEditorMatrix.postTranslate(dx, 0f)
-        }
-        if (distanceY <= 0 && distanceY >= viewHeight - bitmapHeight * currScaleY) {
-            picEditorMatrix.postTranslate(0f, dy)
-        }
-        invalidate()
-    }
-
-    private fun updateMatrixValues() {
+    private fun computeMatrixValues() {
         picEditorMatrix.getValues(picEditorMatrixValues)
         currScaleX = picEditorMatrixValues[0]
         currScaleY = picEditorMatrixValues[4]
@@ -382,6 +349,38 @@ class PictureEditorView @JvmOverloads constructor(
         binTextSize = BIN_TEXT_SIZE / currScaleX
     }
 
+    private fun onScroll(dx: Float, dy: Float) {
+        val distanceX = currTranslateX + dx
+        val distanceY = currTranslateY + dy
+        if (distanceX <= 0 && distanceX >= viewWidth - bitmapWidth * currScaleX) {
+            picEditorMatrix.postTranslate(dx, 0f)
+        }
+        if (distanceY <= 0 && distanceY >= viewHeight - bitmapHeight * currScaleY) {
+            picEditorMatrix.postTranslate(0f, dy)
+        }
+        invalidate()
+    }
+
+    private fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
+        val maxTranslateX: Float
+        val maxTranslateY: Float
+        if (currScaleX * scaleFactor > 1f && currScaleY * scaleFactor > 1f) {
+            picEditorMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY)
+            maxTranslateX = currTranslateX + bitmapWidth * currScaleX * scaleFactor
+            maxTranslateY = currTranslateY + bitmapHeight * currScaleY * scaleFactor
+        } else {
+            picEditorMatrix.postScale(1 / currScaleX, 1 / currScaleY, focusX, focusY)
+            maxTranslateX = currTranslateX + bitmapWidth
+            maxTranslateY = currTranslateY + bitmapHeight
+        }
+        if (maxTranslateX < viewWidth - initTranslateX) {
+            picEditorMatrix.postTranslate(viewWidth - initTranslateX - maxTranslateX, 0f)
+        }
+        if (maxTranslateY < viewHeight - initTranslateY) {
+            picEditorMatrix.postTranslate(0f, viewHeight - initTranslateY - maxTranslateY)
+        }
+    }
+
     private fun resetScaleOffset() {
         if (currTranslateX > initTranslateX) {
             picEditorMatrix.postTranslate(initTranslateX - currTranslateX, 0f)
@@ -389,6 +388,7 @@ class PictureEditorView @JvmOverloads constructor(
         if (currTranslateY > initTranslateY) {
             picEditorMatrix.postTranslate(0f, initTranslateY - currTranslateY)
         }
+        invalidate()
     }
 
 }

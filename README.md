@@ -32,7 +32,7 @@
 |       └── dictionary                   自定义混淆字典
 |       └── proguard-rules.pro           代码混淆配置文件
 | 
-├── library_base                         基础library（存放通用的封装源码）
+├── library-base                         基础library（存放通用的封装源码）
 |   └── src 
 |       └── main 
 |       |   ├── assets                   原生文件目录
@@ -46,7 +46,7 @@
 |       | 
 |       └── build.gradle                 模块构建配置
 | 
-├── library_common                       公共library（存放各个 module 公共的源码及资源）
+├── library-common                       公共library（存放各个 module 公共的源码及资源）
 |   └── src 
 |       └── main 
 |       |   └── java                     源码目录
@@ -55,14 +55,15 @@
 |       | 
 |       └── build.gradle                 模块构建配置
 | 
-├── module_faq                           问答模块（目录同app，不再展开）
-├── module_home                          首页模块（目录同app，不再展开）
-├── module_navigation                    导航模块（目录同app，不再展开）
-├── module_project                       项目模块（目录同app，不再展开）
-├── module_system                        体系模块（目录同app，不再展开）
-├── module_user                          用户模块（目录同app，不再展开）
+├── miaow-picture                        图片编辑器（目录同app，不再展开）
+├── module-faq                           问答模块（目录同app，不再展开）
+├── module-home                          首页模块（目录同app，不再展开）
+├── module-navigation                    导航模块（目录同app，不再展开）
+├── module-project                       项目模块（目录同app，不再展开）
+├── module-system                        体系模块（目录同app，不再展开）
+├── module-user                          用户模块（目录同app，不再展开）
 | 
-├── plugin_statistic                     统计插件模块
+├── plugin-statistic                     统计插件模块
 |   └── src 
 |       └── main 
 |           └── groovy                   源码目录

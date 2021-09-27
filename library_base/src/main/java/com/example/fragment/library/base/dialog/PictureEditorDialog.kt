@@ -68,7 +68,6 @@ class PictureEditorDialog : PictureBaseDialog() {
         tools.add(binding.sticker)
         tools.add(binding.mosaic)
         tools.add(binding.screenshot)
-
         binding.back.setOnClickListener { dismiss() }
         binding.complete.setOnClickListener {
             it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path ->

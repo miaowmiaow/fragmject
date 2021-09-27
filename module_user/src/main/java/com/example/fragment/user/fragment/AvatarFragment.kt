@@ -1,11 +1,8 @@
 package com.example.fragment.user.fragment
 
-import android.content.ContentUris
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +13,7 @@ import com.example.fragment.library.base.dialog.PictureEditorDialog
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStoragePermissions
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
+import com.example.fragment.library.base.utils.AlbumUtil.getImagePath
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.base.utils.SPUtil
 import com.example.fragment.library.common.constant.Keys
@@ -73,7 +71,7 @@ class AvatarFragment : RouterFragment() {
         baseActivity.startForResult(intent, object : ActivityCallback {
             override fun onActivityResult(resultCode: Int, data: Intent?) {
                 data?.data?.let { uri ->
-                    pictureEditor(getImagePath(uri))
+                    pictureEditor(baseActivity.getImagePath(uri))
                 }
             }
         })
@@ -92,38 +90,4 @@ class AvatarFragment : RouterFragment() {
             .show(childFragmentManager)
     }
 
-    private fun getImagePath(uri: Uri): String {
-        var imagePath = ""
-        if (DocumentsContract.isDocumentUri(baseActivity, uri)) {
-            val docId = DocumentsContract.getDocumentId(uri)
-            if ("com.android.providers.media.documents" == uri.authority) {
-                val id = docId.split(":".toRegex()).toTypedArray()[1]
-                val contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                val selection = MediaStore.Images.Media._ID + "=" + id
-                imagePath = contentResolverQuery(contentUri, selection)
-            } else if ("com.android.providers.downloads.documents" == uri.authority) {
-                val uriString = "content://downloads/public_downloads"
-                val contentUri = ContentUris.withAppendedId(Uri.parse(uriString), docId.toLong())
-                imagePath = contentResolverQuery(contentUri)
-            }
-        } else if ("content".equals(uri.scheme, ignoreCase = true)) {
-            imagePath = contentResolverQuery(uri)
-        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
-            imagePath = uri.path.toString()
-        }
-        return imagePath
-    }
-
-    private fun contentResolverQuery(uri: Uri, selection: String = ""): String {
-        val contentResolver = baseActivity.contentResolver
-        val cursor = contentResolver.query(uri, null, selection, null, null)
-        var path = ""
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
-            }
-            cursor.close()
-        }
-        return path
-    }
 }

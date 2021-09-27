@@ -3,7 +3,9 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
+    id 'com.github.dcendents.android-maven'
 }
+group = 'com.github.miaowmiaow'
 
 android {
     compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)

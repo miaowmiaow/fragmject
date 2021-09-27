@@ -7,6 +7,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import androidx.core.graphics.values
+import kotlin.math.max
 import kotlin.math.min
 
 class PictureClipView @JvmOverloads constructor(
@@ -35,7 +37,7 @@ class PictureClipView @JvmOverloads constructor(
     private val bitmapRectF = RectF()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    private val picClipMatrix = Matrix()
+    private val pcMatrix = Matrix()
     private val clipRectF = RectF()
     private val maxClipRectF = RectF()
 
@@ -54,14 +56,12 @@ class PictureClipView @JvmOverloads constructor(
 
     private var downX = 0f
     private var downY = 0f
-    private var currScale = 0f
-    private var currOffsetX = 0f
-    private var currOffsetY = 0f
 
     private val sgListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             isScaling = true
+            val currScale = pcMatrix.values()[0]
             var scaleFactor = detector.scaleFactor
             if (currScale * scaleFactor <= MINIMUM_SCALE) {
                 scaleFactor = MINIMUM_SCALE / currScale
@@ -69,9 +69,8 @@ class PictureClipView @JvmOverloads constructor(
             if (currScale * scaleFactor >= MAXIMUM_SCALE) {
                 scaleFactor = MAXIMUM_SCALE / currScale
             }
-            picClipMatrix.setScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
-            picClipMatrix.mapRect(bitmapRectF)
-            currScale *= scaleFactor
+            pcMatrix.setScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
+            pcMatrix.mapRect(bitmapRectF)
             return true
         }
 
@@ -90,26 +89,24 @@ class PictureClipView @JvmOverloads constructor(
         bitmap = orgBitmap
         bitmapWidth = bitmap.width
         bitmapHeight = bitmap.height
-        picClipMatrix.reset()
-        computeMaxClipRectF()
+        pcMatrix.reset()
         computeBitmapRectF()
-        computeClipRectF()
         computeDragRectF()
+        clipBorderCenter()
         invalidate()
     }
 
     fun rotate() {
-        picClipMatrix.reset()
-        picClipMatrix.setRotate(-90f, clipRectF.centerX(), clipRectF.centerY())
-        picClipMatrix.mapRect(bitmapRectF)
-        picClipMatrix.mapRect(clipRectF)
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmapHeight, picClipMatrix, true)
+        pcMatrix.reset()
+        pcMatrix.setRotate(-90f, clipRectF.centerX(), clipRectF.centerY())
+        pcMatrix.mapRect(bitmapRectF)
+        pcMatrix.mapRect(clipRectF)
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmapHeight, pcMatrix, true)
         bitmapWidth = bitmap.width
         bitmapHeight = bitmap.height
-        computeClipRectF()
+        computeBitmapRectF()
         computeDragRectF()
-        borderCenter()
-        currScale = maxClipRectF.width() / bitmapWidth
+        clipBorderCenter()
         invalidate()
     }
 
@@ -136,9 +133,7 @@ class PictureClipView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         this.viewWidth = w
         this.viewHeight = h
-        computeMaxClipRectF()
         computeBitmapRectF()
-        computeClipRectF()
         computeDragRectF()
     }
 
@@ -149,25 +144,61 @@ class PictureClipView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 downX = event.x
                 downY = event.y
+                if (leftDragRectF.contains(event.x, event.y)) {
+                    isLeftDrag = true
+                    isRightDrag = false
+                }
+                if (topDragRectF.contains(event.x, event.y)) {
+                    isTopDrag = true
+                    isBottomDrag = false
+                }
+                if (rightDragRectF.contains(event.x, event.y)) {
+                    isLeftDrag = false
+                    isRightDrag = true
+                }
+                if (bottomDragRectF.contains(event.x, event.y)) {
+                    isTopDrag = false
+                    isBottomDrag = true
+                }
             }
             MotionEvent.ACTION_MOVE -> {
                 if (!isScaling && maxClipRectF.contains(event.x, event.y)) {
                     if (!isBitmapDrag) {
-                        updateDragRectF(event.x, event.y)
+                        if (isLeftDrag) {
+                            clipRectF.left = min(event.x, rightDragRectF.left)
+                        }
+                        if (isTopDrag) {
+                            clipRectF.top = min(event.y, bottomDragRectF.top)
+                        }
+                        if (isRightDrag) {
+                            clipRectF.right = max(event.x, leftDragRectF.right)
+                        }
+                        if (isBottomDrag) {
+                            clipRectF.bottom = max(event.y, topDragRectF.bottom)
+                        }
+                        if (bitmapRectF.height() < clipRectF.height()) {
+                            val scaleFactor = clipRectF.height() / bitmapRectF.height()
+                            val px = (bitmapRectF.left - DRAG_WIDTH) + clipRectF.centerX()
+                            val py = bitmapRectF.centerY()
+                            pcMatrix.setScale(scaleFactor, scaleFactor, px, py)
+                            pcMatrix.mapRect(bitmapRectF)
+                            bitmapRectF.offset(0f, clipRectF.top - bitmapRectF.top)
+                        }
                     }
-                    if (!isDragging()) {
-                        updateBitmapRectF(event.x, event.y)
+                    if (!isDragging() && bitmapRectF.contains(event.x, event.y)) {
+                        isBitmapDrag = true
+                        bitmapRectF.offset(event.x - downX, event.y - downY)
+                        downX = event.x
+                        downY = event.y
                     }
                 }
             }
             MotionEvent.ACTION_UP -> {
                 downX = 0f
                 downY = 0f
-                currOffsetX = 0f
-                currOffsetY = 0f
-                resetDragState()
                 resetBitmapRectF()
-                borderCenter()
+                clipBorderCenter()
+                resetState()
             }
         }
         invalidate()
@@ -207,86 +238,57 @@ class PictureClipView @JvmOverloads constructor(
         canvas.drawRect(r - BORDER_WIDTH, t, r, b, paint)
         canvas.drawRect(l, b - BORDER_WIDTH, r, b, paint)
         //绘制边角
-        //左上
         canvas.drawRect(l - CORNER_WIDTH, t, l, t + CORNER_LENGTH, paint)
         canvas.drawRect(l - CORNER_WIDTH, t - CORNER_WIDTH, l + CORNER_LENGTH, t, paint)
-        //右上
         canvas.drawRect(r, t, r + CORNER_WIDTH, t + CORNER_LENGTH, paint)
         canvas.drawRect(r - CORNER_LENGTH, t - CORNER_WIDTH, r + CORNER_WIDTH, t, paint)
-        //左下
         canvas.drawRect(l - CORNER_WIDTH, b - CORNER_LENGTH, l, b, paint)
         canvas.drawRect(l - CORNER_WIDTH, b, l + CORNER_LENGTH, b + CORNER_WIDTH, paint)
-        //右下
         canvas.drawRect(r, b - CORNER_LENGTH, r + CORNER_WIDTH, b, paint)
         canvas.drawRect(r - CORNER_LENGTH, b, r + CORNER_WIDTH, b + CORNER_WIDTH, paint)
     }
 
-    private fun computeMaxClipRectF() {
+    private fun computeBitmapRectF() {
         val maxClipLift = DRAG_WIDTH
         val maxClipTop = DRAG_WIDTH
         val maxClipRight = viewWidth - DRAG_WIDTH
         val maxClipBottom = viewHeight - DRAG_WIDTH
         maxClipRectF.set(maxClipLift, maxClipTop, maxClipRight, maxClipBottom)
-        currScale = maxClipRectF.width() / bitmapWidth
-    }
-
-    private fun computeClipRectF() {
-        val left = bitmapRectF.left.coerceAtLeast(maxClipRectF.left)
-        val top = bitmapRectF.top.coerceAtLeast(maxClipRectF.top)
-        val right = bitmapRectF.right.coerceAtMost(maxClipRectF.right)
-        val bottom = bitmapRectF.bottom.coerceAtMost(maxClipRectF.bottom)
-        clipRectF.set(left, top, right, bottom)
-    }
-
-    private fun computeBitmapRectF() {
-        val left = (viewWidth - bitmapWidth * currScale) * 0.5f
-        val top = (viewHeight - bitmapHeight * currScale) * 0.5f
-        val right = viewWidth - left
-        val bottom = viewHeight - top
-        bitmapRectF.set(left, top, right, bottom)
-    }
-
-    private fun updateBitmapRectF(x: Float, y: Float) {
-        if (bitmapRectF.contains(x, y)) {
-            isBitmapDrag = true
-            currOffsetX = x - downX
-            currOffsetY = y - downY
-            bitmapRectF.offset(currOffsetX, currOffsetY)
-            downX = x
-            downY = y
-        }
+        val scaleFactor = maxClipRectF.width() / bitmapWidth
+        val bitmapLeft = (viewWidth - bitmapWidth * scaleFactor) * 0.5f
+        val bitmapTop = (viewHeight - bitmapHeight * scaleFactor) * 0.5f
+        val bitmapRight = viewWidth - bitmapLeft
+        val bitmapBottom = viewHeight - bitmapTop
+        bitmapRectF.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom)
+        val clipLift = bitmapRectF.left.coerceAtLeast(maxClipRectF.left)
+        val clipTop = bitmapRectF.top.coerceAtLeast(maxClipRectF.top)
+        val clipRight = bitmapRectF.right.coerceAtMost(maxClipRectF.right)
+        val clipBottom = bitmapRectF.bottom.coerceAtMost(maxClipRectF.bottom)
+        clipRectF.set(clipLift, clipTop, clipRight, clipBottom)
     }
 
     private fun resetBitmapRectF() {
-        if (bitmapRectF.width() < clipRectF.width()) {
-            val scaleFactor = clipRectF.width() / bitmapRectF.width()
+        if (bitmapRectF.width() < clipRectF.width() || bitmapRectF.height() < clipRectF.height()) {
+            val a = clipRectF.width() / bitmapRectF.width()
+            val b = clipRectF.height() / bitmapRectF.height()
+            val scale = max(a, b)
             val px = bitmapRectF.centerX()
             val py = bitmapRectF.centerY()
-            picClipMatrix.setScale(scaleFactor, scaleFactor, px, py)
-            picClipMatrix.mapRect(bitmapRectF)
-            currScale *= scaleFactor
-        }
-        if (bitmapRectF.height() < clipRectF.height()) {
-            val scaleFactor = clipRectF.height() / bitmapRectF.height()
-            val px = (bitmapRectF.left - DRAG_WIDTH) + clipRectF.centerX()
-            val py = bitmapRectF.centerY()
-            picClipMatrix.setScale(scaleFactor, scaleFactor, px, py)
-            picClipMatrix.mapRect(bitmapRectF)
-            currScale *= scaleFactor
+            pcMatrix.setScale(scale, scale, px, py)
+            pcMatrix.mapRect(bitmapRectF)
         }
         if (bitmapRectF.left > clipRectF.left) {
-            currOffsetX = clipRectF.left - bitmapRectF.left
-        }
-        if (bitmapRectF.right < clipRectF.right) {
-            currOffsetX = clipRectF.right - bitmapRectF.right
+            bitmapRectF.offset(clipRectF.left - bitmapRectF.left, 0f)
         }
         if (bitmapRectF.top > clipRectF.top) {
-            currOffsetY = clipRectF.top - bitmapRectF.top
+            bitmapRectF.offset(0f, clipRectF.top - bitmapRectF.top)
+        }
+        if (bitmapRectF.right < clipRectF.right) {
+            bitmapRectF.offset(clipRectF.right - bitmapRectF.right, 0f)
         }
         if (bitmapRectF.bottom < clipRectF.bottom) {
-            currOffsetY = clipRectF.bottom - bitmapRectF.bottom
+            bitmapRectF.offset(0f, clipRectF.bottom - bitmapRectF.bottom)
         }
-        bitmapRectF.offset(currOffsetX, currOffsetY)
     }
 
     private fun computeDragRectF() {
@@ -300,48 +302,21 @@ class PictureClipView @JvmOverloads constructor(
         bottomDragRectF.set(left, clipRectF.bottom - DRAG_WIDTH, right, bottom)
     }
 
-    private fun updateDragRectF(x: Float, y: Float) {
-        if (leftDragRectF.contains(x, y)) {
-            isLeftDrag = true
-            isRightDrag = false
-        }
-        if (topDragRectF.contains(x, y)) {
-            isTopDrag = true
-            isBottomDrag = false
-        }
-        if (rightDragRectF.contains(x, y)) {
-            isLeftDrag = false
-            isRightDrag = true
-        }
-        if (bottomDragRectF.contains(x, y)) {
-            isTopDrag = false
-            isBottomDrag = true
-        }
-        if (isLeftDrag) {
-            clipRectF.left = x.coerceAtMost(rightDragRectF.left)
-        }
-        if (isTopDrag) {
-            clipRectF.top = y.coerceAtMost(bottomDragRectF.top)
-        }
-        if (isRightDrag) {
-            clipRectF.right = x.coerceAtLeast(leftDragRectF.right)
-        }
-        if (isBottomDrag) {
-            clipRectF.bottom = y.coerceAtLeast(topDragRectF.bottom)
-        }
-        if (bitmapRectF.height() < clipRectF.height()) {
-            val scaleFactor = clipRectF.height() / bitmapRectF.height()
-            val px = (bitmapRectF.left - DRAG_WIDTH) + clipRectF.centerX()
-            val py = bitmapRectF.centerY()
-            picClipMatrix.setScale(scaleFactor, scaleFactor, px, py)
-            picClipMatrix.mapRect(bitmapRectF)
-            currScale *= scaleFactor
-            resetBitmapRectF()
-        }
+    private fun clipBorderCenter() {
+        val offsetX = (viewWidth - clipRectF.width()) * 0.5f - clipRectF.left
+        val offsetY = (viewHeight - clipRectF.height()) * 0.5f - clipRectF.top
+        clipRectF.offset(offsetX, offsetY)
+        bitmapRectF.offset(offsetX, offsetY)
+        val a = maxClipRectF.width() / clipRectF.width()
+        val b = maxClipRectF.height() / clipRectF.height()
+        val scale = min(a, b)
+        pcMatrix.setScale(scale, scale, clipRectF.centerX(), clipRectF.centerY())
+        pcMatrix.mapRect(bitmapRectF)
+        pcMatrix.mapRect(clipRectF)
         computeDragRectF()
     }
 
-    private fun resetDragState() {
+    private fun resetState() {
         isLeftDrag = false
         isTopDrag = false
         isRightDrag = false
@@ -354,21 +329,4 @@ class PictureClipView @JvmOverloads constructor(
         return isLeftDrag || isTopDrag || isRightDrag || isBottomDrag
     }
 
-    private fun borderCenter() {
-        if (clipRectF.width() < maxClipRectF.width()) {
-            val offsetX = (viewWidth - clipRectF.width()) * 0.5f
-            if (clipRectF.width() < bitmapRectF.width()) {
-                currOffsetX += offsetX - clipRectF.left
-            }
-            clipRectF.offset(offsetX - clipRectF.left, 0f)
-            val a = maxClipRectF.height() / clipRectF.height()
-            val b = maxClipRectF.width() / clipRectF.width()
-            val minScale = min(a, b)
-            picClipMatrix.setScale(minScale, minScale, clipRectF.centerX(), clipRectF.centerY())
-            picClipMatrix.mapRect(bitmapRectF)
-            picClipMatrix.mapRect(clipRectF)
-            currScale *= minScale
-            computeDragRectF()
-        }
-    }
 }

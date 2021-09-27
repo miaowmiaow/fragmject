@@ -19,7 +19,7 @@ def initGradleEnvironment(){
 //初始化
 initGradleEnvironment()
 
-rootProject.name = "FragmentProject"
+rootProject.name = "fragmject"
 
 include ':app'
 include ':library-base'

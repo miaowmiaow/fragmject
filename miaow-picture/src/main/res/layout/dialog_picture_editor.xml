@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="#000000">
 
     <com.example.miaow.picture.editor.PictureEditorView
         android:id="@+id/pic_editor"
@@ -212,7 +212,7 @@
                 android:background="@drawable/shape_blue_all_bg"
                 android:gravity="center"
                 android:text="完成"
-                android:textColor="@color/white"
+                android:textColor="#ffffff"
                 android:textSize="12sp" />
         </RelativeLayout>
     </LinearLayout>

@@ -14,7 +14,7 @@
         android:paddingEnd="15dp"
         android:paddingBottom="5dp"
         android:text="返回"
-        android:textColor="@color/white"
+        android:textColor="#ffffff"
         android:textSize="16sp" />
 
     <TextView
@@ -29,7 +29,7 @@
         android:paddingEnd="15dp"
         android:paddingBottom="5dp"
         android:text="完成"
-        android:textColor="@color/white"
+        android:textColor="#ffffff"
         android:textSize="16sp" />
 
     <EditText
@@ -43,8 +43,8 @@
         android:gravity="center"
         android:hint="请输入文字"
         android:textAlignment="center"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"
+        android:textColor="#ffffff"
+        android:textColorHint="#ffffff"
         android:textCursorDrawable="@null"
         android:textSize="24sp"
         android:textStyle="bold" />

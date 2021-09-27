@@ -10,7 +10,7 @@
             <!-- 圆环大小 颜色-->
             <stroke
                 android:width="2dp"
-                android:color="@color/white" />
+                android:color="#ffffff" />
         </shape>
     </item>
 </layer-list>

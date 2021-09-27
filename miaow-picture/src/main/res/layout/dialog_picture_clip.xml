@@ -50,7 +50,7 @@
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:text="还原"
-        android:textColor="@color/white"
+        android:textColor="#ffffff"
         android:textSize="16sp" />
 
 </RelativeLayout>

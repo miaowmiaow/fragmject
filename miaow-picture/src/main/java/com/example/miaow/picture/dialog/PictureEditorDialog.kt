@@ -11,7 +11,7 @@ import com.example.miaow.picture.editor.PictureEditorView
 import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.editor.layer.OnStickerClickListener
 import com.example.miaow.picture.utils.AlbumUtil.saveSystemAlbum
-import com.example.fragment.library.base.utils.ColorUtils
+import com.example.miaow.picture.utils.ColorUtils
 import com.example.miaow.picture.databinding.DialogPictureEditorBinding
 
 class PictureEditorDialog : PictureBaseDialog() {

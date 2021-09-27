@@ -8,13 +8,12 @@ import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
-import com.example.fragment.library.base.R
-import com.example.fragment.library.base.dialog.BaseDialog
 import com.example.miaow.picture.bean.StickerAttrs
-import com.example.fragment.library.base.utils.ColorUtils
+import com.example.miaow.picture.utils.ColorUtils
+import com.example.miaow.picture.R
 import com.example.miaow.picture.databinding.DialogPictureTextBinding
 
-class PictureTextDialog : BaseDialog() {
+class PictureTextDialog : PictureBaseDialog() {
 
     companion object {
         @JvmStatic

@@ -8,8 +8,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import com.example.fragment.library.base.R
-import com.example.fragment.library.base.dialog.BaseDialog
+import com.example.miaow.picture.R
 
 open class PictureBaseDialog : DialogFragment() {
 

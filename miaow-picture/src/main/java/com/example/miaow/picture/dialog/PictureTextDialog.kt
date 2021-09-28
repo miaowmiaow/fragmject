@@ -86,6 +86,9 @@ class PictureTextDialog : PictureBaseDialog() {
         textColors.add(binding.textGreen)
         textColors.add(binding.textBlue)
         textColors.add(binding.textPurple)
+        binding.bg.setOnClickListener{
+            showSoftInput(binding.editText)
+        }
         binding.editText.postDelayed({
             showSoftInput(binding.editText)
         }, 250)

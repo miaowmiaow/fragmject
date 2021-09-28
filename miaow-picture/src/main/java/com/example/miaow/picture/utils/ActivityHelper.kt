@@ -16,7 +16,7 @@ import androidx.fragment.app.FragmentActivity
 import java.util.*
 import kotlin.collections.HashMap
 
-object ActivityResultHelper {
+object ActivityHelper {
 
     /**
      * 忽略电池优化,保持后台常驻
@@ -169,17 +169,17 @@ object ActivityResultHelper {
         getResultFragment().requestForPermissions(permissions, callback)
     }
 
-    private fun FragmentActivity.getResultFragment(): ResultFragment {
-        val tag = ResultFragment::class.java.simpleName
+    private fun FragmentActivity.getResultFragment(): ActivityResultFragment {
+        val tag = ActivityResultFragment::class.java.simpleName
         var fragment = supportFragmentManager.findFragmentByTag(tag)
         if (fragment == null) {
-            fragment = ResultFragment.newInstance()
+            fragment = ActivityResultFragment.newInstance()
             val fragmentTransaction = supportFragmentManager.beginTransaction()
             fragmentTransaction.add(fragment, tag)
             fragmentTransaction.commitAllowingStateLoss()
             supportFragmentManager.executePendingTransactions()
         }
-        return fragment as ResultFragment
+        return fragment as ActivityResultFragment
     }
 
 }
@@ -194,12 +194,12 @@ interface PermissionsCallback {
 //    fun denyAndNotAskAgain()
 }
 
-class ResultFragment : Fragment() {
+class ActivityResultFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(): ResultFragment {
-            return ResultFragment()
+        fun newInstance(): ActivityResultFragment {
+            return ActivityResultFragment()
         }
     }
 

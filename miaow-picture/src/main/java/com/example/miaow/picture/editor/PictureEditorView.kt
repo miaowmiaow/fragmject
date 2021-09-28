@@ -48,6 +48,8 @@ class PictureEditorView @JvmOverloads constructor(
 
     private var viewWidth = 0
     private var viewHeight = 0
+    private var preScrollX = 0f
+    private var preScrollY = 0f
     private val bitmapOptions = BitmapFactory.Options()
     private val bitmapRectF = RectF()
     private var mosaicBitmap: Bitmap? = null
@@ -171,21 +173,23 @@ class PictureEditorView @JvmOverloads constructor(
         mosaicLayer.undo()
     }
 
-    fun setTextSticker(attrs: StickerAttrs, listener: OnStickerClickListener) {
+    fun setSticker(attrs: StickerAttrs, listener: OnStickerClickListener? = null) {
         val stickerLayer = StickerLayer(this, attrs, object : OnStickerClickListener {
             override fun onClick(attrs: StickerAttrs) {
                 if (stickerLayerIndex != INVALID_ID) {
                     stickerLayers.remove(stickerLayers[stickerLayerIndex])
                     stickerLayerIndex = INVALID_ID
                 }
-                listener.onClick(attrs)
+                listener?.onClick(attrs)
             }
         })
-        stickerLayer.onSizeChanged(viewWidth, viewHeight)
+        stickerLayer.setParentMatrix(peMatrix)
+        stickerLayer.onSizeChanged(bitmapRectF.width().toInt(), bitmapRectF.height().toInt())
         stickerLayers.push(stickerLayer)
     }
 
     fun saveBitmap(): Bitmap {
+        val tempMatrix = Matrix(peMatrix)
         peMatrix.reset()
         val width = bitmapRectF.width().toInt()
         val height = bitmapRectF.height().toInt()
@@ -193,6 +197,7 @@ class PictureEditorView @JvmOverloads constructor(
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
         draw(canvas)
+        peMatrix.set(tempMatrix)
         return bitmap
     }
 
@@ -207,7 +212,7 @@ class PictureEditorView @JvmOverloads constructor(
         layerEvent.setLocation(layerX, layerY)
         if (stickerLayerIndex == INVALID_ID) {
             for (index in 0 until stickerLayers.size) {
-                if (stickerLayers[index].inTextBounds(layerEvent.x, layerEvent.y)) {
+                if (stickerLayers[index].inStickerBounds(layerEvent.x, layerEvent.y)) {
                     stickerLayerIndex = index
                     break
                 }
@@ -228,7 +233,7 @@ class PictureEditorView @JvmOverloads constructor(
             return true
         }
         if (graffitiLayer.onTouchEvent(layerEvent)) {
-            graffitiLayer.setPaintStrokeWidthScale(currScaleX())
+            graffitiLayer.setParentScale(currScaleX())
             layerEvent.recycle()
             return true
         }
@@ -303,17 +308,21 @@ class PictureEditorView @JvmOverloads constructor(
     override fun computeScroll() {
         super.computeScroll()
         if (!scroller.isFinished && scroller.computeScrollOffset()) {
-            onScroll(currTranslateX() - scroller.currX, currTranslateY() - scroller.currY)
+            val currX = scroller.currX
+            val currY = scroller.currY
+            onScroll(preScrollX - currX, preScrollY - currY)
+            preScrollX = currX.toFloat()
+            preScrollY = currY.toFloat()
         }
     }
 
     private fun onScroll(dx: Float, dy: Float) {
-        val distanceX = currTranslateX() + dx
-        val distanceY = currTranslateY() + dy
-        if (distanceX <= 0 && distanceX >= viewWidth - bitmapRectF.width() * currScaleX()) {
+        val currBitmapWidth = bitmapRectF.width() * currScaleX()
+        val currBitmapHeight = bitmapRectF.height() * currScaleY()
+        if (currTranslateX() + dx <= 0 && currTranslateX() + dx >= viewWidth - currBitmapWidth) {
             peMatrix.postTranslate(dx, 0f)
         }
-        if (distanceY <= 0 && distanceY >= viewHeight - bitmapRectF.height() * currScaleY()) {
+        if (currTranslateY() + dy <= 0 && currTranslateY() + dy >= viewHeight - currBitmapHeight) {
             peMatrix.postTranslate(0f, dy)
         }
         invalidate()
@@ -331,12 +340,15 @@ class PictureEditorView @JvmOverloads constructor(
 
     private fun resetScaleOffset() {
         var dx = 0f
-        val dy = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f - currTranslateY()
+        var dy = 0f
         if (currTranslateX() > 0) {
             dx = -currTranslateX()
         }
         if (currTranslateX() < viewWidth - bitmapRectF.width() * currScaleX()) {
             dx = viewWidth - bitmapRectF.width() * currScaleX() - currTranslateX()
+        }
+        if (bitmapRectF.height() * currScaleY() < viewHeight) {
+            dy = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f - currTranslateY()
         }
         peMatrix.postTranslate(dx, dy)
         invalidate()

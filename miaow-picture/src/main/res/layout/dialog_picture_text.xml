@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#69000000">
 
-    <TextView
+    <ImageView
         android:id="@+id/text_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:paddingStart="15dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="15dp"
-        android:paddingBottom="5dp"
-        android:text="返回"
-        android:textColor="#ffffff"
-        android:textSize="16sp" />
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:padding="12dp"
+        android:src="@drawable/pe_retake" />
 
     <TextView
         android:id="@+id/text_finish"
@@ -37,17 +32,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_back"
-        android:layout_centerHorizontal="true"
         android:layout_margin="50dp"
         android:background="@null"
+        android:cursorVisible="true"
         android:gravity="center"
-        android:hint="请输入文字"
         android:textAlignment="center"
+        android:hint=" "
         android:textColor="#ffffff"
         android:textColorHint="#ffffff"
         android:textCursorDrawable="@null"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textSize="24sp" />
 
     <LinearLayout
         android:id="@+id/text_color_bar"

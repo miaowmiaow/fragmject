@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.miaow.picture.utils.AlbumUtil.saveSystemAlbum
+import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
 import com.example.miaow.picture.databinding.DialogPictureClipBinding
 
 class PictureClipDialog : PictureBaseDialog() {

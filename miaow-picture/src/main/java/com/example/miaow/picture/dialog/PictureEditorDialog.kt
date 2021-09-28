@@ -1,18 +1,27 @@
 package com.example.miaow.picture.dialog
 
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import com.example.miaow.picture.editor.PictureEditorView
+import android.widget.Toast
 import com.example.miaow.picture.bean.StickerAttrs
-import com.example.miaow.picture.editor.layer.OnStickerClickListener
-import com.example.miaow.picture.utils.AlbumUtil.saveSystemAlbum
-import com.example.miaow.picture.utils.ColorUtils
 import com.example.miaow.picture.databinding.DialogPictureEditorBinding
+import com.example.miaow.picture.editor.PictureEditorView
+import com.example.miaow.picture.editor.layer.OnStickerClickListener
+import com.example.miaow.picture.utils.ActivityCallback
+import com.example.miaow.picture.utils.ActivityHelper.requestStoragePermissions
+import com.example.miaow.picture.utils.ActivityHelper.startForResult
+import com.example.miaow.picture.utils.AlbumUtils.getImagePath
+import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
+import com.example.miaow.picture.utils.ColorUtils
+import com.example.miaow.picture.utils.PermissionsCallback
 
 class PictureEditorDialog : PictureBaseDialog() {
 
@@ -66,6 +75,7 @@ class PictureEditorDialog : PictureBaseDialog() {
         colors.add(binding.purple)
         tools.add(binding.graffiti)
         tools.add(binding.sticker)
+        tools.add(binding.text)
         tools.add(binding.mosaic)
         tools.add(binding.screenshot)
         binding.back.setOnClickListener { dismiss() }
@@ -97,14 +107,18 @@ class PictureEditorDialog : PictureBaseDialog() {
                             binding.picEditor.setMode(PictureEditorView.Mode.GRAFFITI)
                         }
                         1 -> {
-                            openTextDialog()
+                            openAlbum()
                             tool.isSelected = false
                         }
                         2 -> {
+                            openTextDialog()
+                            tool.isSelected = false
+                        }
+                        3 -> {
                             binding.mosaicUndo.visibility = View.VISIBLE
                             binding.picEditor.setMode(PictureEditorView.Mode.MOSAIC)
                         }
-                        3 -> {
+                        4 -> {
                             openClipDialog(binding.picEditor.saveBitmap())
                             tool.isSelected = false
                         }
@@ -116,12 +130,38 @@ class PictureEditorDialog : PictureBaseDialog() {
         }
     }
 
+    private fun openAlbum() {
+        activity?.apply {
+            requestStoragePermissions(object : PermissionsCallback {
+                override fun allow() {
+                    val data = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    val type = "image/*"
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.setDataAndType(data, type)
+                    startForResult(intent, object : ActivityCallback {
+                        override fun onActivityResult(resultCode: Int, data: Intent?) {
+                            data?.data?.let { uri ->
+                                val bitmap = getBitmap(getImagePath(uri))
+                                binding.picEditor.setSticker(StickerAttrs(bitmap))
+                            }
+                        }
+                    })
+                }
+
+                override fun deny() {
+                    val text = "当前应用缺少存储权限。\n请点击\"设置\"-\"权限\"打开所需权限。"
+                    Toast.makeText(this@apply, text, Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
+
     private fun openTextDialog(attrs: StickerAttrs? = null) {
         PictureTextDialog.newInstance()
             .setStickerAttrs(attrs)
             .setTextFinishCallback(object : TextFinishCallback {
                 override fun onFinish(attrs: StickerAttrs) {
-                    binding.picEditor.setTextSticker(attrs, object : OnStickerClickListener {
+                    binding.picEditor.setSticker(attrs, object : OnStickerClickListener {
                         override fun onClick(attrs: StickerAttrs) {
                             openTextDialog(attrs)
                         }
@@ -155,6 +195,17 @@ class PictureEditorDialog : PictureBaseDialog() {
             it.isSelected = false
         }
         view.isSelected = true
+    }
+
+    private fun getBitmap(path: String): Bitmap {
+        val opts = BitmapFactory.Options()
+        opts.inJustDecodeBounds = true
+        BitmapFactory.decodeFile(path, opts)
+        opts.inJustDecodeBounds = false
+        opts.inScaled = true
+        opts.inDensity = opts.outWidth
+        opts.inTargetDensity = 200
+        return BitmapFactory.decodeFile(path, opts)
     }
 
 }

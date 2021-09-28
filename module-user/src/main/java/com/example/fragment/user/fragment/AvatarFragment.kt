@@ -19,7 +19,7 @@ import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentAvatarBinding
 import com.example.miaow.picture.dialog.EditorFinishCallback
 import com.example.miaow.picture.dialog.PictureEditorDialog
-import com.example.miaow.picture.utils.AlbumUtil.getImagePath
+import com.example.miaow.picture.utils.AlbumUtils.getImagePath
 
 class AvatarFragment : RouterFragment() {
 

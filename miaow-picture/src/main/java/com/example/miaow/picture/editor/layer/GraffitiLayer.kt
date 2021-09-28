@@ -44,7 +44,7 @@ class GraffitiLayer(val parent: View) : ILayer {
         setPaintMode(com.example.miaow.picture.editor.PictureEditorView.Mode.GRAFFITI)
     }
 
-    fun setPaintStrokeWidthScale(scale: Float) {
+    fun setParentScale(scale: Float) {
         paint.strokeWidth = DEFAULT_PAINT_SIZE / scale
     }
 

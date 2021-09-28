@@ -1,12 +1,10 @@
 package com.example.miaow.picture.editor.layer
 
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import androidx.core.graphics.values
 import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.utils.Vector2D
 
@@ -23,6 +21,9 @@ class StickerLayer(
         private const val RECT_ROUND = 30.0f
     }
 
+    private var viewWidth = 0
+    private var viewHeight = 0
+    private val parentMatrix = Matrix()
     private val bitmapRectF = RectF()
     private var bitmapWidth = attrs.bitmap.width
     private var bitmapHeight = attrs.bitmap.height
@@ -60,10 +61,14 @@ class StickerLayer(
         borderPaint.isAntiAlias = true
         borderPaint.color = Color.WHITE
         borderPaint.style = Paint.Style.STROKE
-        borderPaint.strokeWidth = 3f
+        borderPaint.strokeWidth = 1f
     }
 
-    fun inTextBounds(x: Float, y: Float): Boolean {
+    fun setParentMatrix(matrix: Matrix) {
+        parentMatrix.set(matrix)
+    }
+
+    fun inStickerBounds(x: Float, y: Float): Boolean {
         return borderRectF.contains(x, y)
     }
 
@@ -117,7 +122,8 @@ class StickerLayer(
                     }
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (System.currentTimeMillis() - touchTime < 300L) {
+                    val isClick = System.currentTimeMillis() - touchTime < 250
+                    if (isClick && attrs.description.isNotBlank()) {
                         val bitmap = attrs.bitmap
                         val desc = attrs.description
                         val rotation = currRotation
@@ -126,6 +132,15 @@ class StickerLayer(
                         val y = currTranslateY
                         listener?.onClick(StickerAttrs(bitmap, desc, rotation, scale, x, y))
                     }
+                    val bw = bitmapWidth / parentScaleX() * 0.5f
+                    if (currTranslateX - bw < 0 || currTranslateX + bw > viewWidth) {
+                        currTranslateX = viewWidth * 0.5f / parentScaleX()
+                    }
+                    val bh = bitmapHeight / parentScaleX() * 0.5f
+                    if (currTranslateY - bh < 0 || currTranslateY + bh > viewHeight) {
+                        currTranslateY = viewHeight * 0.5f / parentScaleY()
+                    }
+                    measureBitmap()
                     pointerIndexId0 = INVALID_POINTER_ID
                     pointerIndexId1 = INVALID_POINTER_ID
                     initRotation = currRotation
@@ -142,11 +157,17 @@ class StickerLayer(
     }
 
     override fun onSizeChanged(w: Int, h: Int) {
+        viewWidth = w
+        viewHeight = h
         if (currTranslateX == 0f) {
-            currTranslateX = w * 0.5f
+            currTranslateX = (w * 0.5f - parentTranslateX()) / parentScaleX()
         }
         if (currTranslateY == 0f) {
-            currTranslateY = h * 0.5f
+            currTranslateY = if (parentTranslateY() < 0) {
+                (h * 0.5f - parentTranslateY()) / parentScaleY()
+            } else {
+                h * 0.5f
+            }
         }
         measureBitmap()
     }
@@ -162,10 +183,10 @@ class StickerLayer(
     }
 
     private fun measureBitmap() {
-        val bitmapLeft = currTranslateX - (bitmapWidth * currScale * 0.5f)
-        val bitmapTop = currTranslateY - (bitmapHeight * currScale * 0.5f)
-        val bitmapRight = currTranslateX + (bitmapWidth * currScale * 0.5f)
-        val bitmapBottom = currTranslateY + (bitmapHeight * currScale * 0.5f)
+        val bitmapLeft = currTranslateX - (bitmapWidth * currScale / parentScaleX() * 0.5f)
+        val bitmapTop = currTranslateY - (bitmapHeight * currScale / parentScaleX() * 0.5f)
+        val bitmapRight = currTranslateX + (bitmapWidth * currScale / parentScaleX() * 0.5f)
+        val bitmapBottom = currTranslateY + (bitmapHeight * currScale / parentScaleX() * 0.5f)
         bitmapRectF.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom)
         val borderLeft = bitmapRectF.left - RECT_ROUND
         val borderTop = bitmapRectF.top - RECT_ROUND
@@ -208,6 +229,22 @@ class StickerLayer(
     private fun adjustScale(deltaScale: Float) {
         currScale *= deltaScale
         currScale = MINIMUM_SCALE.coerceAtLeast(MAXIMUM_SCALE.coerceAtMost(currScale))
+    }
+
+    private fun parentScaleX(): Float {
+        return parentMatrix.values()[0]
+    }
+
+    private fun parentScaleY(): Float {
+        return parentMatrix.values()[4]
+    }
+
+    private fun parentTranslateX(): Float {
+        return parentMatrix.values()[2]
+    }
+
+    private fun parentTranslateY(): Float {
+        return parentMatrix.values()[5]
     }
 
 }

@@ -178,7 +178,16 @@
             android:layout_weight="1"
             android:gravity="center"
             android:padding="10dp"
-            android:src="@drawable/pe_text_sticker" />
+            android:src="@drawable/pe_sticker" />
+
+        <ImageView
+            android:id="@+id/text"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:src="@drawable/pe_text" />
 
         <ImageView
             android:id="@+id/mosaic"

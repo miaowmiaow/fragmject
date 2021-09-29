@@ -9,7 +9,7 @@ import com.example.miaow.picture.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
 
-class GraffitiLayer(val parent: View) : ILayer {
+class GraffitiLayer(private val parent: View) : ILayer {
 
     companion object {
         private const val DEFAULT_PAINT_SIZE = 25.0f
@@ -17,17 +17,12 @@ class GraffitiLayer(val parent: View) : ILayer {
         private const val TOUCH_TOLERANCE = 4f
     }
 
-    private var _bitmap: Bitmap? = null
-    private val bitmap get() = _bitmap!!
-    private var _canvas: Canvas? = null
-    private val canvas get() = _canvas!!
-
+    private lateinit var graffitiBitmap: Bitmap
+    private var graffitiCanvas = Canvas()
+    private val paintPaths = Stack<PaintPath>()
+    private val redoPaths = Stack<PaintPath>()
     private val paint = Paint()
     private val path = Path()
-
-    private val paintPaths = Stack<PaintPath>()
-    private val redoPaintPaths = Stack<PaintPath>()
-
     private var touchX = 0f
     private var touchY = 0f
 
@@ -65,10 +60,10 @@ class GraffitiLayer(val parent: View) : ILayer {
     fun undo(): Boolean {
         if (paintPaths.isNotEmpty()) {
             path.reset()
-            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
-            redoPaintPaths.push(paintPaths.pop())
+            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
+            redoPaths.push(paintPaths.pop())
             for (linePath in paintPaths) {
-                canvas.drawPath(linePath.path, linePath.paint)
+                graffitiCanvas.drawPath(linePath.path, linePath.paint)
             }
             parent.invalidate()
         }
@@ -76,16 +71,16 @@ class GraffitiLayer(val parent: View) : ILayer {
     }
 
     fun redo(): Boolean {
-        if (redoPaintPaths.isNotEmpty()) {
+        if (redoPaths.isNotEmpty()) {
             path.reset()
-            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
-            paintPaths.push(redoPaintPaths.pop())
+            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
+            paintPaths.push(redoPaths.pop())
             for (linePath in paintPaths) {
-                canvas.drawPath(linePath.path, linePath.paint)
+                graffitiCanvas.drawPath(linePath.path, linePath.paint)
             }
             parent.invalidate()
         }
-        return !redoPaintPaths.empty()
+        return !redoPaths.empty()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -113,26 +108,26 @@ class GraffitiLayer(val parent: View) : ILayer {
                     paintPaths.push(PaintPath(path, paint))
                 }
             }
-            canvas.drawPath(path, paint)
+            graffitiCanvas.drawPath(path, paint)
             parent.invalidate()
         }
         return isEnabled
     }
 
     override fun onSizeChanged(w: Int, h: Int) {
-        _bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        _canvas = Canvas(bitmap)
+        graffitiBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        graffitiCanvas.setBitmap(graffitiBitmap)
         if (paintPaths.isNotEmpty()) {
-            canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
             for (linePath in paintPaths) {
-                canvas.drawPath(linePath.path, linePath.paint)
+                graffitiCanvas.drawPath(linePath.path, linePath.paint)
             }
             parent.invalidate()
         }
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBitmap(bitmap, 0f, 0f, null)
+        canvas.drawBitmap(graffitiBitmap, 0f, 0f, null)
     }
 
 }

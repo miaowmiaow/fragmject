@@ -19,6 +19,7 @@ import com.example.miaow.picture.editor.layer.OnStickerClickListener
 import com.example.miaow.picture.editor.layer.StickerLayer
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class PictureEditorView @JvmOverloads constructor(
@@ -45,7 +46,6 @@ class PictureEditorView @JvmOverloads constructor(
     }
 
     private val peMatrix = Matrix()
-
     private var viewWidth = 0
     private var viewHeight = 0
     private var preScrollX = 0f
@@ -58,7 +58,6 @@ class PictureEditorView @JvmOverloads constructor(
     private val stickerLayers = Stack<StickerLayer>()
     private var stickerLayerIndex = INVALID_ID
     private var pointerIndexId0 = INVALID_ID
-
     private val binIcon = BitmapFactory.decodeResource(resources, R.drawable.pe_bin)
     private val binPaint = Paint()
     private val binRectF = RectF()
@@ -191,8 +190,8 @@ class PictureEditorView @JvmOverloads constructor(
     fun saveBitmap(): Bitmap {
         val tempMatrix = Matrix(peMatrix)
         peMatrix.reset()
-        val width = bitmapRectF.width().toInt()
-        val height = bitmapRectF.height().toInt()
+        val width = max(bitmapRectF.width().toInt(), 1)
+        val height = max(bitmapRectF.height().toInt(), 1)
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
@@ -266,21 +265,22 @@ class PictureEditorView @JvmOverloads constructor(
             bitmapDensity = min(bitmapDensity, MAX_BITMAP_DENSITY)
             bitmapOptions.inDensity = bitmapWidth
             bitmapOptions.inTargetDensity = (viewWidth * bitmapDensity).toInt()
-            val bitmap = BitmapFactory.decodeFile(bitmapPath, bitmapOptions)
-            bitmapWidth = (bitmap.width / bitmapDensity).toInt()
-            val bitmapHeight = (bitmap.height / bitmapDensity).toInt()
-            bitmapRectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
-            if (bitmapHeight < viewHeight) {
-                val initTranslateY = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f
-                val dy = initTranslateY - currTranslateY()
-                peMatrix.postTranslate(0f, dy)
+            BitmapFactory.decodeFile(bitmapPath, bitmapOptions)?.let { bitmap ->
+                bitmapWidth = (bitmap.width / bitmapDensity).toInt()
+                val bitmapHeight = (bitmap.height / bitmapDensity).toInt()
+                bitmapRectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
+                if (bitmapHeight < viewHeight) {
+                    val initTranslateY = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f
+                    val dy = initTranslateY - currTranslateY()
+                    peMatrix.postTranslate(0f, dy)
+                }
+                val mosaicWidth = bitmapWidth / MOSAIC_COEFFICIENT
+                val mosaicHeight = bitmapHeight / MOSAIC_COEFFICIENT
+                mosaicBitmap = Bitmap.createScaledBitmap(bitmap, mosaicWidth, mosaicHeight, false)
+                mosaicLayer.setParentBitmap(bitmap)
+                mosaicLayer.onSizeChanged(bitmapWidth, bitmapHeight)
+                graffitiLayer.onSizeChanged(bitmapWidth, bitmapHeight)
             }
-            val mosaicWidth = bitmapWidth / MOSAIC_COEFFICIENT
-            val mosaicHeight = bitmapHeight / MOSAIC_COEFFICIENT
-            mosaicBitmap = Bitmap.createScaledBitmap(bitmap, mosaicWidth, mosaicHeight, false)
-            mosaicLayer.setParentBitmap(bitmap)
-            mosaicLayer.onSizeChanged(bitmapWidth, bitmapHeight)
-            graffitiLayer.onSizeChanged(bitmapWidth, bitmapHeight)
         }
         computeBinRectF()
     }
@@ -290,11 +290,11 @@ class PictureEditorView @JvmOverloads constructor(
         canvas.setMatrix(peMatrix)
         mosaicBitmap?.let {
             canvas.drawBitmap(it, null, bitmapRectF, null)
-        }
-        mosaicLayer.onDraw(canvas)
-        graffitiLayer.onDraw(canvas)
-        stickerLayers.forEach { sticker ->
-            sticker.onDraw(canvas)
+            mosaicLayer.onDraw(canvas)
+            graffitiLayer.onDraw(canvas)
+            stickerLayers.forEach { sticker ->
+                sticker.onDraw(canvas)
+            }
         }
         if (isBin) {
             val round = BIN_ROUND / currScaleX()

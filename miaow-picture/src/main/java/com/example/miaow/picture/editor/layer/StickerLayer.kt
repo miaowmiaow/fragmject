@@ -9,9 +9,9 @@ import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.utils.Vector2D
 
 class StickerLayer(
-    val parent: View,
-    val attrs: StickerAttrs,
-    val listener: OnStickerClickListener? = null
+    private val parent: View,
+    private val attrs: StickerAttrs,
+    private val listener: OnStickerClickListener? = null
 ) : ILayer {
 
     companion object {
@@ -21,8 +21,8 @@ class StickerLayer(
         private const val RECT_ROUND = 30.0f
     }
 
-    private var viewWidth = 0
-    private var viewHeight = 0
+    private var width = 0
+    private var height = 0
     private val parentMatrix = Matrix()
     private val bitmapRectF = RectF()
     private var bitmapWidth = attrs.bitmap.width
@@ -43,6 +43,7 @@ class StickerLayer(
     private var inBorder = false
     private var isInProgress = false
     private var touchTime = 0L
+
     var isEnabled = true
 
     private val scaleGestureDetector = ScaleGestureDetector(parent.context,
@@ -133,12 +134,12 @@ class StickerLayer(
                         listener?.onClick(StickerAttrs(bitmap, desc, rotation, scale, x, y))
                     }
                     val bw = bitmapWidth / parentScaleX() * 0.5f
-                    if (currTranslateX - bw < 0 || currTranslateX + bw > viewWidth) {
-                        currTranslateX = viewWidth * 0.5f / parentScaleX()
+                    if (currTranslateX - bw < 0 || currTranslateX + bw > width) {
+                        currTranslateX = width * 0.5f / parentScaleX()
                     }
                     val bh = bitmapHeight / parentScaleX() * 0.5f
-                    if (currTranslateY - bh < 0 || currTranslateY + bh > viewHeight) {
-                        currTranslateY = viewHeight * 0.5f / parentScaleY()
+                    if (currTranslateY - bh < 0 || currTranslateY + bh > height) {
+                        currTranslateY = height * 0.5f / parentScaleY()
                     }
                     measureBitmap()
                     pointerIndexId0 = INVALID_POINTER_ID
@@ -157,8 +158,8 @@ class StickerLayer(
     }
 
     override fun onSizeChanged(w: Int, h: Int) {
-        viewWidth = w
-        viewHeight = h
+        width = w
+        height = h
         if (currTranslateX == 0f) {
             currTranslateX = (w * 0.5f - parentTranslateX()) / parentScaleX()
         }

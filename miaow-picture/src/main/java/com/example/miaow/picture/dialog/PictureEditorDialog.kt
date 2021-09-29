@@ -16,12 +16,10 @@ import com.example.miaow.picture.databinding.DialogPictureEditorBinding
 import com.example.miaow.picture.editor.PictureEditorView
 import com.example.miaow.picture.editor.layer.OnStickerClickListener
 import com.example.miaow.picture.utils.ActivityCallback
-import com.example.miaow.picture.utils.ActivityHelper.requestStoragePermissions
 import com.example.miaow.picture.utils.ActivityHelper.startForResult
 import com.example.miaow.picture.utils.AlbumUtils.getImagePath
 import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
 import com.example.miaow.picture.utils.ColorUtils
-import com.example.miaow.picture.utils.PermissionsCallback
 
 class PictureEditorDialog : PictureBaseDialog() {
 
@@ -34,7 +32,6 @@ class PictureEditorDialog : PictureBaseDialog() {
 
     private var _binding: DialogPictureEditorBinding? = null
     private val binding get() = _binding!!
-
     private val colors: MutableList<RelativeLayout> = arrayListOf()
     private val tools: MutableList<ImageView> = arrayListOf()
     private var bitmapPath = ""
@@ -132,25 +129,17 @@ class PictureEditorDialog : PictureBaseDialog() {
 
     private fun openAlbum() {
         activity?.apply {
-            requestStoragePermissions(object : PermissionsCallback {
-                override fun allow() {
-                    val data = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                    val type = "image/*"
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.setDataAndType(data, type)
-                    startForResult(intent, object : ActivityCallback {
-                        override fun onActivityResult(resultCode: Int, data: Intent?) {
-                            data?.data?.let { uri ->
-                                val bitmap = getBitmap(getImagePath(uri))
-                                binding.picEditor.setSticker(StickerAttrs(bitmap))
-                            }
+            val data = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val type = "image/*"
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.setDataAndType(data, type)
+            startForResult(intent, object : ActivityCallback {
+                override fun onActivityResult(resultCode: Int, data: Intent?) {
+                    data?.data?.let { uri ->
+                        getBitmap(getImagePath(uri))?.let { bitmap ->
+                            binding.picEditor.setSticker(StickerAttrs(bitmap))
                         }
-                    })
-                }
-
-                override fun deny() {
-                    val text = "当前应用缺少存储权限。\n请点击\"设置\"-\"权限\"打开所需权限。"
-                    Toast.makeText(this@apply, text, Toast.LENGTH_SHORT).show()
+                    }
                 }
             })
         }
@@ -197,15 +186,21 @@ class PictureEditorDialog : PictureBaseDialog() {
         view.isSelected = true
     }
 
-    private fun getBitmap(path: String): Bitmap {
-        val opts = BitmapFactory.Options()
-        opts.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(path, opts)
-        opts.inJustDecodeBounds = false
-        opts.inScaled = true
-        opts.inDensity = opts.outWidth
-        opts.inTargetDensity = 200
-        return BitmapFactory.decodeFile(path, opts)
+    private fun getBitmap(path: String): Bitmap? {
+        try {
+            val opts = BitmapFactory.Options()
+            opts.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(path, opts)
+            opts.inJustDecodeBounds = false
+            opts.inScaled = true
+            opts.inDensity = opts.outWidth
+            opts.inTargetDensity = 200
+            return BitmapFactory.decodeFile(path, opts)
+        } catch (e: Exception) {
+            val text = "请确认存储权限。\n" + e.message
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+        }
+        return null
     }
 
 }

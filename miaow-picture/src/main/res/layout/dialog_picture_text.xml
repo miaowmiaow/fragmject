@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#69000000">
@@ -34,10 +33,9 @@
         android:layout_below="@id/text_back"
         android:layout_margin="50dp"
         android:background="@null"
-        android:cursorVisible="true"
         android:gravity="center"
+        android:hint="请输入"
         android:textAlignment="center"
-        android:hint=" "
         android:textColor="#ffffff"
         android:textColorHint="#ffffff"
         android:textCursorDrawable="@null"

@@ -7,27 +7,21 @@ import com.example.miaow.picture.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
 
-class MosaicLayer(val parent: View) : ILayer {
+class MosaicLayer(private val parent: View) : ILayer {
 
     companion object {
         private const val DEFAULT_PAINT_SIZE = 50.0f
         private const val TOUCH_TOLERANCE = 4f
     }
 
-    private var _parentBitmap: Bitmap? = null
-    private val parentBitmap get() = _parentBitmap!!
-    private var _bitmap: Bitmap? = null
-    private val bitmap get() = _bitmap!!
-    private var _canvas: Canvas? = null
-    private val canvas get() = _canvas!!
-
+    private lateinit var mosaicBitmap: Bitmap
+    private var mosaicCanvas = Canvas()
+    private var parentBitmap: Bitmap? = null
+    private val paintPaths = Stack<PaintPath>()
+    private val redoPaths = Stack<PaintPath>()
+    private val rectF = RectF()
     private val paint = Paint()
     private val path = Path()
-    private val rectF = RectF()
-
-    private val paintPaths = Stack<PaintPath>()
-    private val redoPaintPaths = Stack<PaintPath>()
-
     private var touchX = 0f
     private var touchY = 0f
 
@@ -43,16 +37,18 @@ class MosaicLayer(val parent: View) : ILayer {
     }
 
     fun setParentBitmap(bitmap: Bitmap) {
-        _parentBitmap = bitmap
+        parentBitmap = bitmap
     }
 
     fun undo(): Boolean {
         if (paintPaths.isNotEmpty()) {
             path.reset()
-            canvas.drawBitmap(parentBitmap, null, rectF, null)
-            redoPaintPaths.push(paintPaths.pop())
+            parentBitmap?.let {
+                mosaicCanvas.drawBitmap(it, null, rectF, null)
+            }
+            redoPaths.push(paintPaths.pop())
             for (linePath in paintPaths) {
-                canvas.drawPath(linePath.path, linePath.paint)
+                mosaicCanvas.drawPath(linePath.path, linePath.paint)
             }
             parent.invalidate()
         }
@@ -60,16 +56,18 @@ class MosaicLayer(val parent: View) : ILayer {
     }
 
     fun redo(): Boolean {
-        if (redoPaintPaths.isNotEmpty()) {
+        if (redoPaths.isNotEmpty()) {
             path.reset()
-            canvas.drawBitmap(parentBitmap, null, rectF, null)
-            paintPaths.push(redoPaintPaths.pop())
+            parentBitmap?.let {
+                mosaicCanvas.drawBitmap(it, null, rectF, null)
+            }
+            paintPaths.push(redoPaths.pop())
             for (linePath in paintPaths) {
-                canvas.drawPath(linePath.path, linePath.paint)
+                mosaicCanvas.drawPath(linePath.path, linePath.paint)
             }
             parent.invalidate()
         }
-        return !redoPaintPaths.empty()
+        return !redoPaths.empty()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -78,18 +76,18 @@ class MosaicLayer(val parent: View) : ILayer {
                 MotionEvent.ACTION_DOWN -> {
                     path.reset()
                     path.moveTo(event.x, event.y)
-                    this.touchX = event.x
-                    this.touchY = event.y
+                    touchX = event.x
+                    touchY = event.y
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    val dx = abs(event.x - this.touchX)
-                    val dy = abs(event.y - this.touchY)
+                    val dx = abs(event.x - touchX)
+                    val dy = abs(event.y - touchY)
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        val x = (event.x + this.touchX) / 2
-                        val y = (event.y + this.touchY) / 2
-                        path.quadTo(this.touchX, this.touchY, x, y)
-                        this.touchX = event.x
-                        this.touchY = event.y
+                        val x = (event.x + touchX) / 2
+                        val y = (event.y + touchY) / 2
+                        path.quadTo(touchX, touchY, x, y)
+                        touchX = event.x
+                        touchY = event.y
                     }
                 }
                 MotionEvent.ACTION_UP -> {
@@ -97,7 +95,7 @@ class MosaicLayer(val parent: View) : ILayer {
                     paintPaths.push(PaintPath(path, paint))
                 }
             }
-            canvas.drawPath(path, paint)
+            mosaicCanvas.drawPath(path, paint)
             parent.invalidate()
         }
         return isEnabled
@@ -105,20 +103,22 @@ class MosaicLayer(val parent: View) : ILayer {
 
     override fun onSizeChanged(w: Int, h: Int) {
         rectF.set(0f, 0f, w.toFloat(), h.toFloat())
-        _bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        _canvas = Canvas(bitmap)
-        canvas.drawBitmap(parentBitmap, null, rectF, null)
+        mosaicBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        mosaicCanvas.setBitmap(mosaicBitmap)
+        parentBitmap?.let {
+            mosaicCanvas.drawBitmap(it, null, rectF, null)
+        }
         if (paintPaths.isNotEmpty()) {
-            canvas.drawBitmap(parentBitmap, null, rectF, null)
+            mosaicCanvas.drawBitmap(mosaicBitmap, null, rectF, null)
             for (linePath in paintPaths) {
-                canvas.drawPath(linePath.path, linePath.paint)
+                mosaicCanvas.drawPath(linePath.path, linePath.paint)
             }
             parent.invalidate()
         }
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBitmap(bitmap, 0f, 0f, null)
+        canvas.drawBitmap(mosaicBitmap, 0f, 0f, null)
     }
 
 }

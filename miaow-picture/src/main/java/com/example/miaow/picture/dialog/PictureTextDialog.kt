@@ -8,10 +8,10 @@ import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
-import com.example.miaow.picture.bean.StickerAttrs
-import com.example.miaow.picture.utils.ColorUtils
 import com.example.miaow.picture.R
+import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.databinding.DialogPictureTextBinding
+import com.example.miaow.picture.utils.ColorUtils
 
 class PictureTextDialog : PictureBaseDialog() {
 
@@ -24,7 +24,6 @@ class PictureTextDialog : PictureBaseDialog() {
 
     private var _binding: DialogPictureTextBinding? = null
     private val binding get() = _binding!!
-
     private val textColors: MutableList<RelativeLayout> = arrayListOf()
     private var _attrs: StickerAttrs? = null
     private val attrs get() = _attrs!!
@@ -86,9 +85,6 @@ class PictureTextDialog : PictureBaseDialog() {
         textColors.add(binding.textGreen)
         textColors.add(binding.textBlue)
         textColors.add(binding.textPurple)
-        binding.bg.setOnClickListener{
-            showSoftInput(binding.editText)
-        }
         binding.editText.postDelayed({
             showSoftInput(binding.editText)
         }, 250)
@@ -101,7 +97,7 @@ class PictureTextDialog : PictureBaseDialog() {
             hideSoftInput(binding.editText)
             binding.editText.isFocusable = false
             val description = binding.editText.text.toString()
-            if(description.isNotBlank()){
+            if (description.isNotBlank()) {
                 if (_attrs == null) {
                     _attrs = StickerAttrs(saveBitmap())
                 } else {

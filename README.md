@@ -9,11 +9,12 @@
 - 单Activity多Fragment项目设计
 - 暗夜模式
 - 屏幕录制
+- 图片编辑
 - 字节码插桩
 ## 截图展示
-| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
+| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) |
+| ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/VID_20210929142301.gif) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/VID_20210929141429.gif) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/VID_20210929141339.gif) |
 ## 项目目录结构
 ```
 ├── app                                  app
@@ -167,6 +168,8 @@ LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且
 
      DBHelper.get(“key”)
 ```
+## 图片编辑器
+- [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 ## 动态权限申请
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)
 ## 字节码插桩

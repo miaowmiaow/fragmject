@@ -14,7 +14,7 @@
 ## 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/VID_20210929142301.gif) | ![5.jpg](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/VID_20210929141429.gif) | ![6.jpg](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/VID_20210929141339.gif) |
+| ![4.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141339.gif) |
 ## 项目目录结构
 ```
 ├── app                                  app

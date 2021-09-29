@@ -168,13 +168,45 @@ LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且
 
      DBHelper.get(“key”)
 ```
-## 图片编辑器
-- [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 ## 动态权限申请
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)
 ## 字节码插桩
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 自动埋点](https://juejin.cn/post/6985366891447451662)
+## 图片编辑器
+- [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
+## 使用
+### 接入
+第 1 步:在工程的`build.gradle`中添加：
+```
+allprojects {
+    repositories {
+		...
+		mavenCentral()
+	}
+}
+```
+第2步：在应用的`build.gradle`中添加：
+```
+dependencies {
+    implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.4'
+}
+```
+### 快速使用
+```
+PictureEditorDialog.newInstance()
+    .setBitmapPath(path)
+    .setEditorFinishCallback(object : EditorFinishCallback {
+        override fun onFinish(path: String) {
+            val bitmap = BitmapFactory.decodeFile(path, BitmapFactory.Options())
+        }
+    })
+    .show(childFragmentManager)
+```
+如上所示：
+1. 通过`PictureEditorDialog`调用图片编辑器
+2. 通过`setBitmapPath(path)`传入图片路径
+3. 通过`setEditorFinishCallback(callback)`获取编辑后的图片地址
 ## 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)

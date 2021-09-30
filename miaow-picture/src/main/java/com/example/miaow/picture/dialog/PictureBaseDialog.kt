@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
-import android.view.Window
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -14,12 +13,13 @@ open class PictureBaseDialog : DialogFragment() {
 
     lateinit var manager: FragmentManager
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NO_FRAME, R.style.FullDialog)
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        dialog?.apply {
-            requestWindowFeature(Window.FEATURE_NO_TITLE)
-        }
         super.onActivityCreated(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.FullDialog)
         dialog?.window?.apply {
             setDimAmount(0.5F)
             attributes.gravity = Gravity.BOTTOM

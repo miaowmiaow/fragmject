@@ -206,7 +206,9 @@ PictureEditorDialog.newInstance()
 1. 通过`PictureEditorDialog`调用图片编辑器
 2. 通过`setBitmapPath(path)`传入图片路径
 3. 通过`setEditorFinishCallback(callback)`获取编辑后的图片地址
+
 **如果觉得`PictureEditorDialog`不能满足需求，还可以通过`PictureEditorView`来自定义样式**
+
 ### 自定义使用
 ```
 <com.example.miaow.picture.editor.PictureEditorView
@@ -254,6 +256,8 @@ clip.saveBitmap()
 4. 通过`clip.saveBitmap()`保存裁剪框内图片
 
 `PictureClipView`就介绍到这里，具体使用请查看`PictureClipDialog`
+
+讲在最后，如无法加载图片，请确认存储权限
 
 ## 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)

@@ -60,9 +60,6 @@ class PictureTextDialog : PictureBaseDialog() {
     }
 
     private fun setupView() {
-        _attrs?.apply {
-            binding.editText.setText(description)
-        }
         textColors.add(binding.textWhite)
         textColors.add(binding.textBlack)
         textColors.add(binding.textRed)
@@ -70,9 +67,15 @@ class PictureTextDialog : PictureBaseDialog() {
         textColors.add(binding.textGreen)
         textColors.add(binding.textBlue)
         textColors.add(binding.textPurple)
-        binding.editText.postDelayed({
-            showSoftInput(binding.editText)
-        }, 250)
+        textColors.forEachIndexed { index, view ->
+            view.setOnClickListener {
+                selectedColor(view)
+                binding.editText.setTextColor(ColorUtils.colorful[index])
+            }
+        }
+        _attrs?.apply {
+            binding.editText.setText(description)
+        }
         binding.textBack.setOnClickListener {
             hideSoftInput(binding.editText)
             binding.editText.isFocusable = false
@@ -93,12 +96,12 @@ class PictureTextDialog : PictureBaseDialog() {
             }
             dismiss()
         }
-        textColors.forEachIndexed { index, view ->
-            view.setOnClickListener {
-                selectedColor(view)
-                binding.editText.setTextColor(ColorUtils.colorful[index])
-            }
-        }
+        binding.editText.postDelayed({
+            binding.editText.isFocusable = true
+            binding.editText.isFocusableInTouchMode = true
+            binding.editText.requestFocus()
+            showSoftInput(binding.editText)
+        }, 250)
     }
 
     private fun selectedColor(view: View) {

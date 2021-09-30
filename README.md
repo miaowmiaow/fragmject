@@ -212,7 +212,7 @@ PictureEditorDialog.newInstance()
 ### 自定义使用
 ```
 <com.example.miaow.picture.editor.PictureEditorView
-	android:id="@+id/pic_editor"
+    android:id="@+id/pic_editor"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
 ```

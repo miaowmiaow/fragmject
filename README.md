@@ -207,6 +207,55 @@ PictureEditorDialog.newInstance()
 1. 通过`PictureEditorDialog`调用图片编辑器
 2. 通过`setBitmapPath(path)`传入图片路径
 3. 通过`setEditorFinishCallback(callback)`获取编辑后的图片地址
+**如果觉得`PictureEditorDialog`不能满足需求，还可以通过`PictureEditorView`来自定义样式**
+### 自定义使用
+```
+<com.example.miaow.picture.editor.PictureEditorView
+	android:id="@+id/pic_editor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+```
+```
+picEditor.setBitmapPath(path)
+picEditor.setMode(PictureEditorView.Mode.STICKER)
+picEditor.setGraffitiColor(Color.parseColor("#ffffff"))
+picEditor.setSticker(StickerAttrs(bitmap))
+picEditor.graffitiUndo()
+picEditor.mosaicUndo()
+picEditor.saveBitmap()
+```
+如上所示：
+1. 通过`setBitmapPath(path)`传入图片路径
+2. 通过`setMode(PictureEditorView.Mode.STICKER)`设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸
+3. 通过`setGraffitiColor(Color.parseColor("#ffffff"))`设置涂鸦画笔颜色
+4. 通过`setSticker(StickerAttrs(bitmap))`通过`StickerAttrs`设置贴纸
+5. 通过`graffitiUndo()`涂鸦撤销
+6. 通过`mosaicUndo()`马赛克撤销
+7. 通过`saveBitmap()`保存编辑图片
+
+`PictureEditorView`就介绍到这里，具体使用请查看`PictureEditorDialog`
+
+### 图片裁剪
+```
+<com.example.miaow.picture.editor.PictureClipView
+    android:id="@+id/clip"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+```
+```
+clip.setBitmapResource(bitmap)
+clip.rotate()
+clip.reset()
+clip.saveBitmap()
+```
+如上所示：
+1. 通过`setBitmapResource(bitmap)`传入裁剪图片
+2. 通过`clip.rotate()`裁剪图片旋转
+3. 通过`clip.reset()`裁剪图片重置
+4. 通过`clip.saveBitmap()`保存裁剪框内图片
+
+`PictureClipView`就介绍到这里，具体使用请查看`PictureClipDialog`
+
 ## 主要开源框架
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)

@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import com.example.miaow.picture.R
 
 open class PictureBaseDialog : DialogFragment() {
 
@@ -15,7 +14,7 @@ open class PictureBaseDialog : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NO_FRAME, R.style.FullDialog)
+        setStyle(STYLE_NO_FRAME, 0)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

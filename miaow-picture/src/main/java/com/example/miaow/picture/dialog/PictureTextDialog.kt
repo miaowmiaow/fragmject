@@ -5,10 +5,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
-import com.example.miaow.picture.R
 import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.databinding.DialogPictureTextBinding
 import com.example.miaow.picture.utils.ColorUtils
@@ -37,22 +38,6 @@ class PictureTextDialog : PictureBaseDialog() {
     fun setTextFinishCallback(callback: TextFinishCallback): PictureTextDialog {
         this.callback = callback
         return this
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        dialog?.apply {
-            requestWindowFeature(Window.FEATURE_NO_TITLE)
-        }
-        super.onActivityCreated(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.FullDialog)
-        dialog?.window?.apply {
-            attributes.gravity = Gravity.BOTTOM
-            decorView.setPadding(0, 0, 0, 0)
-            setLayout(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT
-            )
-        }
     }
 
     override fun onCreateView(

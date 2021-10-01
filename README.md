@@ -188,7 +188,7 @@ allprojects {
 第2步：在应用的`build.gradle`中添加：
 ```
 dependencies {
-    implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.4'
+    implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.5'
 }
 ```
 ### 快速使用
@@ -227,9 +227,9 @@ picEditor.saveBitmap()
 ```
 如上所示：
 1. 通过`setBitmapPath(path)`传入图片路径
-2. 通过`setMode(PictureEditorView.Mode.STICKER)`设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸
-3. 通过`setGraffitiColor(Color.parseColor("#ffffff"))`设置涂鸦画笔颜色
-4. 通过`setSticker(StickerAttrs(bitmap))`通过`StickerAttrs`设置贴纸
+2. 通过`setMode(mode)`设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸
+3. 通过`setGraffitiColor(color)`设置涂鸦画笔颜色
+4. 通过`setSticker(StickerAttrs(bitmap))设置贴纸
 5. 通过`graffitiUndo()`涂鸦撤销
 6. 通过`mosaicUndo()`马赛克撤销
 7. 通过`saveBitmap()`保存编辑图片
@@ -251,8 +251,8 @@ clip.saveBitmap()
 ```
 如上所示：
 1. 通过`setBitmapResource(bitmap)`传入裁剪图片
-2. 通过`clip.rotate()`裁剪图片旋转
-3. 通过`clip.reset()`裁剪图片重置
+2. 通过`clip.rotate()`图片旋转
+3. 通过`clip.reset()`图片重置
 4. 通过`clip.saveBitmap()`保存裁剪框内图片
 
 `PictureClipView`就介绍到这里，具体使用请查看`PictureClipDialog`

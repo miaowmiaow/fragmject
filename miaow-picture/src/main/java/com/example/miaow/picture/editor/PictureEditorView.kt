@@ -20,7 +20,6 @@ import com.example.miaow.picture.editor.layer.StickerLayer
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.min
 
 class PictureEditorView @JvmOverloads constructor(
     context: Context,
@@ -30,7 +29,7 @@ class PictureEditorView @JvmOverloads constructor(
 
     companion object {
         private const val INVALID_ID = -1
-        private const val MAX_BITMAP_DENSITY = 2f //图片密度
+        private const val MAX_BITMAP_SIZE = 64f * 1024 * 1024
         private const val MOSAIC_COEFFICIENT = 36 //马赛克系数
         private const val BIN_WIDTH = 300
         private const val BIN_HEIGHT = 200
@@ -48,6 +47,8 @@ class PictureEditorView @JvmOverloads constructor(
     private val peMatrix = Matrix()
     private var viewWidth = 0
     private var viewHeight = 0
+    private var bitmapWidth = 0
+    private var bitmapHeight = 0
     private var preScrollX = 0f
     private var preScrollY = 0f
     private val bitmapOptions = BitmapFactory.Options()
@@ -69,12 +70,16 @@ class PictureEditorView @JvmOverloads constructor(
     private var binTextX = 0f
     private var binTextY = 0f
     private var isBin = false
+    private var isDoubleTap = false
     private var bitmapPath = ""
 
     private val scroller = Scroller(context)
-    private val gListener = object : GestureDetector.OnGestureListener {
+    private val gListener = object : GestureDetector.SimpleOnGestureListener() {
 
         override fun onDown(e: MotionEvent?): Boolean {
+            if(!scroller.isFinished){
+                scroller.forceFinished(true)
+            }
             return false
         }
 
@@ -109,6 +114,18 @@ class PictureEditorView @JvmOverloads constructor(
             val maxX = (bitmapRectF.width() * currScaleX() - viewWidth).toInt()
             val maxY = (bitmapRectF.height() * currScaleY() - viewHeight).toInt()
             scroller.fling(startX, startY, velX, velY, 0, maxX, 0, maxY)
+            return true
+        }
+
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            e?.let { event ->
+                if (isDoubleTap) {
+                    onScale(1 / 2f, event.x, event.y)
+                } else {
+                    onScale(2f, event.x, event.y)
+                }
+                isDoubleTap = !isDoubleTap
+            }
             return true
         }
     }
@@ -183,7 +200,9 @@ class PictureEditorView @JvmOverloads constructor(
             }
         })
         stickerLayer.setParentMatrix(peMatrix)
-        stickerLayer.onSizeChanged(bitmapRectF.width().toInt(), bitmapRectF.height().toInt())
+        val bitmapWidth = bitmapRectF.width().toInt()
+        val bitmapHeight = bitmapRectF.height().toInt()
+        stickerLayer.onSizeChanged(viewWidth, viewHeight, bitmapWidth, bitmapHeight)
         stickerLayers.push(stickerLayer)
     }
 
@@ -228,6 +247,7 @@ class PictureEditorView @JvmOverloads constructor(
             }
         }
         if (mosaicLayer.onTouchEvent(layerEvent)) {
+            mosaicLayer.setParentScale(currScaleX())
             layerEvent.recycle()
             return true
         }
@@ -253,22 +273,31 @@ class PictureEditorView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        this.viewWidth = w
-        this.viewHeight = h
+        this.viewWidth = max(w, oldw)
+        this.viewHeight = max(h, oldh)
         if (bitmapPath.isNotBlank()) {
             bitmapOptions.inJustDecodeBounds = true
             BitmapFactory.decodeFile(bitmapPath, bitmapOptions)
-            var bitmapWidth = bitmapOptions.outWidth
+            bitmapWidth = bitmapOptions.outWidth
+            bitmapHeight = bitmapOptions.outHeight
             bitmapOptions.inJustDecodeBounds = false
             bitmapOptions.inScaled = true
-            var bitmapDensity = bitmapWidth / (viewWidth).toFloat()
-            bitmapDensity = min(bitmapDensity, MAX_BITMAP_DENSITY)
             bitmapOptions.inDensity = bitmapWidth
-            bitmapOptions.inTargetDensity = (viewWidth * bitmapDensity).toInt()
+            bitmapOptions.inTargetDensity = viewWidth
             BitmapFactory.decodeFile(bitmapPath, bitmapOptions)?.let { bitmap ->
-                bitmapWidth = (bitmap.width / bitmapDensity).toInt()
-                val bitmapHeight = (bitmap.height / bitmapDensity).toInt()
+                bitmapWidth = bitmap.width
+                bitmapHeight = bitmap.height
+                if (bitmap.byteCount > MAX_BITMAP_SIZE) {
+                    val bitmapDensity = MAX_BITMAP_SIZE / bitmap.byteCount
+                    bitmapWidth = (bitmapWidth * bitmapDensity).toInt()
+                    bitmapHeight = (bitmapHeight * bitmapDensity).toInt()
+                }
                 bitmapRectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
+                if (bitmapWidth < viewWidth) {
+                    val initTranslateX = (viewWidth - bitmapRectF.width() * currScaleX()) * 0.5f
+                    val dx = initTranslateX - currTranslateX()
+                    peMatrix.postTranslate(dx, 0f)
+                }
                 if (bitmapHeight < viewHeight) {
                     val initTranslateY = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f
                     val dy = initTranslateY - currTranslateY()
@@ -278,8 +307,8 @@ class PictureEditorView @JvmOverloads constructor(
                 val mosaicHeight = bitmapHeight / MOSAIC_COEFFICIENT
                 mosaicBitmap = Bitmap.createScaledBitmap(bitmap, mosaicWidth, mosaicHeight, false)
                 mosaicLayer.setParentBitmap(bitmap)
-                mosaicLayer.onSizeChanged(bitmapWidth, bitmapHeight)
-                graffitiLayer.onSizeChanged(bitmapWidth, bitmapHeight)
+                mosaicLayer.onSizeChanged(w, h, bitmapWidth, bitmapHeight)
+                graffitiLayer.onSizeChanged(w, h, bitmapWidth, bitmapHeight)
             }
         }
         computeBinRectF()
@@ -332,23 +361,35 @@ class PictureEditorView @JvmOverloads constructor(
         if (currScaleX() * scaleFactor > 1f && currScaleY() * scaleFactor > 1f) {
             peMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY)
         } else {
-            peMatrix.reset()
-            peMatrix.postTranslate(0f, (viewHeight - bitmapRectF.height()) * 0.5f)
+            peMatrix.postScale(1 / currScaleX(), 1 / currScaleY(), focusX, focusY)
         }
-        invalidate()
+        resetScaleOffset()
     }
 
     private fun resetScaleOffset() {
         var dx = 0f
         var dy = 0f
-        if (currTranslateX() > 0) {
-            dx = -currTranslateX()
+        if (bitmapWidth < viewWidth) {
+            val initTranslateX = (viewWidth - bitmapRectF.width() * currScaleX()) * 0.5f
+            dx = initTranslateX - currTranslateX()
+        } else {
+            if (currTranslateX() > 0) {
+                dx = -currTranslateX()
+            }
+            if (currTranslateX() + bitmapRectF.width() * currScaleX() < viewWidth) {
+                dx = viewWidth - bitmapRectF.width() * currScaleX() - currTranslateX()
+            }
         }
-        if (currTranslateX() < viewWidth - bitmapRectF.width() * currScaleX()) {
-            dx = viewWidth - bitmapRectF.width() * currScaleX() - currTranslateX()
-        }
-        if (bitmapRectF.height() * currScaleY() < viewHeight) {
-            dy = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f - currTranslateY()
+        if (bitmapHeight < viewHeight) {
+            val initTranslateY = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f
+            dy = initTranslateY - currTranslateY()
+        } else {
+            if (currTranslateY() > 0) {
+                dy = -currTranslateY()
+            }
+            if (currTranslateY() + bitmapRectF.height() * currScaleY() < viewHeight) {
+                dy = viewHeight - bitmapRectF.height() * currScaleY() - currTranslateY()
+            }
         }
         peMatrix.postTranslate(dx, dy)
         invalidate()
@@ -378,11 +419,11 @@ class PictureEditorView @JvmOverloads constructor(
         return peMatrix.values()[4]
     }
 
-    private fun currTranslateX(): Float {
+    fun currTranslateX(): Float {
         return peMatrix.values()[2]
     }
 
-    private fun currTranslateY(): Float {
+    fun currTranslateY(): Float {
         return peMatrix.values()[5]
     }
 

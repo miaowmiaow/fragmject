@@ -73,13 +73,18 @@ class PictureEditorDialog : PictureBaseDialog() {
         tools.add(binding.graffiti)
         tools.add(binding.sticker)
         tools.add(binding.text)
-        tools.add(binding.mosaic)
         tools.add(binding.screenshot)
+        tools.add(binding.mosaic)
         binding.back.setOnClickListener { dismiss() }
         binding.complete.setOnClickListener {
-            it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path ->
-                callback?.onFinish(path)
-                dismiss()
+            if (binding.complete.isEnabled) {
+                binding.complete.isEnabled = false
+                Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_LONG).show()
+                it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path ->
+                    callback?.onFinish(path)
+                    binding.complete.isEnabled = true
+                    dismiss()
+                }
             }
         }
         binding.picEditor.setBitmapPath(bitmapPath)
@@ -112,12 +117,12 @@ class PictureEditorDialog : PictureBaseDialog() {
                             tool.isSelected = false
                         }
                         3 -> {
-                            binding.mosaicUndo.visibility = View.VISIBLE
-                            binding.picEditor.setMode(PictureEditorView.Mode.MOSAIC)
+                            openClipDialog( binding.picEditor.saveBitmap())
+                            tool.isSelected = false
                         }
                         4 -> {
-                            openClipDialog(binding.picEditor.saveBitmap())
-                            tool.isSelected = false
+                            binding.mosaicUndo.visibility = View.VISIBLE
+                            binding.picEditor.setMode(PictureEditorView.Mode.MOSAIC)
                         }
                     }
                 } else {
@@ -160,9 +165,9 @@ class PictureEditorDialog : PictureBaseDialog() {
             .show(manager)
     }
 
-    private fun openClipDialog(clipBmp: Bitmap) {
+    private fun openClipDialog(bitmap: Bitmap) {
         PictureClipDialog.newInstance()
-            .setBitmapResource(clipBmp)
+            .setBitmapResource(bitmap)
             .setClipFinishCallback(object : ClipFinishCallback {
                 override fun onFinish(path: String) {
                     callback?.onFinish(path)

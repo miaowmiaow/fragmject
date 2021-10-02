@@ -190,15 +190,6 @@
             android:src="@drawable/pe_text" />
 
         <ImageView
-            android:id="@+id/mosaic"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:padding="10dp"
-            android:src="@drawable/selector_mosaic" />
-
-        <ImageView
             android:id="@+id/screenshot"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -207,8 +198,16 @@
             android:padding="10dp"
             android:src="@drawable/pe_clip" />
 
+        <ImageView
+            android:id="@+id/mosaic"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:src="@drawable/selector_mosaic" />
+
         <RelativeLayout
-            android:id="@+id/complete"
             android:layout_width="0dp"
             android:layout_height="45dp"
             android:layout_weight="1"
@@ -216,9 +215,10 @@
             android:padding="10dp">
 
             <TextView
+                android:id="@+id/complete"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/shape_blue_all_bg"
+                android:background="@drawable/selector_btn_config"
                 android:gravity="center"
                 android:text="完成"
                 android:textColor="#ffffff"

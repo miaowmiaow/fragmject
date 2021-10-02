@@ -10,7 +10,7 @@ import kotlin.math.abs
 class MosaicLayer(private val parent: View) : ILayer {
 
     companion object {
-        private const val DEFAULT_PAINT_SIZE = 50.0f
+        private const val DEFAULT_PAINT_SIZE = 30.0f
         private const val TOUCH_TOLERANCE = 4f
     }
 
@@ -38,6 +38,10 @@ class MosaicLayer(private val parent: View) : ILayer {
 
     fun setParentBitmap(bitmap: Bitmap) {
         parentBitmap = bitmap
+    }
+
+    fun setParentScale(scale: Float) {
+        paint.strokeWidth = DEFAULT_PAINT_SIZE / scale
     }
 
     fun undo(): Boolean {
@@ -101,9 +105,14 @@ class MosaicLayer(private val parent: View) : ILayer {
         return isEnabled
     }
 
-    override fun onSizeChanged(w: Int, h: Int) {
-        rectF.set(0f, 0f, w.toFloat(), h.toFloat())
-        mosaicBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    override fun onSizeChanged(
+        viewWidth: Int,
+        viewHeight: Int,
+        bitmapWidth: Int,
+        bitmapHeight: Int
+    ) {
+        rectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
+        mosaicBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
         mosaicCanvas.setBitmap(mosaicBitmap)
         parentBitmap?.let {
             mosaicCanvas.drawBitmap(it, null, rectF, null)

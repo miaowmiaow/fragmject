@@ -17,16 +17,17 @@ class StickerLayer(
     companion object {
         private const val INVALID_POINTER_ID = -1
         private const val MINIMUM_SCALE = 0.5f
-        private const val MAXIMUM_SCALE = 2.0f
         private const val RECT_ROUND = 30.0f
     }
 
-    private var width = 0
-    private var height = 0
+    private var viewWidth = 0
+    private var viewHeight = 0
+    private var bitmapWidth = 0
+    private var bitmapHeight = 0
     private val parentMatrix = Matrix()
-    private val bitmapRectF = RectF()
-    private var bitmapWidth = attrs.bitmap.width
-    private var bitmapHeight = attrs.bitmap.height
+    private val stickerRectF = RectF()
+    private var stickerWidth = attrs.bitmap.width
+    private var stickerHeight = attrs.bitmap.height
     private var currRotation = attrs.rotation
     private var currScale = attrs.scale
     private var currTranslateX = attrs.translateX
@@ -133,13 +134,27 @@ class StickerLayer(
                         val y = currTranslateY
                         listener?.onClick(StickerAttrs(bitmap, desc, rotation, scale, x, y))
                     }
-                    val bw = bitmapWidth / parentScaleX() * 0.5f
-                    if (currTranslateX - bw < 0 || currTranslateX + bw > width) {
-                        currTranslateX = width * 0.5f / parentScaleX()
+                    if (currTranslateX == 0f) {
+                        currTranslateX = (viewWidth * 0.5f - parentTranslateX()) / parentScaleX()
                     }
-                    val bh = bitmapHeight / parentScaleX() * 0.5f
-                    if (currTranslateY - bh < 0 || currTranslateY + bh > height) {
-                        currTranslateY = height * 0.5f / parentScaleY()
+                    if (currTranslateY == 0f) {
+                        currTranslateY = if (parentTranslateY() < 0) {
+                            (viewHeight * 0.5f - parentTranslateY()) / parentScaleY()
+                        } else {
+                            viewHeight * 0.5f / parentScaleY()
+                        }
+                    }
+                    val sw = stickerWidth * 0.5f / parentScaleX()
+                    if (currTranslateX - sw < 0 || currTranslateX + sw > bitmapWidth) {
+                        currTranslateX = (viewWidth * 0.5f - parentTranslateX()) / parentScaleX()
+                    }
+                    val sh = stickerHeight * 0.5f / parentScaleY()
+                    if (currTranslateY - sh < 0 || currTranslateY + sh > bitmapHeight) {
+                        currTranslateY = if (parentTranslateY() < 0) {
+                            (viewHeight * 0.5f - parentTranslateY()) / parentScaleY()
+                        } else {
+                            viewHeight * 0.5f / parentScaleY()
+                        }
                     }
                     measureBitmap()
                     pointerIndexId0 = INVALID_POINTER_ID
@@ -157,17 +172,24 @@ class StickerLayer(
         return isEnabled
     }
 
-    override fun onSizeChanged(w: Int, h: Int) {
-        width = w
-        height = h
+    override fun onSizeChanged(
+        viewWidth: Int,
+        viewHeight: Int,
+        bitmapWidth: Int,
+        bitmapHeight: Int
+    ) {
+        this.viewWidth = viewWidth
+        this.viewHeight = viewHeight
+        this.bitmapWidth = bitmapWidth
+        this.bitmapHeight = bitmapHeight
         if (currTranslateX == 0f) {
-            currTranslateX = (w * 0.5f - parentTranslateX()) / parentScaleX()
+            currTranslateX = (viewWidth * 0.5f - parentTranslateX()) / parentScaleX()
         }
         if (currTranslateY == 0f) {
             currTranslateY = if (parentTranslateY() < 0) {
-                (h * 0.5f - parentTranslateY()) / parentScaleY()
+                (viewHeight * 0.5f - parentTranslateY()) / parentScaleY()
             } else {
-                h * 0.5f
+                viewHeight * 0.5f / parentScaleY()
             }
         }
         measureBitmap()
@@ -179,20 +201,20 @@ class StickerLayer(
         if (inBorder) {
             canvas.drawRect(borderRectF, borderPaint)
         }
-        canvas.drawBitmap(attrs.bitmap, null, bitmapRectF, null)
+        canvas.drawBitmap(attrs.bitmap, null, stickerRectF, null)
         canvas.restore()
     }
 
     private fun measureBitmap() {
-        val bitmapLeft = currTranslateX - (bitmapWidth * currScale / parentScaleX() * 0.5f)
-        val bitmapTop = currTranslateY - (bitmapHeight * currScale / parentScaleX() * 0.5f)
-        val bitmapRight = currTranslateX + (bitmapWidth * currScale / parentScaleX() * 0.5f)
-        val bitmapBottom = currTranslateY + (bitmapHeight * currScale / parentScaleX() * 0.5f)
-        bitmapRectF.set(bitmapLeft, bitmapTop, bitmapRight, bitmapBottom)
-        val borderLeft = bitmapRectF.left - RECT_ROUND
-        val borderTop = bitmapRectF.top - RECT_ROUND
-        val borderRight = bitmapRectF.right + RECT_ROUND
-        val borderBottom = bitmapRectF.bottom + RECT_ROUND
+        val stickerLeft = currTranslateX - (stickerWidth * currScale / parentScaleX() * 0.5f)
+        val stickerTop = currTranslateY - (stickerHeight * currScale / parentScaleY() * 0.5f)
+        val stickerRight = currTranslateX + (stickerWidth * currScale / parentScaleX() * 0.5f)
+        val stickerBottom = currTranslateY + (stickerHeight * currScale / parentScaleY() * 0.5f)
+        stickerRectF.set(stickerLeft, stickerTop, stickerRight, stickerBottom)
+        val borderLeft = stickerRectF.left - RECT_ROUND
+        val borderTop = stickerRectF.top - RECT_ROUND
+        val borderRight = stickerRectF.right + RECT_ROUND
+        val borderBottom = stickerRectF.bottom + RECT_ROUND
         borderRectF.set(borderLeft, borderTop, borderRight, borderBottom)
     }
 
@@ -229,7 +251,7 @@ class StickerLayer(
 
     private fun adjustScale(deltaScale: Float) {
         currScale *= deltaScale
-        currScale = MINIMUM_SCALE.coerceAtLeast(MAXIMUM_SCALE.coerceAtMost(currScale))
+        currScale = MINIMUM_SCALE.coerceAtLeast(currScale)
     }
 
     private fun parentScaleX(): Float {

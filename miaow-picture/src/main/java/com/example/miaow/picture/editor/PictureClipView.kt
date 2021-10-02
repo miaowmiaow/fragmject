@@ -176,6 +176,14 @@ class PictureClipView @JvmOverloads constructor(
                         if (isBottomDrag) {
                             clipRectF.bottom = max(event.y, topDragRectF.bottom)
                         }
+                        if (bitmapRectF.width() < clipRectF.width()) {
+                            val scaleFactor = clipRectF.width() / bitmapRectF.width()
+                            val px = bitmapRectF.centerX()
+                            val py = (bitmapRectF.top - DRAG_WIDTH) + clipRectF.centerY()
+                            pcMatrix.setScale(scaleFactor, scaleFactor, px, py)
+                            pcMatrix.mapRect(bitmapRectF)
+                            bitmapRectF.offset(clipRectF.left - bitmapRectF.left, 0f)
+                        }
                         if (bitmapRectF.height() < clipRectF.height()) {
                             val scaleFactor = clipRectF.height() / bitmapRectF.height()
                             val px = (bitmapRectF.left - DRAG_WIDTH) + clipRectF.centerX()
@@ -254,7 +262,11 @@ class PictureClipView @JvmOverloads constructor(
         val maxClipRight = viewWidth - DRAG_WIDTH
         val maxClipBottom = viewHeight - DRAG_WIDTH
         maxClipRectF.set(maxClipLift, maxClipTop, maxClipRight, maxClipBottom)
-        val scaleFactor = maxClipRectF.width() / bitmapWidth
+        val scaleFactor = if (bitmapWidth > bitmapHeight) {
+            maxClipRectF.width() / bitmapWidth
+        } else {
+            maxClipRectF.height() / bitmapHeight
+        }
         val bitmapLeft = (viewWidth - bitmapWidth * scaleFactor) * 0.5f
         val bitmapTop = (viewHeight - bitmapHeight * scaleFactor) * 0.5f
         val bitmapRight = viewWidth - bitmapLeft

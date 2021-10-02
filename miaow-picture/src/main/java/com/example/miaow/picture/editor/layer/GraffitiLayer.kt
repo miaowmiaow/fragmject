@@ -114,8 +114,13 @@ class GraffitiLayer(private val parent: View) : ILayer {
         return isEnabled
     }
 
-    override fun onSizeChanged(w: Int, h: Int) {
-        graffitiBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    override fun onSizeChanged(
+        viewWidth: Int,
+        viewHeight: Int,
+        bitmapWidth: Int,
+        bitmapHeight: Int
+    ) {
+        graffitiBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
         graffitiCanvas.setBitmap(graffitiBitmap)
         if (paintPaths.isNotEmpty()) {
             graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)

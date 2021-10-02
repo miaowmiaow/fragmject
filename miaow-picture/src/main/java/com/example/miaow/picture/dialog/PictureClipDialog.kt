@@ -5,8 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
+import android.widget.Toast
 import com.example.miaow.picture.databinding.DialogPictureClipBinding
+import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
 
 class PictureClipDialog : PictureBaseDialog() {
 
@@ -18,6 +19,7 @@ class PictureClipDialog : PictureBaseDialog() {
     }
 
     private lateinit var bitmap: Bitmap
+    private var isSaving = false
     private var callback: ClipFinishCallback? = null
 
     fun setBitmapResource(bitmap: Bitmap): PictureClipDialog {
@@ -54,9 +56,14 @@ class PictureClipDialog : PictureBaseDialog() {
         binding.reset.setOnClickListener { binding.clip.reset() }
         binding.cancel.setOnClickListener { dismiss() }
         binding.confirm.setOnClickListener {
-            it.context.saveSystemAlbum(binding.clip.saveBitmap()) { path ->
-                callback?.onFinish(path)
-                dismiss()
+            if (!isSaving) {
+                isSaving = true
+                Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_LONG).show()
+                it.context.saveSystemAlbum(binding.clip.saveBitmap()) { path ->
+                    callback?.onFinish(path)
+                    isSaving = false
+                    dismiss()
+                }
             }
         }
     }

@@ -188,7 +188,7 @@ allprojects {
 第2步：在应用的`build.gradle`中添加：
 ```
 dependencies {
-    implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.5'
+    implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.6'
 }
 ```
 ### 快速使用

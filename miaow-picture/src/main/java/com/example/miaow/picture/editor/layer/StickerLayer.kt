@@ -7,6 +7,7 @@ import android.view.View
 import androidx.core.graphics.values
 import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.utils.Vector2D
+import kotlin.math.min
 
 class StickerLayer(
     private val parent: View,
@@ -141,7 +142,7 @@ class StickerLayer(
                         currTranslateY = if (parentTranslateY() < 0) {
                             (viewHeight * 0.5f - parentTranslateY()) / parentScaleY()
                         } else {
-                            viewHeight * 0.5f / parentScaleY()
+                            min(viewHeight, bitmapHeight) * 0.5f / parentScaleY()
                         }
                     }
                     val sw = stickerWidth * 0.5f / parentScaleX()
@@ -153,7 +154,7 @@ class StickerLayer(
                         currTranslateY = if (parentTranslateY() < 0) {
                             (viewHeight * 0.5f - parentTranslateY()) / parentScaleY()
                         } else {
-                            viewHeight * 0.5f / parentScaleY()
+                            min(viewHeight, bitmapHeight) * 0.5f / parentScaleY()
                         }
                     }
                     measureBitmap()
@@ -189,7 +190,7 @@ class StickerLayer(
             currTranslateY = if (parentTranslateY() < 0) {
                 (viewHeight * 0.5f - parentTranslateY()) / parentScaleY()
             } else {
-                viewHeight * 0.5f / parentScaleY()
+                min(viewHeight, bitmapHeight) * 0.5f / parentScaleY()
             }
         }
         measureBitmap()

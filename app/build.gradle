@@ -108,10 +108,6 @@ walle {
 
 dependencies {
     implementation project(path: ':module-home')
-    implementation project(path: ':module-navigation')
-    implementation project(path: ':module-faq')
-    implementation project(path: ':module-system')
-    implementation project(path: ':module-project')
     implementation project(path: ':module-user')
     implementation rootProject.ext.dependencies["meituan-walle"]
 }

@@ -14,7 +14,7 @@ import com.example.fragment.library.common.fragment.WebFragment
 import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.fragment.SearchFragment
-import com.example.fragment.module.system.fragment.SystemListFragment
+import com.example.fragment.module.home.fragment.SystemListFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
 import com.example.fragment.project.fragment.MainFragment

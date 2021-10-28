@@ -11,10 +11,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        thread {
-            initSimpleHttp()
-            initQbSdk()
-        }
+        initSimpleHttp()
+        initQbSdk()
     }
 
     private fun initSimpleHttp() {

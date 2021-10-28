@@ -12,9 +12,9 @@
 - 图片编辑
 - 字节码插桩
 ## 截图展示
-| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621158973.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) |
+| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155342.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141339.gif) |
+| ![4.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/Screenshot_1621155439.png) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 ## 项目目录结构
 ```
 ├── app                                  app
@@ -57,11 +57,7 @@
 |       └── build.gradle                 模块构建配置
 | 
 ├── miaow-picture                        图片编辑器（目录同app，不再展开）
-├── module-faq                           问答模块（目录同app，不再展开）
-├── module-home                          首页模块（目录同app，不再展开）
-├── module-navigation                    导航模块（目录同app，不再展开）
-├── module-project                       项目模块（目录同app，不再展开）
-├── module-system                        体系模块（目录同app，不再展开）
+├── module-home                          玩Android功能模块（目录同app，不再展开）
 ├── module-user                          用户模块（目录同app，不再展开）
 | 
 ├── plugin-statistic                     统计插件模块
@@ -98,7 +94,7 @@ ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的�
 协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 ## Fragment + LiveData + ViewModel + 协程
-以项目中 MainFragment 为例：
+实战讲解，以项目中 MainFragment 为例：
 ```
 class MainViewModel :  ViewModel() {
     
@@ -106,14 +102,10 @@ class MainViewModel :  ViewModel() {
 
     // 获取热词接口
     fun getHotKey() {
-        // 通过viewModelScope创建一个协程
-        viewModelScope.launch {
-            // 构建请求体，传入请求参数
-            val request = HttpRequest("hotkey/json")
-            // 以get方式发起网络请求
-            val response = get<HotKeyListBean>(request)
-            // 通过LiveData更新数据
-            hotKeyResult.postValue(response)
+        viewModelScope.launch {  // 通过viewModelScope创建一个协程
+            val request = HttpRequest("hotkey/json") // 构建请求体，传入请求参数
+            val response = get<HotKeyListBean>(request) // 以get方式发起网络请求
+            hotKeyResult.postValue(response) // 通过LiveData更新数据
         }
     }
     
@@ -122,22 +114,20 @@ class MainViewModel :  ViewModel() {
 ```
 class MainFragment : Fragment() {
 
-    // 使用 'by viewModels()' Kotlin属性委托获取 MainViewModel
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: MainViewModel by viewModels() // 使用 'by viewModels()' Kotlin属性委托获取 MainViewModel
     private val hotKeyAdapter = HotKeyAdapter()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // 观察 hotKeyResult 的变化来更新UI
-        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
+        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result -> // 观察 hotKeyResult 的变化来更新UI
             result.data?.apply {
                 if (result.errorCode == "0") {
                     hotKeyAdapter.setNewData(this)
                 }
             }
         })
-        // 调用获取热词接口
-        viewModel.getHotKey()
+
+        viewModel.getHotKey() // 调用获取热词接口
     }
 
 }
@@ -145,28 +135,27 @@ class MainFragment : Fragment() {
 ## 基于LiveData封装的消息总线LiveDataBus
 LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。  
 ```
-    1、发送事件
-    LiveDataBus.with<String>("key").postEvent("value")
+1、发送事件
+LiveDataBus.with<String>("key").postEvent("value")
 
-    2、接收事件
-    LiveDataBus.with<String>("key").observe(viewLifecycleOwner, { it ->
-        println(it)
-    })
+2、接收事件
+LiveDataBus.with<String>("key").observe(viewLifecycleOwner, { it ->
+    println(it)
+})
 
-    3、接收粘滞事件
-    LiveDataBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
-        println(it)
-    })
+3、接收粘滞事件
+LiveDataBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
+    println(it)
+})
 ```
 ## 基于RoomDatabase封装的DBHelper
 通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
 ```
-    1、存储数据
-    DBHelper.set(“key”, "value")
+1、存储数据
+DBHelper.set(“key”, "value")
 
-    2、获取数据
-
-     DBHelper.get(“key”)
+2、获取数据
+DBHelper.get(“key”)
 ```
 ## 动态权限申请
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)
@@ -175,6 +164,8 @@ LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且
 - [最通俗易懂的字节码插桩实战（Gradle + ASM）—— 自动埋点](https://juejin.cn/post/6985366891447451662)
 ## 图片编辑器
 - [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
+### 截图展示
+| ![14.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![15.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) | ![16.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141339.gif) |
 ### 接入
 第 1 步:在工程的`build.gradle`中添加：
 ```
@@ -229,7 +220,7 @@ picEditor.saveBitmap()
 1. 通过`setBitmapPath(path)`传入图片路径
 2. 通过`setMode(mode)`设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸
 3. 通过`setGraffitiColor(color)`设置涂鸦画笔颜色
-4. 通过`setSticker(StickerAttrs(bitmap))设置贴纸
+4. 通过`setSticker(StickerAttrs(bitmap))`设置贴纸
 5. 通过`graffitiUndo()`涂鸦撤销
 6. 通过`mosaicUndo()`马赛克撤销
 7. 通过`saveBitmap()`保存编辑图片

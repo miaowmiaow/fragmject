@@ -140,7 +140,7 @@ class SettingFragment : RouterFragment() {
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
                         val args = Bundle()
-                        args.putString(Keys.URL, "https://www.bilibili.com/")
+                        args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject.git")
                         baseActivity.navigation(Router.WEB, args)
                     }
 
@@ -174,7 +174,7 @@ class SettingFragment : RouterFragment() {
         }
         binding.feedback.setOnClickListener {
             val args = Bundle()
-            args.putString(Keys.URL, "https://github.com/miaowmiaow/FragmentProject/issues")
+            args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject/issues")
             baseActivity.navigation(Router.WEB, args)
         }
         binding.logout.setOnClickListener {

@@ -11,11 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import com.example.fragment.library.base.view.TabLayout
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.faq.fragment.FAQFragment
+import com.example.fragment.module.home.fragment.FAQFragment
 import com.example.fragment.module.home.fragment.HomeFragment
-import com.example.fragment.module.navigation.fragment.NavigationFragment
-import com.example.fragment.module.project.fragment.ProjectListFragment
-import com.example.fragment.module.system.fragment.SystemFragment
+import com.example.fragment.module.home.fragment.NavigationFragment
+import com.example.fragment.module.home.fragment.ProjectListFragment
+import com.example.fragment.module.home.fragment.SystemFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanBinding
 

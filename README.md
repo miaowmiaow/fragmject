@@ -14,7 +14,7 @@
 ## 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155342.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/blob/master/FragmentProject/Screenshot_1621155439.png) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
+| ![4.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
 ## 项目目录结构
 ```
 ├── app                                  app
@@ -102,10 +102,18 @@ class MainViewModel :  ViewModel() {
 
     // 获取热词接口
     fun getHotKey() {
-        viewModelScope.launch {  // 通过viewModelScope创建一个协程
-            val request = HttpRequest("hotkey/json") // 构建请求体，传入请求参数
-            val response = get<HotKeyListBean>(request) // 以get方式发起网络请求
-            hotKeyResult.postValue(response) // 通过LiveData更新数据
+
+        // 通过viewModelScope创建一个协程
+        viewModelScope.launch {
+
+            // 构建请求体，传入请求参数
+            val request = HttpRequest("hotkey/json")
+
+            // 以get方式发起网络请求
+            val response = get<HotKeyListBean>(request)
+
+            // 通过LiveData更新数据
+            hotKeyResult.postValue(response)
         }
     }
     
@@ -114,12 +122,15 @@ class MainViewModel :  ViewModel() {
 ```
 class MainFragment : Fragment() {
 
-    private val viewModel: MainViewModel by viewModels() // 使用 'by viewModels()' Kotlin属性委托获取 MainViewModel
+    // 使用 'by viewModels()' Kotlin属性委托获取 MainViewModel
+    private val viewModel: MainViewModel by viewModels()
     private val hotKeyAdapter = HotKeyAdapter()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result -> // 观察 hotKeyResult 的变化来更新UI
+
+        // 观察 hotKeyResult 的变化来更新UI
+        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
             result.data?.apply {
                 if (result.errorCode == "0") {
                     hotKeyAdapter.setNewData(this)
@@ -127,7 +138,8 @@ class MainFragment : Fragment() {
             }
         })
 
-        viewModel.getHotKey() // 调用获取热词接口
+        // 调用获取热词接口
+        viewModel.getHotKey()
     }
 
 }

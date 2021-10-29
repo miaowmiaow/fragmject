@@ -70,7 +70,7 @@ class UserViewModel : ViewModel() {
 
     fun userCoin() {
         viewModelScope.launch {
-            val request = HttpRequest("lg/coin/userinfo/jsonn")
+            val request = HttpRequest("lg/coin/userinfo/json")
             val response = get<UserCoinBean>(request)
             userCoinResult.postValue(response)
         }

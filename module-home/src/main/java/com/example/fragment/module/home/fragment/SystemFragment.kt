@@ -54,7 +54,6 @@ class SystemFragment : RouterFragment() {
     private fun setupView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = systemAdapter
-        binding.pullRefresh.setLoadMore(false)
         binding.pullRefresh.setOnRefreshListener(object :
             PullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
@@ -73,9 +72,7 @@ class SystemFragment : RouterFragment() {
             } else if (result.errorCode.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
+            binding.pullRefresh.finishRefresh()
         })
     }
 

@@ -268,7 +268,6 @@ class PullRefreshLayout @JvmOverloads constructor(
             }
         }
         recyclerView.adapter = loadMoreAdapter
-        setLoadMore(true)
     }
 
     class LoadMoreViewHolder(view: View) : RecyclerView.ViewHolder(view)
@@ -332,10 +331,7 @@ class PullRefreshLayout @JvmOverloads constructor(
             if (interpolatedTime >= DRAG_RATE && !refreshing) {
                 refreshing = true
                 refreshDrawable.start()
-                refreshListener?.let {
-                    it.onRefresh(this@PullRefreshLayout)
-                    loadMore = true
-                }
+                refreshListener?.onRefresh(this@PullRefreshLayout)
             }
         }
     }
@@ -458,10 +454,7 @@ class PullRefreshLayout @JvmOverloads constructor(
         if (overScrollTop > refreshViewHeight * 2 && !refreshing) {
             refreshing = true
             refreshDrawable.start()
-            refreshListener?.let {
-                it.onRefresh(this)
-                loadMore = true
-            }
+            refreshListener?.onRefresh(this)
         } else {
             refreshing = false
             animateOffsetToStartPosition(currentTargetOffsetTop)

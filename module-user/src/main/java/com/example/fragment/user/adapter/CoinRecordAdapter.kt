@@ -28,7 +28,7 @@ class CoinRecordAdapter : BaseAdapter<MyCoinBean>() {
             .replace(",", "")
             .replace("：", "")
             .replace(" ", "")
-        binding.coinCount.text = "+$item.coinCount"
+        binding.coinCount.text = "+${item.coinCount}"
         binding.title.text = title
         binding.time.text = time
     }

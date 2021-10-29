@@ -70,7 +70,6 @@ class MyShareArticleFragment : RouterFragment() {
                             articleAdapter.setNewData(list)
                         } else {
                             articleAdapter.addData(list)
-                            binding.pullRefresh.setLoadMore(true)
                         }
                     }
                 }
@@ -83,12 +82,8 @@ class MyShareArticleFragment : RouterFragment() {
                     baseActivity.showTips(result.errorMsg)
                 }
             }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
-            if (viewModel.page >= viewModel.pageCont) {
-                binding.pullRefresh.setLoadMore(false)
-            }
+            binding.pullRefresh.finishRefresh()
+            binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         })
     }
 

@@ -77,7 +77,6 @@ class NavigationFragment : RouterFragment() {
                 }
             }
         })
-        binding.pullRefresh.setLoadMore(false)
         binding.pullRefresh.setOnRefreshListener(object :
             PullRefreshLayout.OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
@@ -102,9 +101,7 @@ class NavigationFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
+            binding.pullRefresh.finishRefresh()
         })
     }
 

@@ -92,19 +92,14 @@ class CoinRankFragment : RouterFragment() {
                         }
                     } else {
                         coinRankAdapter.addData(list)
-                        binding.pullRefresh.setLoadMore(true)
                     }
                 }
             }
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
-            if (viewModel.page >= viewModel.pageCont) {
-                binding.pullRefresh.setLoadMore(false)
-            }
+            binding.pullRefresh.finishRefresh()
+            binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         })
     }
 

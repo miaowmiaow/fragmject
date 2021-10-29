@@ -118,7 +118,6 @@ class MyCoinFragment : RouterFragment() {
                             coinRecordAdapter.setNewData(list)
                         } else {
                             coinRecordAdapter.addData(list)
-                            binding.pullRefresh.setLoadMore(true)
                         }
                     }
                 }
@@ -131,12 +130,8 @@ class MyCoinFragment : RouterFragment() {
                     baseActivity.showTips(result.errorMsg)
                 }
             }
-            if (binding.pullRefresh.isRefresh()) {
-                binding.pullRefresh.finishRefresh()
-            }
-            if (viewModel.page >= viewModel.pageCont) {
-                binding.pullRefresh.setLoadMore(false)
-            }
+            binding.pullRefresh.finishRefresh()
+            binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         })
     }
 

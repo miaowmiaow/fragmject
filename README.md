@@ -39,6 +39,7 @@
 |       |   ├── assets                   原生文件目录
 |       |   └── java                     源码目录
 |       |       ├── bus                  消息总线目录
+|       |       ├── db                   Database目录
 |       |       ├── dialog               Dialog目录
 |       |       ├── http                 网络请求目录
 |       |       ├── provider             ContentProvider目录
@@ -144,30 +145,25 @@ class MainFragment : Fragment() {
 
 }
 ```
-## 基于LiveData封装的消息总线LiveDataBus
-LiveDataBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。  
+## 基于SharedFlow封装的消息总线SharedFlowBus
+SharedFlowBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。
 ```
 1、发送事件
-LiveDataBus.with<String>("key").postEvent("value")
+SharedFlowBus.with(objectKey: Class<T>).tryEmit(value: T)
 
 2、接收事件
-LiveDataBus.with<String>("key").observe(viewLifecycleOwner, { it ->
+SharedFlowBus.on(objectKey: Class<T>).observe(owner){ it ->
     println(it)
-})
-
-3、接收粘滞事件
-LiveDataBus.with<String>("key").observeSticky(viewLifecycleOwner, { it ->
-    println(it)
-})
+}
 ```
-## 基于RoomDatabase封装的DBHelper
+## 基于RoomDatabase封装的KVDatabase
 通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
 ```
 1、存储数据
-DBHelper.set(“key”, "value")
+KVDatabase.set(key: String, value: String)
 
 2、获取数据
-DBHelper.get(“key”)
+KVDatabase.get(key: String)
 ```
 ## 动态权限申请
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)

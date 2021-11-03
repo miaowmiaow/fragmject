@@ -5,9 +5,8 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.utils.DBHelper
-import com.example.fragment.library.base.view.TipsView
 import com.example.fragment.library.base.utils.StatusBarUtils
+import com.example.fragment.library.base.view.TipsView
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -52,11 +51,6 @@ abstract class BaseActivity : AppCompatActivity() {
                 moveTaskToBack(true)
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        DBHelper.closeDatabase()
     }
 
     fun showTips(text: String?) {

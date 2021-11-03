@@ -193,10 +193,10 @@ class SettingFragment : RouterFragment() {
     }
 
     private fun update() {
-        WanHelper.getUser().observe(viewLifecycleOwner, { userBean ->
+        WanHelper.getUser().observe(viewLifecycleOwner) { userBean ->
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
-        })
-        WanHelper.getUIMode().observe(viewLifecycleOwner, { result ->
+        }
+        WanHelper.getUIMode().observe(viewLifecycleOwner) { result ->
             when (result) {
                 1 -> {
                     binding.systemTheme.setChecked(false)
@@ -211,8 +211,8 @@ class SettingFragment : RouterFragment() {
                     binding.darkTheme.setChecked(false)
                 }
             }
-        })
-        WanHelper.getScreenRecordStatus().observe(viewLifecycleOwner, { result ->
+        }
+        WanHelper.getScreenRecordStatus().observe(viewLifecycleOwner) { result ->
             when (result) {
                 0 -> {
                     binding.screenRecord.setChecked(false)
@@ -221,8 +221,8 @@ class SettingFragment : RouterFragment() {
                     binding.screenRecord.setChecked(true)
                 }
             }
-        })
-        viewModel.logoutResult.observe(viewLifecycleOwner, { result ->
+        }
+        viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 WanHelper.setUser(UserBean())
                 baseActivity.onBackPressed()
@@ -230,7 +230,7 @@ class SettingFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-        })
+        }
     }
 
     @Throws(IOException::class)

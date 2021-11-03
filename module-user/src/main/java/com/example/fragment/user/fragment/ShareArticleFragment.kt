@@ -59,7 +59,7 @@ class ShareArticleFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.shareArticleResult.observe(viewLifecycleOwner, { result ->
+        viewModel.shareArticleResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
                 "0" -> {
                     baseActivity.onBackPressed()
@@ -72,7 +72,7 @@ class ShareArticleFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-        })
+        }
     }
 
     private fun checkParameter(link: String): Boolean {

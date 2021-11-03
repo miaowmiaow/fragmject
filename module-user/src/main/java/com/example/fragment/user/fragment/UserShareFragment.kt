@@ -64,7 +64,7 @@ class UserShareFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.userShareResult.observe(viewLifecycleOwner, { result ->
+        viewModel.userShareResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.coinInfo?.let { coin ->
                     binding.title.text = coin.username
@@ -84,7 +84,7 @@ class UserShareFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

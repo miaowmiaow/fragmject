@@ -87,7 +87,7 @@ class NavigationFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.navigationResult.observe(viewLifecycleOwner, { result ->
+        viewModel.navigationResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.let { menu ->
                     if (menu.isNotEmpty()) {
@@ -102,7 +102,7 @@ class NavigationFragment : RouterFragment() {
                 baseActivity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-        })
+        }
     }
 
     private fun fillFlexboxLayout(data: List<ArticleBean>? = null) {

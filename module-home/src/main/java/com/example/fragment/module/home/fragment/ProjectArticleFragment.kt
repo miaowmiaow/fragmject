@@ -79,7 +79,7 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.projectListResult.observe(viewLifecycleOwner, { result ->
+        viewModel.projectListResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -94,6 +94,6 @@ class ProjectArticleFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 }

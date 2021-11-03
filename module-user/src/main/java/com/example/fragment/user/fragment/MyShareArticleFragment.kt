@@ -62,7 +62,7 @@ class MyShareArticleFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.myShareArticleResult.observe(viewLifecycleOwner, { result ->
+        viewModel.myShareArticleResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
                     result.data?.shareArticles?.datas?.let { list ->
@@ -84,7 +84,7 @@ class MyShareArticleFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

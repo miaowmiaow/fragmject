@@ -57,7 +57,7 @@ class RegisterFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.registerResult.observe(viewLifecycleOwner, { result ->
+        viewModel.registerResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {
                     WanHelper.setUser(this)
@@ -67,7 +67,7 @@ class RegisterFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-        })
+        }
     }
 
     private fun checkParameter(username: String, password: String, repassword: String): Boolean {

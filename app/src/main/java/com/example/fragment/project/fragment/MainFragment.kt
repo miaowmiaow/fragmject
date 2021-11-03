@@ -139,7 +139,7 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
     }
 
     private fun update() {
-        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
+        viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
             result.data?.apply {
                 if (result.errorCode == "0") {
                     hotKeyAdapter.setNewData(this)
@@ -150,7 +150,7 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
                     baseActivity.showTips(result.errorMsg)
                 }
             }
-        })
+        }
         viewModel.getHotKey()
         viewModel.getTree()
     }

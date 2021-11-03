@@ -70,7 +70,7 @@ class FAQFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.wendaResult.observe(viewLifecycleOwner, { result ->
+        viewModel.wendaResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -85,7 +85,7 @@ class FAQFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

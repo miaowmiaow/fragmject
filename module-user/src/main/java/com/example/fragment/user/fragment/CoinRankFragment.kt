@@ -71,7 +71,7 @@ class CoinRankFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.coinRankResult.observe(viewLifecycleOwner, { result ->
+        viewModel.coinRankResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -100,7 +100,7 @@ class CoinRankFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
     private fun numberAnimator(view: TextView, number: String) {

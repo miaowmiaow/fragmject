@@ -71,7 +71,7 @@ class HomeFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.bannerResult.observe(viewLifecycleOwner, { result ->
+        viewModel.bannerResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {
                     articleAdapter.setBannerData(this)
@@ -80,8 +80,8 @@ class HomeFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-        })
-        viewModel.articleTopResult.observe(viewLifecycleOwner, { result ->
+        }
+        viewModel.articleTopResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.let { list ->
                     list.forEach {
@@ -93,8 +93,8 @@ class HomeFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-        })
-        viewModel.articleListResult.observe(viewLifecycleOwner, { result ->
+        }
+        viewModel.articleListResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -109,7 +109,7 @@ class HomeFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

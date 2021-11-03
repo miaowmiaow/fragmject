@@ -109,7 +109,7 @@ class SearchFragment : RouterFragment() {
     }
 
     private fun update() {
-        WanHelper.getHotKey().observe(viewLifecycleOwner, { result ->
+        WanHelper.getHotKey().observe(viewLifecycleOwner) { result ->
             binding.hotKey.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
             binding.fbl.removeAllViews()
             result.forEach { hotKey ->
@@ -121,9 +121,9 @@ class SearchFragment : RouterFragment() {
                 }
                 binding.fbl.addView(tv)
             }
-        })
+        }
         initHistorySearch()
-        viewModel.searchResult.observe(viewLifecycleOwner, { result ->
+        viewModel.searchResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -138,7 +138,7 @@ class SearchFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
     private fun search(key: String) {
@@ -159,10 +159,10 @@ class SearchFragment : RouterFragment() {
     private fun initHistorySearch() {
         binding.history.visibility = View.VISIBLE
         binding.pullRefresh.visibility = View.GONE
-        WanHelper.getHistorySearch().observe(viewLifecycleOwner, { result ->
+        WanHelper.getHistorySearch().observe(viewLifecycleOwner) { result ->
             binding.historySearch.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
             historySearchAdapter.setNewData(result)
-        })
+        }
     }
 
     private fun checkParameter(title: String): Boolean {

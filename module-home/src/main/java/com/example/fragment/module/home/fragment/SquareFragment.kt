@@ -65,7 +65,7 @@ class SquareFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.userArticleResult.observe(viewLifecycleOwner, { result ->
+        viewModel.userArticleResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -80,7 +80,7 @@ class SquareFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

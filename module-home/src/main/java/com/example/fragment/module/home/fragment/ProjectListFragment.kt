@@ -65,7 +65,7 @@ class ProjectListFragment : RouterFragment() {
     }
 
     private fun update(savedInstanceState: Bundle?) {
-        viewModel.projectTreeResult.observe(viewLifecycleOwner, { result ->
+        viewModel.projectTreeResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.also { data ->
                     binding.viewpager.offscreenPageLimit = 2
@@ -95,6 +95,6 @@ class ProjectListFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
-        })
+        }
     }
 }

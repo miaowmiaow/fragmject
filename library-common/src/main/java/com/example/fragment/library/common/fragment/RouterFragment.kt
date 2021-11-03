@@ -7,11 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import com.example.fragment.library.base.bus.LiveDataBus
+import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.fragment.BaseFragment
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.LiveBus
 
 open class RouterFragment : BaseFragment() {
 
@@ -37,12 +36,12 @@ open class RouterFragment : BaseFragment() {
 
     override fun onStart() {
         super.onStart()
-        //通过LiveDataBus观察UserBean的变化，从而通知页面刷新
-        LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+        //通过SharedFlowBus观察UserBean的变化，从而通知页面刷新
+        SharedFlowBus.on(UserBean::class.java).observe(this) { userBean ->
             if (!isDestroyView) {
                 onUserStatusUpdate(userBean)
             }
-        })
+        }
     }
 
     override fun onPause() {

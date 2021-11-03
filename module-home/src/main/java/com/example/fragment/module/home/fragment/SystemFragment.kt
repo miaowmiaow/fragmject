@@ -64,7 +64,7 @@ class SystemFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.treeResult.observe(viewLifecycleOwner, { result ->
+        viewModel.treeResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {
                     systemAdapter.setNewData(this)
@@ -73,7 +73,7 @@ class SystemFragment : RouterFragment() {
                 baseActivity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-        })
+        }
     }
 
 }

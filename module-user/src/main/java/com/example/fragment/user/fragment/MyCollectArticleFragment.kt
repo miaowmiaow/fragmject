@@ -62,7 +62,7 @@ class MyCollectArticleFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.myCollectArticleResult.observe(viewLifecycleOwner, { result ->
+        viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
                     result.data?.datas?.let { list ->
@@ -87,7 +87,7 @@ class MyCollectArticleFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

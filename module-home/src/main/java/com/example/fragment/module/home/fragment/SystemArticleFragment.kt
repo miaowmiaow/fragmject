@@ -74,7 +74,7 @@ class SystemArticleFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.treeListResult.observe(viewLifecycleOwner, { result ->
+        viewModel.treeListResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
                     if (viewModel.isRefresh) {
@@ -88,7 +88,7 @@ class SystemArticleFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

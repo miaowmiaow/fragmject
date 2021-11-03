@@ -83,7 +83,7 @@ class MyCoinFragment : RouterFragment() {
     }
 
     private fun update() {
-        viewModel.userCoinResult.observe(viewLifecycleOwner, { result ->
+        viewModel.userCoinResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
                     result.data?.let { coinBean ->
@@ -109,8 +109,8 @@ class MyCoinFragment : RouterFragment() {
                     baseActivity.showTips(result.errorMsg)
                 }
             }
-        })
-        viewModel.myCoinResult.observe(viewLifecycleOwner, { result ->
+        }
+        viewModel.myCoinResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
                     result.data?.datas?.let { list ->
@@ -132,7 +132,7 @@ class MyCoinFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
-        })
+        }
     }
 
 }

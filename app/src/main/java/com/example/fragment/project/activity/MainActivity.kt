@@ -4,10 +4,9 @@ import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
-import com.example.fragment.library.base.bus.LiveDataBus
+import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.LiveBus
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.WebFragment
@@ -76,9 +75,9 @@ class MainActivity : RouterActivity() {
 
     override fun onStart() {
         super.onStart()
-        WanHelper.getUser().observe(this, { userBean ->
-            LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).postEvent(userBean)
-        })
+        WanHelper.getUser().observe(this) { userBean ->
+            SharedFlowBus.with(UserBean::class.java).tryEmit(userBean)
+        }
     }
 
     private fun setupView() {
@@ -87,9 +86,9 @@ class MainActivity : RouterActivity() {
 
     @TestAnnotation(code = 10000, message = "MainActivity.update")
     private fun update() {
-        LiveDataBus.with<UserBean>(LiveBus.USER_STATUS_UPDATE).observe(this, { userBean ->
+        SharedFlowBus.on(UserBean::class.java).observe(this) { userBean ->
             userId = userBean.id
-        })
+        }
     }
 
     /**

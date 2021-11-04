@@ -30,11 +30,11 @@ object SharedFlowBus {
     }
 
     fun <T> on(objectKey: Class<T>): LiveData<T> {
-        return if (stickyEvents.containsKey(objectKey)) {
-            withSticky(objectKey).asLiveData()
-        } else {
-            with(objectKey).asLiveData()
-        }
+        return with(objectKey).asLiveData()
+    }
+
+    fun <T> onSticky(objectKey: Class<T>): LiveData<T> {
+        return withSticky(objectKey).asLiveData()
     }
 
 }

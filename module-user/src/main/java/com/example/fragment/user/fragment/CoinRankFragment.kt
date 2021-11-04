@@ -20,6 +20,7 @@ import com.example.fragment.user.model.UserViewModel
 class CoinRankFragment : RouterFragment() {
 
     private val coinRankAdapter = CoinRankAdapter()
+
     private val viewModel: UserViewModel by viewModels()
     private var _binding: FragmentCoinRankBinding? = null
     private val binding get() = _binding!!
@@ -40,11 +41,6 @@ class CoinRankFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener {
             baseActivity.onBackPressed()
         }
@@ -67,10 +63,6 @@ class CoinRankFragment : RouterFragment() {
                 viewModel.coinRank(false)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.coinRankResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
@@ -101,6 +93,7 @@ class CoinRankFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun numberAnimator(view: TextView, number: String) {

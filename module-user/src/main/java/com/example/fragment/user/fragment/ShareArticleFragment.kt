@@ -35,11 +35,6 @@ class ShareArticleFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.browser.setOnClickListener {
             val link = binding.link.text.toString()
@@ -56,9 +51,6 @@ class ShareArticleFragment : RouterFragment() {
                 viewModel.shareArticle(title, link)
             }
         }
-    }
-
-    private fun update() {
         viewModel.shareArticleResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
                 "0" -> {

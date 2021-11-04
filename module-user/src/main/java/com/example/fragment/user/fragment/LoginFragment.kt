@@ -33,11 +33,6 @@ class LoginFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
@@ -51,9 +46,6 @@ class LoginFragment : RouterFragment() {
         binding.register.setOnClickListener {
             baseActivity.navigation(Router.REGISTER)
         }
-    }
-
-    private fun update() {
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {

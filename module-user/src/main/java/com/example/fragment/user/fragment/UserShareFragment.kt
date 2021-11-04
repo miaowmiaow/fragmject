@@ -40,11 +40,6 @@ class UserShareFragment : RouterFragment() {
         arguments?.apply {
             id = this.getString(Keys.ID).toString()
         }
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
@@ -60,10 +55,6 @@ class UserShareFragment : RouterFragment() {
                 viewModel.userShare(false, id)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.userShareResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.coinInfo?.let { coin ->
@@ -85,6 +76,7 @@ class UserShareFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
 
 }

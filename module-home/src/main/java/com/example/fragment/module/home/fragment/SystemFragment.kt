@@ -23,6 +23,7 @@ class SystemFragment : RouterFragment() {
     }
 
     private val systemAdapter = SystemAdapter()
+
     private val viewModel: SystemViewModel by viewModels()
     private var _binding: FragmentSystemBinding? = null
     private val binding get() = _binding!!
@@ -43,15 +44,6 @@ class SystemFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    override fun onUserStatusUpdate(userBean: UserBean) {
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun setupView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = systemAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -60,10 +52,6 @@ class SystemFragment : RouterFragment() {
                 viewModel.getTree()
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.treeResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {
@@ -74,6 +62,11 @@ class SystemFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
         }
+        binding.pullRefresh.setRefreshing()
+    }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        binding.pullRefresh.setRefreshing()
     }
 
 }

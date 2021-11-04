@@ -44,27 +44,9 @@ class ProjectListFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update(savedInstanceState)
-        viewModel.getProjectTree()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
-    }
-
-    override fun onUserStatusUpdate(userBean: UserBean) {
-        viewModel.getProjectTree()
-    }
-
-    private fun setupView() {
         binding.tab.setTabMod(TabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)
         binding.tab.setSelectedIndicatorHeight(5)
-    }
-
-    private fun update(savedInstanceState: Bundle?) {
         viewModel.projectTreeResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.also { data ->
@@ -95,6 +77,20 @@ class ProjectListFragment : RouterFragment() {
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                 baseActivity.showTips(result.errorMsg)
             }
+            dismissDialog()
         }
+        viewModel.getProjectTree()
+        showDialog()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
+    }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        viewModel.getProjectTree()
+        showDialog()
+    }
+
 }

@@ -62,6 +62,14 @@ open class RouterFragment : BaseFragment() {
      */
     open fun onUserStatusUpdate(userBean: UserBean) {}
 
+    fun showDialog(){
+
+    }
+
+    fun dismissDialog(){
+
+    }
+
     private fun hideInputMethod() {
         val inputMethodManager =
             baseActivity.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager

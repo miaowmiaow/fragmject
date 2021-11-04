@@ -42,10 +42,6 @@ class AvatarFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-    }
-
-    private fun setupView() {
         binding.image.setImageResource(R.drawable.ic_logo)
         val path = SPUtil.getString(Keys.AVATAR)
         BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->

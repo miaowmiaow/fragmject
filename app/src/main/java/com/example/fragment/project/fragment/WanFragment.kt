@@ -43,6 +43,7 @@ class WanFragment : RouterFragment() {
         SystemFragment.newInstance(),
         ProjectListFragment.newInstance()
     )
+
     private var _binding: FragmentWanBinding? = null
     private val binding get() = _binding!!
 
@@ -62,15 +63,6 @@ class WanFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView(savedInstanceState)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("WAN_CURRENT_POSITION", binding.tab.getCurrentPosition())
-    }
-
-    private fun setupView(savedInstanceState: Bundle?) {
         binding.viewpager.offscreenPageLimit = 4
         binding.viewpager.adapter = object :
             FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -112,6 +104,11 @@ class WanFragment : RouterFragment() {
             }
         })
         binding.tab.selectTab(savedInstanceState?.getInt("WAN_CURRENT_POSITION") ?: 0)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("WAN_CURRENT_POSITION", binding.tab.getCurrentPosition())
     }
 
 }

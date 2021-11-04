@@ -13,18 +13,28 @@ import kotlin.collections.set
 object SharedFlowBus {
 
     private var events = ConcurrentHashMap<Any, MutableSharedFlow<Any>>()
+    private var stickyEvents = ConcurrentHashMap<Any, MutableSharedFlow<Any>>()
 
     fun <T> with(objectKey: Class<T>): MutableSharedFlow<T> {
-        var result = events[objectKey]
-        if (result == null) {
-            result = MutableSharedFlow(1, 1, BufferOverflow.DROP_OLDEST)
-            events[objectKey] = result
+        if (!events.containsKey(objectKey)) {
+            events[objectKey] = MutableSharedFlow(0, 1, BufferOverflow.DROP_OLDEST)
         }
-        return result as MutableSharedFlow<T>
+        return events[objectKey] as MutableSharedFlow<T>
+    }
+
+    fun <T> withSticky(objectKey: Class<T>): MutableSharedFlow<T> {
+        if (!stickyEvents.containsKey(objectKey)) {
+            stickyEvents[objectKey] = MutableSharedFlow(1, 1, BufferOverflow.DROP_OLDEST)
+        }
+        return stickyEvents[objectKey] as MutableSharedFlow<T>
     }
 
     fun <T> on(objectKey: Class<T>): LiveData<T> {
-        return with(objectKey).asLiveData()
+        return if (stickyEvents.containsKey(objectKey)) {
+            withSticky(objectKey).asLiveData()
+        } else {
+            with(objectKey).asLiveData()
+        }
     }
 
 }

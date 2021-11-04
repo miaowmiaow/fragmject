@@ -29,6 +29,7 @@ class ProjectArticleFragment : RouterFragment() {
 
     private var cid = ""
     private val articleAdapter = ArticleAdapter()
+
     private val viewModel: ProjectViewModel by viewModels()
     private var _binding: FragmentProjectArticleBinding? = null
     private val binding get() = _binding!!
@@ -52,15 +53,6 @@ class ProjectArticleFragment : RouterFragment() {
         arguments?.apply {
             cid = this.getString(Keys.CID).toString()
         }
-        setupView()
-        update()
-    }
-
-    override fun onUserStatusUpdate(userBean: UserBean) {
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun setupView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -75,10 +67,6 @@ class ProjectArticleFragment : RouterFragment() {
                 viewModel.getProjectList(false, cid)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.projectListResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
@@ -95,5 +83,11 @@ class ProjectArticleFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        binding.pullRefresh.setRefreshing()
+    }
+
 }

@@ -22,6 +22,7 @@ class SquareFragment : RouterFragment() {
     }
 
     private val articleAdapter = ArticleAdapter()
+
     private val viewModel: HomeViewModel by viewModels()
     private var _binding: FragmentSquareBinding? = null
     private val binding get() = _binding!!
@@ -42,11 +43,6 @@ class SquareFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -61,10 +57,6 @@ class SquareFragment : RouterFragment() {
                 viewModel.getUserArticleList(false)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.userArticleResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
@@ -81,6 +73,7 @@ class SquareFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
 
 }

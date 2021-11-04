@@ -46,8 +46,25 @@ class WebFragment : RouterFragment(), OnBackPressedListener {
             url = this.getString(Keys.URL)
             html = this.getString(Keys.HTML)
         }
-        setupView()
-        setupWebView()
+        binding.black.setOnClickListener {
+            baseActivity.onBackPressed()
+        }
+        webHelper = WebHelper.with(binding.webContainer)
+        webHelper.onReceivedTitleListener = object : WebHelper.OnReceivedTitleListener {
+            override fun onReceivedTitle(view: WebView?, title: String?) {
+                binding.title.text = title
+            }
+        }
+        html?.let {
+            if (it.isNotBlank()) {
+                webHelper.loadHtml(it)
+            }
+        }
+        url?.let {
+            if (it.isNotBlank()) {
+                webHelper.loadUrl(it)
+            }
+        }
     }
 
     override fun onResume() {
@@ -66,31 +83,6 @@ class WebFragment : RouterFragment(), OnBackPressedListener {
             true
         } else {
             false
-        }
-    }
-
-    private fun setupView() {
-        binding.black.setOnClickListener {
-            baseActivity.onBackPressed()
-        }
-    }
-
-    private fun setupWebView() {
-        webHelper = WebHelper.with(binding.webContainer)
-        webHelper.onReceivedTitleListener = object : WebHelper.OnReceivedTitleListener {
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                binding.title.text = title
-            }
-        }
-        html?.let {
-            if (it.isNotBlank()) {
-                webHelper.loadHtml(it)
-            }
-        }
-        url?.let {
-            if (it.isNotBlank()) {
-                webHelper.loadUrl(it)
-            }
         }
     }
 

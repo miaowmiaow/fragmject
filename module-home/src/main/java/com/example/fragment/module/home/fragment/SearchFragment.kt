@@ -24,6 +24,7 @@ class SearchFragment : RouterFragment() {
 
     private val historySearchAdapter = HistorySearchAdapter()
     private val articleAdapter = ArticleAdapter()
+
     private val viewModel: HomeViewModel by viewModels()
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
@@ -42,17 +43,12 @@ class SearchFragment : RouterFragment() {
         _binding = null
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         arguments?.apply {
             binding.search.setText(this.getString(Keys.TITLE).toString())
         }
-        setupView()
-        update()
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setupView() {
         binding.cancel.setOnClickListener { baseActivity.onBackPressed() }
         binding.search.setOnTouchListener { _, _ ->
             initHistorySearch()
@@ -106,9 +102,6 @@ class SearchFragment : RouterFragment() {
                 viewModel.search(false, key)
             }
         })
-    }
-
-    private fun update() {
         WanHelper.getHotKey().observe(viewLifecycleOwner) { result ->
             binding.hotKey.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
             binding.fbl.removeAllViews()
@@ -122,7 +115,6 @@ class SearchFragment : RouterFragment() {
                 binding.fbl.addView(tv)
             }
         }
-        initHistorySearch()
         viewModel.searchResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
@@ -139,6 +131,7 @@ class SearchFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        initHistorySearch()
     }
 
     private fun search(key: String) {

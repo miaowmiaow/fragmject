@@ -150,6 +150,8 @@ SharedFlowBus具有生命周期感知，调用者不需要调用反注册，并�
 ```
 1、发送事件
 SharedFlowBus.with(objectKey: Class<T>).tryEmit(value: T)
+or
+SharedFlowBus.withSticky(objectKey: Class<T>).tryEmit(value: T)
 
 2、接收事件
 SharedFlowBus.on(objectKey: Class<T>).observe(owner){ it ->

@@ -39,7 +39,7 @@ ext {
             "bumptech-glide"                         : 'com.github.bumptech.glide:glide:4.11.0',
             "bumptech-glide-compiler"                : 'com.github.bumptech.glide:compiler:4.11.0',
 
-            "tencent-tbs"                            : 'com.tencent.tbs.tbssdk:sdk:43939',
+            "tencent-tbs"                            : 'com.tencent.tbs.tbssdk:sdk:43993',
 
             "meituan-walle"                          : 'com.meituan.android.walle:library:1.1.7',
     ]

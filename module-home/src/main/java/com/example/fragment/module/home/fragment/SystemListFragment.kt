@@ -17,6 +17,7 @@ import com.example.fragment.module.home.databinding.FragmentSystemListBinding
 class SystemListFragment : RouterFragment() {
 
     private var tree: TreeBean? = null
+
     private var _binding: FragmentSystemListBinding? = null
     private val binding get() = _binding!!
 
@@ -39,25 +40,12 @@ class SystemListFragment : RouterFragment() {
         arguments?.apply {
             tree = this.getParcelable(Keys.BEAN)
         }
-        setupView()
-        update(savedInstanceState)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener {
             baseActivity.onBackPressed()
         }
         binding.tab.setTabMod(TabLayout.MODE.FIXED)
         binding.tab.setSelectedIndicatorColor(R.color.black)
         binding.tab.setSelectedIndicatorHeight(5)
-    }
-
-    private fun update(savedInstanceState: Bundle?) {
         binding.viewpager.offscreenPageLimit = 2
         tree?.let { tree ->
             binding.title.text = tree.name
@@ -89,4 +77,10 @@ class SystemListFragment : RouterFragment() {
             )
         }
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("TAB_CURRENT_POSITION", binding.tab.getCurrentPosition())
+    }
+
 }

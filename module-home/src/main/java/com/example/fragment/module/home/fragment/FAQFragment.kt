@@ -23,6 +23,7 @@ class FAQFragment : RouterFragment() {
     }
 
     private val articleAdapter = ArticleAdapter()
+
     private val viewModel: FAQViewModel by viewModels()
     private var _binding: FragmentFaqBinding? = null
     private val binding get() = _binding!!
@@ -43,15 +44,6 @@ class FAQFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    override fun onUserStatusUpdate(userBean: UserBean) {
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun setupView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -66,10 +58,6 @@ class FAQFragment : RouterFragment() {
                 viewModel.getUserArticleList(false)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.wendaResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
@@ -86,6 +74,11 @@ class FAQFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
+    }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        binding.pullRefresh.setRefreshing()
     }
 
 }

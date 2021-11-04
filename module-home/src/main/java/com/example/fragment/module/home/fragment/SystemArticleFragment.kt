@@ -28,6 +28,7 @@ class SystemArticleFragment : RouterFragment() {
 
     private var cid = ""
     private val articleAdapter = ArticleAdapter()
+
     private val viewModel: SystemViewModel by viewModels()
     private var _binding: FragmentSystemArticleBinding? = null
     private val binding get() = _binding!!
@@ -51,11 +52,6 @@ class SystemArticleFragment : RouterFragment() {
         arguments?.apply {
             cid = this.getString(Keys.CID).toString()
         }
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object :
@@ -70,10 +66,6 @@ class SystemArticleFragment : RouterFragment() {
                 viewModel.getTreeList(false, cid)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.treeListResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.datas?.let { list ->
@@ -89,6 +81,7 @@ class SystemArticleFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
 
 }

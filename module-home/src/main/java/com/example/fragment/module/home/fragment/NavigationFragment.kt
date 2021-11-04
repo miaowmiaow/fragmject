@@ -29,6 +29,7 @@ class NavigationFragment : RouterFragment() {
     }
 
     private val navigationMenuAdapter = NavigationMenuAdapter()
+
     private val viewModel: NavigationViewModel by viewModels()
     private var _binding: FragmentNavigationBinding? = null
     private val binding get() = _binding!!
@@ -49,15 +50,6 @@ class NavigationFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    override fun onUserStatusUpdate(userBean: UserBean) {
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun setupView() {
         binding.menu.layoutManager = LinearLayoutManager(binding.menu.context)
         binding.menu.adapter = navigationMenuAdapter
         navigationMenuAdapter.setOnItemSelectedListener(object :
@@ -83,10 +75,6 @@ class NavigationFragment : RouterFragment() {
                 viewModel.getNavigation()
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.navigationResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.let { menu ->
@@ -103,6 +91,11 @@ class NavigationFragment : RouterFragment() {
             }
             binding.pullRefresh.finishRefresh()
         }
+        binding.pullRefresh.setRefreshing()
+    }
+
+    override fun onUserStatusUpdate(userBean: UserBean) {
+        binding.pullRefresh.setRefreshing()
     }
 
     private fun fillFlexboxLayout(data: List<ArticleBean>? = null) {

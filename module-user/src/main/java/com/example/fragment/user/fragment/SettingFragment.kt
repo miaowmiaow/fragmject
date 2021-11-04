@@ -48,15 +48,6 @@ class SettingFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener(object :
             SwitchButton.OnCheckedChangeListener {
@@ -190,9 +181,15 @@ class SettingFragment : RouterFragment() {
                 })
                 .show(childFragmentManager)
         }
-    }
-
-    private fun update() {
+        viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
+            if (result.errorCode == "0") {
+                WanHelper.setUser(UserBean())
+                baseActivity.onBackPressed()
+            }
+            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
+                baseActivity.showTips(result.errorMsg)
+            }
+        }
         WanHelper.getUser().observe(viewLifecycleOwner) { userBean ->
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         }
@@ -220,15 +217,6 @@ class SettingFragment : RouterFragment() {
                 1 -> {
                     binding.screenRecord.setChecked(true)
                 }
-            }
-        }
-        viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
-            if (result.errorCode == "0") {
-                WanHelper.setUser(UserBean())
-                baseActivity.onBackPressed()
-            }
-            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                baseActivity.showTips(result.errorMsg)
             }
         }
     }

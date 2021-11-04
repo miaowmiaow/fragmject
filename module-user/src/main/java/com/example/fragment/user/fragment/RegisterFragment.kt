@@ -34,11 +34,6 @@ class RegisterFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
@@ -54,9 +49,6 @@ class RegisterFragment : RouterFragment() {
                 viewModel.register(username, password, rePassword)
             }
         }
-    }
-
-    private fun update() {
         viewModel.registerResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {

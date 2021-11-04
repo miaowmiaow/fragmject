@@ -10,7 +10,6 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.NavMode
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.WebFragment
-import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.home.fragment.SearchFragment
 import com.example.fragment.module.home.fragment.SystemListFragment
@@ -68,9 +67,10 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
-        initUIMode()
-        setupView()
-        update()
+        SharedFlowBus.on(UserBean::class.java).observe(this) { userBean ->
+            userId = userBean.id
+        }
+        navigation(Router.MAIN)
     }
 
     override fun onStart() {
@@ -80,22 +80,11 @@ class MainActivity : RouterActivity() {
         }
     }
 
-    private fun setupView() {
-        navigation(Router.MAIN)
-    }
-
-    @TestAnnotation(code = 10000, message = "MainActivity.update")
-    private fun update() {
-        SharedFlowBus.on(UserBean::class.java).observe(this) { userBean ->
-            userId = userBean.id
-        }
-    }
-
     /**
      * 登录状态校验
      */
     private fun isLogin(): Boolean {
-        return userId != null && userId.toString().isNotBlank()
+        return !userId.isNullOrBlank()
     }
 
 }

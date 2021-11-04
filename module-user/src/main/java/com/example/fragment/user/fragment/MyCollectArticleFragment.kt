@@ -38,11 +38,6 @@ class MyCollectArticleFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
@@ -58,10 +53,6 @@ class MyCollectArticleFragment : RouterFragment() {
                 viewModel.myCollectArticle(false)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
@@ -88,6 +79,7 @@ class MyCollectArticleFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
 
 }

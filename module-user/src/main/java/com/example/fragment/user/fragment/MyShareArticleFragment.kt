@@ -38,11 +38,6 @@ class MyShareArticleFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-        update()
-    }
-
-    private fun setupView() {
         binding.black.setOnClickListener { baseActivity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
@@ -58,10 +53,6 @@ class MyShareArticleFragment : RouterFragment() {
                 viewModel.myShareArticle(false)
             }
         })
-        binding.pullRefresh.setRefreshing()
-    }
-
-    private fun update() {
         viewModel.myShareArticleResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
@@ -85,6 +76,7 @@ class MyShareArticleFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
         }
+        binding.pullRefresh.setRefreshing()
     }
 
 }

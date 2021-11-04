@@ -157,6 +157,10 @@ SharedFlowBus.withSticky(objectKey: Class<T>).tryEmit(value: T)
 SharedFlowBus.on(objectKey: Class<T>).observe(owner){ it ->
     println(it)
 }
+or
+SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
+    println(it)
+}
 ```
 ## 基于RoomDatabase封装的KVDatabase
 通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。

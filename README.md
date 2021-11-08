@@ -148,16 +148,16 @@ class MainFragment : Fragment() {
 ## 基于SharedFlow封装的消息总线SharedFlowBus
 SharedFlowBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。
 ```
-1、发送事件
+// 发送消息
 SharedFlowBus.with(objectKey: Class<T>).tryEmit(value: T)
-or
+// 发送粘性消息
 SharedFlowBus.withSticky(objectKey: Class<T>).tryEmit(value: T)
 
-2、接收事件
+// 订阅消息
 SharedFlowBus.on(objectKey: Class<T>).observe(owner){ it ->
     println(it)
 }
-or
+// 订阅粘性消息
 SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
     println(it)
 }

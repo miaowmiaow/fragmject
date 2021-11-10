@@ -7,15 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentPagerAdapter
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.activity.OnBackPressedListener
 import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.adapter.BaseViewPagerAdapter
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.utils.BannerHelper
-import com.example.fragment.library.base.utils.SPUtil
+import com.example.fragment.library.common.bean.EventBean
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
@@ -76,17 +75,7 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
-        binding.viewpager.adapter = object :
-            FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-
-            override fun getItem(position: Int): Fragment {
-                return fragments[position]
-            }
-
-            override fun getCount(): Int {
-                return fragments.size
-            }
-        }
+        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
         binding.viewpager.currentItem = savedInstanceState?.getInt("MAIN_CURRENT_POSITION") ?: 1
         viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
             result.data?.apply {
@@ -103,6 +92,13 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
         }
         viewModel.getHotKey()
         showDialog()
+        SharedFlowBus.onSticky(EventBean::class.java).observe(viewLifecycleOwner) { event ->
+            if (event.key == Keys.AVATAR) {
+                BitmapFactory.decodeFile(event.value, BitmapFactory.Options())?.let { bitmap ->
+                    binding.logo.setImageBitmap(bitmap)
+                }
+            }
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -133,10 +129,6 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
 
     @SuppressLint("SetTextI18n")
     override fun onUserStatusUpdate(userBean: UserBean) {
-        val path = SPUtil.getString(Keys.AVATAR)
-        BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
-            binding.logo.setImageBitmap(bitmap)
-        }
         if (userBean.id.isNotEmpty()) {
             binding.logo.setOnClickListener(null)
             binding.username.setOnClickListener(null)

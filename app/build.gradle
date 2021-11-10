@@ -109,7 +109,6 @@ walle {
 dependencies {
     implementation project(path: ':module-home')
     implementation project(path: ':module-user')
-    implementation rootProject.ext.dependencies["meituan-walle"]
 }
 
 //statistic {

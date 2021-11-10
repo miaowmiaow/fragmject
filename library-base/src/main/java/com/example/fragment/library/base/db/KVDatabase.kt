@@ -40,8 +40,8 @@ abstract class KVDatabase : RoomDatabase() {
     abstract fun getDao(): KVDao
 
     fun set(key: String, value: String) {
-        try {
-            CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
                 var kv = getDao().findByKey(key)
                 if (kv == null) {
                     kv = KV(key = key, value = value)
@@ -50,34 +50,37 @@ abstract class KVDatabase : RoomDatabase() {
                     kv.value = value
                     getDao().update(kv)
                 }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            if (database != null) {
-                close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                if (database != null) {
+                    close()
+                }
             }
         }
     }
 
     fun get(key: String): MutableLiveData<String> {
         val result = MutableLiveData<String>()
-        try {
-            CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
                 getDao().findByKey(key)?.value?.let {
                     result.postValue(it)
                 }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            if (database != null) {
-                close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                if (database != null) {
+                    close()
+                }
             }
         }
         return result
     }
 
+    /**
+     * 如果使用数据库频繁，则不建议每次操作后关闭
+     */
     override fun close() {
         super.close()
         database = null

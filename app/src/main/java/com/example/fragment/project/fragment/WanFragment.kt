@@ -1,5 +1,6 @@
 package com.example.fragment.project.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,17 +8,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentPagerAdapter
-import com.example.fragment.library.base.view.TabLayout
+import com.example.fragment.library.base.adapter.BaseViewPagerAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.home.fragment.FAQFragment
-import com.example.fragment.module.home.fragment.HomeFragment
-import com.example.fragment.module.home.fragment.NavigationFragment
-import com.example.fragment.module.home.fragment.ProjectListFragment
-import com.example.fragment.module.home.fragment.SystemFragment
+import com.example.fragment.module.home.fragment.*
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.FragmentWanBinding
+import com.google.android.material.tabs.TabLayout
 
 class WanFragment : RouterFragment() {
 
@@ -61,21 +57,35 @@ class WanFragment : RouterFragment() {
         _binding = null
     }
 
+    @SuppressLint("InflateParams")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.viewpager.offscreenPageLimit = 4
-        binding.viewpager.adapter = object :
-            FragmentPagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-
-            override fun getItem(position: Int): Fragment {
-                return fragments[position]
+        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
+        binding.tab.setupWithViewPager(binding.viewpager)
+        binding.tab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                tab?.customView?.apply {
+                    val icon = findViewById<ImageView>(R.id.iv_tab_icon)
+                    val text = findViewById<TextView>(R.id.tv_tab_name)
+                    icon.setColorFilter(ContextCompat.getColor(icon.context, R.color.text_fff))
+                    text.setTextColor(ContextCompat.getColor(text.context, R.color.text_fff))
+                }
             }
 
-            override fun getCount(): Int {
-                return fragments.size
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                tab?.customView?.apply {
+                    val icon = findViewById<ImageView>(R.id.iv_tab_icon)
+                    val text = findViewById<TextView>(R.id.tv_tab_name)
+                    icon.setColorFilter(ContextCompat.getColor(icon.context, R.color.gray_alpha))
+                    text.setTextColor(ContextCompat.getColor(text.context, R.color.gray_alpha))
+                }
             }
-        }
-        binding.tab.setTabMod(TabLayout.MODE.AUTO)
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+        binding.tab.removeAllTabs()
         for (i in fragments.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.item_tab_main, null)
@@ -85,30 +95,16 @@ class WanFragment : RouterFragment() {
             imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
             txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
             txtTab.text = tabTexts[i]
-            binding.tab.addTab(tabView)
+            val tab = binding.tab.newTab()
+            tab.customView = tabView
+            binding.tab.addTab(tab)
         }
-        binding.tab.setupWithViewPager(binding.viewpager)
-        binding.tab.setOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tabView: View, position: Int, isRefresh: Boolean) {
-                val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
-                val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.text_fff))
-                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.text_fff))
-            }
-
-            override fun onTabUnselected(tabView: View, position: Int) {
-                val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
-                val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-                imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
-                txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
-            }
-        })
-        binding.tab.selectTab(savedInstanceState?.getInt("WAN_CURRENT_POSITION") ?: 0)
+        binding.viewpager.currentItem = savedInstanceState?.getInt("WAN_CURRENT_POSITION") ?: 0
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt("WAN_CURRENT_POSITION", binding.tab.getCurrentPosition())
+        outState.putInt("WAN_CURRENT_POSITION", binding.viewpager.currentItem)
     }
 
 }

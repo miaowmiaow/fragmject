@@ -77,7 +77,7 @@ class MyCollectArticleFragment : RouterFragment() {
                 }
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
         }
         binding.pullRefresh.setRefreshing()
     }

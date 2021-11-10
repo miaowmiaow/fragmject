@@ -34,7 +34,6 @@ abstract class RouterActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initUIMode()
-        initQbSdk()
     }
 
     /**
@@ -72,29 +71,6 @@ abstract class RouterActivity : BaseActivity() {
                     else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                 }
             }
-        })
-    }
-
-    private fun initQbSdk() {
-        requestStoragePermissions(object : PermissionsCallback {
-            override fun allow() {
-                //x5内核初始化接口
-                QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
-                    override fun onViewInitFinished(arg0: Boolean) {
-                    }
-
-                    override fun onCoreInitFinished() {
-                    }
-                })
-                val map = HashMap<String, Any>()
-                map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-                map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-                QbSdk.initTbsSettings(map)
-            }
-
-            override fun deny() {
-            }
-
         })
     }
 

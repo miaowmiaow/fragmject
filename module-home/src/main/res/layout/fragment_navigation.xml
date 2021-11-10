@@ -22,12 +22,13 @@
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_toEndOf="@id/menu"
+                android:background="@color/white"
                 android:paddingLeft="11dp"
                 android:paddingTop="5dp"
                 android:paddingRight="11dp"
-                android:background="@color/white"
                 android:paddingBottom="11dp"
-                android:layout_toEndOf="@id/menu">
+                android:scrollbars="none">
 
                 <com.google.android.flexbox.FlexboxLayout
                     android:id="@+id/fbl"

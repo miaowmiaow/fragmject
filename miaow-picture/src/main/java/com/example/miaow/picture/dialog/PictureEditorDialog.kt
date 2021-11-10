@@ -79,7 +79,7 @@ class PictureEditorDialog : PictureBaseDialog() {
         binding.complete.setOnClickListener {
             if (binding.complete.isEnabled) {
                 binding.complete.isEnabled = false
-                Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_LONG).show()
+                Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_SHORT).show()
                 it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path ->
                     callback?.onFinish(path)
                     binding.complete.isEnabled = true

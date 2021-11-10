@@ -23,7 +23,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.animation.AnimationUtils
 import kotlin.math.roundToInt
 
-class TabLayout @JvmOverloads constructor(
+class MyTabLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -190,30 +190,30 @@ class TabLayout @JvmOverloads constructor(
         populateFromPagerAdapter()
     }
 
-    private class CustomPagerAdapterObserver(val tabLayout: TabLayout) : DataSetObserver() {
+    private class CustomPagerAdapterObserver(val myTabLayout: MyTabLayout) : DataSetObserver() {
         override fun onChanged() {
-            tabLayout.populateFromPagerAdapter()
+            myTabLayout.populateFromPagerAdapter()
         }
 
         override fun onInvalidated() {
-            tabLayout.populateFromPagerAdapter()
+            myTabLayout.populateFromPagerAdapter()
         }
     }
 
-    private class CustomAdapterChangeListener(val tabLayout: TabLayout) :
+    private class CustomAdapterChangeListener(val myTabLayout: MyTabLayout) :
         ViewPager.OnAdapterChangeListener {
         override fun onAdapterChanged(
             viewPager: ViewPager,
             oldAdapter: PagerAdapter?,
             newAdapter: PagerAdapter?
         ) {
-            if (tabLayout.viewPager == viewPager) {
-                tabLayout.setPagerAdapter(newAdapter)
+            if (myTabLayout.viewPager == viewPager) {
+                myTabLayout.setPagerAdapter(newAdapter)
             }
         }
     }
 
-    private class CustomOnPageChangeListener(val tabLayout: TabLayout) :
+    private class CustomOnPageChangeListener(val myTabLayout: MyTabLayout) :
         ViewPager.OnPageChangeListener {
 
         private var previousScrollState = 0
@@ -226,15 +226,15 @@ class TabLayout @JvmOverloads constructor(
         ) {
             val updateIndicator =
                 !(scrollState == ViewPager.SCROLL_STATE_SETTLING && previousScrollState == ViewPager.SCROLL_STATE_IDLE)
-            tabLayout.setScrollPosition(position, positionOffset, updateIndicator)
+            myTabLayout.setScrollPosition(position, positionOffset, updateIndicator)
         }
 
         override fun onPageSelected(position: Int) {
-            if (tabLayout.currentPosition != position && position < tabLayout.slidingTabIndicator.childCount) {
+            if (myTabLayout.currentPosition != position && position < myTabLayout.slidingTabIndicator.childCount) {
                 val updateIndicator = (scrollState == ViewPager.SCROLL_STATE_IDLE
                         || (scrollState == ViewPager.SCROLL_STATE_SETTLING
                         && previousScrollState == ViewPager.SCROLL_STATE_IDLE))
-                tabLayout.selectTab(position, updateIndicator)
+                myTabLayout.selectTab(position, updateIndicator)
             }
         }
 

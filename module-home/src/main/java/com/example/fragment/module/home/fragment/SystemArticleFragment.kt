@@ -17,12 +17,8 @@ class SystemArticleFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(cid: String): SystemArticleFragment {
-            val fragment = SystemArticleFragment()
-            val args = Bundle()
-            args.putString(Keys.CID, cid)
-            fragment.arguments = args
-            return fragment
+        fun newInstance(): SystemArticleFragment {
+            return SystemArticleFragment()
         }
     }
 
@@ -79,7 +75,7 @@ class SystemArticleFragment : RouterFragment() {
                 baseActivity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page <= viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
         }
         binding.pullRefresh.setRefreshing()
     }

@@ -79,9 +79,14 @@
 ├── gradle.properties                    gradle配置
 └── settings.gradle                      项目依赖配置
 ```
+## Kotlin
+Kotlin 是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
+- [学习Kotlin编程语言1](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
+- [学习Kotlin编程语言2](https://play.kotlinlang.org/byExample/overview)
+- [在Android开发中使用常见的Kotlin模式](https://developer.android.google.cn/kotlin/common-patterns?hl=zh_cn)
+- [将Kotlin添加到现有应用](https://developer.android.google.cn/kotlin/add-kotlin?hl=zh_cn)
 ## ViewBinding
-通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。在模块中启用视图绑定之后，系统会为该模块中的每个 XML 布局文件生成一个绑定类。绑定类的实例包含对在相应布局中具有 ID 的所有视图的直接引用。
-与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
+通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 ## LiveData
 LiveData 是一种可观察的数据存储器类，它具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。
@@ -145,8 +150,18 @@ class MainFragment : Fragment() {
 
 }
 ```
+## 基于RoomDatabase封装的KVDatabase
+通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
+```
+1、存储数据
+KVDatabase.set(key: String, value: String)
+
+2、获取数据
+KVDatabase.get(key: String)
+```
 ## 基于SharedFlow封装的消息总线SharedFlowBus
-SharedFlowBus具有生命周期感知，调用者不需要调用反注册，并且没有内存泄漏风险。
+- [SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
+### 快速使用
 ```
 // 发送消息
 SharedFlowBus.with(objectKey: Class<T>).tryEmit(value: T)
@@ -162,15 +177,6 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
     println(it)
 }
 ```
-## 基于RoomDatabase封装的KVDatabase
-通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
-```
-1、存储数据
-KVDatabase.set(key: String, value: String)
-
-2、获取数据
-KVDatabase.get(key: String)
-```
 ## 动态权限申请
 - [超详细 —— 自己动手撸一个Android动态权限申请库](https://juejin.cn/post/6991471901704978440)
 ## 字节码插桩
@@ -180,6 +186,7 @@ KVDatabase.get(key: String)
 - [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 ### 截图展示
 | ![14.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![15.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) | ![16.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141339.gif) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 ### 接入
 第 1 步:在工程的`build.gradle`中添加：
 ```

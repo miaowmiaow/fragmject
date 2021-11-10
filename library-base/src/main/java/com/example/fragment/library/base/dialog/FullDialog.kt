@@ -15,6 +15,7 @@ class FullDialog : BaseDialog() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         dialog?.window?.apply {
+            setDimAmount(0F)
             attributes.gravity = Gravity.BOTTOM
             decorView.setPadding(0, 0, 0, 0)
             setWindowAnimations(R.style.AnimBottom)

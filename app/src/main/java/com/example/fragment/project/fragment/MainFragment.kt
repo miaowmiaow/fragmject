@@ -26,7 +26,6 @@ import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
 import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
@@ -89,7 +88,8 @@ class MainFragment : RouterFragment() {
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
-        binding.viewpager.adapter = BaseViewPagerAdapter(this@MainFragment, fragments)
+        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
+        binding.tabBar.setupWithViewPager(binding.viewpager)
         binding.tabBar.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.customView?.apply {
@@ -113,21 +113,19 @@ class MainFragment : RouterFragment() {
             }
         })
         binding.tabBar.removeAllTabs()
-        TabLayoutMediator(binding.tabBar, binding.viewpager, true, false) { tab, position ->
+        for (i in fragments.indices) {
+            val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.item_tab_main, null)
             val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
             val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-            imgTab.setImageDrawable(
-                ContextCompat.getDrawable(
-                    imgTab.context,
-                    tabDrawable[position]
-                )
-            )
+            imgTab.setImageDrawable(ContextCompat.getDrawable(imgTab.context, tabDrawable[i]))
             imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
             txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
-            txtTab.text = tabTexts[position]
+            txtTab.text = tabTexts[i]
+            val tab = binding.tabBar.newTab()
             tab.customView = tabView
-        }.attach()
+            binding.tabBar.addTab(tab)
+        }
         binding.viewpager.currentItem = 0
     }
 

@@ -44,14 +44,17 @@ class QAFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.viewpager.adapter = BaseViewPagerAdapter(this@QAFragment, fragments)
+        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
+        binding.tabBar.setupWithViewPager(binding.viewpager)
         binding.tabBar.removeAllTabs()
-        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+        for (i in tabTexts.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.tab_item_top, null)
-            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[position]
+            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[i]
+            val tab = binding.tabBar.newTab()
             tab.customView = tabView
-        }.attach()
+            binding.tabBar.addTab(tab)
+        }
         binding.viewpager.currentItem = 0
     }
 

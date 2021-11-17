@@ -6,13 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.example.fragment.library.base.adapter.SimplePagerAdapter
 import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentSystemBinding
-import com.google.android.material.tabs.TabLayoutMediator
 
 class SystemFragment : RouterFragment() {
 
@@ -49,13 +48,13 @@ class SystemFragment : RouterFragment() {
             binding.title.text = tree.name
             tree.children?.let { data ->
                 binding.viewpager.offscreenPageLimit = 1
-                binding.viewpager.adapter = object : FragmentStateAdapter(this@SystemFragment) {
+                binding.viewpager.adapter = object : SimplePagerAdapter(childFragmentManager) {
 
-                    override fun getItemCount(): Int {
+                    override fun getCount(): Int {
                         return data.size
                     }
 
-                    override fun createFragment(position: Int): Fragment {
+                    override fun getItem(position: Int): Fragment {
                         val args = Bundle()
                         args.putString(Keys.CID, data[position].id)
                         val fragment = SystemArticleFragment.newInstance()
@@ -63,13 +62,16 @@ class SystemFragment : RouterFragment() {
                         return fragment
                     }
                 }
+                binding.tabBar.setupWithViewPager(binding.viewpager)
                 binding.tabBar.removeAllTabs()
-                TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+                data.forEach {
                     val layoutInflater = LayoutInflater.from(binding.root.context)
                     val tabView: View = layoutInflater.inflate(R.layout.tab_item_top, null)
-                    tabView.findViewById<TextView>(R.id.tv_tab).text = data[position].name
+                    tabView.findViewById<TextView>(R.id.tv_tab).text = it.name
+                    val tab = binding.tabBar.newTab()
                     tab.customView = tabView
-                }.attach()
+                    binding.tabBar.addTab(tab)
+                }
                 binding.viewpager.currentItem = tree.childrenSelectPosition
             }
         }

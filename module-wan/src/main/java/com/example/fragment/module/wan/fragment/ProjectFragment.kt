@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.example.fragment.library.base.adapter.SimplePagerAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
@@ -51,12 +52,13 @@ class ProjectFragment : RouterFragment() {
                 result.errorCode == "0" -> {
                     result.data?.also { data ->
                         binding.viewpager.offscreenPageLimit = 1
-                        binding.viewpager.adapter = object : FragmentStateAdapter(this@ProjectFragment) {
-                                override fun getItemCount(): Int {
+                        binding.viewpager.adapter =
+                            object : SimplePagerAdapter(childFragmentManager) {
+                                override fun getCount(): Int {
                                     return data.size
                                 }
 
-                                override fun createFragment(position: Int): Fragment {
+                                override fun getItem(position: Int): Fragment {
                                     val args = Bundle()
                                     args.putString(Keys.CID, data[position].id)
                                     val fragment = ProjectArticleFragment.newInstance()
@@ -64,13 +66,16 @@ class ProjectFragment : RouterFragment() {
                                     return fragment
                                 }
                             }
+                        binding.tabBar.setupWithViewPager(binding.viewpager)
                         binding.tabBar.removeAllTabs()
-                        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+                        data.forEach {
                             val layoutInflater = LayoutInflater.from(binding.root.context)
                             val tabView: View = layoutInflater.inflate(R.layout.tab_item_top, null)
-                            tabView.findViewById<TextView>(R.id.tv_tab).text = data[position].name
+                            tabView.findViewById<TextView>(R.id.tv_tab).text = it.name
+                            val tab = binding.tabBar.newTab()
                             tab.customView = tabView
-                        }.attach()
+                            binding.tabBar.addTab(tab)
+                        }
                         binding.viewpager.currentItem = 0
                     }
                 }

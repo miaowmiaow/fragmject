@@ -37,27 +37,22 @@
 
     </RelativeLayout>
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_bar"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_below="@id/title_bar"
-        android:background="@drawable/layer_while_item_top_bottom"
-        android:clipChildren="false"
-        app:tabIndicatorColor="@color/black"
-        app:tabIndicatorFullWidth="false"
-        app:tabIndicatorHeight="2dp"
-        app:tabMode="scrollable"
-        app:tabRippleColor="@null" />
-
-    <com.example.fragment.library.base.view.NestedScrollableHost
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tab_bar">
+        android:layout_below="@id/title_bar">
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewpager"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_bar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </com.example.fragment.library.base.view.NestedScrollableHost>
+            android:layout_height="50dp"
+            android:background="@drawable/layer_while_item_top_bottom"
+            android:clipChildren="false"
+            app:tabIndicatorColor="@color/black"
+            app:tabIndicatorFullWidth="false"
+            app:tabIndicatorHeight="2dp"
+            app:tabMode="scrollable"
+            app:tabRippleColor="@null" />
+    </androidx.viewpager.widget.ViewPager>
 </RelativeLayout>

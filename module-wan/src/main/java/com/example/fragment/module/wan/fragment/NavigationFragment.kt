@@ -9,7 +9,6 @@ import com.example.fragment.library.base.adapter.BaseViewPagerAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentNavigationBinding
-import com.google.android.material.tabs.TabLayoutMediator
 
 class NavigationFragment : RouterFragment() {
 
@@ -44,14 +43,17 @@ class NavigationFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.viewpager.adapter = BaseViewPagerAdapter(this@NavigationFragment, fragments)
+        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
+        binding.tabBar.setupWithViewPager(binding.viewpager)
         binding.tabBar.removeAllTabs()
-        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+        for (i in tabTexts.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.tab_item_top, null)
-            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[position]
+            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[i]
+            val tab = binding.tabBar.newTab()
             tab.customView = tabView
-        }.attach()
+            binding.tabBar.addTab(tab)
+        }
         binding.viewpager.currentItem = 0
     }
 

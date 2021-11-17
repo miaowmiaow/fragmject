@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/project_list_graph"
+    app:startDestination="@id/project_list">
+    <fragment
+        android:id="@+id/project_list"
+        android:name="com.example.fragment.module.wan.fragment.ProjectListFragment"
+        android:label="ProjectListFragment"
+        tools:layout="@layout/fragment_project_list">
+        <action
+            android:id="@+id/action_project_list_to_project_article"
+            app:destination="@id/project_article"
+            app:enterAnim="@anim/bottom_in"
+            app:exitAnim="@anim/bottom_out"
+            app:popEnterAnim="@anim/bottom_in"
+            app:popExitAnim="@anim/bottom_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/project_article"
+        android:name="com.example.fragment.module.wan.fragment.ProjectArticleFragment"
+        android:label="ProjectArticleFragment"
+        tools:layout="@layout/fragment_project_article">
+        <action
+            android:id="@+id/action_project_article_to_web"
+            app:destination="@id/web_graph"
+            app:popEnterAnim="@anim/bottom_in"
+            app:popExitAnim="@anim/bottom_out"
+            app:enterAnim="@anim/bottom_in"
+            app:exitAnim="@anim/bottom_out"/>
+    </fragment>
+</navigation>

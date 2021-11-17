@@ -1,4 +1,4 @@
-package com.example.fragment.user.adapter
+package com.example.fragment.module.user.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

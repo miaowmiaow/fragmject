@@ -2,32 +2,26 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/project_list_graph"
-    app:startDestination="@id/project_list">
+    android:id="@+id/system_list_graph"
+    app:startDestination="@id/system_list">
     <fragment
-        android:id="@+id/project_list"
-        android:name="com.example.fragment.module.wan.fragment.ProjectListFragment"
-        android:label="ProjectListFragment"
-        tools:layout="@layout/fragment_project_list">
+        android:id="@+id/system_list"
+        android:name="com.example.fragment.module.wan.fragment.SystemFragment"
+        android:label="SystemListFragment"
+        tools:layout="@layout/fragment_system">
         <action
-            android:id="@+id/action_project_list_to_project_article"
-            app:destination="@id/project_article"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-    </fragment>
-    <fragment
-        android:id="@+id/project_article"
-        android:name="com.example.fragment.module.wan.fragment.ProjectArticleFragment"
-        android:label="ProjectArticleFragment"
-        tools:layout="@layout/fragment_project_article">
+            android:id="@+id/action_system_list_to_user_share"
+            app:destination="@id/user_share_graph"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
         <action
-            android:id="@+id/action_project_article_to_web"
+            android:id="@+id/action_system_list_to_web"
             app:destination="@id/web_graph"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"/>
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
     </fragment>
 </navigation>

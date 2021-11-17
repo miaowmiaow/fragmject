@@ -1,4 +1,4 @@
-package com.example.fragment.module.home.model
+package com.example.fragment.module.wan.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.module.home.bean.ProjectTreeBean
+import com.example.fragment.module.wan.bean.ProjectTreeBean
 import kotlinx.coroutines.launch
 
 class ProjectViewModel : ViewModel() {

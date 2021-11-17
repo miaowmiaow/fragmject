@@ -53,10 +53,10 @@ object FragmentHelper {
     ): Class<out Fragment> {
         val transaction = manager.beginTransaction()
         transaction.setCustomAnimations(
-            R.anim.slide_right_in,
-            R.anim.slide_left_out,
-            R.anim.slide_left_in,
-            R.anim.slide_right_out
+            R.anim.slide_in_right,
+            R.anim.slide_out_left,
+            R.anim.slide_in_left,
+            R.anim.slide_out_right
         )
         if (currClazz != null) {
             manager.findFragmentByTag(currClazz.simpleName)?.let {

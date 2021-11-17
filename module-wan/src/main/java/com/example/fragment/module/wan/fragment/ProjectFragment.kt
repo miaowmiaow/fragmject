@@ -11,21 +11,21 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.databinding.FragmentProjectListBinding
+import com.example.fragment.module.wan.databinding.FragmentProjectBinding
 import com.example.fragment.module.wan.model.ProjectViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
-class ProjectListFragment : RouterFragment() {
+class ProjectFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(): ProjectListFragment {
-            return ProjectListFragment()
+        fun newInstance(): ProjectFragment {
+            return ProjectFragment()
         }
     }
 
     private val viewModel: ProjectViewModel by viewModels()
-    private var _binding: FragmentProjectListBinding? = null
+    private var _binding: FragmentProjectBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -33,7 +33,7 @@ class ProjectListFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentProjectListBinding.inflate(inflater, container, false)
+        _binding = FragmentProjectBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -51,7 +51,7 @@ class ProjectListFragment : RouterFragment() {
                 result.errorCode == "0" -> {
                     result.data?.also { data ->
                         binding.viewpager.offscreenPageLimit = 1
-                        binding.viewpager.adapter = object : FragmentStateAdapter(this@ProjectListFragment) {
+                        binding.viewpager.adapter = object : FragmentStateAdapter(this@ProjectFragment) {
                                 override fun getItemCount(): Int {
                                     return data.size
                                 }

@@ -19,6 +19,7 @@ object WanHelper {
     private const val UI_MODE = "ui_mode"
     private const val SCREEN_RECORD = "screen_record"
     private const val USER = "user"
+    private const val AVATAR = "avatar"
     private const val COIN = "coin"
     private const val HOT_KEY = "hot_key"
     private const val HISTORY_SEARCH = "history_search"
@@ -72,8 +73,8 @@ object WanHelper {
     }
 
     fun setUser(userBean: UserBean) {
-        SharedFlowBus.with(UserBean::class.java).tryEmit(userBean)
         KVDatabase.set(USER, userBean.toJson())
+        SharedFlowBus.withSticky(UserBean::class.java).tryEmit(userBean)
     }
 
     fun getUser(): LiveData<UserBean> {
@@ -85,6 +86,14 @@ object WanHelper {
                 UserBean()
             }
         }
+    }
+
+    fun setAvatar(path: String) {
+        KVDatabase.set(AVATAR, path)
+    }
+
+    fun getAvatar(): LiveData<String> {
+        return KVDatabase.get(AVATAR)
     }
 
     fun setCoin(coinBean: CoinBean) {
@@ -145,6 +154,10 @@ object WanHelper {
                 ArrayList()
             }
         }
+    }
+
+    fun close(){
+        KVDatabase.closeDatabase()
     }
 
 }

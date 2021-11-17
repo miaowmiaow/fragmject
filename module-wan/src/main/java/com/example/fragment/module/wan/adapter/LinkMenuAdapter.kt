@@ -9,7 +9,7 @@ import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.bean.NavigationBean
 import com.example.fragment.module.wan.databinding.ItemNavigationMenuBinding
 
-class NavigationMenuAdapter : BaseAdapter<NavigationBean>() {
+class LinkMenuAdapter : BaseAdapter<NavigationBean>() {
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return ItemNavigationMenuBinding::inflate

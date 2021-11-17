@@ -9,7 +9,6 @@ import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.BannerBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.databinding.ItemBannerBinding
 
 class BannerAdapter : BaseAdapter<BannerBean>() {
@@ -27,7 +26,7 @@ class BannerAdapter : BaseAdapter<BannerBean>() {
         binding.root.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, item.url)
-            baseActivity.navigation(Router.WEB, args)
+//            baseActivity.navigation(Router.WEB, args)
         }
     }
 

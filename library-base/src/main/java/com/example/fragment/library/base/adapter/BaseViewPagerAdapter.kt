@@ -1,24 +1,17 @@
 package com.example.fragment.library.base.adapter
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.viewpager2.adapter.FragmentStateAdapter
 
 open class BaseViewPagerAdapter(
-    fm: FragmentManager,
-    private var fragments: ArrayList<out Fragment>
-) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-
-    override fun getCount(): Int {
-        return fragments.size
+    fragment: Fragment,
+    private var data: ArrayList<out Fragment>
+) : FragmentStateAdapter(fragment) {
+    override fun getItemCount(): Int {
+        return data.size
     }
 
-    override fun getItem(position: Int): Fragment {
-        return fragments[position]
+    override fun createFragment(position: Int): Fragment {
+        return data[position]
     }
-
 }
-
-abstract class SimplePagerAdapter(fm: FragmentManager) :
-    FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT)

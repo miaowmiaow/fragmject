@@ -1,4 +1,4 @@
-package com.example.fragment.module.home.adapter
+package com.example.fragment.module.wan.adapter
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,10 +8,10 @@ import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.bean.TreeBean
-import com.example.fragment.module.home.R
-import com.example.fragment.module.home.databinding.ItemSystemBinding
+import com.example.fragment.library.common.constant.Router
+import com.example.fragment.module.wan.R
+import com.example.fragment.module.wan.databinding.ItemSystemBinding
 
 class SystemAdapter : BaseAdapter<TreeBean>() {
 
@@ -33,7 +33,7 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
                 item.childrenSelectPosition = index
                 val args = Bundle()
                 args.putParcelable(Keys.BEAN, item)
-//                baseActivity.navigation(Router.SYSTEM_LIST, args)
+                baseActivity.navigation(Router.SYSTEM, args)
             }
             binding.fbl.addView(tv)
         }
@@ -41,7 +41,7 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
         binding.root.setOnClickListener {
             val args = Bundle()
             args.putParcelable(Keys.BEAN, item)
-//            baseActivity.navigation(Router.SYSTEM_LIST, args)
+            baseActivity.navigation(Router.SYSTEM, args)
         }
     }
 

@@ -2,19 +2,19 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/user_share_graph"
+    android:id="@+id/share_article_graph"
     app:startDestination="@id/user_share">
     <fragment
         android:id="@+id/user_share"
-        android:name="com.example.fragment.module.wan.fragment.UserShareFragment"
-        android:label="UserShareFragment"
-        tools:layout="@layout/fragment_user_share">
+        android:name="com.example.fragment.module.wan.fragment.ShareArticleFragment"
+        android:label="ShareArticleFragment"
+        tools:layout="@layout/fragment_share_article">
         <action
-            android:id="@+id/action_user_share_to_web"
+            android:id="@+id/action_share_article_to_web"
             app:destination="@id/web_graph"
-            app:enterAnim="@anim/slide_right_in"
-            app:exitAnim="@anim/slide_left_out"
-            app:popEnterAnim="@anim/slide_left_in"
-            app:popExitAnim="@anim/slide_right_out" />
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
     </fragment>
 </navigation>

@@ -5,84 +5,26 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <RelativeLayout
-        android:id="@+id/title_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/theme">
-
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <ImageView
-            android:id="@+id/wan"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentStart="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_logo" />
-
-        <RelativeLayout
-            android:id="@+id/search"
-            android:layout_width="match_parent"
-            android:layout_height="26dp"
-            android:layout_below="@id/status_bar"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_toStartOf="@id/add"
-            android:layout_toEndOf="@id/wan"
-            android:alpha="0.7"
-            android:background="@drawable/shape_corners_solid_gray_alpha">
-
-            <ImageView
-                android:id="@+id/iv_search"
-                android:layout_width="13dp"
-                android:layout_height="13dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="15dp"
-                android:layout_marginEnd="10dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/ic_search" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/hot_key"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
-                android:layout_toEndOf="@id/iv_search" />
-
-        </RelativeLayout>
-
-        <ImageView
-            android:id="@+id/add"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentEnd="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_add" />
-
-    </RelativeLayout>
-
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_bar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/theme"
+        android:background="@drawable/layer_while_item_top_bottom"
         android:clipChildren="false"
-        app:tabIndicatorHeight="0dp"
-        app:tabMode="fixed"
+        app:tabIndicatorColor="@color/black"
+        app:tabIndicatorFullWidth="false"
+        app:tabIndicatorHeight="2dp"
+        app:tabMode="scrollable"
         app:tabRippleColor="@null" />
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewpager"
+    <com.example.fragment.library.base.view.NestedScrollableHost
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/title_bar"
-        android:layout_above="@id/tab_bar" />
+        android:layout_below="@id/tab_bar">
 
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.example.fragment.library.base.view.NestedScrollableHost>
 </RelativeLayout>

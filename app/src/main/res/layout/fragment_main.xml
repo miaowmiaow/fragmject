@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
     <RelativeLayout
         android:id="@+id/title_bar"
@@ -15,15 +16,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ImageView
-            android:id="@+id/menu"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentStart="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_menu" />
-
         <RelativeLayout
             android:id="@+id/search"
             android:layout_width="match_parent"
@@ -31,8 +23,8 @@
             android:layout_below="@id/status_bar"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
+            android:layout_marginStart="15dp"
             android:layout_toStartOf="@id/add"
-            android:layout_toEndOf="@id/menu"
             android:alpha="0.7"
             android:background="@drawable/shape_corners_solid_gray_alpha">
 
@@ -66,121 +58,22 @@
 
     </RelativeLayout>
 
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:id="@+id/drawer"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/theme"
+        android:clipChildren="false"
+        app:tabIndicatorHeight="0dp"
+        app:tabMode="fixed"
+        app:tabRippleColor="@null" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/title_bar">
-
-        <androidx.viewpager.widget.ViewPager
-            android:id="@+id/viewpager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/background" />
-
-        <RelativeLayout
-            android:layout_width="275dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:background="@drawable/bg"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:id="@+id/logo"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="50dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_logo" />
-
-            <TextView
-                android:id="@+id/username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/logo"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="25dp"
-                android:gravity="center"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="去登录"
-                android:textColor="@color/text_fff"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/coin"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/username"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="我的积分"
-                android:textColor="@color/text_fff"
-                android:textSize="13sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-            <TextView
-                android:id="@+id/my_collection"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/coin"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="我的收藏"
-                android:textColor="@color/text_fff"
-                android:textSize="13sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-            <TextView
-                android:id="@+id/my_share"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/my_collection"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="我的分享"
-                android:textColor="@color/text_fff"
-                android:textSize="13sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-            <TextView
-                android:id="@+id/avatar"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/my_share"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="设置头像"
-                android:textColor="@color/text_fff"
-                android:textSize="14sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-            <TextView
-                android:id="@+id/setting"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/avatar"
-                android:background="@drawable/selector_transparent"
-                android:gravity="center_vertical"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp"
-                android:text="系统设置"
-                android:textColor="@color/text_fff"
-                android:textSize="14sp"
-                app:drawableEndCompat="@drawable/ic_right" />
-
-        </RelativeLayout>
-    </androidx.drawerlayout.widget.DrawerLayout>
-
+        android:layout_below="@id/title_bar"
+        android:layout_above="@id/tab_bar" />
 
 </RelativeLayout>

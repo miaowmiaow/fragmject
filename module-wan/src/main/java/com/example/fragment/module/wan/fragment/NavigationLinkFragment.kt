@@ -14,15 +14,15 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.LinkMenuAdapter
-import com.example.fragment.module.wan.databinding.FragmentLinkBinding
+import com.example.fragment.module.wan.databinding.FragmentNavigationLinkBinding
 import com.example.fragment.module.wan.model.LinkViewModel
 
-class LinkFragment : RouterFragment() {
+class NavigationLinkFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(): LinkFragment {
-            return LinkFragment()
+        fun newInstance(): NavigationLinkFragment {
+            return NavigationLinkFragment()
         }
     }
 
@@ -45,7 +45,7 @@ class LinkFragment : RouterFragment() {
     }
 
     private val viewModel: LinkViewModel by viewModels()
-    private var _binding: FragmentLinkBinding? = null
+    private var _binding: FragmentNavigationLinkBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -53,7 +53,7 @@ class LinkFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLinkBinding.inflate(inflater, container, false)
+        _binding = FragmentNavigationLinkBinding.inflate(inflater, container, false)
         return binding.root
     }
 

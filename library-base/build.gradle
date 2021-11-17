@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -36,13 +37,16 @@ dependencies {
     api rootProject.ext.dependencies["androidx-appcompat"]
     api rootProject.ext.dependencies["androidx-core-ktx"]
     api rootProject.ext.dependencies["androidx-fragment-ktx"]
+    api rootProject.ext.dependencies["androidx-viewpager2"]
+    api rootProject.ext.dependencies["androidx-webkit"]
     api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-ktx"]
     api rootProject.ext.dependencies["androidx-lifecycle-livedata-ktx"]
+    api rootProject.ext.dependencies["androidx-navigation-fragment-ktx"]
+    api rootProject.ext.dependencies["androidx-navigation-ui-ktx"]
     api rootProject.ext.dependencies["androidx-room-runtime"]
     annotationProcessor rootProject.ext.dependencies["androidx-room-compiler"]
     kapt rootProject.ext.dependencies["androidx-room-compiler"]
     api rootProject.ext.dependencies["androidx-room-ktx"]
-    api rootProject.ext.dependencies["androidx-webkit"]
     api rootProject.ext.dependencies["google-flexbox"]
     api rootProject.ext.dependencies["google-material"]
     api rootProject.ext.dependencies["google-gson"]

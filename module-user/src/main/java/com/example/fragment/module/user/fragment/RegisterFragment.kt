@@ -1,16 +1,14 @@
-package com.example.fragment.user.fragment
+package com.example.fragment.module.user.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import com.example.fragment.library.common.constant.NavMode
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentRegisterBinding
-import com.example.fragment.user.model.UserViewModel
+import com.example.fragment.module.user.model.UserViewModel
 
 class RegisterFragment : RouterFragment() {
 
@@ -32,14 +30,13 @@ class RegisterFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+    override fun initView() {
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.repassword.addKeyboardListener(binding.root)
         binding.login.setOnClickListener {
-            baseActivity.navigation(Router.LOGIN, navMode = NavMode.POP_BACK_STACK)
+            activity.onBackPressed()
         }
         binding.register.setOnClickListener {
             val username = binding.username.text.toString()
@@ -49,34 +46,40 @@ class RegisterFragment : RouterFragment() {
                 viewModel.register(username, password, rePassword)
             }
         }
+    }
+
+    override fun initViewModel() {
         viewModel.registerResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 result.data?.apply {
                     WanHelper.setUser(this)
                 }
-                baseActivity.navigation(Router.MAIN, navMode = NavMode.POP_BACK_STACK)
+                activity.onBackPressed()
             }
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                baseActivity.showTips(result.errorMsg)
+                activity.showTips(result.errorMsg)
             }
         }
     }
 
-    private fun checkParameter(username: String, password: String, repassword: String): Boolean {
+    override fun onLoad() {
+    }
+
+    private fun checkParameter(username: String, password: String, rePassword: String): Boolean {
         if (username.isBlank()) {
-            baseActivity.showTips("用户名不能为空")
+            activity.showTips("用户名不能为空")
             return false
         }
         if (password.isBlank()) {
-            baseActivity.showTips("密码不能为空")
+            activity.showTips("密码不能为空")
             return false
         }
-        if (repassword.isBlank()) {
-            baseActivity.showTips("确认密码不能为空")
+        if (rePassword.isBlank()) {
+            activity.showTips("确认密码不能为空")
             return false
         }
-        if (password != repassword) {
-            baseActivity.showTips("两次密码不一样")
+        if (password != rePassword) {
+            activity.showTips("两次密码不一样")
             return false
         }
         return true

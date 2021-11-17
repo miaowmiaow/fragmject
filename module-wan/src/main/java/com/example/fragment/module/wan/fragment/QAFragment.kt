@@ -8,24 +8,25 @@ import android.widget.TextView
 import com.example.fragment.library.base.adapter.BaseViewPagerAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.databinding.FragmentNavigationBinding
+import com.example.fragment.module.wan.databinding.FragmentQaBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
-class NavigationFragment : RouterFragment() {
+class QAFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(): NavigationFragment {
-            return NavigationFragment()
+        fun newInstance(): QAFragment {
+            return QAFragment()
         }
     }
 
-    private val tabTexts = arrayOf("广场 • 近期分享", "导航")
+    private val tabTexts = arrayOf("问答", "广场")
     private val fragments = arrayListOf(
-        SquareFragment.newInstance(),
-        LinkFragment.newInstance()
+        FAQFragment.newInstance(),
+        SquareFragment.newInstance()
     )
 
-    private var _binding: FragmentNavigationBinding? = null
+    private var _binding: FragmentQaBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -33,7 +34,7 @@ class NavigationFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentNavigationBinding.inflate(inflater, container, false)
+        _binding = FragmentQaBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -42,26 +43,22 @@ class NavigationFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
-        binding.tabBar.setupWithViewPager(binding.viewpager)
+    override fun initView() {
+        binding.viewpager.adapter = BaseViewPagerAdapter(this@QAFragment, fragments)
         binding.tabBar.removeAllTabs()
-        for (i in tabTexts.indices) {
+        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
             val layoutInflater = LayoutInflater.from(binding.root.context)
             val tabView: View = layoutInflater.inflate(R.layout.tab_item_top, null)
-            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[i]
-            val tab = binding.tabBar.newTab()
+            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[position]
             tab.customView = tabView
-            binding.tabBar.addTab(tab)
-        }
-        binding.viewpager.currentItem =
-            savedInstanceState?.getInt("NAVIGATION_CURRENT_POSITION") ?: 0
+        }.attach()
+        binding.viewpager.currentItem = 0
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("NAVIGATION_CURRENT_POSITION", binding.viewpager.currentItem)
+    override fun initViewModel() {
+    }
+
+    override fun onLoad() {
     }
 
 }

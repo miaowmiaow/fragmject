@@ -35,6 +35,10 @@ abstract class KVDatabase : RoomDatabase() {
             return getDB().get(key)
         }
 
+        fun closeDatabase(){
+            getDB().close()
+        }
+
     }
 
     abstract fun getDao(): KVDao
@@ -53,9 +57,10 @@ abstract class KVDatabase : RoomDatabase() {
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                if (database != null) {
-                    close()
-                }
+                //用完关闭会影响性能，此处待优化
+//                if (database != null) {
+//                    close()
+//                }
             }
         }
     }
@@ -70,9 +75,9 @@ abstract class KVDatabase : RoomDatabase() {
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                if (database != null) {
-                    close()
-                }
+//                if (database != null) {
+//                    close()
+//                }
             }
         }
         return result

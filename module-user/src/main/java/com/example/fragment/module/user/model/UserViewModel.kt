@@ -1,4 +1,4 @@
-package com.example.fragment.user.model
+package com.example.fragment.module.user.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,8 +8,6 @@ import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.common.bean.*
-import com.example.fragment.user.bean.UserShareBean
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
@@ -17,13 +15,11 @@ class UserViewModel : ViewModel() {
     val loginResult = MutableLiveData<LoginBean>()
     val registerResult = MutableLiveData<RegisterBean>()
     val logoutResult = MutableLiveData<HttpResponse>()
-    val shareArticleResult = MutableLiveData<HttpResponse>()
     val userCoinResult = MutableLiveData<UserCoinBean>()
     val myCoinResult = MutableLiveData<MyCoinListBean>()
     val coinRankResult = MutableLiveData<CoinRankBean>()
     val myCollectArticleResult = MutableLiveData<ArticleListBean>()
     val myShareArticleResult = MutableLiveData<ShareArticleListBean>()
-    val userShareResult = MutableLiveData<UserShareBean>()
 
     var page = 0
     var pageCont = 1
@@ -55,16 +51,6 @@ class UserViewModel : ViewModel() {
             val request = HttpRequest("user/logout/json")
             val response = get<HttpResponse>(request)
             logoutResult.postValue(response)
-        }
-    }
-
-    fun shareArticle(title: String, link: String) {
-        viewModelScope.launch(Dispatchers.Main) {
-            val request = HttpRequest("lg/user_article/add/json")
-                .putParam("title", title)
-                .putParam("link", link)
-            val response = post<RegisterBean>(request)
-            registerResult.postValue(response)
         }
     }
 
@@ -143,26 +129,6 @@ class UserViewModel : ViewModel() {
                 val response = get<ShareArticleListBean>(request)
                 response.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
                 myShareArticleResult.postValue(response)
-            }
-        }
-    }
-
-    fun userShare(isRefresh: Boolean, id: String) {
-        this.isRefresh = isRefresh
-        viewModelScope.launch {
-            if (isRefresh) {
-                page = 1
-                pageCont = 1
-            } else {
-                page++
-            }
-            if (page <= pageCont) {
-                val request = HttpRequest("user/{id}/share_articles/{page}/json")
-                request.putPath("id", id)
-                request.putPath("page", page.toString())
-                val response = get<UserShareBean>(request)
-                response.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
-                userShareResult.postValue(response)
             }
         }
     }

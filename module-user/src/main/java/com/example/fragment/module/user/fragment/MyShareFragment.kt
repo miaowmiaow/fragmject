@@ -6,21 +6,39 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.view.OnLoadMoreListener
+import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.FragmentMyShareArticleBinding
+import com.example.fragment.module.user.databinding.FragmentMyShareBinding
 import com.example.fragment.module.user.model.UserViewModel
 
-class MyShareArticleFragment : RouterFragment() {
+class MyShareFragment : RouterFragment() {
 
     private val articleAdapter = ArticleAdapter()
+    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
+        override fun onItemChildClick(
+            view: View,
+            holder: BaseAdapter.ViewBindHolder,
+            position: Int
+        ) {
+            val item = articleAdapter.getItem(position)
+            when (view.id) {
+                R.id.rl_item -> {
+                    val args = Bundle()
+                    args.putString(Keys.URL, item.link)
+                    activity.navigation(R.id.action_my_collect_to_web, args)
+                }
+            }
+        }
+    }
+
     private val viewModel: UserViewModel by viewModels()
-    private var _binding: FragmentMyShareArticleBinding? = null
+    private var _binding: FragmentMyShareBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -28,7 +46,7 @@ class MyShareArticleFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyShareArticleBinding.inflate(inflater, container, false)
+        _binding = FragmentMyShareBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -37,23 +55,24 @@ class MyShareArticleFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+    override fun initView() {
+        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
-        binding.pullRefresh.setOnRefreshListener(object :
-            PullRefreshLayout.OnRefreshListener {
+        binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.myShareArticle(true)
             }
         })
-        binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
-            PullRefreshLayout.OnLoadMoreListener {
+        binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.myShareArticle(false)
             }
         })
+    }
+
+    override fun initViewModel() {
         viewModel.myShareArticleResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
@@ -65,19 +84,19 @@ class MyShareArticleFragment : RouterFragment() {
                         }
                     }
                 }
-                result.errorCode == "-1001" -> {
-                    WanHelper.setUser(UserBean())
-                    baseActivity.showTips(result.errorMsg)
-                    baseActivity.navigation(R.id.action_my_share_article_to_login)
-                }
                 result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    baseActivity.showTips(result.errorMsg)
+                    activity.showTips(result.errorMsg)
                 }
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
         }
-        binding.pullRefresh.setRefreshing()
+    }
+
+    override fun onLoad() {
+        if(viewModel.myShareArticleResult.value == null){
+            viewModel.myShareArticle(true)
+        }
     }
 
 }

@@ -4,6 +4,7 @@ apply from: 'config.gradle'
 buildscript {
     ext.gradle_version = "4.2.2"
     ext.kotlin_version = "1.5.20"
+    ext.nav_version  = "2.3.5"
     repositories {
         google()
         mavenCentral()
@@ -15,6 +16,7 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:$gradle_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath 'com.meituan.android.walle:plugin:1.1.7'
         // 使用自定义插件

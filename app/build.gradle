@@ -107,8 +107,8 @@ walle {
 }
 
 dependencies {
-    implementation project(path: ':module-home')
     implementation project(path: ':module-user')
+    implementation project(path: ':module-wan')
 }
 
 //statistic {

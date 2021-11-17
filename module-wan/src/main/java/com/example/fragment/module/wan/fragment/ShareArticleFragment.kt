@@ -1,22 +1,19 @@
-package com.example.fragment.module.user.fragment
+package com.example.fragment.module.wan.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.FragmentShareArticleBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.wan.R
+import com.example.fragment.module.wan.databinding.FragmentShareArticleBinding
+import com.example.fragment.module.wan.model.ShareModel
 
 class ShareArticleFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
+    private val viewModel: ShareModel by viewModels()
     private var _binding: FragmentShareArticleBinding? = null
     private val binding get() = _binding!!
 
@@ -34,15 +31,14 @@ class ShareArticleFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+    override fun initView() {
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.browser.setOnClickListener {
             val link = binding.link.text.toString()
             if (checkParameter(link)) {
                 val args = Bundle()
                 args.putString(Keys.URL, link)
-                baseActivity.navigation(R.id.action_share_article_to_login, args)
+                activity.navigation(R.id.action_share_article_to_web, args)
             }
         }
         binding.share.setOnClickListener {
@@ -52,25 +48,24 @@ class ShareArticleFragment : RouterFragment() {
                 viewModel.shareArticle(title, link)
             }
         }
+    }
+
+    override fun initViewModel() {
         viewModel.shareArticleResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    baseActivity.onBackPressed()
-                }
-                "-1001" -> {
-                    WanHelper.setUser(UserBean())
-                    baseActivity.navigation(R.id.action_share_article_to_login)
-                }
-            }
-            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                baseActivity.showTips(result.errorMsg)
+            if (result.errorCode == "0") {
+                activity.onBackPressed()
+            } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
+                activity.showTips(result.errorMsg)
             }
         }
     }
 
+    override fun onLoad() {
+    }
+
     private fun checkParameter(link: String): Boolean {
         if (link.isBlank()) {
-            baseActivity.showTips("分享链接不能为空")
+            activity.showTips("分享链接不能为空")
             return false
         }
         return true

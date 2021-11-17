@@ -2,7 +2,6 @@ package com.example.fragment.library.common.adapter
 
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.text.Html
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -15,15 +14,13 @@ import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
-import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.base.utils.BannerHelper
+import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.BannerBean
-import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.databinding.ItemArticleBannerBinding
 import com.example.fragment.library.common.databinding.ItemArticleBinding
 import com.example.fragment.library.common.utils.WanHelper
@@ -47,6 +44,13 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private val bannerAdapter = BannerAdapter()
     private var bannerData: MutableList<BannerBean> = ArrayList()
 
+    init {
+        addOnClickListener(R.id.rl_item)
+        addOnClickListener(R.id.tv_author)
+        addOnClickListener(R.id.tv_tag)
+        addOnClickListener(R.id.tv_chapter_name)
+    }
+
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return if (viewType == 0) {
             ItemArticleBannerBinding::inflate
@@ -68,7 +72,6 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             binding.tvAuthor.text = item.author
             if (item.tags != null && item.tags.isNotEmpty()) {
                 binding.tvTag.text = item.tags[0].name
-                binding.tvTag.tag = item.tags[0].url
                 binding.tvTag.visibility = View.VISIBLE
             } else {
                 binding.tvTag.visibility = View.GONE
@@ -97,53 +100,28 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             val activity: RouterActivity = contextToActivity(binding.root.context)
             if (item.collect) {
                 binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
-            } else {
-                binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
-            }
-            binding.ivCollect.setOnClickListener {
-                if (item.collect) {
+                binding.ivCollect.setOnClickListener {
                     unCollect(item.id).observe(activity, { result ->
                         if (result.errorCode == "0") {
-                            binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
                             item.collect = false
-                        } else if (result.errorCode == "-1001") {
-                            WanHelper.setUser(UserBean())
-                            activity.navigation(Router.LOGIN)
-                        }
-                        if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                            activity.showTips(result.errorMsg)
-                        }
-                    })
-                } else {
-                    collect(item.id).observe(activity, { result ->
-                        if (result.errorCode == "0") {
-                            binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
-                            item.collect = true
-                        } else if (result.errorCode == "-1001") {
-                            WanHelper.setUser(UserBean())
-                            activity.navigation(Router.LOGIN)
-                        }
-                        if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
+                            binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
+                        } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                             activity.showTips(result.errorMsg)
                         }
                     })
                 }
-            }
-            binding.root.setOnClickListener {
-                val args = Bundle()
-                args.putString(Keys.URL, item.link)
-                activity.navigation(Router.WEB, args)
-            }
-            binding.tvTag.setOnClickListener {
-                urlToSystemList(activity, binding.tvTag.tag.toString())
-            }
-            binding.tvChapterName.setOnClickListener {
-                chapterIdToSystemList(activity, item.realSuperChapterId, item.chapterId)
-            }
-            binding.tvAuthor.setOnClickListener {
-                val args = Bundle()
-                args.putString(Keys.ID, item.userId)
-                activity.navigation(Router.USER_SHARE, args)
+            } else {
+                binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
+                binding.ivCollect.setOnClickListener {
+                    collect(item.id).observe(activity, { result ->
+                        if (result.errorCode == "0") {
+                            item.collect = true
+                            binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
+                        } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
+                            activity.showTips(result.errorMsg)
+                        }
+                    })
+                }
             }
         }
     }
@@ -183,7 +161,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private fun removeAllBank(str: String?, count: Int): String {
         var s = ""
         if (str != null) {
-            val p = Pattern.compile("\\s{" + count + ",}|\t|\r|\n")
+            val p = Pattern.compile("\\s{$count,}|\t|\r|\n")
             val m = p.matcher(str)
             s = m.replaceAll(" ")
         }
@@ -196,7 +174,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         notifyItemChanged(0)
     }
 
-    private fun urlToSystemList(activity: RouterActivity, url: String) {
+    fun urlToSystemList(activity: RouterActivity, url: String, callback: (TreeBean) -> Unit) {
         try {
             val uri = Uri.parse("https://www.wanandroid.com/$url")
             var chapterId = uri.getQueryParameter("cid")
@@ -207,45 +185,41 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                 }
             }
             if (chapterId != null) {
-                WanHelper.getTreeList().observe(activity, { list ->
+                WanHelper.getTreeList().observe(activity) { list ->
                     list.forEach { treeBean ->
                         treeBean.children?.forEachIndexed { index, childrenTreeBean ->
                             if (childrenTreeBean.id == chapterId) {
                                 treeBean.childrenSelectPosition = index
-                                val args = Bundle()
-                                args.putParcelable(Keys.BEAN, treeBean)
-                                activity.navigation(Router.SYSTEM_LIST, args)
+                                callback.invoke(treeBean)
                                 return@forEach
                             }
                         }
                     }
-                })
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun chapterIdToSystemList(
+    fun chapterIdToSystemList(
         activity: RouterActivity,
-        realSuperChapterId: String,
-        chapterId: String
+        item: ArticleBean,
+        callback: (TreeBean) -> Unit
     ) {
-        WanHelper.getTreeList().observe(activity, { list ->
+        WanHelper.getTreeList().observe(activity) { list ->
             list.forEach { treeBean ->
-                if (treeBean.id == realSuperChapterId) {
+                if (treeBean.id == item.realSuperChapterId) {
                     treeBean.children?.forEachIndexed { index, childrenTreeBean ->
-                        if (childrenTreeBean.id == chapterId) {
+                        if (childrenTreeBean.id == item.chapterId) {
                             treeBean.childrenSelectPosition = index
                         }
                     }
-                    val args = Bundle()
-                    args.putParcelable(Keys.BEAN, treeBean)
-                    activity.navigation(Router.SYSTEM_LIST, args)
+                    callback.invoke(treeBean)
                     return@forEach
                 }
             }
-        })
+        }
     }
 
     private fun collect(id: String): MutableLiveData<HttpResponse> {

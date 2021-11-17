@@ -6,21 +6,39 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.view.OnLoadMoreListener
+import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.FragmentMyCollectArticleBinding
+import com.example.fragment.module.user.databinding.FragmentMyCollectBinding
 import com.example.fragment.module.user.model.UserViewModel
 
-class MyCollectArticleFragment : RouterFragment() {
+class MyCollectFragment : RouterFragment() {
 
     private val articleAdapter = ArticleAdapter()
+    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
+        override fun onItemChildClick(
+            view: View,
+            holder: BaseAdapter.ViewBindHolder,
+            position: Int
+        ) {
+            val item = articleAdapter.getItem(position)
+            when (view.id) {
+                R.id.rl_item -> {
+                    val args = Bundle()
+                    args.putString(Keys.URL, item.link)
+                    activity.navigation(R.id.action_my_collect_to_web, args)
+                }
+            }
+        }
+    }
+
     private val viewModel: UserViewModel by viewModels()
-    private var _binding: FragmentMyCollectArticleBinding? = null
+    private var _binding: FragmentMyCollectBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -28,7 +46,7 @@ class MyCollectArticleFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyCollectArticleBinding.inflate(inflater, container, false)
+        _binding = FragmentMyCollectBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -37,23 +55,24 @@ class MyCollectArticleFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+    override fun initView() {
+        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
-        binding.pullRefresh.setOnRefreshListener(object :
-            PullRefreshLayout.OnRefreshListener {
+        binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.myCollectArticle(true)
             }
         })
-        binding.pullRefresh.setOnLoadMoreListener(binding.list, object :
-            PullRefreshLayout.OnLoadMoreListener {
+        binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.myCollectArticle(false)
             }
         })
+    }
+
+    override fun initViewModel() {
         viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
             when {
                 result.errorCode == "0" -> {
@@ -68,19 +87,19 @@ class MyCollectArticleFragment : RouterFragment() {
                         }
                     }
                 }
-                result.errorCode == "-1001" -> {
-                    WanHelper.setUser(UserBean())
-                    baseActivity.showTips(result.errorMsg)
-                    baseActivity.navigation(R.id.action_my_collect_article_to_login)
-                }
                 result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    baseActivity.showTips(result.errorMsg)
+                    activity.showTips(result.errorMsg)
                 }
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
         }
-        binding.pullRefresh.setRefreshing()
+    }
+
+    override fun onLoad() {
+        if (viewModel.myCollectArticleResult.value == null) {
+            viewModel.myCollectArticle(true)
+        }
     }
 
 }

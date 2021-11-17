@@ -8,7 +8,7 @@ import com.example.fragment.library.base.http.get
 import com.example.fragment.module.wan.bean.NavigationListBean
 import kotlinx.coroutines.launch
 
-class NavigationViewModel : ViewModel() {
+class LinkViewModel : ViewModel() {
 
     val navigationResult = MutableLiveData<NavigationListBean>()
 

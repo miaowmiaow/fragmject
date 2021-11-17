@@ -6,27 +6,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.view.OnRefreshListener
-import com.example.fragment.library.base.view.PullRefreshLayout
-import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.SystemAdapter
-import com.example.fragment.module.wan.databinding.FragmentSystemBinding
+import com.example.fragment.module.wan.databinding.FragmentNavigationSystemBinding
 import com.example.fragment.module.wan.model.SystemViewModel
 
-class SystemFragment : RouterFragment() {
+class NavigationSystemFragment : RouterFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(): SystemFragment {
-            return SystemFragment()
+        fun newInstance(): NavigationSystemFragment {
+            return NavigationSystemFragment()
         }
     }
 
     private val systemAdapter = SystemAdapter()
 
     private val viewModel: SystemViewModel by viewModels()
-    private var _binding: FragmentSystemBinding? = null
+    private var _binding: FragmentNavigationSystemBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -34,7 +31,7 @@ class SystemFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSystemBinding.inflate(inflater, container, false)
+        _binding = FragmentNavigationSystemBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -1,11 +1,11 @@
-package com.example.fragment.module.home.adapter
+package com.example.fragment.module.wan.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.module.home.R
-import com.example.fragment.module.home.databinding.ItemHistorySearchBinding
+import com.example.fragment.module.wan.R
+import com.example.fragment.module.wan.databinding.ItemHistorySearchBinding
 
 class HistorySearchAdapter : BaseAdapter<String>() {
 

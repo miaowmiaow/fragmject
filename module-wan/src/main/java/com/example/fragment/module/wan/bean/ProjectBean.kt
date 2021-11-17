@@ -1,4 +1,4 @@
-package com.example.fragment.module.home.bean
+package com.example.fragment.module.wan.bean
 
 import com.example.fragment.library.base.http.HttpResponse
 

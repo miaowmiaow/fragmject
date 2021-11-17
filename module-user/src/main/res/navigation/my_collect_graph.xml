@@ -2,145 +2,19 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/user_graph"
-    app:startDestination="@id/user">
+    android:id="@+id/my_collect_graph"
+    app:startDestination="@id/my_collect">
     <fragment
-        android:id="@+id/coin_rank"
-        android:name="com.example.fragment.module.user.fragment.CoinRankFragment"
-        android:label="CoinRankFragment"
-        tools:layout="@layout/fragment_coin_rank">
+        android:id="@+id/my_collect"
+        android:name="com.example.fragment.module.user.fragment.MyCollectFragment"
+        android:label="MyCollectFragment"
+        tools:layout="@layout/fragment_my_collect">
         <action
-            android:id="@+id/action_coin_rank_to_web"
-            app:destination="@id/web"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-    </fragment>
-    <fragment
-        android:id="@+id/my_coin"
-        android:name="com.example.fragment.module.user.fragment.MyCoinFragment"
-        android:label="MyCoinFragment"
-        tools:layout="@layout/fragment_my_coin">
-        <action
-            android:id="@+id/action_my_coin_to_coin_rank"
-            app:destination="@id/coin_rank"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_my_coin_to_login"
-            app:destination="@id/login_graph"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-    </fragment>
-    <fragment
-        android:id="@+id/my_collect_article"
-        android:name="com.example.fragment.module.user.fragment.MyCollectArticleFragment"
-        android:label="MyCollectArticleFragment"
-        tools:layout="@layout/fragment_my_collect_article">
-        <action
-            android:id="@+id/action_my_collect_article_to_web"
-            app:destination="@id/web"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_my_collect_article_to_login"
-            app:destination="@id/login_graph"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-    </fragment>
-    <fragment
-        android:id="@+id/my_share_article"
-        android:name="com.example.fragment.module.user.fragment.MyShareArticleFragment"
-        android:label="MyShareArticleFragment"
-        tools:layout="@layout/fragment_my_share_article">
-        <action
-            android:id="@+id/action_my_share_article_to_web"
-            app:destination="@id/web"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_my_share_article_to_login"
-            app:destination="@id/login_graph"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-    </fragment>
-    <fragment
-        android:id="@+id/avatar"
-        android:name="com.example.fragment.module.user.fragment.AvatarFragment"
-        android:label="AvatarFragment"
-        tools:layout="@layout/fragment_avatar" />
-    <fragment
-        android:id="@+id/setting"
-        android:name="com.example.fragment.module.user.fragment.SettingFragment"
-        android:label="SettingFragment"
-        tools:layout="@layout/fragment_setting">
-        <action
-            android:id="@+id/action_setting_to_web"
-            app:destination="@id/web"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-    </fragment>
-    <fragment
-        android:id="@+id/user"
-        android:name="com.example.fragment.module.user.fragment.UserFragment"
-        android:label="UserFragment"
-        tools:layout="@layout/fragment_user">
-        <action
-            android:id="@+id/action_user_to_login"
-            app:destination="@id/login_graph"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_user_to_my_coin"
-            app:destination="@id/my_coin"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_user_to_my_collect_article"
-            app:destination="@id/my_collect_article"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_user_to_my_share_article"
-            app:destination="@id/my_share_article"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_user_to_avatar"
-            app:destination="@id/avatar"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
-        <action
-            android:id="@+id/action_user_to_setting"
-            app:destination="@id/setting"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
+            android:id="@+id/action_my_collect_to_web"
+            app:destination="@id/web_graph"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
     </fragment>
 </navigation>

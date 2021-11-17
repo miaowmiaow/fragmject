@@ -11,14 +11,14 @@ import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.databinding.FragmentSystemListBinding
+import com.example.fragment.module.wan.databinding.FragmentSystemBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
-class SystemListFragment : RouterFragment() {
+class SystemFragment : RouterFragment() {
 
     private var tree: TreeBean? = null
 
-    private var _binding: FragmentSystemListBinding? = null
+    private var _binding: FragmentSystemBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -26,7 +26,7 @@ class SystemListFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSystemListBinding.inflate(inflater, container, false)
+        _binding = FragmentSystemBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -49,7 +49,7 @@ class SystemListFragment : RouterFragment() {
             binding.title.text = tree.name
             tree.children?.let { data ->
                 binding.viewpager.offscreenPageLimit = 1
-                binding.viewpager.adapter = object : FragmentStateAdapter(this@SystemListFragment) {
+                binding.viewpager.adapter = object : FragmentStateAdapter(this@SystemFragment) {
 
                     override fun getItemCount(): Int {
                         return data.size

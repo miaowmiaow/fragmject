@@ -1,117 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg">
-
-    <RelativeLayout
-        android:id="@+id/title_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <ImageView
-            android:id="@+id/black"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentStart="true"
-            android:padding="18dp"
-            android:src="@drawable/ic_back" />
-
-    </RelativeLayout>
+    android:background="@color/background"
+    android:clickable="true"
+    android:focusable="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/title_bar"
-        android:gravity="center">
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/logo"
-            android:layout_width="125dp"
-            android:layout_height="125dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="50dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_logo" />
 
-        <com.example.fragment.library.base.view.ClearEditText
+        <TextView
             android:id="@+id/username"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:layout_below="@id/logo"
-            android:layout_marginStart="50dp"
-            android:layout_marginTop="100dp"
-            android:layout_marginEnd="50dp"
-            android:background="@null"
-            android:hint="请输入用户名"
-            android:singleLine="true"
-            android:textColor="@color/text_fff"
-            android:textColorHint="@color/text_ccc"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/username"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@color/white" />
-
-        <com.example.fragment.library.base.view.ClearEditText
-            android:id="@+id/password"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/username"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@null"
-            android:hint="请输入密码"
-            android:inputType="textPassword"
-            android:singleLine="true"
-            android:textColor="@color/text_fff"
-            android:textColorHint="@color/text_ccc"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/password"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@color/white" />
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="25dp"
+            android:gravity="center"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="去登录"
+            android:textColor="@color/text_333"
+            android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/register"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/password"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="50dp"
-            android:layout_marginTop="75dp"
-            android:layout_marginEnd="50dp"
-            android:text="去注册"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/login"
-            android:layout_width="wrap_content"
+            android:id="@+id/my_coin"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_below="@id/register"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="25dp"
-            android:layout_marginBottom="25dp"
-            android:background="@drawable/shape_corners_solid_stroke_white"
-            android:paddingStart="100dp"
-            android:paddingEnd="100dp"
-            android:text="登录"
-            android:textColor="@color/text_fff"
-            android:textSize="16sp" />
+            android:layout_below="@id/username"
+            android:background="@drawable/layer_white_bg"
+            android:gravity="center_vertical"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="我的积分"
+            android:textColor="@color/text_333"
+            android:textSize="13sp"
+            app:drawableEndCompat="@drawable/ic_right" />
+
+        <TextView
+            android:id="@+id/my_collection"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@id/my_coin"
+            android:background="@drawable/layer_white_bg"
+            android:gravity="center_vertical"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="我的收藏"
+            android:textColor="@color/text_333"
+            android:textSize="13sp"
+            app:drawableEndCompat="@drawable/ic_right" />
+
+        <TextView
+            android:id="@+id/my_share"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@id/my_collection"
+            android:background="@drawable/layer_white_bg"
+            android:gravity="center_vertical"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="我的分享"
+            android:textColor="@color/text_333"
+            android:textSize="13sp"
+            app:drawableEndCompat="@drawable/ic_right" />
+
+        <TextView
+            android:id="@+id/setting"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@id/my_share"
+            android:background="@drawable/layer_white_bg"
+            android:gravity="center_vertical"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="系统设置"
+            android:textColor="@color/text_333"
+            android:textSize="14sp"
+            app:drawableEndCompat="@drawable/ic_right" />
+
     </RelativeLayout>
 
 </RelativeLayout>

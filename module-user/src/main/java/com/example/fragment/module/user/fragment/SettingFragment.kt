@@ -1,4 +1,4 @@
-package com.example.fragment.user.fragment
+package com.example.fragment.module.user.fragment
 
 import android.app.Activity
 import android.os.Bundle
@@ -14,12 +14,12 @@ import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenReco
 import com.example.fragment.library.base.view.SwitchButton
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
+import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
-import com.example.fragment.user.model.UserViewModel
+import com.example.fragment.module.user.model.UserViewModel
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -46,9 +46,8 @@ class SettingFragment : RouterFragment() {
         countDownTimer?.cancel()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+    override fun initView() {
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener(object :
             SwitchButton.OnCheckedChangeListener {
             override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
@@ -87,14 +86,14 @@ class SettingFragment : RouterFragment() {
                 if (isChecked) {
                     countDownTimer = object : CountDownTimer(5000, 1000) {
                         override fun onTick(millisUntilFinished: Long) {
-                            baseActivity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
+                            activity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
                         }
 
                         override fun onFinish() {
-                            baseActivity.dismissTips()
-                            baseActivity.startScreenRecord { code, message ->
+                            activity.dismissTips()
+                            activity.startScreenRecord { code, message ->
                                 if (code != Activity.RESULT_OK) {
-                                    baseActivity.showTips(message)
+                                    activity.showTips(message)
                                     binding.screenRecord.setChecked(false)
                                 }
                             }
@@ -103,20 +102,20 @@ class SettingFragment : RouterFragment() {
                 } else {
                     countDownTimer?.cancel()
                     view.postDelayed({
-                        baseActivity.dismissTips()
-                        baseActivity.stopScreenRecord()
+                        activity.dismissTips()
+                        activity.stopScreenRecord()
                     }, 1000)
                 }
             }
         })
-        binding.cacheSize.text = CacheUtils.getTotalCacheSize(baseActivity)
+        binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
         binding.clearCache.setOnClickListener {
             StandardDialog.newInstance()
                 .setContent("确定要清除缓存吗？")
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
-                        CacheUtils.clearAllCache(baseActivity)
-                        binding.cacheSize.text = CacheUtils.getTotalCacheSize(baseActivity)
+                        CacheUtils.clearAllCache(activity)
+                        binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -132,7 +131,7 @@ class SettingFragment : RouterFragment() {
                     override fun onConfirm(dialog: StandardDialog) {
                         val args = Bundle()
                         args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject.git")
-                        baseActivity.navigation(Router.WEB, args)
+                        activity.navigation(R.id.action_setting_to_web, args)
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -143,7 +142,7 @@ class SettingFragment : RouterFragment() {
         binding.about.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, "https://wanandroid.com")
-            baseActivity.navigation(Router.WEB, args)
+            activity.navigation(R.id.action_setting_to_web, args)
         }
         binding.privacyPolicy.setOnClickListener {
             var inputStream: InputStream? = null
@@ -154,7 +153,7 @@ class SettingFragment : RouterFragment() {
                     readRawFromStreamToString(inputStream)?.let { html ->
                         val args = Bundle()
                         args.putString(Keys.HTML, html.replace("{privacy_policy}", template))
-                        baseActivity.navigation(Router.WEB, args)
+                        activity.navigation(R.id.action_setting_to_web, args)
                     }
                 }
             } catch (e: Exception) {
@@ -166,7 +165,7 @@ class SettingFragment : RouterFragment() {
         binding.feedback.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject/issues")
-            baseActivity.navigation(Router.WEB, args)
+            activity.navigation(R.id.action_setting_to_web, args)
         }
         binding.logout.setOnClickListener {
             StandardDialog.newInstance()
@@ -181,15 +180,21 @@ class SettingFragment : RouterFragment() {
                 })
                 .show(childFragmentManager)
         }
+    }
+
+    override fun initViewModel() {
         viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
             if (result.errorCode == "0") {
                 WanHelper.setUser(UserBean())
-                baseActivity.onBackPressed()
+                activity.onBackPressed()
             }
             if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                baseActivity.showTips(result.errorMsg)
+                activity.showTips(result.errorMsg)
             }
         }
+    }
+
+    override fun onLoad() {
         WanHelper.getUser().observe(viewLifecycleOwner) { userBean ->
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         }

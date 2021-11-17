@@ -1,35 +1,58 @@
 package com.example.fragment.project.fragment
 
-import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.GravityCompat
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
-import com.example.fragment.library.base.activity.OnBackPressedListener
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.adapter.BaseViewPagerAdapter
-import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.utils.BannerHelper
-import com.example.fragment.library.common.bean.EventBean
-import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.home.fragment.SquareFragment
+import com.example.fragment.module.user.fragment.UserFragment
+import com.example.fragment.module.wan.fragment.HomeFragment
+import com.example.fragment.module.wan.fragment.NavigationFragment
+import com.example.fragment.module.wan.fragment.ProjectFragment
+import com.example.fragment.module.wan.fragment.QAFragment
+import com.example.fragment.project.R
 import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.model.MainViewModel
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
-class MainFragment : RouterFragment(), OnBackPressedListener {
+class MainFragment : RouterFragment() {
+
+    private val tabTexts = arrayOf("首页", "导航", "问答", "项目", "我的")
+    private val tabDrawable = intArrayOf(
+        R.drawable.ic_bottom_bar_home,
+        R.drawable.ic_bottom_bar_navigation,
+        R.drawable.ic_bottom_bar_faq,
+        R.drawable.ic_bottom_bar_system,
+        R.drawable.ic_bottom_bar_project
+    )
+    private val fragments = arrayListOf(
+        HomeFragment.newInstance(),
+        NavigationFragment.newInstance(),
+        QAFragment.newInstance(),
+        ProjectFragment.newInstance(),
+        UserFragment.newInstance()
+    )
 
     private lateinit var bannerHelper: BannerHelper
-    private val fragments = arrayListOf(SquareFragment.newInstance(), WanFragment.newInstance())
     private val hotKeyAdapter = HotKeyAdapter()
+    private val hotKeyClickListener = object : BaseAdapter.OnItemClickListener {
+        override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+            search()
+        }
+    }
 
     private val viewModel: MainViewModel by viewModels()
     private var _binding: FragmentMainBinding? = null
@@ -49,34 +72,66 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.menu.setOnClickListener {
-            if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
-                binding.drawer.closeDrawer(GravityCompat.START)
-            } else {
-                binding.drawer.openDrawer(GravityCompat.START)
-            }
-        }
-        binding.add.setOnClickListener { baseActivity.navigation(Router.SHARE_ARTICLE) }
-        binding.logo.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
-        binding.username.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
-        binding.coin.setOnClickListener { baseActivity.navigation(Router.MY_COIN) }
-        binding.myCollection.setOnClickListener { baseActivity.navigation(Router.MY_COLLECT_ARTICLE) }
-        binding.myShare.setOnClickListener { baseActivity.navigation(Router.MY_SHARE_ARTICLE) }
-        binding.avatar.setOnClickListener { baseActivity.navigation(Router.AVATAR) }
-        binding.setting.setOnClickListener { baseActivity.navigation(Router.SETTING) }
+    override fun onResume() {
+        super.onResume()
+        bannerHelper.startTimerTask()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bannerHelper.stopTimerTask()
+    }
+
+    override fun initView() {
+        hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)
         binding.search.setOnClickListener { search() }
-        hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
-            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                search()
-            }
-        })
+        binding.add.setOnClickListener { activity.navigation(Router.SHARE) }
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
-        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
-        binding.viewpager.currentItem = savedInstanceState?.getInt("MAIN_CURRENT_POSITION") ?: 1
+        binding.viewpager.adapter = BaseViewPagerAdapter(this@MainFragment, fragments)
+        binding.tabBar.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                tab?.customView?.apply {
+                    val icon = findViewById<ImageView>(R.id.iv_tab_icon)
+                    val text = findViewById<TextView>(R.id.tv_tab_name)
+                    icon.setColorFilter(ContextCompat.getColor(icon.context, R.color.text_fff))
+                    text.setTextColor(ContextCompat.getColor(text.context, R.color.text_fff))
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+                tab?.customView?.apply {
+                    val icon = findViewById<ImageView>(R.id.iv_tab_icon)
+                    val text = findViewById<TextView>(R.id.tv_tab_name)
+                    icon.setColorFilter(ContextCompat.getColor(icon.context, R.color.gray_alpha))
+                    text.setTextColor(ContextCompat.getColor(text.context, R.color.gray_alpha))
+                }
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+        binding.tabBar.removeAllTabs()
+        TabLayoutMediator(binding.tabBar, binding.viewpager, true, false) { tab, position ->
+            val tabView: View = layoutInflater.inflate(R.layout.item_tab_main, null)
+            val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
+            val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
+            imgTab.setImageDrawable(
+                ContextCompat.getDrawable(
+                    imgTab.context,
+                    tabDrawable[position]
+                )
+            )
+            imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
+            txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
+            txtTab.text = tabTexts[position]
+            tab.customView = tabView
+        }.attach()
+        binding.viewpager.currentItem = 0
+    }
+
+    override fun initViewModel() {
         viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
             result.data?.apply {
                 if (result.errorCode == "0") {
@@ -85,58 +140,15 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
                     bannerHelper.startTimerTask()
                 }
                 if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                    baseActivity.showTips(result.errorMsg)
-                }
-            }
-            dismissDialog()
-        }
-        viewModel.getHotKey()
-        showDialog()
-        SharedFlowBus.onSticky(EventBean::class.java).observe(viewLifecycleOwner) { event ->
-            if (event.key == Keys.AVATAR) {
-                BitmapFactory.decodeFile(event.value, BitmapFactory.Options())?.let { bitmap ->
-                    binding.logo.setImageBitmap(bitmap)
+                    activity.showTips(result.errorMsg)
                 }
             }
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("MAIN_CURRENT_POSITION", binding.viewpager.currentItem)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        baseActivity.registerOnBackPressedListener(this::class.java.simpleName, this)
-        bannerHelper.startTimerTask()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        baseActivity.removerOnBackPressedListener(this::class.java.simpleName)
-        bannerHelper.stopTimerTask()
-    }
-
-    override fun onBackPressed(): Boolean {
-        return if (binding.viewpager.currentItem == 1) {
-            false
-        } else {
-            binding.viewpager.currentItem = 1
-            true
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    override fun onUserStatusUpdate(userBean: UserBean) {
-        if (userBean.id.isNotEmpty()) {
-            binding.logo.setOnClickListener(null)
-            binding.username.setOnClickListener(null)
-            binding.username.text = "欢迎回来！${userBean.username}"
-        } else {
-            binding.logo.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
-            binding.username.setOnClickListener { baseActivity.navigation(Router.LOGIN) }
-            binding.username.text = "去登录"
+    override fun onLoad() {
+        if (viewModel.hotKeyResult.value == null) {
+            viewModel.getHotKey()
         }
     }
 
@@ -144,7 +156,7 @@ class MainFragment : RouterFragment(), OnBackPressedListener {
         val title = hotKeyAdapter.getItem(bannerHelper.findLastVisibleItemPosition()).name
         val args = Bundle()
         args.putString(Keys.TITLE, title)
-        baseActivity.navigation(Router.SEARCH, args)
+        activity.navigation(Router.SEARCH, args)
     }
 
 }

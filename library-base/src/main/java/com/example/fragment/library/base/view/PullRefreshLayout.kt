@@ -148,14 +148,6 @@ class PullRefreshLayout @JvmOverloads constructor(
 
     }
 
-    interface OnRefreshListener {
-        fun onRefresh(refreshLayout: PullRefreshLayout)
-    }
-
-    interface OnLoadMoreListener {
-        fun onLoadMore(refreshLayout: PullRefreshLayout)
-    }
-
     fun isRefresh(): Boolean {
         return refreshing
     }
@@ -758,6 +750,14 @@ abstract class BaseRefreshView(val parent: PullRefreshLayout) : Drawable(), Anim
     abstract fun setPercent(percent: Float, invalidate: Boolean)
 
     abstract fun offsetTopAndBottom(offset: Int)
+}
+
+interface OnRefreshListener {
+    fun onRefresh(refreshLayout: PullRefreshLayout)
+}
+
+interface OnLoadMoreListener {
+    fun onLoadMore(refreshLayout: PullRefreshLayout)
 }
 
 class LoadMoreView(context: Context) : AppCompatTextView(context) {

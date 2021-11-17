@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.common.bean.HotKeyListBean
-import com.example.fragment.library.common.bean.TreeListBean
-import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
@@ -24,16 +22,6 @@ class MainViewModel : ViewModel() {
             val response = get<HotKeyListBean>(request)
             // 通过LiveData通知界面更新
             hotKeyResult.postValue(response)
-        }
-    }
-
-    fun getTree() {
-        viewModelScope.launch {
-            val request = HttpRequest("tree/json")
-            val response = get<TreeListBean>(request)
-            response.data?.apply {
-                WanHelper.setTreeList(this)
-            }
         }
     }
 

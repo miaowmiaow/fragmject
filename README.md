@@ -88,6 +88,9 @@ Kotlin 是一种富有表现力且简洁的编程语言，不仅可以减少常�
 ## ViewBinding
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
+## Navigation
+Navigation 组件旨在用于具有一个主 Activity 和多个 Fragment 目的地的应用。
+- [轻松使用Navigation](https://developer.android.google.cn/guide/navigation?hl=zh_cn)
 ## LiveData
 LiveData 是一种可观察的数据存储器类，它具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。
 LiveData 的优势：不会发生内存泄漏，不会因 Activity 停止而导致崩溃，不再需要手动处理生命周期，数据始终保持最新状态，适当的配置更改，共享资源。

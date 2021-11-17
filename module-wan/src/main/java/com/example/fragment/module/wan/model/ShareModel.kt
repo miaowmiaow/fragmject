@@ -4,46 +4,49 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
+import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.get
-import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.library.common.bean.TreeListBean
+import com.example.fragment.library.base.http.post
+import com.example.fragment.library.common.bean.RegisterBean
+import com.example.fragment.module.wan.bean.UserShareBean
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class SystemViewModel : ViewModel() {
+class ShareModel : ViewModel() {
 
-    val treeResult = MutableLiveData<TreeListBean>()
-    val treeListResult = MutableLiveData<ArticleListBean>()
+    val userShareResult = MutableLiveData<UserShareBean>()
+    val shareArticleResult = MutableLiveData<HttpResponse>()
+
     var page = 0
     var pageCont = 1
     var isRefresh = true
 
-    fun getTree() {
-        viewModelScope.launch {
-            val request = HttpRequest("tree/json")
-            val response = get<TreeListBean>(request)
-            treeResult.postValue(response)
-            response.data?.apply {
-                WanHelper.setTreeList(this)
-            }
+    fun shareArticle(title: String, link: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val request = HttpRequest("lg/user_article/add/json")
+                .putParam("title", title)
+                .putParam("link", link)
+            val response = post<RegisterBean>(request)
+            shareArticleResult.postValue(response)
         }
     }
 
-    fun getTreeList(isRefresh: Boolean, cid: String) {
+    fun userShare(isRefresh: Boolean, id: String) {
         this.isRefresh = isRefresh
         viewModelScope.launch {
             if (isRefresh) {
-                page = 0
+                page = 1
+                pageCont = 1
             } else {
                 page++
             }
             if (page <= pageCont) {
-                val request = HttpRequest("article/list/{page}/json")
+                val request = HttpRequest("user/{id}/share_articles/{page}/json")
+                request.putPath("id", id)
                 request.putPath("page", page.toString())
-                request.putQuery("cid", cid)
-                val response = get<ArticleListBean>(request)
-                response.data?.pageCount?.let { pageCont = it.toInt() }
-                treeListResult.postValue(response)
+                val response = get<UserShareBean>(request)
+                response.data?.shareArticles?.pageCount?.let { pageCont = it.toInt() }
+                userShareResult.postValue(response)
             }
         }
     }

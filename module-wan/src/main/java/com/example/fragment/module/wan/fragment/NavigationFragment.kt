@@ -1,51 +1,32 @@
-package com.example.fragment.project.fragment
+package com.example.fragment.module.wan.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.RecyclerView
-import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.adapter.BaseViewPagerAdapter
-import com.example.fragment.library.base.utils.BannerHelper
-import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.fragment.UserFragment
-import com.example.fragment.module.wan.fragment.*
-import com.example.fragment.project.R
-import com.example.fragment.project.adapter.HotKeyAdapter
-import com.example.fragment.project.databinding.FragmentMainBinding
-import com.example.fragment.project.model.MainViewModel
-import com.google.android.material.tabs.TabLayout
+import com.example.fragment.module.wan.R
+import com.example.fragment.module.wan.databinding.FragmentNavigationBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
-class MainFragment : RouterFragment() {
+class NavigationFragment : RouterFragment() {
 
-    private lateinit var bannerHelper: BannerHelper
-    private val hotKeyAdapter = HotKeyAdapter()
+    companion object {
+        @JvmStatic
+        fun newInstance(): NavigationFragment {
+            return NavigationFragment()
+        }
+    }
 
-    private val tabTexts = arrayOf("首页", "导航", "问答", "项目", "我的")
-    private val tabDrawable = intArrayOf(
-        R.drawable.ic_bottom_bar_home,
-        R.drawable.ic_bottom_bar_navigation,
-        R.drawable.ic_bottom_bar_faq,
-        R.drawable.ic_bottom_bar_system,
-        R.drawable.ic_bottom_bar_project
-    )
+    private val tabTexts = arrayOf("导航", "体系")
     private val fragments = arrayListOf(
-        HomeFragment.newInstance(),
-        LinkFragment.newInstance(),
-        FAQFragment.newInstance(),
-        ProjectListFragment.newInstance(),
-        UserFragment.newInstance()
+        NavigationLinkFragment.newInstance(),
+        NavigationSystemFragment.newInstance()
     )
 
-    private val viewModel: MainViewModel by viewModels()
-    private var _binding: FragmentMainBinding? = null
+    private var _binding: FragmentNavigationBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -53,7 +34,7 @@ class MainFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = FragmentNavigationBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -62,93 +43,22 @@ class MainFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.wan.setOnClickListener { baseActivity.navigation(R.id.action_main_to_user) }
-        binding.search.setOnClickListener { search() }
-        hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
-            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                search()
-            }
-        })
-        bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
-        binding.hotKey.adapter = hotKeyAdapter
-        viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
-            result.data?.apply {
-                if (result.errorCode == "0") {
-                    hotKeyAdapter.setNewData(this)
-                    WanHelper.setHotKey(this)
-                    bannerHelper.startTimerTask()
-                }
-                if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                    baseActivity.showTips(result.errorMsg)
-                }
-            }
-        }
-        viewModel.getHotKey()
-
-        binding.viewpager.offscreenPageLimit = 4
-        binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
-        binding.tabBar.setupWithViewPager(binding.viewpager)
-        binding.tabBar.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                tab?.customView?.apply {
-                    val icon = findViewById<ImageView>(R.id.iv_tab_icon)
-                    val text = findViewById<TextView>(R.id.tv_tab_name)
-                    icon.setColorFilter(ContextCompat.getColor(icon.context, R.color.text_fff))
-                    text.setTextColor(ContextCompat.getColor(text.context, R.color.text_fff))
-                }
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-                tab?.customView?.apply {
-                    val icon = findViewById<ImageView>(R.id.iv_tab_icon)
-                    val text = findViewById<TextView>(R.id.tv_tab_name)
-                    icon.setColorFilter(ContextCompat.getColor(icon.context, R.color.gray_alpha))
-                    text.setTextColor(ContextCompat.getColor(text.context, R.color.gray_alpha))
-                }
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-            }
-        })
+    override fun initView() {
+        binding.viewpager.adapter = BaseViewPagerAdapter(this@NavigationFragment, fragments)
         binding.tabBar.removeAllTabs()
-        for (i in fragments.indices) {
+        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
             val layoutInflater = LayoutInflater.from(binding.root.context)
-            val tabView: View = layoutInflater.inflate(R.layout.item_tab_main, null)
-            val imgTab = tabView.findViewById<ImageView>(R.id.iv_tab_icon)
-            val txtTab = tabView.findViewById<TextView>(R.id.tv_tab_name)
-            imgTab.setImageDrawable(ContextCompat.getDrawable(imgTab.context, tabDrawable[i]))
-            imgTab.setColorFilter(ContextCompat.getColor(imgTab.context, R.color.gray_alpha))
-            txtTab.setTextColor(ContextCompat.getColor(txtTab.context, R.color.gray_alpha))
-            txtTab.text = tabTexts[i]
-            val tab = binding.tabBar.newTab()
+            val tabView: View = layoutInflater.inflate(R.layout.tab_item_top, null)
+            tabView.findViewById<TextView>(R.id.tv_tab).text = tabTexts[position]
             tab.customView = tabView
-            binding.tabBar.addTab(tab)
-        }
-        binding.viewpager.currentItem = savedInstanceState?.getInt("MAIN_CURRENT_POSITION") ?: 0
+        }.attach()
+        binding.viewpager.currentItem = 0
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("MAIN_CURRENT_POSITION", binding.viewpager.currentItem)
+    override fun initViewModel() {
     }
 
-    override fun onResume() {
-        super.onResume()
-        bannerHelper.startTimerTask()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        bannerHelper.stopTimerTask()
-    }
-
-    private fun search() {
-        val title = hotKeyAdapter.getItem(bannerHelper.findLastVisibleItemPosition()).name
-        val args = Bundle()
-        args.putString(Keys.TITLE, title)
-//        baseActivity.navigation(R.id.action_main_to_search, args)
+    override fun onLoad() {
     }
 
 }

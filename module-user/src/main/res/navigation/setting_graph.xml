@@ -2,13 +2,8 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/avatar_graph"
-    app:startDestination="@id/avatar">
-    <fragment
-        android:id="@+id/avatar"
-        android:name="com.example.fragment.module.user.fragment.AvatarFragment"
-        android:label="AvatarFragment"
-        tools:layout="@layout/fragment_avatar" />
+    android:id="@+id/setting_graph"
+    app:startDestination="@id/setting">
     <fragment
         android:id="@+id/setting"
         android:name="com.example.fragment.module.user.fragment.SettingFragment"
@@ -16,10 +11,10 @@
         tools:layout="@layout/fragment_setting">
         <action
             android:id="@+id/action_setting_to_web"
-            app:destination="@id/web"
-            app:enterAnim="@anim/bottom_in"
-            app:exitAnim="@anim/bottom_out"
-            app:popEnterAnim="@anim/bottom_in"
-            app:popExitAnim="@anim/bottom_out" />
+            app:destination="@id/web_graph"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
     </fragment>
 </navigation>

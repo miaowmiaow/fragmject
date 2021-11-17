@@ -1,4 +1,4 @@
-package com.example.fragment.user.fragment
+package com.example.fragment.module.user.fragment
 
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -7,16 +7,13 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.fragment.library.base.bus.SharedFlowBus
-import com.example.fragment.library.base.db.KVDatabase
 import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStoragePermissions
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
 import com.example.fragment.library.base.utils.PermissionsCallback
-import com.example.fragment.library.common.bean.EventBean
-import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentAvatarBinding
 import com.example.miaow.picture.dialog.EditorFinishCallback
@@ -42,22 +39,27 @@ class AvatarFragment : RouterFragment() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun initView() {
         binding.image.setImageResource(R.drawable.ic_logo)
-        binding.black.setOnClickListener { baseActivity.onBackPressed() }
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.album.setOnClickListener {
-            baseActivity.requestStoragePermissions(object : PermissionsCallback {
+            activity.requestStoragePermissions(object : PermissionsCallback {
                 override fun allow() {
                     openAlbum()
                 }
 
                 override fun deny() {
-                    PermissionDialog.alert(baseActivity, "存储")
+                    PermissionDialog.alert(activity, "存储")
                 }
             })
         }
-        KVDatabase.get(Keys.AVATAR).observe(viewLifecycleOwner) { path ->
+    }
+
+    override fun initViewModel() {
+    }
+
+    override fun onLoad() {
+        WanHelper.getAvatar().observe(viewLifecycleOwner) { path ->
             BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
                 binding.image.setImageBitmap(bitmap)
             }
@@ -67,10 +69,10 @@ class AvatarFragment : RouterFragment() {
     private fun openAlbum() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-        baseActivity.startForResult(intent, object : ActivityCallback {
+        activity.startForResult(intent, object : ActivityCallback {
             override fun onActivityResult(resultCode: Int, data: Intent?) {
                 data?.data?.let { uri ->
-                    pictureEditor(baseActivity.getImagePath(uri))
+                    pictureEditor(activity.getImagePath(uri))
                 }
             }
         })
@@ -83,9 +85,7 @@ class AvatarFragment : RouterFragment() {
                 override fun onFinish(path: String) {
                     val bitmap = BitmapFactory.decodeFile(path, BitmapFactory.Options())
                     binding.image.setImageBitmap(bitmap)
-                    KVDatabase.set(Keys.AVATAR, path)
-                    SharedFlowBus.withSticky(EventBean::class.java)
-                        .tryEmit(EventBean(Keys.AVATAR, path))
+                    WanHelper.setAvatar(path)
                 }
             })
             .show(childFragmentManager)

@@ -15,6 +15,7 @@ import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
@@ -59,7 +60,7 @@ class SearchFragment : RouterFragment() {
                 R.id.rl_item -> {
                     val args = Bundle()
                     args.putString(Keys.URL, item.link)
-                    activity.navigation(R.id.action_search_to_web, args)
+                    activity.navigation(Router.SEARCH_TO_WEB, args)
                 }
             }
         }

@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentLoginBinding
 import com.example.fragment.module.user.model.UserViewModel
 
@@ -43,7 +43,7 @@ class LoginFragment : RouterFragment() {
             }
         }
         binding.register.setOnClickListener {
-            activity.navigation(R.id.action_login_to_register)
+            activity.navigation(Router.LOGIN_TO_REGISTER)
         }
     }
 

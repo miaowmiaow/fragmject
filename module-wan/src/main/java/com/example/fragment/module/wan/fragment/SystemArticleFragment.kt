@@ -12,6 +12,7 @@ import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentSystemArticleBinding
@@ -39,12 +40,12 @@ class SystemArticleFragment : RouterFragment() {
                 R.id.rl_item -> {
                     val args = Bundle()
                     args.putString(Keys.URL, item.link)
-                    activity.navigation(R.id.action_system_list_to_web, args)
+                    activity.navigation(Router.SYSTEM_TO_WEB, args)
                 }
                 R.id.tv_author -> {
                     val args = Bundle()
                     args.putString(Keys.UID, item.userId)
-                    activity.navigation(R.id.action_system_list_to_user_share, args)
+                    activity.navigation(Router.SYSTEM_TO_USER_SHARE, args)
                 }
             }
         }
@@ -109,7 +110,7 @@ class SystemArticleFragment : RouterFragment() {
     }
 
     override fun onLoad() {
-        if(viewModel.treeListResult.value == null){
+        if (viewModel.treeListResult.value == null) {
             viewModel.getTreeList(true, cid)
         }
     }

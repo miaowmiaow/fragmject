@@ -13,8 +13,8 @@ import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.R
 import com.example.fragment.module.user.adapter.CoinRankAdapter
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
 import com.example.fragment.module.user.model.UserViewModel
@@ -48,7 +48,7 @@ class CoinRankFragment : RouterFragment() {
         binding.rule.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, "https://www.wanandroid.com/blog/show/2653")
-            activity.navigation(R.id.action_coin_rank_to_web, args)
+            activity.navigation(Router.COIN_RANK_TO_WEB, args)
         }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRankAdapter

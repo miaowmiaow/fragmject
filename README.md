@@ -58,8 +58,8 @@
 |       └── build.gradle                 模块构建配置
 | 
 ├── miaow-picture                        图片编辑器（目录同app，不再展开）
-├── module-home                          玩Android功能模块（目录同app，不再展开）
 ├── module-user                          用户模块（目录同app，不再展开）
+├── module-wan                           玩Android功能模块（目录同app，不再展开）
 | 
 ├── plugin-statistic                     统计插件模块
 |   └── src 

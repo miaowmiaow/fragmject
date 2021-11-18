@@ -10,7 +10,7 @@
         android:label="MyShareFragment"
         tools:layout="@layout/fragment_my_share">
         <action
-            android:id="@+id/action_my_share_article_to_web"
+            android:id="@+id/action_my_share_to_web"
             app:destination="@id/web_graph"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"

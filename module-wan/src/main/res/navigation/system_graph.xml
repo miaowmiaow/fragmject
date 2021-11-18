@@ -2,22 +2,22 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/project_list_graph"
-    app:startDestination="@id/project_list">
+    android:id="@+id/system_graph"
+    app:startDestination="@id/system">
     <fragment
-        android:id="@+id/project_list"
-        android:name="com.example.fragment.module.wan.fragment.ProjectFragment"
-        android:label="ProjectListFragment"
-        tools:layout="@layout/fragment_project">
+        android:id="@+id/system"
+        android:name="com.example.fragment.module.wan.fragment.SystemFragment"
+        android:label="SystemListFragment"
+        tools:layout="@layout/fragment_system">
         <action
-            android:id="@+id/action_project_list_to_user_share"
+            android:id="@+id/action_system_to_user_share"
             app:destination="@id/user_share_graph"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left" />
         <action
-            android:id="@+id/action_project_list_to_web"
+            android:id="@+id/action_system_to_web"
             app:destination="@id/web_graph"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.IdRes
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.example.fragment.library.base.R
@@ -23,14 +22,6 @@ abstract class RouterActivity : BaseActivity() {
      * NavController的视图id
      */
     abstract fun controllerId(): Int
-
-    /**
-     * 导航方法，根据id跳转
-     */
-    abstract fun navigation(
-        @IdRes resId: Int,
-        bundle: Bundle? = null,
-    )
 
     /**
      * 导航方法，根据路由名跳转

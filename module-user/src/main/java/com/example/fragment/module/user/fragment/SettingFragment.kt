@@ -14,10 +14,10 @@ import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenReco
 import com.example.fragment.library.base.view.SwitchButton
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
 import com.example.fragment.module.user.model.UserViewModel
 import java.io.ByteArrayOutputStream
@@ -131,7 +131,7 @@ class SettingFragment : RouterFragment() {
                     override fun onConfirm(dialog: StandardDialog) {
                         val args = Bundle()
                         args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject.git")
-                        activity.navigation(R.id.action_setting_to_web, args)
+                        activity.navigation(Router.SETTING_TO_WEB, args)
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -142,7 +142,7 @@ class SettingFragment : RouterFragment() {
         binding.about.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, "https://wanandroid.com")
-            activity.navigation(R.id.action_setting_to_web, args)
+            activity.navigation(Router.SETTING_TO_WEB, args)
         }
         binding.privacyPolicy.setOnClickListener {
             var inputStream: InputStream? = null
@@ -153,7 +153,7 @@ class SettingFragment : RouterFragment() {
                     readRawFromStreamToString(inputStream)?.let { html ->
                         val args = Bundle()
                         args.putString(Keys.HTML, html.replace("{privacy_policy}", template))
-                        activity.navigation(R.id.action_setting_to_web, args)
+                        activity.navigation(Router.SETTING_TO_WEB, args)
                     }
                 }
             } catch (e: Exception) {
@@ -165,7 +165,7 @@ class SettingFragment : RouterFragment() {
         binding.feedback.setOnClickListener {
             val args = Bundle()
             args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject/issues")
-            activity.navigation(R.id.action_setting_to_web, args)
+            activity.navigation(Router.SETTING_TO_WEB, args)
         }
         binding.logout.setOnClickListener {
             StandardDialog.newInstance()

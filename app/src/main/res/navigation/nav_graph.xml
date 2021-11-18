@@ -6,16 +6,16 @@
     app:startDestination="@id/main">
 
     <include app:graph="@navigation/avatar_graph" />
-    <include app:graph="@navigation/project_list_graph" />
+    <include app:graph="@navigation/project_graph" />
     <include app:graph="@navigation/login_graph" />
     <include app:graph="@navigation/my_coin_graph" />
     <include app:graph="@navigation/my_collect_graph" />
     <include app:graph="@navigation/my_share_graph" />
-    <include app:graph="@navigation/project_list_graph" />
+    <include app:graph="@navigation/project_graph" />
     <include app:graph="@navigation/search_graph" />
     <include app:graph="@navigation/setting_graph" />
     <include app:graph="@navigation/share_article_graph" />
-    <include app:graph="@navigation/system_list_graph" />
+    <include app:graph="@navigation/system_graph" />
     <include app:graph="@navigation/user_share_graph" />
     <include app:graph="@navigation/web_graph" />
 
@@ -60,8 +60,8 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
         <action
-            android:id="@+id/action_main_to_project_list"
-            app:destination="@id/project_list_graph"
+            android:id="@+id/action_main_to_project"
+            app:destination="@id/project_graph"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -88,8 +88,8 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
         <action
-            android:id="@+id/action_main_to_system_list"
-            app:destination="@id/system_list_graph"
+            android:id="@+id/action_main_to_system"
+            app:destination="@id/system_graph"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"

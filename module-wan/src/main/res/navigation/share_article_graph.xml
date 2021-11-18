@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/share_article_graph"
-    app:startDestination="@id/user_share">
+    app:startDestination="@id/share_article">
     <fragment
-        android:id="@+id/user_share"
+        android:id="@+id/share_article"
         android:name="com.example.fragment.module.wan.fragment.ShareArticleFragment"
         android:label="ShareArticleFragment"
         tools:layout="@layout/fragment_share_article">

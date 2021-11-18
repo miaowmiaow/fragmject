@@ -1,5 +1,6 @@
 package com.example.fragment.project.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -81,10 +82,11 @@ class MainFragment : RouterFragment() {
         bannerHelper.stopTimerTask()
     }
 
+    @SuppressLint("InflateParams")
     override fun initView() {
         hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)
         binding.search.setOnClickListener { search() }
-        binding.add.setOnClickListener { activity.navigation(Router.SHARE) }
+        binding.add.setOnClickListener { activity.navigation(Router.SHARE_ARTICLE) }
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         binding.hotKey.adapter = hotKeyAdapter
         binding.viewpager.offscreenPageLimit = 1
@@ -112,6 +114,8 @@ class MainFragment : RouterFragment() {
             override fun onTabReselected(tab: TabLayout.Tab?) {
             }
         })
+        var currentItem = binding.tabBar.selectedTabPosition
+        if (currentItem == -1) currentItem = 0
         binding.tabBar.removeAllTabs()
         for (i in fragments.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
@@ -126,7 +130,7 @@ class MainFragment : RouterFragment() {
             tab.customView = tabView
             binding.tabBar.addTab(tab)
         }
-        binding.viewpager.currentItem = 0
+        binding.viewpager.currentItem = currentItem
     }
 
     override fun initViewModel() {

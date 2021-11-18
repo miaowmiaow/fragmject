@@ -45,6 +45,8 @@ class NavigationFragment : RouterFragment() {
     override fun initView() {
         binding.viewpager.adapter = BaseViewPagerAdapter(childFragmentManager, fragments)
         binding.tabBar.setupWithViewPager(binding.viewpager)
+        var currentItem = binding.tabBar.selectedTabPosition
+        if (currentItem == -1) currentItem = 0
         binding.tabBar.removeAllTabs()
         for (i in tabTexts.indices) {
             val layoutInflater = LayoutInflater.from(binding.root.context)
@@ -54,7 +56,7 @@ class NavigationFragment : RouterFragment() {
             tab.customView = tabView
             binding.tabBar.addTab(tab)
         }
-        binding.viewpager.currentItem = 0
+        binding.viewpager.currentItem = currentItem
     }
 
     override fun initViewModel() {

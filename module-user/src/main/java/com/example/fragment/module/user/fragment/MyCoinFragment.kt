@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.R
 import com.example.fragment.module.user.adapter.CoinRecordAdapter
 import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
 import com.example.fragment.module.user.model.UserViewModel
@@ -42,7 +42,7 @@ class MyCoinFragment : RouterFragment() {
 
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
-        binding.rank.setOnClickListener { activity.navigation(R.id.action_my_coin_to_coin_rank) }
+        binding.rank.setOnClickListener { activity.navigation(Router.MY_COIN_TO_COIN_RANK) }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRecordAdapter
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
@@ -102,7 +102,7 @@ class MyCoinFragment : RouterFragment() {
     }
 
     override fun onLoad() {
-        if(viewModel.myCoinResult.value == null){
+        if (viewModel.myCoinResult.value == null) {
             viewModel.userCoin()
             viewModel.myCoin(true)
         }

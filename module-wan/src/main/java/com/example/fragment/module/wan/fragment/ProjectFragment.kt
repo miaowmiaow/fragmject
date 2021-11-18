@@ -7,14 +7,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.adapter.SimplePagerAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentProjectBinding
 import com.example.fragment.module.wan.model.ProjectViewModel
-import com.google.android.material.tabs.TabLayoutMediator
 
 class ProjectFragment : RouterFragment() {
 
@@ -67,6 +65,8 @@ class ProjectFragment : RouterFragment() {
                                 }
                             }
                         binding.tabBar.setupWithViewPager(binding.viewpager)
+                        var currentItem = binding.tabBar.selectedTabPosition
+                        if (currentItem == -1) currentItem = 0
                         binding.tabBar.removeAllTabs()
                         data.forEach {
                             val layoutInflater = LayoutInflater.from(binding.root.context)
@@ -76,7 +76,7 @@ class ProjectFragment : RouterFragment() {
                             tab.customView = tabView
                             binding.tabBar.addTab(tab)
                         }
-                        binding.viewpager.currentItem = 0
+                        binding.viewpager.currentItem = currentItem
                     }
                 }
                 result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
@@ -87,7 +87,7 @@ class ProjectFragment : RouterFragment() {
     }
 
     override fun onLoad() {
-        if(viewModel.projectTreeResult.value == null){
+        if (viewModel.projectTreeResult.value == null) {
             viewModel.getProjectTree()
         }
     }

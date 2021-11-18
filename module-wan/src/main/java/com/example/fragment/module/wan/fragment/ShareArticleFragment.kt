@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentShareArticleBinding
 import com.example.fragment.module.wan.model.ShareModel
 
@@ -38,7 +38,7 @@ class ShareArticleFragment : RouterFragment() {
             if (checkParameter(link)) {
                 val args = Bundle()
                 args.putString(Keys.URL, link)
-                activity.navigation(R.id.action_share_article_to_web, args)
+                activity.navigation(Router.SHARE_ARTICLE_TO_WEB, args)
             }
         }
         binding.share.setOnClickListener {

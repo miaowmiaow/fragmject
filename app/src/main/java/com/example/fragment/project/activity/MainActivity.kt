@@ -22,18 +22,11 @@ class MainActivity : RouterActivity() {
         Router.MY_COIN,
         Router.MY_COLLECT,
         Router.MY_SHARE,
-        Router.SHARE
+        Router.SHARE_ARTICLE
     )
 
     override fun controllerId(): Int {
         return R.id.nav_host_fragment_main
-    }
-
-    /**
-     * 导航方法，根据id跳转Fragment
-     */
-    override fun navigation(resId: Int, bundle: Bundle?) {
-        navController.navigate(resId, bundle)
     }
 
     /**
@@ -44,18 +37,52 @@ class MainActivity : RouterActivity() {
             navController.navigate(R.id.action_main_to_login)
         } else {
             when (name) {
-                Router.AVATAR -> navController.navigate(R.id.action_main_to_avatar, bundle)
-                Router.LOGIN -> navController.navigate(R.id.action_main_to_login, bundle)
-                Router.MY_COIN -> navController.navigate(R.id.action_main_to_my_coin, bundle)
-                Router.MY_COLLECT -> navController.navigate(R.id.action_main_to_my_collect, bundle)
-                Router.MY_SHARE -> navController.navigate(R.id.action_main_to_my_share, bundle)
-                Router.PROJECT -> navController.navigate(R.id.action_main_to_project_list, bundle)
-                Router.SEARCH -> navController.navigate(R.id.action_main_to_search, bundle)
-                Router.SETTING -> navController.navigate(R.id.action_main_to_setting, bundle)
-                Router.SHARE -> navController.navigate(R.id.action_main_to_share_article, bundle)
-                Router.SYSTEM -> navController.navigate(R.id.action_main_to_system_list, bundle)
-                Router.USER_SHARE -> navController.navigate(R.id.action_main_to_user_share, bundle)
-                Router.WEB -> navController.navigate(R.id.action_main_to_web, bundle)
+                Router.AVATAR ->
+                    navController.navigate(R.id.action_main_to_avatar, bundle)
+                Router.COIN_RANK_TO_WEB ->
+                    navController.navigate(R.id.action_coin_rank_to_web, bundle)
+                Router.LOGIN ->
+                    navController.navigate(R.id.action_main_to_login, bundle)
+                Router.LOGIN_TO_REGISTER ->
+                    navController.navigate(R.id.action_login_to_register, bundle)
+                Router.MY_COIN ->
+                    navController.navigate(R.id.action_main_to_my_coin, bundle)
+                Router.MY_COIN_TO_COIN_RANK ->
+                    navController.navigate(R.id.action_my_coin_to_coin_rank, bundle)
+                Router.MY_COLLECT ->
+                    navController.navigate(R.id.action_main_to_my_collect, bundle)
+                Router.MY_COLLECT_TO_WEB ->
+                    navController.navigate(R.id.action_my_collect_to_web, bundle)
+                Router.MY_SHARE ->
+                    navController.navigate(R.id.action_main_to_my_share, bundle)
+                Router.MY_SHARE_TO_WEB ->
+                    navController.navigate(R.id.action_my_share_to_web, bundle)
+                Router.PROJECT ->
+                    navController.navigate(R.id.action_main_to_project, bundle)
+                Router.SEARCH ->
+                    navController.navigate(R.id.action_main_to_search, bundle)
+                Router.SEARCH_TO_WEB ->
+                    navController.navigate(R.id.action_search_to_web, bundle)
+                Router.SETTING ->
+                    navController.navigate(R.id.action_main_to_setting, bundle)
+                Router.SETTING_TO_WEB ->
+                    navController.navigate(R.id.action_setting_to_web, bundle)
+                Router.SHARE_ARTICLE ->
+                    navController.navigate(R.id.action_main_to_share_article, bundle)
+                Router.SHARE_ARTICLE_TO_WEB ->
+                    navController.navigate(R.id.action_share_article_to_web, bundle)
+                Router.SYSTEM ->
+                    navController.navigate(R.id.action_main_to_system, bundle)
+                Router.SYSTEM_TO_USER_SHARE ->
+                    navController.navigate(R.id.action_system_to_user_share, bundle)
+                Router.SYSTEM_TO_WEB ->
+                    navController.navigate(R.id.action_system_to_web, bundle)
+                Router.USER_SHARE ->
+                    navController.navigate(R.id.action_main_to_user_share, bundle)
+                Router.USER_SHARE_TO_WEB ->
+                    navController.navigate(R.id.action_user_share_to_web, bundle)
+                Router.WEB ->
+                    navController.navigate(R.id.action_main_to_web, bundle)
             }
         }
     }

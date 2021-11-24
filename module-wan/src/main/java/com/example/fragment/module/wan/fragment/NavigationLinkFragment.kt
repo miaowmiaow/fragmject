@@ -38,21 +38,15 @@ class NavigationLinkFragment : RouterFragment() {
         override fun onItemSelected(holder: BaseAdapter.ViewBindHolder, position: Int) {
             linkMenuAdapter.getItem(position).let { item ->
                 item.isSelected = true
+                linkMenuAdapter.notifyItemRangeChanged(position, 1)
                 fillFlexboxLayout(item.articles)
-                holder.itemView.background = ContextCompat.getDrawable(
-                    holder.itemView.context,
-                    R.drawable.layer_while_item_top
-                )
             }
         }
 
         override fun onItemUnselected(holder: BaseAdapter.ViewBindHolder, position: Int) {
             linkMenuAdapter.getItem(position).let { item ->
                 item.isSelected = false
-                holder.itemView.background = ContextCompat.getDrawable(
-                    holder.itemView.context,
-                    R.drawable.layer_gray_item_top
-                )
+                linkMenuAdapter.notifyItemRangeChanged(position, 1)
             }
         }
     }

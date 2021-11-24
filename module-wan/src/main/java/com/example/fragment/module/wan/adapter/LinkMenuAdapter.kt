@@ -18,7 +18,7 @@ class LinkMenuAdapter : BaseAdapter<NavigationBean>() {
     override fun onItemView(holder: ViewBindHolder, position: Int, item: NavigationBean) {
         val binding = holder.binding as ItemNavigationMenuBinding
         binding.tv.text = item.name
-        holder.itemView.background = if (item.isSelected) {
+        binding.root.background = if (item.isSelected) {
             ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_while_item_top)
         } else {
             ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_gray_item_top)

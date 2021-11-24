@@ -5,16 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentSystemArticleBinding
 import com.example.fragment.module.wan.model.SystemViewModel
 
@@ -27,33 +26,16 @@ class SystemArticleFragment : RouterFragment() {
         }
     }
 
-    private var cid = ""
-    private val articleAdapter = ArticleAdapter()
-    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
-        override fun onItemChildClick(
-            view: View,
-            holder: BaseAdapter.ViewBindHolder,
-            position: Int
-        ) {
-            val item = articleAdapter.getItem(position)
-            when (view.id) {
-                R.id.rl_item -> {
-                    val args = Bundle()
-                    args.putString(Keys.URL, item.link)
-                    activity.navigation(Router.SYSTEM_TO_WEB, args)
-                }
-                R.id.tv_author -> {
-                    val args = Bundle()
-                    args.putString(Keys.UID, item.userId)
-                    activity.navigation(Router.SYSTEM_TO_USER_SHARE, args)
-                }
-            }
-        }
-    }
-
     private val viewModel: SystemViewModel by viewModels()
     private var _binding: FragmentSystemArticleBinding? = null
     private val binding get() = _binding!!
+
+    private val articleAdapter = ArticleAdapter()
+    private var cid = ""
+
+    init {
+        delayedLoad = 0L
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,48 +52,48 @@ class SystemArticleFragment : RouterFragment() {
     }
 
     override fun initView() {
-        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
+        cid = arguments?.getString(Keys.CID).toString()
+        //体系列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
+        binding.list.addItemDecoration(
+            object : DividerItemDecoration(binding.list.context, VERTICAL) {}
+        )
         binding.list.adapter = articleAdapter
+        //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getTreeList(true, cid)
+                viewModel.getSystemArticle(cid)
             }
         })
+        //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.getTreeList(false, cid)
+                viewModel.getSystemArticleNext(cid)
             }
         })
     }
 
-    override fun initViewModel() {
-        arguments?.apply {
-            cid = this.getString(Keys.CID).toString()
-        }
-        viewModel.treeListResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.datas?.let { list ->
-                        if (viewModel.isRefresh) {
-                            articleAdapter.setNewData(list)
-                        } else {
-                            articleAdapter.addData(list)
-                        }
+    override fun initViewModel(): BaseViewModel {
+        viewModel.systemArticleResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> {
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(result.data?.datas)
+                    } else {
+                        articleAdapter.addData(result.data?.datas)
                     }
                 }
-                result.errorCode.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
+        return viewModel
     }
 
-    override fun onLoad() {
-        if (viewModel.treeListResult.value == null) {
-            viewModel.getTreeList(true, cid)
+    override fun initLoad() {
+        if (viewModel.systemArticleResult.value == null) {
+            viewModel.getSystemArticle(cid)
         }
     }
 

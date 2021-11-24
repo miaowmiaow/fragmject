@@ -1,12 +1,12 @@
 package com.example.fragment.module.user.fragment
 
-import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.fragment.library.base.bus.SharedFlowBus
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -41,18 +41,15 @@ class UserFragment : RouterFragment() {
 
     override fun initView() {
         binding.username.text = "去登录"
-        binding.logo.setOnClickListener { activity.navigation(Router.LOGIN) }
-        binding.username.setOnClickListener { activity.navigation(Router.LOGIN) }
+        binding.logo.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
+        binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
         binding.myCoin.setOnClickListener { activity.navigation(Router.MY_COIN) }
         binding.myCollection.setOnClickListener { activity.navigation(Router.MY_COLLECT) }
         binding.myShare.setOnClickListener { activity.navigation(Router.MY_SHARE) }
         binding.setting.setOnClickListener { activity.navigation(Router.SETTING) }
     }
 
-    override fun initViewModel() {
-    }
-
-    override fun onLoad() {
+    override fun initViewModel(): BaseViewModel? {
         WanHelper.getUser().observe(this) { userBean ->
             updateView(userBean)
         }
@@ -64,13 +61,16 @@ class UserFragment : RouterFragment() {
         SharedFlowBus.onSticky(UserBean::class.java).observe(this) { userBean ->
             updateView(userBean)
         }
+        return null
     }
 
-    @SuppressLint("SetTextI18n")
+    override fun initLoad() {
+    }
+
     private fun updateView(userBean: UserBean) {
         if (userBean.id.isNotBlank()) {
-            binding.logo.setOnClickListener { activity.navigation(Router.AVATAR) }
-            binding.username.setOnClickListener { activity.navigation(Router.AVATAR) }
+            binding.logo.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
+            binding.username.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
             binding.username.text = "欢迎回来！${userBean.username}"
         }
     }

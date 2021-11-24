@@ -23,7 +23,6 @@ object WanHelper {
     private const val COIN = "coin"
     private const val HOT_KEY = "hot_key"
     private const val HISTORY_SEARCH = "history_search"
-    private const val TREE_LIST = "tree_list"
 
     /**
      * mode :
@@ -72,9 +71,11 @@ object WanHelper {
         }
     }
 
-    fun setUser(userBean: UserBean) {
-        KVDatabase.set(USER, userBean.toJson())
-        SharedFlowBus.withSticky(UserBean::class.java).tryEmit(userBean)
+    fun setUser(userBean: UserBean? = null) {
+        if (userBean != null) {
+            KVDatabase.set(USER, userBean.toJson())
+            SharedFlowBus.withSticky(UserBean::class.java).tryEmit(userBean)
+        }
     }
 
     fun getUser(): LiveData<UserBean> {
@@ -111,8 +112,10 @@ object WanHelper {
         }
     }
 
-    fun setHotKey(hotKeys: List<HotKeyBean>) {
-        KVDatabase.set(HOT_KEY, Gson().toJson(hotKeys))
+    fun setHotKey(hotKeys: List<HotKeyBean>? = null) {
+        if (hotKeys != null) {
+            KVDatabase.set(HOT_KEY, Gson().toJson(hotKeys))
+        }
     }
 
     fun getHotKey(): LiveData<List<HotKeyBean>> {
@@ -141,22 +144,7 @@ object WanHelper {
         }
     }
 
-    fun setTreeList(list: List<TreeBean>) {
-        KVDatabase.set(TREE_LIST, Gson().toJson(list))
-    }
-
-    fun getTreeList(): LiveData<List<TreeBean>> {
-        return Transformations.map(KVDatabase.get(TREE_LIST)) {
-            try {
-                Gson().fromJson(it.toString(), object : TypeToken<List<TreeBean>>() {}.type)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ArrayList()
-            }
-        }
-    }
-
-    fun close(){
+    fun close() {
         KVDatabase.closeDatabase()
     }
 

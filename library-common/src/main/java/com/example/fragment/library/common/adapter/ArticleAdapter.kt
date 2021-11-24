@@ -1,29 +1,31 @@
 package com.example.fragment.library.common.adapter
 
-import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.text.Html
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.utils.BannerHelper
-import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.BannerBean
-import com.example.fragment.library.common.bean.TreeBean
+import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.databinding.ItemArticleBannerBinding
 import com.example.fragment.library.common.databinding.ItemArticleBinding
-import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -44,12 +46,14 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     private val bannerAdapter = BannerAdapter()
     private var bannerData: MutableList<BannerBean> = ArrayList()
 
-    init {
-        addOnClickListener(R.id.rl_item)
-        addOnClickListener(R.id.tv_author)
-        addOnClickListener(R.id.tv_tag)
-        addOnClickListener(R.id.tv_chapter_name)
-    }
+    private var avatarList: List<Int> = listOf(
+        R.drawable.avatar_1_raster,
+        R.drawable.avatar_2_raster,
+        R.drawable.avatar_3_raster,
+        R.drawable.avatar_4_raster,
+        R.drawable.avatar_5_raster,
+        R.drawable.avatar_6_raster,
+    )
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return if (viewType == 0) {
@@ -67,56 +71,83 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             bannerHelper?.startTimerTask()
         } else {
             val binding = holder.binding as ItemArticleBinding
-            binding.tvTop.visibility = if (item.top) View.VISIBLE else View.GONE
-            binding.tvNew.visibility = if (item.fresh) View.VISIBLE else View.GONE
-            binding.tvAuthor.text = item.author
-            if (item.tags != null && item.tags.isNotEmpty()) {
-                binding.tvTag.text = item.tags[0].name
-                binding.tvTag.visibility = View.VISIBLE
-            } else {
-                binding.tvTag.visibility = View.GONE
+            val activity: RouterActivity = contextToActivity(binding.root.context)
+            binding.root.setOnClickListener {
+                val args = bundleOf(Keys.URL to item.link)
+                activity.navigation(Router.WEB, args)
             }
-            binding.tvTime.text = item.niceDate
-            if (item.envelopePic.isNotEmpty()) {
-                ImageLoader.with(binding.ivImg.context).load(item.envelopePic).into(binding.ivImg)
-                binding.ivImg.visibility = View.VISIBLE
+            binding.author.text = if (item.author.isNotBlank()) {
+                item.author
             } else {
-                binding.ivImg.visibility = View.GONE
+                "匿名"
             }
-            binding.tvTitle.text = fromHtml(item.title)
+            binding.avatar.load(avatarList[(0..5).random()]) {
+                crossfade(true)
+                transformations(CircleCropTransformation())
+            }
+            binding.avatar.setOnClickListener {
+                val args = bundleOf(Keys.UID to item.userId)
+                activity.navigation(Router.USER_SHARE, args)
+            }
+            binding.time.text = item.niceDate
+            binding.newest.visibility = if (item.fresh) View.VISIBLE else View.GONE
+            binding.tag.visibility = if (!item.tags.isNullOrEmpty()) {
+                binding.tag.text = item.tags[0].name
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+            binding.tag.setOnClickListener {
+                item.tags?.let {
+                    val args = bundleOf(Keys.URL to it[0].url)
+                    activity.navigation(Router.SYSTEM, args)
+                }
+            }
+            binding.top.visibility = if (item.top) View.VISIBLE else View.GONE
+            binding.image.visibility = if (item.envelopePic.isNotEmpty()) {
+                binding.image.load(item.envelopePic)
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+            binding.title.text = fromHtml(item.title)
             if (TextUtils.isEmpty(item.desc)) {
-                binding.tvTitle.isSingleLine = false
-                binding.tvDesc.visibility = View.GONE
+                binding.title.isSingleLine = false
+                binding.desc.visibility = View.GONE
             } else {
-                binding.tvTitle.isSingleLine = true
-                var desc = fromHtml(item.desc).toString()
+                binding.title.isSingleLine = true
+                var desc = fromHtml(item.desc)
                 desc = removeAllBank(desc, 2)
-                binding.tvDesc.text = desc
-                binding.tvDesc.visibility = View.VISIBLE
+                binding.desc.text = desc
+                binding.desc.visibility = View.VISIBLE
             }
-            binding.tvChapterName.text = fromHtml(
+            binding.chapterName.text = fromHtml(
                 formatChapterName(item.superChapterName, item.chapterName)
             )
-            val activity: RouterActivity = contextToActivity(binding.root.context)
+            binding.chapterName.setOnClickListener {
+                val args = bundleOf(Keys.CID to item.chapterId)
+                activity.navigation(Router.SYSTEM, args)
+            }
             if (item.collect) {
-                binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
-                binding.ivCollect.setOnClickListener {
+                binding.collect.setImageResource(R.drawable.ic_collect_checked)
+            } else {
+                binding.collect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
+            }
+            binding.collect.setOnClickListener {
+                if (item.collect) {
                     unCollect(item.id).observe(activity, { result ->
                         if (result.errorCode == "0") {
                             item.collect = false
-                            binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
+                            binding.collect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
                         } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                             activity.showTips(result.errorMsg)
                         }
                     })
-                }
-            } else {
-                binding.ivCollect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
-                binding.ivCollect.setOnClickListener {
+                } else {
                     collect(item.id).observe(activity, { result ->
                         if (result.errorCode == "0") {
                             item.collect = true
-                            binding.ivCollect.setImageResource(R.drawable.ic_collect_checked)
+                            binding.collect.setImageResource(R.drawable.ic_collect_checked)
                         } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
                             activity.showTips(result.errorMsg)
                         }
@@ -168,57 +199,11 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         return s
     }
 
-    fun setBannerData(data: List<BannerBean>) {
-        bannerData.addAll(data)
-        bannerAdapter.setNewData(bannerData)
-        notifyItemChanged(0)
-    }
-
-    fun urlToSystemList(activity: RouterActivity, url: String, callback: (TreeBean) -> Unit) {
-        try {
-            val uri = Uri.parse("https://www.wanandroid.com/$url")
-            var chapterId = uri.getQueryParameter("cid")
-            if (chapterId.isNullOrBlank()) {
-                val paths = uri.pathSegments
-                if (paths != null && paths.size >= 3) {
-                    chapterId = paths[2]
-                }
-            }
-            if (chapterId != null) {
-                WanHelper.getTreeList().observe(activity) { list ->
-                    list.forEach { treeBean ->
-                        treeBean.children?.forEachIndexed { index, childrenTreeBean ->
-                            if (childrenTreeBean.id == chapterId) {
-                                treeBean.childrenSelectPosition = index
-                                callback.invoke(treeBean)
-                                return@forEach
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun chapterIdToSystemList(
-        activity: RouterActivity,
-        item: ArticleBean,
-        callback: (TreeBean) -> Unit
-    ) {
-        WanHelper.getTreeList().observe(activity) { list ->
-            list.forEach { treeBean ->
-                if (treeBean.id == item.realSuperChapterId) {
-                    treeBean.children?.forEachIndexed { index, childrenTreeBean ->
-                        if (childrenTreeBean.id == item.chapterId) {
-                            treeBean.childrenSelectPosition = index
-                        }
-                    }
-                    callback.invoke(treeBean)
-                    return@forEach
-                }
-            }
+    fun setBannerData(data: List<BannerBean>? = null) {
+        if (data != null) {
+            bannerData.addAll(data)
+            bannerAdapter.setNewData(bannerData)
+            notifyItemChanged(0)
         }
     }
 

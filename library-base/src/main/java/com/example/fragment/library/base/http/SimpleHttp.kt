@@ -3,9 +3,12 @@ package com.example.fragment.library.base.http
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.*
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.http.*
@@ -19,32 +22,38 @@ import javax.net.ssl.SSLContext
 
 /**
  * get请求
- * @param request http请求体
+ * @param request  http请求体
+ * @param progress 进度回调方法
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
-    request: HttpRequest = HttpRequest()
+    request: HttpRequest = HttpRequest(),
+    noinline progress: ((Double)->Unit)? = null
 ): T {
-    return SimpleHttp.instance().get(request, T::class.java)
+    return SimpleHttp.instance().get(request, T::class.java, progress)
 }
 
 /**
  * post请求
- * @param request http请求体
+ * @param request  http请求体
+ * @param progress 进度回调方法
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
-    request: HttpRequest = HttpRequest()
+    request: HttpRequest = HttpRequest(),
+    noinline progress: ((Double)->Unit)? = null
 ): T {
-    return SimpleHttp.instance().post(request, T::class.java)
+    return SimpleHttp.instance().post(request, T::class.java, progress)
 }
 
 /**
  * form请求
- * @param request http请求体
+ * @param request  http请求体
+ * @param progress 进度回调方法
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
-    request: HttpRequest = HttpRequest()
+    request: HttpRequest = HttpRequest(),
+    noinline progress: ((Double)->Unit)? = null
 ): T {
-    return SimpleHttp.instance().form(request, T::class.java)
+    return SimpleHttp.instance().form(request, T::class.java, progress)
 }
 
 /**
@@ -138,10 +147,12 @@ class SimpleHttp private constructor() {
 
     suspend fun <T : HttpResponse> get(
         request: HttpRequest = HttpRequest(),
-        type: Class<T>
+        type: Class<T>,
+        progress: ((Double)->Unit)? = null
     ): T {
         return withContext(Dispatchers.IO) {
             try {
+                progress?.invoke(0.0)
                 converter.converter(
                     getService().get(
                         request.getUrl(baseUrl.toString()),
@@ -154,15 +165,19 @@ class SimpleHttp private constructor() {
                 val t = type.newInstance()
                 t.errorMsg = msg
                 t
+            } finally {
+                progress?.invoke(1.0)
             }
         }
     }
 
     suspend fun <T : HttpResponse> post(
         request: HttpRequest = HttpRequest(),
-        type: Class<T>
+        type: Class<T>,
+        progress: ((Double)->Unit)? = null
     ): T {
         return withContext(Dispatchers.IO) {
+            progress?.invoke(0.0)
             try {
                 converter.converter(
                     getService().post(
@@ -177,13 +192,16 @@ class SimpleHttp private constructor() {
                 val t = type.newInstance()
                 t.errorMsg = msg
                 t
+            } finally {
+                progress?.invoke(1.0)
             }
         }
     }
 
     suspend fun <T : HttpResponse> form(
         request: HttpRequest = HttpRequest(),
-        type: Class<T>
+        type: Class<T>,
+        progress: ((Double)->Unit)? = null
     ): T {
         val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         request.getParam().forEach { map ->
@@ -204,6 +222,7 @@ class SimpleHttp private constructor() {
         }
         return withContext(Dispatchers.IO) {
             try {
+                progress?.invoke(0.0)
                 converter.converter(
                     getService().form(
                         request.getUrl(baseUrl.toString()),
@@ -217,6 +236,8 @@ class SimpleHttp private constructor() {
                 val t = type.newInstance()
                 t.errorMsg = msg
                 t
+            } finally {
+                progress?.invoke(1.0)
             }
         }
     }

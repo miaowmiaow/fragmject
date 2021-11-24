@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.fragment.app.FragmentStatePagerAdapter
 
-open class BaseViewPagerAdapter(
+open class FragmentPagerAdapter(
     fm: FragmentManager,
     private var data: ArrayList<out Fragment>
 ) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -20,5 +20,5 @@ open class BaseViewPagerAdapter(
 
 }
 
-abstract class SimplePagerAdapter(fm: FragmentManager) :
+abstract class FragmentStatePagerAdapter(fm: FragmentManager) :
     FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT)

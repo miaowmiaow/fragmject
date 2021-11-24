@@ -1,11 +1,14 @@
 package com.example.fragment.library.common.activity
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.IdRes
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.NavHostFragment
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.activity.BaseActivity
 import com.example.fragment.library.common.constant.Router
@@ -15,7 +18,7 @@ import com.example.fragment.library.common.constant.Router
  */
 abstract class RouterActivity : BaseActivity() {
 
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
     private var exitTime = 0L
 
     /**
@@ -33,7 +36,8 @@ abstract class RouterActivity : BaseActivity() {
 
     override fun setContentView(view: View) {
         super.setContentView(view)
-        navController = findNavController(controllerId())
+        val navHostFragment = supportFragmentManager.findFragmentById(controllerId())
+        navController = (navHostFragment as NavHostFragment).navController
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (System.currentTimeMillis() - exitTime > 2000) {
@@ -45,6 +49,26 @@ abstract class RouterActivity : BaseActivity() {
                 }
             }
         })
+    }
+
+    fun navigate(@IdRes resId: Int, args: Bundle? = null) {
+        navController.navigate(
+            resId, args, NavOptions.Builder()
+                .setEnterAnim(R.anim.slide_in_right)
+                .setExitAnim(R.anim.slide_out_left)
+                .setPopEnterAnim(R.anim.slide_in_left)
+                .setPopExitAnim(R.anim.slide_out_right).build()
+        )
+    }
+
+    fun navigate(deepLink: String) {
+        navController.navigate(
+            Uri.parse(deepLink), NavOptions.Builder()
+                .setEnterAnim(R.anim.slide_in_right)
+                .setExitAnim(R.anim.slide_out_left)
+                .setPopEnterAnim(R.anim.slide_in_left)
+                .setPopExitAnim(R.anim.slide_out_right).build()
+        )
     }
 
 }

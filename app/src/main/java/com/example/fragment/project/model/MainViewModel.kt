@@ -1,14 +1,14 @@
 package com.example.fragment.project.model
 
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.HotKeyListBean
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class MainViewModel : BaseViewModel() {
 
     val hotKeyResult = MutableLiveData<HotKeyListBean>()
 

@@ -118,7 +118,7 @@ class BannerHelper(
         }
     }
 
-    fun findLastVisibleItemPosition(): Int {
+    fun findItemPosition(): Int {
         return repeatLayoutManager.findLastVisibleItemPosition()
     }
 

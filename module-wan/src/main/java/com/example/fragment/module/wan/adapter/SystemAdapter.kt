@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.activity.RouterActivity
@@ -31,17 +32,10 @@ class SystemAdapter : BaseAdapter<TreeBean>() {
             tv.text = treeBean.name
             tv.setOnClickListener {
                 item.childrenSelectPosition = index
-                val args = Bundle()
-                args.putParcelable(Keys.BEAN, item)
+                val args = bundleOf(Keys.CID to treeBean.id)
                 baseActivity.navigation(Router.SYSTEM, args)
             }
             binding.fbl.addView(tv)
-        }
-
-        binding.root.setOnClickListener {
-            val args = Bundle()
-            args.putParcelable(Keys.BEAN, item)
-            baseActivity.navigation(Router.SYSTEM, args)
         }
     }
 

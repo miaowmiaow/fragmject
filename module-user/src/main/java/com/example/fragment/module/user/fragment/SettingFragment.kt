@@ -7,7 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
@@ -19,7 +21,7 @@ import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.model.UserLoginViewModel
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -27,7 +29,8 @@ import java.io.InputStream
 class SettingFragment : RouterFragment() {
 
     private var countDownTimer: CountDownTimer? = null
-    private val viewModel: UserViewModel by viewModels()
+
+    private val viewModel: UserLoginViewModel by viewModels()
     private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
 
@@ -129,9 +132,8 @@ class SettingFragment : RouterFragment() {
                 .setContent("喜欢的话，请给颗♥哈")
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
-                        val args = Bundle()
-                        args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject.git")
-                        activity.navigation(Router.SETTING_TO_WEB, args)
+                        val args = bundleOf(Keys.URL  to "https://github.com/miaowmiaow/fragmject.git")
+                        activity.navigation(Router.SETTING2WEB, args)
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -140,9 +142,8 @@ class SettingFragment : RouterFragment() {
                 .show(childFragmentManager)
         }
         binding.about.setOnClickListener {
-            val args = Bundle()
-            args.putString(Keys.URL, "https://wanandroid.com")
-            activity.navigation(Router.SETTING_TO_WEB, args)
+            val args = bundleOf(Keys.URL to "https://wanandroid.com")
+            activity.navigation(Router.SETTING2WEB, args)
         }
         binding.privacyPolicy.setOnClickListener {
             var inputStream: InputStream? = null
@@ -151,9 +152,8 @@ class SettingFragment : RouterFragment() {
                 readRawFromStreamToString(inputStream)?.let { template ->
                     inputStream = resources.assets.open("privacy_policy.html")
                     readRawFromStreamToString(inputStream)?.let { html ->
-                        val args = Bundle()
-                        args.putString(Keys.HTML, html.replace("{privacy_policy}", template))
-                        activity.navigation(Router.SETTING_TO_WEB, args)
+                        val args = bundleOf(Keys.HTML to html.replace("{privacy_policy}", template))
+                        activity.navigation(Router.SETTING2WEB, args)
                     }
                 }
             } catch (e: Exception) {
@@ -163,9 +163,8 @@ class SettingFragment : RouterFragment() {
             }
         }
         binding.feedback.setOnClickListener {
-            val args = Bundle()
-            args.putString(Keys.URL, "https://github.com/miaowmiaow/fragmject/issues")
-            activity.navigation(Router.SETTING_TO_WEB, args)
+            val args = bundleOf(Keys.URL to "https://github.com/miaowmiaow/fragmject/issues")
+            activity.navigation(Router.SETTING2WEB, args)
         }
         binding.logout.setOnClickListener {
             StandardDialog.newInstance()
@@ -182,19 +181,20 @@ class SettingFragment : RouterFragment() {
         }
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
-            if (result.errorCode == "0") {
-                WanHelper.setUser(UserBean())
-                activity.onBackPressed()
-            }
-            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                activity.showTips(result.errorMsg)
+            when (result.errorCode) {
+                "0" -> {
+                    WanHelper.setUser(UserBean())
+                    activity.onBackPressed()
+                }
+                else -> activity.showTips(result.errorMsg)
             }
         }
+        return viewModel
     }
 
-    override fun onLoad() {
+    override fun initLoad() {
         WanHelper.getUser().observe(viewLifecycleOwner) { userBean ->
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         }
@@ -216,12 +216,8 @@ class SettingFragment : RouterFragment() {
         }
         WanHelper.getScreenRecordStatus().observe(viewLifecycleOwner) { result ->
             when (result) {
-                0 -> {
-                    binding.screenRecord.setChecked(false)
-                }
-                1 -> {
-                    binding.screenRecord.setChecked(true)
-                }
+                0 -> binding.screenRecord.setChecked(false)
+                1 -> binding.screenRecord.setChecked(true)
             }
         }
     }

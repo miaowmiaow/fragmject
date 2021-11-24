@@ -24,7 +24,7 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
             android:layout_marginStart="15dp"
-            android:layout_toStartOf="@id/add"
+            android:layout_toStartOf="@id/share_article"
             android:alpha="0.7"
             android:background="@drawable/shape_corners_solid_gray_alpha">
 
@@ -48,7 +48,7 @@
         </RelativeLayout>
 
         <ImageView
-            android:id="@+id/add"
+            android:id="@+id/share_article"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_below="@id/status_bar"

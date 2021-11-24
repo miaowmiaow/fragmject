@@ -5,7 +5,7 @@
     android:gravity="center">
 
     <TextView
-        android:id="@+id/tv_tab"
+        android:id="@+id/tab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@drawable/selector_theme"

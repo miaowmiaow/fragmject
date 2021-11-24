@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
-    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -46,13 +45,12 @@ dependencies {
     annotationProcessor rootProject.ext.dependencies["androidx-room-compiler"]
     kapt rootProject.ext.dependencies["androidx-room-compiler"]
     api rootProject.ext.dependencies["androidx-room-ktx"]
+    api rootProject.ext.dependencies["coil-kt"]
     api rootProject.ext.dependencies["google-flexbox"]
     api rootProject.ext.dependencies["google-material"]
     api rootProject.ext.dependencies["google-gson"]
     api rootProject.ext.dependencies["jetbrains-kotlin-stdlib"]
     api rootProject.ext.dependencies["jetbrains-kotlinx-coroutines-android"]
-    api rootProject.ext.dependencies["bumptech-glide"]
-    annotationProcessor rootProject.ext.dependencies["bumptech-glide-compiler"]
     api rootProject.ext.dependencies["meituan-walle"]
     api rootProject.ext.dependencies["squareup-retrofit"]
     api rootProject.ext.dependencies["squareup-okhttp"]

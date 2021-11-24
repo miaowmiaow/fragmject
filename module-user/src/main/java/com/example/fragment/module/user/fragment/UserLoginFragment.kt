@@ -5,16 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.databinding.FragmentLoginBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.databinding.FragmentUserLoginBinding
+import com.example.fragment.module.user.model.UserLoginViewModel
 
-class LoginFragment : RouterFragment() {
+class UserLoginFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
-    private var _binding: FragmentLoginBinding? = null
+    private val viewModel: UserLoginViewModel by viewModels()
+    private var _binding: FragmentUserLoginBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -22,7 +23,7 @@ class LoginFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        _binding = FragmentUserLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -43,27 +44,24 @@ class LoginFragment : RouterFragment() {
             }
         }
         binding.register.setOnClickListener {
-            activity.navigation(Router.LOGIN_TO_REGISTER)
+            activity.navigation(Router.USER_REGISTER)
         }
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.apply {
-                        WanHelper.setUser(this)
-                    }
+            when (result.errorCode) {
+                "0" -> {
+                    WanHelper.setUser(result.data)
                     activity.onBackPressed()
                 }
-                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
         }
+        return viewModel
     }
 
-    override fun onLoad() {
+    override fun initLoad() {
     }
 
     private fun checkParameter(username: String, password: String): Boolean {

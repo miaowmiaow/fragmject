@@ -8,20 +8,5 @@
         android:id="@+id/system"
         android:name="com.example.fragment.module.wan.fragment.SystemFragment"
         android:label="SystemListFragment"
-        tools:layout="@layout/fragment_system">
-        <action
-            android:id="@+id/action_system_to_user_share"
-            app:destination="@id/user_share_graph"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left" />
-        <action
-            android:id="@+id/action_system_to_web"
-            app:destination="@id/web_graph"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left" />
-    </fragment>
+        tools:layout="@layout/fragment_system" />
 </navigation>

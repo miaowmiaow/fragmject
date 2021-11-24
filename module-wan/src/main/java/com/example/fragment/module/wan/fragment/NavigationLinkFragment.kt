@@ -5,9 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.fragment.app.viewModels
+import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
@@ -15,7 +18,7 @@ import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.LinkMenuAdapter
 import com.example.fragment.module.wan.databinding.FragmentNavigationLinkBinding
-import com.example.fragment.module.wan.model.LinkViewModel
+import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationLinkFragment : RouterFragment() {
 
@@ -26,27 +29,33 @@ class NavigationLinkFragment : RouterFragment() {
         }
     }
 
+    private val viewModel: NavigationViewModel by activityViewModels()
+    private var _binding: FragmentNavigationLinkBinding? = null
+    private val binding get() = _binding!!
+
     private val linkMenuAdapter = LinkMenuAdapter()
     private val linkMenuSelectedListener = object : BaseAdapter.OnItemSelectedListener {
         override fun onItemSelected(holder: BaseAdapter.ViewBindHolder, position: Int) {
             linkMenuAdapter.getItem(position).let { item ->
                 item.isSelected = true
-                linkMenuAdapter.notifyItemRangeChanged(position, 1)
                 fillFlexboxLayout(item.articles)
+                holder.itemView.background = ContextCompat.getDrawable(
+                    holder.itemView.context,
+                    R.drawable.layer_while_item_top
+                )
             }
         }
 
         override fun onItemUnselected(holder: BaseAdapter.ViewBindHolder, position: Int) {
             linkMenuAdapter.getItem(position).let { item ->
                 item.isSelected = false
-                linkMenuAdapter.notifyItemRangeChanged(position, 1)
+                holder.itemView.background = ContextCompat.getDrawable(
+                    holder.itemView.context,
+                    R.drawable.layer_gray_item_top
+                )
             }
         }
     }
-
-    private val viewModel: LinkViewModel by viewModels()
-    private var _binding: FragmentNavigationLinkBinding? = null
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,32 +72,31 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     override fun initView() {
-        linkMenuAdapter.setOnItemSelectedListener(linkMenuSelectedListener)
         binding.menu.layoutManager = LinearLayoutManager(binding.menu.context)
         binding.menu.adapter = linkMenuAdapter
+        linkMenuAdapter.setOnItemSelectedListener(linkMenuSelectedListener)
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.navigationResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.let { menu ->
-                        if (menu.isNotEmpty()) {
-                            menu[0].isSelected = true
+            when (result.errorCode) {
+                "0" -> {
+                    result.data?.let { data ->
+                        if (data.isNotEmpty()) {
+                            data[0].isSelected = true
                             linkMenuAdapter.selectItem(0)
-                            linkMenuAdapter.setNewData(menu)
-                            fillFlexboxLayout(menu[0].articles)
+                            linkMenuAdapter.setNewData(data)
+                            fillFlexboxLayout(data[0].articles)
                         }
                     }
                 }
-                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
         }
+        return viewModel
     }
 
-    override fun onLoad() {
+    override fun initLoad() {
         if (viewModel.navigationResult.value == null) {
             viewModel.getNavigation()
         }
@@ -101,8 +109,7 @@ class NavigationLinkFragment : RouterFragment() {
             val tv = inflater.inflate(R.layout.fbl_link, binding.fbl, false) as TextView
             tv.text = article.title
             tv.setOnClickListener {
-                val args = Bundle()
-                args.putString(Keys.URL, article.link)
+                val args = bundleOf(Keys.URL to article.link)
                 activity.navigation(Router.WEB, args)
             }
             binding.fbl.addView(tv)

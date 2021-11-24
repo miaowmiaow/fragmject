@@ -278,7 +278,7 @@ clip.saveBitmap()
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
 - [google/gson](https://github.com/google/gson)
-- [bumptech/glide](https://github.com/bumptech/glide)
+- [coil-kt/coil](https://github.com/coil-kt/coil)
 - [tencent/x5](https://x5.tencent.com/)
 - [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
 ## Thanks

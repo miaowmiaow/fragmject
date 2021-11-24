@@ -24,7 +24,7 @@ class TipsView @JvmOverloads constructor(
         }
     }
 
-    fun setMessage(text: String?) {
+    fun setMessage(text: String) {
         message.text = text
     }
 

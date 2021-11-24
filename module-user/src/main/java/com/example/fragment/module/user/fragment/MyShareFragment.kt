@@ -6,41 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentMyShareBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.model.MyShareViewModel
 
 class MyShareFragment : RouterFragment() {
 
-    private val articleAdapter = ArticleAdapter()
-    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
-        override fun onItemChildClick(
-            view: View,
-            holder: BaseAdapter.ViewBindHolder,
-            position: Int
-        ) {
-            val item = articleAdapter.getItem(position)
-            when (view.id) {
-                R.id.rl_item -> {
-                    val args = Bundle()
-                    args.putString(Keys.URL, item.link)
-                    activity.navigation(Router.MY_SHARE_TO_WEB, args)
-                }
-            }
-        }
-    }
-
-    private val viewModel: UserViewModel by viewModels()
+    private val viewModel: MyShareViewModel by viewModels()
     private var _binding: FragmentMyShareBinding? = null
     private val binding get() = _binding!!
+
+    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,46 +38,42 @@ class MyShareFragment : RouterFragment() {
     }
 
     override fun initView() {
-        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.myShareArticle(true)
+                viewModel.getMyShareArticle()
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.myShareArticle(false)
+                viewModel.getMyShareArticleNext()
             }
         })
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.myShareArticleResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.shareArticles?.datas?.let { list ->
-                        if (viewModel.isRefresh) {
-                            articleAdapter.setNewData(list)
-                        } else {
-                            articleAdapter.addData(list)
-                        }
+            when (result.errorCode) {
+                "0" -> {
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(result.data?.shareArticles?.datas)
+                    } else {
+                        articleAdapter.addData(result.data?.shareArticles?.datas)
                     }
                 }
-                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
+        return viewModel
     }
 
-    override fun onLoad() {
-        if(viewModel.myShareArticleResult.value == null){
-            viewModel.myShareArticle(true)
+    override fun initLoad() {
+        if (viewModel.myShareArticleResult.value == null) {
+            viewModel.getMyShareArticle()
         }
     }
 

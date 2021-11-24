@@ -100,7 +100,9 @@ object ActivityResultHelper {
      */
     fun FragmentActivity.requestPhonePermissions(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
-            Manifest.permission.CALL_PHONE
+            Manifest.permission.CALL_PHONE,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CALL_LOG,
         )
         requestPermissions(permissions, callback)
     }

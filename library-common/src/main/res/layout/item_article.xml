@@ -88,6 +88,7 @@
             android:id="@+id/desc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="55dp"
             android:layout_below="@id/title"
             android:layout_marginBottom="10dp"
             android:layout_toStartOf="@id/image"

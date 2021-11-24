@@ -10,24 +10,12 @@
         android:label="MyCoinFragment"
         tools:layout="@layout/fragment_my_coin">
         <action
-            android:id="@+id/action_my_coin_to_coin_rank"
-            app:destination="@id/coin_rank"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left" />
+            android:id="@+id/action_coin_to_rank"
+            app:destination="@id/coin_rank" />
     </fragment>
     <fragment
         android:id="@+id/coin_rank"
         android:name="com.example.fragment.module.user.fragment.CoinRankFragment"
         android:label="CoinRankFragment"
-        tools:layout="@layout/fragment_coin_rank">
-        <action
-            android:id="@+id/action_coin_rank_to_web"
-            app:destination="@id/web_graph"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left" />
-    </fragment>
+        tools:layout="@layout/fragment_coin_rank" />
 </navigation>

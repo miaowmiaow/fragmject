@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
+import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
@@ -17,15 +19,15 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.adapter.CoinRankAdapter
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.model.CoinRankViewModel
 
 class CoinRankFragment : RouterFragment() {
 
-    private val coinRankAdapter = CoinRankAdapter()
-
-    private val viewModel: UserViewModel by viewModels()
+    private val viewModel: CoinRankViewModel by viewModels()
     private var _binding: FragmentCoinRankBinding? = null
     private val binding get() = _binding!!
+
+    private val coinRankAdapter = CoinRankAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,60 +48,54 @@ class CoinRankFragment : RouterFragment() {
             activity.onBackPressed()
         }
         binding.rule.setOnClickListener {
-            val args = Bundle()
-            args.putString(Keys.URL, "https://www.wanandroid.com/blog/show/2653")
-            activity.navigation(Router.COIN_RANK_TO_WEB, args)
+            val args = bundleOf(Keys.URL to "https://www.wanandroid.com/blog/show/2653")
+            activity.navigation(Router.WEB, args)
         }
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRankAdapter
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.coinRank(true)
+                viewModel.getCoinRank()
             }
         })
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.coinRank(false)
+                viewModel.getCoinRankNext()
             }
         })
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.coinRankResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.datas?.let { list ->
-                        if (viewModel.isRefresh && list.isNotEmpty()) {
-                            binding.name1.text = list[0].username
-                            numberAnimator(binding.coin1, list[0].coinCount)
-                            if (list.size > 1) {
-                                binding.name2.text = list[1].username
-                                numberAnimator(binding.coin2, list[1].coinCount)
-                            }
-                            if (list.size > 2) {
-                                binding.name3.text = list[2].username
-                                numberAnimator(binding.coin3, list[2].coinCount)
-                            }
-                            if (list.size > 3) {
-                                coinRankAdapter.setNewData(list.subList(2, list.size))
-                            }
-                        } else {
-                            coinRankAdapter.addData(list)
+            when (result.errorCode) {
+                "0" -> {
+                    val names = arrayListOf(binding.name1, binding.name2, binding.name3)
+                    val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
+                    val data = result.data?.datas
+                    if (viewModel.isHomePage() && !data.isNullOrEmpty()) {
+                        val size = if (data.size < 3) data.size else 3
+                        for (i in 0 until size) {
+                            names[i].text = data[i].username
+                            numberAnimator(coins[i], data[i].coinCount)
                         }
+                        if (data.size > 3) {
+                            coinRankAdapter.setNewData(data.subList(2, data.size))
+                        }
+                    } else {
+                        coinRankAdapter.addData(data)
                     }
                 }
-                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
+        return viewModel
     }
 
-    override fun onLoad() {
+    override fun initLoad() {
         if (viewModel.coinRankResult.value == null) {
-            viewModel.coinRank(true)
+            viewModel.getCoinRank()
         }
     }
 

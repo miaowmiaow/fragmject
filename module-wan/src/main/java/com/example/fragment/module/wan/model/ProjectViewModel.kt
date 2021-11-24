@@ -1,21 +1,18 @@
 package com.example.fragment.module.wan.model
 
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.module.wan.bean.ProjectTreeBean
 import kotlinx.coroutines.launch
 
-class ProjectViewModel : ViewModel() {
+class ProjectViewModel : BaseViewModel() {
 
     val projectTreeResult = MutableLiveData<ProjectTreeBean>()
     val projectListResult = MutableLiveData<ArticleListBean>()
-    var page = 0
-    var pageCont = 1
-    var isRefresh = true
 
     fun getProjectTree() {
         viewModelScope.launch {
@@ -25,18 +22,22 @@ class ProjectViewModel : ViewModel() {
         }
     }
 
-    fun getProjectList(isRefresh: Boolean, cid: String) {
-        this.isRefresh = isRefresh
+    fun getProject(cid: String){
+        getProjectList(cid, getHomePage())
+    }
+
+    fun getProjectNext(cid: String){
+        getProjectList(cid, getNextPage())
+    }
+
+    private fun getProjectList(cid: String, page: Int) {
         viewModelScope.launch {
-            if (isRefresh) page = 0 else page++
-            if (page <= pageCont) {
-                val request = HttpRequest("project/list/{page}/json")
-                request.putPath("page", page.toString())
-                request.putQuery("cid", cid)
-                val response = get<ArticleListBean>(request)
-                response.data?.pageCount?.let { pageCont = it.toInt() }
-                projectListResult.postValue(response)
-            }
+            val request = HttpRequest("project/list/{page}/json")
+            request.putQuery("cid", cid)
+            request.putPath("page", page.toString())
+            val response = get<ArticleListBean>(request) { progress(it) }
+            response.data?.pageCount?.let {updatePageCont(it.toInt())}
+            projectListResult.postValue(response)
         }
     }
 }

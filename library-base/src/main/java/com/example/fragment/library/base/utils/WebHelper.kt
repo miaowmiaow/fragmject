@@ -6,8 +6,12 @@ import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import coil.executeBlocking
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.utils.InjectUtils.injectDarkModeJs
 import com.example.fragment.library.base.utils.InjectUtils.injectVConsoleJs
@@ -19,10 +23,14 @@ import com.tencent.smtt.export.external.interfaces.IX5WebSettings
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest
 import com.tencent.smtt.export.external.interfaces.WebResourceResponse
 import com.tencent.smtt.sdk.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.util.regex.Pattern
 
-class WebHelper private constructor(val parent: ViewGroup) {
+class WebHelper private constructor(private val parent: ViewGroup) {
 
     companion object {
         fun with(parent: ViewGroup): WebHelper {
@@ -193,7 +201,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
     }
 
     fun loadHtml(data: String) {
-        loadData(data,"text/html", "utf-8")
+        loadData(data)
     }
 
     fun onDestroy() {
@@ -210,7 +218,7 @@ class WebHelper private constructor(val parent: ViewGroup) {
         }
     }
 
-    private fun loadData(data: String, mimeType: String, encoding: String) {
+    private fun loadData(data: String, mimeType: String = "text/html", encoding: String = "utf-8") {
         webView.loadData(data, mimeType, encoding)
     }
 
@@ -222,9 +230,13 @@ class WebHelper private constructor(val parent: ViewGroup) {
     }
 
     private fun webImageResponse(context: Context, url: String): WebResourceResponse? {
-        ImageLoader.with(context).load(url).submit()?.let { bytes ->
+        val request = ImageRequest.Builder(context).data(url).build()
+        context.imageLoader.executeBlocking(request).drawable?.let { drawable ->
+            val bitmap = drawable.toBitmap()
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
             val mimeType = getMimeTypeFromUrl(url, "image/png")
-            val inputStream = ByteArrayInputStream(bytes)
+            val inputStream = ByteArrayInputStream(baos.toByteArray())
             return WebResourceResponse(mimeType, "UTF-8", inputStream)
         }
         return null

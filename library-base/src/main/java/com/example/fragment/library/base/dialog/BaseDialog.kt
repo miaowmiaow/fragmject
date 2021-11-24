@@ -13,7 +13,7 @@ open class BaseDialog : DialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         dialog?.window?.apply {
-            setDimAmount(0.5F)
+            setDimAmount(0F)
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
@@ -48,6 +48,7 @@ open class BaseDialog : DialogFragment() {
 
     fun show(manager: FragmentManager) {
         this.manager = manager
+        dismiss()
         show(manager, this::class.java.canonicalName)
     }
 

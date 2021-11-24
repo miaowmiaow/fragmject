@@ -10,20 +10,24 @@ import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.HistorySearchAdapter
 import com.example.fragment.module.wan.databinding.FragmentSearchBinding
-import com.example.fragment.module.wan.model.HomeViewModel
+import com.example.fragment.module.wan.model.SearchViewModel
 
 class SearchFragment : RouterFragment() {
+
+    private val viewModel: SearchViewModel by viewModels()
+    private var _binding: FragmentSearchBinding? = null
+    private val binding get() = _binding!!
 
     private val historySearchAdapter = HistorySearchAdapter()
     private val historySearchClickListener = object : BaseAdapter.OnItemClickListener {
@@ -49,26 +53,6 @@ class SearchFragment : RouterFragment() {
         }
     }
     private val articleAdapter = ArticleAdapter()
-    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
-        override fun onItemChildClick(
-            view: View,
-            holder: BaseAdapter.ViewBindHolder,
-            position: Int
-        ) {
-            val item = articleAdapter.getItem(position)
-            when (view.id) {
-                R.id.rl_item -> {
-                    val args = Bundle()
-                    args.putString(Keys.URL, item.link)
-                    activity.navigation(Router.SEARCH_TO_WEB, args)
-                }
-            }
-        }
-    }
-
-    private val viewModel: HomeViewModel by viewModels()
-    private var _binding: FragmentSearchBinding? = null
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,10 +70,9 @@ class SearchFragment : RouterFragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun initView() {
-        historySearchAdapter.setOnItemClickListener(historySearchClickListener)
-        historySearchAdapter.setOnItemChildClickListener(historySearchChildClickListener)
-        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
+        binding.search.setText(arguments?.getString(Keys.VALUE).toString())
         binding.cancel.setOnClickListener { activity.onBackPressed() }
+        //搜索
         binding.search.setOnTouchListener { _, _ ->
             initHistorySearch()
             false
@@ -101,41 +84,49 @@ class SearchFragment : RouterFragment() {
             }
             false
         }
+        //搜索历史
         binding.historyList.layoutManager = LinearLayoutManager(binding.list.context)
         binding.historyList.adapter = historySearchAdapter
+        historySearchAdapter.setOnItemClickListener(historySearchClickListener)
+        historySearchAdapter.setOnItemChildClickListener(historySearchChildClickListener)
+        //搜索结果列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
+        //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.search(true, binding.search.text.toString())
+                viewModel.getSearch(binding.search.text.toString())
             }
         })
+        //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.search(false, binding.search.text.toString())
+                viewModel.getSearchNext(binding.search.text.toString())
             }
         })
     }
 
-    override fun initViewModel() {
-        arguments?.apply {
-            binding.search.setText(this.getString(Keys.TITLE).toString())
-        }
+    override fun initViewModel(): BaseViewModel {
         viewModel.searchResult.observe(viewLifecycleOwner) { result ->
-            if (result.errorCode == "0") {
-                result.data?.datas?.let { list ->
-                    if (viewModel.isRefresh) {
-                        articleAdapter.setNewData(list)
-                    } else {
-                        articleAdapter.addData(list)
+            when (result.errorCode) {
+                "0" -> {
+                    result.data?.datas?.let { list ->
+                        if (viewModel.isHomePage()) {
+                            articleAdapter.setNewData(list)
+                        } else {
+                            articleAdapter.addData(list)
+                        }
                     }
                 }
-            } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                activity.showTips(result.errorMsg)
+                else -> activity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
+        return viewModel
+    }
+
+    override fun initLoad() {
         WanHelper.getHotKey().observe(viewLifecycleOwner) { result ->
             binding.hotKey.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
             binding.fbl.removeAllViews()
@@ -149,9 +140,6 @@ class SearchFragment : RouterFragment() {
                 binding.fbl.addView(tv)
             }
         }
-    }
-
-    override fun onLoad() {
     }
 
     private fun initHistorySearch() {

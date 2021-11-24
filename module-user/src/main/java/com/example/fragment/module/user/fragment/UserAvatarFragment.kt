@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.fragment.library.base.dialog.PermissionDialog
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStoragePermissions
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
@@ -15,14 +16,14 @@ import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.FragmentAvatarBinding
+import com.example.fragment.module.user.databinding.FragmentUserAvatarBinding
 import com.example.miaow.picture.dialog.EditorFinishCallback
 import com.example.miaow.picture.dialog.PictureEditorDialog
 import com.example.miaow.picture.utils.AlbumUtils.getImagePath
 
-class AvatarFragment : RouterFragment() {
+class UserAvatarFragment : RouterFragment() {
 
-    private var _binding: FragmentAvatarBinding? = null
+    private var _binding: FragmentUserAvatarBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -30,7 +31,7 @@ class AvatarFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAvatarBinding.inflate(inflater, container, false)
+        _binding = FragmentUserAvatarBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -55,15 +56,16 @@ class AvatarFragment : RouterFragment() {
         }
     }
 
-    override fun initViewModel() {
-    }
-
-    override fun onLoad() {
+    override fun initViewModel(): BaseViewModel? {
         WanHelper.getAvatar().observe(viewLifecycleOwner) { path ->
             BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
                 binding.image.setImageBitmap(bitmap)
             }
         }
+        return null
+    }
+
+    override fun initLoad() {
     }
 
     private fun openAlbum() {

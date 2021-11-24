@@ -9,8 +9,7 @@
         android:name="com.example.fragment.library.common.fragment.WebFragment"
         android:label="WebFragment"
         tools:layout="@layout/fragment_web">
-        <argument
-            android:name="URL"
-            app:argType="string" />
+        <argument android:name="url" />
+        <deepLink app:uri="fragment.example.com/web/{url}" />
     </fragment>
 </navigation>

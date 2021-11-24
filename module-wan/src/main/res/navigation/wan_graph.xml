@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/wan_graph"
+    tools:ignore="InvalidNavigation">
+    <fragment
+        android:id="@+id/search"
+        android:name="com.example.fragment.module.wan.fragment.SearchFragment"
+        android:label="SearchFragment"
+        tools:layout="@layout/fragment_search">
+        <argument android:name="value" />
+        <deepLink app:uri="fragment.example.com/search/{value}" />
+    </fragment>
+    <fragment
+        android:id="@+id/share_article"
+        android:name="com.example.fragment.module.wan.fragment.ShareArticleFragment"
+        android:label="ShareArticleFragment"
+        tools:layout="@layout/fragment_share_article">
+        <deepLink app:uri="fragment.example.com/share-article" />
+    </fragment>
+    <fragment
+        android:id="@+id/system"
+        android:name="com.example.fragment.module.wan.fragment.SystemFragment"
+        android:label="SystemListFragment"
+        tools:layout="@layout/fragment_system">
+        <argument android:name="url" />
+        <deepLink app:uri="fragment.example.com/system-url/{url}" />
+        <argument android:name="cid" />
+        <deepLink app:uri="fragment.example.com/system/{cid}" />
+    </fragment>
+</navigation>

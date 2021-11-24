@@ -5,15 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.databinding.FragmentRegisterBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.databinding.FragmentUserRegisterBinding
+import com.example.fragment.module.user.model.UserLoginViewModel
 
-class RegisterFragment : RouterFragment() {
+class UserRegisterFragment : RouterFragment() {
 
-    private val viewModel: UserViewModel by viewModels()
-    private var _binding: FragmentRegisterBinding? = null
+    private val viewModel: UserLoginViewModel by viewModels()
+    private var _binding: FragmentUserRegisterBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -21,7 +22,7 @@ class RegisterFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        _binding = FragmentUserRegisterBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -35,9 +36,7 @@ class RegisterFragment : RouterFragment() {
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.repassword.addKeyboardListener(binding.root)
-        binding.login.setOnClickListener {
-            activity.onBackPressed()
-        }
+        binding.login.setOnClickListener { activity.onBackPressed() }
         binding.register.setOnClickListener {
             val username = binding.username.text.toString()
             val password = binding.password.text.toString()
@@ -48,21 +47,20 @@ class RegisterFragment : RouterFragment() {
         }
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.registerResult.observe(viewLifecycleOwner) { result ->
-            if (result.errorCode == "0") {
-                result.data?.apply {
-                    WanHelper.setUser(this)
+            when (result.errorCode) {
+                "0" -> {
+                    WanHelper.setUser(result.data)
+                    activity.onBackPressed()
                 }
-                activity.onBackPressed()
-            }
-            if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                activity.showTips(result.errorMsg)
+                else -> activity.showTips(result.errorMsg)
             }
         }
+        return viewModel
     }
 
-    override fun onLoad() {
+    override fun initLoad() {
     }
 
     private fun checkParameter(username: String, password: String, rePassword: String): Boolean {

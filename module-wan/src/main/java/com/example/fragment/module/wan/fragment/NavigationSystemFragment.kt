@@ -4,12 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.SystemAdapter
 import com.example.fragment.module.wan.databinding.FragmentNavigationSystemBinding
-import com.example.fragment.module.wan.model.SystemViewModel
+import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationSystemFragment : RouterFragment() {
 
@@ -20,11 +21,11 @@ class NavigationSystemFragment : RouterFragment() {
         }
     }
 
-    private val systemAdapter = SystemAdapter()
-
-    private val viewModel: SystemViewModel by viewModels()
+    private val viewModel: NavigationViewModel by activityViewModels()
     private var _binding: FragmentNavigationSystemBinding? = null
     private val binding get() = _binding!!
+
+    private val systemAdapter = SystemAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,24 +46,19 @@ class NavigationSystemFragment : RouterFragment() {
         binding.list.adapter = systemAdapter
     }
 
-    override fun initViewModel() {
-        viewModel.treeResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.apply {
-                        systemAdapter.setNewData(this)
-                    }
-                }
-                result.errorCode.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+    override fun initViewModel(): BaseViewModel {
+        viewModel.systemTreeResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> systemAdapter.setNewData(result.data)
+                else -> activity.showTips(result.errorMsg)
             }
         }
+        return viewModel
     }
 
-    override fun onLoad() {
-        if(viewModel.treeResult.value == null){
-            viewModel.getTree()
+    override fun initLoad() {
+        if (viewModel.systemTreeResult.value == null) {
+            viewModel.getSystemTree()
         }
     }
 

@@ -6,41 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentMyCollectBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.model.MyCollectViewModel
 
 class MyCollectFragment : RouterFragment() {
 
-    private val articleAdapter = ArticleAdapter()
-    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
-        override fun onItemChildClick(
-            view: View,
-            holder: BaseAdapter.ViewBindHolder,
-            position: Int
-        ) {
-            val item = articleAdapter.getItem(position)
-            when (view.id) {
-                R.id.rl_item -> {
-                    val args = Bundle()
-                    args.putString(Keys.URL, item.link)
-                    activity.navigation(Router.MY_COLLECT_TO_WEB, args)
-                }
-            }
-        }
-    }
-
-    private val viewModel: UserViewModel by viewModels()
+    private val viewModel: MyCollectViewModel by viewModels()
     private var _binding: FragmentMyCollectBinding? = null
     private val binding get() = _binding!!
+
+    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,49 +38,48 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initView() {
-        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
         binding.black.setOnClickListener { activity.onBackPressed() }
+        //我的收藏列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
+        //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.myCollectArticle(true)
+                viewModel.getMyCollectArticle()
             }
         })
+        //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.myCollectArticle(false)
+                viewModel.getMyCollectArticleNext()
             }
         })
     }
 
-    override fun initViewModel() {
+    override fun initViewModel(): BaseViewModel {
         viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.datas?.let { list ->
-                        list.forEach {
-                            it.collect = true
-                        }
-                        if (viewModel.isRefresh) {
-                            articleAdapter.setNewData(list)
+            when (result.errorCode) {
+                "0" -> {
+                    result.data?.datas?.let { data ->
+                        data.forEach { it.collect = true }
+                        if (viewModel.isHomePage()) {
+                            articleAdapter.setNewData(data)
                         } else {
-                            articleAdapter.addData(list)
+                            articleAdapter.addData(data)
                         }
                     }
                 }
-                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
+        return viewModel
     }
 
-    override fun onLoad() {
+    override fun initLoad() {
         if (viewModel.myCollectArticleResult.value == null) {
-            viewModel.myCollectArticle(true)
+            viewModel.getMyCollectArticle()
         }
     }
 

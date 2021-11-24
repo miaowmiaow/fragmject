@@ -1,185 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/rl_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/selector_white"
-    android:orientation="vertical">
+    android:background="@drawable/selector_white">
 
     <RelativeLayout
-        android:id="@+id/rl_top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginTop="16sp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp">
+        android:padding="15dp">
 
-        <LinearLayout
-            android:id="@+id/ll_new"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_alignTop="@+id/tv_author"
-            android:layout_alignBottom="@+id/tv_author"
-            android:layout_centerVertical="true"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/tv_new"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:text="新"
-                android:textColor="@color/blue"
-                android:textSize="13sp" />
-
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="10dp" />
 
         <TextView
-            android:id="@+id/tv_author"
+            android:id="@+id/author"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/ll_new"
+            android:layout_height="15dp"
+            android:layout_toStartOf="@id/tag"
+            android:layout_toEndOf="@+id/avatar"
+            android:ellipsize="end"
+            android:gravity="top"
+            android:includeFontPadding="false"
+            android:singleLine="true"
             android:textColor="@color/text_666"
-            android:textSize="13sp" />
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tv_tag"
+            android:id="@+id/time"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/tv_author"
-            android:layout_alignBottom="@+id/tv_author"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="5dp"
-            android:layout_toEndOf="@+id/tv_author"
+            android:layout_height="15dp"
+            android:layout_below="@id/author"
+            android:layout_toStartOf="@id/tag"
+            android:layout_toEndOf="@+id/avatar"
+            android:ellipsize="end"
+            android:gravity="bottom"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:textColor="@color/text_999"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tag"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
             android:background="@drawable/shape_corners_stroke_blue"
             android:gravity="center"
             android:paddingLeft="3dp"
             android:paddingRight="3dp"
             android:textColor="@color/blue"
-            android:textSize="13sp" />
-
-        <TextView
-            android:id="@+id/tv_time"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_alignTop="@+id/tv_author"
-            android:layout_alignBottom="@+id/tv_author"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:textColor="@color/text_999"
-            android:textSize="13sp" />
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_middle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/rl_top"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp">
+            android:textSize="12sp" />
 
         <ImageView
-            android:id="@+id/iv_img"
-            android:layout_width="120dp"
+            android:id="@+id/image"
+            android:layout_width="100dp"
             android:layout_height="80dp"
-            android:layout_marginEnd="10dp"
+            android:layout_below="@id/avatar"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
             android:scaleType="centerCrop"
             android:visibility="gone" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/title"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:includeFontPadding="false"
-                android:lineSpacingExtra="0dp"
-                android:maxLines="3"
-                android:singleLine="false"
-                android:textColor="@color/text_333"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tv_desc"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="5dp"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:includeFontPadding="true"
-                android:lineSpacingExtra="3dp"
-                android:maxLines="3"
-                android:textColor="@color/text_666"
-                android:textSize="13sp"
-                android:visibility="gone" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_top"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ll_middle"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16sp"
-        android:layout_marginTop="10dp"
-        android:gravity="center_vertical">
+            android:layout_height="wrap_content"
+            android:layout_below="@id/avatar"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_toStartOf="@id/image"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:lineSpacingExtra="3dp"
+            android:maxLines="3"
+            android:singleLine="false"
+            android:textColor="@color/text_333"
+            android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/tv_top"
+            android:id="@+id/desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/title"
+            android:layout_marginBottom="10dp"
+            android:layout_toStartOf="@id/image"
+            android:ellipsize="end"
+            android:includeFontPadding="true"
+            android:lineSpacingExtra="3dp"
+            android:maxLines="3"
+            android:textColor="@color/text_666"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/newest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/desc"
             android:layout_marginEnd="5dp"
+            android:gravity="center"
+            android:text="新"
+            android:textColor="@color/blue"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/desc"
+            android:layout_marginEnd="5dp"
+            android:layout_toEndOf="@id/newest"
             android:text="置顶"
             android:textColor="@color/orange"
-            android:textSize="13sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_chapter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ll_middle"
-        android:layout_marginTop="10dp"
-        android:layout_toEndOf="@+id/ll_top"
-        android:orientation="horizontal">
+            android:textSize="12sp"
+            android:visibility="gone" />
 
         <TextView
-            android:id="@+id/tv_chapter_name"
+            android:id="@+id/chapter_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/desc"
+            android:layout_toEndOf="@id/top"
             android:textColor="@color/text_999"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
-    </LinearLayout>
+        <ImageView
+            android:id="@+id/collect"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_below="@id/desc"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_collect_unchecked" />
 
-    <ImageView
-        android:id="@+id/iv_collect"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_alignBottom="@+id/ll_chapter"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_collect_unchecked" />
+    </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@+id/ll_chapter"
-        android:layout_marginTop="16dp"
-        android:background="@color/line" />
-
+        android:background="@color/background" />
 </RelativeLayout>

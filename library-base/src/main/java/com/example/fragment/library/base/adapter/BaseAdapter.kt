@@ -56,14 +56,18 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         notifyDataSetChanged()
     }
 
-    fun addOneData(data: T) {
-        this.data.add(data)
-        notifyItemRangeChanged(this.data.size - 1, 1)
+    fun addOneData(data: T? = null) {
+        if (data != null) {
+            this.data.add(data)
+            notifyItemRangeChanged(this.data.size - 1, 1)
+        }
     }
 
-    fun addData(newData: List<T>) {
-        this.data.addAll(newData)
-        notifyItemRangeChanged(data.size - newData.size, newData.size)
+    fun addData(newData: List<T>? = null) {
+        if (newData != null) {
+            this.data.addAll(newData)
+            notifyItemRangeChanged(data.size - newData.size, newData.size)
+        }
     }
 
     fun addData(index: Int, newData: List<T>) {

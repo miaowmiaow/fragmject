@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.db
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.*
 import com.example.fragment.library.base.provider.BaseContent
@@ -31,7 +32,7 @@ abstract class KVDatabase : RoomDatabase() {
             getDB().set(key, value)
         }
 
-        fun get(key: String): MutableLiveData<String> {
+        fun get(key: String): LiveData<String> {
             return getDB().get(key)
         }
 

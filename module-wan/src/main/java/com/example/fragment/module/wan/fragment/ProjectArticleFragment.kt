@@ -6,15 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
 import com.example.fragment.library.base.view.OnRefreshListener
 import com.example.fragment.library.base.view.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.FragmentProjectArticleBinding
 import com.example.fragment.module.wan.model.ProjectViewModel
 
@@ -27,33 +25,16 @@ class ProjectArticleFragment : RouterFragment() {
         }
     }
 
-    private var cid = ""
-    private val articleAdapter = ArticleAdapter()
-    private val articleChildClickListener = object : BaseAdapter.OnItemChildClickListener {
-        override fun onItemChildClick(
-            view: View,
-            holder: BaseAdapter.ViewBindHolder,
-            position: Int
-        ) {
-            val item = articleAdapter.getItem(position)
-            when (view.id) {
-                R.id.rl_item -> {
-                    val args = Bundle()
-                    args.putString(Keys.URL, item.link)
-                    activity.navigation(Router.WEB, args)
-                }
-                R.id.tv_author -> {
-                    val args = Bundle()
-                    args.putString(Keys.UID, item.userId)
-                    activity.navigation(Router.USER_SHARE, args)
-                }
-            }
-        }
-    }
-
     private val viewModel: ProjectViewModel by viewModels()
     private var _binding: FragmentProjectArticleBinding? = null
     private val binding get() = _binding!!
+
+    private val articleAdapter = ArticleAdapter()
+    private var cid = ""
+
+    init {
+        delayedLoad = 0L
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,48 +51,47 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     override fun initView() {
-        articleAdapter.setOnItemChildClickListener(articleChildClickListener)
+        cid = arguments?.getString(Keys.CID).toString()
+        //项目列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
+        //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getProjectList(true, cid)
+                viewModel.getProject(cid)
             }
         })
+        //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.getProjectList(false, cid)
+                viewModel.getProjectNext(cid)
             }
         })
+        println(System.currentTimeMillis())
     }
 
-    override fun initViewModel() {
-        arguments?.apply {
-            cid = this.getString(Keys.CID).toString()
-        }
+    override fun initViewModel(): BaseViewModel {
         viewModel.projectListResult.observe(viewLifecycleOwner) { result ->
-            when {
-                result.errorCode == "0" -> {
-                    result.data?.datas?.let { list ->
-                        if (viewModel.isRefresh) {
-                            articleAdapter.setNewData(list)
-                        } else {
-                            articleAdapter.addData(list)
-                        }
+            when (result.errorCode) {
+                "0" -> {
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(result.data?.datas)
+                    } else {
+                        articleAdapter.addData(result.data?.datas)
                     }
                 }
-                result.errorCode.isNotBlank() && result.errorMsg.isNotBlank() -> {
-                    activity.showTips(result.errorMsg)
-                }
+                else -> activity.showTips(result.errorMsg)
             }
             binding.pullRefresh.finishRefresh()
-            binding.pullRefresh.setLoadMore(viewModel.page < viewModel.pageCont)
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
+        return viewModel
     }
 
-    override fun onLoad() {
-        if(viewModel.projectListResult.value == null){
-            viewModel.getProjectList(true, cid)
+    override fun initLoad() {
+        println(System.currentTimeMillis())
+        if (viewModel.projectListResult.value == null) {
+            viewModel.getProject(cid)
         }
     }
 

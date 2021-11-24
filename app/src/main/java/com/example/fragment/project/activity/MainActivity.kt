@@ -1,6 +1,7 @@
 package com.example.fragment.project.activity
 
 import android.graphics.PixelFormat
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
@@ -8,6 +9,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
+import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.project.R
@@ -17,12 +19,11 @@ class MainActivity : RouterActivity() {
 
     private var userId: String? = null
     private val loginRequired = arrayOf(
-        Router.AVATAR,
-        Router.LOGIN,
         Router.MY_COIN,
         Router.MY_COLLECT,
         Router.MY_SHARE,
-        Router.SHARE_ARTICLE
+        Router.SHARE_ARTICLE,
+        Router.USER_AVATAR
     )
 
     override fun controllerId(): Int {
@@ -34,55 +35,36 @@ class MainActivity : RouterActivity() {
      */
     override fun navigation(name: Router, bundle: Bundle?) {
         if (loginRequired.contains(name) && !isLogin()) {
-            navController.navigate(R.id.action_main_to_login)
+            //登录态校验
+            navigate("http://fragment.example.com/login")
         } else {
             when (name) {
-                Router.AVATAR ->
-                    navController.navigate(R.id.action_main_to_avatar, bundle)
-                Router.COIN_RANK_TO_WEB ->
-                    navController.navigate(R.id.action_coin_rank_to_web, bundle)
-                Router.LOGIN ->
-                    navController.navigate(R.id.action_main_to_login, bundle)
-                Router.LOGIN_TO_REGISTER ->
-                    navController.navigate(R.id.action_login_to_register, bundle)
-                Router.MY_COIN ->
-                    navController.navigate(R.id.action_main_to_my_coin, bundle)
-                Router.MY_COIN_TO_COIN_RANK ->
-                    navController.navigate(R.id.action_my_coin_to_coin_rank, bundle)
-                Router.MY_COLLECT ->
-                    navController.navigate(R.id.action_main_to_my_collect, bundle)
-                Router.MY_COLLECT_TO_WEB ->
-                    navController.navigate(R.id.action_my_collect_to_web, bundle)
-                Router.MY_SHARE ->
-                    navController.navigate(R.id.action_main_to_my_share, bundle)
-                Router.MY_SHARE_TO_WEB ->
-                    navController.navigate(R.id.action_my_share_to_web, bundle)
-                Router.PROJECT ->
-                    navController.navigate(R.id.action_main_to_project, bundle)
-                Router.SEARCH ->
-                    navController.navigate(R.id.action_main_to_search, bundle)
-                Router.SEARCH_TO_WEB ->
-                    navController.navigate(R.id.action_search_to_web, bundle)
-                Router.SETTING ->
-                    navController.navigate(R.id.action_main_to_setting, bundle)
-                Router.SETTING_TO_WEB ->
-                    navController.navigate(R.id.action_setting_to_web, bundle)
-                Router.SHARE_ARTICLE ->
-                    navController.navigate(R.id.action_main_to_share_article, bundle)
-                Router.SHARE_ARTICLE_TO_WEB ->
-                    navController.navigate(R.id.action_share_article_to_web, bundle)
-                Router.SYSTEM ->
-                    navController.navigate(R.id.action_main_to_system, bundle)
-                Router.SYSTEM_TO_USER_SHARE ->
-                    navController.navigate(R.id.action_system_to_user_share, bundle)
-                Router.SYSTEM_TO_WEB ->
-                    navController.navigate(R.id.action_system_to_web, bundle)
-                Router.USER_SHARE ->
-                    navController.navigate(R.id.action_main_to_user_share, bundle)
-                Router.USER_SHARE_TO_WEB ->
-                    navController.navigate(R.id.action_user_share_to_web, bundle)
-                Router.WEB ->
-                    navController.navigate(R.id.action_main_to_web, bundle)
+                Router.COIN2RANK -> navigate(R.id.action_coin_to_rank, bundle)
+                Router.MY_COIN -> navigate(R.id.action_main_to_my_coin, bundle)
+                Router.MY_COLLECT -> navigate(R.id.action_main_to_my_collect, bundle)
+                Router.MY_SHARE -> navigate(R.id.action_main_to_my_share, bundle)
+                Router.SEARCH -> navigate(
+                    StringBuilder()
+                        .append("http://fragment.example.com/search")
+                        .append("/${bundle?.getString(Keys.VALUE)}").toString()
+                )
+                Router.SETTING -> navigate(R.id.action_main_to_setting, bundle)
+                Router.SETTING2WEB -> navigate(R.id.action_setting_to_web, bundle)
+                Router.SHARE_ARTICLE -> navigate("http://fragment.example.com/share-article")
+                Router.SYSTEM -> navigate(R.id.action_main_to_system, bundle)
+                Router.USER_AVATAR -> navigate("http://fragment.example.com/avatar")
+                Router.USER_LOGIN -> navigate("http://fragment.example.com/login")
+                Router.USER_REGISTER -> navigate("http://fragment.example.com/register")
+                Router.USER_SHARE -> navigate(
+                    StringBuilder()
+                        .append("http://fragment.example.com/user-share")
+                        .append("/${bundle?.getString(Keys.UID)}").toString()
+                )
+                Router.WEB -> navigate(
+                    StringBuilder()
+                        .append("http://fragment.example.com/web")
+                        .append("/${Uri.encode(bundle?.getString(Keys.URL))}").toString()
+                )
             }
         }
     }
@@ -93,19 +75,7 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
-        initViewModel()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        WanHelper.close()
-    }
-
-    private fun initViewModel() {
-        WanHelper.getUser().observe(this) { userBean ->
-            userId = userBean.id
-        }
-        WanHelper.getUIMode().observe(this, {
+        WanHelper.getUIMode().observe(this) {
             if (it != AppCompatDelegate.getDefaultNightMode()) {
                 when (it) {
                     1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -113,10 +83,18 @@ class MainActivity : RouterActivity() {
                     else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                 }
             }
-        })
+        }
+        WanHelper.getUser().observe(this) { userBean ->
+            userId = userBean.id
+        }
         SharedFlowBus.onSticky(UserBean::class.java).observe(this) { userBean ->
             userId = userBean.id
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        WanHelper.close()
     }
 
     /**

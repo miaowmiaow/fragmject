@@ -6,11 +6,23 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleListBean
+import com.example.fragment.library.common.bean.HotKeyBean
+import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.launch
 
 class SearchViewModel : BaseViewModel() {
 
+    val hotKeyResult = MutableLiveData<List<HotKeyBean>>()
+    val historySearchResult = MutableLiveData<List<String>>()
     val searchResult = MutableLiveData<ArticleListBean>()
+
+    fun getHotKey() {
+        WanHelper.getHotKey { hotKeyResult.postValue(it) }
+    }
+
+    fun getHistorySearch() {
+        WanHelper.getHistorySearch { historySearchResult.postValue(it) }
+    }
 
     fun getSearch(k: String) {
         getArticleQuery(k, getHomePage())

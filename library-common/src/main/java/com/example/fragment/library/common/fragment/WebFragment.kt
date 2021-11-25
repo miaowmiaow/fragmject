@@ -61,20 +61,19 @@ class WebFragment : RouterFragment() {
                 binding.title.text = title
             }
         }
-    }
-
-    override fun initViewModel(): BaseViewModel? { return null }
-
-    override fun initLoad() {
-        val html = arguments?.getString(Keys.HTML)
+        val html = requireArguments().getString(Keys.HTML)
         if (!html.isNullOrBlank()) {
             webHelper.loadHtml(html)
         } else {
-            val url = arguments?.getString(Keys.URL)
+            val url = requireArguments().getString(Keys.URL)
             if (!url.isNullOrBlank()) {
                 webHelper.loadUrl(Uri.decode(url))
             }
         }
     }
+
+    override fun initViewModel(): BaseViewModel? { return null }
+
+    override fun initLoad() {}
 
 }

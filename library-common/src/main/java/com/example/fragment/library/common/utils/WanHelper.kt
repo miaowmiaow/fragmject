@@ -1,13 +1,12 @@
 package com.example.fragment.library.common.utils
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.db.KVDatabase
 import com.example.fragment.library.common.bean.CoinBean
+import com.example.fragment.library.common.bean.EventBean
 import com.example.fragment.library.common.bean.HotKeyBean
-import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.bean.UserBean
+import com.example.fragment.library.common.constant.Keys
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -40,14 +39,9 @@ object WanHelper {
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
-    fun getUIMode(): LiveData<Int> {
-        return Transformations.map(KVDatabase.get(UI_MODE)) {
-            try {
-                it.toInt()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                1
-            }
+    fun getUIMode(result: (Int) -> Unit) {
+        KVDatabase.get(UI_MODE) {
+            result.invoke(it.toInt())
         }
     }
 
@@ -60,14 +54,9 @@ object WanHelper {
         KVDatabase.set(SCREEN_RECORD, status.toString())
     }
 
-    fun getScreenRecordStatus(): LiveData<Int> {
-        return Transformations.map(KVDatabase.get(SCREEN_RECORD)) {
-            try {
-                it.toInt()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                0
-            }
+    fun getScreenRecordStatus(result: (Int) -> Unit) {
+        KVDatabase.get(SCREEN_RECORD) {
+            result.invoke(it.toInt())
         }
     }
 
@@ -78,37 +67,44 @@ object WanHelper {
         }
     }
 
-    fun getUser(): LiveData<UserBean> {
-        return Transformations.map(KVDatabase.get(USER)) {
-            try {
-                Gson().fromJson(it.toString(), UserBean::class.java)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                UserBean()
-            }
+    fun getUser(result: (UserBean) -> Unit) {
+        KVDatabase.get(USER) {
+            result.invoke(
+                try {
+                    Gson().fromJson(it, UserBean::class.java)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    UserBean()
+                }
+            )
         }
     }
 
     fun setAvatar(path: String) {
         KVDatabase.set(AVATAR, path)
+        SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(Keys.AVATAR, path))
     }
 
-    fun getAvatar(): LiveData<String> {
-        return KVDatabase.get(AVATAR)
+    fun getAvatar(result: (String) -> Unit) {
+        KVDatabase.get(AVATAR) {
+            result.invoke(it)
+        }
     }
 
     fun setCoin(coinBean: CoinBean) {
         KVDatabase.set(COIN, coinBean.toJson())
     }
 
-    fun getCoin(): LiveData<CoinBean> {
-        return Transformations.map(KVDatabase.get(COIN)) {
-            try {
-                Gson().fromJson(it.toString(), CoinBean::class.java)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                CoinBean()
-            }
+    fun getCoin(result: (CoinBean) -> Unit) {
+        KVDatabase.get(COIN) {
+            result.invoke(
+                try {
+                    Gson().fromJson(it, CoinBean::class.java)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    CoinBean()
+                }
+            )
         }
     }
 
@@ -118,14 +114,16 @@ object WanHelper {
         }
     }
 
-    fun getHotKey(): LiveData<List<HotKeyBean>> {
-        return Transformations.map(KVDatabase.get(HOT_KEY)) {
-            try {
-                Gson().fromJson(it.toString(), object : TypeToken<List<HotKeyBean>>() {}.type)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ArrayList()
-            }
+    fun getHotKey(result: (List<HotKeyBean>) -> Unit) {
+        KVDatabase.get(HOT_KEY) {
+            result.invoke(
+                try {
+                    Gson().fromJson(it, object : TypeToken<List<HotKeyBean>>() {}.type)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    ArrayList()
+                }
+            )
         }
     }
 
@@ -133,14 +131,16 @@ object WanHelper {
         KVDatabase.set(HISTORY_SEARCH, Gson().toJson(list))
     }
 
-    fun getHistorySearch(): LiveData<List<String>> {
-        return Transformations.map(KVDatabase.get(HISTORY_SEARCH)) {
-            try {
-                Gson().fromJson(it.toString(), object : TypeToken<List<String>>() {}.type)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ArrayList()
-            }
+    fun getHistorySearch(result: (List<String>) -> Unit) {
+        KVDatabase.get(HISTORY_SEARCH) {
+            result.invoke(
+                try {
+                    Gson().fromJson(it, object : TypeToken<List<String>>() {}.type)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    ArrayList()
+                }
+            )
         }
     }
 

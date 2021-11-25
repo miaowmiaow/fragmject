@@ -83,7 +83,7 @@
 Kotlin 是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
 - [学习Kotlin编程语言1](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
 - [学习Kotlin编程语言2](https://play.kotlinlang.org/byExample/overview)
-- [在Android开发中使用常见的Kotlin模式](https://developer.android.google.cn/kotlin/common-patterns?hl=zh_cn)
+- [开发中常见的Kotlin模式](https://developer.android.google.cn/kotlin/common-patterns?hl=zh_cn)
 - [将Kotlin添加到现有应用](https://developer.android.google.cn/kotlin/add-kotlin?hl=zh_cn)
 ## ViewBinding
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。

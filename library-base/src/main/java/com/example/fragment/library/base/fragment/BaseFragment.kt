@@ -23,9 +23,9 @@ abstract class BaseFragment : Fragment() {
             { showProgress() },
             { dismissProgress() }
         )
+        // 在转场动画结束后加载数据，
+        // 用于解决过度动画卡顿问题。
         view.postDelayed({
-            // 在转场动画结束后加载数据，
-            // 用于解决过度动画卡顿问题。
             initLoad()
         }, delayedLoad)
     }
@@ -42,10 +42,14 @@ abstract class BaseFragment : Fragment() {
     }
 
     abstract fun initView()
+
+    /**
+     * 用于ViewModel中的数据更新
+     */
     abstract fun initViewModel(): BaseViewModel?
 
     /**
-     * 请在这里初始化数据！
+     * 本地或网络数据请在这里加载
      */
     abstract fun initLoad()
 

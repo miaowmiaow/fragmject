@@ -40,21 +40,7 @@ class SystemFragment : RouterFragment() {
     }
 
     override fun initView() {
-        if (arguments?.containsKey(Keys.CID) == true) {
-            cid = arguments?.getString(Keys.CID).toString()
-        }
-        if (arguments?.containsKey(Keys.URL) == true) {
-            val url = arguments?.getString(Keys.URL)
-            val uri = Uri.parse("https://www.wanandroid.com/${Uri.decode(url)}")
-            var chapterId = uri.getQueryParameter("cid")
-            if (chapterId.isNullOrBlank()) {
-                val paths = uri.pathSegments
-                if (paths != null && paths.size >= 3) {
-                    chapterId = paths[2]
-                }
-            }
-            cid = chapterId.toString()
-        }
+        cid = getCid()
         binding.black.setOnClickListener {
             activity.onBackPressed()
         }
@@ -79,6 +65,29 @@ class SystemFragment : RouterFragment() {
         if (viewModel.systemTreeResult.value == null) {
             viewModel.getSystemTree()
         }
+    }
+
+    private fun getCid(): String {
+        var cid = ""
+        if (requireArguments().containsKey(Keys.CID)) {
+            cid = requireArguments().getString(Keys.CID).toString()
+            if(cid.isNotBlank()){
+                return cid
+            }
+        }
+        if (requireArguments().containsKey(Keys.URL)) {
+            val url = requireArguments().getString(Keys.URL)
+            val uri = Uri.parse("https://www.wanandroid.com/${Uri.decode(url)}")
+            var chapterId = uri.getQueryParameter("cid")
+            if (chapterId.isNullOrBlank()) {
+                val paths = uri.pathSegments
+                if (paths != null && paths.size >= 3) {
+                    chapterId = paths[2]
+                }
+            }
+            cid = chapterId.toString()
+        }
+        return cid
     }
 
     private fun updateView(treeBean: TreeBean) {

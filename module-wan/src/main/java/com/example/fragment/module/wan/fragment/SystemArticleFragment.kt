@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
@@ -52,12 +51,9 @@ class SystemArticleFragment : RouterFragment() {
     }
 
     override fun initView() {
-        cid = arguments?.getString(Keys.CID).toString()
+        cid = requireArguments().getString(Keys.CID).toString()
         //体系列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
-        binding.list.addItemDecoration(
-            object : DividerItemDecoration(binding.list.context, VERTICAL) {}
-        )
         binding.list.adapter = articleAdapter
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {

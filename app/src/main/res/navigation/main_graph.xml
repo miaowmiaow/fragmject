@@ -9,7 +9,6 @@
     <include app:graph="@navigation/my_collect_graph" />
     <include app:graph="@navigation/my_share_graph" />
     <include app:graph="@navigation/setting_graph" />
-    <include app:graph="@navigation/system_graph" />
     <include app:graph="@navigation/user_graph" />
     <include app:graph="@navigation/wan_graph" />
     <include app:graph="@navigation/web_graph" />
@@ -31,8 +30,5 @@
         <action
             android:id="@+id/action_main_to_setting"
             app:destination="@id/setting_graph" />
-        <action
-            android:id="@+id/action_main_to_system"
-            app:destination="@id/system_graph" />
     </fragment>
 </navigation>

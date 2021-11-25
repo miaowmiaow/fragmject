@@ -40,7 +40,7 @@ class UserShareFragment : RouterFragment() {
     }
 
     override fun initView() {
-        id = arguments?.getString(Keys.UID).toString()
+        id = requireArguments().getString(Keys.UID).toString()
         binding.black.setOnClickListener { activity.onBackPressed() }
         //用户分享 列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)

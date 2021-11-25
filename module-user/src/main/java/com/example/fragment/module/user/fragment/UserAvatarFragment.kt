@@ -7,6 +7,7 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.ActivityCallback
@@ -17,12 +18,14 @@ import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.FragmentUserAvatarBinding
+import com.example.fragment.module.user.model.UserViewModel
 import com.example.miaow.picture.dialog.EditorFinishCallback
 import com.example.miaow.picture.dialog.PictureEditorDialog
 import com.example.miaow.picture.utils.AlbumUtils.getImagePath
 
 class UserAvatarFragment : RouterFragment() {
 
+    private val viewModel: UserViewModel by activityViewModels()
     private var _binding: FragmentUserAvatarBinding? = null
     private val binding get() = _binding!!
 
@@ -56,16 +59,21 @@ class UserAvatarFragment : RouterFragment() {
         }
     }
 
-    override fun initViewModel(): BaseViewModel? {
-        WanHelper.getAvatar().observe(viewLifecycleOwner) { path ->
-            BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
-                binding.image.setImageBitmap(bitmap)
+    override fun initViewModel(): BaseViewModel {
+        viewModel.avatarResult.observe(viewLifecycleOwner) { path ->
+            if(!path.isNullOrBlank()){
+                BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
+                    binding.image.setImageBitmap(bitmap)
+                }
             }
         }
-        return null
+        return viewModel
     }
 
     override fun initLoad() {
+        if (viewModel.avatarResult.value == null) {
+            viewModel.getAvatar()
+        }
     }
 
     private fun openAlbum() {

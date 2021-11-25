@@ -100,7 +100,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             binding.tag.setOnClickListener {
                 item.tags?.let {
                     val args = bundleOf(Keys.URL to it[0].url)
-                    activity.navigation(Router.SYSTEM, args)
+                    activity.navigation(Router.SYSTEM_URL, args)
                 }
             }
             binding.top.visibility = if (item.top) View.VISIBLE else View.GONE

@@ -70,11 +70,11 @@ class SearchFragment : RouterFragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun initView() {
-        binding.search.setText(arguments?.getString(Keys.VALUE).toString())
+        binding.search.setText(requireArguments().getString(Keys.VALUE).toString())
         binding.cancel.setOnClickListener { activity.onBackPressed() }
         //搜索
         binding.search.setOnTouchListener { _, _ ->
-            initHistorySearch()
+            viewModel.getHistorySearch()
             false
         }
         binding.search.setOnEditorActionListener { _, actionId, _ ->
@@ -107,6 +107,27 @@ class SearchFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
+        viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
+            binding.history.visibility = View.VISIBLE
+            binding.pullRefresh.visibility = View.GONE
+            binding.hotKey.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.fbl.removeAllViews()
+            result.forEach { hotKey ->
+                val inflater = LayoutInflater.from(binding.fbl.context)
+                val tv = inflater.inflate(R.layout.fbl_hot_key, binding.fbl, false) as TextView
+                tv.text = hotKey.name
+                tv.setOnClickListener {
+                    search(hotKey.name)
+                }
+                binding.fbl.addView(tv)
+            }
+        }
+        viewModel.historySearchResult.observe(viewLifecycleOwner) { result ->
+            binding.history.visibility = View.VISIBLE
+            binding.pullRefresh.visibility = View.GONE
+            binding.historySearch.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
+            historySearchAdapter.setNewData(result)
+        }
         viewModel.searchResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
                 "0" -> {
@@ -127,27 +148,11 @@ class SearchFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        WanHelper.getHotKey().observe(viewLifecycleOwner) { result ->
-            binding.hotKey.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
-            binding.fbl.removeAllViews()
-            result.forEach { hotKey ->
-                val inflater = LayoutInflater.from(binding.fbl.context)
-                val tv = inflater.inflate(R.layout.fbl_hot_key, binding.fbl, false) as TextView
-                tv.text = hotKey.name
-                tv.setOnClickListener {
-                    search(hotKey.name)
-                }
-                binding.fbl.addView(tv)
-            }
+        if (viewModel.hotKeyResult.value == null) {
+            viewModel.getHotKey()
         }
-    }
-
-    private fun initHistorySearch() {
-        binding.history.visibility = View.VISIBLE
-        binding.pullRefresh.visibility = View.GONE
-        WanHelper.getHistorySearch().observe(viewLifecycleOwner) { result ->
-            binding.historySearch.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
-            historySearchAdapter.setNewData(result)
+        if(viewModel.historySearchResult.value == null){
+            viewModel.getHistorySearch()
         }
     }
 

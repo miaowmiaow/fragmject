@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -77,10 +76,16 @@ class NavigationLinkFragment : RouterFragment() {
                 "0" -> {
                     result.data?.let { data ->
                         if (data.isNotEmpty()) {
-                            data[0].isSelected = true
-                            linkMenuAdapter.selectItem(0)
+                            var selectItem = 0
+                            data.forEachIndexed { index, bean ->
+                                if(bean.isSelected){
+                                    selectItem = index
+                                }
+                            }
+                            data[selectItem].isSelected = true
                             linkMenuAdapter.setNewData(data)
-                            fillFlexboxLayout(data[0].articles)
+                            linkMenuAdapter.selectItem(selectItem)
+                            fillFlexboxLayout(data[selectItem].articles)
                         }
                     }
                 }

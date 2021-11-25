@@ -51,7 +51,16 @@ class MainActivity : RouterActivity() {
                 Router.SETTING -> navigate(R.id.action_main_to_setting, bundle)
                 Router.SETTING2WEB -> navigate(R.id.action_setting_to_web, bundle)
                 Router.SHARE_ARTICLE -> navigate("http://fragment.example.com/share-article")
-                Router.SYSTEM -> navigate(R.id.action_main_to_system, bundle)
+                Router.SYSTEM -> navigate(
+                    StringBuilder()
+                        .append("http://fragment.example.com/system")
+                        .append("/${bundle?.getString(Keys.CID)}").toString()
+                )
+                Router.SYSTEM_URL -> navigate(
+                    StringBuilder()
+                        .append("http://fragment.example.com/system-url")
+                        .append("/${Uri.encode(bundle?.getString(Keys.URL))}").toString()
+                )
                 Router.USER_AVATAR -> navigate("http://fragment.example.com/avatar")
                 Router.USER_LOGIN -> navigate("http://fragment.example.com/login")
                 Router.USER_REGISTER -> navigate("http://fragment.example.com/register")
@@ -75,7 +84,10 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
-        WanHelper.getUIMode().observe(this) {
+        WanHelper.getUser {
+            userId = it.id
+        }
+        WanHelper.getUIMode {
             if (it != AppCompatDelegate.getDefaultNightMode()) {
                 when (it) {
                     1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -83,9 +95,6 @@ class MainActivity : RouterActivity() {
                     else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                 }
             }
-        }
-        WanHelper.getUser().observe(this) { userBean ->
-            userId = userBean.id
         }
         SharedFlowBus.onSticky(UserBean::class.java).observe(this) { userBean ->
             userId = userBean.id

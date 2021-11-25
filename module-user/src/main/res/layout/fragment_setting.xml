@@ -51,7 +51,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -74,7 +74,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -97,7 +97,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -121,7 +121,7 @@
                 android:id="@+id/privacy_policy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -141,7 +141,7 @@
                 android:id="@+id/feedback"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -161,7 +161,7 @@
                 android:id="@+id/about"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -181,7 +181,7 @@
                 android:id="@+id/clear_cache"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView
@@ -210,7 +210,7 @@
                 android:id="@+id/update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/layer_while_item_top"
+                android:background="@drawable/layer_while_item_bottom"
                 android:padding="15dp">
 
                 <TextView

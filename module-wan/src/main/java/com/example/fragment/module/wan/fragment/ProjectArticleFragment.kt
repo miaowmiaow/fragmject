@@ -51,7 +51,7 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     override fun initView() {
-        cid = arguments?.getString(Keys.CID).toString()
+        cid = requireArguments().getString(Keys.CID).toString()
         //项目列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
@@ -67,7 +67,6 @@ class ProjectArticleFragment : RouterFragment() {
                 viewModel.getProjectNext(cid)
             }
         })
-        println(System.currentTimeMillis())
     }
 
     override fun initViewModel(): BaseViewModel {
@@ -89,7 +88,6 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        println(System.currentTimeMillis())
         if (viewModel.projectListResult.value == null) {
             viewModel.getProject(cid)
         }

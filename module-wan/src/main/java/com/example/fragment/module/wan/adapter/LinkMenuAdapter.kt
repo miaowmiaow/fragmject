@@ -19,9 +19,9 @@ class LinkMenuAdapter : BaseAdapter<NavigationBean>() {
         val binding = holder.binding as ItemNavigationMenuBinding
         binding.tv.text = item.name
         binding.root.background = if (item.isSelected) {
-            ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_while_item_top)
+            ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_while_item_bottom)
         } else {
-            ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_gray_item_top)
+            ContextCompat.getDrawable(holder.itemView.context, R.drawable.layer_gray_item_bottom)
         }
     }
 

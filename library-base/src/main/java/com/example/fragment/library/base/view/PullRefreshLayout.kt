@@ -153,13 +153,13 @@ class PullRefreshLayout @JvmOverloads constructor(
     }
 
     fun setRefreshing() {
-        if (!refreshing) {
+        if (!isRefresh()) {
             animateOffsetToEndPosition(refreshViewHeight)
         }
     }
 
     fun finishRefresh() {
-        if (refreshing) {
+        if (isRefresh()) {
             refreshing = false
             setLoadMore(true)
             refreshDrawable.stop()
@@ -232,12 +232,11 @@ class PullRefreshLayout @JvmOverloads constructor(
                 override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                     if (getItemViewType(position) == TYPE_LOAD_MORE) {
                         val loadView = holder.itemView.findViewById<LoadMoreView>(TYPE_LOAD_MORE)
-                        if (itemCount > 1) {
-                            loadView.setLoadMore(loadMoreText)
-                        }
+                        loadView.setLoadMore(itemCount, loadMoreText)
                     } else {
                         adapter.onBindViewHolder(holder, position)
                     }
+                    //TYPE_LOAD_MORE，所以itemCount > 1
                     if (itemCount > 1 && position >= itemCount - PRELOADING_NUMBER && loadMore) {
                         loadMore = false
                         recyclerView.post {
@@ -320,7 +319,7 @@ class PullRefreshLayout @JvmOverloads constructor(
     private val mAnimateToEndPosition: Animation = object : Animation() {
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
             moveToEnd(interpolatedTime)
-            if (interpolatedTime >= DRAG_RATE && !refreshing) {
+            if (interpolatedTime >= DRAG_RATE && !isRefresh()) {
                 refreshing = true
                 refreshDrawable.start()
                 refreshListener?.onRefresh(this@PullRefreshLayout)
@@ -443,7 +442,7 @@ class PullRefreshLayout @JvmOverloads constructor(
     }
 
     private fun finishSpinner(overScrollTop: Float) {
-        if (overScrollTop > refreshViewHeight * 2 && !refreshing) {
+        if (overScrollTop > refreshViewHeight * 2 && !isRefresh()) {
             refreshing = true
             refreshDrawable.start()
             refreshListener?.onRefresh(this)
@@ -768,8 +767,8 @@ class LoadMoreView(context: Context) : AppCompatTextView(context) {
         gravity = Gravity.CENTER
     }
 
-    fun setLoadMore(isLoadMore: Boolean) {
-        text = if (isLoadMore) "正在加载..." else "没有更多了。"
+    fun setLoadMore(itemCount: Int, isLoadMore: Boolean) {
+        text = if (isLoadMore) if (itemCount > 1) "正在加载..." else "" else "没有更多了。"
     }
 }
 

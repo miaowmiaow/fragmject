@@ -2,6 +2,7 @@ package com.example.fragment.library.common.constant
 
 class Keys {
     companion object {
+        const val AVATAR = "avatar"
         const val CID = "cid"
         const val HTML = "html"
         const val UID = "uid"

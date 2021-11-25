@@ -1,7 +1,5 @@
 package com.example.fragment.library.base.db
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.room.*
 import com.example.fragment.library.base.provider.BaseContent
 import kotlinx.coroutines.CoroutineScope
@@ -32,11 +30,11 @@ abstract class KVDatabase : RoomDatabase() {
             getDB().set(key, value)
         }
 
-        fun get(key: String): LiveData<String> {
-            return getDB().get(key)
+        fun get(key: String, result: (String) -> Unit) {
+            getDB().get(key, result)
         }
 
-        fun closeDatabase(){
+        fun closeDatabase() {
             getDB().close()
         }
 
@@ -66,12 +64,11 @@ abstract class KVDatabase : RoomDatabase() {
         }
     }
 
-    fun get(key: String): MutableLiveData<String> {
-        val result = MutableLiveData<String>()
+    fun get(key: String, result: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 getDao().findByKey(key)?.value?.let {
-                    result.postValue(it)
+                    result.invoke(it)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -81,7 +78,6 @@ abstract class KVDatabase : RoomDatabase() {
 //                }
             }
         }
-        return result
     }
 
     /**

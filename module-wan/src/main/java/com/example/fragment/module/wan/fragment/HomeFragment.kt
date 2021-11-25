@@ -51,6 +51,7 @@ class HomeFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
+                viewModel.getBanner()
                 viewModel.getArticle()
             }
         })
@@ -69,26 +70,11 @@ class HomeFragment : RouterFragment() {
                 else -> activity.showTips(result.errorMsg)
             }
         }
-        viewModel.articleTopResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    result.data?.let { data ->
-                        data.forEach { it.top = true }
-                        articleAdapter.addData(0, data)
-                    }
-                }
-            }
-        }
         viewModel.articleListResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(result.data?.datas)
-                    } else {
-                        articleAdapter.addData(result.data?.datas)
-                    }
-                }
-                else -> activity.showTips(result.errorMsg)
+            if (viewModel.isHomePage()) {
+                articleAdapter.setNewData(result)
+            } else {
+                articleAdapter.addData(result)
             }
             binding.pullRefresh.finishRefresh()
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
@@ -99,7 +85,6 @@ class HomeFragment : RouterFragment() {
     override fun initLoad() {
         if (viewModel.articleListResult.value == null) {
             viewModel.getBanner()
-            viewModel.getArticleTop()
             viewModel.getArticle()
         }
     }

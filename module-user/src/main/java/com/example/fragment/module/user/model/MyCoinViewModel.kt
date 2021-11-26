@@ -22,11 +22,11 @@ class MyCoinViewModel : BaseViewModel() {
         }
     }
 
-    fun getMyCoin(){
+    fun getMyCoin() {
         getMyCoin(getHomePage(1))
     }
 
-    fun getMyCoinNext(){
+    fun getMyCoinNext() {
         getMyCoin(getNextPage())
     }
 

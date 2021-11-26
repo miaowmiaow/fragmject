@@ -2,11 +2,8 @@ package com.example.fragment.library.common.utils
 
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.db.KVDatabase
-import com.example.fragment.library.common.bean.CoinBean
-import com.example.fragment.library.common.bean.EventBean
 import com.example.fragment.library.common.bean.HotKeyBean
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.Keys
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -19,7 +16,6 @@ object WanHelper {
     private const val SCREEN_RECORD = "screen_record"
     private const val USER = "user"
     private const val AVATAR = "avatar"
-    private const val COIN = "coin"
     private const val HOT_KEY = "hot_key"
     private const val HISTORY_SEARCH = "history_search"
 
@@ -82,29 +78,11 @@ object WanHelper {
 
     fun setAvatar(path: String) {
         KVDatabase.set(AVATAR, path)
-        SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(Keys.AVATAR, path))
     }
 
     fun getAvatar(result: (String) -> Unit) {
         KVDatabase.get(AVATAR) {
             result.invoke(it)
-        }
-    }
-
-    fun setCoin(coinBean: CoinBean) {
-        KVDatabase.set(COIN, coinBean.toJson())
-    }
-
-    fun getCoin(result: (CoinBean) -> Unit) {
-        KVDatabase.get(COIN) {
-            result.invoke(
-                try {
-                    Gson().fromJson(it, CoinBean::class.java)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    CoinBean()
-                }
-            )
         }
     }
 

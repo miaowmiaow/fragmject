@@ -64,7 +64,6 @@ class MyCoinFragment : RouterFragment() {
             when (result.errorCode) {
                 "0" -> {
                     result.data?.let { coinBean ->
-                        WanHelper.setCoin(coinBean)
                         val from = binding.coinCount.text.toString().toInt()
                         val to = coinBean.coinCount.toInt()
                         val animator = ValueAnimator.ofInt(from, to)

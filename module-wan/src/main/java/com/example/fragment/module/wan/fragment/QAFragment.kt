@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.fragment.library.base.adapter.FragmentPagerAdapter
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.databinding.TabItemTopBinding
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.databinding.FragmentQaBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
 class QAFragment : RouterFragment() {
 
@@ -44,17 +45,18 @@ class QAFragment : RouterFragment() {
 
     override fun initView() {
         //TabBar与ViewPager
-        binding.viewpager.adapter = FragmentPagerAdapter(childFragmentManager, fragments)
-        binding.tabBar.setupWithViewPager(binding.viewpager)
-        var currentItem = binding.tabBar.selectedTabPosition
-        if (currentItem == -1) currentItem = 0
-        binding.tabBar.removeAllTabs()
-        for (i in tabTexts.indices) {
-            val item = TabItemTopBinding.inflate(LayoutInflater.from(binding.root.context))
-            item.tab.text = tabTexts[i]
-            binding.tabBar.addTab(binding.tabBar.newTab().setCustomView(item.root))
+        binding.viewpager.adapter = object : FragmentStateAdapter(this) {
+            override fun getItemCount(): Int {
+                return fragments.size
+            }
+
+            override fun createFragment(position: Int): Fragment {
+                return fragments[position]
+            }
         }
-        binding.viewpager.currentItem = currentItem
+        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+            tab.text = tabTexts[position]
+        }.attach()
     }
 
     override fun initViewModel(): BaseViewModel? {

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
@@ -17,7 +17,7 @@ import com.example.fragment.module.user.model.MyShareViewModel
 
 class MyShareFragment : RouterFragment() {
 
-    private val viewModel: MyShareViewModel by viewModels()
+    private val viewModel: MyShareViewModel by activityViewModels()
     private var _binding: FragmentMyShareBinding? = null
     private val binding get() = _binding!!
 

@@ -17,33 +17,19 @@ class BannerHelper(
     private var bannerDelay = 5000L
     private var offsetX = 0
     private var offsetY = 0
-    private var predictOffsetX = 0
-    private var predictOffsetY = 0
     private var isUp = false
     private var isSettling = false
     private val timerTask = Runnable {
         recyclerView.post {
             if (repeatLayoutManager.itemCount > 1) {
-                val position = repeatLayoutManager.childCount - 1
-                val firstVisibleItemPosition = repeatLayoutManager.findFirstVisibleItemPosition()
-                val lastVisibleItemPosition = repeatLayoutManager.findLastVisibleItemPosition()
+                val position = repeatLayoutManager.findFirstVisibleItemPosition()
                 if (orientation == RecyclerView.VERTICAL) {
                     repeatLayoutManager.getChildAt(position)?.let { view ->
-                        var dy = view.height
-                        predictOffsetY += dy
-                        if (firstVisibleItemPosition != lastVisibleItemPosition) {
-                            dy += predictOffsetY - offsetY
-                        }
-                        recyclerView.smoothScrollBy(0, dy, null, smoothScrollDuration)
+                        recyclerView.smoothScrollBy(0, view.bottom, null, smoothScrollDuration)
                     }
                 } else if (orientation == RecyclerView.HORIZONTAL) {
                     repeatLayoutManager.getChildAt(position)?.let { view ->
-                        var dx = view.width
-                        predictOffsetX += dx
-                        if (firstVisibleItemPosition != lastVisibleItemPosition) {
-                            dx += predictOffsetX - offsetX
-                        }
-                        recyclerView.smoothScrollBy(dx, 0, null, smoothScrollDuration)
+                        recyclerView.smoothScrollBy(view.right, 0, null, smoothScrollDuration)
                     }
                 }
                 startTimerTask()

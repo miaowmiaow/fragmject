@@ -32,10 +32,6 @@ class SystemArticleFragment : RouterFragment() {
     private val articleAdapter = ArticleAdapter()
     private var cid = ""
 
-    init {
-        delayedLoad = 0L
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

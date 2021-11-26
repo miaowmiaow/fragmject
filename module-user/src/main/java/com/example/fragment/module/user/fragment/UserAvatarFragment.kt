@@ -93,8 +93,7 @@ class UserAvatarFragment : RouterFragment() {
             .setBitmapPath(path)
             .setEditorFinishCallback(object : EditorFinishCallback {
                 override fun onFinish(path: String) {
-                    val bitmap = BitmapFactory.decodeFile(path, BitmapFactory.Options())
-                    binding.image.setImageBitmap(bitmap)
+                    viewModel.avatarResult.postValue(path)
                     WanHelper.setAvatar(path)
                 }
             })

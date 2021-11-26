@@ -18,6 +18,9 @@ class ProgressView @JvmOverloads constructor(
         inflate(context, R.layout.view_progress, this)
         progress = findViewById(R.id.progress)
         visibility = View.GONE
+        setOnClickListener {
+            dismiss()
+        }
     }
 
     fun show() {

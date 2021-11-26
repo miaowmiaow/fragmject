@@ -8,10 +8,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.adapter.FragmentPagerAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.BannerHelper
 import com.example.fragment.library.common.constant.Keys
@@ -29,6 +30,7 @@ import com.example.fragment.project.databinding.FragmentMainBinding
 import com.example.fragment.project.databinding.ItemTabMainBinding
 import com.example.fragment.project.model.MainViewModel
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
@@ -92,9 +94,23 @@ class MainFragment : RouterFragment() {
         hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         //TabBar与ViewPager
-        binding.viewpager.offscreenPageLimit = 1
-        binding.viewpager.adapter = FragmentPagerAdapter(childFragmentManager, fragments)
-        binding.tabBar.setupWithViewPager(binding.viewpager)
+        binding.viewpager.adapter = object : FragmentStateAdapter(this) {
+            override fun getItemCount(): Int {
+                return fragments.size
+            }
+
+            override fun createFragment(position: Int): Fragment {
+                return fragments[position]
+            }
+        }
+        TabLayoutMediator(binding.tabBar, binding.viewpager){ tab, position ->
+            val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
+            item.icon.setImageResource(tabDrawable[position])
+            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
+            item.name.text = tabTexts[position]
+            item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.gray_alpha))
+            tab.customView = item.root
+        }.attach()
         binding.tabBar.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 setColorFilter(tab.customView, R.color.text_fff)
@@ -107,18 +123,6 @@ class MainFragment : RouterFragment() {
             override fun onTabReselected(tab: TabLayout.Tab) {
             }
         })
-        var currentItem = binding.tabBar.selectedTabPosition
-        if (currentItem == -1) currentItem = 0
-        binding.tabBar.removeAllTabs()
-        for (i in fragments.indices) {
-            val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
-            item.icon.setImageResource(tabDrawable[i])
-            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
-            item.name.text = tabTexts[i]
-            item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.gray_alpha))
-            binding.tabBar.addTab(binding.tabBar.newTab().setCustomView(item.root))
-        }
-        binding.viewpager.currentItem = currentItem
     }
 
     override fun initViewModel(): BaseViewModel {
@@ -148,7 +152,7 @@ class MainFragment : RouterFragment() {
         activity.navigation(Router.SEARCH, args)
     }
 
-    private fun setColorFilter(view: View?, id: Int){
+    private fun setColorFilter(view: View?, id: Int) {
         view?.apply {
             val icon = findViewById<ImageView>(R.id.icon)
             val name = findViewById<TextView>(R.id.name)

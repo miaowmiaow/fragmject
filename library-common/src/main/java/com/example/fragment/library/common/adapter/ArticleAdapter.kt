@@ -1,7 +1,6 @@
 package com.example.fragment.library.common.adapter
 
 import android.os.Build
-import android.os.Bundle
 import android.text.Html
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -81,7 +80,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             } else {
                 "匿名"
             }
-            binding.avatar.load(avatarList[(0..5).random()]) {
+            binding.avatar.load(avatarList[position % 6]) {
                 crossfade(true)
                 transformations(CircleCropTransformation())
             }

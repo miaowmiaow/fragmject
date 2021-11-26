@@ -8,9 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.EventBean
 import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.databinding.FragmentUserBinding
@@ -44,7 +42,6 @@ class UserFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.username.text = "去登录"
         binding.logo.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
         binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
         binding.myCoin.setOnClickListener { activity.navigation(Router.MY_COIN) }
@@ -55,7 +52,7 @@ class UserFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.avatarResult.observe(viewLifecycleOwner) { path ->
-            if(!path.isNullOrBlank()){
+            if (!path.isNullOrBlank()) {
                 BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
                     binding.logo.setImageBitmap(bitmap)
                 }
@@ -74,13 +71,6 @@ class UserFragment : RouterFragment() {
         if (viewModel.userResult.value == null) {
             viewModel.getUser()
         }
-        SharedFlowBus.onSticky(EventBean::class.java).observe(this) { eventBean ->
-            if (eventBean.key == Keys.AVATAR) {
-                BitmapFactory.decodeFile(eventBean.value, BitmapFactory.Options())?.let { bitmap ->
-                    binding.logo.setImageBitmap(bitmap)
-                }
-            }
-        }
         SharedFlowBus.onSticky(UserBean::class.java).observe(this) { userBean ->
             updateView(userBean)
         }
@@ -91,6 +81,10 @@ class UserFragment : RouterFragment() {
             binding.logo.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
             binding.username.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
             binding.username.text = "欢迎回来！${userBean.username}"
+        } else {
+            binding.logo.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
+            binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
+            binding.username.text = "去登录"
         }
     }
 

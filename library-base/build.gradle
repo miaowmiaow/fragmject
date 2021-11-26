@@ -36,6 +36,7 @@ dependencies {
     api rootProject.ext.dependencies["androidx-appcompat"]
     api rootProject.ext.dependencies["androidx-core-ktx"]
     api rootProject.ext.dependencies["androidx-fragment-ktx"]
+    api rootProject.ext.dependencies["androidx-viewpager2"]
     api rootProject.ext.dependencies["androidx-webkit"]
     api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-ktx"]
     api rootProject.ext.dependencies["androidx-lifecycle-livedata-ktx"]

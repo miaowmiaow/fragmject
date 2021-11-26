@@ -1,6 +1,5 @@
 package com.example.fragment.library.common.adapter
 
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf

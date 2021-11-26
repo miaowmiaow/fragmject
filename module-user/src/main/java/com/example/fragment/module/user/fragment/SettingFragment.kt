@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
@@ -30,7 +30,7 @@ class SettingFragment : RouterFragment() {
 
     private var countDownTimer: CountDownTimer? = null
 
-    private val viewModel: UserViewModel by activityViewModels()
+    private val viewModel: UserViewModel by viewModels()
     private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
 
@@ -221,6 +221,9 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initLoad() {
+        if (viewModel.userResult.value == null) {
+            viewModel.getUser()
+        }
         if (viewModel.uiModeResult.value == null) {
             viewModel.getUIMode()
         }

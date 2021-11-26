@@ -11,7 +11,13 @@ import com.example.fragment.library.base.model.BaseViewModel
 abstract class BaseFragment : Fragment() {
 
     private var isVisibleToUser = false
-    var delayedLoad = 300L
+
+    /**
+     * 在转场动画结束后加载数据，
+     * 用于解决过度动画卡顿问题，
+     * 建议大于等于转场动画时间。
+     */
+    private var delayedLoad = 350L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -23,8 +29,6 @@ abstract class BaseFragment : Fragment() {
             { showProgress() },
             { dismissProgress() }
         )
-        // 在转场动画结束后加载数据，
-        // 用于解决过度动画卡顿问题。
         view.postDelayed({
             initLoad()
         }, delayedLoad)
@@ -38,6 +42,7 @@ abstract class BaseFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         isVisibleToUser = false
+        dismissProgress()
         hideInputMethod()
     }
 

@@ -51,7 +51,7 @@
                 android:singleLine="true"
                 android:textColor="@color/text_fff"
                 android:textColorHint="@color/text_ccc"
-                android:textSize="14sp" />
+                android:textSize="12sp" />
 
         </RelativeLayout>
 
@@ -81,7 +81,8 @@
             android:id="@+id/hot_key"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -102,7 +103,8 @@
             android:id="@+id/history_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"

@@ -16,7 +16,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="50dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_logo" />
+            android:src="@drawable/avatar_1_raster" />
 
         <TextView
             android:id="@+id/username"

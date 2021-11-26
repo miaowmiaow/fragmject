@@ -44,7 +44,7 @@ class UserAvatarFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.image.setImageResource(R.drawable.ic_logo)
+        binding.image.setImageResource(R.drawable.avatar_1_raster)
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.album.setOnClickListener {
             activity.requestStoragePermissions(object : PermissionsCallback {

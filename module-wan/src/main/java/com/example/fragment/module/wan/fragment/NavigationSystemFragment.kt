@@ -42,6 +42,7 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initView() {
+        //体系列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = systemAdapter
     }

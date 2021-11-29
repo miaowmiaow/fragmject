@@ -72,7 +72,9 @@ class WebFragment : RouterFragment() {
         }
     }
 
-    override fun initViewModel(): BaseViewModel? { return null }
+    override fun initViewModel(): BaseViewModel? {
+        return null
+    }
 
     override fun initLoad() {}
 

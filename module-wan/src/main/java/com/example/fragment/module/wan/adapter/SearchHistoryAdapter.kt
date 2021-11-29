@@ -5,20 +5,20 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.databinding.ItemHistorySearchBinding
+import com.example.fragment.module.wan.databinding.ItemSearchHistoryBinding
 
-class HistorySearchAdapter : BaseAdapter<String>() {
+class SearchHistoryAdapter : BaseAdapter<String>() {
 
     init {
         addOnClickListener(R.id.delete)
     }
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return ItemHistorySearchBinding::inflate
+        return ItemSearchHistoryBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: String) {
-        val binding = holder.binding as ItemHistorySearchBinding
+        val binding = holder.binding as ItemSearchHistoryBinding
         binding.title.text = item
     }
 

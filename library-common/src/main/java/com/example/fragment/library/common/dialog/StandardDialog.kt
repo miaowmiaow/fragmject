@@ -33,6 +33,9 @@ class StandardDialog : BaseDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        dialog?.window?.apply {
+            setDimAmount(0.5F)
+        }
         title?.apply {
             binding.title.text = this
             binding.title.visibility = View.VISIBLE

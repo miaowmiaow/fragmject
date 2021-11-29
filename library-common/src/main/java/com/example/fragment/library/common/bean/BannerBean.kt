@@ -2,7 +2,7 @@ package com.example.fragment.library.common.bean
 
 import com.example.fragment.library.base.http.HttpResponse
 
-data class BannerDataBean(
+data class BannerListBean(
     val data: List<BannerBean>? = null
 ) : HttpResponse()
 

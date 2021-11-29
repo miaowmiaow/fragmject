@@ -55,11 +55,6 @@ abstract class KVDatabase : RoomDatabase() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-            } finally {
-                //用完关闭会影响性能，此处待优化
-//                if (database != null) {
-//                    close()
-//                }
             }
         }
     }
@@ -72,10 +67,6 @@ abstract class KVDatabase : RoomDatabase() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-            } finally {
-//                if (database != null) {
-//                    close()
-//                }
             }
         }
     }

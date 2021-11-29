@@ -39,13 +39,16 @@ class MyShareFragment : RouterFragment() {
 
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
+        //我分享的文章列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
+        //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.getMyShareArticle()
             }
         })
+        //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.getMyShareArticleNext()
@@ -56,16 +59,16 @@ class MyShareFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.myShareArticleResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> {
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(result.data?.shareArticles?.datas)
-                    } else {
-                        articleAdapter.addData(result.data?.shareArticles?.datas)
-                    }
+                "0" -> if (viewModel.isHomePage()) {
+                    articleAdapter.setNewData(result.data?.shareArticles?.datas)
+                } else {
+                    articleAdapter.addData(result.data?.shareArticles?.datas)
                 }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel

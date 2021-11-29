@@ -14,14 +14,24 @@ class NavigationViewModel : BaseViewModel() {
     val navigationResult = MutableLiveData<NavigationListBean>()
     val systemTreeResult = MutableLiveData<TreeListBean>()
 
+    /**
+     * 获取导航数据
+     */
     fun getNavigation() {
+        //通过viewModelScope创建一个协程
         viewModelScope.launch {
+            //构建请求体，传入请求参数
             val request = HttpRequest("navi/json")
+            //以get方式发起网络请求
             val response = get<NavigationListBean>(request) { progress(it) }
+            //通过LiveData通知界面更新
             navigationResult.postValue(response)
         }
     }
 
+    /**
+     * 获取项目分类
+     */
     fun getSystemTree() {
         viewModelScope.launch {
             val request = HttpRequest("tree/json")

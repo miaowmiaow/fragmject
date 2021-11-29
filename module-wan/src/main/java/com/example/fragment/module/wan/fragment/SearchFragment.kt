@@ -19,7 +19,7 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.adapter.HistorySearchAdapter
+import com.example.fragment.module.wan.adapter.SearchHistoryAdapter
 import com.example.fragment.module.wan.databinding.FragmentSearchBinding
 import com.example.fragment.module.wan.model.SearchViewModel
 
@@ -29,7 +29,7 @@ class SearchFragment : RouterFragment() {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
 
-    private val historySearchAdapter = HistorySearchAdapter()
+    private val historySearchAdapter = SearchHistoryAdapter()
     private val historySearchClickListener = object : BaseAdapter.OnItemClickListener {
         override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
             historySearchAdapter.getItem(position).apply {
@@ -46,9 +46,9 @@ class SearchFragment : RouterFragment() {
             if (view.id == R.id.delete) {
                 historySearchAdapter.removeData(position)
                 val data = historySearchAdapter.getData()
-                binding.historySearch.visibility =
+                binding.searchHistory.visibility =
                     if (data.isNotEmpty()) View.VISIBLE else View.GONE
-                WanHelper.setHistorySearch(data)
+                WanHelper.setSearchHistory(data)
             }
         }
     }
@@ -74,7 +74,7 @@ class SearchFragment : RouterFragment() {
         binding.cancel.setOnClickListener { activity.onBackPressed() }
         //搜索
         binding.search.setOnTouchListener { _, _ ->
-            viewModel.getHistorySearch()
+            viewModel.getSearchHistory()
             false
         }
         binding.search.setOnEditorActionListener { _, actionId, _ ->
@@ -122,26 +122,26 @@ class SearchFragment : RouterFragment() {
                 binding.fbl.addView(tv)
             }
         }
-        viewModel.historySearchResult.observe(viewLifecycleOwner) { result ->
+        viewModel.searchHistoryResult.observe(viewLifecycleOwner) { result ->
             binding.history.visibility = View.VISIBLE
             binding.pullRefresh.visibility = View.GONE
-            binding.historySearch.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.searchHistory.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
             historySearchAdapter.setNewData(result)
         }
         viewModel.searchResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> {
-                    result.data?.datas?.let { list ->
-                        if (viewModel.isHomePage()) {
-                            articleAdapter.setNewData(list)
-                        } else {
-                            articleAdapter.addData(list)
-                        }
+                "0" -> result.data?.datas?.let { list ->
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(list)
+                    } else {
+                        articleAdapter.addData(list)
                     }
                 }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
@@ -151,8 +151,8 @@ class SearchFragment : RouterFragment() {
         if (viewModel.hotKeyResult.value == null) {
             viewModel.getHotKey()
         }
-        if(viewModel.historySearchResult.value == null){
-            viewModel.getHistorySearch()
+        if (viewModel.searchHistoryResult.value == null) {
+            viewModel.getSearchHistory()
         }
     }
 
@@ -167,7 +167,7 @@ class SearchFragment : RouterFragment() {
                 list.remove(key)
             }
             list.add(0, key)
-            WanHelper.setHistorySearch(list)
+            WanHelper.setSearchHistory(list)
         }
     }
 

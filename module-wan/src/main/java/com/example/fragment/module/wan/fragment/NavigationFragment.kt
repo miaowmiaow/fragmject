@@ -44,8 +44,8 @@ class NavigationFragment : RouterFragment() {
     }
 
     override fun initView() {
-        //TabBar与ViewPager
-        binding.viewpager.adapter = object : FragmentStateAdapter(this) {
+        //TabLayout与ViewPager2
+        binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount(): Int {
                 return fragments.size
             }
@@ -54,7 +54,7 @@ class NavigationFragment : RouterFragment() {
                 return fragments[position]
             }
         }
-        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+        TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
             tab.text = tabTexts[position]
         }.attach()
     }

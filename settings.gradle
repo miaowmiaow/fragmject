@@ -24,7 +24,7 @@ rootProject.name = "fragmject"
 include ':app'
 include ':library-base'
 include ':library-common'
+include ':miaow-picture'
 include ':module-user'
 include ':module-wan'
 include ':plugin-statistic'
-include ':miaow-picture'

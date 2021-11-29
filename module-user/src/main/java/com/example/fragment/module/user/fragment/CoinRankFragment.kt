@@ -51,13 +51,16 @@ class CoinRankFragment : RouterFragment() {
             val args = bundleOf(Keys.URL to "https://www.wanandroid.com/blog/show/2653")
             activity.navigation(Router.WEB, args)
         }
+        //积分排行榜列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRankAdapter
+        //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
                 viewModel.getCoinRank()
             }
         })
+        //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
                 viewModel.getCoinRankNext()
@@ -87,7 +90,9 @@ class CoinRankFragment : RouterFragment() {
                 }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel

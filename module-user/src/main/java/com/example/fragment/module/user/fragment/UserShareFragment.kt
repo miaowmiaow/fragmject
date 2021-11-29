@@ -76,7 +76,9 @@ class UserShareFragment : RouterFragment() {
                 }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel

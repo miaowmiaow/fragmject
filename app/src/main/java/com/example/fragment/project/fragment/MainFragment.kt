@@ -93,8 +93,8 @@ class MainFragment : RouterFragment() {
         binding.hotKey.adapter = hotKeyAdapter
         hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
-        //TabBar与ViewPager
-        binding.viewpager.adapter = object : FragmentStateAdapter(this) {
+        //TabLayout与ViewPager2
+        binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount(): Int {
                 return fragments.size
             }
@@ -103,7 +103,7 @@ class MainFragment : RouterFragment() {
                 return fragments[position]
             }
         }
-        TabLayoutMediator(binding.tabBar, binding.viewpager){ tab, position ->
+        TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
             val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
             item.icon.setImageResource(tabDrawable[position])
             item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
@@ -111,7 +111,7 @@ class MainFragment : RouterFragment() {
             item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.gray_alpha))
             tab.customView = item.root
         }.attach()
-        binding.tabBar.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 setColorFilter(tab.customView, R.color.text_fff)
             }
@@ -136,6 +136,14 @@ class MainFragment : RouterFragment() {
                 else -> activity.showTips(result.errorMsg)
             }
         }
+        viewModel.projectListResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> {
+                    WanHelper.setProjectTree(result.data)
+                }
+                else -> activity.showTips(result.errorMsg)
+            }
+        }
         return viewModel
     }
 
@@ -143,8 +151,14 @@ class MainFragment : RouterFragment() {
         if (viewModel.hotKeyResult.value == null) {
             viewModel.getHotKey()
         }
+        if (viewModel.projectListResult.value == null) {
+            viewModel.getProjectTree()
+        }
     }
 
+    /**
+     * 跳转搜索界面
+     */
     private fun search() {
         val position = bannerHelper.findItemPosition()
         val title = hotKeyAdapter.getItem(position).name

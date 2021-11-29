@@ -20,13 +20,23 @@ class SystemViewModel : BaseViewModel() {
         getSystemList(cid, getNextPage())
     }
 
+    /**
+     * 获取知识体系下的文章
+     * 	cid 分类id
+     * 	page 0开始
+     */
     private fun getSystemList(cid: String, page: Int) {
+        //通过viewModelScope创建一个协程
         viewModelScope.launch {
+            //构建请求体，传入请求参数
             val request = HttpRequest("article/list/{page}/json")
-            request.putQuery("cid", cid)
-            request.putPath("page", page.toString())
+                .putPath("page", page.toString())
+                .putQuery("cid", cid)
+            //以get方式发起网络请求
             val response = get<ArticleListBean>(request) { progress(it) }
+            //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+            //通过LiveData通知界面更新
             systemArticleResult.postValue(response)
         }
     }

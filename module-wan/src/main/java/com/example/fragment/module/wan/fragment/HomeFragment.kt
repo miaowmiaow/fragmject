@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.OnLoadMoreListener
@@ -24,7 +24,7 @@ class HomeFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel: HomeViewModel by activityViewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
@@ -51,7 +51,6 @@ class HomeFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getBanner()
                 viewModel.getArticle()
             }
         })
@@ -70,13 +69,26 @@ class HomeFragment : RouterFragment() {
                 else -> activity.showTips(result.errorMsg)
             }
         }
-        viewModel.articleListResult.observe(viewLifecycleOwner) { result ->
-            if (viewModel.isHomePage()) {
-                articleAdapter.setNewData(result)
-            } else {
-                articleAdapter.addData(result)
+        viewModel.articleTopResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> result.data?.onEach { it.top = true }?.let { articleAdapter.addData(0, it) }
+                else -> activity.showTips(result.errorMsg)
             }
+        }
+        viewModel.articleListResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> result.data?.datas?.let {
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(it)
+                    } else {
+                        articleAdapter.addData(it)
+                    }
+                }
+                else -> activity.showTips(result.errorMsg)
+            }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
@@ -84,7 +96,6 @@ class HomeFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.articleListResult.value == null) {
-            viewModel.getBanner()
             viewModel.getArticle()
         }
     }

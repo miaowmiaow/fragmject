@@ -3,20 +3,18 @@ package com.example.fragment.library.base.activity
 import android.view.View
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.example.fragment.library.base.dialog.ProgressDialog
 import com.example.fragment.library.base.utils.StatusBarUtils
-import com.example.fragment.library.base.view.ProgressView
 import com.example.fragment.library.base.view.TipsView
 
 abstract class BaseActivity : AppCompatActivity() {
 
     private lateinit var tipsView: TipsView
-    private lateinit var progressView: ProgressView
+    private var progressDialog: ProgressDialog? = null
 
     override fun setContentView(view: View) {
         //添加顶部提示view
         tipsView = TipsView(view.context)
-        //添加进度条view
-        progressView = ProgressView(view.context)
         val layout = RelativeLayout(view.context)
         layout.addView(view)
         layout.addView(
@@ -26,16 +24,6 @@ abstract class BaseActivity : AppCompatActivity() {
                 RelativeLayout.LayoutParams.WRAP_CONTENT
             ).also { layoutParams ->
                 layoutParams.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
-            }
-        )
-        layout.addView(
-            progressView,
-            RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-            ).also { layoutParams ->
-                layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE)
-                layoutParams.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE)
             }
         )
         super.setContentView(layout)
@@ -60,11 +48,14 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun showProgress() {
-        progressView.show()
+        progressDialog ?: ProgressDialog.newInstance().also { dialog ->
+            progressDialog = dialog
+        }
+        progressDialog?.show(supportFragmentManager)
     }
 
     fun dismissProgress() {
-        progressView.dismiss()
+        progressDialog?.dismiss()
     }
 
 }

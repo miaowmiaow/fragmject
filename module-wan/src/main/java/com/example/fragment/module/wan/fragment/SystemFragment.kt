@@ -93,6 +93,7 @@ class SystemFragment : RouterFragment() {
     private fun updateView(treeBean: TreeBean) {
         binding.title.text = treeBean.name
         treeBean.children?.let { data ->
+            //TabLayout与ViewPager2
             binding.viewpager.adapter = object : FragmentStateAdapter(this) {
                 override fun getItemCount(): Int {
                     return data.size

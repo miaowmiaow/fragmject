@@ -59,19 +59,19 @@ class MyCollectFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> {
-                    result.data?.datas?.let { data ->
-                        data.forEach { it.collect = true }
-                        if (viewModel.isHomePage()) {
-                            articleAdapter.setNewData(data)
-                        } else {
-                            articleAdapter.addData(data)
-                        }
+                "0" -> result.data?.datas?.let { data ->
+                    data.forEach { it.collect = true }
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(data)
+                    } else {
+                        articleAdapter.addData(data)
                     }
                 }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel

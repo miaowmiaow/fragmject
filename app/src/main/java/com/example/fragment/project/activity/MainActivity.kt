@@ -84,9 +84,11 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
+        //获取本地用户信息
         WanHelper.getUser {
             userId = it.id
         }
+        //根据本地配置设置显示模式
         WanHelper.getUIMode {
             if (it != AppCompatDelegate.getDefaultNightMode()) {
                 when (it) {
@@ -96,6 +98,7 @@ class MainActivity : RouterActivity() {
                 }
             }
         }
+        //监听用户状态
         SharedFlowBus.onSticky(UserBean::class.java).observe(this) { userBean ->
             userId = userBean.id
         }
@@ -103,6 +106,7 @@ class MainActivity : RouterActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        //关闭Database
         WanHelper.close()
     }
 

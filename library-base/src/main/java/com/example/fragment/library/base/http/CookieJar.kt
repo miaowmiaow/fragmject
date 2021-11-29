@@ -10,7 +10,7 @@ class CookieJar : CookieJar {
     //Http发送请求前回调，Request中设置Cookie
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
         val cookieList: MutableList<Cookie> = ArrayList()
-        CookieManager.getInstance().getCookie(url.toString())?.let { cookiesStr ->
+        CookieManager.getInstance().getCookie(url.host)?.let { cookiesStr ->
             if (cookiesStr.isNotEmpty()) {
                 val cookies = cookiesStr.split(";".toRegex())
                 for (cookie in cookies) {
@@ -28,7 +28,7 @@ class CookieJar : CookieJar {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         for (cookie in cookies) {
-            cookieManager.setCookie(url.toString(), cookie.toString())
+            cookieManager.setCookie(url.host, cookie.toString())
         }
         cookieManager.flush()
     }

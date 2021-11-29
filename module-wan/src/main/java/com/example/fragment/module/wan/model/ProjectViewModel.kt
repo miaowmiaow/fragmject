@@ -6,37 +6,62 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.module.wan.bean.ProjectTreeBean
+import com.example.fragment.library.common.bean.ProjectTreeBean
+import com.example.fragment.library.common.bean.ProjectTreeListBean
+import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
-    val projectTreeResult = MutableLiveData<ProjectTreeBean>()
+    val projectTreeResult = MutableLiveData<List<ProjectTreeBean>>()
     val projectListResult = MutableLiveData<ArticleListBean>()
 
+    /**
+     * 获取项目分类
+     */
     fun getProjectTree() {
-        viewModelScope.launch {
-            val request = HttpRequest("project/tree/json")
-            val response = get<ProjectTreeBean>(request)
-            projectTreeResult.postValue(response)
+        WanHelper.getProjectTree { projectTree ->
+            //没有本地数据则从网络获取
+            if (projectTree.isNotEmpty()) {
+                projectTreeResult.postValue(projectTree)
+            } else {
+                viewModelScope.launch {
+                    val request = HttpRequest("project/tree/json")
+                    val response = get<ProjectTreeListBean>(request) { progress(it) }
+                    response.data?.let { data ->
+                        projectTreeResult.postValue(data)
+                        WanHelper.setProjectTree(data)
+                    }
+                }
+            }
         }
     }
 
-    fun getProject(cid: String){
+    fun getProject(cid: String) {
         getProjectList(cid, getHomePage())
     }
 
-    fun getProjectNext(cid: String){
+    fun getProjectNext(cid: String) {
         getProjectList(cid, getNextPage())
     }
 
+    /**
+     * 获取项目列表
+     * cid 分类id
+     * page 0开始
+     */
     private fun getProjectList(cid: String, page: Int) {
+        //通过viewModelScope创建一个协程
         viewModelScope.launch {
+            //构建请求体，传入请求参数
             val request = HttpRequest("project/list/{page}/json")
-            request.putQuery("cid", cid)
-            request.putPath("page", page.toString())
+                .putPath("page", page.toString())
+                .putQuery("cid", cid)
+            //以get方式发起网络请求
             val response = get<ArticleListBean>(request) { progress(it) }
-            response.data?.pageCount?.let {updatePageCont(it.toInt())}
+            //根据接口返回更新总页码
+            response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+            //通过LiveData通知界面更新
             projectListResult.postValue(response)
         }
     }

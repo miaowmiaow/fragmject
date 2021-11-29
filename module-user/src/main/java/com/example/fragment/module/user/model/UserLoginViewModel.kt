@@ -15,11 +15,15 @@ class UserLoginViewModel : BaseViewModel() {
     val registerResult = MutableLiveData<RegisterBean>()
 
     fun login(username: String, password: String) {
+        //通过viewModelScope创建一个协程
         viewModelScope.launch {
+            //构建请求体，传入请求参数
             val request = HttpRequest("user/login")
                 .putParam("username", username)
                 .putParam("password", password)
+            //以post方式发起网络请求
             val response = post<LoginBean>(request) { progress(it) }
+            //通过LiveData通知界面更新
             loginResult.postValue(response)
         }
     }

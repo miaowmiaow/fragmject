@@ -15,11 +15,15 @@ class ShareArticleModel : BaseViewModel() {
     val shareArticleResult = MutableLiveData<HttpResponse>()
 
     fun getShareArticle(title: String, link: String) {
+        //通过viewModelScope创建一个协程
         viewModelScope.launch(Dispatchers.Main) {
+            //构建请求体，传入请求参数
             val request = HttpRequest("lg/user_article/add/json")
                 .putParam("title", title)
                 .putParam("link", link)
+            //以get方式发起网络请求
             val response = post<RegisterBean>(request) { progress(it) }
+            //通过LiveData通知界面更新
             shareArticleResult.postValue(response)
         }
     }

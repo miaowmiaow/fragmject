@@ -1,12 +1,12 @@
-package com.example.fragment.module.wan.bean
+package com.example.fragment.library.common.bean
 
 import com.example.fragment.library.base.http.HttpResponse
 
-data class ProjectTreeBean(
-    val data: List<ProjectTreeDataBean>? = null,
+data class ProjectTreeListBean(
+    val data: List<ProjectTreeBean>? = null,
 ) : HttpResponse()
 
-data class ProjectTreeDataBean(
+data class ProjectTreeBean(
     val courseId: String = "",
     val id: String = "",
     val name: String = "",

@@ -65,6 +65,7 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     override fun initView() {
+        //导航列表
         binding.menu.layoutManager = LinearLayoutManager(binding.menu.context)
         binding.menu.adapter = linkMenuAdapter
         linkMenuAdapter.setOnItemSelectedListener(linkMenuSelectedListener)
@@ -73,21 +74,17 @@ class NavigationLinkFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.navigationResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> {
-                    result.data?.let { data ->
-                        if (data.isNotEmpty()) {
-                            var selectItem = 0
-                            data.forEachIndexed { index, bean ->
-                                if(bean.isSelected){
-                                    selectItem = index
-                                }
-                            }
-                            data[selectItem].isSelected = true
-                            linkMenuAdapter.setNewData(data)
-                            linkMenuAdapter.selectItem(selectItem)
-                            fillFlexboxLayout(data[selectItem].articles)
+                "0" -> result.data?.let { data ->
+                    var selectItem = 0
+                    data.forEachIndexed { index, bean ->
+                        if (bean.isSelected) {
+                            selectItem = index
                         }
                     }
+                    data[selectItem].isSelected = true
+                    linkMenuAdapter.setNewData(data)
+                    linkMenuAdapter.selectItem(selectItem)
+                    fillFlexboxLayout(data[selectItem].articles)
                 }
                 else -> activity.showTips(result.errorMsg)
             }

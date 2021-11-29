@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -12,15 +13,8 @@ open class PictureBaseDialog : DialogFragment() {
 
     lateinit var manager: FragmentManager
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(STYLE_NO_FRAME, 0)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         dialog?.window?.apply {
-            setDimAmount(0.5F)
             attributes.gravity = Gravity.BOTTOM
             decorView.setPadding(0, 0, 0, 0)
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -29,6 +23,7 @@ open class PictureBaseDialog : DialogFragment() {
                 WindowManager.LayoutParams.MATCH_PARENT
             )
         }
+        super.onViewCreated(view, savedInstanceState)
     }
 
     override fun dismiss() {

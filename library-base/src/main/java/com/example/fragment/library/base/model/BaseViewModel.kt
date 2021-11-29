@@ -14,25 +14,41 @@ abstract class BaseViewModel : ViewModel() {
     private var curPage = 0
     private var pageCont = 1
 
+    /**
+     * 获取首页
+     * 默认从0开始
+     */
     fun getHomePage(homePage: Int = 0): Int {
         this.homePage = homePage
         this.curPage = homePage
         return homePage
     }
 
+    /**
+     * 获取下页
+     */
     fun getNextPage(): Int {
         this.curPage = curPage + 1
         return curPage
     }
 
+    /**
+     * 更新总页码
+     */
     fun updatePageCont(pageCont: Int = 1) {
         this.pageCont = pageCont
     }
 
+    /**
+     * 是否首页
+     */
     fun isHomePage(): Boolean {
         return homePage == curPage
     }
 
+    /**
+     * 还有下页
+     */
     fun hasNextPage(): Boolean {
         return curPage < pageCont
     }
@@ -52,7 +68,7 @@ abstract class BaseViewModel : ViewModel() {
 
     fun progress(num: Double) {
         viewModelScope.launch {
-            if(homePage == curPage){
+            if (homePage == curPage) {
                 progress.postValue(num)
             }
         }

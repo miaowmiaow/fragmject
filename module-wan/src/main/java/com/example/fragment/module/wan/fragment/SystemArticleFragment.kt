@@ -68,16 +68,16 @@ class SystemArticleFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.systemArticleResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> {
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(result.data?.datas)
-                    } else {
-                        articleAdapter.addData(result.data?.datas)
-                    }
+                "0" -> if (viewModel.isHomePage()) {
+                    articleAdapter.setNewData(result.data?.datas)
+                } else {
+                    articleAdapter.addData(result.data?.datas)
                 }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel

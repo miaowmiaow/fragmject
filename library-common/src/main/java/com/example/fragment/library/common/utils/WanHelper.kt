@@ -3,6 +3,7 @@ package com.example.fragment.library.common.utils
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.db.KVDatabase
 import com.example.fragment.library.common.bean.HotKeyBean
+import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.bean.UserBean
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -17,6 +18,7 @@ object WanHelper {
     private const val USER = "user"
     private const val AVATAR = "avatar"
     private const val HOT_KEY = "hot_key"
+    private const val PROJECT_TREES = "project_trees"
     private const val HISTORY_SEARCH = "history_search"
 
     /**
@@ -56,6 +58,9 @@ object WanHelper {
         }
     }
 
+    /**
+     * 设置用户信息
+     */
     fun setUser(userBean: UserBean? = null) {
         if (userBean != null) {
             KVDatabase.set(USER, userBean.toJson())
@@ -63,6 +68,9 @@ object WanHelper {
         }
     }
 
+    /**
+     * 获取用户信息
+     */
     fun getUser(result: (UserBean) -> Unit) {
         KVDatabase.get(USER) {
             result.invoke(
@@ -76,22 +84,34 @@ object WanHelper {
         }
     }
 
+    /**
+     * 设置头像
+     */
     fun setAvatar(path: String) {
         KVDatabase.set(AVATAR, path)
     }
 
+    /**
+     * 获取头像
+     */
     fun getAvatar(result: (String) -> Unit) {
         KVDatabase.get(AVATAR) {
             result.invoke(it)
         }
     }
 
+    /**
+     * 设置热词
+     */
     fun setHotKey(hotKeys: List<HotKeyBean>? = null) {
         if (hotKeys != null) {
             KVDatabase.set(HOT_KEY, Gson().toJson(hotKeys))
         }
     }
 
+    /**
+     * 获取热词
+     */
     fun getHotKey(result: (List<HotKeyBean>) -> Unit) {
         KVDatabase.get(HOT_KEY) {
             result.invoke(
@@ -105,11 +125,42 @@ object WanHelper {
         }
     }
 
-    fun setHistorySearch(list: List<String>) {
+    /**
+     * 设置项目分类
+     */
+    fun setProjectTree(projectTrees: List<ProjectTreeBean>? = null) {
+        if (projectTrees != null) {
+            KVDatabase.set(PROJECT_TREES, Gson().toJson(projectTrees))
+        }
+    }
+
+    /**
+     * 获取项目分类
+     */
+    fun getProjectTree(result: (List<ProjectTreeBean>) -> Unit) {
+        KVDatabase.get(PROJECT_TREES) {
+            result.invoke(
+                try {
+                    Gson().fromJson(it, object : TypeToken<List<ProjectTreeBean>>() {}.type)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    ArrayList()
+                }
+            )
+        }
+    }
+
+    /**
+     * 设置搜索历史
+     */
+    fun setSearchHistory(list: List<String>) {
         KVDatabase.set(HISTORY_SEARCH, Gson().toJson(list))
     }
 
-    fun getHistorySearch(result: (List<String>) -> Unit) {
+    /**
+     * 获取搜索历史
+     */
+    fun getSearchHistory(result: (List<String>) -> Unit) {
         KVDatabase.get(HISTORY_SEARCH) {
             result.invoke(
                 try {
@@ -122,6 +173,9 @@ object WanHelper {
         }
     }
 
+    /**
+     * 关闭数据库
+     */
     fun close() {
         KVDatabase.closeDatabase()
     }

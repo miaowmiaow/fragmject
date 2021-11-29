@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.bean.ProjectTreeDataBean
 import com.example.fragment.module.wan.databinding.FragmentProjectBinding
 import com.example.fragment.module.wan.model.ProjectViewModel
 import com.google.android.material.tabs.TabLayoutMediator
@@ -47,9 +47,9 @@ class ProjectFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.projectTreeResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> updateView(result.data)
-                else -> activity.showTips(result.errorMsg)
+            when (result.isNotEmpty()) {
+                true -> updateView(result)
+                else -> activity.showTips("获取项目分类错误")
             }
         }
         return viewModel
@@ -61,11 +61,9 @@ class ProjectFragment : RouterFragment() {
         }
     }
 
-    private fun updateView(data: List<ProjectTreeDataBean>? = null) {
-        if (data.isNullOrEmpty()) {
-            return
-        }
-        binding.viewpager.adapter = object : FragmentStateAdapter(this) {
+    private fun updateView(data: List<ProjectTreeBean>) {
+        //TabLayout与ViewPager2
+        binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount(): Int {
                 return data.size
             }
@@ -77,7 +75,7 @@ class ProjectFragment : RouterFragment() {
                 return fragment
             }
         }
-        TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+        TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
             tab.text = data[position].name
         }.attach()
     }

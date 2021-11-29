@@ -20,12 +20,20 @@ class CoinRankViewModel : BaseViewModel() {
         getCoinRank(getNextPage())
     }
 
+    /**
+     * 获取积分排行榜
+     * page 1开始
+     */
     private fun getCoinRank(page: Int) {
+        //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            val request = HttpRequest("coin/rank/{page}/json")
-            request.putPath("page", page.toString())
+            //构建请求体，传入请求参数
+            val request = HttpRequest("coin/rank/{page}/json").putPath("page", page.toString())
+            //以get方式发起网络请求
             val response = get<CoinRankBean>(request) { progress(it) }
+            //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+            //通过LiveData通知界面更新
             coinRankResult.postValue(response)
         }
     }

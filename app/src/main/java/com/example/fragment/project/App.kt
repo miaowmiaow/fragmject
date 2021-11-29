@@ -17,8 +17,10 @@ class App : Application() {
         SimpleHttp.setBaseUrl("https://www.wanandroid.com/")
     }
 
+    /**
+     * 初始化x5内核
+     */
     private fun initQbSdk() {
-        //x5内核初始化接口
         QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
             override fun onViewInitFinished(arg0: Boolean) {
             }

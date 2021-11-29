@@ -1,20 +1,26 @@
 ## 前言
-学习```Kotlin```有一段时间了，想写一个项目总结收获，就有了这个可能是东半球最简洁的玩安卓客户端，在此感谢[玩Android](https://www.wanandroid.com/) 的开放API。
+刚开始学习```Kotlin```其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解看完又好像还是不会做项目，开源的项目内容太多用来上手实在不合适。
+不用多么的炫酷吊炸天，只要够简单，够全面，够详细就好，于是就有了这个入门级的项目。
+在此感谢[玩Android](https://www.wanandroid.com/) 提供的[开放API](https://wanandroid.com/blog/show/2)。
 ## 简介
-适合初学者入门的项目，通过对Kotlin的系统运用，实现的一个功能完备符合主流市场标准App。  
+适合初学者入门的项目，通过对Kotlin的系统运用，实现的一个功能完备符合主流市场标准App。 
+它够简单，够全面，够详细，能让你快速上手的kotlin项目。
 虽然本项目的定位是入门级，但是该有的知识点却一点不少，对理解其他项目设计思想和封装技巧也很有帮助。  
 学习本项目你将有如下收获： 
-- Kotlin实战（函数进阶，泛型，反射，协程...） 
-- MVVM开发架构（ViewBinding，ViewModel，LiveData，RoomDatabase...）
-- 单Activity多Fragment项目设计
+- Kotlin（函数进阶，泛型，反射，协程...） 
+- Jetpack 全家桶
+- MVVM开发架构（ViewModel，LiveData...）
+- 单Activity多Fragment（Navigation）
 - 暗夜模式
 - 屏幕录制
 - 图片编辑
 - 字节码插桩
 ## 截图展示
-| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155342.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155363.png) | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155408.png) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155418.png) | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155439.png) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/Screenshot_1621155387.png) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-100723.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-100805.png) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-101002.png) | ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-29-171800.png) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
 ## 项目目录结构
 ```
 ├── app                                  app
@@ -188,8 +194,9 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 ## 图片编辑器
 - [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 ### 截图展示
-| ![14.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![15.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) | ![16.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141339.gif) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
 ### 接入
 第 1 步:在工程的`build.gradle`中添加：
 ```

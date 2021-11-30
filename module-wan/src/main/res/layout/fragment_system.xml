@@ -38,7 +38,7 @@
     </RelativeLayout>
 
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_bar"
+        android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_below="@id/title_bar"
@@ -54,10 +54,10 @@
     <com.example.fragment.library.base.view.NestedScrollableHost
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tab_bar">
+        android:layout_below="@id/tab_layout">
 
         <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewpager"
+            android:id="@+id/viewpager2"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </com.example.fragment.library.base.view.NestedScrollableHost>

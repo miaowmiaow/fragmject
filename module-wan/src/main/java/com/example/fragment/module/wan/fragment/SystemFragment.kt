@@ -94,7 +94,7 @@ class SystemFragment : RouterFragment() {
         binding.title.text = treeBean.name
         treeBean.children?.let { data ->
             //TabLayout与ViewPager2
-            binding.viewpager.adapter = object : FragmentStateAdapter(this) {
+            binding.viewpager2.adapter = object : FragmentStateAdapter(requireActivity()) {
                 override fun getItemCount(): Int {
                     return data.size
                 }
@@ -106,12 +106,12 @@ class SystemFragment : RouterFragment() {
                     return fragment
                 }
             }
-            TabLayoutMediator(binding.tabBar, binding.viewpager) { tab, position ->
+            TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
                 tab.text = data[position].name
             }.attach()
-            var selectPosition = binding.tabBar.selectedTabPosition
+            var selectPosition = binding.tabLayout.selectedTabPosition
             if (selectPosition == 0) selectPosition = treeBean.childrenSelectPosition
-            binding.viewpager.setCurrentItem(selectPosition, false)
+            binding.viewpager2.setCurrentItem(selectPosition, false)
         }
     }
 

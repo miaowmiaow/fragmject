@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.bean.BannerListBean
 import com.example.fragment.library.common.bean.TopArticleBean
@@ -15,8 +16,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel : BaseViewModel() {
 
     val bannerResult = MutableLiveData<BannerListBean>()
-    val articleTopResult = MutableLiveData<TopArticleBean>()
-    val articleListResult = MutableLiveData<ArticleListBean>()
+    val articleListResult = MutableLiveData<List<ArticleBean>>()
 
     fun getArticle() {
         //通过viewModelScope创建一个协程
@@ -28,9 +28,11 @@ class HomeViewModel : BaseViewModel() {
             val articleTop = async { getArticleTop() }
             val articleList = async { getArticleList(getHomePage()) }
             //通过LiveData通知界面更新
+            val articleData = ArrayList<ArticleBean>()
+            articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
+            articleList.await().data?.datas?.let { articleData.addAll(it) }
+            articleListResult.postValue(articleData)
             bannerResult.postValue(banner.await())
-            articleTopResult.postValue(articleTop.await())
-            articleListResult.postValue(articleList.await())
             //设置请求进度，1.0请求结束
             progress(1.0)
         }
@@ -38,7 +40,7 @@ class HomeViewModel : BaseViewModel() {
 
     fun getArticleNext() {
         viewModelScope.launch {
-            articleListResult.postValue(getArticleList(getNextPage()))
+            getArticleList(getNextPage()).data?.datas?.let { articleListResult.postValue(it) }
         }
     }
 

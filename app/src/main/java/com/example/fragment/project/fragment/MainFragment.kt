@@ -94,7 +94,7 @@ class MainFragment : RouterFragment() {
         hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         //TabLayout与ViewPager2
-        binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
+        binding.viewpager2.adapter = object : FragmentStateAdapter(requireActivity()) {
             override fun getItemCount(): Int {
                 return fragments.size
             }

@@ -69,22 +69,11 @@ class HomeFragment : RouterFragment() {
                 else -> activity.showTips(result.errorMsg)
             }
         }
-        viewModel.articleTopResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> result.data?.onEach { it.top = true }?.let { articleAdapter.addData(0, it) }
-                else -> activity.showTips(result.errorMsg)
-            }
-        }
         viewModel.articleListResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> result.data?.datas?.let {
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(it)
-                    } else {
-                        articleAdapter.addData(it)
-                    }
-                }
-                else -> activity.showTips(result.errorMsg)
+            if (viewModel.isHomePage()) {
+                articleAdapter.setNewData(result)
+            } else {
+                articleAdapter.addData(result)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

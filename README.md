@@ -16,11 +16,9 @@
 - 图片编辑
 - 字节码插桩
 ## 截图展示
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-100723.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-100805.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![3.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-101002.png) | ![4.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-29-171800.png) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
 ## 项目目录结构
 ```
 ├── app                                  app
@@ -95,7 +93,7 @@ Kotlin 是一种富有表现力且简洁的编程语言，不仅可以减少常�
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 ## Navigation
-Navigation 组件旨在用于具有一个主 Activity 和多个 Fragment 目的地的应用。
+Navigation 是 Android Jetpack 组件之一，主要是用于 Fragment 路由导航的框架，通过 Navigation 我们可以设计出单 Activity 应用架构。
 - [轻松使用Navigation](https://developer.android.google.cn/guide/navigation?hl=zh_cn)
 ## LiveData
 LiveData 是一种可观察的数据存储器类，它具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。
@@ -194,7 +192,6 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 ## 图片编辑器
 - [巨丝滑 —— 自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 ### 截图展示
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![5.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929142301.gif) | ![6.gif](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/VID_20210929141429.gif) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 ### 接入

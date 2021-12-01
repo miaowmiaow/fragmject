@@ -1,19 +1,15 @@
 ## 前言
-刚开始学习```Kotlin```其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解看完好像还是不会做项目，开源的项目内容太多用来上手实在不合适。
-想要一个项目，它不用多么的炫酷吊炸天，只要代码够简单，知识够详细，内容够全面，于是就有了这个入门级的项目。
+刚开始学习`Kotlin`其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解看完好像还是不会做项目，开源的项目内容太多用来上手实在不合适。   
+多希望有一个项目，它不用多么的炫酷吊炸天，只要代码够简单，内容够全面，知识够详细，于是便有了这个入门级的项目。
 在此感谢[玩Android](https://www.wanandroid.com/) 提供的[开放API](https://wanandroid.com/blog/show/2)。
 ## 简介
-适合初学者入门的项目，通过对Kotlin的系统运用，实现的一个功能完备符合主流市场标准App。 
-它够简单，够全面，够详细，能让你快速上手的kotlin项目。
-虽然本项目的定位是入门级，但是该有的知识点却一点不少，对理解其他项目设计思想和封装技巧也很有帮助。  
+真正的入门级的项目，通过对`Kotlin`和`Jetpack`全家桶的系统运用，实现的一个功能完备符合主流市场标准App。 
+一个代码够简单，内容够全面，知识够详细，能让你快速上手的项目，对理解其他项目设计思想和封装技巧也很有帮助。  
 学习本项目你将有如下收获： 
 - Kotlin（函数进阶，泛型，反射，协程...） 
-- MVVM开发架构（ViewModel，LiveData...）
-- 单Activity多Fragment（Navigation）
-- 暗夜模式
-- 屏幕录制
-- 图片编辑
-- 字节码插桩
+- MVVM（ViewModel，LiveData...）
+- 单Activity应用架构（Navigation）
+- 屏幕录制、图片编辑、字节码插桩...
 ## 截图展示
 | ![1.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-100723.png) | ![2.jpg](https://gitee.com/zhao.git/PictureWarehouse/raw/master/FragmentProject/device-2021-11-25-100805.png) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -88,30 +84,42 @@
 └── settings.gradle                      项目依赖配置
 ```
 ## Kotlin
-Kotlin 是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
-- [学习Kotlin编程语言1](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
-- [学习Kotlin编程语言2](https://play.kotlinlang.org/byExample/overview)
-- [开发中常见的Kotlin模式](https://developer.android.google.cn/kotlin/common-patterns?hl=zh_cn)
-- [将Kotlin添加到现有应用](https://developer.android.google.cn/kotlin/add-kotlin?hl=zh_cn)
+`Kotlin`是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
+- [学习Kotlin编程语言](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
+- [Kotlin代码示例](https://play.kotlinlang.org/byExample/overview)
 ## ViewBinding
-通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
+通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用`findViewById`相比，视图绑定具有
+**Null安全**、
+**类型安全**
+等很显著的优点。
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 ## LiveData
-LiveData 是一种可观察的数据存储器类，它具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。
-LiveData 的优势：不会发生内存泄漏，不会因 Activity 停止而导致崩溃，不再需要手动处理生命周期，数据始终保持最新状态，适当的配置更改，共享资源。
+`LiveData`是一种可观察的数据存储器类，它具有生命周期感知能力，这种感知能力可确保`LiveData`仅更新处于活跃生命周期状态的应用组件观察者。并且它具有
+**确保界面符合数据状态**、
+**不会发生内存泄漏**、
+**不会因Activity停止而导致崩溃**、
+**不再需要手动处理生命周期**、
+**数据始终保持最新状态**、
+**适当的配置更改**、
+**共享资源**
+等优势。
 - [轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 ## ViewModel
-ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的数据。ViewModel 类让数据可在发生屏幕旋转等配置更改后继续留存。
+`ViewModel`类旨在以注重生命周期的方式存储和管理界面相关的数据。`ViewModel`类让数据可在发生屏幕旋转等配置更改后继续留存。
 - [轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
 ## 协程
-协程是一种并发设计模式，您可以使用它来简化异步执行的代码。
-协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
+协程是一种并发设计模式，您可以在 Android 平台上使用它来简化异步执行的代码。它包括
+**轻量**、
+**内存泄漏更少**、
+**内置取消支持**、
+**Jetpack集成**
+等特点。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 ## Navigation
-Navigation 是 Android Jetpack 组件之一，主要是用于 Fragment 路由导航的框架，通过 Navigation 我们可以设计出单 Activity 应用架构。
+`Navigation`是 Android Jetpack 组件之一，主要是用于`Fragment`路由导航的框架，通过`Navigation`我们可以设计出单`Activity`应用架构。
 - [一文看懂Navigation](https://juejin.cn/post/7036296113573347364)
 ## 基于RoomDatabase封装的KVDatabase
-通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
+通过键值对的方式来存储数据，不用再去关心`RoomDatabase`的复杂操作。
 ### 快速使用
 ```
 1、存储数据

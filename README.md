@@ -1,6 +1,6 @@
 ## 前言
-刚开始学习```Kotlin```其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解看完又好像还是不会做项目，开源的项目内容太多用来上手实在不合适。
-不用多么的炫酷吊炸天，只要够简单，够全面，够详细就好，于是就有了这个入门级的项目。
+刚开始学习```Kotlin```其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解看完好像还是不会做项目，开源的项目内容太多用来上手实在不合适。
+想要一个项目，它不用多么的炫酷吊炸天，只要代码够简单，知识够详细，内容够全面，于是就有了这个入门级的项目。
 在此感谢[玩Android](https://www.wanandroid.com/) 提供的[开放API](https://wanandroid.com/blog/show/2)。
 ## 简介
 适合初学者入门的项目，通过对Kotlin的系统运用，实现的一个功能完备符合主流市场标准App。 
@@ -8,7 +8,6 @@
 虽然本项目的定位是入门级，但是该有的知识点却一点不少，对理解其他项目设计思想和封装技巧也很有帮助。  
 学习本项目你将有如下收获： 
 - Kotlin（函数进阶，泛型，反射，协程...） 
-- Jetpack 全家桶
 - MVVM开发架构（ViewModel，LiveData...）
 - 单Activity多Fragment（Navigation）
 - 暗夜模式
@@ -25,13 +24,18 @@
 |   └── src 
 |       └── main 
 |       |   └── java                     源码目录
-|       |       ├── activity             Activity目录
-|       |       |   └── MainActivity     项目唯一Activity
-|       |       ├── adapter              Adapter目录
-|       |       ├── fragment             Fragment目录
-|       |       ├── model                ViewModel目录
-|       |       └── App                  Application
-|       | 
+|       |   |   ├── activity             Activity目录
+|       |   |   |   └── MainActivity     项目唯一Activity
+|       |   |   ├── adapter              Adapter目录
+|       |   |   ├── fragment             Fragment目录
+|       |   |   ├── model                ViewModel目录
+|       |   |   └── App                  Application
+|       |   |
+|       |   └── res                      资源目录
+|       |   |   └── navigation           导航图目录
+|       |   |
+|       |   └── AndroidManifest.xml      配置文件
+|       |
 |       └── build.gradle                 模块构建配置
 |       └── channel                      渠道配置文件
 |       └── dictionary                   自定义混淆字典
@@ -92,9 +96,6 @@ Kotlin 是一种富有表现力且简洁的编程语言，不仅可以减少常�
 ## ViewBinding
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 findViewById 相比，视图绑定具有 Null 安全，类型安全等很显著的优点。
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
-## Navigation
-Navigation 是 Android Jetpack 组件之一，主要是用于 Fragment 路由导航的框架，通过 Navigation 我们可以设计出单 Activity 应用架构。
-- [轻松使用Navigation](https://developer.android.google.cn/guide/navigation?hl=zh_cn)
 ## LiveData
 LiveData 是一种可观察的数据存储器类，它具有生命周期感知能力，意指它遵循其他应用组件（如 Activity、Fragment 或 Service）的生命周期。
 LiveData 的优势：不会发生内存泄漏，不会因 Activity 停止而导致崩溃，不再需要手动处理生命周期，数据始终保持最新状态，适当的配置更改，共享资源。
@@ -106,59 +107,12 @@ ViewModel 类旨在以注重生命周期的方式存储和管理界面相关的�
 协程是一种并发设计模式，您可以使用它来简化异步执行的代码。
 协程的特点包括：轻量，内存泄漏更少，内置取消支持，Jetpack 集成。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
-## Fragment + LiveData + ViewModel + 协程
-实战讲解，以项目中 MainFragment 为例：
-```
-class MainViewModel :  ViewModel() {
-    
-    val hotKeyResult = MutableLiveData<HotKeyListBean>()
-
-    // 获取热词接口
-    fun getHotKey() {
-
-        // 通过viewModelScope创建一个协程
-        viewModelScope.launch {
-
-            // 构建请求体，传入请求参数
-            val request = HttpRequest("hotkey/json")
-
-            // 以get方式发起网络请求
-            val response = get<HotKeyListBean>(request)
-
-            // 通过LiveData更新数据
-            hotKeyResult.postValue(response)
-        }
-    }
-    
-}
-```
-```
-class MainFragment : Fragment() {
-
-    // 使用 'by viewModels()' Kotlin属性委托获取 MainViewModel
-    private val viewModel: MainViewModel by viewModels()
-    private val hotKeyAdapter = HotKeyAdapter()
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // 观察 hotKeyResult 的变化来更新UI
-        viewModel.hotKeyResult.observe(viewLifecycleOwner, { result ->
-            result.data?.apply {
-                if (result.errorCode == "0") {
-                    hotKeyAdapter.setNewData(this)
-                }
-            }
-        })
-
-        // 调用获取热词接口
-        viewModel.getHotKey()
-    }
-
-}
-```
+## Navigation
+Navigation 是 Android Jetpack 组件之一，主要是用于 Fragment 路由导航的框架，通过 Navigation 我们可以设计出单 Activity 应用架构。
+- [一文看懂Navigation](https://juejin.cn/post/7036296113573347364)
 ## 基于RoomDatabase封装的KVDatabase
 通过键值对的方式来存储数据，不用再去关心RoomDatabase的复杂操作。
+### 快速使用
 ```
 1、存储数据
 KVDatabase.set(key: String, value: String)

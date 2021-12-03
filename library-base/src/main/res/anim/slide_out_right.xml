@@ -14,10 +14,12 @@
   ~ limitations under the License.
   -->
 
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="350"
+    android:fillAfter="false"
+    android:interpolator="@android:anim/decelerate_interpolator"
+    android:shareInterpolator="true">
     <translate
-        android:duration="300"
         android:fromXDelta="0%"
         android:fromYDelta="0%"
         android:toXDelta="100%"

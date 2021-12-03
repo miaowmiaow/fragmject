@@ -12,6 +12,7 @@ import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.http.*
+import java.io.File
 import java.io.InputStream
 import java.io.UnsupportedEncodingException
 import java.net.URLConnection
@@ -27,7 +28,7 @@ import javax.net.ssl.SSLContext
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     request: HttpRequest = HttpRequest(),
-    noinline progress: ((Double)->Unit)? = null
+    noinline progress: ((Double) -> Unit)? = null
 ): T {
     return SimpleHttp.instance().get(request, T::class.java, progress)
 }
@@ -39,7 +40,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
     request: HttpRequest = HttpRequest(),
-    noinline progress: ((Double)->Unit)? = null
+    noinline progress: ((Double) -> Unit)? = null
 ): T {
     return SimpleHttp.instance().post(request, T::class.java, progress)
 }
@@ -51,9 +52,22 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
     request: HttpRequest = HttpRequest(),
-    noinline progress: ((Double)->Unit)? = null
+    noinline progress: ((Double) -> Unit)? = null
 ): T {
     return SimpleHttp.instance().form(request, T::class.java, progress)
+}
+
+/**
+ * download请求
+ * @param request  http请求体
+ * @param progress 进度回调方法
+ */
+suspend inline fun CoroutineScope.download(
+    request: HttpRequest = HttpRequest(),
+    filePathName: String,
+    noinline progress: ((Double) -> Unit)? = null
+): HttpResponse {
+    return SimpleHttp.instance().download(request, filePathName, progress)
 }
 
 /**
@@ -148,7 +162,7 @@ class SimpleHttp private constructor() {
     suspend fun <T : HttpResponse> get(
         request: HttpRequest = HttpRequest(),
         type: Class<T>,
-        progress: ((Double)->Unit)? = null
+        progress: ((Double) -> Unit)? = null
     ): T {
         return withContext(Dispatchers.IO) {
             try {
@@ -174,7 +188,7 @@ class SimpleHttp private constructor() {
     suspend fun <T : HttpResponse> post(
         request: HttpRequest = HttpRequest(),
         type: Class<T>,
-        progress: ((Double)->Unit)? = null
+        progress: ((Double) -> Unit)? = null
     ): T {
         return withContext(Dispatchers.IO) {
             progress?.invoke(0.0)
@@ -201,7 +215,7 @@ class SimpleHttp private constructor() {
     suspend fun <T : HttpResponse> form(
         request: HttpRequest = HttpRequest(),
         type: Class<T>,
-        progress: ((Double)->Unit)? = null
+        progress: ((Double) -> Unit)? = null
     ): T {
         val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         request.getParam().forEach { map ->
@@ -242,6 +256,30 @@ class SimpleHttp private constructor() {
         }
     }
 
+    suspend fun download(
+        request: HttpRequest = HttpRequest(),
+        filePathName: String,
+        progress: ((Double) -> Unit)? = null
+    ): HttpResponse {
+        return withContext(Dispatchers.IO) {
+            try {
+                progress?.invoke(0.0)
+                getService().download(request.getUrl(), request.getHeader()).use { body ->
+                    val file = File(filePathName)
+                    body.byteStream().use { inputStream ->
+                        file.writeBytes(inputStream.readBytes())
+                    }
+                }
+                HttpResponse("0", "success")
+            } catch (e: Exception) {
+                val msg = e.message.toString()
+                HttpResponse("-1", msg)
+            } finally {
+                progress?.invoke(1.0)
+            }
+        }
+    }
+
     private fun guessMimeType(path: String): MediaType {
         val fileNameMap = URLConnection.getFileNameMap()
         var contentTypeFor = "application/octet-stream"
@@ -264,6 +302,12 @@ class SimpleHttp private constructor() {
 }
 
 interface ApiService {
+
+    @GET
+    suspend fun download(
+        @Url url: String = "",
+        @HeaderMap header: Map<String, String>
+    ): ResponseBody
 
     @POST
     suspend fun form(

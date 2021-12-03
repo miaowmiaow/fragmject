@@ -52,8 +52,12 @@ class WebFragment : RouterFragment() {
                 }
             }
         binding.black.setOnClickListener {
-            onBackPressedCallback.isEnabled = false
-            activity.onBackPressed()
+            if (webHelper.webView.canGoBack()) {
+                webHelper.webView.goBack()
+            } else {
+                onBackPressedCallback.isEnabled = false
+                activity.onBackPressed()
+            }
         }
         webHelper = WebHelper.with(binding.webContainer)
         webHelper.onReceivedTitleListener = object : WebHelper.OnReceivedTitleListener {

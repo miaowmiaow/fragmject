@@ -55,10 +55,23 @@
     <!--排序系统任务权限,重新排序系统Z轴运行中的任务-->
     <uses-permission android:name="android.permission.REORDER_TASKS" />
 
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+
     <application>
         <provider
             android:name=".provider.BaseContent"
             android:authorities="${applicationId}.BaseProvider"
             android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"
+                />
+        </provider>
     </application>
 </manifest>

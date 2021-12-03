@@ -1,18 +1,27 @@
 package com.example.fragment.module.user.fragment
 
 import android.app.Activity
+import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
+import com.example.fragment.library.base.utils.SystemUtil
+import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 import com.example.fragment.library.base.view.SwitchButton
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
@@ -21,16 +30,19 @@ import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.model.SettingViewModel
+import com.tencent.smtt.sdk.QbSdk
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
+
 
 class SettingFragment : RouterFragment() {
 
     private var countDownTimer: CountDownTimer? = null
 
-    private val viewModel: UserViewModel by viewModels()
+    private val viewModel: SettingViewModel by viewModels()
     private var _binding: FragmentSettingBinding? = null
     private val binding get() = _binding!!
 
@@ -72,9 +84,11 @@ class SettingFragment : RouterFragment() {
                 WanHelper.setUIMode(
                     if (isChecked) {
                         binding.systemTheme.setChecked(false)
+                        QbSdk.forceSysWebView()
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                         2
                     } else {
+                        QbSdk.unForceSysWebView()
                         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                         1
                     }
@@ -126,21 +140,9 @@ class SettingFragment : RouterFragment() {
                 })
                 .show(childFragmentManager)
         }
+        binding.versionName.text = SystemUtil.getVersionName()
         binding.update.setOnClickListener {
-            StandardDialog.newInstance()
-                .setTitle("感谢使用")
-                .setContent("喜欢的话，请给颗♥哈")
-                .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
-                    override fun onConfirm(dialog: StandardDialog) {
-                        val args =
-                            bundleOf(Keys.URL to "https://github.com/miaowmiaow/fragmject.git")
-                        activity.navigation(Router.SETTING2WEB, args)
-                    }
-
-                    override fun onCancel(dialog: StandardDialog) {
-                    }
-                })
-                .show(childFragmentManager)
+            viewModel.update()
         }
         binding.about.setOnClickListener {
             val args = bundleOf(Keys.URL to "https://wanandroid.com")
@@ -213,6 +215,53 @@ class SettingFragment : RouterFragment() {
                 "0" -> {
                     WanHelper.setUser(UserBean())
                     activity.onBackPressed()
+                }
+                else -> activity.showTips(result.errorMsg)
+            }
+        }
+        viewModel.updateResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> {
+                    result.data?.let { data ->
+                        StandardDialog.newInstance()
+                            .setTitle("有新版本更新啦♥~")
+                            .setContent("当前版本：${SystemUtil.getVersionName()}\n最新版本：${data.versionName}")
+                            .setOnDialogClickListener(object :
+                                StandardDialog.OnDialogClickListener {
+                                override fun onConfirm(dialog: StandardDialog) {
+                                    val apkUrl = data.download_url
+                                    activity.getExternalFilesDir(null)?.absolutePath?.let {
+                                        val filePathName = it + File.separator + apkUrl.substring(
+                                            apkUrl.lastIndexOf("/") + 1
+                                        )
+                                        viewModel.downloadApk(apkUrl, filePathName)
+                                    }
+                                }
+
+                                override fun onCancel(dialog: StandardDialog) {
+                                }
+                            })
+                            .show(childFragmentManager)
+                    }
+                }
+                else -> activity.showTips(result.errorMsg)
+            }
+        }
+        viewModel.downloadApkResult.observe(viewLifecycleOwner) { result ->
+            when (result.errorCode) {
+                "0" -> {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    val uri = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        val authority = "${SystemUtil.getPackageName()}.FileProvider"
+                        FileProvider.getUriForFile(activity, authority, File(result.errorMsg))
+                    } else {
+                        Uri.parse("file://" + result.errorMsg)
+                    }
+                    val type = "application/vnd.android.package-archive"
+                    intent.setDataAndType(uri, type)
+                    activity.startActivity(intent)
                 }
                 else -> activity.showTips(result.errorMsg)
             }

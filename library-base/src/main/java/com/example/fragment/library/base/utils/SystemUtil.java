@@ -64,15 +64,15 @@ public class SystemUtil {
     /**
      * 获取应用程序版本号
      */
-    public static synchronized int getVersionCode() {
+    public static synchronized long getVersionCode() {
         return getVersionCode(BaseContent.get());
     }
 
-    public static synchronized int getVersionCode(Context context) {
+    public static synchronized long getVersionCode(Context context) {
         try {
             PackageManager manager = context.getPackageManager();
             PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-            return info.versionCode;
+            return info.getLongVersionCode();
         } catch (Exception e) {
             e.printStackTrace();
         }

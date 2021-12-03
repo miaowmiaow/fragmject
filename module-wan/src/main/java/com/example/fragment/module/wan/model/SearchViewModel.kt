@@ -51,7 +51,7 @@ class SearchViewModel : BaseViewModel() {
     /**
      * 搜索
      * k 搜索关键词
-     * page 1开始
+     * page 0开始
      */
     private fun getArticleQuery(k: String, page: Int) {
         //通过viewModelScope创建一个协程

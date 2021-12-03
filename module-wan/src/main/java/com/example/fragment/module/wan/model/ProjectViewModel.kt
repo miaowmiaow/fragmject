@@ -38,7 +38,7 @@ class ProjectViewModel : BaseViewModel() {
     }
 
     fun getProject(cid: String) {
-        getProjectList(cid, getHomePage())
+        getProjectList(cid, getHomePage(1))
     }
 
     fun getProjectNext(cid: String) {
@@ -48,7 +48,7 @@ class ProjectViewModel : BaseViewModel() {
     /**
      * 获取项目列表
      * cid 分类id
-     * page 0开始
+     * page 1开始
      */
     private fun getProjectList(cid: String, page: Int) {
         //通过viewModelScope创建一个协程

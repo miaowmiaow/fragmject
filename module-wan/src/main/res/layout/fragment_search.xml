@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:padding="15dp"
                 android:text="大家在搜"
-                android:textColor="@color/text_theme"
+                android:textColor="@color/text_333"
                 android:textSize="16sp" />
 
             <com.google.android.flexbox.FlexboxLayout
@@ -111,7 +111,7 @@
                 android:layout_height="wrap_content"
                 android:padding="15dp"
                 android:text="历史搜索"
-                android:textColor="@color/text_theme"
+                android:textColor="@color/text_333"
                 android:textSize="16sp" />
 
             <androidx.recyclerview.widget.RecyclerView

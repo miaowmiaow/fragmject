@@ -103,7 +103,8 @@ class MainFragment : RouterFragment() {
                 return fragments[position]
             }
         }
-        TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
+        binding.viewpager2.isUserInputEnabled = false
+        TabLayoutMediator(binding.tabLayout, binding.viewpager2, true, false) { tab, position ->
             val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
             item.icon.setImageResource(tabDrawable[position])
             item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))

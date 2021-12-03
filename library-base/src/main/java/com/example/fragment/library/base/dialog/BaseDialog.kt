@@ -49,7 +49,6 @@ open class BaseDialog : DialogFragment() {
 
     fun show(manager: FragmentManager) {
         this.manager = manager
-        dismiss()
         show(manager, this::class.java.canonicalName)
     }
 

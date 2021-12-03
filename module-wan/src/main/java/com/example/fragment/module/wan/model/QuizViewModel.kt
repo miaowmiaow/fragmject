@@ -13,7 +13,7 @@ class QuizViewModel : BaseViewModel() {
     val wendaResult = MutableLiveData<ArticleListBean>()
 
     fun getWenDa() {
-        getWenDaList(getHomePage())
+        getWenDaList(getHomePage(1))
     }
 
     fun getWenDaNext() {
@@ -22,7 +22,7 @@ class QuizViewModel : BaseViewModel() {
 
     /**
      * 获取问答
-     * page 0开始
+     * page 1开始
      */
     private fun getWenDaList(page: Int) {
         //通过viewModelScope创建一个协程

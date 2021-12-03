@@ -1,35 +1,37 @@
 package com.example.fragment.library.base.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.core.graphics.drawable.toBitmap
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import coil.executeBlocking
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.example.fragment.library.base.R
-import com.example.fragment.library.base.utils.InjectUtils.injectDarkModeJs
 import com.example.fragment.library.base.utils.InjectUtils.injectVConsoleJs
-import com.example.fragment.library.base.utils.InjectUtils.newDarkModeJs
-import com.example.fragment.library.base.utils.InjectUtils.newVConsoleJs
 import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 import com.example.fragment.library.base.view.SnailBar
 import com.tencent.smtt.export.external.interfaces.IX5WebSettings
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest
 import com.tencent.smtt.export.external.interfaces.WebResourceResponse
 import com.tencent.smtt.sdk.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.tencent.smtt.sdk.WebView.HitTestResult.IMAGE_TYPE
+import com.tencent.smtt.sdk.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.regex.Pattern
 
+@SuppressLint("SetJavaScriptEnabled")
 class WebHelper private constructor(private val parent: ViewGroup) {
 
     companion object {
@@ -49,47 +51,61 @@ class WebHelper private constructor(private val parent: ViewGroup) {
     private var injectJs = false
 
     init {
-        webView.setBackgroundColor(ContextCompat.getColor(parent.context, R.color.white))
+        parent.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        parent.addView(progressBar, ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        webView.overScrollMode = WebView.OVER_SCROLL_NEVER
+        webView.view.overScrollMode = WebView.OVER_SCROLL_NEVER
+        webView.settingsExtension?.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
             QbSdk.forceSysWebView()
+            webView.setBackgroundColor(Color.BLACK)
             val view = webView.view
             if (view is android.webkit.WebView) {
                 val forceDarkMode = if (parent.context.isNightMode()) {
+                    view.setBackgroundColor(Color.BLACK)
                     WebSettingsCompat.FORCE_DARK_ON
                 } else {
+                    view.setBackgroundColor(Color.WHITE)
                     WebSettingsCompat.FORCE_DARK_OFF
                 }
                 WebSettingsCompat.setForceDark(view.settings, forceDarkMode)
             }
         } else {
             QbSdk.unForceSysWebView()
+            webView.setBackgroundColor(Color.WHITE)
             webView.setDayOrNight(!parent.context.isNightMode())
         }
         val webSetting = webView.settings
         webSetting.allowFileAccess = true
-        webSetting.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS
-        webSetting.setSupportZoom(true)
-        webSetting.builtInZoomControls = true
-        webSetting.useWideViewPort = true
-        webSetting.setSupportMultipleWindows(false)
         webSetting.setAppCacheEnabled(true)
+        webSetting.setAppCachePath(webView.context.getDir("appcache", MODE_PRIVATE).path)
         webSetting.domStorageEnabled = true
-        webSetting.javaScriptEnabled = true
         webSetting.setGeolocationEnabled(true)
-        webSetting.setAppCacheMaxSize(Long.MAX_VALUE)
-        webSetting.setAppCachePath(parent.context.getDir("appcache", 0).path)
-        webSetting.databasePath = parent.context.getDir("databases", 0).path
-        webSetting.setGeolocationDatabasePath(parent.context.getDir("geolocation", 0).path)
-        webSetting.pluginState = WebSettings.PluginState.ON_DEMAND
+        webSetting.javaScriptEnabled = true
+        webSetting.loadWithOverviewMode = true
+        webSetting.useWideViewPort = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSetting.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         }
-        webView.settingsExtension?.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)
-        webView.overScrollMode = WebView.OVER_SCROLL_NEVER
-        webView.view.overScrollMode = WebView.OVER_SCROLL_NEVER
         webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                return shouldOverrideUrlLoading(view, Uri.parse(url))
+            }
+
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                return shouldOverrideUrlLoading(view, request?.url)
+            }
+
+            private fun shouldOverrideUrlLoading(view: WebView?, uri: Uri?): Boolean {
+                if (view != null && uri != null && !("http" == uri.scheme || "https" == uri.scheme)) {
+                    startActionView(view.context, uri)
+                    return true
+                }
                 return false
             }
 
@@ -97,65 +113,46 @@ class WebHelper private constructor(private val parent: ViewGroup) {
                 view: WebView?,
                 url: String?
             ): WebResourceResponse? {
-                if (view != null && url != null) {
-                    if (isImageUrl(url)) {
-                        val response = webImageResponse(view.context, url)
-                        if (response != null) {
-                            return response
-                        }
-                    }
-                    if (url.startsWith("file:///android_asset/")) {
-                        val filenameIndex = url.lastIndexOf("/")
-                        val filename = url.substring(filenameIndex)
-                        val suffixIndex = url.lastIndexOf(".")
-                        val suffix = url.substring(suffixIndex + 1)
-                        val response = assetsResponse(view.context, "$suffix$filename")
-                        if (response != null) {
-                            return response
-                        }
-                    }
-                }
-                return super.shouldInterceptRequest(view, url)
+                val webResourceResponse = shouldInterceptRequest(view, Uri.parse(url))
+                return webResourceResponse ?: super.shouldInterceptRequest(view, url)
             }
 
             override fun shouldInterceptRequest(
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                if (view != null && request != null) {
-                    val url = request.url.toString()
+                val webResourceResponse = shouldInterceptRequest(view, request?.url)
+                return webResourceResponse ?: super.shouldInterceptRequest(view, request)
+            }
+
+            private fun shouldInterceptRequest(view: WebView?, uri: Uri?): WebResourceResponse? {
+                if (view != null && uri != null) {
+                    val url = uri.toString()
                     if (isImageUrl(url)) {
-                        val response = webImageResponse(view.context, url)
-                        if (response != null) {
-                            return response
-                        }
-                    }
-                    if (url.startsWith("file:///android_asset/")) {
+                        return webImageResponse(view.context, url)
+                    } else if (url.startsWith("file:///android_asset/")) {
                         val filenameIndex = url.lastIndexOf("/")
                         val filename = url.substring(filenameIndex)
                         val suffixIndex = url.lastIndexOf(".")
                         val suffix = url.substring(suffixIndex + 1)
-                        val response = assetsResponse(view.context, "$suffix$filename")
-                        if (response != null) {
-                            return response
-                        }
+                        return assetsResponse(view.context, "$suffix$filename")
                     }
                 }
-                return super.shouldInterceptRequest(view, request)
+                return null
             }
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
+                injectJs = false
                 progressBar.visibility = View.VISIBLE
                 onPageStartedListener?.onPageStarted(view, url, favicon)
-                injectJs = false
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                injectJs = false
                 progressBar.visibility = View.GONE
                 onPageFinishedListener?.onPageFinished(view, url)
-                injectJs = false
             }
         }
         webView.webChromeClient = object : WebChromeClient() {
@@ -167,33 +164,26 @@ class WebHelper private constructor(private val parent: ViewGroup) {
 
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
-                onProgressChangedListener?.onProgressChanged(view, newProgress)
                 progressBar.progress = newProgress
                 if (!injectJs && newProgress > 80) {
                     view?.apply {
-                        evaluateJavascript(context.injectDarkModeJs()) {}
-                        evaluateJavascript(context.newDarkModeJs()) {}
                         evaluateJavascript(context.injectVConsoleJs()) {}
-                        evaluateJavascript(context.newVConsoleJs()) {}
                     }
                     injectJs = true
                 }
+                onProgressChangedListener?.onProgressChanged(view, newProgress)
             }
         }
-        parent.addView(
-            webView,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        )
-        parent.addView(
-            progressBar,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
+        webView.setOnLongClickListener {
+            val hitTestResult = webView.hitTestResult
+            when (hitTestResult.type) {
+                IMAGE_TYPE, SRC_IMAGE_ANCHOR_TYPE -> {
+                    println(hitTestResult.extra)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     fun loadUrl(url: String) {
@@ -202,6 +192,20 @@ class WebHelper private constructor(private val parent: ViewGroup) {
 
     fun loadHtml(data: String) {
         loadData(data)
+    }
+
+    fun setWebDownloadListener(listener: WebDownloadListener) {
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+            listener.onDownloadStart(url, userAgent, contentDisposition, mimetype, contentLength)
+        }
+    }
+
+    fun startActionView(context: Context, uri: Uri) {
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun onDestroy() {
@@ -234,7 +238,7 @@ class WebHelper private constructor(private val parent: ViewGroup) {
         context.imageLoader.executeBlocking(request).drawable?.let { drawable ->
             val bitmap = drawable.toBitmap()
             val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
             val mimeType = getMimeTypeFromUrl(url, "image/png")
             val inputStream = ByteArrayInputStream(baos.toByteArray())
             return WebResourceResponse(mimeType, "UTF-8", inputStream)
@@ -260,6 +264,16 @@ class WebHelper private constructor(private val parent: ViewGroup) {
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         }
         return mimeType
+    }
+
+    interface WebDownloadListener {
+        fun onDownloadStart(
+            url: String,
+            userAgent: String,
+            contentDisposition: String,
+            mimetype: String,
+            contentLength: Long
+        )
     }
 
     interface OnReceivedTitleListener {

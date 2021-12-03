@@ -14,6 +14,7 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
+import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
@@ -92,8 +93,14 @@ class MainActivity : RouterActivity() {
         WanHelper.getUIMode {
             if (it != AppCompatDelegate.getDefaultNightMode()) {
                 when (it) {
-                    1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                    2 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    1 -> {
+                        QbSdk.unForceSysWebView()
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    }
+                    2 -> {
+                        QbSdk.forceSysWebView()
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    }
                     else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                 }
             }

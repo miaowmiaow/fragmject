@@ -1,29 +1,27 @@
 package com.example.fragment.library.base.utils
 
+import android.Manifest.permission.*
 import android.app.Activity
-import android.content.Context
+import android.content.Context.MEDIA_PROJECTION_SERVICE
 import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
-import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.ActivityResultHelper.requestRecordAudioPermissions
-import com.example.fragment.library.base.utils.ActivityResultHelper.requestStoragePermissions
+import com.example.fragment.library.base.utils.ActivityResultHelper.requestPermissions
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
-import java.io.File
 
 object ScreenRecordHelper {
 
     private var mediaProjection: MediaProjection? = null
+    private val mp get() = mediaProjection!!
     private var mediaRecorder: MediaRecorder? = null
+    private val mr get() = mediaRecorder!!
     private var virtualDisplay: VirtualDisplay? = null
-
-    private var screenRecordData: Intent? = null
+    private val vd get() = virtualDisplay!!
     private var isRunning = false
 
     /**
@@ -34,86 +32,55 @@ object ScreenRecordHelper {
             onCallback.invoke(Activity.RESULT_OK, "屏幕录制中")
             return
         }
-        requestScreenRecordPermissions { resultCode, resultData, resultMessage ->
+        requestScreenRecord { resultCode, resultData, resultMessage ->
             if (resultCode == Activity.RESULT_OK && resultData != null) {
                 try {
                     if (mediaProjection == null) {
                         //MediaProjectionManager申请权限MediaProjection获取申请结果,防止别人调取隐私
-                        val manager =
-                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                        val service = getSystemService(MEDIA_PROJECTION_SERVICE)
+                        val manager = service as MediaProjectionManager
                         mediaProjection = manager.getMediaProjection(resultCode, resultData)
                     }
                     if (mediaRecorder == null) {
-                        mediaRecorder = MediaRecorder()
-                        //设置音频源
-                        mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-                        //设置视频源
-                        mediaRecorder?.setVideoSource(MediaRecorder.VideoSource.SURFACE)
-                        //设置输出的编码格式
-                        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                        val moviesPath =
-                            getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath
-                                ?: cacheDir.absolutePath
-                        val recordPath =
-                            moviesPath + File.separator + System.currentTimeMillis() + ".mp4"
-                        mediaRecorder?.setOutputFile(recordPath)
-                        //设置录屏时屏幕大小,这个可跟mVirtualDisplay 一起控制屏幕大小
-                        //virtualDisplay 是将屏幕设置成多大多小，setVideoSize是输出文件时屏幕多大多小
-                        mediaRecorder?.setVideoSize(
-                            MetricsUtils.screenWidth,
-                            MetricsUtils.screenHeight
-                        )
-                        //音频编码
-                        mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-                        //图像编码
-                        mediaRecorder?.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-                        val bitRate = MetricsUtils.screenWidth * MetricsUtils.screenHeight * 2.6
-                        //设置码率
-                        mediaRecorder?.setVideoEncodingBitRate(bitRate.toInt())
-                        //设置帧率，该帧率必须是硬件支持的，
-                        //可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
-                        mediaRecorder?.setVideoFrameRate(24)
-                        mediaRecorder?.prepare()
+                        mediaRecorder = MediaRecorder().apply {
+                            setAudioSource(MediaRecorder.AudioSource.MIC)//设置音频源
+                            setVideoSource(MediaRecorder.VideoSource.SURFACE)//设置视频源
+                            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)//设置输出的编码格式
+                            val path = CacheUtils.getCacheDirectory(
+                                this@startScreenRecord,
+                                "movies"
+                            ).absolutePath
+                            val recordPath = path + "/" + System.currentTimeMillis() + ".mp4"
+                            setOutputFile(recordPath)
+                            //设置录屏时屏幕大小,这个可跟VirtualDisplay一起控制屏幕大小,VirtualDisplay是将屏幕设置成多大多小setVideoSize是输出文件时屏幕多大多小
+                            setVideoSize(MetricsUtils.screenWidth, MetricsUtils.screenHeight)
+                            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)//音频编码
+                            setVideoEncoder(MediaRecorder.VideoEncoder.H264)//图像编码
+                            val bitRate = MetricsUtils.screenWidth * MetricsUtils.screenHeight * 2.6
+                            setVideoEncodingBitRate(bitRate.toInt())//设置码率
+                            setVideoFrameRate(24)//设置帧率，该帧率必须是硬件支持的，可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
+                            prepare()
+                        }
                     }
                     if (virtualDisplay == null) {
                         //获取录制屏幕的大小,像素,等等一些数据
-                        virtualDisplay = mediaProjection?.createVirtualDisplay(
+                        virtualDisplay = mp.createVirtualDisplay(
                             "Screen Record Service",
                             MetricsUtils.screenWidth,
                             MetricsUtils.screenHeight,
                             MetricsUtils.densityDpi,
                             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                            mediaRecorder?.surface,
-                            null,
-                            null
+                            mr.surface,
+                            null, null
                         )
                     }
-                    mediaRecorder?.start()
+                    mr.start()
                     isRunning = true
                 } catch (e: Exception) {
-                    e.printStackTrace()
-                    onCallback.invoke(Activity.RESULT_CANCELED, "录屏失败:${e.message}")
+                    onCallback.invoke(Activity.RESULT_CANCELED, "屏幕录制异常:${e.message}")
                 }
             }
             onCallback.invoke(resultCode, resultMessage)
-        }
-    }
-
-    /**
-     * 继续录屏
-     */
-    fun FragmentActivity.resumeScreenRecord() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            mediaRecorder?.resume()
-        }
-    }
-
-    /**
-     * 暂停录屏
-     */
-    fun FragmentActivity.pauseScreenRecord() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            mediaRecorder?.pause()
         }
     }
 
@@ -125,61 +92,44 @@ object ScreenRecordHelper {
             return
         }
         try {
-            mediaRecorder?.stop()
-            mediaRecorder?.reset()
+            mr.stop()
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            mediaRecorder?.release()
-            virtualDisplay?.release()
-            mediaProjection?.stop()
+            mr.reset()
+            mr.release()
+            vd.release()
+            mp.stop()
             mediaRecorder = null
             virtualDisplay = null
             mediaProjection = null
-            isRunning = false
         }
     }
 
     /**
      * 申请录屏权限
      */
-    private fun FragmentActivity.requestScreenRecordPermissions(onCallback: (Int, Intent?, String) -> Unit) {
-        requestStoragePermissions(object : PermissionsCallback {
+    private fun FragmentActivity.requestScreenRecord(onCallback: (Int, Intent?, String) -> Unit) {
+        val permissions = arrayOf(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, RECORD_AUDIO)
+        requestPermissions(permissions, object : PermissionsCallback {
 
             override fun allow() {
-                requestRecordAudioPermissions(object : PermissionsCallback {
+                val manager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                startForResult(manager.createScreenCaptureIntent(), object : ActivityCallback {
 
-                    override fun allow() {
-                        if (screenRecordData != null) {
-                            onCallback.invoke(Activity.RESULT_OK, screenRecordData, "屏幕录制中")
+                    override fun onActivityResult(resultCode: Int, data: Intent?) {
+                        if (resultCode == Activity.RESULT_OK) {
+                            onCallback.invoke(resultCode, data, "屏幕录制中")
                         } else {
-                            val service = getSystemService(Context.MEDIA_PROJECTION_SERVICE)
-                            val manager = service as MediaProjectionManager
-                            val intent = manager.createScreenCaptureIntent()
-                            val activityCallback = object : ActivityCallback {
-                                override fun onActivityResult(resultCode: Int, data: Intent?) {
-                                    if (resultCode == Activity.RESULT_OK) {
-                                        onCallback.invoke(resultCode, data, "屏幕录制中")
-                                        screenRecordData = data
-                                    } else {
-                                        onCallback.invoke(resultCode, null, "没有屏幕录制权限")
-                                    }
-                                }
-                            }
-                            startForResult(intent, activityCallback)
+                            onCallback.invoke(resultCode, null, "没有屏幕录制权限")
                         }
-                    }
-
-                    override fun deny() {
-                        PermissionDialog.alert(this@requestScreenRecordPermissions, "麦克风")
-                        onCallback.invoke(Activity.RESULT_CANCELED, null, "没有麦克风权限")
                     }
                 })
             }
 
             override fun deny() {
-                PermissionDialog.alert(this@requestScreenRecordPermissions, "存储")
-                onCallback.invoke(Activity.RESULT_CANCELED, null, "没有存储权限")
+                PermissionDialog.alert(this@requestScreenRecord, "存储和麦克风")
+                onCallback.invoke(Activity.RESULT_CANCELED, null, "没有存储和麦克风权限")
             }
         })
     }

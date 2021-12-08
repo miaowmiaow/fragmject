@@ -11,6 +11,7 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentUserBinding
 import com.example.fragment.module.user.model.UserViewModel
 
@@ -51,29 +52,26 @@ class UserFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.avatarResult.observe(viewLifecycleOwner) { path ->
+        viewModel.localAvatarResult.observe(viewLifecycleOwner) { path ->
             if (!path.isNullOrBlank()) {
                 BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
                     binding.logo.setImageBitmap(bitmap)
                 }
             }
         }
-        viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
-            updateView(userBean)
-        }
         return viewModel
     }
 
     override fun initLoad() {
-        if (viewModel.avatarResult.value == null) {
-            viewModel.getAvatar()
+        if (viewModel.localAvatarResult.value == null) {
+            viewModel.getLocalAvatar()
         }
-        if (viewModel.userResult.value == null) {
-            viewModel.getUser()
-        }
-        SharedFlowBus.onSticky(UserBean::class.java).observe(this) { userBean ->
-            updateView(userBean)
-        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //监听用户状态
+        WanHelper.getUser(this) { updateView(it) }
     }
 
     private fun updateView(userBean: UserBean) {

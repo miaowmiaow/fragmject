@@ -104,14 +104,6 @@ class MainFragment : RouterFragment() {
             }
         }
         binding.viewpager2.isUserInputEnabled = false
-        TabLayoutMediator(binding.tabLayout, binding.viewpager2, true, false) { tab, position ->
-            val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
-            item.icon.setImageResource(tabDrawable[position])
-            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
-            item.name.text = tabTexts[position]
-            item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.gray_alpha))
-            tab.customView = item.root
-        }.attach()
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 setColorFilter(tab.customView, R.color.text_fff)
@@ -124,6 +116,14 @@ class MainFragment : RouterFragment() {
             override fun onTabReselected(tab: TabLayout.Tab) {
             }
         })
+        TabLayoutMediator(binding.tabLayout, binding.viewpager2, true, false) { tab, position ->
+            val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
+            item.icon.setImageResource(tabDrawable[position])
+            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
+            item.name.text = tabTexts[position]
+            item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.gray_alpha))
+            tab.customView = item.root
+        }.attach()
     }
 
     override fun initViewModel(): BaseViewModel {

@@ -93,7 +93,7 @@ class SwitchButton @JvmOverloads constructor(
     private val toggleAnimator = ValueAnimator.ofFloat(0f, 1f)
 
     private var dragDistance = 0f
-    private var onCheckedChangeListener: OnCheckedChangeListener? = null
+    private var onChangeListener: OnChangeListener? = null
 
     init {
         setPadding(
@@ -143,13 +143,11 @@ class SwitchButton @JvmOverloads constructor(
                 if (buttonOffset == 0f) {
                     state = STATE.CLOSE
                     downAnimator(false)
+                    onChangeListener?.onClose(this@SwitchButton)
                 } else if (buttonOffset == buttonMaxOffset) {
                     state = STATE.OPEN
+                    onChangeListener?.onOpen(this@SwitchButton)
                 }
-                onCheckedChangeListener?.onCheckedChanged(
-                    this@SwitchButton,
-                    state == STATE.OPEN
-                )
             }
 
             override fun onAnimationCancel(animation: Animator?) {
@@ -205,13 +203,11 @@ class SwitchButton @JvmOverloads constructor(
                 if (buttonOffset == 0f) {
                     state = STATE.CLOSE
                     downAnimator(false)
+                    onChangeListener?.onClose(this@SwitchButton)
                 } else if (buttonOffset == buttonMaxOffset) {
                     state = STATE.OPEN
+                    onChangeListener?.onOpen(this@SwitchButton)
                 }
-                onCheckedChangeListener?.onCheckedChanged(
-                    this@SwitchButton,
-                    state == STATE.OPEN
-                )
             }
 
             override fun onAnimationCancel(animation: Animator?) {
@@ -263,12 +259,13 @@ class SwitchButton @JvmOverloads constructor(
                     if (state == STATE.DRAG) {
                         originAnimator()
                     } else {
-                        onCheckedChangeListener?.onCheckedChanged(
-                            this@SwitchButton,
-                            state == STATE.OPEN
-                        )
                         if (buttonOffset == 0f) {
                             downAnimator(false)
+                        }
+                        if (state == STATE.OPEN) {
+                            onChangeListener?.onOpen(this@SwitchButton)
+                        } else {
+                            onChangeListener?.onClose(this@SwitchButton)
                         }
                     }
                 }
@@ -337,12 +334,13 @@ class SwitchButton @JvmOverloads constructor(
         canvas.drawCircle(buttonX + buttonOffset, buttonY, buttonRadius, buttonPaint)
     }
 
-    fun setOnCheckedChangeListener(l: OnCheckedChangeListener) {
-        onCheckedChangeListener = l
+    fun setOnChangeListener(l: OnChangeListener) {
+        onChangeListener = l
     }
 
-    interface OnCheckedChangeListener {
-        fun onCheckedChanged(view: SwitchButton, isChecked: Boolean)
+    interface OnChangeListener {
+        fun onOpen(view: SwitchButton)
+        fun onClose(view: SwitchButton)
     }
 
 }

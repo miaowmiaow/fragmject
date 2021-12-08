@@ -46,7 +46,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestCalendarPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestCalendar(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.READ_CALENDAR,
             Manifest.permission.WRITE_CALENDAR
@@ -59,7 +59,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestCameraPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestCamera(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.CAMERA
         )
@@ -71,7 +71,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestContactsPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestContacts(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.GET_ACCOUNTS,
             Manifest.permission.READ_CONTACTS,
@@ -85,7 +85,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestLocationPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestLocation(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -98,7 +98,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestPhonePermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestPhone(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.CALL_PHONE,
             Manifest.permission.READ_PHONE_STATE,
@@ -112,7 +112,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestRecordAudioPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestRecordAudio(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.RECORD_AUDIO
         )
@@ -125,7 +125,7 @@ object ActivityResultHelper {
      * @param callback 回调
      */
     @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-    fun FragmentActivity.requestSensorsPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestSensors(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.BODY_SENSORS
         )
@@ -137,7 +137,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestSMSPermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestSMS(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.READ_SMS,
             Manifest.permission.RECEIVE_MMS,
@@ -152,7 +152,7 @@ object ActivityResultHelper {
      *
      * @param callback 回调
      */
-    fun FragmentActivity.requestStoragePermissions(callback: PermissionsCallback? = null) {
+    fun FragmentActivity.requestStorage(callback: PermissionsCallback? = null) {
         val permissions = arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -164,7 +164,7 @@ object ActivityResultHelper {
         getResultFragment().startForResult(intent, callback)
     }
 
-    private fun FragmentActivity.requestPermissions(
+    fun FragmentActivity.requestPermissions(
         permissions: Array<String>,
         callback: PermissionsCallback?
     ) {

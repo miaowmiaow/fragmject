@@ -8,9 +8,5 @@
         android:id="@+id/setting"
         android:name="com.example.fragment.module.user.fragment.SettingFragment"
         android:label="SettingFragment"
-        tools:layout="@layout/fragment_setting">
-        <action
-            android:id="@+id/action_setting_to_web"
-            app:destination="@id/web_graph" />
-    </fragment>
+        tools:layout="@layout/fragment_setting" />
 </navigation>

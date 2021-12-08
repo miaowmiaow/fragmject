@@ -7,7 +7,6 @@ enum class Router {
     MY_SHARE,
     SEARCH,
     SETTING,
-    SETTING2WEB,
     SHARE_ARTICLE,
     SYSTEM,
     SYSTEM_URL,

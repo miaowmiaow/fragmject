@@ -48,10 +48,8 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun showProgress() {
-        progressDialog ?: ProgressDialog.newInstance().also { dialog ->
-            progressDialog = dialog
-        }
-        progressDialog?.show(supportFragmentManager)
+        progressDialog ?: ProgressDialog.newInstance().also { progressDialog = it }
+            .show(supportFragmentManager)
     }
 
     fun dismissProgress() {

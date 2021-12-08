@@ -2,7 +2,6 @@ package com.example.fragment.module.user.fragment
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -10,18 +9,15 @@ import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
+import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
 import com.example.fragment.library.base.utils.SystemUtil
-import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 import com.example.fragment.library.base.view.SwitchButton
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
@@ -31,12 +27,7 @@ import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.databinding.FragmentSettingBinding
 import com.example.fragment.module.user.model.SettingViewModel
-import com.tencent.smtt.sdk.QbSdk
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
-import java.io.InputStream
-
 
 class SettingFragment : RouterFragment() {
 
@@ -63,66 +54,56 @@ class SettingFragment : RouterFragment() {
 
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
-        binding.systemTheme.setOnCheckedChangeListener(object :
-            SwitchButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
-                WanHelper.setUIMode(
-                    if (isChecked) {
-                        binding.darkTheme.setChecked(false)
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                        -1
-                    } else {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        1
-                    }
-                )
-            }
-        })
-        binding.darkTheme.setOnCheckedChangeListener(object :
-            SwitchButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
-                WanHelper.setUIMode(
-                    if (isChecked) {
-                        binding.systemTheme.setChecked(false)
-                        QbSdk.forceSysWebView()
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        2
-                    } else {
-                        QbSdk.unForceSysWebView()
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        1
-                    }
-                )
-            }
-        })
-        binding.screenRecord.setOnCheckedChangeListener(object :
-            SwitchButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(view: SwitchButton, isChecked: Boolean) {
-                val status = if (isChecked) 1 else 0
-                WanHelper.setScreenRecordStatus(status)
-                if (isChecked) {
-                    countDownTimer = object : CountDownTimer(5000, 1000) {
-                        override fun onTick(millisUntilFinished: Long) {
-                            activity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
-                        }
+        binding.systemTheme.setOnChangeListener(object : SwitchButton.OnChangeListener {
 
-                        override fun onFinish() {
-                            activity.dismissTips()
-                            activity.startScreenRecord { code, message ->
-                                if (code != Activity.RESULT_OK) {
-                                    activity.showTips(message)
-                                    binding.screenRecord.setChecked(false)
-                                }
+            override fun onOpen(view: SwitchButton) {
+                binding.darkTheme.setChecked(false)
+                WanHelper.setUIMode("-1")
+            }
+
+            override fun onClose(view: SwitchButton) {
+                WanHelper.setUIMode("1")
+            }
+        })
+        binding.darkTheme.setOnChangeListener(object : SwitchButton.OnChangeListener {
+
+            override fun onOpen(view: SwitchButton) {
+                binding.systemTheme.setChecked(false)
+                WanHelper.setUIMode("2")
+            }
+
+            override fun onClose(view: SwitchButton) {
+                WanHelper.setUIMode("1")
+            }
+        })
+        binding.screenRecord.setOnChangeListener(object : SwitchButton.OnChangeListener {
+
+            override fun onOpen(view: SwitchButton) {
+                countDownTimer = object : CountDownTimer(5000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        activity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
+                    }
+
+                    override fun onFinish() {
+                        activity.dismissTips()
+                        activity.startScreenRecord { code, message ->
+                            if (code != Activity.RESULT_OK) {
+                                activity.showTips(message)
+                                binding.screenRecord.setChecked(false)
                             }
                         }
-                    }.start()
-                } else {
-                    countDownTimer?.cancel()
-                    view.postDelayed({
-                        activity.dismissTips()
-                        activity.stopScreenRecord()
-                    }, 1000)
-                }
+                    }
+                }.start()
+                WanHelper.setScreenRecord("1")
+            }
+
+            override fun onClose(view: SwitchButton) {
+                countDownTimer?.cancel()
+                view.postDelayed({
+                    activity.dismissTips()
+                    activity.stopScreenRecord()
+                }, 1000)
+                WanHelper.setScreenRecord("0")
             }
         })
         binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
@@ -146,28 +127,15 @@ class SettingFragment : RouterFragment() {
         }
         binding.about.setOnClickListener {
             val args = bundleOf(Keys.URL to "https://wanandroid.com")
-            activity.navigation(Router.SETTING2WEB, args)
+            activity.navigation(Router.WEB, args)
         }
         binding.privacyPolicy.setOnClickListener {
-            var inputStream: InputStream? = null
-            try {
-                inputStream = resources.assets.open("privacy_policy.template")
-                readRawFromStreamToString(inputStream)?.let { template ->
-                    inputStream = resources.assets.open("privacy_policy.html")
-                    readRawFromStreamToString(inputStream)?.let { html ->
-                        val args = bundleOf(Keys.HTML to html.replace("{privacy_policy}", template))
-                        activity.navigation(Router.SETTING2WEB, args)
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                inputStream?.close()
-            }
+            val args = bundleOf(Keys.URL to "file:///android_asset/privacy_policy.html")
+            activity.navigation(Router.WEB, args)
         }
         binding.feedback.setOnClickListener {
             val args = bundleOf(Keys.URL to "https://github.com/miaowmiaow/fragmject/issues")
-            activity.navigation(Router.SETTING2WEB, args)
+            activity.navigation(Router.WEB, args)
         }
         binding.logout.setOnClickListener {
             StandardDialog.newInstance()
@@ -185,31 +153,6 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
-            binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
-        }
-        viewModel.uiModeResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                1 -> {
-                    binding.systemTheme.setChecked(false)
-                    binding.darkTheme.setChecked(false)
-                }
-                2 -> {
-                    binding.systemTheme.setChecked(false)
-                    binding.darkTheme.setChecked(true)
-                }
-                else -> {
-                    binding.systemTheme.setChecked(true)
-                    binding.darkTheme.setChecked(false)
-                }
-            }
-        }
-        viewModel.screenRecordStatusResult.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                0 -> binding.screenRecord.setChecked(false)
-                1 -> binding.screenRecord.setChecked(true)
-            }
-        }
         viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
                 "0" -> {
@@ -230,11 +173,21 @@ class SettingFragment : RouterFragment() {
                                 StandardDialog.OnDialogClickListener {
                                 override fun onConfirm(dialog: StandardDialog) {
                                     val apkUrl = data.download_url
-                                    activity.getExternalFilesDir(null)?.absolutePath?.let {
-                                        val filePathName = it + File.separator + apkUrl.substring(
-                                            apkUrl.lastIndexOf("/") + 1
-                                        )
+                                    val path =
+                                        CacheUtils.getCacheDirectory(activity, "apk").absolutePath
+                                    val filePathName = path + File.separator + apkUrl.substring(
+                                        apkUrl.lastIndexOf("/") + 1
+                                    )
+                                    val file = File(filePathName)
+                                    if (!file.exists() || !file.isFile) {
                                         viewModel.downloadApk(apkUrl, filePathName)
+                                    } else {
+                                        viewModel.downloadApkResult.postValue(
+                                            HttpResponse(
+                                                "0",
+                                                filePathName
+                                            )
+                                        )
                                     }
                                 }
 
@@ -270,29 +223,34 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        if (viewModel.userResult.value == null) {
-            viewModel.getUser()
+        WanHelper.getScreenRecord(viewLifecycleOwner) { eventBean ->
+            if (eventBean.key == WanHelper.SCREEN_RECORD) {
+                when (eventBean.value) {
+                    "0" -> binding.screenRecord.setChecked(false)
+                    "1" -> binding.screenRecord.setChecked(true)
+                }
+            }
         }
-        if (viewModel.uiModeResult.value == null) {
-            viewModel.getUIMode()
+        WanHelper.getUIMode(viewLifecycleOwner) { eventBean ->
+            if (eventBean.key == WanHelper.UI_MODE) {
+                when (eventBean.value) {
+                    "1" -> {
+                        binding.systemTheme.setChecked(false)
+                        binding.darkTheme.setChecked(false)
+                    }
+                    "2" -> {
+                        binding.systemTheme.setChecked(false)
+                        binding.darkTheme.setChecked(true)
+                    }
+                    else -> {
+                        binding.systemTheme.setChecked(true)
+                        binding.darkTheme.setChecked(false)
+                    }
+                }
+            }
         }
-        if (viewModel.screenRecordStatusResult.value == null) {
-            viewModel.getScreenRecordStatus()
+        WanHelper.getUser(viewLifecycleOwner) { userBean ->
+            binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         }
     }
-
-    @Throws(IOException::class)
-    fun readRawFromStreamToString(inputStream: InputStream?): String? {
-        if (inputStream == null) {
-            return null
-        }
-        val baos = ByteArrayOutputStream()
-        var len: Int
-        val bytes = ByteArray(2048)
-        while (inputStream.read(bytes).also { len = it } != -1) {
-            baos.write(bytes, 0, len)
-        }
-        return baos.toString("UTF-8")
-    }
-
 }

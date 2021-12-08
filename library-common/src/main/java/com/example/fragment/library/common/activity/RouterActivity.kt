@@ -6,12 +6,15 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.IdRes
+import androidx.appcompat.app.AppCompatDelegate.*
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.activity.BaseActivity
 import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.utils.WanHelper
+import com.tencent.smtt.sdk.QbSdk
 
 /**
  * 路由类，方便模块之间调用
@@ -49,6 +52,26 @@ abstract class RouterActivity : BaseActivity() {
                 }
             }
         })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //设置显示模式
+        WanHelper.getUIMode(this) { eventBean ->
+            if (eventBean.key == WanHelper.UI_MODE) {
+                when (eventBean.value) {
+                    "1" -> {
+                        QbSdk.unForceSysWebView()
+                        setDefaultNightMode(MODE_NIGHT_NO)
+                    }
+                    "2" -> {
+                        QbSdk.forceSysWebView()
+                        setDefaultNightMode(MODE_NIGHT_YES)
+                    }
+                    else -> setDefaultNightMode(MODE_NIGHT_FOLLOW_SYSTEM)
+                }
+            }
+        }
     }
 
     fun navigate(@IdRes resId: Int, args: Bundle? = null) {

@@ -35,25 +35,35 @@ class WebFragment : RouterFragment() {
         return binding.root
     }
 
+    override fun onPause() {
+        webHelper.onPause()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        webHelper.onResume()
+        super.onResume()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
         webHelper.onDestroy()
+        _binding = null
     }
 
     override fun initView() {
         val onBackPressedCallback =
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                if (webHelper.webView.canGoBack()) {
-                    webHelper.webView.goBack()
+                if (webHelper.getWebView().canGoBack()) {
+                    webHelper.getWebView().goBack()
                 } else {
                     this.isEnabled = false
                     activity.onBackPressed()
                 }
             }
         binding.black.setOnClickListener {
-            if (webHelper.webView.canGoBack()) {
-                webHelper.webView.goBack()
+            if (webHelper.getWebView().canGoBack()) {
+                webHelper.getWebView().goBack()
             } else {
                 onBackPressedCallback.isEnabled = false
                 activity.onBackPressed()
@@ -65,14 +75,9 @@ class WebFragment : RouterFragment() {
                 binding.title.text = title
             }
         }
-        val html = requireArguments().getString(Keys.HTML)
-        if (!html.isNullOrBlank()) {
-            webHelper.loadHtml(html)
-        } else {
-            val url = requireArguments().getString(Keys.URL)
-            if (!url.isNullOrBlank()) {
-                webHelper.loadUrl(Uri.decode(url))
-            }
+        val url = requireArguments().getString(Keys.URL)
+        if (!url.isNullOrBlank()) {
+            webHelper.loadUrl(Uri.decode(url))
         }
     }
 

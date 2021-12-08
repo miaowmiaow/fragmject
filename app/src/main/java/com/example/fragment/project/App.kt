@@ -1,16 +1,36 @@
 package com.example.fragment.project
 
 import android.app.Application
+import android.os.Build
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.decode.SvgDecoder
 import com.example.fragment.library.base.http.SimpleHttp
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 
-class App : Application() {
+class App : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
         initSimpleHttp()
         initQbSdk()
+    }
+
+    override fun newImageLoader(): ImageLoader {
+        return ImageLoader.Builder(applicationContext)
+            .crossfade(true)
+            .componentRegistry {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder(applicationContext))
+                } else {
+                    add(GifDecoder())
+                }
+            }
+            .componentRegistry { add(SvgDecoder(applicationContext)) }
+            .build()
     }
 
     private fun initSimpleHttp() {

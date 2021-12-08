@@ -7,40 +7,14 @@ import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.download
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.UserBean
-import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.bean.UpdateBean
 import kotlinx.coroutines.launch
 
 class SettingViewModel : BaseViewModel() {
 
-    val userResult = MutableLiveData<UserBean>()
-    val uiModeResult = MutableLiveData<Int>()
-    val screenRecordStatusResult = MutableLiveData<Int>()
     val logoutResult = MutableLiveData<HttpResponse>()
     val updateResult = MutableLiveData<UpdateBean>()
     val downloadApkResult = MutableLiveData<HttpResponse>()
-
-    /**
-     * 获取用户信息
-     */
-    fun getUser() {
-        WanHelper.getUser { userResult.postValue(it) }
-    }
-
-    /**
-     * 获取显示模式
-     */
-    fun getUIMode() {
-        WanHelper.getUIMode { uiModeResult.postValue(it) }
-    }
-
-    /**
-     * 获取屏幕录制状态
-     */
-    fun getScreenRecordStatus() {
-        WanHelper.getScreenRecordStatus { screenRecordStatusResult.postValue(it) }
-    }
 
     /**
      * 退出登录

@@ -11,7 +11,7 @@ import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.ActivityCallback
-import com.example.fragment.library.base.utils.ActivityResultHelper.requestStoragePermissions
+import com.example.fragment.library.base.utils.ActivityResultHelper.requestStorage
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -47,7 +47,7 @@ class UserAvatarFragment : RouterFragment() {
         binding.image.setImageResource(R.drawable.avatar_1_raster)
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.album.setOnClickListener {
-            activity.requestStoragePermissions(object : PermissionsCallback {
+            activity.requestStorage(object : PermissionsCallback {
                 override fun allow() {
                     openAlbum()
                 }
@@ -60,8 +60,8 @@ class UserAvatarFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.avatarResult.observe(viewLifecycleOwner) { path ->
-            if(!path.isNullOrBlank()){
+        viewModel.localAvatarResult.observe(viewLifecycleOwner) { path ->
+            if (!path.isNullOrBlank()) {
                 BitmapFactory.decodeFile(path, BitmapFactory.Options())?.let { bitmap ->
                     binding.image.setImageBitmap(bitmap)
                 }
@@ -71,8 +71,8 @@ class UserAvatarFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        if (viewModel.avatarResult.value == null) {
-            viewModel.getAvatar()
+        if (viewModel.localAvatarResult.value == null) {
+            viewModel.getLocalAvatar()
         }
     }
 
@@ -93,8 +93,8 @@ class UserAvatarFragment : RouterFragment() {
             .setBitmapPath(path)
             .setEditorFinishCallback(object : EditorFinishCallback {
                 override fun onFinish(path: String) {
-                    viewModel.avatarResult.postValue(path)
-                    WanHelper.setAvatar(path)
+                    viewModel.localAvatarResult.postValue(path)
+                    WanHelper.setLocalAvatar(path)
                 }
             })
             .show(childFragmentManager)

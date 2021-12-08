@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+
+<!--    //context.getCacheDir()-->
+    <cache-path
+        name="cache"
+        path="html" />
+
+<!--    //Environment.getExternalStorageDirectory()-->
+<!--    <external-path-->
+<!--        name="external"-->
+<!--        path="." />-->
+
+<!--    //context.getExternalCacheDirs()-->
+<!--    <external-cache-path-->
+<!--        name="external-cache"-->
+<!--        path="." />-->
+
+<!--    //context.getExternalFilesDirs()-->
+<!--    <external-files-path-->
+<!--        name="external-files"-->
+<!--        path="." />-->
+
+<!--    //context.getFilesDir()-->
+<!--    <files-path-->
+<!--        name="files"-->
+<!--        path="." />-->
+
+</paths>

@@ -49,7 +49,9 @@ open class BaseDialog : DialogFragment() {
 
     fun show(manager: FragmentManager) {
         this.manager = manager
-        show(manager, this::class.java.canonicalName)
+        if(manager.findFragmentByTag(this::class.java.canonicalName) == null){
+            show(manager, this::class.java.canonicalName)
+        }
     }
 
 }

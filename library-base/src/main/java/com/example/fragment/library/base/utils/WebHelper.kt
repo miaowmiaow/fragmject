@@ -202,11 +202,11 @@ class WebHelper private constructor(parent: ViewGroup) {
     }
 
     private fun isImage(url: String, accept: String?): Boolean {
-        if (url.endsWith(".jpg")
+        if (url.endsWith(".gif")
             || url.endsWith(".jpeg")
+            || url.endsWith(".jpg")
             || url.endsWith(".png")
             || url.endsWith(".svg")
-            || url.endsWith(".gif")
             || url.endsWith(".webp")
         ) {
             return true
@@ -214,17 +214,19 @@ class WebHelper private constructor(parent: ViewGroup) {
         if (accept.isNullOrBlank()) {
             return false
         }
-        return accept.contains("image/*")
+        val contentType = accept.split(",")[0]
+        return contentType.contains("image/")
     }
 
     private fun isHtmlStyle(url: String, accept: String?): Boolean {
-        if (url.endsWith(".css") || url.endsWith(".js")) {
+        if (url.endsWith(".css") || url.endsWith(".js") || url.endsWith(".json")) {
             return true
         }
         if (accept.isNullOrBlank()) {
             return false
         }
-        return accept.contains("text/css") || accept.contains("text/javascript")
+        val contentType = accept.split(",")[0]
+        return contentType.contains("css") || contentType.contains("javascript") || contentType.contains("json")
     }
 
     private fun assetsResponse(context: Context, url: String): WebResourceResponse {
@@ -234,7 +236,7 @@ class WebHelper private constructor(parent: ViewGroup) {
             val filename = url.substring(filenameIndex)
             val suffixIndex = url.lastIndexOf(".")
             val suffix = url.substring(suffixIndex + 1)
-            webResourceResponse.mimeType = getMimeTypeFromUrl(suffix + filename)
+            webResourceResponse.mimeType = getMimeTypeFromUrl(suffix + filename, "*/*")
             webResourceResponse.encoding = "UTF-8"
             webResourceResponse.data = context.resources.assets.open(suffix + filename)
         } catch (e: Exception) {
@@ -294,14 +296,15 @@ class WebHelper private constructor(parent: ViewGroup) {
         return webResourceResponse
     }
 
-    private fun getMimeTypeFromUrl(url: String, accept: String? = null): String {
+    private fun getMimeTypeFromUrl(url: String, accept: String?): String {
         var mimeType = "*/*"
         try {
             val extension = MimeTypeMap.getFileExtensionFromUrl(url)
             if (extension.isNotBlank()) {
                 mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-            } else if (!accept.isNullOrBlank()) {
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(accept)
+            }
+            if (mimeType == "*/*" && !accept.isNullOrBlank()) {
+                mimeType = accept.split(",")[0]
             }
         } catch (e: Exception) {
             e.printStackTrace()

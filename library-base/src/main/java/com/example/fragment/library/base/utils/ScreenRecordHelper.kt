@@ -46,10 +46,7 @@ object ScreenRecordHelper {
                             setAudioSource(MediaRecorder.AudioSource.MIC)//设置音频源
                             setVideoSource(MediaRecorder.VideoSource.SURFACE)//设置视频源
                             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)//设置输出的编码格式
-                            val path = CacheUtils.getCacheDirectory(
-                                this@startScreenRecord,
-                                "movies"
-                            ).absolutePath
+                            val path = CacheUtils.getCacheDirPath(this@startScreenRecord, "movies")
                             val recordPath = path + "/" + System.currentTimeMillis() + ".mp4"
                             setOutputFile(recordPath)
                             //设置录屏时屏幕大小,这个可跟VirtualDisplay一起控制屏幕大小,VirtualDisplay是将屏幕设置成多大多小setVideoSize是输出文件时屏幕多大多小

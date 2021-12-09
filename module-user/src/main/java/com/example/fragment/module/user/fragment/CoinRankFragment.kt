@@ -108,8 +108,8 @@ class CoinRankFragment : RouterFragment() {
         val from = view.text.toString().toInt()
         val to = number.toInt()
         val animator = ValueAnimator.ofInt(from, to)
-        animator.addUpdateListener { animation ->
-            val value = animation.animatedValue as Int
+        animator.addUpdateListener {
+            val value = it.animatedValue as Int
             view.text = String.format("%d", value)
         }
         animator.duration = 1000

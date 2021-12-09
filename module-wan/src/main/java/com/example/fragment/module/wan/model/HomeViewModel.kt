@@ -28,7 +28,7 @@ class HomeViewModel : BaseViewModel() {
             val articleTop = async { getArticleTop() }
             val articleList = async { getArticleList(getHomePage()) }
             //通过LiveData通知界面更新
-            val articleData = ArrayList<ArticleBean>()
+            val articleData = arrayListOf(ArticleBean())
             articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
             articleList.await().data?.datas?.let { articleData.addAll(it) }
             articleListResult.postValue(articleData)

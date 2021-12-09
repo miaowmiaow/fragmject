@@ -1,8 +1,6 @@
 package com.example.fragment.library.base.http
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -135,9 +133,10 @@ class SimpleHttp private constructor() {
             .cookieJar(CookieJar())
             .hostnameVerifier { hostname, session ->
                 if (hostNames != null) {
-                    listOf(*hostNames!!)
-                        .contains(hostname)
-                } else HttpsURLConnection.getDefaultHostnameVerifier().verify(hostname, session)
+                    listOf(*hostNames!!).contains(hostname)
+                } else {
+                    HttpsURLConnection.getDefaultHostnameVerifier().verify(hostname, session)
+                }
             }
             .sslSocketFactory(sslContext.socketFactory, trustManager)
             .addNetworkInterceptor(interceptor)
@@ -164,24 +163,22 @@ class SimpleHttp private constructor() {
         type: Class<T>,
         progress: ((Double) -> Unit)? = null
     ): T {
-        return withContext(Dispatchers.IO) {
-            try {
-                progress?.invoke(0.0)
-                converter.converter(
-                    getService().get(
-                        request.getUrl(baseUrl.toString()),
-                        request.getHeader()
-                    ),
-                    type
-                )
-            } catch (e: Exception) {
-                val msg = e.message.toString()
-                val t = type.newInstance()
-                t.errorMsg = msg
-                t
-            } finally {
-                progress?.invoke(1.0)
-            }
+        return try {
+            progress?.invoke(0.0)
+            converter.converter(
+                getService().get(
+                    request.getUrl(baseUrl.toString()),
+                    request.getHeader()
+                ),
+                type
+            )
+        } catch (e: Exception) {
+            val msg = e.message.toString()
+            val t = type.newInstance()
+            t.errorMsg = msg
+            t
+        } finally {
+            progress?.invoke(1.0)
         }
     }
 
@@ -190,25 +187,23 @@ class SimpleHttp private constructor() {
         type: Class<T>,
         progress: ((Double) -> Unit)? = null
     ): T {
-        return withContext(Dispatchers.IO) {
+        return try {
             progress?.invoke(0.0)
-            try {
-                converter.converter(
-                    getService().post(
-                        request.getUrl(baseUrl.toString()),
-                        request.getHeader(),
-                        request.getParam()
-                    ),
-                    type
-                )
-            } catch (e: Exception) {
-                val msg = e.message.toString()
-                val t = type.newInstance()
-                t.errorMsg = msg
-                t
-            } finally {
-                progress?.invoke(1.0)
-            }
+            converter.converter(
+                getService().post(
+                    request.getUrl(baseUrl.toString()),
+                    request.getHeader(),
+                    request.getParam()
+                ),
+                type
+            )
+        } catch (e: Exception) {
+            val msg = e.message.toString()
+            val t = type.newInstance()
+            t.errorMsg = msg
+            t
+        } finally {
+            progress?.invoke(1.0)
         }
     }
 
@@ -234,25 +229,23 @@ class SimpleHttp private constructor() {
                 }
             }
         }
-        return withContext(Dispatchers.IO) {
-            try {
-                progress?.invoke(0.0)
-                converter.converter(
-                    getService().form(
-                        request.getUrl(baseUrl.toString()),
-                        request.getHeader(),
-                        body.build()
-                    ),
-                    type
-                )
-            } catch (e: Exception) {
-                val msg = e.message.toString()
-                val t = type.newInstance()
-                t.errorMsg = msg
-                t
-            } finally {
-                progress?.invoke(1.0)
-            }
+        return try {
+            progress?.invoke(0.0)
+            converter.converter(
+                getService().form(
+                    request.getUrl(baseUrl.toString()),
+                    request.getHeader(),
+                    body.build()
+                ),
+                type
+            )
+        } catch (e: Exception) {
+            val msg = e.message.toString()
+            val t = type.newInstance()
+            t.errorMsg = msg
+            t
+        } finally {
+            progress?.invoke(1.0)
         }
     }
 
@@ -261,22 +254,20 @@ class SimpleHttp private constructor() {
         filePathName: String,
         progress: ((Double) -> Unit)? = null
     ): HttpResponse {
-        return withContext(Dispatchers.IO) {
-            try {
-                progress?.invoke(0.0)
-                getService().download(request.getUrl(), request.getHeader()).use { body ->
-                    val file = File(filePathName)
-                    body.byteStream().use { inputStream ->
-                        file.writeBytes(inputStream.readBytes())
-                    }
+        return try {
+            progress?.invoke(0.0)
+            getService().download(request.getUrl(), request.getHeader()).use { body ->
+                val file = File(filePathName)
+                body.byteStream().use { inputStream ->
+                    file.writeBytes(inputStream.readBytes())
                 }
-                HttpResponse("0", "success")
-            } catch (e: Exception) {
-                val msg = e.message.toString()
-                HttpResponse("-1", msg)
-            } finally {
-                progress?.invoke(1.0)
             }
+            HttpResponse("0", "success")
+        } catch (e: Exception) {
+            val msg = e.message.toString()
+            HttpResponse("-1", msg)
+        } finally {
+            progress?.invoke(1.0)
         }
     }
 

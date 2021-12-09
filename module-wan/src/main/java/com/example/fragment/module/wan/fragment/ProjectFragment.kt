@@ -69,9 +69,8 @@ class ProjectFragment : RouterFragment() {
             }
 
             override fun createFragment(position: Int): Fragment {
-                val args = bundleOf(Keys.CID to data[position].id)
                 val fragment = ProjectArticleFragment.newInstance()
-                fragment.arguments = args
+                fragment.arguments = bundleOf(Keys.CID to data[position].id)
                 return fragment
             }
         }

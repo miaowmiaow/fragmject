@@ -59,9 +59,7 @@ abstract class BaseFragment : Fragment() {
     abstract fun initLoad()
 
     private fun showProgress() {
-        if (isVisibleToUser) {
-            (requireActivity() as BaseActivity).showProgress()
-        }
+        if (isVisibleToUser) (requireActivity() as BaseActivity).showProgress()
     }
 
     private fun dismissProgress() {

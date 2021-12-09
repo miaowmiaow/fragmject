@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
@@ -46,8 +48,7 @@ class SearchFragment : RouterFragment() {
             if (view.id == R.id.delete) {
                 historySearchAdapter.removeData(position)
                 val data = historySearchAdapter.getData()
-                binding.searchHistory.visibility =
-                    if (data.isNotEmpty()) View.VISIBLE else View.GONE
+                binding.searchHistory.visibility = if (data.isNotEmpty()) VISIBLE else GONE
                 WanHelper.setSearchHistory(data)
             }
         }
@@ -108,33 +109,31 @@ class SearchFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
-            binding.history.visibility = View.VISIBLE
-            binding.pullRefresh.visibility = View.GONE
-            binding.hotKey.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.history.visibility = VISIBLE
+            binding.pullRefresh.visibility = GONE
+            binding.hotKey.visibility = if (result.isNotEmpty()) VISIBLE else GONE
             binding.fbl.removeAllViews()
             result.forEach { hotKey ->
                 val inflater = LayoutInflater.from(binding.fbl.context)
-                val tv = inflater.inflate(R.layout.fbl_hot_key, binding.fbl, false) as TextView
-                tv.text = hotKey.name
-                tv.setOnClickListener {
-                    search(hotKey.name)
-                }
+                val tv = inflater.inflate(R.layout.fbl_hot_key, binding.fbl, false)
+                (tv as TextView).text = hotKey.name
+                tv.setOnClickListener { search(hotKey.name) }
                 binding.fbl.addView(tv)
             }
         }
         viewModel.searchHistoryResult.observe(viewLifecycleOwner) { result ->
-            binding.history.visibility = View.VISIBLE
-            binding.pullRefresh.visibility = View.GONE
-            binding.searchHistory.visibility = if (result.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.history.visibility = VISIBLE
+            binding.pullRefresh.visibility = GONE
+            binding.searchHistory.visibility = if (result.isNotEmpty()) VISIBLE else GONE
             historySearchAdapter.setNewData(result)
         }
         viewModel.searchResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> result.data?.datas?.let { list ->
+                "0" -> result.data?.datas?.let { data ->
                     if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(list)
+                        articleAdapter.setNewData(data)
                     } else {
-                        articleAdapter.addData(list)
+                        articleAdapter.addData(data)
                     }
                 }
                 else -> activity.showTips(result.errorMsg)
@@ -158,8 +157,8 @@ class SearchFragment : RouterFragment() {
 
     private fun search(key: String) {
         if (checkParameter(key)) {
-            binding.history.visibility = View.GONE
-            binding.pullRefresh.visibility = View.VISIBLE
+            binding.history.visibility = GONE
+            binding.pullRefresh.visibility = VISIBLE
             binding.search.setText(key)
             binding.pullRefresh.setRefreshing()
             val list = historySearchAdapter.getData()

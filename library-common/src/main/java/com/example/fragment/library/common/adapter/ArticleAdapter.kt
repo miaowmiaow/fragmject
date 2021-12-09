@@ -54,6 +54,14 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         R.drawable.avatar_6_raster,
     )
 
+    fun setBannerData(data: List<BannerBean>? = null) {
+        if (data != null) {
+            bannerData.addAll(data)
+            bannerAdapter.setNewData(bannerData)
+            notifyItemChanged(0)
+        }
+    }
+
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return if (viewType == 0) {
             ItemArticleBannerBinding::inflate
@@ -196,14 +204,6 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             s = m.replaceAll(" ")
         }
         return s
-    }
-
-    fun setBannerData(data: List<BannerBean>? = null) {
-        if (data != null) {
-            bannerData.addAll(data)
-            bannerAdapter.setNewData(bannerData)
-            notifyItemChanged(0)
-        }
     }
 
     private fun collect(id: String): MutableLiveData<HttpResponse> {

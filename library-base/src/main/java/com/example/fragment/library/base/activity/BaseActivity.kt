@@ -17,15 +17,12 @@ abstract class BaseActivity : AppCompatActivity() {
         tipsView = TipsView(view.context)
         val layout = RelativeLayout(view.context)
         layout.addView(view)
-        layout.addView(
-            tipsView,
-            RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-            ).also { layoutParams ->
-                layoutParams.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
-            }
-        )
+        layout.addView(tipsView, RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        ).also {
+            it.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
+        })
         super.setContentView(layout)
     }
 
@@ -48,12 +45,13 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun showProgress() {
-        progressDialog ?: ProgressDialog.newInstance().also { progressDialog = it }
-            .show(supportFragmentManager)
+        progressDialog = ProgressDialog.newInstance()
+        progressDialog?.show(supportFragmentManager)
     }
 
     fun dismissProgress() {
         progressDialog?.dismiss()
+        progressDialog = null
     }
 
 }

@@ -67,8 +67,8 @@ class MyCoinFragment : RouterFragment() {
                     val from = binding.coinCount.text.toString().toInt()
                     val to = coinBean.coinCount.toInt()
                     val animator = ValueAnimator.ofInt(from, to)
-                    animator.addUpdateListener { animation ->
-                        val value = animation.animatedValue as Int
+                    animator.addUpdateListener {
+                        val value = it.animatedValue as Int
                         binding.coinCount.text = String.format("%d", value)
                     }
                     animator.duration = 1000

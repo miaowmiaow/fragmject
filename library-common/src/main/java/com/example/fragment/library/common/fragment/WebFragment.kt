@@ -54,22 +54,18 @@ class WebFragment : RouterFragment() {
     override fun initView() {
         val onBackPressedCallback =
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                if (webHelper.getWebView().canGoBack()) {
-                    webHelper.getWebView().goBack()
-                } else {
+                if (!webHelper.canGoBack()) {
                     this.isEnabled = false
                     activity.onBackPressed()
                 }
             }
         binding.black.setOnClickListener {
-            if (webHelper.getWebView().canGoBack()) {
-                webHelper.getWebView().goBack()
-            } else {
+            if (!webHelper.canGoBack()) {
                 onBackPressedCallback.isEnabled = false
                 activity.onBackPressed()
             }
         }
-        webHelper = WebHelper.with(binding.webContainer)
+        webHelper = WebHelper.with(binding.webContainer).injectVConsole(false)
         webHelper.onReceivedTitleListener = object : WebHelper.OnReceivedTitleListener {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 binding.title.text = title

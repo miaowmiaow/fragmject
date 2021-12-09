@@ -1,14 +1,12 @@
 package com.example.fragment.library.base.utils
 
 import android.content.Context
-import android.os.Build
-import android.os.StatFs
 import java.io.File
 
 object CacheUtils {
 
-    fun getCacheDirectory(context: Context, name: String): File {
-        return File(context.cacheDir, name).apply { mkdirs() }
+    fun getCacheDirPath(context: Context, name: String): String {
+        return File(context.cacheDir, name).apply { mkdirs() }.absolutePath
     }
 
     fun getTotalCacheSize(context: Context): String {

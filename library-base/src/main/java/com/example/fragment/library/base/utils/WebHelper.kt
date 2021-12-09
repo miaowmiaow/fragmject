@@ -35,8 +35,9 @@ import kotlinx.coroutines.runBlocking
 import okio.BufferedSource
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
+import java.util.*
 
-class WebHelper private constructor(private val parent: ViewGroup) {
+class WebHelper private constructor(parent: ViewGroup) {
 
     companion object {
         fun with(parent: ViewGroup): WebHelper {
@@ -44,7 +45,7 @@ class WebHelper private constructor(private val parent: ViewGroup) {
         }
     }
 
-    private val webView = WebView(parent.context)
+    private val webView = WebHolder.obtain(parent.context)
     private val progressBar = SnailBar(parent.context)
 
     var onReceivedTitleListener: OnReceivedTitleListener? = null
@@ -52,29 +53,12 @@ class WebHelper private constructor(private val parent: ViewGroup) {
     var onPageFinishedListener: OnPageFinishedListener? = null
     var onProgressChangedListener: OnProgressChangedListener? = null
 
-    private var injectJs = false
+    private var injectState = false
+    private var injectVConsole = false
 
     init {
         parent.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        parent.addView(progressBar, ViewGroup.LayoutParams(MATCH_PARENT, 15))
-        webView.setBackgroundColor(Color.TRANSPARENT)
-        webView.view.setBackgroundColor(Color.TRANSPARENT)
-        webView.overScrollMode = WebView.OVER_SCROLL_NEVER
-        webView.view.overScrollMode = WebView.OVER_SCROLL_NEVER
-        val webSetting = webView.settings
-        webSetting.allowFileAccess = true
-        webSetting.setAppCacheEnabled(true)
-        webSetting.cacheMode = WebSettings.LOAD_DEFAULT
-        webSetting.domStorageEnabled = true
-        webSetting.setGeolocationEnabled(true)
-        webSetting.javaScriptEnabled = true
-        webSetting.loadWithOverviewMode = true
-        webSetting.useWideViewPort = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            webSetting.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
-        }
-        webView.settingsExtension?.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)
+        parent.addView(progressBar, ViewGroup.LayoutParams(MATCH_PARENT, 10))
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(
@@ -101,12 +85,16 @@ class WebHelper private constructor(private val parent: ViewGroup) {
                 val accept = request?.requestHeaders?.get("Accept")
                 if (view != null && uri != null) {
                     val url = uri.toString()
-                    if (isImage(accept)) {
-                        return imageResponse(view.context, url)
-                    } else if (url.endsWith(".js") || isHtml(accept)) {
-                        return htmlResponse(view.context, url)
-                    } else if (url.startsWith("file:///android_asset/")) {
-                        return assetsResponse(view.context, url)
+                    when {
+                        url.startsWith("file:///android_asset/") -> {
+                            return assetsResponse(view.context, url)
+                        }
+                        isImage(url, accept) -> {
+                            return imageResponse(view.context, url, accept)
+                        }
+                        isHtmlStyle(url, accept) -> {
+                            return htmlStyleResponse(view.context, url, accept)
+                        }
                     }
                 }
                 return super.shouldInterceptRequest(view, request)
@@ -114,14 +102,14 @@ class WebHelper private constructor(private val parent: ViewGroup) {
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                injectJs = false
+                injectState = false
                 progressBar.visibility = View.VISIBLE
                 onPageStartedListener?.onPageStarted(view, url, favicon)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                injectJs = false
+                injectState = false
                 progressBar.visibility = View.GONE
                 onPageFinishedListener?.onPageFinished(view, url)
             }
@@ -136,11 +124,11 @@ class WebHelper private constructor(private val parent: ViewGroup) {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
                 progressBar.progress = newProgress
-                if (!injectJs && newProgress > 80) {
+                if (injectVConsole && !injectState && newProgress > 80) {
                     view?.apply {
                         evaluateJavascript(context.injectVConsoleJs()) {}
                     }
-                    injectJs = true
+                    injectState = true
                 }
                 onProgressChangedListener?.onProgressChanged(view, newProgress)
             }
@@ -182,8 +170,17 @@ class WebHelper private constructor(private val parent: ViewGroup) {
         }
     }
 
-    fun getWebView(): WebView {
-        return webView
+    fun injectVConsole(inject: Boolean): WebHelper {
+        injectVConsole = inject
+        return this
+    }
+
+    fun canGoBack(): Boolean {
+        val can = webView.canGoBack()
+        if (can) {
+            webView.goBack()
+        }
+        return can
     }
 
     fun loadUrl(url: String) {
@@ -201,72 +198,34 @@ class WebHelper private constructor(private val parent: ViewGroup) {
     }
 
     fun onDestroy() {
-        parent.removeView(webView)
-        try {
-            webView.removeAllViews()
-            webView.loadDataWithBaseURL(null, "", "text/html", "utf-8", null)
-            webView.stopLoading()
-            webView.webChromeClient = null
-            webView.webViewClient = null
-            webView.destroy()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        WebHolder.destroy(webView)
     }
 
-    private fun isImage(accept: String?): Boolean {
+    private fun isImage(url: String, accept: String?): Boolean {
+        if (url.endsWith(".jpg")
+            || url.endsWith(".jpeg")
+            || url.endsWith(".png")
+            || url.endsWith(".svg")
+            || url.endsWith(".gif")
+            || url.endsWith(".webp")
+        ) {
+            return true
+        }
         if (accept.isNullOrBlank()) {
             return false
         }
         return accept.contains("image/*")
     }
 
-    private fun isHtml(accept: String?): Boolean {
+    private fun isHtmlStyle(url: String, accept: String?): Boolean {
+        if (url.endsWith(".css") || url.endsWith(".js")) {
+            return true
+        }
         if (accept.isNullOrBlank()) {
             return false
         }
-        return accept.contains("text/javascript") || accept.contains("text/css")
+        return accept.contains("text/css") || accept.contains("text/javascript")
     }
-
-    private fun imageResponse(context: Context, url: String): WebResourceResponse {
-        val webResourceResponse = WebResourceResponse()
-        val request = ImageRequest.Builder(context).data(url).decoder(object : Decoder {
-            override suspend fun decode(
-                pool: BitmapPool,
-                source: BufferedSource,
-                size: Size,
-                options: Options
-            ): DecodeResult {
-                val byteArray = source.use { it.peek().inputStream().readBytes() }
-                webResourceResponse.mimeType = getMimeTypeFromUrl(url, "image/webp")
-                webResourceResponse.encoding = "UTF-8"
-                webResourceResponse.data = byteArray.inputStream()
-                return DecodeResult(ColorDrawable(), false)
-            }
-
-            override fun handles(source: BufferedSource, mimeType: String?) = false
-
-        }).build()
-        context.imageLoader.executeBlocking(request)
-        return webResourceResponse
-    }
-
-    private fun htmlResponse(context: Context, url: String): WebResourceResponse {
-        val webResourceResponse = WebResourceResponse()
-        val path = CacheUtils.getCacheDirectory(context, "html").absolutePath
-        val filePathName = path + File.separator + url.encodeUtf8().md5().hex()
-        val file = File(filePathName)
-        runBlocking {
-            if (!file.exists() || !file.isFile) {
-                download(HttpRequest(url), filePathName)
-            }
-        }
-        webResourceResponse.mimeType = getMimeTypeFromUrl(url)
-        webResourceResponse.encoding = "UTF-8"
-        webResourceResponse.data = file.inputStream()
-        return webResourceResponse
-    }
-
 
     private fun assetsResponse(context: Context, url: String): WebResourceResponse {
         val webResourceResponse = WebResourceResponse()
@@ -284,11 +243,68 @@ class WebHelper private constructor(private val parent: ViewGroup) {
         return webResourceResponse
     }
 
-    private fun getMimeTypeFromUrl(url: String, defType: String = "*/*"): String {
-        var mimeType = defType
-        val extension = MimeTypeMap.getFileExtensionFromUrl(url)
-        if (extension.isNotBlank()) {
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+    private fun imageResponse(context: Context, url: String, accept: String?): WebResourceResponse {
+        val webResourceResponse = WebResourceResponse()
+        try {
+            val request = ImageRequest.Builder(context).data(url).decoder(object : Decoder {
+                override suspend fun decode(
+                    pool: BitmapPool,
+                    source: BufferedSource,
+                    size: Size,
+                    options: Options
+                ): DecodeResult {
+                    val byteArray = source.use { it.peek().inputStream().readBytes() }
+                    webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
+                    webResourceResponse.encoding = "UTF-8"
+                    webResourceResponse.data = byteArray.inputStream()
+                    return DecodeResult(ColorDrawable(), false)
+                }
+
+                override fun handles(source: BufferedSource, mimeType: String?) = false
+
+            }).build()
+            context.imageLoader.executeBlocking(request)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return webResourceResponse
+    }
+
+    private fun htmlStyleResponse(
+        context: Context,
+        url: String,
+        accept: String?
+    ): WebResourceResponse {
+        val webResourceResponse = WebResourceResponse()
+        try {
+            val cachePath = CacheUtils.getCacheDirPath(context, "html")
+            val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
+            val file = File(filePathName)
+            runBlocking {
+                if (!file.exists() || !file.isFile) {
+                    download(HttpRequest(url), filePathName)
+                }
+            }
+            webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
+            webResourceResponse.encoding = "UTF-8"
+            webResourceResponse.data = file.inputStream()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return webResourceResponse
+    }
+
+    private fun getMimeTypeFromUrl(url: String, accept: String? = null): String {
+        var mimeType = "*/*"
+        try {
+            val extension = MimeTypeMap.getFileExtensionFromUrl(url)
+            if (extension.isNotBlank()) {
+                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            } else if (!accept.isNullOrBlank()) {
+                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(accept)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return mimeType
     }
@@ -307,6 +323,82 @@ class WebHelper private constructor(private val parent: ViewGroup) {
 
     interface OnProgressChangedListener {
         fun onProgressChanged(view: WebView?, newProgress: Int)
+    }
+
+}
+
+class WebHolder private constructor() {
+
+    companion object {
+        @Volatile
+        private var instance: WebHolder? = null
+
+        private fun instance() = instance ?: synchronized(this) {
+            instance ?: WebHolder().also { instance = it }
+        }
+
+        fun obtain(context: Context): WebView {
+            return instance().obtain(context)
+        }
+
+        fun destroy(webView: WebView) {
+            instance().destroy(webView)
+        }
+    }
+
+    private val webCache: MutableList<WebView> = ArrayList(1)
+
+    private fun create(context: Context): WebView {
+        val webView = WebView(context)
+        webView.setBackgroundColor(Color.TRANSPARENT)
+        webView.view.setBackgroundColor(Color.TRANSPARENT)
+        webView.overScrollMode = WebView.OVER_SCROLL_NEVER
+        webView.view.overScrollMode = WebView.OVER_SCROLL_NEVER
+        val webSetting = webView.settings
+        webSetting.allowFileAccess = true
+        webSetting.setAppCacheEnabled(true)
+        webSetting.cacheMode = WebSettings.LOAD_DEFAULT
+        webSetting.domStorageEnabled = true
+        webSetting.setGeolocationEnabled(true)
+        webSetting.javaScriptEnabled = true
+        webSetting.loadWithOverviewMode = true
+        webSetting.useWideViewPort = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSetting.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+        }
+        webView.settingsExtension?.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)
+        return webView
+    }
+
+    fun obtain(context: Context): WebView {
+        if (webCache.isEmpty()) {
+            webCache.add(create(context))
+        }
+        val webView = webCache.removeAt(0)
+        if (webCache.isEmpty()) {
+            webCache.add(create(context))
+        }
+        return webView
+    }
+
+    fun destroy(webView: WebView) {
+        try {
+            val parent = webView.parent
+            if (parent != null) {
+                (parent as ViewGroup).removeView(webView)
+            }
+            webView.stopLoading()
+            webView.loadDataWithBaseURL(null, "", "text/html", "utf-8", null)
+            webView.webChromeClient = null
+            webView.webViewClient = null
+            webView.removeAllViews()
+            webView.destroy()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            webCache.remove(webView)
+        }
     }
 
 }

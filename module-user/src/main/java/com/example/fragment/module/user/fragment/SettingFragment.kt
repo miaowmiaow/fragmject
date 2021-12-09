@@ -164,38 +164,29 @@ class SettingFragment : RouterFragment() {
         }
         viewModel.updateResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> {
-                    result.data?.let { data ->
-                        StandardDialog.newInstance()
-                            .setTitle("有新版本更新啦♥~")
-                            .setContent("当前版本：${SystemUtil.getVersionName()}\n最新版本：${data.versionName}")
-                            .setOnDialogClickListener(object :
-                                StandardDialog.OnDialogClickListener {
-                                override fun onConfirm(dialog: StandardDialog) {
-                                    val apkUrl = data.download_url
-                                    val path =
-                                        CacheUtils.getCacheDirectory(activity, "apk").absolutePath
-                                    val filePathName = path + File.separator + apkUrl.substring(
-                                        apkUrl.lastIndexOf("/") + 1
+                "0" -> result.data?.let { data ->
+                    StandardDialog.newInstance()
+                        .setTitle("有新版本更新啦♥~")
+                        .setContent("当前版本：${SystemUtil.getVersionName()}\n最新版本：${data.versionName}")
+                        .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
+                            override fun onConfirm(dialog: StandardDialog) {
+                                val apkUrl = data.download_url
+                                val cachePath = CacheUtils.getCacheDirPath(activity, "apk")
+                                val apkName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1)
+                                val filePathName = cachePath + File.separator + apkName
+                                val file = File(filePathName)
+                                if (!file.exists() || !file.isFile) {
+                                    viewModel.downloadApk(apkUrl, filePathName)
+                                } else {
+                                    viewModel.downloadApkResult.postValue(
+                                        HttpResponse("0", filePathName)
                                     )
-                                    val file = File(filePathName)
-                                    if (!file.exists() || !file.isFile) {
-                                        viewModel.downloadApk(apkUrl, filePathName)
-                                    } else {
-                                        viewModel.downloadApkResult.postValue(
-                                            HttpResponse(
-                                                "0",
-                                                filePathName
-                                            )
-                                        )
-                                    }
                                 }
+                            }
 
-                                override fun onCancel(dialog: StandardDialog) {
-                                }
-                            })
-                            .show(childFragmentManager)
-                    }
+                            override fun onCancel(dialog: StandardDialog) {
+                            }
+                        }).show(childFragmentManager)
                 }
                 else -> activity.showTips(result.errorMsg)
             }

@@ -67,11 +67,7 @@ abstract class BaseViewModel : ViewModel() {
     }
 
     fun progress(num: Double) {
-        viewModelScope.launch {
-            if (homePage == curPage) {
-                progress.postValue(num)
-            }
-        }
+        if (homePage == curPage) progress.postValue(num)
     }
 
 }

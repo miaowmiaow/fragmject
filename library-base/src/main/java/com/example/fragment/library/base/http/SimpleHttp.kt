@@ -7,17 +7,12 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.ResponseBody
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.http.*
 import java.io.File
-import java.io.InputStream
 import java.io.UnsupportedEncodingException
 import java.net.URLConnection
 import java.net.URLEncoder
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
 
 /**
  * get请求
@@ -83,16 +78,14 @@ class SimpleHttp private constructor() {
         }
 
         @JvmStatic
-        fun setBaseUrl(baseUrl: String? = null): Companion {
-            instance().baseUrl.clear().append(baseUrl)
-            instance().httpClient = null
-            instance().retrofit = null
+        fun setBaseUrl(baseUrl: String): Companion {
+            instance().baseUrl = baseUrl
             return this
         }
 
         @JvmStatic
-        fun setHttpClient(httpClient: OkHttpClient? = null): Companion {
-            instance().httpClient = httpClient
+        fun setHttpClient(client: OkHttpClient): Companion {
+            instance().client = client
             return this
         }
 
@@ -103,59 +96,22 @@ class SimpleHttp private constructor() {
         }
     }
 
+    private lateinit var baseUrl: String
+    private lateinit var client: OkHttpClient
+    private lateinit var converter: Converter
     private var retrofit: Retrofit? = null
     private var service: ApiService? = null
-    private var httpClient: OkHttpClient? = null
-    private var baseUrl = StringBuilder()
-    private var hostNames: Array<String>? = null
-    private var clientCertificate: InputStream? = null
-    private var serverCertificates: Array<InputStream>? = null
-    private var clientCertificatePassword: String? = null
-    private var converter: Converter = GSonConverter.create()
 
-    private fun getHttpClient(): OkHttpClient {
-        return httpClient ?: buildHttpClient().also { httpClient = it }
+    private fun getRetrofit(): Retrofit {
+        return retrofit ?: Retrofit.Builder().baseUrl(baseUrl).client(client).build().also {
+            retrofit = it
+        }
     }
 
-    private fun buildHttpClient(): OkHttpClient {
-        val keyManagers =
-            HttpsHelper.prepareKeyManager(clientCertificate, clientCertificatePassword)
-        val trustManager = HttpsHelper.prepareX509TrustManager(serverCertificates)
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(keyManagers, arrayOf(trustManager), null)
-        val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
-        return OkHttpClient()
-            .newBuilder()
-            .readTimeout(15000L, TimeUnit.MILLISECONDS)
-            .writeTimeout(15000L, TimeUnit.MILLISECONDS)
-            .connectTimeout(15000L, TimeUnit.MILLISECONDS)
-            .cookieJar(CookieJar())
-            .hostnameVerifier { hostname, session ->
-                if (hostNames != null) {
-                    listOf(*hostNames!!).contains(hostname)
-                } else {
-                    HttpsURLConnection.getDefaultHostnameVerifier().verify(hostname, session)
-                }
-            }
-            .sslSocketFactory(sslContext.socketFactory, trustManager)
-            .addNetworkInterceptor(interceptor)
-            .build()
-    }
-
-    private fun getRetrofit() = retrofit ?: synchronized(this) {
-        retrofit ?: buildRetrofit().also { retrofit = it }
-    }
-
-    private fun buildRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(baseUrl.toString())
-            .client(getHttpClient())
-            .build()
-    }
-
-    private fun getService() = service ?: synchronized(this) {
-        service ?: getRetrofit().create(ApiService::class.java).also { service = it }
+    private fun getService(): ApiService {
+        return service ?: getRetrofit().create(ApiService::class.java).also {
+            service = it
+        }
     }
 
     suspend fun <T : HttpResponse> get(
@@ -167,7 +123,7 @@ class SimpleHttp private constructor() {
             progress?.invoke(0.0)
             converter.converter(
                 getService().get(
-                    request.getUrl(baseUrl.toString()),
+                    request.getUrl(baseUrl),
                     request.getHeader()
                 ),
                 type
@@ -191,7 +147,7 @@ class SimpleHttp private constructor() {
             progress?.invoke(0.0)
             converter.converter(
                 getService().post(
-                    request.getUrl(baseUrl.toString()),
+                    request.getUrl(baseUrl),
                     request.getHeader(),
                     request.getParam()
                 ),
@@ -233,7 +189,7 @@ class SimpleHttp private constructor() {
             progress?.invoke(0.0)
             converter.converter(
                 getService().form(
-                    request.getUrl(baseUrl.toString()),
+                    request.getUrl(baseUrl),
                     request.getHeader(),
                     body.build()
                 ),

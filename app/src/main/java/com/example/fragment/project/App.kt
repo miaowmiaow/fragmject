@@ -7,7 +7,9 @@ import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
+import com.example.fragment.library.base.http.GSonConverter
 import com.example.fragment.library.base.http.SimpleHttp
+import com.example.fragment.library.base.utils.OkHelper
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 
@@ -15,13 +17,14 @@ class App : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        initSimpleHttp()
+        initHttp()
         initQbSdk()
     }
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(applicationContext)
             .crossfade(true)
+            .okHttpClient { OkHelper.httpClient(applicationContext) }
             .componentRegistry {
                 if (Build.VERSION.SDK_INT >= 28) {
                     add(ImageDecoderDecoder(applicationContext))
@@ -33,8 +36,10 @@ class App : Application(), ImageLoaderFactory {
             .build()
     }
 
-    private fun initSimpleHttp() {
+    private fun initHttp() {
         SimpleHttp.setBaseUrl("https://www.wanandroid.com/")
+            .setHttpClient(OkHelper.httpClient(applicationContext))
+            .setConverter(GSonConverter.create())
     }
 
     /**
@@ -53,5 +58,6 @@ class App : Application(), ImageLoaderFactory {
         map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
         QbSdk.initTbsSettings(map)
     }
+
 
 }

@@ -37,15 +37,15 @@ import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 import java.util.*
 
-class WebHelper private constructor(parent: ViewGroup) {
+class WebViewHelper private constructor(parent: ViewGroup) {
 
     companion object {
-        fun with(parent: ViewGroup): WebHelper {
-            return WebHelper(parent)
+        fun with(parent: ViewGroup): WebViewHelper {
+            return WebViewHelper(parent)
         }
     }
 
-    private val webView = WebHolder.obtain(parent.context)
+    private val webView = WebViewCache.obtain(parent.context)
     private val progressBar = SnailBar(parent.context)
 
     var onReceivedTitleListener: OnReceivedTitleListener? = null
@@ -170,7 +170,7 @@ class WebHelper private constructor(parent: ViewGroup) {
         }
     }
 
-    fun injectVConsole(inject: Boolean): WebHelper {
+    fun injectVConsole(inject: Boolean): WebViewHelper {
         injectVConsole = inject
         return this
     }
@@ -198,7 +198,7 @@ class WebHelper private constructor(parent: ViewGroup) {
     }
 
     fun onDestroy() {
-        WebHolder.destroy(webView)
+        WebViewCache.destroy(webView)
     }
 
     private fun isImage(url: String, accept: String?): Boolean {
@@ -226,74 +226,86 @@ class WebHelper private constructor(parent: ViewGroup) {
             return false
         }
         val contentType = accept.split(",")[0]
-        return contentType.contains("css") || contentType.contains("javascript") || contentType.contains("json")
+        return contentType.contains("css") || contentType.contains("javascript") || contentType.contains(
+            "json"
+        )
     }
 
-    private fun assetsResponse(context: Context, url: String): WebResourceResponse {
-        val webResourceResponse = WebResourceResponse()
+    private fun assetsResponse(context: Context, url: String): WebResourceResponse? {
         try {
-            val filenameIndex = url.lastIndexOf("/")
+            val webResourceResponse = WebResourceResponse()
+            val filenameIndex = url.lastIndexOf("/") + 1
             val filename = url.substring(filenameIndex)
             val suffixIndex = url.lastIndexOf(".")
             val suffix = url.substring(suffixIndex + 1)
-            webResourceResponse.mimeType = getMimeTypeFromUrl(suffix + filename, "*/*")
+            webResourceResponse.mimeType = getMimeTypeFromUrl(url, "*/*")
             webResourceResponse.encoding = "UTF-8"
-            webResourceResponse.data = context.resources.assets.open(suffix + filename)
+            webResourceResponse.data = context.resources.assets.open("$suffix/$filename")
+            return webResourceResponse
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return webResourceResponse
+        return null
     }
 
-    private fun imageResponse(context: Context, url: String, accept: String?): WebResourceResponse {
-        val webResourceResponse = WebResourceResponse()
+    private fun imageResponse(
+        context: Context,
+        url: String,
+        accept: String?
+    ): WebResourceResponse? {
         try {
-            val request = ImageRequest.Builder(context).data(url).decoder(object : Decoder {
-                override suspend fun decode(
-                    pool: BitmapPool,
-                    source: BufferedSource,
-                    size: Size,
-                    options: Options
-                ): DecodeResult {
-                    val byteArray = source.use { it.peek().inputStream().readBytes() }
-                    webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
-                    webResourceResponse.encoding = "UTF-8"
-                    webResourceResponse.data = byteArray.inputStream()
-                    return DecodeResult(ColorDrawable(), false)
-                }
+            val webResourceResponse = WebResourceResponse()
+            context.imageLoader.executeBlocking(
+                ImageRequest.Builder(context).data(url).decoder(object : Decoder {
+                    override suspend fun decode(
+                        pool: BitmapPool,
+                        source: BufferedSource,
+                        size: Size,
+                        options: Options
+                    ): DecodeResult {
+                        val byteArray = source.use { it.peek().inputStream().readBytes() }
+                        webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
+                        webResourceResponse.encoding = "UTF-8"
+                        webResourceResponse.data = byteArray.inputStream()
+                        return DecodeResult(ColorDrawable(), false)
+                    }
 
-                override fun handles(source: BufferedSource, mimeType: String?) = false
+                    override fun handles(source: BufferedSource, mimeType: String?) = false
 
-            }).build()
-            context.imageLoader.executeBlocking(request)
+                }).build()
+            )
+            return webResourceResponse
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return webResourceResponse
+        return null
     }
 
     private fun htmlStyleResponse(
         context: Context,
         url: String,
         accept: String?
-    ): WebResourceResponse {
-        val webResourceResponse = WebResourceResponse()
+    ): WebResourceResponse? {
         try {
             val cachePath = CacheUtils.getCacheDirPath(context, "html")
             val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
             val file = File(filePathName)
-            runBlocking {
-                if (!file.exists() || !file.isFile) {
+            if (!file.exists() || !file.isFile) {
+                val response = runBlocking {
                     download(HttpRequest(url), filePathName)
                 }
+                if (response.errorCode == "0") {
+                    val webResourceResponse = WebResourceResponse()
+                    webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
+                    webResourceResponse.encoding = "UTF-8"
+                    webResourceResponse.data = file.inputStream()
+                    return webResourceResponse
+                }
             }
-            webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
-            webResourceResponse.encoding = "UTF-8"
-            webResourceResponse.data = file.inputStream()
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return webResourceResponse
+        return null
     }
 
     private fun getMimeTypeFromUrl(url: String, accept: String?): String {
@@ -330,14 +342,14 @@ class WebHelper private constructor(parent: ViewGroup) {
 
 }
 
-class WebHolder private constructor() {
+class WebViewCache private constructor() {
 
     companion object {
         @Volatile
-        private var instance: WebHolder? = null
+        private var instance: WebViewCache? = null
 
         private fun instance() = instance ?: synchronized(this) {
-            instance ?: WebHolder().also { instance = it }
+            instance ?: WebViewCache().also { instance = it }
         }
 
         fun obtain(context: Context): WebView {

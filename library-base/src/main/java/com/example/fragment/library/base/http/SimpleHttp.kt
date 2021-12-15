@@ -71,27 +71,27 @@ class SimpleHttp private constructor() {
     companion object {
 
         @Volatile
-        private var instance: SimpleHttp? = null
+        private var INSTANCE: SimpleHttp? = null
 
-        fun instance() = instance ?: synchronized(this) {
-            instance ?: SimpleHttp().also { instance = it }
+        fun instance() = INSTANCE ?: synchronized(this) {
+            INSTANCE ?: SimpleHttp().also { INSTANCE = it }
         }
 
         @JvmStatic
         fun setBaseUrl(baseUrl: String): Companion {
-            instance().baseUrl = baseUrl
+            instance().setBaseUrl(baseUrl)
             return this
         }
 
         @JvmStatic
         fun setHttpClient(client: OkHttpClient): Companion {
-            instance().client = client
+            instance().setHttpClient(client)
             return this
         }
 
         @JvmStatic
         fun setConverter(converter: Converter): Companion {
-            instance().converter = converter
+            instance().setConverter(converter)
             return this
         }
     }
@@ -101,6 +101,18 @@ class SimpleHttp private constructor() {
     private lateinit var converter: Converter
     private var retrofit: Retrofit? = null
     private var service: ApiService? = null
+
+    private fun setBaseUrl(baseUrl: String) {
+        this.baseUrl = baseUrl
+    }
+
+    private fun setHttpClient(client: OkHttpClient) {
+        this.client = client
+    }
+
+    private fun setConverter(converter: Converter) {
+        this.converter = converter
+    }
 
     private fun getRetrofit(): Retrofit {
         return retrofit ?: Retrofit.Builder().baseUrl(baseUrl).client(client).build().also {

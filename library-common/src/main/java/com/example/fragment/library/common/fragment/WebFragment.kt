@@ -35,14 +35,14 @@ class WebFragment : RouterFragment() {
         return binding.root
     }
 
-    override fun onPause() {
-        webViewHelper.onPause()
-        super.onPause()
-    }
-
     override fun onResume() {
         webViewHelper.onResume()
         super.onResume()
+    }
+
+    override fun onPause() {
+        webViewHelper.onPause()
+        super.onPause()
     }
 
     override fun onDestroyView() {

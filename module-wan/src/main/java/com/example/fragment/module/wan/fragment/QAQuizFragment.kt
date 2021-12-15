@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.view.OnLoadMoreListener
-import com.example.fragment.library.base.view.OnRefreshListener
-import com.example.fragment.library.base.view.PullRefreshLayout
+import com.example.fragment.library.base.view.pull.OnLoadMoreListener
+import com.example.fragment.library.base.view.pull.OnRefreshListener
+import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.databinding.FragmentQaQuizBinding

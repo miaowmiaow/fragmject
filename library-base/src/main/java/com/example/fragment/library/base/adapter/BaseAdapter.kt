@@ -102,11 +102,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
         return ViewBindHolder(
-            onCreateViewBinding(viewType).invoke(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
+            onCreateViewBinding(viewType).invoke(LayoutInflater.from(parent.context), parent, false)
         )
     }
 

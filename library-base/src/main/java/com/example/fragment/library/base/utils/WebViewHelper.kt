@@ -45,7 +45,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         }
     }
 
-    private val webView = WebViewCache.obtain(parent.context)
+    private val webView = WebViewManager.obtain(parent.context)
     private val progressBar = SnailBar(parent.context)
 
     var onReceivedTitleListener: OnReceivedTitleListener? = null
@@ -198,7 +198,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
     }
 
     fun onDestroy() {
-        WebViewCache.destroy(webView)
+        WebViewManager.destroy(webView)
     }
 
     private fun isImage(url: String, accept: String?): Boolean {
@@ -342,14 +342,14 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
 }
 
-class WebViewCache private constructor() {
+class WebViewManager private constructor() {
 
     companion object {
         @Volatile
-        private var instance: WebViewCache? = null
+        private var INSTANCE: WebViewManager? = null
 
-        private fun instance() = instance ?: synchronized(this) {
-            instance ?: WebViewCache().also { instance = it }
+        private fun instance() = INSTANCE ?: synchronized(this) {
+            INSTANCE ?: WebViewManager().also { INSTANCE = it }
         }
 
         fun obtain(context: Context): WebView {
@@ -361,7 +361,7 @@ class WebViewCache private constructor() {
         }
     }
 
-    private val webCache: MutableList<WebView> = ArrayList(1)
+    private val webViewCache: MutableList<WebView> = ArrayList(1)
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -387,12 +387,12 @@ class WebViewCache private constructor() {
     }
 
     fun obtain(context: Context): WebView {
-        if (webCache.isEmpty()) {
-            webCache.add(create(context))
+        if (webViewCache.isEmpty()) {
+            webViewCache.add(create(context))
         }
-        val webView = webCache.removeAt(0)
-        if (webCache.isEmpty()) {
-            webCache.add(create(context))
+        val webView = webViewCache.removeAt(0)
+        if (webViewCache.isEmpty()) {
+            webViewCache.add(create(context))
         }
         return webView
     }
@@ -412,7 +412,7 @@ class WebViewCache private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            webCache.remove(webView)
+            webViewCache.remove(webView)
         }
     }
 

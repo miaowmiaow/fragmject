@@ -4,15 +4,28 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <com.example.fragment.library.base.view.PullRefreshLayout
+    <com.example.fragment.library.base.view.pull.PullRefreshLayout
         android:id="@+id/pull_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
+        <com.example.fragment.library.base.view.CoordinatorLayout
+            android:id="@+id/coordinator"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </com.example.fragment.library.base.view.PullRefreshLayout>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/banner"
+                android:layout_width="match_parent"
+                android:layout_height="175dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.example.fragment.library.base.view.CoordinatorLayout>
+
+    </com.example.fragment.library.base.view.pull.PullRefreshLayout>
 
 </RelativeLayout>

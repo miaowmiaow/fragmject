@@ -27,15 +27,6 @@ object FileUtils {
     fun getSize(file: File): Long {
         var size: Long = 0
         try {
-            if (file.isDirectory) {
-                file.listFiles()?.apply {
-                    for (f in this) {
-                        size += getSize(f)
-                    }
-                }
-            } else {
-                size += file.length()
-            }
             file.listFiles()?.apply {
                 for (f in this) {
                     size = if (f.isDirectory) {

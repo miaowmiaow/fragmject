@@ -4,7 +4,7 @@
 <!--    //context.getCacheDir()-->
     <cache-path
         name="cache"
-        path="html" />
+        path="." />
 
 <!--    //Environment.getExternalStorageDirectory()-->
 <!--    <external-path-->

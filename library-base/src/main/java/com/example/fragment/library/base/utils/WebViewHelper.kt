@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -7,9 +8,11 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.FrameLayout
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import coil.bitmap.BitmapPool
@@ -55,10 +58,13 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
     private var injectState = false
     private var injectVConsole = false
+    private var originalUrl = "about:blank"
 
     init {
         parent.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        parent.addView(progressBar, ViewGroup.LayoutParams(MATCH_PARENT, 10))
+        parent.addView(progressBar, FrameLayout.LayoutParams(MATCH_PARENT, 5).apply {
+            gravity = Gravity.BOTTOM
+        })
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(
@@ -82,18 +88,18 @@ class WebViewHelper private constructor(parent: ViewGroup) {
                 request: WebResourceRequest?
             ): WebResourceResponse? {
                 val uri = request?.url
-                val accept = request?.requestHeaders?.get("Accept")
                 if (view != null && uri != null) {
                     val url = uri.toString()
+                    val extension = getExtensionFromUrl(url)
                     when {
                         url.startsWith("file:///android_asset/") -> {
                             return assetsResponse(view.context, url)
                         }
-                        isImage(url, accept) -> {
-                            return imageResponse(view.context, url, accept)
+                        isImage(extension) -> {
+                            return imageResponse(view.context, url, extension)
                         }
-                        isHtmlStyle(url, accept) -> {
-                            return htmlStyleResponse(view.context, url, accept)
+                        isHtmlStyle(extension) -> {
+                            return htmlStyleResponse(view.context, url, extension)
                         }
                     }
                 }
@@ -176,59 +182,60 @@ class WebViewHelper private constructor(parent: ViewGroup) {
     }
 
     fun canGoBack(): Boolean {
-        val can = webView.canGoBack()
-        if (can) {
-            webView.goBack()
+        val canBack = webView.canGoBack()
+        if (canBack) webView.goBack()
+        val backForwardList = webView.copyBackForwardList()
+        val currentIndex = backForwardList.currentIndex
+        if (currentIndex == 0) {
+            val currentUrl = backForwardList.currentItem.url
+            val currentHost = Uri.parse(currentUrl).host
+            //栈底不是链接则直接返回
+            if (currentHost.isNullOrBlank()) return false
+            //栈底链接不是原始链接则直接返回
+            if (originalUrl != currentUrl) return false
         }
-        return can
+        return canBack
+    }
+
+    fun canGoForward(): Boolean {
+        val canForward = webView.canGoForward()
+        if (canForward) webView.goForward()
+        return canForward
     }
 
     fun loadUrl(url: String) {
         webView.loadUrl(url)
+        originalUrl = url
+    }
+
+    fun reload() {
+        webView.reload()
     }
 
     fun onResume() {
-        webView.resumeTimers()
         webView.onResume()
     }
 
     fun onPause() {
-        webView.pauseTimers()
         webView.onPause()
     }
 
-    fun onDestroy() {
-        WebViewManager.destroy(webView)
+    fun onDestroyView() {
+        WebViewManager.recycle(webView)
     }
 
-    private fun isImage(url: String, accept: String?): Boolean {
-        if (url.endsWith(".gif")
-            || url.endsWith(".jpeg")
-            || url.endsWith(".jpg")
-            || url.endsWith(".png")
-            || url.endsWith(".svg")
-            || url.endsWith(".webp")
-        ) {
-            return true
-        }
-        if (accept.isNullOrBlank()) {
-            return false
-        }
-        val contentType = accept.split(",")[0]
-        return contentType.contains("image/")
+    private fun isImage(extension: String): Boolean {
+        return extension == "ico"
+                || extension == "gif"
+                || extension == "jpeg"
+                || extension == "jpg"
+                || extension == "png"
+                || extension == "svg"
+                || extension == "webp"
     }
 
-    private fun isHtmlStyle(url: String, accept: String?): Boolean {
-        if (url.endsWith(".css") || url.endsWith(".js") || url.endsWith(".json")) {
-            return true
-        }
-        if (accept.isNullOrBlank()) {
-            return false
-        }
-        val contentType = accept.split(",")[0]
-        return contentType.contains("css") || contentType.contains("javascript") || contentType.contains(
-            "json"
-        )
+    private fun isHtmlStyle(extension: String): Boolean {
+        return extension == "css" || extension == "js"
     }
 
     private fun assetsResponse(context: Context, url: String): WebResourceResponse? {
@@ -238,7 +245,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
             val filename = url.substring(filenameIndex)
             val suffixIndex = url.lastIndexOf(".")
             val suffix = url.substring(suffixIndex + 1)
-            webResourceResponse.mimeType = getMimeTypeFromUrl(url, "*/*")
+            webResourceResponse.mimeType = getMimeTypeFromExtension(url)
             webResourceResponse.encoding = "UTF-8"
             webResourceResponse.data = context.resources.assets.open("$suffix/$filename")
             return webResourceResponse
@@ -248,10 +255,13 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return null
     }
 
+    /**
+     * 接管图片加载
+     */
     private fun imageResponse(
         context: Context,
         url: String,
-        accept: String?
+        extension: String
     ): WebResourceResponse? {
         try {
             val webResourceResponse = WebResourceResponse()
@@ -264,9 +274,11 @@ class WebViewHelper private constructor(parent: ViewGroup) {
                         options: Options
                     ): DecodeResult {
                         val byteArray = source.use { it.peek().inputStream().readBytes() }
-                        webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
+                        val responseHeaders = mapOf("access-control-allow-origin" to "*")
+                        webResourceResponse.mimeType = getMimeTypeFromExtension(extension)
                         webResourceResponse.encoding = "UTF-8"
                         webResourceResponse.data = byteArray.inputStream()
+                        webResourceResponse.responseHeaders = responseHeaders
                         return DecodeResult(ColorDrawable(), false)
                     }
 
@@ -281,26 +293,29 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return null
     }
 
+    /**
+     * 接管css、js加载
+     */
     private fun htmlStyleResponse(
         context: Context,
         url: String,
-        accept: String?
+        extension: String
     ): WebResourceResponse? {
         try {
             val cachePath = CacheUtils.getCacheDirPath(context, "html")
             val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
             val file = File(filePathName)
             if (!file.exists() || !file.isFile) {
-                val response = runBlocking {
+                runBlocking {
                     download(HttpRequest(url), filePathName)
                 }
-                if (response.errorCode == "0") {
-                    val webResourceResponse = WebResourceResponse()
-                    webResourceResponse.mimeType = getMimeTypeFromUrl(url, accept)
-                    webResourceResponse.encoding = "UTF-8"
-                    webResourceResponse.data = file.inputStream()
-                    return webResourceResponse
-                }
+            }
+            if (file.exists() && file.isFile) {
+                val webResourceResponse = WebResourceResponse()
+                webResourceResponse.mimeType = getMimeTypeFromExtension(extension)
+                webResourceResponse.encoding = "UTF-8"
+                webResourceResponse.data = file.inputStream()
+                return webResourceResponse
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -308,21 +323,28 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return null
     }
 
-    private fun getMimeTypeFromUrl(url: String, accept: String?): String {
-        var mimeType = "*/*"
+    private fun getExtensionFromUrl(url: String): String {
         try {
-            val extension = MimeTypeMap.getFileExtensionFromUrl(url)
-            if (extension.isNotBlank()) {
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-            }
-            if (mimeType == "*/*" && !accept.isNullOrBlank()) {
-                mimeType = accept.split(",")[0]
+            if (url.isNotBlank() && url != "null") {
+                return MimeTypeMap.getFileExtensionFromUrl(url)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        return mimeType
+        return ""
     }
+
+    private fun getMimeTypeFromExtension(extension: String): String {
+        try {
+            if (extension.isNotBlank() && extension != "null") {
+                return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return "*/*"
+    }
+
 
     interface OnReceivedTitleListener {
         fun onReceivedTitle(view: WebView?, title: String?)
@@ -342,6 +364,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
 }
 
+@SuppressLint("SetJavaScriptEnabled")
 class WebViewManager private constructor() {
 
     companion object {
@@ -356,8 +379,12 @@ class WebViewManager private constructor() {
             return instance().obtain(context)
         }
 
-        fun destroy(webView: WebView) {
-            instance().destroy(webView)
+        fun recycle(webView: WebView) {
+            instance().recycle(webView)
+        }
+
+        fun destroy() {
+            instance().destroy()
         }
     }
 
@@ -391,28 +418,41 @@ class WebViewManager private constructor() {
             webViewCache.add(create(context))
         }
         val webView = webViewCache.removeAt(0)
-        if (webViewCache.isEmpty()) {
-            webViewCache.add(create(context))
-        }
+        webView.clearHistory()
+        webView.resumeTimers()
         return webView
     }
 
-    fun destroy(webView: WebView) {
+    fun recycle(webView: WebView) {
         try {
+            webView.stopLoading()
+            webView.loadDataWithBaseURL(null, "", "text/html", "utf-8", null)
+            webView.clearHistory()
+            webView.pauseTimers()
+            webView.webChromeClient = null
+            webView.webViewClient = null
             val parent = webView.parent
             if (parent != null) {
                 (parent as ViewGroup).removeView(webView)
             }
-            webView.stopLoading()
-            webView.loadDataWithBaseURL(null, "", "text/html", "utf-8", null)
-            webView.webChromeClient = null
-            webView.webViewClient = null
-            webView.removeAllViews()
-            webView.destroy()
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            webViewCache.remove(webView)
+            if (!webViewCache.contains(webView)) {
+                webViewCache.add(webView)
+            }
+        }
+    }
+
+    fun destroy() {
+        try {
+            webViewCache.forEach {
+                it.removeAllViews()
+                it.destroy()
+                webViewCache.remove(it)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

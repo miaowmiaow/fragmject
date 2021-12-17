@@ -1,5 +1,6 @@
 package com.example.fragment.library.common.fragment
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +11,6 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
-import com.tencent.smtt.sdk.WebView
 
 class WebFragment : RouterFragment() {
 
@@ -47,33 +47,43 @@ class WebFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        webViewHelper.onDestroy()
+        webViewHelper.onDestroyView()
         _binding = null
     }
 
     override fun initView() {
-        val onBackPressedCallback =
-            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                if (!webViewHelper.canGoBack()) {
-                    this.isEnabled = false
-                    activity.onBackPressed()
-                }
-            }
-        binding.black.setOnClickListener {
-            if (!webViewHelper.canGoBack()) {
-                onBackPressedCallback.isEnabled = false
-                activity.onBackPressed()
-            }
-        }
         webViewHelper = WebViewHelper.with(binding.webContainer).injectVConsole(false)
-        webViewHelper.onReceivedTitleListener = object : WebViewHelper.OnReceivedTitleListener {
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                binding.title.text = title
-            }
-        }
         val url = requireArguments().getString(Keys.URL)
         if (!url.isNullOrBlank()) {
             webViewHelper.loadUrl(Uri.decode(url))
+        }
+        binding.statusBar.setStatusBarTheme(true)
+        val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            if (!webViewHelper.canGoBack()) {
+                this.isEnabled = false
+                activity.onBackPressed()
+            }
+        }
+        binding.black.setOnClickListener {
+            if (!webViewHelper.canGoBack()) {
+                onBackPressed.isEnabled = false
+                activity.onBackPressed()
+            }
+        }
+        binding.forward.setOnClickListener {
+            webViewHelper.canGoForward()
+        }
+        binding.refresh.setOnClickListener {
+            webViewHelper.reload()
+        }
+        binding.browse.setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                activity.startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

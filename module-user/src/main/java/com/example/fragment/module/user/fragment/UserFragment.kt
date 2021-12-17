@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
@@ -71,7 +70,7 @@ class UserFragment : RouterFragment() {
     override fun onStart() {
         super.onStart()
         //监听用户状态
-        WanHelper.getUser(this) { updateView(it) }
+        WanHelper.registerUser(this) { updateView(it) }
     }
 
     private fun updateView(userBean: UserBean) {

@@ -17,7 +17,7 @@ abstract class BaseFragment : Fragment() {
      * 用于解决过度动画卡顿问题，
      * 建议大于等于转场动画时间。
      */
-    private var delayedLoad = 350L
+    private var delayedLoad = 375L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -2,75 +2,59 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/white">
 
-    <RelativeLayout
-        android:id="@+id/title_bar"
+    <com.example.fragment.library.base.view.StatusBar
+        android:id="@+id/status_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/theme">
+        android:layout_height="wrap_content" />
 
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <LinearLayout
+        android:id="@+id/nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/layer_web_nav_bar_bg"
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/black"
-            android:layout_width="50dp"
+            android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentStart="true"
-            android:padding="18dp"
-            android:src="@drawable/ic_back" />
-
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_toStartOf="@id/collect"
-            android:layout_toEndOf="@id/black"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:includeFontPadding="false"
-            android:lines="1"
-            android:singleLine="true"
-            android:textColor="@color/text_fff"
-            android:textSize="16sp" />
+            android:layout_weight="1"
+            android:padding="17dp"
+            android:src="@drawable/ic_web_back" />
 
         <ImageView
-            android:id="@+id/collect"
-            android:layout_width="50dp"
+            android:id="@+id/forward"
+            android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_toStartOf="@id/more"
-            android:paddingStart="15dp"
-            android:paddingTop="16dp"
-            android:paddingEnd="1dp"
-            android:visibility="gone"
-            android:paddingBottom="16dp"
-            android:src="@drawable/ic_collect_unchecked" />
+            android:layout_weight="1"
+            android:padding="17dp"
+            android:src="@drawable/ic_web_forward" />
 
         <ImageView
-            android:id="@+id/more"
-            android:layout_width="50dp"
+            android:id="@+id/refresh"
+            android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentEnd="true"
-            android:paddingStart="1dp"
-            android:paddingTop="16dp"
-            android:visibility="invisible"
-            android:paddingEnd="15dp"
-            android:paddingBottom="16dp"
-            android:src="@drawable/ic_more_v" />
+            android:layout_weight="1"
+            android:padding="15dp"
+            android:src="@drawable/ic_web_refresh" />
 
-    </RelativeLayout>
+        <ImageView
+            android:id="@+id/browse"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:padding="15dp"
+            android:src="@drawable/ic_web_browse" />
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/web_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/title_bar" />
+        android:layout_above="@id/nav_bar"
+        android:layout_below="@id/status_bar" />
 
 </RelativeLayout>

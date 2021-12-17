@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
+import androidx.appcompat.app.AppCompatDelegate
+import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
@@ -12,6 +14,7 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
+import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
@@ -75,18 +78,32 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
-    }
-
-    override fun onStart() {
-        super.onStart()
         //监听用户状态
-        WanHelper.getUser(this) { userBean = it }
+        WanHelper.registerUser(this) { userBean = it }
+        WanHelper.getUser()
+        //设置显示模式
+        WanHelper.registerUIMode(this) { eventBean ->
+            if (eventBean.key == WanHelper.UI_MODE) {
+                when (eventBean.value) {
+                    "1" -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        QbSdk.unForceSysWebView()
+                    }
+                    "2" -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        QbSdk.forceSysWebView()
+                    }
+                    else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                }
+            }
+        }
+        WanHelper.getUIMode()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        //关闭Database
         WanHelper.close()
+        WebViewManager.destroy()
     }
 
 }

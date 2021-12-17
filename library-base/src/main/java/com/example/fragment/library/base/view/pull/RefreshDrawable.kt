@@ -12,8 +12,8 @@ import kotlin.math.abs
 class RefreshDrawable(private val parentView: PullRefreshLayout) : Drawable(), Animatable {
 
     companion object {
-        private const val ANIMATION_DURATION = 750L
-        private const val ROTATE_FACTOR = 0.75
+        private const val ANIMATION_DURATION = 2500L
+        private const val ROTATE_FACTOR = 0.25
     }
 
     private var loadingBitmaps = listOf<Bitmap>(
@@ -32,11 +32,11 @@ class RefreshDrawable(private val parentView: PullRefreshLayout) : Drawable(), A
     private val screenWidth = parentView.resources.displayMetrics.widthPixels.toFloat()
     private var offsetX = (screenWidth - bitmapWidth) / 2f
     private var offsetY = parentView.getMaxDragDistance() - (bitmapHeight / 2f)
-    private var percent = 0.0f
+    private var percent = 0L
 
     private var animation = object : Animation() {
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
-            setPercent(interpolatedTime * 100)
+            invalidate()
         }
     }
 
@@ -47,8 +47,8 @@ class RefreshDrawable(private val parentView: PullRefreshLayout) : Drawable(), A
         animation.duration = ANIMATION_DURATION
     }
 
-    fun setPercent(percent: Float) {
-        this.percent = percent
+    fun invalidate() {
+        percent += 1
         invalidateSelf()
     }
 
@@ -59,7 +59,7 @@ class RefreshDrawable(private val parentView: PullRefreshLayout) : Drawable(), A
 
     override fun draw(canvas: Canvas) {
         val size = loadingBitmaps.size - 1
-        val index = (abs(percent) * ROTATE_FACTOR % size).toInt()
+        val index = (percent * ROTATE_FACTOR % size).toInt()
         canvas.drawBitmap(loadingBitmaps[index], offsetX, offsetY, null)
     }
 
@@ -80,6 +80,7 @@ class RefreshDrawable(private val parentView: PullRefreshLayout) : Drawable(), A
 
     override fun stop() {
         parentView.clearAnimation()
+        percent = 0L
     }
 
     override fun isRunning(): Boolean {

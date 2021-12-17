@@ -19,12 +19,12 @@ class StatusBar @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     init {
-        val activity = context as Activity
-        setTranslucentStatus(activity)
-        setStatusBarTheme(activity, false)
+        setTranslucentStatus()
+        setStatusBarTheme(false)
     }
 
-    fun setStatusBarTheme(activity: Activity, darkTheme: Boolean): Boolean {
+    fun setStatusBarTheme(darkTheme: Boolean): Boolean {
+        val activity = context as Activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val decorView: View = activity.window.decorView
@@ -45,7 +45,7 @@ class StatusBar @JvmOverloads constructor(
                         val window = activity.window
                         window.statusBarColor = 0x33000000
                     } else {
-                        setTranslucentStatus(activity)
+                        setTranslucentStatus()
                         setBackgroundColor(0x33000000);
                     }
                 }
@@ -54,7 +54,8 @@ class StatusBar @JvmOverloads constructor(
         return false
     }
 
-    fun setRootViewFitsSystemWindows(activity: Activity, fitSystemWindows: Boolean) {
+    fun setRootViewFitsSystemWindows(fitSystemWindows: Boolean) {
+        val activity = context as Activity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             val winContent = activity.findViewById<View>(R.id.content) as ViewGroup
             if (winContent.childCount > 0) {
@@ -66,7 +67,8 @@ class StatusBar @JvmOverloads constructor(
         }
     }
 
-    private fun setTranslucentStatus(activity: Activity) {
+    private fun setTranslucentStatus() {
+        val activity = context as Activity
         val window: Window = activity.window
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色

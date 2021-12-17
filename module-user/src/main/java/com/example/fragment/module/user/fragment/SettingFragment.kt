@@ -214,7 +214,7 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        WanHelper.getScreenRecord(viewLifecycleOwner) { eventBean ->
+        WanHelper.registerScreenRecord(viewLifecycleOwner) { eventBean ->
             if (eventBean.key == WanHelper.SCREEN_RECORD) {
                 when (eventBean.value) {
                     "0" -> binding.screenRecord.setChecked(false)
@@ -222,7 +222,8 @@ class SettingFragment : RouterFragment() {
                 }
             }
         }
-        WanHelper.getUIMode(viewLifecycleOwner) { eventBean ->
+        WanHelper.getScreenRecord()
+        WanHelper.registerUIMode(viewLifecycleOwner) { eventBean ->
             if (eventBean.key == WanHelper.UI_MODE) {
                 when (eventBean.value) {
                     "1" -> {
@@ -240,7 +241,7 @@ class SettingFragment : RouterFragment() {
                 }
             }
         }
-        WanHelper.getUser(viewLifecycleOwner) { userBean ->
+        WanHelper.registerUser(viewLifecycleOwner) { userBean ->
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         }
     }

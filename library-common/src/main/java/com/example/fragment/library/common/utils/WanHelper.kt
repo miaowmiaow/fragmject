@@ -101,11 +101,14 @@ object WanHelper {
         SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(SCREEN_RECORD, status))
     }
 
-    fun getScreenRecord(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
-        SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
+    fun getScreenRecord() {
         KVDatabase.get(SCREEN_RECORD) {
             SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(SCREEN_RECORD, it))
         }
+    }
+
+    fun registerScreenRecord(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
+        SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
     }
 
     /**
@@ -149,13 +152,15 @@ object WanHelper {
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
-    fun getUIMode(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
-        SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
+    fun getUIMode() {
         KVDatabase.get(UI_MODE) {
             SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(UI_MODE, it))
         }
     }
 
+    fun registerUIMode(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
+        SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
+    }
 
     /**
      * 设置用户信息
@@ -170,8 +175,7 @@ object WanHelper {
     /**
      * 获取用户信息
      */
-    fun getUser(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<UserBean>) {
-        SharedFlowBus.onSticky(UserBean::class.java).observe(owner, observer)
+    fun getUser() {
         KVDatabase.get(USER) {
             SharedFlowBus.withSticky(UserBean::class.java).tryEmit(
                 try {
@@ -182,6 +186,10 @@ object WanHelper {
                 }
             )
         }
+    }
+
+    fun registerUser(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<UserBean>) {
+        SharedFlowBus.onSticky(UserBean::class.java).observe(owner, observer)
     }
 
     /**

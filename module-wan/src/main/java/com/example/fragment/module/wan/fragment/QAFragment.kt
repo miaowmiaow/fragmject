@@ -45,7 +45,10 @@ class QAFragment : RouterFragment() {
 
     override fun initView() {
         //TabLayout与ViewPager2
-        binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
+        binding.viewpager2.adapter = object : FragmentStateAdapter(
+            activity.supportFragmentManager,
+            viewLifecycleOwner.lifecycle
+        ) {
             override fun getItemCount(): Int {
                 return fragments.size
             }

@@ -54,26 +54,6 @@ abstract class RouterActivity : BaseActivity() {
         })
     }
 
-    override fun onStart() {
-        super.onStart()
-        //设置显示模式
-        WanHelper.getUIMode(this) { eventBean ->
-            if (eventBean.key == WanHelper.UI_MODE) {
-                when (eventBean.value) {
-                    "1" -> {
-                        QbSdk.unForceSysWebView()
-                        setDefaultNightMode(MODE_NIGHT_NO)
-                    }
-                    "2" -> {
-                        QbSdk.forceSysWebView()
-                        setDefaultNightMode(MODE_NIGHT_YES)
-                    }
-                    else -> setDefaultNightMode(MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-            }
-        }
-    }
-
     fun navigate(@IdRes resId: Int, args: Bundle? = null) {
         navController.navigate(
             resId, args, NavOptions.Builder()

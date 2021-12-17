@@ -126,19 +126,19 @@ class PullRefreshLayout @JvmOverloads constructor(
     }
 
     private fun refreshViewToStart(percent: Float) {
-        refreshDrawable.setPercent(percent)
+        refreshDrawable.invalidate()
         val offset = targetViewOffset - (targetViewOffset * percent).toInt()
         targetViewOffsetTopAndBottom(offset - targetViewOffset)
     }
 
     private fun refreshViewToEnd(percent: Float) {
-        refreshDrawable.setPercent(percent)
+        refreshDrawable.invalidate()
         val offset = (getMaxDragDistance() * percent).toInt()
         targetViewOffsetTopAndBottom(offset - targetViewOffset)
     }
 
     private fun refreshViewMoveSpinner(offset: Int) {
-        refreshDrawable.setPercent(offset.toFloat())
+        refreshDrawable.invalidate()
         targetViewOffsetTopAndBottom(offset)
     }
 

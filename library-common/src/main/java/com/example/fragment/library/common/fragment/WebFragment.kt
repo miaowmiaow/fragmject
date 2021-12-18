@@ -1,6 +1,7 @@
 package com.example.fragment.library.common.fragment
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
+import com.tencent.smtt.sdk.WebView
 
 class WebFragment : RouterFragment() {
 
@@ -53,6 +55,19 @@ class WebFragment : RouterFragment() {
 
     override fun initView() {
         webViewHelper = WebViewHelper.with(binding.webContainer).injectVConsole(false)
+        webViewHelper.onPageChangedListener = object : WebViewHelper.OnPageChangedListener {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                binding.progressBar.visibility = View.VISIBLE
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                binding.progressBar.visibility = View.GONE
+            }
+
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                binding.progressBar.progress = newProgress
+            }
+        }
         val url = requireArguments().getString(Keys.URL)
         if (!url.isNullOrBlank()) {
             webViewHelper.loadUrl(Uri.decode(url))

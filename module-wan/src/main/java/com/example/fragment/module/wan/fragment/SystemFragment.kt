@@ -86,7 +86,7 @@ class SystemFragment : RouterFragment() {
         treeBean.children?.let { data ->
             //TabLayout与ViewPager2
             binding.viewpager2.adapter = object : FragmentStateAdapter(
-                activity.supportFragmentManager,
+                childFragmentManager,
                 viewLifecycleOwner.lifecycle
             ) {
                 override fun getItemCount(): Int {

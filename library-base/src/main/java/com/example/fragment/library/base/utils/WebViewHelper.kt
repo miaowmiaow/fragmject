@@ -17,7 +17,9 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.download
 import com.example.fragment.library.base.utils.InjectUtils.injectVConsoleJs
 import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
-import com.tencent.smtt.export.external.interfaces.*
+import com.tencent.smtt.export.external.interfaces.IX5WebSettings
+import com.tencent.smtt.export.external.interfaces.WebResourceRequest
+import com.tencent.smtt.export.external.interfaces.WebResourceResponse
 import com.tencent.smtt.sdk.*
 import com.tencent.smtt.sdk.WebView.HitTestResult.IMAGE_TYPE
 import com.tencent.smtt.sdk.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
@@ -36,9 +38,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
     private val webView = WebViewManager.obtain(parent.context)
 
-
-    var onReceivedTitleListener: OnReceivedTitleListener? = null
-    var onPageChangedListener: OnPageChangedListener? = null
+    private var onPageChangedListener: OnPageChangedListener? = null
 
     private var injectState = false
     private var injectVConsole = false
@@ -68,16 +68,13 @@ class WebViewHelper private constructor(parent: ViewGroup) {
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                val uri = request?.url
-                if (view != null && uri != null) {
-                    val url = uri.toString()
-                    val extension = getExtensionFromUrl(url)
+                if (view != null && request != null) {
                     when {
-                        isAssetsResource(url) -> {
-                            return assetsResourceRequest(view.context, url)
+                        isAssetsResource(request) -> {
+                            return assetsResourceRequest(view.context, request)
                         }
-                        isWebResource(extension) -> {
-                            return webResourceRequest(view.context, url, extension)
+                        isWebResource(request) -> {
+                            return webResourceRequest(view.context, request)
                         }
                     }
                 }
@@ -86,39 +83,25 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                injectState = false
                 onPageChangedListener?.onPageStarted(view, url, favicon)
+                injectState = false
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                injectState = false
                 onPageChangedListener?.onPageFinished(view, url)
-            }
-
-            override fun onReceivedSslError(
-                view: WebView?,
-                handler: SslErrorHandler?,
-                error: SslError?
-            ) {
-                super.onReceivedSslError(view, handler, error)
-                handler?.proceed() //接受证书
+                injectState = false
             }
         }
         webView.webChromeClient = object : WebChromeClient() {
 
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                super.onReceivedTitle(view, title)
-                onReceivedTitleListener?.onReceivedTitle(view, title)
-            }
-
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
-                if (injectVConsole && !injectState && newProgress > 80) {
+                onPageChangedListener?.onProgressChanged(view, newProgress)
+                if (newProgress > 80 && injectVConsole && !injectState) {
                     view?.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
                     injectState = true
                 }
-                onPageChangedListener?.onProgressChanged(view, newProgress)
             }
         }
         webView.setDownloadListener { url, _, _, _, _ ->
@@ -156,6 +139,11 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
     fun injectVConsole(inject: Boolean): WebViewHelper {
         injectVConsole = inject
+        return this
+    }
+
+    fun setOnPageChangedListener(onPageChangedListener: OnPageChangedListener?): WebViewHelper {
+        this.onPageChangedListener = onPageChangedListener
         return this
     }
 
@@ -202,11 +190,14 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         WebViewManager.recycle(webView)
     }
 
-    private fun isAssetsResource(url: String): Boolean {
+    private fun isAssetsResource(webRequest: WebResourceRequest): Boolean {
+        val url = webRequest.url.toString()
         return url.startsWith("file:///android_asset/")
     }
 
-    private fun isWebResource(extension: String): Boolean {
+    private fun isWebResource(webRequest: WebResourceRequest): Boolean {
+        val url = webRequest.url.toString()
+        val extension = getExtensionFromUrl(url)
         return extension == "ico" || extension == "gif"
                 || extension == "jpeg" || extension == "jpg"
                 || extension == "png" || extension == "svg"
@@ -214,16 +205,21 @@ class WebViewHelper private constructor(parent: ViewGroup) {
                 || extension == "js" || extension == "json"
     }
 
-    private fun assetsResourceRequest(context: Context, url: String): WebResourceResponse? {
+    private fun assetsResourceRequest(
+        context: Context,
+        webRequest: WebResourceRequest
+    ): WebResourceResponse? {
         try {
-            val webResourceResponse = WebResourceResponse()
+            val url = webRequest.url.toString()
             val filenameIndex = url.lastIndexOf("/") + 1
             val filename = url.substring(filenameIndex)
             val suffixIndex = url.lastIndexOf(".")
             val suffix = url.substring(suffixIndex + 1)
-            webResourceResponse.mimeType = getMimeTypeFromExtension(url)
+            val webResourceResponse = WebResourceResponse()
+            webResourceResponse.mimeType = getMimeTypeFromUrl(url)
             webResourceResponse.encoding = "UTF-8"
-            webResourceResponse.data = context.resources.assets.open("$suffix/$filename")
+            webResourceResponse.data = context.assets.open("$suffix/$filename")
+            webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
             return webResourceResponse
         } catch (e: Exception) {
             e.printStackTrace()
@@ -233,24 +229,26 @@ class WebViewHelper private constructor(parent: ViewGroup) {
 
     private fun webResourceRequest(
         context: Context,
-        url: String,
-        extension: String
+        webRequest: WebResourceRequest
     ): WebResourceResponse? {
         try {
+            val url = webRequest.url.toString()
             val cachePath = CacheUtils.getCacheDirPath(context, "web_cache")
             val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
             val file = File(filePathName)
             if (!file.exists() || !file.isFile) {
                 runBlocking {
-                    download(HttpRequest(url), filePathName)
+                    download(HttpRequest(url).apply {
+                        webRequest.requestHeaders.forEach { putHeader(it.key, it.value) }
+                    }, filePathName)
                 }
             }
             if (file.exists() && file.isFile) {
                 val webResourceResponse = WebResourceResponse()
-                webResourceResponse.mimeType = getMimeTypeFromExtension(extension)
+                webResourceResponse.mimeType = getMimeTypeFromUrl(url)
                 webResourceResponse.encoding = "UTF-8"
-                webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
                 webResourceResponse.data = file.inputStream()
+                webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
                 return webResourceResponse
             }
         } catch (e: Exception) {
@@ -270,8 +268,9 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return ""
     }
 
-    private fun getMimeTypeFromExtension(extension: String): String {
+    private fun getMimeTypeFromUrl(url: String): String {
         try {
+            val extension = getExtensionFromUrl(url)
             if (extension.isNotBlank() && extension != "null") {
                 if (extension == "json") {
                     return "application/json"
@@ -284,17 +283,11 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return "*/*"
     }
 
-
-    interface OnReceivedTitleListener {
-        fun onReceivedTitle(view: WebView?, title: String?)
-    }
-
     interface OnPageChangedListener {
         fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?)
         fun onPageFinished(view: WebView?, url: String?)
         fun onProgressChanged(view: WebView?, newProgress: Int)
     }
-
 }
 
 @SuppressLint("SetJavaScriptEnabled")

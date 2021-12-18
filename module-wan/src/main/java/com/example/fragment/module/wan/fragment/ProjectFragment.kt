@@ -64,7 +64,7 @@ class ProjectFragment : RouterFragment() {
     private fun updateView(data: List<ProjectTreeBean>) {
         //TabLayout与ViewPager2
         binding.viewpager2.adapter = object : FragmentStateAdapter(
-            activity.supportFragmentManager,
+            childFragmentManager,
             viewLifecycleOwner.lifecycle
         ) {
             override fun getItemCount(): Int {

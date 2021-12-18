@@ -6,7 +6,6 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import coil.decode.SvgDecoder
 import com.example.fragment.library.base.http.GSonConverter
 import com.example.fragment.library.base.http.SimpleHttp
 import com.example.fragment.library.base.utils.OkHelper
@@ -32,7 +31,6 @@ class App : Application(), ImageLoaderFactory {
                     add(GifDecoder())
                 }
             }
-            .componentRegistry { add(SvgDecoder(applicationContext)) }
             .build()
     }
 

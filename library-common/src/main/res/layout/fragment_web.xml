@@ -50,6 +50,13 @@
             android:src="@drawable/ic_web_browse" />
     </LinearLayout>
 
+    <com.example.fragment.library.base.view.SnailBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_above="@id/nav_bar"
+        android:visibility="gone" />
+
     <FrameLayout
         android:id="@+id/web_container"
         android:layout_width="match_parent"

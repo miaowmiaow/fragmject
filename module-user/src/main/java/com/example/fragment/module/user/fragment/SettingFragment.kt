@@ -241,8 +241,10 @@ class SettingFragment : RouterFragment() {
                 }
             }
         }
+        WanHelper.getUIMode()
         WanHelper.registerUser(viewLifecycleOwner) { userBean ->
             binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
         }
+        WanHelper.getUser()
     }
 }

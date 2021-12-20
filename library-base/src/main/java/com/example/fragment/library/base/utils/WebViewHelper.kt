@@ -139,7 +139,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         }
     }
 
-    fun evaluateJavascript(js: String, callback: (String)->Unit): WebViewHelper {
+    fun evaluateJavascript(js: String, callback: (String) -> Unit): WebViewHelper {
         webView.evaluateJavascript(js, callback)
         return this
     }
@@ -396,15 +396,8 @@ class WebViewManager private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            try {
-                if (!webViewCache.contains(webView)) {
-                    webViewCache.add(webView)
-                } else {
-                    webView.removeAllViews()
-                    webView.destroy()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            if (!webViewCache.contains(webView)) {
+                webViewCache.add(webView)
             }
         }
     }

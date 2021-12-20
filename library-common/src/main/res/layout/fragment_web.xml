@@ -4,12 +4,6 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <ImageView
-        android:id="@+id/monkey"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true" />
-
     <com.example.fragment.library.base.view.StatusBar
         android:id="@+id/status_bar"
         android:layout_width="match_parent"
@@ -56,6 +50,12 @@
             android:src="@drawable/ic_web_browse" />
     </LinearLayout>
 
+    <com.example.fragment.library.base.view.SnailBar
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_above="@id/nav_bar" />
+
     <FrameLayout
         android:id="@+id/web_container"
         android:layout_width="match_parent"
@@ -63,10 +63,10 @@
         android:layout_above="@id/nav_bar"
         android:layout_below="@id/status_bar" />
 
-    <com.example.fragment.library.base.view.SnailBar
-        android:id="@+id/progress_bar"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_above="@id/nav_bar" />
+    <ImageView
+        android:id="@+id/monkey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
 
 </RelativeLayout>

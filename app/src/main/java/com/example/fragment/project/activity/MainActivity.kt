@@ -98,6 +98,8 @@ class MainActivity : RouterActivity() {
             }
         }
         WanHelper.getUIMode()
+        //WebView预加载
+        WebViewManager.prepare(applicationContext)
     }
 
     override fun onDestroy() {

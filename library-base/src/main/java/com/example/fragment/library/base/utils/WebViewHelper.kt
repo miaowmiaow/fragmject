@@ -3,10 +3,12 @@ package com.example.fragment.library.base.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.MutableContextWrapper
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.os.Looper
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.webkit.WebSettingsCompat
@@ -70,11 +72,11 @@ class WebViewHelper private constructor(parent: ViewGroup) {
             ): WebResourceResponse? {
                 if (view != null && request != null) {
                     when {
-                        isAssetsResource(request) -> {
+                        canAssetsResource(request) -> {
                             return assetsResourceRequest(view.context, request)
                         }
-                        isWebResource(request) -> {
-                            return webResourceRequest(view.context, request)
+                        canCacheResource(request) -> {
+                            return cacheResourceRequest(view.context, request)
                         }
                     }
                 }
@@ -137,6 +139,11 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         }
     }
 
+    fun evaluateJavascript(js: String, callback: (String)->Unit): WebViewHelper {
+        webView.evaluateJavascript(js, callback)
+        return this
+    }
+
     fun injectVConsole(inject: Boolean): WebViewHelper {
         injectVConsole = inject
         return this
@@ -190,19 +197,19 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         WebViewManager.recycle(webView)
     }
 
-    private fun isAssetsResource(webRequest: WebResourceRequest): Boolean {
+    private fun canAssetsResource(webRequest: WebResourceRequest): Boolean {
         val url = webRequest.url.toString()
         return url.startsWith("file:///android_asset/")
     }
 
-    private fun isWebResource(webRequest: WebResourceRequest): Boolean {
+    private fun canCacheResource(webRequest: WebResourceRequest): Boolean {
         val url = webRequest.url.toString()
         val extension = getExtensionFromUrl(url)
-        return extension == "ico" || extension == "gif"
-                || extension == "jpeg" || extension == "jpg"
-                || extension == "png" || extension == "svg"
-                || extension == "webp" || extension == "css"
-                || extension == "js" || extension == "json"
+        return extension == "ico" || extension == "bmp" || extension == "gif"
+                || extension == "jpeg" || extension == "jpg" || extension == "png"
+                || extension == "svg" || extension == "webp" || extension == "css"
+                || extension == "js" || extension == "json" || extension == "eot"
+                || extension == "otf" || extension == "ttf" || extension == "woff"
     }
 
     private fun assetsResourceRequest(
@@ -227,7 +234,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return null
     }
 
-    private fun webResourceRequest(
+    private fun cacheResourceRequest(
         context: Context,
         webRequest: WebResourceRequest
     ): WebResourceResponse? {
@@ -260,7 +267,12 @@ class WebViewHelper private constructor(parent: ViewGroup) {
     private fun getExtensionFromUrl(url: String): String {
         try {
             if (url.isNotBlank() && url != "null") {
-                return MimeTypeMap.getFileExtensionFromUrl(url)
+                val extension = url
+                    .substringBeforeLast('#') // Strip the fragment.
+                    .substringBeforeLast('?') // Strip the query.
+                    .substringAfterLast('/') // Get the last path segment.
+                    .substringAfterLast('.', missingDelimiterValue = "") // Get the file extension.
+                return MimeTypeMap.getFileExtensionFromUrl(extension)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -301,6 +313,10 @@ class WebViewManager private constructor() {
             INSTANCE ?: WebViewManager().also { INSTANCE = it }
         }
 
+        fun prepare(context: Context) {
+            instance().prepare(context)
+        }
+
         fun obtain(context: Context): WebView {
             return instance().obtain(context)
         }
@@ -330,20 +346,36 @@ class WebViewManager private constructor() {
         webSetting.setGeolocationEnabled(true)
         webSetting.javaScriptEnabled = true
         webSetting.loadWithOverviewMode = true
+        webSetting.setSupportZoom(true)
+        webSetting.displayZoomControls = false
         webSetting.useWideViewPort = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSetting.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         }
-        webView.settingsExtension?.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)
+        webView.settingsExtension?.apply {
+            setContentCacheEnable(true)
+            setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)
+        }
         return webView
+    }
+
+    fun prepare(context: Context) {
+        if (webViewCache.isEmpty()) {
+            Looper.myQueue().addIdleHandler {
+                webViewCache.add(create(MutableContextWrapper(context)))
+                false
+            }
+        }
     }
 
     fun obtain(context: Context): WebView {
         if (webViewCache.isEmpty()) {
-            webViewCache.add(create(context))
+            webViewCache.add(create(MutableContextWrapper(context)))
         }
-        val webView = webViewCache.removeAt(0)
+        val webView = webViewCache.removeFirst()
+        val contextWrapper = webView.context as MutableContextWrapper
+        contextWrapper.baseContext = context
         webView.clearHistory()
         webView.resumeTimers()
         return webView
@@ -364,8 +396,15 @@ class WebViewManager private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            if (!webViewCache.contains(webView)) {
-                webViewCache.add(webView)
+            try {
+                if (!webViewCache.contains(webView)) {
+                    webViewCache.add(webView)
+                } else {
+                    webView.removeAllViews()
+                    webView.destroy()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

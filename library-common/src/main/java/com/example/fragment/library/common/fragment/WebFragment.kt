@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.core.view.isVisible
 import coil.load
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.WebViewHelper
@@ -57,7 +58,6 @@ class WebFragment : RouterFragment() {
 
     override fun initView() {
         val url = requireArguments().getString(Keys.URL)
-        binding.monkey.load(R.drawable.icons8_monkey)
         webViewHelper = WebViewHelper.with(binding.webContainer)
             .injectVConsole(false)
             .setOnPageChangedListener(object : WebViewHelper.OnPageChangedListener {
@@ -73,6 +73,9 @@ class WebFragment : RouterFragment() {
 
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                     binding.progressBar.progress = newProgress
+                    if (newProgress > 80 && binding.monkey.isVisible) {
+                        binding.monkey.visibility = View.GONE
+                    }
                 }
             })
         if (!url.isNullOrBlank()) {
@@ -112,6 +115,8 @@ class WebFragment : RouterFragment() {
         return null
     }
 
-    override fun initLoad() {}
+    override fun initLoad() {
+        binding.monkey.load(R.drawable.icons8_monkey)
+    }
 
 }

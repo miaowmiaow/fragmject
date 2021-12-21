@@ -141,7 +141,7 @@ class CoordinatorLayout @JvmOverloads constructor(
      * @param consumed       父控件消耗的距离，父控件消耗完成之后，剩余的才会给子控件，子控件需要使用consumed来进行实际滑动距离的处理
      * @param offsetInWindow 子控件在当前window的偏移量
      * @param type           滑动类型，ViewCompat.TYPE_NON_TOUCH fling效果,ViewCompat.TYPE_TOUCH 手势滑动
-     * @return true    表示父控件进行了滑动消耗，需要处理 consumed 的值，false表示父控件不对滑动距离进行消耗，可以不考虑consumed数据的处理，此时consumed中两个数据都应该为0
+     * @return true表示父控件进行了滑动消耗，需要处理 consumed 的值，false表示父控件不对滑动距离进行消耗，可以不考虑consumed数据的处理，此时consumed中两个数据都应该为0
      */
     override fun dispatchNestedPreScroll(
         dx: Int,
@@ -156,10 +156,10 @@ class CoordinatorLayout @JvmOverloads constructor(
     /**
      * 开始NestedScroll时调用，判断父View是否接受嵌套滑动
      *
-     * @param child            嵌套滑动对应的父类的子类(因为嵌套滑动对于的父View不一定是一级就能找到的，可能挑了两级父View的父View，child的辈分>=target)
-     * @param target           具体嵌套滑动的那个子类
-     * @param axes             支持嵌套滚动轴。水平方向，垂直方向，或者不指定
-     * @param type             滑动类型，ViewCompat.TYPE_NON_TOUCH fling 效果ViewCompat.TYPE_TOUCH 手势滑动
+     * @param child  嵌套滑动对应的父类的子类(因为嵌套滑动对于的父View不一定是一级就能找到的，可能挑了两级父View的父View，child的辈分>=target)
+     * @param target 具体嵌套滑动的那个子类
+     * @param axes   支持嵌套滚动轴。水平方向，垂直方向，或者不指定
+     * @param type   滑动类型，ViewCompat.TYPE_NON_TOUCH fling 效果ViewCompat.TYPE_TOUCH 手势滑动
      */
     override fun onStartNestedScroll(child: View, target: View, axes: Int, type: Int): Boolean {
         return axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0

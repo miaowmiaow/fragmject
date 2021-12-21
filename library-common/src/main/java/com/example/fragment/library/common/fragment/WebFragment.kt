@@ -8,11 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
-import androidx.core.view.isVisible
-import coil.load
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.WebViewHelper
-import com.example.fragment.library.common.R
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.FragmentWebBinding
 import com.tencent.smtt.sdk.WebView
@@ -57,29 +54,24 @@ class WebFragment : RouterFragment() {
     }
 
     override fun initView() {
-        val url = requireArguments().getString(Keys.URL)
+        val url = Uri.decode(requireArguments().getString(Keys.URL))
         webViewHelper = WebViewHelper.with(binding.webContainer)
             .injectVConsole(false)
             .setOnPageChangedListener(object : WebViewHelper.OnPageChangedListener {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                    binding.monkey.visibility = View.VISIBLE
                     binding.progressBar.visibility = View.VISIBLE
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
-                    binding.monkey.visibility = View.GONE
                     binding.progressBar.visibility = View.GONE
                 }
 
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                     binding.progressBar.progress = newProgress
-                    if (newProgress > 80 && binding.monkey.isVisible) {
-                        binding.monkey.visibility = View.GONE
-                    }
                 }
             })
         if (!url.isNullOrBlank()) {
-            webViewHelper.loadUrl(Uri.decode(url))
+            webViewHelper.loadUrl(url)
         }
         binding.statusBar.setStatusBarTheme(true)
         val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
@@ -116,7 +108,6 @@ class WebFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        binding.monkey.load(R.drawable.icons8_monkey)
     }
 
 }

@@ -113,6 +113,7 @@ dependencies {
 }
 
 //privacy {
+//    //扫描APP隐私合规字段
 //    filedPoint = [
 //            [
 //                    'owner' : 'android/os/Build',
@@ -130,6 +131,7 @@ dependencies {
 //                    'desc'  : 'Ljava/lang/String;',
 //            ]
 //    ]
+//    //扫描APP隐私合规方法
 //    methodPoint = [
 //            [
 //                    'owner' : 'android/telephony/TelephonyManager',

@@ -60,7 +60,8 @@ abstract class RouterActivity : BaseActivity() {
                 .setEnterAnim(R.anim.slide_in_right)
                 .setExitAnim(R.anim.slide_out_left)
                 .setPopEnterAnim(R.anim.slide_in_left)
-                .setPopExitAnim(R.anim.slide_out_right).build()
+                .setPopExitAnim(R.anim.slide_out_right)
+                .build()
         )
     }
 
@@ -70,8 +71,13 @@ abstract class RouterActivity : BaseActivity() {
                 .setEnterAnim(R.anim.slide_in_right)
                 .setExitAnim(R.anim.slide_out_left)
                 .setPopEnterAnim(R.anim.slide_in_left)
-                .setPopExitAnim(R.anim.slide_out_right).build()
+                .setPopExitAnim(R.anim.slide_out_right)
+                .build()
         )
+    }
+
+    fun popBackStack(@IdRes destinationId: Int, inclusive: Boolean){
+        navController.popBackStack(destinationId, inclusive)
     }
 
 }

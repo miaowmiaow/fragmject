@@ -2,6 +2,7 @@ package com.example.fragment.library.common.constant
 
 enum class Router {
     COIN2RANK,
+    MAIN,
     MY_COIN,
     MY_COLLECT,
     MY_SHARE,

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +17,7 @@ import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.adapter.CoinRankAdapter
 import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
@@ -28,6 +30,11 @@ class CoinRankFragment : RouterFragment() {
     private val binding get() = _binding!!
 
     private val coinRankAdapter = CoinRankAdapter()
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            backPressedDialog()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +43,28 @@ class CoinRankFragment : RouterFragment() {
     ): View {
         _binding = FragmentCoinRankBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPressedCallback)
+    }
+
+    private fun backPressedDialog(){
+        StandardDialog.newInstance()
+            .setContent("直接回到首页吗？")
+            .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
+                override fun onConfirm(dialog: StandardDialog) {
+                    backPressedCallback.isEnabled = true
+                    activity.navigation(Router.MAIN)
+                }
+
+                override fun onCancel(dialog: StandardDialog) {
+                    backPressedCallback.isEnabled = false
+                    activity.onBackPressed()
+                }
+            })
+            .show(childFragmentManager)
     }
 
     override fun onDestroyView() {

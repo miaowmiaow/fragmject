@@ -44,6 +44,7 @@ class MainActivity : RouterActivity() {
             navigate("http://fragment.example.com/login")
         } else when (name) {
             Router.COIN2RANK -> navigate(R.id.action_coin_to_rank, bundle)
+            Router.MAIN -> popBackStack(R.id.main, false)
             Router.MY_COIN -> navigate(R.id.action_main_to_my_coin, bundle)
             Router.MY_COLLECT -> navigate(R.id.action_main_to_my_collect, bundle)
             Router.MY_SHARE -> navigate(R.id.action_main_to_my_share, bundle)
@@ -119,9 +120,13 @@ class MainActivity : RouterActivity() {
     }
 
     /**
-     * 初始化x5内核
+     * 初始化X5内核
      */
     private fun initQbSdk() {
+        val map = HashMap<String, Any>()
+        map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
+        map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
+        QbSdk.initTbsSettings(map)
         QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
             override fun onViewInitFinished(arg0: Boolean) {
             }
@@ -129,10 +134,6 @@ class MainActivity : RouterActivity() {
             override fun onCoreInitFinished() {
             }
         })
-        val map = HashMap<String, Any>()
-        map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-        map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-        QbSdk.initTbsSettings(map)
         //WebView预加载
         WebViewManager.prepare(applicationContext)
     }

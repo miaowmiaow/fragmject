@@ -141,9 +141,7 @@ class PrivacyTransform extends Transform {
     }
 
     static void printTargetNode(ClassNode classNode, MethodNode methodNode, AbstractInsnNode insnNode) {
-        String str = "---------------------------------------------------------------------------\n"
-        str += classNode.name + "." + methodNode.name + "->" + methodNode.desc + " \n"
-        str += insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
+        String str = classNode.name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
         InsnList insnList = new InsnList()
         insnList.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"))
         insnList.add(new LdcInsnNode(str))

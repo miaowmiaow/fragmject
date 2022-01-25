@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
     id 'walle'
+//    id 'privacy'
 //    id 'statistic'
 }
 
@@ -110,6 +111,53 @@ dependencies {
     implementation project(path: ':module-user')
     implementation project(path: ':module-wan')
 }
+
+//privacy {
+//    filedPoint = [
+//            [
+//                    'owner' : 'android/os/Build',
+//                    'name'  : 'BRAND',
+//                    'desc'  : 'Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner' : 'android/os/Build',
+//                    'name'  : 'Model',
+//                    'desc'  : 'Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner' : 'android/os/Build',
+//                    'name'  : 'Serial',
+//                    'desc'  : 'Ljava/lang/String;',
+//            ]
+//    ]
+//    methodPoint = [
+//            [
+//                    'owner' : 'android/telephony/TelephonyManager',
+//                    'name'  : 'getDeviceId',
+//                    'desc'  : '()Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner' : 'android/telephony/TelephonyManager',
+//                    'name'  : 'getImei',
+//                    'desc'  : '()I;',
+//            ],
+//            [
+//                    'owner' : 'android/telephony/TelephonyManager',
+//                    'name'  : 'getMeid',
+//                    'desc'  : '()I;',
+//            ],
+//            [
+//                    'owner' : 'android/telephony/TelephonyManager',
+//                    'name'  : 'getSimSerialNumber',
+//                    'desc'  : '()Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner' : 'android/telephony/TelephonyManager',
+//                    'name'  : 'getSubscriberId',
+//                    'desc'  : '()Ljava/lang/String;',
+//            ]
+//    ]
+//}
 
 //statistic {
 //    buryPoint = [

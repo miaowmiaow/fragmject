@@ -1,22 +1,54 @@
 package com.example.plugin.privacy
 
 import com.android.build.gradle.AppExtension
-import com.example.plugin.statistic.bp.BuryPointEntity
-import com.example.plugin.statistic.bp.BuryPointTransform
-import com.example.plugin.statistic.mt.MethodTimerEntity
-import com.example.plugin.statistic.mt.MethodTimerTransform
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class PrivacyPlugin implements Plugin<Project> {
 
-    public static Map<String, BuryPointEntity> BURY_POINT_MAP
-    public static List<MethodTimerEntity> METHOD_TIMER_LIST
+    public static List<PrivacyEntity> PRIVACY_FIELDS
+    public static List<PrivacyEntity> PRIVACY_METHODS
 
     @Override
     void apply(Project project) {
         def android = project.extensions.findByType(AppExtension)
-        // 注册Transform
         android.registerTransform(new PrivacyTransform())
+        def privacyExtension = project.extensions.create('privacy', PrivacyExtension)
+        project.afterEvaluate {
+            PRIVACY_FIELDS = new ArrayList<>()
+            PRIVACY_METHODS = new ArrayList<>()
+            def filedPoint = privacyExtension.getFiledPoint()
+            if (filedPoint != null) {
+                filedPoint.each { Map<String, Object> map ->
+                    PrivacyEntity entity = new PrivacyEntity()
+                    if (map.containsKey("owner")) {
+                        entity.owner = map.get("owner")
+                    }
+                    if (map.containsKey("name")) {
+                        entity.name = map.get("name")
+                    }
+                    if (map.containsKey("desc")) {
+                        entity.desc = map.get("desc")
+                    }
+                    PRIVACY_FIELDS.add(entity)
+                }
+            }
+            def methodPoint = privacyExtension.getMethodPoint()
+            if (methodPoint != null) {
+                methodPoint.each { Map<String, Object> map ->
+                    PrivacyEntity entity = new PrivacyEntity()
+                    if (map.containsKey("owner")) {
+                        entity.owner = map.get("owner")
+                    }
+                    if (map.containsKey("name")) {
+                        entity.name = map.get("name")
+                    }
+                    if (map.containsKey("desc")) {
+                        entity.desc = map.get("desc")
+                    }
+                    PRIVACY_METHODS.add(entity)
+                }
+            }
+        }
     }
 }

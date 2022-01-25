@@ -19,7 +19,8 @@ buildscript {
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath 'com.meituan.android.walle:plugin:1.1.7'
         // 使用自定义插件
-        classpath 'com.example.plugin:statistic:1.0.0'
+//        classpath 'com.example.plugin:privacy:1.0.0'
+//        classpath 'com.example.plugin:statistic:1.0.0'
     }
 }
 

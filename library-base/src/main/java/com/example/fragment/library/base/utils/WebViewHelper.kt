@@ -267,12 +267,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
     private fun getExtensionFromUrl(url: String): String {
         try {
             if (url.isNotBlank() && url != "null") {
-                val extension = url
-                    .substringBeforeLast('#') // Strip the fragment.
-                    .substringBeforeLast('?') // Strip the query.
-                    .substringAfterLast('/') // Get the last path segment.
-                    .substringAfterLast('.', missingDelimiterValue = "") // Get the file extension.
-                return MimeTypeMap.getFileExtensionFromUrl(extension)
+                return MimeTypeMap.getFileExtensionFromUrl(url)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -287,7 +282,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
                 if (extension == "json") {
                     return "application/json"
                 }
-                return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+                return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {
             e.printStackTrace()

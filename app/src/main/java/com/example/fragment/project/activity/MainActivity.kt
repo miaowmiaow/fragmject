@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.fragment.library.base.utils.ActivityResultHelper.requestStorage
+import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
@@ -14,6 +16,7 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.ActivityMainBinding
+import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
@@ -98,14 +101,40 @@ class MainActivity : RouterActivity() {
             }
         }
         WanHelper.getUIMode()
-        //WebView预加载
-        WebViewManager.prepare(applicationContext)
+        requestStorage(object : PermissionsCallback{
+            override fun allow() {
+                initQbSdk()
+            }
+
+            override fun deny() {
+                initQbSdk()
+            }
+        })
     }
 
     override fun onDestroy() {
         super.onDestroy()
         WanHelper.close()
         WebViewManager.destroy()
+    }
+
+    /**
+     * 初始化x5内核
+     */
+    private fun initQbSdk() {
+        QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
+            override fun onViewInitFinished(arg0: Boolean) {
+            }
+
+            override fun onCoreInitFinished() {
+            }
+        })
+        val map = HashMap<String, Any>()
+        map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
+        map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
+        QbSdk.initTbsSettings(map)
+        //WebView预加载
+        WebViewManager.prepare(applicationContext)
     }
 
 }

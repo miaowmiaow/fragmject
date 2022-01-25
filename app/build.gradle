@@ -121,12 +121,12 @@ dependencies {
 //            ],
 //            [
 //                    'owner' : 'android/os/Build',
-//                    'name'  : 'Model',
+//                    'name'  : 'MODEL',
 //                    'desc'  : 'Ljava/lang/String;',
 //            ],
 //            [
 //                    'owner' : 'android/os/Build',
-//                    'name'  : 'Serial',
+//                    'name'  : 'SERIAL',
 //                    'desc'  : 'Ljava/lang/String;',
 //            ]
 //    ]

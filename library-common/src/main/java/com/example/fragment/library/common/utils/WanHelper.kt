@@ -158,6 +158,9 @@ object WanHelper {
         }
     }
 
+    /**
+     * 监听显示模式状态
+     */
     fun registerUIMode(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
         SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
     }
@@ -188,6 +191,9 @@ object WanHelper {
         }
     }
 
+    /**
+     * 监听用户信息
+     */
     fun registerUser(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<UserBean>) {
         SharedFlowBus.onSticky(UserBean::class.java).observe(owner, observer)
     }

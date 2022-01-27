@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.fragment.library.base.utils.ActivityResultHelper.requestStorage
-import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
@@ -82,10 +80,7 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
-        //监听用户状态
         WanHelper.registerUser(this) { userBean = it }
-        WanHelper.getUser()
-        //设置显示模式
         WanHelper.registerUIMode(this) { eventBean ->
             if (eventBean.key == WanHelper.UI_MODE) {
                 when (eventBean.value) {
@@ -101,16 +96,9 @@ class MainActivity : RouterActivity() {
                 }
             }
         }
+        WanHelper.getUser()
         WanHelper.getUIMode()
-        requestStorage(object : PermissionsCallback{
-            override fun allow() {
-                initQbSdk()
-            }
-
-            override fun deny() {
-                initQbSdk()
-            }
-        })
+        initQbSdk()
     }
 
     override fun onDestroy() {
@@ -123,17 +111,19 @@ class MainActivity : RouterActivity() {
      * 初始化X5内核
      */
     private fun initQbSdk() {
-        val map = HashMap<String, Any>()
-        map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-        map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-        QbSdk.initTbsSettings(map)
-        QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
-            override fun onViewInitFinished(arg0: Boolean) {
-            }
+        Thread {
+            val map = HashMap<String, Any>()
+            map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
+            map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
+            QbSdk.initTbsSettings(map)
+            QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
+                override fun onViewInitFinished(arg0: Boolean) {
+                }
 
-            override fun onCoreInitFinished() {
-            }
-        })
+                override fun onCoreInitFinished() {
+                }
+            })
+        }.start()
         //WebView预加载
         WebViewManager.prepare(applicationContext)
     }

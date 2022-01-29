@@ -115,6 +115,9 @@
 **Jetpack集成**
 等特点。
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
+## MVVM 
+MVVM（Model-View-ViewModel）最早由微软提出。ViewModel指 "Model of View"——视图的模型。
+- [一文看懂MVVM](https://juejin.cn/post/7058542176375930887)
 ## Navigation
 `Navigation`是 Android Jetpack 组件之一，主要是用于`Fragment`路由导航的框架，通过`Navigation`我们可以设计出单`Activity`应用架构。
 - [一文看懂Navigation](https://juejin.cn/post/7036296113573347364)

@@ -7,12 +7,12 @@ import com.example.fragment.library.common.bean.CoinBean
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class UserShareBean(
-    val data: UserShareDataBean? = null
+class ShareArticleBean(
+    val data: ShareArticleDataBean? = null
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class UserShareDataBean(
+data class ShareArticleDataBean(
     val coinInfo: CoinBean? = null,
     val shareArticles: ArticleDataBean? = null,
 ) : Parcelable

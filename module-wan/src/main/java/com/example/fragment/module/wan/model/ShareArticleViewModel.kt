@@ -1,16 +1,16 @@
-package com.example.fragment.module.user.model
+package com.example.fragment.module.wan.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.module.user.bean.UserShareBean
+import com.example.fragment.module.wan.bean.ShareArticleBean
 import kotlinx.coroutines.launch
 
-class UserShareViewModel : BaseViewModel() {
+class ShareArticleViewModel : BaseViewModel() {
 
-    val userShareArticleResult = MutableLiveData<UserShareBean>()
+    val userShareArticleResult = MutableLiveData<ShareArticleBean>()
 
     fun getUserShareArticles(id: String){
         getUserShareArticles(id, getHomePage(1))
@@ -32,7 +32,7 @@ class UserShareViewModel : BaseViewModel() {
                 .putPath("id", id)
                 .putPath("page", page.toString())
             //以get方式发起网络请求
-            val response = get<UserShareBean>(request) { progress(it) }
+            val response = get<ShareArticleBean>(request) { progress(it) }
             //根据接口返回更新总页码
             response.data?.shareArticles?.pageCount?.let {updatePageCont(it.toInt())}
             //通过LiveData通知界面更新

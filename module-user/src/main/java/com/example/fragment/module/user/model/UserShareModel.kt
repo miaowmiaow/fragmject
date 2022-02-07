@@ -1,4 +1,4 @@
-package com.example.fragment.module.wan.model
+package com.example.fragment.module.user.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -10,7 +10,7 @@ import com.example.fragment.library.common.bean.RegisterBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ShareArticleModel : BaseViewModel() {
+class UserShareModel : BaseViewModel() {
 
     val shareArticleResult = MutableLiveData<HttpResponse>()
 

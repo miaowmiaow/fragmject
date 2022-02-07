@@ -1,12 +1,10 @@
-package com.example.fragment.module.user.fragment
+package com.example.fragment.module.wan.fragment
 
-import android.animation.ValueAnimator
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
@@ -19,9 +17,9 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.adapter.CoinRankAdapter
-import com.example.fragment.module.user.databinding.FragmentCoinRankBinding
-import com.example.fragment.module.user.model.CoinRankViewModel
+import com.example.fragment.module.wan.adapter.CoinRankAdapter
+import com.example.fragment.module.wan.databinding.FragmentCoinRankBinding
+import com.example.fragment.module.wan.model.CoinRankViewModel
 
 class CoinRankFragment : RouterFragment() {
 
@@ -50,7 +48,7 @@ class CoinRankFragment : RouterFragment() {
         activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPressedCallback)
     }
 
-    private fun backPressedDialog(){
+    private fun backPressedDialog() {
         StandardDialog.newInstance()
             .setContent("直接回到首页吗？")
             .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
@@ -77,8 +75,8 @@ class CoinRankFragment : RouterFragment() {
             activity.onBackPressed()
         }
         binding.rule.setOnClickListener {
-            val args = bundleOf(Keys.URL to "https://www.wanandroid.com/blog/show/2653")
-            activity.navigation(Router.WEB, args)
+            val url = Uri.encode("https://www.wanandroid.com/blog/show/2653")
+            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         //积分排行榜列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
@@ -108,7 +106,7 @@ class CoinRankFragment : RouterFragment() {
                         val size = if (data.size < 3) data.size else 3
                         for (i in 0 until size) {
                             names[i].text = data[i].username
-                            numberAnimator(coins[i], data[i].coinCount)
+                            coins[i].text = data[i].coinCount
                         }
                         if (data.size > 3) {
                             coinRankAdapter.setNewData(data.subList(2, data.size))
@@ -131,19 +129,6 @@ class CoinRankFragment : RouterFragment() {
         if (viewModel.coinRankResult.value == null) {
             viewModel.getCoinRank()
         }
-    }
-
-    private fun numberAnimator(view: TextView, number: String) {
-        val from = view.text.toString().toInt()
-        val to = number.toInt()
-        val animator = ValueAnimator.ofInt(from, to)
-        animator.addUpdateListener {
-            val value = it.animatedValue as Int
-            view.text = String.format("%d", value)
-        }
-        animator.duration = 1000
-        animator.interpolator = DecelerateInterpolator()
-        animator.start()
     }
 
 }

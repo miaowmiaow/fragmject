@@ -25,29 +25,25 @@ class StatusBar @JvmOverloads constructor(
 
     fun setStatusBarTheme(darkTheme: Boolean): Boolean {
         val activity = context as Activity
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val decorView: View = activity.window.decorView
-                if (decorView != null) {
-                    var vis = decorView.systemUiVisibility
-                    vis = if (darkTheme) {
-                        vis or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    } else {
-                        vis and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                    }
-                    if (decorView.systemUiVisibility != vis) {
-                        decorView.systemUiVisibility = vis
-                    }
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val decorView: View = activity.window.decorView
+            var vis = decorView.systemUiVisibility
+            vis = if (darkTheme) {
+                vis or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             } else {
-                if (!darkTheme) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        val window = activity.window
-                        window.statusBarColor = 0x33000000
-                    } else {
-                        setTranslucentStatus()
-                        setBackgroundColor(0x33000000);
-                    }
+                vis and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            }
+            if (decorView.systemUiVisibility != vis) {
+                decorView.systemUiVisibility = vis
+            }
+        } else {
+            if (!darkTheme) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val window = activity.window
+                    window.statusBarColor = 0x33000000
+                } else {
+                    setTranslucentStatus()
+                    setBackgroundColor(0x33000000);
                 }
             }
         }
@@ -56,14 +52,10 @@ class StatusBar @JvmOverloads constructor(
 
     fun setRootViewFitsSystemWindows(fitSystemWindows: Boolean) {
         val activity = context as Activity
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            val winContent = activity.findViewById<View>(R.id.content) as ViewGroup
-            if (winContent.childCount > 0) {
-                val rootView = winContent.getChildAt(0) as ViewGroup
-                if (rootView != null) {
-                    rootView.fitsSystemWindows = fitSystemWindows
-                }
-            }
+        val winContent = activity.findViewById<View>(R.id.content) as ViewGroup
+        if (winContent.childCount > 0) {
+            val rootView = winContent.getChildAt(0) as ViewGroup
+            rootView.fitsSystemWindows = fitSystemWindows
         }
     }
 
@@ -78,11 +70,6 @@ class StatusBar @JvmOverloads constructor(
             decorView.systemUiVisibility = option
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             window.statusBarColor = Color.TRANSPARENT
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            val attributes: WindowManager.LayoutParams = window.attributes
-            val flagTranslucentStatus = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-            attributes.flags = attributes.flags or flagTranslucentStatus
-            window.attributes = attributes
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.fragment.module.user.fragment
+package com.example.fragment.module.wan.fragment
 
 import android.app.Activity
 import android.content.Intent
@@ -25,8 +25,8 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.databinding.FragmentSettingBinding
-import com.example.fragment.module.user.model.SettingViewModel
+import com.example.fragment.module.wan.databinding.FragmentSettingBinding
+import com.example.fragment.module.wan.model.SettingViewModel
 import java.io.File
 
 class SettingFragment : RouterFragment() {
@@ -126,16 +126,16 @@ class SettingFragment : RouterFragment() {
             viewModel.update()
         }
         binding.about.setOnClickListener {
-            val args = bundleOf(Keys.URL to "https://wanandroid.com")
-            activity.navigation(Router.WEB, args)
+            val url = Uri.encode("https://wanandroid.com")
+            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.privacyPolicy.setOnClickListener {
-            val args = bundleOf(Keys.URL to "file:///android_asset/privacy_policy.html")
-            activity.navigation(Router.WEB, args)
+            val url = Uri.encode("file:///android_asset/privacy_policy.html")
+            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.feedback.setOnClickListener {
-            val args = bundleOf(Keys.URL to "https://github.com/miaowmiaow/fragmject/issues")
-            activity.navigation(Router.WEB, args)
+            val url = Uri.encode("https://github.com/miaowmiaow/fragmject/issues")
+            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.logout.setOnClickListener {
             StandardDialog.newInstance()

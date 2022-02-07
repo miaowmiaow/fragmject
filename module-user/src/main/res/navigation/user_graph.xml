@@ -9,28 +9,27 @@
         android:name="com.example.fragment.module.user.fragment.UserAvatarFragment"
         android:label="AvatarFragment"
         tools:layout="@layout/fragment_user_avatar">
-        <deepLink app:uri="fragment.example.com/avatar" />
+        <deepLink app:uri="fragment.example.com/user/avatar" />
     </fragment>
     <fragment
         android:id="@+id/login"
         android:name="com.example.fragment.module.user.fragment.UserLoginFragment"
         android:label="LoginFragment"
         tools:layout="@layout/fragment_user_login">
-        <deepLink app:uri="fragment.example.com/login" />
+        <deepLink app:uri="fragment.example.com/user/login" />
     </fragment>
     <fragment
         android:id="@+id/register"
         android:name="com.example.fragment.module.user.fragment.UserRegisterFragment"
         android:label="RegisterFragment"
         tools:layout="@layout/fragment_user_register">
-        <deepLink app:uri="fragment.example.com/register" />
+        <deepLink app:uri="fragment.example.com/user/register" />
     </fragment>
     <fragment
         android:id="@+id/user_share"
         android:name="com.example.fragment.module.user.fragment.UserShareFragment"
         android:label="UserShareFragment"
         tools:layout="@layout/fragment_user_share">
-        <argument android:name="uid" />
-        <deepLink app:uri="fragment.example.com/user-share/{uid}" />
+        <deepLink app:uri="fragment.example.com/user/share" />
     </fragment>
 </navigation>

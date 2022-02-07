@@ -25,6 +25,16 @@ class MyCoinFragment : RouterFragment() {
     private val binding get() = _binding!!
 
     private val coinRecordAdapter = CoinRecordAdapter()
+    private val coinCountAnimator = ValueAnimator()
+
+    init {
+        coinCountAnimator.addUpdateListener {
+            val value = it.animatedValue as Int
+            binding.coinCount.text = String.format("%d", value)
+        }
+        coinCountAnimator.duration = 1000
+        coinCountAnimator.interpolator = DecelerateInterpolator()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,6 +47,7 @@ class MyCoinFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        coinCountAnimator.cancel()
         _binding = null
     }
 
@@ -66,14 +77,8 @@ class MyCoinFragment : RouterFragment() {
                 "0" -> result.data?.let { coinBean ->
                     val from = binding.coinCount.text.toString().toInt()
                     val to = coinBean.coinCount.toInt()
-                    val animator = ValueAnimator.ofInt(from, to)
-                    animator.addUpdateListener {
-                        val value = it.animatedValue as Int
-                        binding.coinCount.text = String.format("%d", value)
-                    }
-                    animator.duration = 1000
-                    animator.interpolator = DecelerateInterpolator()
-                    animator.start()
+                    coinCountAnimator.setIntValues(from, to)
+                    coinCountAnimator.start()
                 }
                 else -> activity.showTips(result.errorMsg)
             }

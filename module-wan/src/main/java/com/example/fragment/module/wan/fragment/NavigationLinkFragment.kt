@@ -1,5 +1,6 @@
 package com.example.fragment.module.wan.fragment
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -105,8 +106,8 @@ class NavigationLinkFragment : RouterFragment() {
             val tv = inflater.inflate(R.layout.fbl_link, binding.fbl, false) as TextView
             tv.text = article.title
             tv.setOnClickListener {
-                val args = bundleOf(Keys.URL to article.link)
-                activity.navigation(Router.WEB, args)
+                val url = Uri.encode(article.link)
+                activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
             }
             binding.fbl.addView(tv)
         }

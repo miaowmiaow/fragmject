@@ -5,6 +5,13 @@
     android:id="@+id/wan_graph"
     tools:ignore="InvalidNavigation">
     <fragment
+        android:id="@+id/coin_rank"
+        android:name="com.example.fragment.module.wan.fragment.CoinRankFragment"
+        android:label="CoinRankFragment"
+        tools:layout="@layout/fragment_coin_rank">
+        <deepLink app:uri="fragment.example.com/coin/rank" />
+    </fragment>
+    <fragment
         android:id="@+id/search"
         android:name="com.example.fragment.module.wan.fragment.SearchFragment"
         android:label="SearchFragment"
@@ -17,7 +24,8 @@
         android:name="com.example.fragment.module.wan.fragment.ShareArticleFragment"
         android:label="ShareArticleFragment"
         tools:layout="@layout/fragment_share_article">
-        <deepLink app:uri="fragment.example.com/share-article" />
+        <argument android:name="uid" />
+        <deepLink app:uri="fragment.example.com/share/article/{uid}" />
     </fragment>
     <fragment
         android:id="@+id/system"
@@ -25,7 +33,7 @@
         android:label="SystemListFragment"
         tools:layout="@layout/fragment_system">
         <argument android:name="url" />
-        <deepLink app:uri="fragment.example.com/system-url/{url}" />
+        <deepLink app:uri="fragment.example.com/system/url/{url}" />
         <argument android:name="cid" />
         <deepLink app:uri="fragment.example.com/system/{cid}" />
     </fragment>

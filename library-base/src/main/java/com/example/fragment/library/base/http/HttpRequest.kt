@@ -20,10 +20,6 @@ open class HttpRequest @JvmOverloads constructor(
     private var params: MutableMap<String, String> = HashMap(),
     private var files: MutableMap<String, File> = HashMap()
 ) {
-    companion object {
-        private const val PARAM = "[a-zA-Z][a-zA-Z0-9_-]*"
-        private var PARAM_URL_REGEX = Pattern.compile("\\{($PARAM)\\}")
-    }
 
     fun setUrl(url: String): HttpRequest {
         this.url = url
@@ -31,10 +27,10 @@ open class HttpRequest @JvmOverloads constructor(
     }
 
     fun getUrl(baseUrl: String? = null): String {
-        val m = PARAM_URL_REGEX.matcher(url)
+        val matcher = Pattern.compile("\\{([a-zA-Z][a-zA-Z0-9_-]*)\\}").matcher(url)
         val patterns: MutableSet<String> = LinkedHashSet()
-        while (m.find()) {
-            m.group(1)?.let {
+        while (matcher.find()) {
+            matcher.group(1)?.let {
                 patterns.add(it)
             }
         }

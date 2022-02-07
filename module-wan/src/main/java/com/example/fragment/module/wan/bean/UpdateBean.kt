@@ -1,9 +1,7 @@
-package com.example.fragment.module.user.bean
+package com.example.fragment.module.wan.bean
 
 import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
-import com.example.fragment.library.common.bean.ArticleDataBean
-import com.example.fragment.library.common.bean.CoinBean
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

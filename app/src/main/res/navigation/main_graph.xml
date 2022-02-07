@@ -5,10 +5,8 @@
     android:id="@+id/main_graph"
     app:startDestination="@id/main">
 
-    <include app:graph="@navigation/my_coin_graph" />
-    <include app:graph="@navigation/my_collect_graph" />
-    <include app:graph="@navigation/my_share_graph" />
     <include app:graph="@navigation/setting_graph" />
+    <include app:graph="@navigation/my_graph" />
     <include app:graph="@navigation/user_graph" />
     <include app:graph="@navigation/wan_graph" />
     <include app:graph="@navigation/web_graph" />
@@ -18,15 +16,6 @@
         android:name="com.example.fragment.project.fragment.MainFragment"
         android:label="MainFragment"
         tools:layout="@layout/fragment_main">
-        <action
-            android:id="@+id/action_main_to_my_coin"
-            app:destination="@id/my_coin_graph" />
-        <action
-            android:id="@+id/action_main_to_my_collect"
-            app:destination="@id/my_collect_graph" />
-        <action
-            android:id="@+id/action_main_to_my_share"
-            app:destination="@id/my_share_graph" />
         <action
             android:id="@+id/action_main_to_setting"
             app:destination="@id/setting_graph" />

@@ -4,20 +4,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.view.pull.OnLoadMoreListener
+import com.example.fragment.library.base.view.pull.OnRefreshListener
+import com.example.fragment.library.base.view.pull.PullRefreshLayout
+import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.databinding.FragmentShareArticleBinding
-import com.example.fragment.module.wan.model.ShareArticleModel
+import com.example.fragment.module.wan.model.ShareArticleViewModel
 
 class ShareArticleFragment : RouterFragment() {
 
-    private val viewModel: ShareArticleModel by viewModels()
+    private val viewModel: ShareArticleViewModel by viewModels()
     private var _binding: FragmentShareArticleBinding? = null
     private val binding get() = _binding!!
+
+    private val articleAdapter = ArticleAdapter()
+    private var id: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,41 +40,54 @@ class ShareArticleFragment : RouterFragment() {
     }
 
     override fun initView() {
+        id = requireArguments().getString(Keys.UID).toString()
         binding.black.setOnClickListener { activity.onBackPressed() }
-        binding.browser.setOnClickListener {
-            val link = binding.link.text.toString()
-            if (checkParameter(link)) {
-                val args = bundleOf(Keys.URL to link)
-                activity.navigation(Router.WEB, args)
+        //用户分享 列表
+        binding.list.layoutManager = LinearLayoutManager(binding.list.context)
+        binding.list.adapter = articleAdapter
+        //下拉刷新
+        binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
+            override fun onRefresh(refreshLayout: PullRefreshLayout) {
+                viewModel.getUserShareArticles(id)
             }
-        }
-        binding.share.setOnClickListener {
-            val title = binding.title.text.toString()
-            val link = binding.link.text.toString()
-            if (checkParameter(link)) {
-                viewModel.getShareArticle(title, link)
+        })
+        //加载更多
+        binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
+            override fun onLoadMore(refreshLayout: PullRefreshLayout) {
+                viewModel.getUserShareArticlesNext(id)
             }
-        }
+        })
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.shareArticleResult.observe(viewLifecycleOwner) { result ->
+        viewModel.userShareArticleResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
-                "0" -> activity.onBackPressed()
+                "0" -> {
+                    result.data?.coinInfo?.let { coin ->
+                        binding.title.text = coin.username
+                        binding.id.text = coin.userId
+                        binding.coinCount.text = coin.coinCount
+                    }
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(result.data?.shareArticles?.datas)
+                    } else {
+                        articleAdapter.addData(result.data?.shareArticles?.datas)
+                    }
+                }
                 else -> activity.showTips(result.errorMsg)
             }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }
 
-    override fun initLoad() {}
-
-    private fun checkParameter(link: String): Boolean {
-        if (link.isBlank()) {
-            activity.showTips("分享链接不能为空")
-            return false
+    override fun initLoad() {
+        if (viewModel.userShareArticleResult.value == null) {
+            viewModel.getUserShareArticles(id)
         }
-        return true
     }
 
 }

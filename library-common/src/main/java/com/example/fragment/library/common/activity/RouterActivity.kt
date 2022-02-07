@@ -13,8 +13,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.activity.BaseActivity
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.utils.WanHelper
-import com.tencent.smtt.sdk.QbSdk
+import java.util.regex.Pattern
 
 /**
  * 路由类，方便模块之间调用
@@ -23,6 +22,12 @@ abstract class RouterActivity : BaseActivity() {
 
     private lateinit var navController: NavController
     private var exitTime = 0L
+    private val navOptions = NavOptions.Builder()
+        .setEnterAnim(R.anim.slide_in_right)
+        .setExitAnim(R.anim.slide_out_left)
+        .setPopEnterAnim(R.anim.slide_in_left)
+        .setPopExitAnim(R.anim.slide_out_right)
+        .build()
 
     /**
      * NavController的视图id
@@ -55,28 +60,28 @@ abstract class RouterActivity : BaseActivity() {
     }
 
     fun navigate(@IdRes resId: Int, args: Bundle? = null) {
-        navController.navigate(
-            resId, args, NavOptions.Builder()
-                .setEnterAnim(R.anim.slide_in_right)
-                .setExitAnim(R.anim.slide_out_left)
-                .setPopEnterAnim(R.anim.slide_in_left)
-                .setPopExitAnim(R.anim.slide_out_right)
-                .build()
-        )
+        navController.navigate(resId, args, navOptions)
     }
 
-    fun navigate(deepLink: String) {
-        navController.navigate(
-            Uri.parse(deepLink), NavOptions.Builder()
-                .setEnterAnim(R.anim.slide_in_right)
-                .setExitAnim(R.anim.slide_out_left)
-                .setPopEnterAnim(R.anim.slide_in_left)
-                .setPopExitAnim(R.anim.slide_out_right)
-                .build()
-        )
+    /**
+     * 通过正则匹配“{}”内的参数并替换
+     */
+    fun navigate(deepLink: String, args: Bundle? = null) {
+        var newDeepLink = deepLink
+        args?.apply {
+            val matcher = Pattern.compile("(\\{)(.+?)(\\})").matcher(deepLink)
+            while (matcher.find()) {
+                matcher.group(2)?.let { key ->
+                    if (containsKey(key)) {
+                        newDeepLink = deepLink.replace("{$key}", get(key).toString())
+                    }
+                }
+            }
+        }
+        navController.navigate(Uri.parse(newDeepLink), navOptions)
     }
 
-    fun popBackStack(@IdRes destinationId: Int, inclusive: Boolean){
+    fun popBackStack(@IdRes destinationId: Int, inclusive: Boolean) {
         navController.popBackStack(destinationId, inclusive)
     }
 

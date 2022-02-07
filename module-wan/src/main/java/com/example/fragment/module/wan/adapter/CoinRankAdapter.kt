@@ -1,12 +1,12 @@
-package com.example.fragment.module.user.adapter
+package com.example.fragment.module.wan.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.CoinBean
-import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.ItemCoinRankBinding
+import com.example.fragment.module.wan.R
+import com.example.fragment.module.wan.databinding.ItemCoinRankBinding
 
 class CoinRankAdapter : BaseAdapter<CoinBean>() {
 

@@ -1,5 +1,6 @@
 package com.example.fragment.library.common.adapter
 
+import android.net.Uri
 import android.os.Build
 import android.text.Html
 import android.text.TextUtils
@@ -49,8 +50,8 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         val binding = holder.binding as ItemArticleBinding
         val activity: RouterActivity = contextToActivity(binding.root.context)
         binding.root.setOnClickListener {
-            val args = bundleOf(Keys.URL to item.link)
-            activity.navigation(Router.WEB, args)
+            val url = Uri.encode(item.link)
+            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.author.text = if (item.author.isNotBlank()) {
             item.author
@@ -62,8 +63,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             transformations(CircleCropTransformation())
         }
         binding.avatar.setOnClickListener {
-            val args = bundleOf(Keys.UID to item.userId)
-            activity.navigation(Router.USER_SHARE, args)
+            activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
         }
         binding.time.text = item.niceDate
         binding.newest.visibility = if (item.fresh) View.VISIBLE else View.GONE
@@ -75,8 +75,8 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         }
         binding.tag.setOnClickListener {
             item.tags?.let {
-                val args = bundleOf(Keys.URL to it[0].url)
-                activity.navigation(Router.SYSTEM_URL, args)
+                val url = Uri.encode(it[0].url)
+                activity.navigation(Router.SYSTEM_URL, bundleOf(Keys.URL to url))
             }
         }
         binding.top.visibility = if (item.top) View.VISIBLE else View.GONE

@@ -1,5 +1,6 @@
 package com.example.fragment.library.common.adapter
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
@@ -25,8 +26,8 @@ class BannerAdapter : BaseAdapter<BannerBean>() {
         }
         val baseActivity: RouterActivity = contextToActivity(binding.root.context)
         binding.root.setOnClickListener {
-            val args = bundleOf(Keys.URL to item.url)
-            baseActivity.navigation(Router.WEB, args)
+            val url = Uri.encode(item.url)
+            baseActivity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
     }
 

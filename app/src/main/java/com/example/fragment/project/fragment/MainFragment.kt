@@ -88,7 +88,7 @@ class MainFragment : RouterFragment() {
 
     override fun initView() {
         binding.search.setOnClickListener { search() }
-        binding.shareArticle.setOnClickListener { activity.navigation(Router.SHARE_ARTICLE) }
+        binding.userShare.setOnClickListener { activity.navigation(Router.USER_SHARE) }
         //滚动热词
         binding.hotKey.adapter = hotKeyAdapter
         hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)

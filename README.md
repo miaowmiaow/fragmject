@@ -90,49 +90,57 @@
 
 ## Kotlin
 `Kotlin` 是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
-- [学习Kotlin编程语言](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
-- [Kotlin代码示例](https://play.kotlinlang.org/byExample/overview)
+
+[学习Kotlin编程语言](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
+
+[Kotlin代码示例](https://play.kotlinlang.org/byExample/overview)
 
 ## ViewBinding
-通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 `findViewById` 相比，视图绑定具有一些很显著的优点：   
-    **Null安全**、   
-    **类型安全**   
-- [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
+通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 `findViewById` 相比，视图绑定具有一些很显著的优点：
+    - Null安全
+    - 类型安全
+    
+[轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 
 ## LiveData
 `LiveData` 是一种可观察的数据存储器类，它具有生命周期感知能力，这种感知能力可确保 `LiveData` 仅更新处于活跃生命周期状态的应用组件观察者。   
-并且使用 `LiveData` 具有以下优势：   
-    **确保界面符合数据状态**、   
-    **不会发生内存泄漏**、   
-    **不会因Activity停止而导致崩溃**、   
-    **不再需要手动处理生命周期**、   
-    **数据始终保持最新状态**、   
-    **适当的配置更改**、   
-    **共享资源**   
-- [轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
+并且使用 `LiveData` 具有以下优势：
+    - 确保界面符合数据状态
+    - 不会发生内存泄漏
+    - 不会因Activity停止而导致崩溃
+    - 不再需要手动处理生命周期
+    - 数据始终保持最新状态**
+    - 适当的配置更改**
+    - 共享资源
+    
+[轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 
 ## ViewModel
 `ViewModel` 类旨在以注重生命周期的方式存储和管理界面相关的数据。 `ViewModel` 类让数据可在发生屏幕旋转等配置更改后继续留存。
-- [轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
+
+[轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
 
 ## 协程
 协程是我们在 Android 上进行异步编程的推荐解决方案。值得关注的特点包括：
-    **轻量**、   
-    **内存泄漏更少**、   
-    **内置取消支持**、   
-    **Jetpack集成**   
-- [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
+    - 轻量
+    - 内存泄漏更少
+    - 内置取消支持
+    - Jetpack集成
+    
+[轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 
 ## MVVM 
 MVVM（Model-View-ViewModel） 最早由微软提出。ViewModel指 "Model of View"——视图的模型。
-- [一文看懂MVVM](https://juejin.cn/post/7058542176375930887)
+
+[一文看懂MVVM](https://juejin.cn/post/7058542176375930887)
 
 ## Navigation
 `Navigation` 是 Android Jetpack 组件之一，主要是用于 `Fragment` 路由导航的框架，通过 `Navigation` 我们可以设计出单 `Activity` 应用架构。
-- [一文看懂Navigation](https://juejin.cn/post/7036296113573347364)
+
+[一文看懂Navigation](https://juejin.cn/post/7036296113573347364)
 
 ## WebView优化及H5秒开实践
-- [满满的WebView优化干货，让你的H5实现秒开体验](https://juejin.cn/post/7043706765879279629)
+[满满的WebView优化干货，让你的H5实现秒开体验](https://juejin.cn/post/7043706765879279629)
 
 ## KVDatabase
 基于RoomDatabase封装，通过键值对的方式来存储数据，不用再去关心 `RoomDatabase` 的复杂操作。
@@ -147,7 +155,9 @@ KVDatabase.get(key: String)
 
 ## SharedFlowBus
 基于SharedFlow封装的消息总线
-- [SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
+
+[SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
+
 #### 快速使用
 ```
 // 发送消息
@@ -168,14 +178,15 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 ```
 
 ## 字节码插桩
-- [最通俗易懂的字节码插桩实战 —— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
-- [最通俗易懂的字节码插桩实战 —— 自动埋点](https://juejin.cn/post/6985366891447451662)
+[最通俗易懂的字节码插桩实战 —— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
+
+[最通俗易懂的字节码插桩实战 —— 自动埋点](https://juejin.cn/post/6985366891447451662)
 
 ## 动态权限申请
-- [自己动手撸一个动态权限申请库](https://juejin.cn/post/6991471901704978440)
+[自己动手撸一个动态权限申请库](https://juejin.cn/post/6991471901704978440)
 
 ## 图片编辑器
-- [自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
+[自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 
 ### 截图展示
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |

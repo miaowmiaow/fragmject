@@ -1,7 +1,7 @@
 ## 前言
 刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解看完好像还是不会做项目，开源的项目内容太多用来上手实在不合适。   
 多希望有个代码简单，内容全面，知识详细，快速上手的项目，于是便有了 `fragmject` 项目。   
-在此感谢[玩Android](https://www.wanandroid.com/) 提供的[开放API](https://wanandroid.com/blog/show/2)。
+在此感谢 [玩Android](https://www.wanandroid.com/) 提供的 [开放API](https://wanandroid.com/blog/show/2) 。
 
 ## 简介
 一个入门级的项目，通过对 `Kotlin` 和 `Jetpack` 全家桶的系统运用，实现的一个功能完备符合主流市场标准App。 
@@ -92,26 +92,25 @@
 `Kotlin` 是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
 
 [学习Kotlin编程语言](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
-
 [Kotlin代码示例](https://play.kotlinlang.org/byExample/overview)
 
 ## ViewBinding
 通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 `findViewById` 相比，视图绑定具有一些很显著的优点：
-    - Null安全
-    - 类型安全
+- Null安全
+- 类型安全
     
 [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 
 ## LiveData
 `LiveData` 是一种可观察的数据存储器类，它具有生命周期感知能力，这种感知能力可确保 `LiveData` 仅更新处于活跃生命周期状态的应用组件观察者。   
 并且使用 `LiveData` 具有以下优势：
-    - 确保界面符合数据状态
-    - 不会发生内存泄漏
-    - 不会因Activity停止而导致崩溃
-    - 不再需要手动处理生命周期
-    - 数据始终保持最新状态**
-    - 适当的配置更改**
-    - 共享资源
+- 确保界面符合数据状态
+- 不会发生内存泄漏
+- 不会因Activity停止而导致崩溃
+- 不再需要手动处理生命周期
+- 数据始终保持最新状态
+- 适当的配置更改
+- 共享资源
     
 [轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 

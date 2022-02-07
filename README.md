@@ -94,22 +94,21 @@
 - [Kotlin代码示例](https://play.kotlinlang.org/byExample/overview)
 
 ## ViewBinding
-通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 `findViewById` 相比，视图绑定具有
-**Null安全**、
-**类型安全**
-等很显著的优点。
+通过视图绑定功能，您可以更轻松地编写可与视图交互的代码。与使用 `findViewById` 相比，视图绑定具有一些很显著的优点：   
+    **Null安全**、   
+    **类型安全**   
 - [轻松使用ViewBinding](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 
 ## LiveData
-`LiveData` 是一种可观察的数据存储器类，它具有生命周期感知能力，这种感知能力可确保 `LiveData` 仅更新处于活跃生命周期状态的应用组件观察者。并且它具有
-**确保界面符合数据状态**、
-**不会发生内存泄漏**、
-**不会因Activity停止而导致崩溃**、
-**不再需要手动处理生命周期**、
-**数据始终保持最新状态**、
-**适当的配置更改**、
-**共享资源**
-等优势。
+`LiveData` 是一种可观察的数据存储器类，它具有生命周期感知能力，这种感知能力可确保 `LiveData` 仅更新处于活跃生命周期状态的应用组件观察者。   
+并且使用 `LiveData` 具有以下优势：   
+    **确保界面符合数据状态**、   
+    **不会发生内存泄漏**、   
+    **不会因Activity停止而导致崩溃**、   
+    **不再需要手动处理生命周期**、   
+    **数据始终保持最新状态**、   
+    **适当的配置更改**、   
+    **共享资源**   
 - [轻松使用LiveData](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 
 ## ViewModel
@@ -117,16 +116,15 @@
 - [轻松使用ViewModel](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
 
 ## 协程
-协程是一种并发设计模式，您可以在 Android 平台上使用它来简化异步执行的代码。它包括
-**轻量**、
-**内存泄漏更少**、
-**内置取消支持**、
-**Jetpack集成**
-等特点。
+协程是我们在 Android 上进行异步编程的推荐解决方案。值得关注的特点包括：
+    **轻量**、   
+    **内存泄漏更少**、   
+    **内置取消支持**、   
+    **Jetpack集成**   
 - [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 
 ## MVVM 
-`MVVM（Model-View-ViewModel）` 最早由微软提出。ViewModel指 "Model of View"——视图的模型。
+MVVM（Model-View-ViewModel） 最早由微软提出。ViewModel指 "Model of View"——视图的模型。
 - [一文看懂MVVM](https://juejin.cn/post/7058542176375930887)
 
 ## Navigation
@@ -136,10 +134,9 @@
 ## WebView优化及H5秒开实践
 - [满满的WebView优化干货，让你的H5实现秒开体验](https://juejin.cn/post/7043706765879279629)
 
-## 基于RoomDatabase封装的KVDatabase
-通过键值对的方式来存储数据，不用再去关心 `RoomDatabase` 的复杂操作。
-
-### 快速使用
+## KVDatabase
+基于RoomDatabase封装，通过键值对的方式来存储数据，不用再去关心 `RoomDatabase` 的复杂操作。
+#### 快速使用
 ```
 // 存储数据
 KVDatabase.set(key: String, value: String)
@@ -148,10 +145,10 @@ KVDatabase.set(key: String, value: String)
 KVDatabase.get(key: String)
 ```
 
-## 基于SharedFlow封装的消息总线SharedFlowBus
+## SharedFlowBus
+基于SharedFlow封装的消息总线
 - [SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
-
-### 快速使用
+#### 快速使用
 ```
 // 发送消息
 SharedFlowBus.with(objectKey: Class<T>).tryEmit(value: T)
@@ -184,7 +181,7 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 
-### 接入
+#### 接入
 第 1 步:在工程的 `build.gradle` 中添加：
 ```
 allprojects {
@@ -200,7 +197,7 @@ dependencies {
     implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.6'
 }
 ```
-### 快速使用
+#### 快速使用
 ```
 PictureEditorDialog.newInstance()
     .setBitmapPath(path)
@@ -215,8 +212,9 @@ PictureEditorDialog.newInstance()
 1. 通过 `PictureEditorDialog` 调用图片编辑器
 2. 通过 `setBitmapPath(path)` 传入图片路径
 3. 通过 `setEditorFinishCallback(callback)` 获取编辑后的图片地址
+
 **如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式**
-### 自定义使用
+#### 自定义使用
 ```
 <com.example.miaow.picture.editor.PictureEditorView
     android:id="@+id/pic_editor"
@@ -240,8 +238,9 @@ picEditor.saveBitmap()
 5. 通过 `graffitiUndo()` 涂鸦撤销
 6. 通过 `mosaicUndo()` 马赛克撤销
 7. 通过 `saveBitmap()` 保存编辑图片
+
 `PictureEditorView` 就介绍到这里，具体使用请查看 `PictureEditorDialog`
-### 图片裁剪
+#### 图片裁剪
 ```
 <com.example.miaow.picture.editor.PictureClipView
     android:id="@+id/clip"
@@ -259,6 +258,7 @@ clip.saveBitmap()
 2. 通过 `clip.rotate()` 图片旋转
 3. 通过 `clip.reset()` 图片重置
 4. 通过 `clip.saveBitmap()` 保存裁剪框内图片
+
 `PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`
 
 ## 主要开源框架

@@ -1,5 +1,7 @@
 package com.example.fragment.library.base.http
 
+import android.app.Application
+import android.content.ContextWrapper
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
@@ -20,7 +22,7 @@ import java.net.URLEncoder
  * @param progress 进度回调方法
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
-    request: HttpRequest = HttpRequest(),
+    request: HttpRequest,
     noinline progress: ((Double) -> Unit)? = null
 ): T {
     return SimpleHttp.instance().get(request, T::class.java, progress)
@@ -32,7 +34,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
  * @param progress 进度回调方法
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
-    request: HttpRequest = HttpRequest(),
+    request: HttpRequest,
     noinline progress: ((Double) -> Unit)? = null
 ): T {
     return SimpleHttp.instance().post(request, T::class.java, progress)
@@ -44,7 +46,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
  * @param progress 进度回调方法
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
-    request: HttpRequest = HttpRequest(),
+    request: HttpRequest,
     noinline progress: ((Double) -> Unit)? = null
 ): T {
     return SimpleHttp.instance().form(request, T::class.java, progress)
@@ -56,11 +58,19 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
  * @param progress 进度回调方法
  */
 suspend inline fun CoroutineScope.download(
-    request: HttpRequest = HttpRequest(),
+    request: HttpRequest,
     filePathName: String,
     noinline progress: ((Double) -> Unit)? = null
 ): HttpResponse {
     return SimpleHttp.instance().download(request, filePathName, progress)
+}
+
+fun ContextWrapper.setBaseUrl(baseUrl: String) {
+    SimpleHttp.instance().setBaseUrl(baseUrl)
+}
+
+fun ContextWrapper.setHttpClient(client: OkHttpClient) {
+    SimpleHttp.instance().setHttpClient(client)
 }
 
 /**
@@ -77,41 +87,20 @@ class SimpleHttp private constructor() {
             INSTANCE ?: SimpleHttp().also { INSTANCE = it }
         }
 
-        @JvmStatic
-        fun setBaseUrl(baseUrl: String): Companion {
-            instance().setBaseUrl(baseUrl)
-            return this
-        }
-
-        @JvmStatic
-        fun setHttpClient(client: OkHttpClient): Companion {
-            instance().setHttpClient(client)
-            return this
-        }
-
-        @JvmStatic
-        fun setConverter(converter: Converter): Companion {
-            instance().setConverter(converter)
-            return this
-        }
     }
 
     private lateinit var baseUrl: String
     private lateinit var client: OkHttpClient
-    private lateinit var converter: Converter
     private var retrofit: Retrofit? = null
     private var service: ApiService? = null
+    private var converter: Converter? = null
 
-    private fun setBaseUrl(baseUrl: String) {
+    fun setBaseUrl(baseUrl: String) {
         this.baseUrl = baseUrl
     }
 
-    private fun setHttpClient(client: OkHttpClient) {
+    fun setHttpClient(client: OkHttpClient) {
         this.client = client
-    }
-
-    private fun setConverter(converter: Converter) {
-        this.converter = converter
     }
 
     private fun getRetrofit(): Retrofit {
@@ -126,14 +115,18 @@ class SimpleHttp private constructor() {
         }
     }
 
+    private fun getConverter(): Converter {
+        return converter ?: GSonConverter.create()
+    }
+
     suspend fun <T : HttpResponse> get(
-        request: HttpRequest = HttpRequest(),
+        request: HttpRequest,
         type: Class<T>,
         progress: ((Double) -> Unit)? = null
     ): T {
         return try {
             progress?.invoke(0.0)
-            converter.converter(
+            getConverter().converter(
                 getService().get(
                     request.getUrl(baseUrl),
                     request.getHeader()
@@ -141,9 +134,8 @@ class SimpleHttp private constructor() {
                 type
             )
         } catch (e: Exception) {
-            val msg = e.message.toString()
             val t = type.newInstance()
-            t.errorMsg = msg
+            t.errorMsg = e.message.toString()
             t
         } finally {
             progress?.invoke(1.0)
@@ -151,13 +143,13 @@ class SimpleHttp private constructor() {
     }
 
     suspend fun <T : HttpResponse> post(
-        request: HttpRequest = HttpRequest(),
+        request: HttpRequest,
         type: Class<T>,
         progress: ((Double) -> Unit)? = null
     ): T {
         return try {
             progress?.invoke(0.0)
-            converter.converter(
+            getConverter().converter(
                 getService().post(
                     request.getUrl(baseUrl),
                     request.getHeader(),
@@ -166,9 +158,8 @@ class SimpleHttp private constructor() {
                 type
             )
         } catch (e: Exception) {
-            val msg = e.message.toString()
             val t = type.newInstance()
-            t.errorMsg = msg
+            t.errorMsg = e.message.toString()
             t
         } finally {
             progress?.invoke(1.0)
@@ -176,7 +167,7 @@ class SimpleHttp private constructor() {
     }
 
     suspend fun <T : HttpResponse> form(
-        request: HttpRequest = HttpRequest(),
+        request: HttpRequest,
         type: Class<T>,
         progress: ((Double) -> Unit)? = null
     ): T {
@@ -199,7 +190,7 @@ class SimpleHttp private constructor() {
         }
         return try {
             progress?.invoke(0.0)
-            converter.converter(
+            getConverter().converter(
                 getService().form(
                     request.getUrl(baseUrl),
                     request.getHeader(),
@@ -208,9 +199,8 @@ class SimpleHttp private constructor() {
                 type
             )
         } catch (e: Exception) {
-            val msg = e.message.toString()
             val t = type.newInstance()
-            t.errorMsg = msg
+            t.errorMsg = e.message.toString()
             t
         } finally {
             progress?.invoke(1.0)
@@ -218,7 +208,7 @@ class SimpleHttp private constructor() {
     }
 
     suspend fun download(
-        request: HttpRequest = HttpRequest(),
+        request: HttpRequest,
         filePathName: String,
         progress: ((Double) -> Unit)? = null
     ): HttpResponse {
@@ -232,8 +222,7 @@ class SimpleHttp private constructor() {
             }
             HttpResponse("0", "success")
         } catch (e: Exception) {
-            val msg = e.message.toString()
-            HttpResponse("-1", msg)
+            HttpResponse("-1", e.message.toString())
         } finally {
             progress?.invoke(1.0)
         }

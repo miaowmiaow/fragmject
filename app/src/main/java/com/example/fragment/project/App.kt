@@ -6,8 +6,8 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
-import com.example.fragment.library.base.http.GSonConverter
-import com.example.fragment.library.base.http.SimpleHttp
+import com.example.fragment.library.base.http.setBaseUrl
+import com.example.fragment.library.base.http.setHttpClient
 import com.example.fragment.library.base.utils.OkHelper
 
 class App : Application(), ImageLoaderFactory {
@@ -32,9 +32,8 @@ class App : Application(), ImageLoaderFactory {
     }
 
     private fun initHttp() {
-        SimpleHttp.setBaseUrl("https://www.wanandroid.com/")
-            .setHttpClient(OkHelper.httpClient(applicationContext))
-            .setConverter(GSonConverter.create())
+        setBaseUrl("https://www.wanandroid.com/")
+        setHttpClient(OkHelper.httpClient(applicationContext))
     }
 
 }

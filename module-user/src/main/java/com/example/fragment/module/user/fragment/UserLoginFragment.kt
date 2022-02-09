@@ -27,6 +27,11 @@ class UserLoginFragment : RouterFragment() {
         return binding.root
     }
 
+    override fun onPause() {
+        super.onPause()
+        hideInputMethod()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -61,8 +66,7 @@ class UserLoginFragment : RouterFragment() {
         return viewModel
     }
 
-    override fun initLoad() {
-    }
+    override fun initLoad() {}
 
     private fun checkParameter(username: String, password: String): Boolean {
         if (username.isBlank()) {

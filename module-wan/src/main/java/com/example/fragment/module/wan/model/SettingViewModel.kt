@@ -13,8 +13,8 @@ import kotlinx.coroutines.launch
 class SettingViewModel : BaseViewModel() {
 
     val logoutResult = MutableLiveData<HttpResponse>()
-    val updateResult = MutableLiveData<UpdateBean>()
-    val downloadApkResult = MutableLiveData<HttpResponse>()
+    val updateResult = MutableLiveData<UpdateBean?>()
+    val downloadApkResult = MutableLiveData<HttpResponse?>()
 
     /**
      * 退出登录

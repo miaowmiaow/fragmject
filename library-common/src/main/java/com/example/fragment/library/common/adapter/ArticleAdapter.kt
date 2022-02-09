@@ -21,7 +21,7 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.databinding.ItemArticleBinding
+import com.example.fragment.library.common.databinding.ArticleItemBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,11 +43,11 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
     )
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return ItemArticleBinding::inflate
+        return ArticleItemBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: ArticleBean) {
-        val binding = holder.binding as ItemArticleBinding
+        val binding = holder.binding as ArticleItemBinding
         val activity: RouterActivity = contextToActivity(binding.root.context)
         binding.root.setOnClickListener {
             val url = Uri.encode(item.link)

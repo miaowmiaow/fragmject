@@ -13,14 +13,14 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.TreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.FragmentSystemBinding
+import com.example.fragment.module.wan.databinding.SystemFragmentBinding
 import com.example.fragment.module.wan.model.NavigationViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
 class SystemFragment : RouterFragment() {
 
     private val viewModel: NavigationViewModel by activityViewModels()
-    private var _binding: FragmentSystemBinding? = null
+    private var _binding: SystemFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var cid = ""
@@ -30,7 +30,7 @@ class SystemFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSystemBinding.inflate(inflater, container, false)
+        _binding = SystemFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

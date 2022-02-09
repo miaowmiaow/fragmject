@@ -11,7 +11,7 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.project.R
-import com.example.fragment.project.databinding.ActivityMainBinding
+import com.example.fragment.project.databinding.MainActivityBinding
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 
@@ -64,7 +64,7 @@ class MainActivity : RouterActivity() {
         setTheme(R.style.AppTheme)
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-        setContentView(ActivityMainBinding.inflate(LayoutInflater.from(this)).root)
+        setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
         initWanHelper()
         initQbSdk()
     }

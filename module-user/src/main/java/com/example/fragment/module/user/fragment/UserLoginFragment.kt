@@ -9,13 +9,13 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.databinding.FragmentUserLoginBinding
+import com.example.fragment.module.user.databinding.UserLoginFragmentBinding
 import com.example.fragment.module.user.model.UserLoginViewModel
 
 class UserLoginFragment : RouterFragment() {
 
     private val viewModel: UserLoginViewModel by viewModels()
-    private var _binding: FragmentUserLoginBinding? = null
+    private var _binding: UserLoginFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -23,7 +23,7 @@ class UserLoginFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUserLoginBinding.inflate(inflater, container, false)
+        _binding = UserLoginFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

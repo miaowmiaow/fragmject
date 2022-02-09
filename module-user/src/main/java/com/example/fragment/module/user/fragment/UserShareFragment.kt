@@ -11,13 +11,13 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.databinding.FragmentUserShareBinding
+import com.example.fragment.module.user.databinding.UserShareFragmentBinding
 import com.example.fragment.module.user.model.UserShareModel
 
 class UserShareFragment : RouterFragment() {
 
     private val viewModel: UserShareModel by viewModels()
-    private var _binding: FragmentUserShareBinding? = null
+    private var _binding: UserShareFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -25,7 +25,7 @@ class UserShareFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUserShareBinding.inflate(inflater, container, false)
+        _binding = UserShareFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

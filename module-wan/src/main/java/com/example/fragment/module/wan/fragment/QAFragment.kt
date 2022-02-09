@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.FragmentQaBinding
+import com.example.fragment.module.wan.databinding.QaFragmentBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
 class QAFragment : RouterFragment() {
@@ -20,7 +20,7 @@ class QAFragment : RouterFragment() {
         }
     }
 
-    private var _binding: FragmentQaBinding? = null
+    private var _binding: QaFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val tabTexts = arrayOf("问答", "广场")
@@ -34,7 +34,7 @@ class QAFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentQaBinding.inflate(inflater, container, false)
+        _binding = QaFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

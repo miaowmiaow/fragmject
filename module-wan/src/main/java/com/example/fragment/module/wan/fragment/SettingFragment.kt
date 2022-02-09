@@ -25,7 +25,7 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.wan.databinding.FragmentSettingBinding
+import com.example.fragment.module.wan.databinding.SettingFragmentBinding
 import com.example.fragment.module.wan.model.SettingViewModel
 import java.io.File
 
@@ -34,7 +34,7 @@ class SettingFragment : RouterFragment() {
     private var countDownTimer: CountDownTimer? = null
 
     private val viewModel: SettingViewModel by viewModels()
-    private var _binding: FragmentSettingBinding? = null
+    private var _binding: SettingFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -42,7 +42,7 @@ class SettingFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSettingBinding.inflate(inflater, container, false)
+        _binding = SettingFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

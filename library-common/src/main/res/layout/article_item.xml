@@ -59,12 +59,13 @@
 
         <ImageView
             android:id="@+id/image"
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
             android:layout_height="80dp"
             android:layout_below="@id/avatar"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:visibility="gone" />
 
@@ -88,7 +89,6 @@
             android:id="@+id/desc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="55dp"
             android:layout_below="@id/title"
             android:layout_marginBottom="10dp"
             android:layout_toStartOf="@id/image"
@@ -96,6 +96,7 @@
             android:includeFontPadding="true"
             android:lineSpacingExtra="3dp"
             android:maxLines="3"
+            android:minHeight="55dp"
             android:textColor="@color/text_666"
             android:textSize="12sp"
             android:visibility="gone" />

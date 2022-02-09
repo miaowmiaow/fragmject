@@ -11,7 +11,7 @@ import androidx.activity.addCallback
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.databinding.FragmentWebBinding
+import com.example.fragment.library.common.databinding.WebFragmentBinding
 import com.tencent.smtt.sdk.WebView
 
 class WebFragment : RouterFragment() {
@@ -23,7 +23,7 @@ class WebFragment : RouterFragment() {
         }
     }
 
-    private var _binding: FragmentWebBinding? = null
+    private var _binding: WebFragmentBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var webViewHelper: WebViewHelper
@@ -33,7 +33,7 @@ class WebFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentWebBinding.inflate(inflater, container, false)
+        _binding = WebFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

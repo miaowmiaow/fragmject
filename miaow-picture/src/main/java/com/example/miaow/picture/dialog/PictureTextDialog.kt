@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
 import com.example.miaow.picture.bean.StickerAttrs
-import com.example.miaow.picture.databinding.DialogPictureTextBinding
+import com.example.miaow.picture.databinding.PictureTextDialogBinding
 import com.example.miaow.picture.utils.ColorUtils
 
 class PictureTextDialog : PictureBaseDialog() {
@@ -23,7 +23,7 @@ class PictureTextDialog : PictureBaseDialog() {
         }
     }
 
-    private var _binding: DialogPictureTextBinding? = null
+    private var _binding: PictureTextDialogBinding? = null
     private val binding get() = _binding!!
     private val textColors: MutableList<RelativeLayout> = arrayListOf()
     private var _attrs: StickerAttrs? = null
@@ -45,7 +45,7 @@ class PictureTextDialog : PictureBaseDialog() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DialogPictureTextBinding.inflate(inflater, container, false)
+        _binding = PictureTextDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -8,5 +8,5 @@
         android:id="@+id/setting"
         android:name="com.example.fragment.module.wan.fragment.SettingFragment"
         android:label="SettingFragment"
-        tools:layout="@layout/fragment_setting" />
+        tools:layout="@layout/setting_fragment" />
 </navigation>

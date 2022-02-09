@@ -15,7 +15,7 @@
         android:id="@+id/main"
         android:name="com.example.fragment.project.fragment.MainFragment"
         android:label="MainFragment"
-        tools:layout="@layout/fragment_main">
+        tools:layout="@layout/main_fragment">
         <action
             android:id="@+id/action_main_to_setting"
             app:destination="@id/setting_graph" />

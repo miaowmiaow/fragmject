@@ -11,7 +11,7 @@ import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.databinding.FragmentUserBinding
+import com.example.fragment.module.user.databinding.UserFragmentBinding
 import com.example.fragment.module.user.model.UserViewModel
 
 class UserFragment : RouterFragment() {
@@ -24,7 +24,7 @@ class UserFragment : RouterFragment() {
     }
 
     private val viewModel: UserViewModel by activityViewModels()
-    private var _binding: FragmentUserBinding? = null
+    private var _binding: UserFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -32,7 +32,7 @@ class UserFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUserBinding.inflate(inflater, container, false)
+        _binding = UserFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

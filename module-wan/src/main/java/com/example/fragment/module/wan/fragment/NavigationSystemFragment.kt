@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.SystemAdapter
-import com.example.fragment.module.wan.databinding.FragmentNavigationSystemBinding
+import com.example.fragment.module.wan.databinding.NavigationSystemFragmentBinding
 import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationSystemFragment : RouterFragment() {
@@ -22,7 +22,7 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     private val viewModel: NavigationViewModel by activityViewModels()
-    private var _binding: FragmentNavigationSystemBinding? = null
+    private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val systemAdapter = SystemAdapter()
@@ -32,7 +32,7 @@ class NavigationSystemFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentNavigationSystemBinding.inflate(inflater, container, false)
+        _binding = NavigationSystemFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

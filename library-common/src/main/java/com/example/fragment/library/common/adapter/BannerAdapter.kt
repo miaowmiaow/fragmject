@@ -11,16 +11,16 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.BannerBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.databinding.ItemBannerBinding
+import com.example.fragment.library.common.databinding.BannerItemBinding
 
 class BannerAdapter : BaseAdapter<BannerBean>() {
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return ItemBannerBinding::inflate
+        return BannerItemBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
-        val binding = holder.binding as ItemBannerBinding
+        val binding = holder.binding as BannerItemBinding
         if (item.imagePath.isNotEmpty()) {
             binding.banner.load(item.imagePath)
         }

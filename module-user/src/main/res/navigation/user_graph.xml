@@ -8,28 +8,28 @@
         android:id="@+id/avatar"
         android:name="com.example.fragment.module.user.fragment.UserAvatarFragment"
         android:label="AvatarFragment"
-        tools:layout="@layout/fragment_user_avatar">
+        tools:layout="@layout/user_avatar_fragment">
         <deepLink app:uri="fragment.example.com/user/avatar" />
     </fragment>
     <fragment
         android:id="@+id/login"
         android:name="com.example.fragment.module.user.fragment.UserLoginFragment"
         android:label="LoginFragment"
-        tools:layout="@layout/fragment_user_login">
+        tools:layout="@layout/user_login_fragment">
         <deepLink app:uri="fragment.example.com/user/login" />
     </fragment>
     <fragment
         android:id="@+id/register"
         android:name="com.example.fragment.module.user.fragment.UserRegisterFragment"
         android:label="RegisterFragment"
-        tools:layout="@layout/fragment_user_register">
+        tools:layout="@layout/user_register_fragment">
         <deepLink app:uri="fragment.example.com/user/register" />
     </fragment>
     <fragment
         android:id="@+id/user_share"
         android:name="com.example.fragment.module.user.fragment.UserShareFragment"
         android:label="UserShareFragment"
-        tools:layout="@layout/fragment_user_share">
+        tools:layout="@layout/user_share_fragment">
         <deepLink app:uri="fragment.example.com/user/share" />
     </fragment>
 </navigation>

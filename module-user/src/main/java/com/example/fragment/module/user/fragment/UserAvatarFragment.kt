@@ -17,7 +17,7 @@ import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.FragmentUserAvatarBinding
+import com.example.fragment.module.user.databinding.UserAvatarFragmentBinding
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.miaow.picture.dialog.EditorFinishCallback
 import com.example.miaow.picture.dialog.PictureEditorDialog
@@ -26,7 +26,7 @@ import com.example.miaow.picture.utils.AlbumUtils.getImagePath
 class UserAvatarFragment : RouterFragment() {
 
     private val viewModel: UserViewModel by activityViewModels()
-    private var _binding: FragmentUserAvatarBinding? = null
+    private var _binding: UserAvatarFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -34,7 +34,7 @@ class UserAvatarFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUserAvatarBinding.inflate(inflater, container, false)
+        _binding = UserAvatarFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

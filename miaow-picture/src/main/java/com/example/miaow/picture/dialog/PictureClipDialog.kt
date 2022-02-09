@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.example.miaow.picture.databinding.DialogPictureClipBinding
+import com.example.miaow.picture.databinding.PictureClipDialogBinding
 import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
 
 class PictureClipDialog : PictureBaseDialog() {
@@ -32,7 +32,7 @@ class PictureClipDialog : PictureBaseDialog() {
         return this
     }
 
-    private var _binding: DialogPictureClipBinding? = null
+    private var _binding: PictureClipDialogBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -40,7 +40,7 @@ class PictureClipDialog : PictureBaseDialog() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DialogPictureClipBinding.inflate(inflater, container, false)
+        _binding = PictureClipDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 

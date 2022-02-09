@@ -8,21 +8,21 @@
         android:id="@+id/coin"
         android:name="com.example.fragment.module.user.fragment.MyCoinFragment"
         android:label="MyCoinFragment"
-        tools:layout="@layout/fragment_my_coin">
+        tools:layout="@layout/my_coin_fragment">
         <deepLink app:uri="fragment.example.com/my/coin" />
     </fragment>
     <fragment
         android:id="@+id/my_collect"
         android:name="com.example.fragment.module.user.fragment.MyCollectFragment"
         android:label="MyCollectFragment"
-        tools:layout="@layout/fragment_my_collect">
+        tools:layout="@layout/my_collect_fragment">
         <deepLink app:uri="fragment.example.com/my/collect" />
     </fragment>
     <fragment
         android:id="@+id/my_share"
         android:name="com.example.fragment.module.user.fragment.MyShareFragment"
         android:label="MyShareFragment"
-        tools:layout="@layout/fragment_my_share">
+        tools:layout="@layout/my_share_fragment">
         <deepLink app:uri="fragment.example.com/my/share" />
     </fragment>
 </navigation>

@@ -5,16 +5,16 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.HotKeyBean
-import com.example.fragment.project.databinding.ItemHotKeyBinding
+import com.example.fragment.project.databinding.HotKeyItemBinding
 
 class HotKeyAdapter : BaseAdapter<HotKeyBean>() {
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return ItemHotKeyBinding::inflate
+        return HotKeyItemBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: HotKeyBean) {
-        val binding = holder.binding as ItemHotKeyBinding
+        val binding = holder.binding as HotKeyItemBinding
         binding.hotKey.text = item.name
     }
 

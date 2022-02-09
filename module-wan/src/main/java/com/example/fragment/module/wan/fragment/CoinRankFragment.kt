@@ -18,13 +18,13 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.CoinRankAdapter
-import com.example.fragment.module.wan.databinding.FragmentCoinRankBinding
+import com.example.fragment.module.wan.databinding.CoinRankFragmentBinding
 import com.example.fragment.module.wan.model.CoinRankViewModel
 
 class CoinRankFragment : RouterFragment() {
 
     private val viewModel: CoinRankViewModel by viewModels()
-    private var _binding: FragmentCoinRankBinding? = null
+    private var _binding: CoinRankFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val coinRankAdapter = CoinRankAdapter()
@@ -39,7 +39,7 @@ class CoinRankFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCoinRankBinding.inflate(inflater, container, false)
+        _binding = CoinRankFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -14,17 +14,17 @@ import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.adapter.CoinRecordAdapter
-import com.example.fragment.module.user.databinding.FragmentMyCoinBinding
+import com.example.fragment.module.user.adapter.MyCoinAdapter
+import com.example.fragment.module.user.databinding.MyCoinFragmentBinding
 import com.example.fragment.module.user.model.MyCoinViewModel
 
 class MyCoinFragment : RouterFragment() {
 
     private val viewModel: MyCoinViewModel by viewModels()
-    private var _binding: FragmentMyCoinBinding? = null
+    private var _binding: MyCoinFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private val coinRecordAdapter = CoinRecordAdapter()
+    private val coinRecordAdapter = MyCoinAdapter()
     private val coinCountAnimator = ValueAnimator()
 
     init {
@@ -41,7 +41,7 @@ class MyCoinFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyCoinBinding.inflate(inflater, container, false)
+        _binding = MyCoinFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

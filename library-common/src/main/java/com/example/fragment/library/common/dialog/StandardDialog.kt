@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.fragment.library.base.dialog.BaseDialog
-import com.example.fragment.library.common.databinding.DialogStandardBinding
+import com.example.fragment.library.common.databinding.StandardDialogBinding
 
 class StandardDialog : BaseDialog() {
 
@@ -16,7 +16,7 @@ class StandardDialog : BaseDialog() {
         }
     }
 
-    private lateinit var binding: DialogStandardBinding
+    private lateinit var binding: StandardDialogBinding
 
     private var listener: OnDialogClickListener? = null
     private var title: String? = null
@@ -27,7 +27,7 @@ class StandardDialog : BaseDialog() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogStandardBinding.inflate(inflater, container, false)
+        binding = StandardDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 

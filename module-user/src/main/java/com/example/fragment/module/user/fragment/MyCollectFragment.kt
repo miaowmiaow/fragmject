@@ -12,13 +12,13 @@ import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.databinding.FragmentMyCollectBinding
+import com.example.fragment.module.user.databinding.MyCollectFragmentBinding
 import com.example.fragment.module.user.model.MyCollectViewModel
 
 class MyCollectFragment : RouterFragment() {
 
     private val viewModel: MyCollectViewModel by viewModels()
-    private var _binding: FragmentMyCollectBinding? = null
+    private var _binding: MyCollectFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val articleAdapter = ArticleAdapter()
@@ -28,7 +28,7 @@ class MyCollectFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyCollectBinding.inflate(inflater, container, false)
+        _binding = MyCollectFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -14,7 +14,7 @@ import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.adapter.BannerAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.FragmentHomeBinding
+import com.example.fragment.module.wan.databinding.HomeFragmentBinding
 import com.example.fragment.module.wan.model.HomeViewModel
 
 class HomeFragment : RouterFragment() {
@@ -27,7 +27,7 @@ class HomeFragment : RouterFragment() {
     }
 
     private val viewModel: HomeViewModel by activityViewModels()
-    private var _binding: FragmentHomeBinding? = null
+    private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var bannerHelper: BannerHelper? = null
@@ -39,7 +39,7 @@ class HomeFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = HomeFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

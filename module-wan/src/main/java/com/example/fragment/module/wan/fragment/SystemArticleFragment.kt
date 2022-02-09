@@ -13,7 +13,7 @@ import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.FragmentSystemArticleBinding
+import com.example.fragment.module.wan.databinding.SystemArticleFragmentBinding
 import com.example.fragment.module.wan.model.SystemViewModel
 
 class SystemArticleFragment : RouterFragment() {
@@ -26,7 +26,7 @@ class SystemArticleFragment : RouterFragment() {
     }
 
     private val viewModel: SystemViewModel by viewModels()
-    private var _binding: FragmentSystemArticleBinding? = null
+    private var _binding: SystemArticleFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val articleAdapter = ArticleAdapter()
@@ -37,7 +37,7 @@ class SystemArticleFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSystemArticleBinding.inflate(inflater, container, false)
+        _binding = SystemArticleFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

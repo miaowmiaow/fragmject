@@ -26,8 +26,8 @@ import com.example.fragment.module.wan.fragment.ProjectFragment
 import com.example.fragment.module.wan.fragment.QAFragment
 import com.example.fragment.project.R
 import com.example.fragment.project.adapter.HotKeyAdapter
-import com.example.fragment.project.databinding.FragmentMainBinding
-import com.example.fragment.project.databinding.ItemTabMainBinding
+import com.example.fragment.project.databinding.MainFragmentBinding
+import com.example.fragment.project.databinding.MainTabItemBinding
 import com.example.fragment.project.model.MainViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -35,7 +35,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 class MainFragment : RouterFragment() {
 
     private val viewModel: MainViewModel by viewModels()
-    private var _binding: FragmentMainBinding? = null
+    private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val tabTexts = arrayOf("首页", "导航", "问答", "项目", "我的")
@@ -67,7 +67,7 @@ class MainFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = MainFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -120,7 +120,7 @@ class MainFragment : RouterFragment() {
             }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2, true, false) { tab, position ->
-            val item = ItemTabMainBinding.inflate(LayoutInflater.from(binding.root.context))
+            val item = MainTabItemBinding.inflate(LayoutInflater.from(binding.root.context))
             item.icon.setImageResource(tabDrawable[position])
             item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
             item.name.text = tabTexts[position]

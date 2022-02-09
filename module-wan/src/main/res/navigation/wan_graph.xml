@@ -8,14 +8,14 @@
         android:id="@+id/coin_rank"
         android:name="com.example.fragment.module.wan.fragment.CoinRankFragment"
         android:label="CoinRankFragment"
-        tools:layout="@layout/fragment_coin_rank">
+        tools:layout="@layout/coin_rank_fragment">
         <deepLink app:uri="fragment.example.com/coin/rank" />
     </fragment>
     <fragment
         android:id="@+id/search"
         android:name="com.example.fragment.module.wan.fragment.SearchFragment"
         android:label="SearchFragment"
-        tools:layout="@layout/fragment_search">
+        tools:layout="@layout/search_fragment">
         <argument android:name="value" />
         <deepLink app:uri="fragment.example.com/search/{value}" />
     </fragment>
@@ -23,7 +23,7 @@
         android:id="@+id/share_article"
         android:name="com.example.fragment.module.wan.fragment.ShareArticleFragment"
         android:label="ShareArticleFragment"
-        tools:layout="@layout/fragment_share_article">
+        tools:layout="@layout/share_article_fragment">
         <argument android:name="uid" />
         <deepLink app:uri="fragment.example.com/share/article/{uid}" />
     </fragment>
@@ -31,7 +31,7 @@
         android:id="@+id/system"
         android:name="com.example.fragment.module.wan.fragment.SystemFragment"
         android:label="SystemListFragment"
-        tools:layout="@layout/fragment_system">
+        tools:layout="@layout/system_fragment">
         <argument android:name="url" />
         <deepLink app:uri="fragment.example.com/system/url/{url}" />
         <argument android:name="cid" />

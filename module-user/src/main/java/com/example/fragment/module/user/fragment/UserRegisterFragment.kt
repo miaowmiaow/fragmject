@@ -8,13 +8,13 @@ import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.databinding.FragmentUserRegisterBinding
+import com.example.fragment.module.user.databinding.UserRegisterFragmentBinding
 import com.example.fragment.module.user.model.UserLoginViewModel
 
 class UserRegisterFragment : RouterFragment() {
 
     private val viewModel: UserLoginViewModel by viewModels()
-    private var _binding: FragmentUserRegisterBinding? = null
+    private var _binding: UserRegisterFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -22,7 +22,7 @@ class UserRegisterFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentUserRegisterBinding.inflate(inflater, container, false)
+        _binding = UserRegisterFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

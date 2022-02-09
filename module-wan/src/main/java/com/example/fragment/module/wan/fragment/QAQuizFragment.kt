@@ -12,7 +12,7 @@ import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.FragmentQaQuizBinding
+import com.example.fragment.module.wan.databinding.QaQuizFragmentBinding
 import com.example.fragment.module.wan.model.QuizViewModel
 
 class QAQuizFragment : RouterFragment() {
@@ -25,7 +25,7 @@ class QAQuizFragment : RouterFragment() {
     }
 
     private val viewModel: QuizViewModel by viewModels()
-    private var _binding: FragmentQaQuizBinding? = null
+    private var _binding: QaQuizFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val articleAdapter = ArticleAdapter()
@@ -35,7 +35,7 @@ class QAQuizFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentQaQuizBinding.inflate(inflater, container, false)
+        _binding = QaQuizFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

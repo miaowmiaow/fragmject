@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.databinding.ItemSearchHistoryBinding
+import com.example.fragment.module.wan.databinding.SearchHistoryItemBinding
 
 class SearchHistoryAdapter : BaseAdapter<String>() {
 
@@ -14,11 +14,11 @@ class SearchHistoryAdapter : BaseAdapter<String>() {
     }
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return ItemSearchHistoryBinding::inflate
+        return SearchHistoryItemBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: String) {
-        val binding = holder.binding as ItemSearchHistoryBinding
+        val binding = holder.binding as SearchHistoryItemBinding
         binding.title.text = item
     }
 

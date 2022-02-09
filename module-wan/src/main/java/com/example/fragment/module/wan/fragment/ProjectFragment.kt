@@ -12,7 +12,7 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.FragmentProjectBinding
+import com.example.fragment.module.wan.databinding.ProjectFragmentBinding
 import com.example.fragment.module.wan.model.ProjectViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -26,7 +26,7 @@ class ProjectFragment : RouterFragment() {
     }
 
     private val viewModel: ProjectViewModel by viewModels()
-    private var _binding: FragmentProjectBinding? = null
+    private var _binding: ProjectFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -34,7 +34,7 @@ class ProjectFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentProjectBinding.inflate(inflater, container, false)
+        _binding = ProjectFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -22,13 +22,13 @@ import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.SearchHistoryAdapter
-import com.example.fragment.module.wan.databinding.FragmentSearchBinding
+import com.example.fragment.module.wan.databinding.SearchFragmentBinding
 import com.example.fragment.module.wan.model.SearchViewModel
 
 class SearchFragment : RouterFragment() {
 
     private val viewModel: SearchViewModel by viewModels()
-    private var _binding: FragmentSearchBinding? = null
+    private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val historySearchAdapter = SearchHistoryAdapter()
@@ -60,7 +60,7 @@ class SearchFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        _binding = SearchFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -115,7 +115,7 @@ class SearchFragment : RouterFragment() {
             binding.fbl.removeAllViews()
             result.forEach { hotKey ->
                 val inflater = LayoutInflater.from(binding.fbl.context)
-                val tv = inflater.inflate(R.layout.fbl_hot_key, binding.fbl, false)
+                val tv = inflater.inflate(R.layout.hot_key_fbl, binding.fbl, false)
                 (tv as TextView).text = hotKey.name
                 tv.setOnClickListener { search(hotKey.name) }
                 binding.fbl.addView(tv)

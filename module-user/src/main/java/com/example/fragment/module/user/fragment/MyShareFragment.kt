@@ -12,13 +12,13 @@ import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.user.databinding.FragmentMyShareBinding
+import com.example.fragment.module.user.databinding.MyShareFragmentBinding
 import com.example.fragment.module.user.model.MyShareViewModel
 
 class MyShareFragment : RouterFragment() {
 
     private val viewModel: MyShareViewModel by viewModels()
-    private var _binding: FragmentMyShareBinding? = null
+    private var _binding: MyShareFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val articleAdapter = ArticleAdapter()
@@ -28,7 +28,7 @@ class MyShareFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyShareBinding.inflate(inflater, container, false)
+        _binding = MyShareFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -6,7 +6,7 @@ import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.databinding.ItemCoinRankBinding
+import com.example.fragment.module.wan.databinding.CoinRankItemBinding
 
 class CoinRankAdapter : BaseAdapter<CoinBean>() {
 
@@ -19,11 +19,11 @@ class CoinRankAdapter : BaseAdapter<CoinBean>() {
     )
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return ItemCoinRankBinding::inflate
+        return CoinRankItemBinding::inflate
     }
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: CoinBean) {
-        val binding = holder.binding as ItemCoinRankBinding
+        val binding = holder.binding as CoinRankItemBinding
         binding.medal.setImageResource(medalList[(0..4).random()])
         binding.name.text = item.username
         binding.coinCount.text = item.coinCount

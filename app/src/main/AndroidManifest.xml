@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Splash"
         android:usesCleartextTraffic="true"
-        tools:targetApi="n">
+        tools:targetApi="lollipop">
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation"

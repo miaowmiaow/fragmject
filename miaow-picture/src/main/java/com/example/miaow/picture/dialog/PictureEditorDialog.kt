@@ -12,7 +12,7 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
 import com.example.miaow.picture.bean.StickerAttrs
-import com.example.miaow.picture.databinding.DialogPictureEditorBinding
+import com.example.miaow.picture.databinding.PictureEditorDialogBinding
 import com.example.miaow.picture.editor.PictureEditorView
 import com.example.miaow.picture.editor.layer.OnStickerClickListener
 import com.example.miaow.picture.utils.ActivityCallback
@@ -30,7 +30,7 @@ class PictureEditorDialog : PictureBaseDialog() {
         }
     }
 
-    private var _binding: DialogPictureEditorBinding? = null
+    private var _binding: PictureEditorDialogBinding? = null
     private val binding get() = _binding!!
     private val colors: MutableList<RelativeLayout> = arrayListOf()
     private val tools: MutableList<ImageView> = arrayListOf()
@@ -52,7 +52,7 @@ class PictureEditorDialog : PictureBaseDialog() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DialogPictureEditorBinding.inflate(inflater, container, false)
+        _binding = PictureEditorDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 

@@ -17,7 +17,7 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.LinkMenuAdapter
-import com.example.fragment.module.wan.databinding.FragmentNavigationLinkBinding
+import com.example.fragment.module.wan.databinding.NavigationLinkFragmentBinding
 import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationLinkFragment : RouterFragment() {
@@ -30,7 +30,7 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     private val viewModel: NavigationViewModel by activityViewModels()
-    private var _binding: FragmentNavigationLinkBinding? = null
+    private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
 
     private val linkMenuAdapter = LinkMenuAdapter()
@@ -56,7 +56,7 @@ class NavigationLinkFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentNavigationLinkBinding.inflate(inflater, container, false)
+        _binding = NavigationLinkFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -103,7 +103,7 @@ class NavigationLinkFragment : RouterFragment() {
         binding.fbl.removeAllViews()
         data?.forEach { article ->
             val inflater = LayoutInflater.from(binding.fbl.context)
-            val tv = inflater.inflate(R.layout.fbl_link, binding.fbl, false) as TextView
+            val tv = inflater.inflate(R.layout.link_fbl, binding.fbl, false) as TextView
             tv.text = article.title
             tv.setOnClickListener {
                 val url = Uri.encode(article.link)

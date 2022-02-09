@@ -12,26 +12,24 @@ abstract class BaseFragment : Fragment() {
 
     private var isVisibleToUser = false
 
+    private val start = { if (isVisibleToUser) (requireActivity() as BaseActivity).showProgress() }
+
+    private val end = { (requireActivity() as BaseActivity).dismissProgress() }
+
     /**
      * 在转场动画结束后加载数据，
      * 用于解决过度动画卡顿问题，
      * 建议大于等于转场动画时间。
      */
-    private var delayedLoad = 375L
+    private var loadDelayMillis = 375L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.isClickable = true
         view.isFocusable = true
         initView()
-        initViewModel()?.progressState(
-            viewLifecycleOwner,
-            { showProgress() },
-            { dismissProgress() }
-        )
-        view.postDelayed({
-            initLoad()
-        }, delayedLoad)
+        initViewModel()?.progressState(viewLifecycleOwner, start, end)
+        view.postDelayed({ initLoad() }, loadDelayMillis)
     }
 
     override fun onResume() {
@@ -42,8 +40,6 @@ abstract class BaseFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         isVisibleToUser = false
-        dismissProgress()
-        hideInputMethod()
     }
 
     abstract fun initView()
@@ -58,15 +54,7 @@ abstract class BaseFragment : Fragment() {
      */
     abstract fun initLoad()
 
-    private fun showProgress() {
-        if (isVisibleToUser) (requireActivity() as BaseActivity).showProgress()
-    }
-
-    private fun dismissProgress() {
-        (requireActivity() as BaseActivity).dismissProgress()
-    }
-
-    private fun hideInputMethod() {
+    fun hideInputMethod() {
         val imm = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         val view = requireActivity().currentFocus ?: return
         imm.hideSoftInputFromWindow(view.windowToken, 0)

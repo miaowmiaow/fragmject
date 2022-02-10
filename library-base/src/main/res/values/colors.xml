@@ -14,13 +14,16 @@
 
     <!--通用颜色-->
     <color name="black">#000000</color>
+    <color name="one_b_black">#1b000000</color>
     <color name="white">#ffffff</color>
+    <color name="bb_white">#BBFFFFFF</color>
     <color name="red">#FF0000</color>
     <color name="blue">#508cee</color>
     <color name="yellow">#ffb636</color>
     <color name="orange">#ff7800</color>
     <color name="green">#33cc99</color>
-    <color name="gray">#F6F6F6</color>
+    <color name="gray">#F5F5F5</color>
+    <color name="gray_e5">#E5E5E5</color>
     <color name="gray_alpha">#39F6F6F6</color>
     <color name="transparent">#00000000</color>
 

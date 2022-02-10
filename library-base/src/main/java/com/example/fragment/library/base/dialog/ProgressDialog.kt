@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.fragment.library.base.databinding.ViewProgressBinding
 
-class ProgressDialog : BaseDialog() {
+class ProgressDialog : TransparentDialog() {
 
     companion object {
         @JvmStatic

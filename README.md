@@ -272,12 +272,13 @@ clip.saveBitmap()
 `PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`
 
 ## 主要开源框架
+- [coil-kt/coil](https://github.com/coil-kt/coil)
+- [google/gson](https://github.com/google/gson)
+- [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
+- [pinyin4j](http://pinyin4j.sourceforge.net/)
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
-- [google/gson](https://github.com/google/gson)
-- [coil-kt/coil](https://github.com/coil-kt/coil)
 - [tencent/x5](https://x5.tencent.com/)
-- [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
 
 ## Thanks
   感谢所有优秀的开源项目 ^_^   

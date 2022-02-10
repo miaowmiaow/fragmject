@@ -52,6 +52,7 @@ class MainActivity : RouterActivity() {
             Router.SYSTEM -> navigate("$baseDeepLink/system/{cid}", bundle)
             Router.SYSTEM_URL -> navigate("$baseDeepLink/system/url/{url}", bundle)
             Router.USER_AVATAR -> navigate("$baseDeepLink/user/avatar", bundle)
+            Router.USER_INFO -> navigate("$baseDeepLink/user/info", bundle)
             Router.USER_LOGIN -> navigate("$baseDeepLink/user/login", bundle)
             Router.USER_REGISTER -> navigate("$baseDeepLink/user/register", bundle)
             Router.USER_SHARE -> navigate("$baseDeepLink/user/share", bundle)

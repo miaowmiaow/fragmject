@@ -26,7 +26,7 @@ class SearchViewModel : BaseViewModel() {
             } else {
                 viewModelScope.launch {
                     val request = HttpRequest("hotkey/json")
-                    val response = get<HotKeyListBean>(request)
+                    val response = get<HotKeyListBean>(request) { progress(it) }
                     response.data?.let {
                         hotKeyResult.postValue(it)
                         WanHelper.setHotKey(it)

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_corner_top_bg"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_corner_gray_2_bg"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="取消"
+            android:textColor="#ff666666"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/secrecy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/config"
+            android:background="@drawable/shape_corner_green_2_bg"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="保密"
+            android:textColor="#ffffffff"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/config"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/shape_corner_blue_2_bg"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="确定"
+            android:textColor="#ffffffff"
+            android:textSize="13sp" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/line" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="18dp"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="144dp"
+            android:layout_centerInParent="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.example.fragment.library.base.view.WheelView
+                android:id="@+id/year"
+                android:layout_width="70dp"
+                android:layout_height="144dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="18dp"
+                android:text="/"
+                android:textColor="#ffc2c2c2"
+                android:textSize="14sp" />
+
+            <com.example.fragment.library.base.view.WheelView
+                android:id="@+id/month"
+                android:layout_width="70dp"
+                android:layout_height="144dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="18dp"
+                android:text="/"
+                android:textColor="#ffc2c2c2"
+                android:textSize="14sp" />
+
+            <com.example.fragment.library.base.view.WheelView
+                android:id="@+id/day"
+                android:layout_width="70dp"
+                android:layout_height="144dp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/mask"
+            android:background="@drawable/shape_corner_white_a4_bg" />
+
+        <View
+            android:id="@+id/mask"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/shape_corner_gray_a4_bg" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/mask"
+            android:layout_centerInParent="true"
+            android:background="@drawable/shape_corner_white_a4_bg" />
+    </RelativeLayout>
+</LinearLayout>

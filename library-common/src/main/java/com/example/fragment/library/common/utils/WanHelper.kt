@@ -107,7 +107,10 @@ object WanHelper {
         }
     }
 
-    fun registerScreenRecord(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
+    fun registerScreenRecord(
+        @NonNull owner: LifecycleOwner,
+        @NonNull observer: Observer<EventBean>
+    ) {
         SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
     }
 
@@ -188,6 +191,17 @@ object WanHelper {
                     UserBean()
                 }
             )
+        }
+    }
+
+    fun getUser(result: (UserBean) -> Unit) {
+        KVDatabase.get(USER) {
+            try {
+                result.invoke(Gson().fromJson(it, UserBean::class.java))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                result.invoke(UserBean())
+            }
         }
     }
 

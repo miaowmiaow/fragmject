@@ -9,7 +9,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
@@ -27,7 +27,7 @@ import com.example.fragment.module.wan.model.SearchViewModel
 
 class SearchFragment : RouterFragment() {
 
-    private val viewModel: SearchViewModel by viewModels()
+    private val viewModel: SearchViewModel by activityViewModels()
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 

@@ -12,6 +12,13 @@
         <deepLink app:uri="fragment.example.com/user/avatar" />
     </fragment>
     <fragment
+        android:id="@+id/info"
+        android:name="com.example.fragment.module.user.fragment.UserInfoFragment"
+        android:label="UserInfoFragment"
+        tools:layout="@layout/user_info_fragment">
+        <deepLink app:uri="fragment.example.com/user/info" />
+    </fragment>
+    <fragment
         android:id="@+id/login"
         android:name="com.example.fragment.module.user.fragment.UserLoginFragment"
         android:label="LoginFragment"

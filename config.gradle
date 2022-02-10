@@ -32,6 +32,8 @@ ext {
             "jetbrains-kotlinx-coroutines-android"   : 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2',
             // 美团瓦力
             "meituan-walle"                          : 'com.meituan.android.walle:library:1.1.7',
+            // pinyin4j
+            "pinyin4j"                               : 'com.belerweb:pinyin4j:2.5.0',
             // retrofit 和 okhttp
             "squareup-retrofit"                      : "com.squareup.retrofit2:retrofit:2.9.0",
             "squareup-okhttp"                        : "com.squareup.okhttp3:okhttp:$okhttp_version",

@@ -24,6 +24,10 @@ data class UserBean @JvmOverloads constructor(
     val publicName: String = "",
     val token: String = "",
     val type: String = "",
+    var avatar: String = "",
+    var sex: String = "",
+    var birthday: String = "",
+    var city: String = "",
     val username: String = ""
 ) {
 

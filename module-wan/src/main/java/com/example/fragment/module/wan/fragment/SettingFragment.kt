@@ -48,8 +48,8 @@ class SettingFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
         countDownTimer?.cancel()
+        _binding = null
     }
 
     override fun initView() {

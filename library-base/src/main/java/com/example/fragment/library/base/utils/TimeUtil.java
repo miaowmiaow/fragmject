@@ -13,13 +13,17 @@ import java.util.Objects;
  */
 public class TimeUtil {
 
-    private static String timeFormat(long timeMillis, String pattern) {
+    public static String timeFormat(long timeMillis, String pattern) {
         SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.CHINA);
         return format.format(new Date(timeMillis));
     }
 
     public static String timeFormat(long timeMillis) {
         return timeFormat(timeMillis, "yyyy-MM-dd HH:mm:ss");
+    }
+
+    public static String timeFormat(String time, String pattern) {
+        return timeFormat(timeFormatData(time, "yyyy-MM-dd"), pattern);
     }
 
     public static String currentData(String pattern) {
@@ -45,7 +49,7 @@ public class TimeUtil {
     }
 
     public static int getDay() {
-        return Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        return Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
     }
 
     public static int getHour() {

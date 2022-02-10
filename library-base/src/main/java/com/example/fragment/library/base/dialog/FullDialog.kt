@@ -1,12 +1,11 @@
 package com.example.fragment.library.base.dialog
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import com.example.fragment.library.base.R
 
-open class FullDialog : BaseDialog() {
+open class FullDialog : TransparentDialog() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,9 +14,6 @@ open class FullDialog : BaseDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         dialog?.window?.apply {
-            attributes.gravity = Gravity.BOTTOM
-            decorView.setPadding(0, 0, 0, 0)
-            setWindowAnimations(R.style.AnimBottom)
             setLayout(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT

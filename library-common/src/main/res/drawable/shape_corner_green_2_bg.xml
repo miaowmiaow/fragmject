@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--阴影-->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:endColor="@color/green"
+                android:startColor="@color/green"/>
+            <corners android:radius="2dp" />
+        </shape>
+    </item>
+    <!--阴影-->
+
+    <!--白色背景-->
+    <item
+        android:left="0.5dp"
+        android:top="0.5dp"
+        android:bottom="0.5dp"
+        android:right="0.5dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:endColor="@color/green"
+                android:startColor="@color/green"/>
+
+            <corners android:radius="2dp" />
+        </shape>
+    </item>
+
+</layer-list>
+

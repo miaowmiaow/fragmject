@@ -1,11 +1,11 @@
-package com.example.fragment.project.adapter
+package com.example.fragment.library.common.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.common.bean.HotKeyBean
-import com.example.fragment.project.databinding.HotKeyItemBinding
+import com.example.fragment.library.common.databinding.HotKeyItemBinding
 
 class HotKeyAdapter : BaseAdapter<HotKeyBean>() {
 

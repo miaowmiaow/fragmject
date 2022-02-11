@@ -10,16 +10,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.TreeBean
+import com.example.fragment.library.common.bean.SystemTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.databinding.SystemFragmentBinding
-import com.example.fragment.module.wan.model.NavigationViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
 class SystemFragment : RouterFragment() {
 
-    private val viewModel: NavigationViewModel by activityViewModels()
+    private val viewModel: CommonViewModel by activityViewModels()
     private var _binding: SystemFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -61,8 +61,8 @@ class SystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.systemTreeResult.observe(viewLifecycleOwner) { treeList ->
-            treeList.data?.forEach { data ->
+        viewModel.systemTreeResult.observe(viewLifecycleOwner) {
+            it.forEach { data ->
                 data.children?.forEachIndexed { index, children ->
                     if (children.id == cid) {
                         data.childrenSelectPosition = index
@@ -81,7 +81,7 @@ class SystemFragment : RouterFragment() {
         }
     }
 
-    private fun updateView(treeBean: TreeBean) {
+    private fun updateView(treeBean: SystemTreeBean) {
         binding.title.text = treeBean.name
         treeBean.children?.let { data ->
             //TabLayout与ViewPager2

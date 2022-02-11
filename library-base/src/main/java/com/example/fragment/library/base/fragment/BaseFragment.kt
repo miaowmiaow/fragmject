@@ -40,6 +40,7 @@ abstract class BaseFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         isVisibleToUser = false
+        (requireActivity() as BaseActivity).dismissProgress()
     }
 
     abstract fun initView()

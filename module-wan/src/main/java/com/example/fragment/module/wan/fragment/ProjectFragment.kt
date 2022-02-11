@@ -6,14 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.databinding.ProjectFragmentBinding
-import com.example.fragment.module.wan.model.ProjectViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ProjectFragment : RouterFragment() {
@@ -25,7 +25,7 @@ class ProjectFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: ProjectViewModel by viewModels()
+    private val viewModel: CommonViewModel by activityViewModels()
     private var _binding: ProjectFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -46,12 +46,7 @@ class ProjectFragment : RouterFragment() {
     override fun initView() {}
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.projectTreeResult.observe(viewLifecycleOwner) { result ->
-            when (result.isNotEmpty()) {
-                true -> updateView(result)
-                else -> activity.showTips("获取项目分类错误")
-            }
-        }
+        viewModel.projectTreeResult.observe(viewLifecycleOwner) { updateView(it) }
         return viewModel
     }
 

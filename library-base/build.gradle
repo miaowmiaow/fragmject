@@ -33,6 +33,7 @@ android {
 
 dependencies {
     api fileTree(dir: "libs", include: ["*.jar"])
+    api files('libs/pinyin4j-2.5.0.jar')
     api rootProject.ext.dependencies["androidx-appcompat"]
     api rootProject.ext.dependencies["androidx-core-ktx"]
     api rootProject.ext.dependencies["androidx-fragment-ktx"]
@@ -54,7 +55,6 @@ dependencies {
     api rootProject.ext.dependencies["jetbrains-kotlin-stdlib"]
     api rootProject.ext.dependencies["jetbrains-kotlinx-coroutines-android"]
     api rootProject.ext.dependencies["meituan-walle"]
-    api rootProject.ext.dependencies["pinyin4j"]
     api rootProject.ext.dependencies["squareup-retrofit"]
     api rootProject.ext.dependencies["squareup-okhttp"]
     api rootProject.ext.dependencies["squareup-okhttp-logging-interceptor"]

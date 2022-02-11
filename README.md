@@ -92,6 +92,7 @@
 `Kotlin` 是一种富有表现力且简洁的编程语言，不仅可以减少常见代码错误，还可以轻松集成到现有应用中。
 
 [学习Kotlin编程语言](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
+
 [Kotlin代码示例](https://play.kotlinlang.org/byExample/overview)
 
 ## ViewBinding
@@ -121,10 +122,10 @@
 
 ## 协程
 协程是我们在 Android 上进行异步编程的推荐解决方案。值得关注的特点包括：
-    - 轻量
-    - 内存泄漏更少
-    - 内置取消支持
-    - Jetpack集成
+- 轻量
+- 内存泄漏更少
+- 内置取消支持
+- Jetpack集成
     
 [轻松使用协程](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 
@@ -186,11 +187,9 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 
 ## 图片编辑器
 [自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
-
 ### 截图展示
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-
 #### 接入
 第 1 步:在工程的 `build.gradle` 中添加：
 ```
@@ -223,7 +222,7 @@ PictureEditorDialog.newInstance()
 2. 通过 `setBitmapPath(path)` 传入图片路径
 3. 通过 `setEditorFinishCallback(callback)` 获取编辑后的图片地址
 
-**如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式**
+如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式
 #### 自定义使用
 ```
 <com.example.miaow.picture.editor.PictureEditorView
@@ -275,7 +274,7 @@ clip.saveBitmap()
 - [coil-kt/coil](https://github.com/coil-kt/coil)
 - [google/gson](https://github.com/google/gson)
 - [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
-- [pinyin4j](http://pinyin4j.sourceforge.net/)
+- [sourceforge/pinyin4j](http://pinyin4j.sourceforge.net/)
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
 - [tencent/x5](https://x5.tencent.com/)

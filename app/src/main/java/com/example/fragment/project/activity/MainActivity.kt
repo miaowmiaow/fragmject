@@ -4,29 +4,17 @@ import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
-import androidx.appcompat.app.AppCompatDelegate
-import com.example.fragment.library.base.utils.WebViewManager
+import androidx.activity.viewModels
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.utils.WanHelper
+import com.example.fragment.library.common.model.UserViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainActivityBinding
-import com.tencent.smtt.export.external.TbsCoreSettings
-import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
-    private val baseDeepLink = "http://fragment.example.com"
-
-    private val loginRequired = arrayOf(
-        Router.MY_COIN,
-        Router.MY_COLLECT,
-        Router.MY_SHARE,
-        Router.USER_AVATAR,
-        Router.USER_SHARE
-    )
-
+    private val userViewModel: UserViewModel by viewModels()
     private var userBean = UserBean()
 
     override fun controllerId(): Int {
@@ -38,25 +26,25 @@ class MainActivity : RouterActivity() {
      */
     override fun navigation(name: Router, bundle: Bundle?) {
         //登录态校验
-        if (loginRequired.contains(name) && userBean.id.isBlank()) {
-            navigate("$baseDeepLink/user/login")
+        if (loginRequired(name)) {
+            navigate("/user/login")
         } else when (name) {
-            Router.COIN2RANK -> navigate("$baseDeepLink/coin/rank", bundle)
+            Router.COIN2RANK -> navigate("/coin/rank", bundle)
             Router.MAIN -> popBackStack(R.id.main, false)
-            Router.MY_COIN -> navigate("$baseDeepLink/my/coin", bundle)
-            Router.MY_COLLECT -> navigate("$baseDeepLink/my/collect", bundle)
-            Router.MY_SHARE -> navigate("$baseDeepLink/my/share", bundle)
-            Router.SEARCH -> navigate("$baseDeepLink/search/{value}", bundle)
+            Router.MY_COIN -> navigate("/my/coin", bundle)
+            Router.MY_COLLECT -> navigate("/my/collect", bundle)
+            Router.MY_SHARE -> navigate("/my/share", bundle)
+            Router.SEARCH -> navigate("/search/{value}", bundle)
             Router.SETTING -> navigate(R.id.action_main_to_setting, bundle)
-            Router.SHARE_ARTICLE -> navigate("$baseDeepLink/share/article/{uid}", bundle)
-            Router.SYSTEM -> navigate("$baseDeepLink/system/{cid}", bundle)
-            Router.SYSTEM_URL -> navigate("$baseDeepLink/system/url/{url}", bundle)
-            Router.USER_AVATAR -> navigate("$baseDeepLink/user/avatar", bundle)
-            Router.USER_INFO -> navigate("$baseDeepLink/user/info", bundle)
-            Router.USER_LOGIN -> navigate("$baseDeepLink/user/login", bundle)
-            Router.USER_REGISTER -> navigate("$baseDeepLink/user/register", bundle)
-            Router.USER_SHARE -> navigate("$baseDeepLink/user/share", bundle)
-            Router.WEB -> navigate("$baseDeepLink/web/{url}", bundle)
+            Router.SHARE_ARTICLE -> navigate("/share/article/{uid}", bundle)
+            Router.SYSTEM -> navigate("/system/{cid}", bundle)
+            Router.SYSTEM_URL -> navigate("/system/url/{url}", bundle)
+            Router.USER_AVATAR -> navigate("/user/avatar", bundle)
+            Router.USER_INFO -> navigate("/user/info", bundle)
+            Router.USER_LOGIN -> navigate("/user/login", bundle)
+            Router.USER_REGISTER -> navigate("/user/register", bundle)
+            Router.USER_SHARE -> navigate("/user/share", bundle)
+            Router.WEB -> navigate("/web/{url}", bundle)
         }
     }
 
@@ -66,56 +54,29 @@ class MainActivity : RouterActivity() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
-        initWanHelper()
-        initQbSdk()
+        initViewModel()
+        initLoad()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        WanHelper.close()
-        WebViewManager.destroy()
+    private fun initViewModel() {
+        userViewModel.userResult.observe(this) { userBean = it }
     }
 
-    private fun initWanHelper(){
-        WanHelper.registerUser(this) { userBean = it }
-        WanHelper.registerUIMode(this) { eventBean ->
-            if (eventBean.key == WanHelper.UI_MODE) {
-                when (eventBean.value) {
-                    "1" -> {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        QbSdk.unForceSysWebView()
-                    }
-                    "2" -> {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        QbSdk.forceSysWebView()
-                    }
-                    else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-            }
+    private fun initLoad() {
+        if (userViewModel.userResult.value == null) {
+            userViewModel.getUser()
         }
-        WanHelper.getUser()
-        WanHelper.getUIMode()
     }
 
-    /**
-     * 初始化X5内核
-     */
-    private fun initQbSdk() {
-        Thread {
-            val map = HashMap<String, Any>()
-            map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-            map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-            QbSdk.initTbsSettings(map)
-            QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
-                override fun onViewInitFinished(arg0: Boolean) {
-                }
-
-                override fun onCoreInitFinished() {
-                }
-            })
-        }.start()
-        //WebView预加载
-        WebViewManager.prepare(applicationContext)
+    private fun loginRequired(name: Router): Boolean {
+        val loginRouter = arrayOf(
+            Router.MY_COIN,
+            Router.MY_COLLECT,
+            Router.MY_SHARE,
+            Router.USER_AVATAR,
+            Router.USER_SHARE
+        )
+        return loginRouter.contains(name) && userBean.id.isBlank()
     }
 
 }

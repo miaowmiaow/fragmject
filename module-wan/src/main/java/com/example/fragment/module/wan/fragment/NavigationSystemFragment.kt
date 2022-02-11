@@ -8,9 +8,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.adapter.SystemAdapter
 import com.example.fragment.module.wan.databinding.NavigationSystemFragmentBinding
-import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationSystemFragment : RouterFragment() {
 
@@ -21,7 +21,7 @@ class NavigationSystemFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: NavigationViewModel by activityViewModels()
+    private val viewModel: CommonViewModel by activityViewModels()
     private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -48,18 +48,13 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.systemTreeResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> systemAdapter.setNewData(result.data)
-                else -> activity.showTips(result.errorMsg)
-            }
-        }
+        viewModel.systemTreeResult.observe(viewLifecycleOwner) { systemAdapter.setNewData(it) }
         return viewModel
     }
 
     override fun initLoad() {
         if (viewModel.systemTreeResult.value == null) {
-            viewModel.getSystemTree()
+            viewModel.getSystemTree(true)
         }
     }
 

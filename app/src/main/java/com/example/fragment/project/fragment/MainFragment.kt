@@ -9,32 +9,31 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.BannerHelper
+import com.example.fragment.library.common.adapter.HotKeyAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.utils.WanHelper
+import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.user.fragment.UserFragment
 import com.example.fragment.module.wan.fragment.HomeFragment
 import com.example.fragment.module.wan.fragment.NavigationFragment
 import com.example.fragment.module.wan.fragment.ProjectFragment
 import com.example.fragment.module.wan.fragment.QAFragment
 import com.example.fragment.project.R
-import com.example.fragment.project.adapter.HotKeyAdapter
 import com.example.fragment.project.databinding.MainFragmentBinding
 import com.example.fragment.project.databinding.MainTabItemBinding
-import com.example.fragment.project.model.MainViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: CommonViewModel by activityViewModels()
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -53,14 +52,8 @@ class MainFragment : RouterFragment() {
         ProjectFragment.newInstance(),
         UserFragment.newInstance()
     )
-
-    private lateinit var bannerHelper: BannerHelper
     private val hotKeyAdapter = HotKeyAdapter()
-    private val hotKeyClickListener = object : BaseAdapter.OnItemClickListener {
-        override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-            search()
-        }
-    }
+    private lateinit var bannerHelper: BannerHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -91,7 +84,11 @@ class MainFragment : RouterFragment() {
         binding.userShare.setOnClickListener { activity.navigation(Router.USER_SHARE) }
         //滚动热词
         binding.hotKey.adapter = hotKeyAdapter
-        hotKeyAdapter.setOnItemClickListener(hotKeyClickListener)
+        hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
+            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+                search()
+            }
+        })
         bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         //TabLayout与ViewPager2
         binding.viewpager2.adapter = object : FragmentStateAdapter(
@@ -107,6 +104,7 @@ class MainFragment : RouterFragment() {
             }
         }
         binding.viewpager2.isUserInputEnabled = false
+        binding.viewpager2.offscreenPageLimit = 2
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 setColorFilter(tab.customView, R.color.text_fff)
@@ -116,10 +114,9 @@ class MainFragment : RouterFragment() {
                 setColorFilter(tab.customView, R.color.gray_alpha)
             }
 
-            override fun onTabReselected(tab: TabLayout.Tab) {
-            }
+            override fun onTabReselected(tab: TabLayout.Tab) {}
         })
-        TabLayoutMediator(binding.tabLayout, binding.viewpager2, true, false) { tab, position ->
+        TabLayoutMediator(binding.tabLayout, binding.viewpager2, false, false) { tab, position ->
             val item = MainTabItemBinding.inflate(LayoutInflater.from(binding.root.context))
             item.icon.setImageResource(tabDrawable[position])
             item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
@@ -131,22 +128,8 @@ class MainFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    hotKeyAdapter.setNewData(result.data)
-                    bannerHelper.startTimerTask()
-                    WanHelper.setHotKey(result.data)
-                }
-                else -> activity.showTips(result.errorMsg)
-            }
-        }
-        viewModel.projectListResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    WanHelper.setProjectTree(result.data)
-                }
-                else -> activity.showTips(result.errorMsg)
-            }
+            hotKeyAdapter.setNewData(result)
+            bannerHelper.startTimerTask()
         }
         return viewModel
     }
@@ -155,8 +138,15 @@ class MainFragment : RouterFragment() {
         if (viewModel.hotKeyResult.value == null) {
             viewModel.getHotKey()
         }
-        if (viewModel.projectListResult.value == null) {
+        //接口预加载
+        if (viewModel.navigationResult.value == null) {
+            viewModel.getNavigation()
+        }
+        if (viewModel.projectTreeResult.value == null) {
             viewModel.getProjectTree()
+        }
+        if (viewModel.systemTreeResult.value == null) {
+            viewModel.getSystemTree()
         }
     }
 
@@ -166,8 +156,7 @@ class MainFragment : RouterFragment() {
     private fun search() {
         val position = bannerHelper.findItemPosition()
         val title = hotKeyAdapter.getItem(position).name
-        val args = bundleOf(Keys.VALUE to title)
-        activity.navigation(Router.SEARCH, args)
+        activity.navigation(Router.SEARCH, bundleOf(Keys.VALUE to title))
     }
 
     private fun setColorFilter(view: View?, id: Int) {

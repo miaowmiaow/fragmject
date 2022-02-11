@@ -5,13 +5,13 @@ import com.example.fragment.library.base.http.HttpResponse
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class TreeListBean(
-    val data: List<TreeBean>? = null,
+data class SystemTreeListBean(
+    val data: List<SystemTreeBean>? = null,
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class TreeBean(
-    val children: List<TreeBean>? = null,
+data class SystemTreeBean(
+    val children: List<SystemTreeBean>? = null,
     var childrenSelectPosition: Int = 0,
     val courseId: String = "",
     val id: String = "",

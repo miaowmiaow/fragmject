@@ -15,10 +15,10 @@ import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.LinkMenuAdapter
 import com.example.fragment.module.wan.databinding.NavigationLinkFragmentBinding
-import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationLinkFragment : RouterFragment() {
 
@@ -29,7 +29,7 @@ class NavigationLinkFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: NavigationViewModel by activityViewModels()
+    private val viewModel: CommonViewModel by activityViewModels()
     private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -73,29 +73,24 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.navigationResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> result.data?.let { data ->
-                    var selectItem = 0
-                    data.forEachIndexed { index, bean ->
-                        if (bean.isSelected) {
-                            selectItem = index
-                        }
-                    }
-                    data[selectItem].isSelected = true
-                    linkMenuAdapter.setNewData(data)
-                    linkMenuAdapter.selectItem(selectItem)
-                    fillFlexboxLayout(data[selectItem].articles)
+        viewModel.navigationResult.observe(viewLifecycleOwner) {
+            var selectItem = 0
+            it.forEachIndexed { index, bean ->
+                if (bean.isSelected) {
+                    selectItem = index
                 }
-                else -> activity.showTips(result.errorMsg)
             }
+            it[selectItem].isSelected = true
+            linkMenuAdapter.setNewData(it)
+            linkMenuAdapter.selectItem(selectItem)
+            fillFlexboxLayout(it[selectItem].articles)
         }
         return viewModel
     }
 
     override fun initLoad() {
         if (viewModel.navigationResult.value == null) {
-            viewModel.getNavigation()
+            viewModel.getNavigation(true)
         }
     }
 

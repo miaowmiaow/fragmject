@@ -7,14 +7,27 @@ import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.download
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.bean.UpdateBean
 import kotlinx.coroutines.launch
 
 class SettingViewModel : BaseViewModel() {
 
+    val screenRecordResult = MutableLiveData<String>()
     val logoutResult = MutableLiveData<HttpResponse>()
     val updateResult = MutableLiveData<UpdateBean?>()
     val downloadApkResult = MutableLiveData<HttpResponse?>()
+
+    fun getScreenRecord() {
+        WanHelper.getScreenRecord {
+            screenRecordResult.postValue(it)
+        }
+    }
+
+    fun updateScreenRecord(status: String) {
+        WanHelper.setScreenRecord(status)
+        screenRecordResult.postValue(status)
+    }
 
     /**
      * 退出登录
@@ -56,6 +69,5 @@ class SettingViewModel : BaseViewModel() {
             downloadApkResult.postValue(response)
         }
     }
-
 
 }

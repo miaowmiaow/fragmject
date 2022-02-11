@@ -6,36 +6,11 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.library.common.bean.ProjectTreeBean
-import com.example.fragment.library.common.bean.ProjectTreeListBean
-import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
-    val projectTreeResult = MutableLiveData<List<ProjectTreeBean>>()
     val projectListResult = MutableLiveData<ArticleListBean>()
-
-    /**
-     * 获取项目分类
-     */
-    fun getProjectTree() {
-        WanHelper.getProjectTree { projectTree ->
-            //没有本地数据则从网络获取
-            if (projectTree.isNotEmpty()) {
-                projectTreeResult.postValue(projectTree)
-            } else {
-                viewModelScope.launch {
-                    val request = HttpRequest("project/tree/json")
-                    val response = get<ProjectTreeListBean>(request) { progress(it) }
-                    response.data?.let { data ->
-                        projectTreeResult.postValue(data)
-                        WanHelper.setProjectTree(data)
-                    }
-                }
-            }
-        }
-    }
 
     fun getProject(cid: String) {
         getProjectList(cid, getHomePage(1))

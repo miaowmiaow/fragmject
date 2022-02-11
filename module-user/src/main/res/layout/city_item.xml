@@ -7,19 +7,19 @@
     <TextView
         android:id="@+id/letter"
         style="@style/LetterIndexTextViewStyle"
-        android:textSize="11sp"
-        android:clickable="false"/>
+        android:clickable="false"
+        android:textSize="11sp" />
 
     <TextView
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="15dp"
-        android:background="@drawable/shape_city_normal_bg"
         android:layout_marginBottom="1dp"
+        android:background="@drawable/shape_city_normal_bg"
         android:clickable="true"
         android:gravity="center_vertical"
-        android:textSize="14sp"
-        android:textColor="#333333"/>
+        android:padding="15dp"
+        android:textColor="@color/text_333"
+        android:textSize="14sp" />
 
 </LinearLayout>

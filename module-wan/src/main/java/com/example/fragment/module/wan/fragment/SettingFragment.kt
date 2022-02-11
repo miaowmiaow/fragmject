@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.model.BaseViewModel
@@ -24,6 +25,7 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.UserViewModel
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.databinding.SettingFragmentBinding
 import com.example.fragment.module.wan.model.SettingViewModel
@@ -31,11 +33,12 @@ import java.io.File
 
 class SettingFragment : RouterFragment() {
 
-    private var countDownTimer: CountDownTimer? = null
-
+    private val userViewModel: UserViewModel by activityViewModels()
     private val viewModel: SettingViewModel by viewModels()
     private var _binding: SettingFragmentBinding? = null
     private val binding get() = _binding!!
+
+    private var countDownTimer: CountDownTimer? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -94,7 +97,7 @@ class SettingFragment : RouterFragment() {
                         }
                     }
                 }.start()
-                WanHelper.setScreenRecord("1")
+                viewModel.updateScreenRecord("1")
             }
 
             override fun onClose(view: SwitchButton) {
@@ -103,7 +106,7 @@ class SettingFragment : RouterFragment() {
                     activity.dismissTips()
                     activity.stopScreenRecord()
                 }, 1000)
-                WanHelper.setScreenRecord("0")
+                viewModel.updateScreenRecord("0")
             }
         })
         binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
@@ -153,10 +156,19 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
+        userViewModel.userResult.observe(viewLifecycleOwner) { result ->
+            binding.logout.visibility = if (result.id.isNotBlank()) View.VISIBLE else View.GONE
+        }
+        viewModel.screenRecordResult.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                "0" -> binding.screenRecord.setChecked(false)
+                "1" -> binding.screenRecord.setChecked(true)
+            }
+        }
         viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
                 "0" -> {
-                    WanHelper.setUser(UserBean())
+                    userViewModel.updateUser(UserBean())
                     activity.onBackPressed()
                 }
                 else -> activity.showTips(result.errorMsg)
@@ -221,15 +233,12 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        WanHelper.registerScreenRecord(viewLifecycleOwner) { eventBean ->
-            if (eventBean.key == WanHelper.SCREEN_RECORD) {
-                when (eventBean.value) {
-                    "0" -> binding.screenRecord.setChecked(false)
-                    "1" -> binding.screenRecord.setChecked(true)
-                }
-            }
+        if (userViewModel.userResult.value == null) {
+            userViewModel.getUser()
         }
-        WanHelper.getScreenRecord()
+        if (viewModel.screenRecordResult.value == null) {
+            viewModel.getScreenRecord()
+        }
         WanHelper.registerUIMode(viewLifecycleOwner) { eventBean ->
             if (eventBean.key == WanHelper.UI_MODE) {
                 when (eventBean.value) {
@@ -248,10 +257,5 @@ class SettingFragment : RouterFragment() {
                 }
             }
         }
-        WanHelper.getUIMode()
-        WanHelper.registerUser(viewLifecycleOwner) { userBean ->
-            binding.logout.visibility = if (userBean.id.isNotBlank()) View.VISIBLE else View.GONE
-        }
-        WanHelper.getUser()
     }
 }

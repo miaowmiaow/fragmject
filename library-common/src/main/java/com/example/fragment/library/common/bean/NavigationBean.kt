@@ -1,7 +1,6 @@
-package com.example.fragment.module.wan.bean
+package com.example.fragment.library.common.bean
 
 import com.example.fragment.library.base.http.HttpResponse
-import com.example.fragment.library.common.bean.ArticleBean
 
 data class NavigationListBean(
     val data: List<NavigationBean>? = null

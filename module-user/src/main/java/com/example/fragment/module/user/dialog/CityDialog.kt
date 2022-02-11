@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.dialog.BottomDialog
+import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.utils.GsonUtil
 import com.example.fragment.library.base.utils.PinyinUtils
 import com.example.fragment.library.base.utils.ReadAssetsFileUtil
@@ -20,7 +21,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.sortWith
 
-class CityDialog : BottomDialog() {
+class CityDialog : FullDialog() {
 
     companion object {
         @JvmStatic
@@ -31,9 +32,7 @@ class CityDialog : BottomDialog() {
 
     private var _binding: CityDialogBinding? = null
     private val binding get() = _binding!!
-
     private var cityAdapter = CityAdapter()
-
     private var listener: CityListener? = null
 
     override fun onCreateView(

@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FFFFFF"
+    android:background="@color/white"
     android:orientation="horizontal"
     android:padding="10dp">
 
@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="热门城市"
-        android:textColor="#666666"
+        android:textColor="@color/text_666"
         android:textSize="12sp" />
 
     <LinearLayout
@@ -32,7 +32,7 @@
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
             android:text="北京"
-            android:textColor="#5c5c5c"
+            android:textColor="@color/text_333"
             android:textSize="13sp" />
 
         <TextView
@@ -47,7 +47,7 @@
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
             android:text="上海"
-            android:textColor="#5c5c5c"
+            android:textColor="@color/text_333"
             android:textSize="13sp" />
 
         <TextView
@@ -62,7 +62,7 @@
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
             android:text="广州"
-            android:textColor="#5c5c5c"
+            android:textColor="@color/text_333"
             android:textSize="13sp" />
 
         <TextView
@@ -76,7 +76,7 @@
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
             android:text="深圳"
-            android:textColor="#5c5c5c"
+            android:textColor="@color/text_333"
             android:textSize="13sp" />
 
     </LinearLayout>

@@ -1,4 +1,4 @@
-package com.example.fragment.module.user.model
+package com.example.fragment.library.common.model
 
 import androidx.lifecycle.MutableLiveData
 import com.example.fragment.library.base.model.BaseViewModel
@@ -15,9 +15,9 @@ class UserViewModel : BaseViewModel() {
         }
     }
 
-    fun updateUser(userBean: UserBean){
-        userResult.postValue(userBean)
+    fun updateUser(userBean: UserBean) {
         WanHelper.setUser(userBean)
+        userResult.postValue(userBean)
     }
 
 }

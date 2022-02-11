@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.BannerHelper
@@ -26,7 +26,7 @@ class HomeFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: HomeViewModel by activityViewModels()
+    private val viewModel: HomeViewModel by viewModels()
     private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
 

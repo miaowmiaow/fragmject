@@ -5,10 +5,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
-import android.view.WindowManager
+import android.view.*
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.utils.StatusBarUtils
 
@@ -24,7 +21,11 @@ class StatusBar @JvmOverloads constructor(
     }
 
     fun setStatusBarTheme(darkTheme: Boolean): Boolean {
-        val activity = context as Activity
+        val activity = try {
+            context as Activity
+        } catch (e: Exception) {
+            (context as ContextThemeWrapper).baseContext as Activity
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val decorView: View = activity.window.decorView
             var vis = decorView.systemUiVisibility
@@ -51,7 +52,11 @@ class StatusBar @JvmOverloads constructor(
     }
 
     fun setRootViewFitsSystemWindows(fitSystemWindows: Boolean) {
-        val activity = context as Activity
+        val activity = try {
+            context as Activity
+        } catch (e: Exception) {
+            (context as ContextThemeWrapper).baseContext as Activity
+        }
         val winContent = activity.findViewById<View>(R.id.content) as ViewGroup
         if (winContent.childCount > 0) {
             val rootView = winContent.getChildAt(0) as ViewGroup
@@ -60,7 +65,11 @@ class StatusBar @JvmOverloads constructor(
     }
 
     private fun setTranslucentStatus() {
-        val activity = context as Activity
+        val activity = try {
+            context as Activity
+        } catch (e: Exception) {
+            (context as ContextThemeWrapper).baseContext as Activity
+        }
         val window: Window = activity.window
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //5.x开始需要把颜色设置透明，否则导航栏会呈现系统默认的浅灰色

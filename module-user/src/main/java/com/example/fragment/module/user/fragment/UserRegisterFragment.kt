@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.utils.WanHelper
+import com.example.fragment.library.common.model.UserViewModel
 import com.example.fragment.module.user.databinding.UserRegisterFragmentBinding
 import com.example.fragment.module.user.model.UserLoginViewModel
 
@@ -56,8 +58,9 @@ class UserRegisterFragment : RouterFragment() {
         viewModel.registerResult.observe(viewLifecycleOwner) { result ->
             when (result.errorCode) {
                 "0" -> {
-                    WanHelper.setUser(result.data)
-                    activity.onBackPressed()
+                    val userViewModel: UserViewModel by activityViewModels()
+                    userViewModel.updateUser(result.data)
+                    activity.navigation(Router.MAIN)
                 }
                 else -> activity.showTips(result.errorMsg)
             }

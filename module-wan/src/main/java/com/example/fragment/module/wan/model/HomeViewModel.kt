@@ -22,7 +22,7 @@ class HomeViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //设置请求进度，0.0请求开始
-            progress(0.0)
+//            progress(0.0)
             //通过async获取首页需要展示的数据
             val banner = async { getBanner() }
             val articleTop = async { getArticleTop() }
@@ -34,7 +34,7 @@ class HomeViewModel : BaseViewModel() {
             articleListResult.postValue(articleData)
             bannerResult.postValue(banner.await())
             //设置请求进度，1.0请求结束
-            progress(1.0)
+//            progress(1.0)
         }
     }
 

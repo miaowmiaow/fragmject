@@ -23,7 +23,7 @@
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
             android:text="取消"
-            android:textColor="#ff666666"
+            android:textColor="@color/text_666"
             android:textSize="13sp" />
 
         <TextView
@@ -37,7 +37,7 @@
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
             android:text="保密"
-            android:textColor="#ffffffff"
+            android:textColor="@color/white"
             android:textSize="13sp" />
 
         <TextView
@@ -52,7 +52,7 @@
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
             android:text="确定"
-            android:textColor="#ffffffff"
+            android:textColor="@color/white"
             android:textSize="13sp" />
 
     </RelativeLayout>

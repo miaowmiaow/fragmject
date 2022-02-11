@@ -65,8 +65,8 @@ class ShareArticleFragment : RouterFragment() {
                 "0" -> {
                     result.data?.coinInfo?.let { coin ->
                         binding.title.text = coin.username
-                        binding.id.text = coin.userId
-                        binding.coinCount.text = coin.coinCount
+                        binding.id.text = "id:$coin.userId"
+                        binding.coinCount.text = "积分:$coin.coinCount"
                     }
                     if (viewModel.isHomePage()) {
                         articleAdapter.setNewData(result.data?.shareArticles?.datas)

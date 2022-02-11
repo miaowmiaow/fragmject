@@ -6,8 +6,6 @@ import androidx.lifecycle.Observer
 import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.db.KVDatabase
 import com.example.fragment.library.common.bean.EventBean
-import com.example.fragment.library.common.bean.HotKeyBean
-import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.bean.UserBean
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -17,79 +15,10 @@ import com.google.gson.reflect.TypeToken
  */
 object WanHelper {
 
-    private const val HOT_KEY = "hot_key"
-    private const val LOCAL_AVATAR = "local_avatar"
-    private const val PROJECT_TREES = "project_trees"
-    const val SCREEN_RECORD = "screen_record"
+    private const val SCREEN_RECORD = "screen_record"
     private const val SEARCH_HISTORY = "search_history"
     const val UI_MODE = "ui_mode"
-    const val USER = "user"
-
-    /**
-     * 设置热词
-     */
-    fun setHotKey(hotKeys: List<HotKeyBean>? = null) {
-        if (hotKeys != null) {
-            KVDatabase.set(HOT_KEY, Gson().toJson(hotKeys))
-        }
-    }
-
-    /**
-     * 获取热词
-     */
-    fun getHotKey(result: (List<HotKeyBean>) -> Unit) {
-        KVDatabase.get(HOT_KEY) {
-            result.invoke(
-                try {
-                    Gson().fromJson(it, object : TypeToken<List<HotKeyBean>>() {}.type)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    ArrayList()
-                }
-            )
-        }
-    }
-
-    /**
-     * 设置本地头像
-     */
-    fun setLocalAvatar(path: String) {
-        KVDatabase.set(LOCAL_AVATAR, path)
-    }
-
-    /**
-     * 获取本地头像
-     */
-    fun getLocalAvatar(result: (String) -> Unit) {
-        KVDatabase.get(LOCAL_AVATAR) {
-            result.invoke(it)
-        }
-    }
-
-    /**
-     * 设置项目分类
-     */
-    fun setProjectTree(projectTrees: List<ProjectTreeBean>? = null) {
-        if (projectTrees != null) {
-            KVDatabase.set(PROJECT_TREES, Gson().toJson(projectTrees))
-        }
-    }
-
-    /**
-     * 获取项目分类
-     */
-    fun getProjectTree(result: (List<ProjectTreeBean>) -> Unit) {
-        KVDatabase.get(PROJECT_TREES) {
-            result.invoke(
-                try {
-                    Gson().fromJson(it, object : TypeToken<List<ProjectTreeBean>>() {}.type)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    ArrayList()
-                }
-            )
-        }
-    }
+    private const val USER = "user"
 
     /**
      * status :
@@ -98,20 +27,12 @@ object WanHelper {
      */
     fun setScreenRecord(status: String) {
         KVDatabase.set(SCREEN_RECORD, status)
-        SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(SCREEN_RECORD, status))
     }
 
-    fun getScreenRecord() {
+    fun getScreenRecord(status: (String) -> Unit) {
         KVDatabase.get(SCREEN_RECORD) {
-            SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(SCREEN_RECORD, it))
+            status.invoke(it)
         }
-    }
-
-    fun registerScreenRecord(
-        @NonNull owner: LifecycleOwner,
-        @NonNull observer: Observer<EventBean>
-    ) {
-        SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
     }
 
     /**
@@ -137,7 +58,6 @@ object WanHelper {
         }
     }
 
-
     /**
      * mode :
      *      -1 : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
@@ -150,6 +70,7 @@ object WanHelper {
     }
 
     /**
+     * 显示模式状态
      * return
      *      -1 : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
@@ -171,45 +92,22 @@ object WanHelper {
     /**
      * 设置用户信息
      */
-    fun setUser(userBean: UserBean? = null) {
-        if (userBean != null) {
-            KVDatabase.set(USER, userBean.toJson())
-            SharedFlowBus.withSticky(UserBean::class.java).tryEmit(userBean)
-        }
+    fun setUser(userBean: UserBean) {
+        KVDatabase.set(USER, userBean.toJson())
     }
 
     /**
      * 获取用户信息
      */
-    fun getUser() {
-        KVDatabase.get(USER) {
-            SharedFlowBus.withSticky(UserBean::class.java).tryEmit(
-                try {
-                    Gson().fromJson(it, UserBean::class.java)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    UserBean()
-                }
-            )
-        }
-    }
-
-    fun getUser(result: (UserBean) -> Unit) {
+    fun getUser(userBean: (UserBean) -> Unit) {
         KVDatabase.get(USER) {
             try {
-                result.invoke(Gson().fromJson(it, UserBean::class.java))
+                userBean.invoke(Gson().fromJson(it, UserBean::class.java))
             } catch (e: Exception) {
                 e.printStackTrace()
-                result.invoke(UserBean())
+                userBean.invoke(UserBean())
             }
         }
-    }
-
-    /**
-     * 监听用户信息
-     */
-    fun registerUser(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<UserBean>) {
-        SharedFlowBus.onSticky(UserBean::class.java).observe(owner, observer)
     }
 
     /**

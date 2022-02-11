@@ -3,38 +3,16 @@ package com.example.fragment.module.wan.model
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.library.common.bean.HotKeyBean
-import com.example.fragment.library.common.bean.HotKeyListBean
 import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.launch
 
 class SearchViewModel : BaseViewModel() {
 
-    val hotKeyResult = MutableLiveData<List<HotKeyBean>>()
     val searchHistoryResult = MutableLiveData<List<String>>()
     val searchResult = MutableLiveData<ArticleListBean>()
-
-    fun getHotKey() {
-        WanHelper.getHotKey { hotKey ->
-            //没有本地数据则从网络获取
-            if (hotKey.isNotEmpty()) {
-                hotKeyResult.postValue(hotKey)
-            } else {
-                viewModelScope.launch {
-                    val request = HttpRequest("hotkey/json")
-                    val response = get<HotKeyListBean>(request) { progress(it) }
-                    response.data?.let {
-                        hotKeyResult.postValue(it)
-                        WanHelper.setHotKey(it)
-                    }
-                }
-            }
-        }
-    }
 
     fun getSearchHistory() {
         WanHelper.getSearchHistory { searchHistoryResult.postValue(it) }

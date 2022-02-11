@@ -7,7 +7,7 @@ import com.example.fragment.library.common.activity.RouterActivity
 abstract class RouterFragment : BaseFragment() {
 
     /**
-     * 获取baseActivity方便调用navigation方法进行页面切换
+     * 获取RouterActivity方便调用navigation进行页面切换
      */
     lateinit var activity: RouterActivity
 

@@ -6,7 +6,7 @@ import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.bean.NavigationBean
+import com.example.fragment.library.common.bean.NavigationBean
 import com.example.fragment.module.wan.databinding.NavigationMenuItemBinding
 
 class LinkMenuAdapter : BaseAdapter<NavigationBean>() {

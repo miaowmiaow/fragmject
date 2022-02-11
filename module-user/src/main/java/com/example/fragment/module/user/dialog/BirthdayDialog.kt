@@ -28,6 +28,7 @@ class BirthdayDialog : BottomDialog() {
     private val monthData: MutableList<String> = arrayListOf()
     private val dayData: MutableList<String> = arrayListOf()
     private var birthday = TimeUtil.currentData("yyyy-MM-dd")
+    private var listener: BirthdayListener? = null
 
     private val yearAdapter = object : BaseAdapter<String>() {
 
@@ -65,8 +66,6 @@ class BirthdayDialog : BottomDialog() {
             binding.tv.text = "${item}日"
         }
     }
-
-    private var listener: BirthdayListener? = null
 
     init {
         val currYear = TimeUtil.timeFormat(System.currentTimeMillis(), "yyyy").toInt()

@@ -20,7 +20,6 @@ class SexDialog : BottomDialog() {
     private val binding get() = _binding!!
     private val sexViews = arrayListOf<View>()
     private var sexIndex = -1
-
     private var listener: SexListener? = null
 
     override fun onCreateView(

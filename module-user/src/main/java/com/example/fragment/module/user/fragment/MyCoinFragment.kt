@@ -73,14 +73,13 @@ class MyCoinFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.userCoinResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> result.data?.let { coinBean ->
+            wanSuccessCallback(result) {
+                result.data?.let { coinBean ->
                     val from = binding.coinCount.text.toString().toInt()
                     val to = coinBean.coinCount.toInt()
                     coinCountAnimator.setIntValues(from, to)
                     coinCountAnimator.start()
                 }
-                else -> activity.showTips(result.errorMsg)
             }
         }
         viewModel.myCoinResult.observe(viewLifecycleOwner) { result ->

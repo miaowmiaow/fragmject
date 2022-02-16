@@ -1,4 +1,4 @@
-package com.example.fragment.module.wan.model
+package com.example.fragment.module.user.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope

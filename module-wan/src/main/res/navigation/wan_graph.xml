@@ -5,13 +5,6 @@
     android:id="@+id/wan_graph"
     tools:ignore="InvalidNavigation">
     <fragment
-        android:id="@+id/coin_rank"
-        android:name="com.example.fragment.module.wan.fragment.CoinRankFragment"
-        android:label="CoinRankFragment"
-        tools:layout="@layout/coin_rank_fragment">
-        <deepLink app:uri="fragment.example.com/coin/rank" />
-    </fragment>
-    <fragment
         android:id="@+id/search"
         android:name="com.example.fragment.module.wan.fragment.SearchFragment"
         android:label="SearchFragment"

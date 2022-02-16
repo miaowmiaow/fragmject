@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
@@ -20,7 +19,6 @@ import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.SearchHistoryAdapter
@@ -29,8 +27,7 @@ import com.example.fragment.module.wan.model.SearchViewModel
 
 class SearchFragment : RouterFragment() {
 
-    private val commonViewModel: CommonViewModel by activityViewModels()
-    private val viewModel: SearchViewModel by viewModels()
+    private val viewModel: SearchViewModel by activityViewModels()
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -116,7 +113,7 @@ class SearchFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        commonViewModel.hotKeyResult.observe(viewLifecycleOwner) {
+        viewModel.hotKeyResult.observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE
             binding.pullRefresh.visibility = GONE
             binding.hotKey.visibility = if (it.isNotEmpty()) VISIBLE else GONE
@@ -136,15 +133,14 @@ class SearchFragment : RouterFragment() {
             historySearchAdapter.setNewData(result)
         }
         viewModel.searchResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> result.data?.datas?.let { data ->
+            wanSuccessCallback(result) {
+                result.data?.datas?.let { data ->
                     if (viewModel.isHomePage()) {
                         articleAdapter.setNewData(data)
                     } else {
                         articleAdapter.addData(data)
                     }
                 }
-                else -> activity.showTips(result.errorMsg)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
@@ -155,8 +151,8 @@ class SearchFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        if (commonViewModel.hotKeyResult.value == null) {
-            commonViewModel.getHotKey()
+        if (viewModel.hotKeyResult.value == null) {
+            viewModel.getHotKey()
         }
         if (viewModel.searchHistoryResult.value == null) {
             viewModel.getSearchHistory()

@@ -1,4 +1,4 @@
-package com.example.fragment.module.wan.bean
+package com.example.fragment.module.user.bean
 
 import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse

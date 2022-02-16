@@ -9,9 +9,9 @@ import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.UserViewModel
 import com.example.fragment.module.user.databinding.UserLoginFragmentBinding
 import com.example.fragment.module.user.model.UserLoginViewModel
+import com.example.fragment.module.user.model.UserViewModel
 
 class UserLoginFragment : RouterFragment() {
 
@@ -56,13 +56,10 @@ class UserLoginFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    val userViewModel: UserViewModel by activityViewModels()
-                    userViewModel.updateUser(result.data)
-                    activity.onBackPressed()
-                }
-                else -> activity.showTips(result.errorMsg)
+            wanSuccessCallback(result) {
+                val userViewModel: UserViewModel by activityViewModels()
+                userViewModel.updateUser(result.data)
+                activity.onBackPressed()
             }
         }
         return viewModel

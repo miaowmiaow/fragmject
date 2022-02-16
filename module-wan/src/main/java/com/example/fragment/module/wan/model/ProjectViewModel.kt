@@ -6,11 +6,27 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleListBean
+import com.example.fragment.library.common.bean.ProjectTreeBean
+import com.example.fragment.library.common.bean.ProjectTreeListBean
 import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
+    val projectTreeResult = MutableLiveData<List<ProjectTreeBean>>()
     val projectListResult = MutableLiveData<ArticleListBean>()
+
+    /**
+     * 获取项目分类
+     */
+    fun getProjectTree(show: Boolean = false) {
+        viewModelScope.launch {
+            val request = HttpRequest("project/tree/json")
+            val response = get<ProjectTreeListBean>(request) { if (show) progress(it) }
+            response.data?.let {
+                projectTreeResult.postValue(it)
+            }
+        }
+    }
 
     fun getProject(cid: String) {
         getProjectList(cid, getHomePage(1))

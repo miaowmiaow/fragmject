@@ -13,13 +13,13 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.SystemTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.databinding.SystemFragmentBinding
+import com.example.fragment.module.wan.model.SystemViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
 class SystemFragment : RouterFragment() {
 
-    private val viewModel: CommonViewModel by activityViewModels()
+    private val viewModel: SystemViewModel by activityViewModels()
     private var _binding: SystemFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -77,7 +77,7 @@ class SystemFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.systemTreeResult.value == null) {
-            viewModel.getSystemTree()
+            viewModel.getSystemTree(true)
         }
     }
 

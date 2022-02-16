@@ -1,4 +1,4 @@
-package com.example.fragment.module.wan.fragment
+package com.example.fragment.module.user.fragment
 
 import android.net.Uri
 import android.os.Bundle
@@ -17,9 +17,9 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.adapter.CoinRankAdapter
-import com.example.fragment.module.wan.databinding.CoinRankFragmentBinding
-import com.example.fragment.module.wan.model.CoinRankViewModel
+import com.example.fragment.module.user.adapter.CoinRankAdapter
+import com.example.fragment.module.user.databinding.CoinRankFragmentBinding
+import com.example.fragment.module.user.model.CoinRankViewModel
 
 class CoinRankFragment : RouterFragment() {
 
@@ -97,25 +97,22 @@ class CoinRankFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.coinRankResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    val names = arrayListOf(binding.name1, binding.name2, binding.name3)
-                    val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
-                    val data = result.data?.datas
-                    if (viewModel.isHomePage() && !data.isNullOrEmpty()) {
-                        val size = if (data.size < 3) data.size else 3
-                        for (i in 0 until size) {
-                            names[i].text = data[i].username
-                            coins[i].text = data[i].coinCount
-                        }
-                        if (data.size > 3) {
-                            coinRankAdapter.setNewData(data.subList(2, data.size))
-                        }
-                    } else {
-                        coinRankAdapter.addData(data)
+            wanSuccessCallback(result) {
+                val names = arrayListOf(binding.name1, binding.name2, binding.name3)
+                val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
+                val datas = result.data?.datas
+                if (viewModel.isHomePage() && !datas.isNullOrEmpty()) {
+                    val size = if (datas.size < 3) datas.size else 3
+                    for (i in 0 until size) {
+                        names[i].text = datas[i].username
+                        coins[i].text = datas[i].coinCount
                     }
+                    if (datas.size > 3) {
+                        coinRankAdapter.setNewData(datas.subList(2, datas.size))
+                    }
+                } else {
+                    coinRankAdapter.addData(datas)
                 }
-                else -> activity.showTips(result.errorMsg)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

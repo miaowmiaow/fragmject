@@ -13,7 +13,7 @@ import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.databinding.QaQuizFragmentBinding
-import com.example.fragment.module.wan.model.QuizViewModel
+import com.example.fragment.module.wan.model.QAModel
 
 class QAQuizFragment : RouterFragment() {
 
@@ -24,7 +24,7 @@ class QAQuizFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: QuizViewModel by viewModels()
+    private val viewModel: QAModel by viewModels()
     private var _binding: QaQuizFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -64,13 +64,12 @@ class QAQuizFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.wendaResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> if (viewModel.isHomePage()) {
+            wanSuccessCallback(result) {
+                if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.datas)
                 } else {
                     articleAdapter.addData(result.data?.datas)
                 }
-                else -> activity.showTips(result.errorMsg)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

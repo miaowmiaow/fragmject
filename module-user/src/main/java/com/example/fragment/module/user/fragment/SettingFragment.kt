@@ -1,4 +1,4 @@
-package com.example.fragment.module.wan.fragment
+package com.example.fragment.module.user.fragment
 
 import android.app.Activity
 import android.content.Intent
@@ -25,16 +25,16 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.UserViewModel
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.wan.databinding.SettingFragmentBinding
-import com.example.fragment.module.wan.model.SettingViewModel
+import com.example.fragment.module.user.databinding.SettingFragmentBinding
+import com.example.fragment.module.user.model.SettingViewModel
+import com.example.fragment.module.user.model.UserViewModel
 import java.io.File
 
 class SettingFragment : RouterFragment() {
 
     private val userViewModel: UserViewModel by activityViewModels()
-    private val viewModel: SettingViewModel by viewModels()
+    private val settingViewModel: SettingViewModel by viewModels()
     private var _binding: SettingFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -97,7 +97,7 @@ class SettingFragment : RouterFragment() {
                         }
                     }
                 }.start()
-                viewModel.updateScreenRecord("1")
+                settingViewModel.updateScreenRecord("1")
             }
 
             override fun onClose(view: SwitchButton) {
@@ -106,7 +106,7 @@ class SettingFragment : RouterFragment() {
                     activity.dismissTips()
                     activity.stopScreenRecord()
                 }, 1000)
-                viewModel.updateScreenRecord("0")
+                settingViewModel.updateScreenRecord("0")
             }
         })
         binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
@@ -126,7 +126,7 @@ class SettingFragment : RouterFragment() {
         }
         binding.versionName.text = SystemUtil.getVersionName()
         binding.update.setOnClickListener {
-            viewModel.update()
+            settingViewModel.update()
         }
         binding.about.setOnClickListener {
             val url = Uri.encode("https://wanandroid.com")
@@ -145,7 +145,7 @@ class SettingFragment : RouterFragment() {
                 .setContent("确定退出登录吗？")
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
-                        viewModel.logout()
+                        settingViewModel.logout()
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -159,25 +159,22 @@ class SettingFragment : RouterFragment() {
         userViewModel.userResult.observe(viewLifecycleOwner) { result ->
             binding.logout.visibility = if (result.id.isNotBlank()) View.VISIBLE else View.GONE
         }
-        viewModel.screenRecordResult.observe(viewLifecycleOwner) { result ->
+        settingViewModel.screenRecordResult.observe(viewLifecycleOwner) { result ->
             when (result) {
                 "0" -> binding.screenRecord.setChecked(false)
                 "1" -> binding.screenRecord.setChecked(true)
             }
         }
-        viewModel.logoutResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    userViewModel.updateUser(UserBean())
-                    activity.onBackPressed()
-                }
-                else -> activity.showTips(result.errorMsg)
+        settingViewModel.logoutResult.observe(viewLifecycleOwner) { result ->
+            wanSuccessCallback(result) {
+                userViewModel.updateUser(UserBean())
+                activity.onBackPressed()
             }
         }
-        viewModel.updateResult.observe(viewLifecycleOwner) { result ->
+        settingViewModel.updateResult.observe(viewLifecycleOwner) { result ->
             result?.apply {
-                when (errorCode) {
-                    "0" -> data?.let { data ->
+                wanSuccessCallback(this) {
+                    data?.let { data ->
                         StandardDialog.newInstance()
                             .setTitle("有新版本更新啦♥~")
                             .setContent("当前版本：${SystemUtil.getVersionName()}\n最新版本：${data.versionName}")
@@ -190,54 +187,50 @@ class SettingFragment : RouterFragment() {
                                     val filePathName = cachePath + File.separator + apkName
                                     val file = File(filePathName)
                                     if (!file.exists() || !file.isFile) {
-                                        viewModel.downloadApk(apkUrl, filePathName)
+                                        settingViewModel.downloadApk(apkUrl, filePathName)
                                     } else {
-                                        viewModel.downloadApkResult.postValue(
+                                        settingViewModel.downloadApkResult.postValue(
                                             HttpResponse("0", filePathName)
                                         )
                                     }
                                 }
 
                                 override fun onCancel(dialog: StandardDialog) {
-                                    viewModel.updateResult.postValue(null)
+                                    settingViewModel.updateResult.postValue(null)
                                 }
                             }).show(childFragmentManager)
                     }
-                    else -> activity.showTips(errorMsg)
                 }
             }
         }
-        viewModel.downloadApkResult.observe(viewLifecycleOwner) { result ->
+        settingViewModel.downloadApkResult.observe(viewLifecycleOwner) { result ->
             result?.apply {
-                when (errorCode) {
-                    "0" -> {
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        val uri = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
-                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            val authority = "${SystemUtil.getPackageName()}.FileProvider"
-                            FileProvider.getUriForFile(activity, authority, File(errorMsg))
-                        } else {
-                            Uri.parse("file://$errorMsg")
-                        }
-                        val type = "application/vnd.android.package-archive"
-                        intent.setDataAndType(uri, type)
-                        activity.startActivity(intent)
-                        viewModel.downloadApkResult.postValue(null)
+                wanSuccessCallback(this) {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    val uri = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        val authority = "${SystemUtil.getPackageName()}.FileProvider"
+                        FileProvider.getUriForFile(activity, authority, File(errorMsg))
+                    } else {
+                        Uri.parse("file://$errorMsg")
                     }
-                    else -> activity.showTips(errorMsg)
+                    val type = "application/vnd.android.package-archive"
+                    intent.setDataAndType(uri, type)
+                    activity.startActivity(intent)
+                    settingViewModel.downloadApkResult.postValue(null)
                 }
             }
         }
-        return viewModel
+        return settingViewModel
     }
 
     override fun initLoad() {
         if (userViewModel.userResult.value == null) {
             userViewModel.getUser()
         }
-        if (viewModel.screenRecordResult.value == null) {
-            viewModel.getScreenRecord()
+        if (settingViewModel.screenRecordResult.value == null) {
+            settingViewModel.getScreenRecord()
         }
         WanHelper.registerUIMode(viewLifecycleOwner) { eventBean ->
             if (eventBean.key == WanHelper.UI_MODE) {

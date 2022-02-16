@@ -1,4 +1,4 @@
-package com.example.fragment.library.common.model
+package com.example.fragment.module.user.model
 
 import androidx.lifecycle.MutableLiveData
 import com.example.fragment.library.base.model.BaseViewModel

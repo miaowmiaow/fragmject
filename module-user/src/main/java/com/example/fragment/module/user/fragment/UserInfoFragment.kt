@@ -11,7 +11,7 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.UserViewModel
+import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
 import com.example.fragment.module.user.dialog.CityDialog

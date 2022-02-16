@@ -1,6 +1,5 @@
 package com.example.fragment.library.base.http
 
-import android.app.Application
 import android.content.ContextWrapper
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MediaType

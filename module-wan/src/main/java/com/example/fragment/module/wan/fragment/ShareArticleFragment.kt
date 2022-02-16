@@ -61,20 +61,17 @@ class ShareArticleFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.userShareArticleResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> {
-                    result.data?.coinInfo?.let { coin ->
-                        binding.title.text = coin.username
-                        binding.id.text = "id:$coin.userId"
-                        binding.coinCount.text = "积分:$coin.coinCount"
-                    }
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(result.data?.shareArticles?.datas)
-                    } else {
-                        articleAdapter.addData(result.data?.shareArticles?.datas)
-                    }
+            wanSuccessCallback(result) {
+                result.data?.coinInfo?.let { coin ->
+                    binding.title.text = coin.username
+                    binding.id.text = "id:$coin.userId"
+                    binding.coinCount.text = "积分:$coin.coinCount"
                 }
-                else -> activity.showTips(result.errorMsg)
+                if (viewModel.isHomePage()) {
+                    articleAdapter.setNewData(result.data?.shareArticles?.datas)
+                } else {
+                    articleAdapter.addData(result.data?.shareArticles?.datas)
+                }
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

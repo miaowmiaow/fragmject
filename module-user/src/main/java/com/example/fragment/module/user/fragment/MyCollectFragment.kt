@@ -58,8 +58,8 @@ class MyCollectFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> result.data?.datas?.let { data ->
+            wanSuccessCallback(result) {
+                result.data?.datas?.let { data ->
                     data.forEach { it.collect = true }
                     if (viewModel.isHomePage()) {
                         articleAdapter.setNewData(data)
@@ -67,7 +67,6 @@ class MyCollectFragment : RouterFragment() {
                         articleAdapter.addData(data)
                     }
                 }
-                else -> activity.showTips(result.errorMsg)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

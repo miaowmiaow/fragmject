@@ -58,13 +58,12 @@ class MyShareFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.myShareArticleResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> if (viewModel.isHomePage()) {
+            wanSuccessCallback(result) {
+                if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.shareArticles?.datas)
                 } else {
                     articleAdapter.addData(result.data?.shareArticles?.datas)
                 }
-                else -> activity.showTips(result.errorMsg)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

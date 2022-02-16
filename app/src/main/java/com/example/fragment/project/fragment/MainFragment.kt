@@ -19,12 +19,12 @@ import com.example.fragment.library.common.adapter.HotKeyAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.user.fragment.UserFragment
 import com.example.fragment.module.wan.fragment.HomeFragment
 import com.example.fragment.module.wan.fragment.NavigationFragment
 import com.example.fragment.module.wan.fragment.ProjectFragment
 import com.example.fragment.module.wan.fragment.QAFragment
+import com.example.fragment.module.wan.model.SearchViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainFragmentBinding
 import com.example.fragment.project.databinding.MainTabItemBinding
@@ -33,7 +33,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
-    private val viewModel: CommonViewModel by activityViewModels()
+    private val viewModel: SearchViewModel by activityViewModels()
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -53,7 +53,7 @@ class MainFragment : RouterFragment() {
         UserFragment.newInstance()
     )
     private val hotKeyAdapter = HotKeyAdapter()
-    private lateinit var bannerHelper: BannerHelper
+    private lateinit var hotKeyHelper: BannerHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,12 +71,12 @@ class MainFragment : RouterFragment() {
 
     override fun onResume() {
         super.onResume()
-        bannerHelper.startTimerTask()
+        hotKeyHelper.startTimerTask()
     }
 
     override fun onPause() {
         super.onPause()
-        bannerHelper.stopTimerTask()
+        hotKeyHelper.stopTimerTask()
     }
 
     override fun initView() {
@@ -89,7 +89,7 @@ class MainFragment : RouterFragment() {
                 search()
             }
         })
-        bannerHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
+        hotKeyHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         //TabLayout与ViewPager2
         binding.viewpager2.adapter = object : FragmentStateAdapter(
             activity.supportFragmentManager,
@@ -126,27 +126,17 @@ class MainFragment : RouterFragment() {
         }.attach()
     }
 
-    override fun initViewModel(): BaseViewModel {
+    override fun initViewModel(): BaseViewModel? {
         viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
             hotKeyAdapter.setNewData(result)
-            bannerHelper.startTimerTask()
+            hotKeyHelper.startTimerTask()
         }
-        return viewModel
+        return null
     }
 
     override fun initLoad() {
         if (viewModel.hotKeyResult.value == null) {
             viewModel.getHotKey()
-        }
-        //接口预加载
-        if (viewModel.navigationResult.value == null) {
-            viewModel.getNavigation()
-        }
-        if (viewModel.projectTreeResult.value == null) {
-            viewModel.getProjectTree()
-        }
-        if (viewModel.systemTreeResult.value == null) {
-            viewModel.getSystemTree()
         }
     }
 
@@ -154,7 +144,7 @@ class MainFragment : RouterFragment() {
      * 跳转搜索界面
      */
     private fun search() {
-        val position = bannerHelper.findItemPosition()
+        val position = hotKeyHelper.findItemPosition()
         val title = hotKeyAdapter.getItem(position).name
         activity.navigation(Router.SEARCH, bundleOf(Keys.VALUE to title))
     }

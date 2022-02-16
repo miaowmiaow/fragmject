@@ -87,9 +87,8 @@ class HomeFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.bannerResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> bannerAdapter.setNewData(result.data)
-                else -> activity.showTips(result.errorMsg)
+            wanSuccessCallback(result) {
+                bannerAdapter.setNewData(result.data)
             }
         }
         viewModel.articleListResult.observe(viewLifecycleOwner) { result ->

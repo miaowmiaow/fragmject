@@ -12,8 +12,8 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.databinding.ProjectFragmentBinding
+import com.example.fragment.module.wan.model.ProjectViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ProjectFragment : RouterFragment() {
@@ -25,7 +25,7 @@ class ProjectFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: CommonViewModel by activityViewModels()
+    private val viewModel: ProjectViewModel by activityViewModels()
     private var _binding: ProjectFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -52,7 +52,7 @@ class ProjectFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.projectTreeResult.value == null) {
-            viewModel.getProjectTree()
+            viewModel.getProjectTree(true)
         }
     }
 

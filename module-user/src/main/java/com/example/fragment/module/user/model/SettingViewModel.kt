@@ -1,4 +1,4 @@
-package com.example.fragment.module.wan.model
+package com.example.fragment.module.user.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -8,7 +8,7 @@ import com.example.fragment.library.base.http.download
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.wan.bean.UpdateBean
+import com.example.fragment.module.user.bean.UpdateBean
 import kotlinx.coroutines.launch
 
 class SettingViewModel : BaseViewModel() {

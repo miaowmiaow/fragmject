@@ -15,10 +15,10 @@ import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.LinkMenuAdapter
 import com.example.fragment.module.wan.databinding.NavigationLinkFragmentBinding
+import com.example.fragment.module.wan.model.NavigationViewModel
 
 class NavigationLinkFragment : RouterFragment() {
 
@@ -29,7 +29,7 @@ class NavigationLinkFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: CommonViewModel by activityViewModels()
+    private val viewModel: NavigationViewModel by activityViewModels()
     private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
 

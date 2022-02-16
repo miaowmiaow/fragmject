@@ -58,9 +58,8 @@ class UserShareFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.shareArticleResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> activity.onBackPressed()
-                else -> activity.showTips(result.errorMsg)
+            wanSuccessCallback(result) {
+                activity.onBackPressed()
             }
         }
         return viewModel

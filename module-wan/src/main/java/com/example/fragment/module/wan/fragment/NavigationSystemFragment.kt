@@ -8,9 +8,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.CommonViewModel
 import com.example.fragment.module.wan.adapter.SystemAdapter
 import com.example.fragment.module.wan.databinding.NavigationSystemFragmentBinding
+import com.example.fragment.module.wan.model.SystemViewModel
 
 class NavigationSystemFragment : RouterFragment() {
 
@@ -21,7 +21,7 @@ class NavigationSystemFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: CommonViewModel by activityViewModels()
+    private val viewModel: SystemViewModel by activityViewModels()
     private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
 

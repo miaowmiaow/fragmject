@@ -16,7 +16,7 @@ import com.example.fragment.library.base.utils.ActivityResultHelper.startForResu
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.UserViewModel
+import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.module.user.databinding.UserAvatarFragmentBinding
 import com.example.miaow.picture.dialog.EditorFinishCallback
 import com.example.miaow.picture.dialog.PictureEditorDialog

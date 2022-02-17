@@ -21,9 +21,9 @@ abstract class RouterFragment : BaseFragment() {
     /**
      * 网络请求结果处理（不建议封装在网络请求框架中）
      */
-    fun <T : HttpResponse> wanSuccessCallback(result: T, success: (() -> Unit)) {
+    fun <T : HttpResponse> httpParseSuccess(result: T, success: ((T) -> Unit)) {
         when (result.errorCode) {
-            "0" -> success.invoke()
+            "0" -> success.invoke(result)
             "-1001" -> activity.navigation(Router.USER_LOGIN)
             else -> activity.showTips(result.errorMsg)
         }

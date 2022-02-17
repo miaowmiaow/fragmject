@@ -79,23 +79,21 @@ class HomeFragment : RouterFragment() {
         })
         binding.coordinator.post {
             binding.coordinator.setMaxScrollY(binding.banner.height)
-            val layoutParams = binding.list.layoutParams
-            layoutParams.height = binding.coordinator.height
-            binding.list.layoutParams = layoutParams
+            binding.list.layoutParams.height = binding.coordinator.height
         }
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.bannerResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.bannerResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 bannerAdapter.setNewData(result.data)
             }
         }
-        viewModel.articleListResult.observe(viewLifecycleOwner) { result ->
+        viewModel.articleListResult.observe(viewLifecycleOwner) {
             if (viewModel.isHomePage()) {
-                articleAdapter.setNewData(result)
+                articleAdapter.setNewData(it)
             } else {
-                articleAdapter.addData(result)
+                articleAdapter.addData(it)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

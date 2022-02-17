@@ -33,24 +33,24 @@ class MainActivity : RouterActivity() {
     override fun navigation(name: Router, bundle: Bundle?) {
         //登录态校验
         if (loginRequired(name)) {
-            navigate("/user/login")
+            navigate("user/login")
         } else when (name) {
-            Router.COIN2RANK -> navigate("/coin/rank", bundle)
+            Router.COIN2RANK -> navigate("coin/rank", bundle)
             Router.MAIN -> popBackStack(R.id.main, false)
-            Router.MY_COIN -> navigate("/my/coin", bundle)
-            Router.MY_COLLECT -> navigate("/my/collect", bundle)
-            Router.MY_SHARE -> navigate("/my/share", bundle)
-            Router.SEARCH -> navigate("/search/{value}", bundle)
+            Router.MY_COIN -> navigate("my/coin", bundle)
+            Router.MY_COLLECT -> navigate("my/collect", bundle)
+            Router.MY_SHARE -> navigate("my/share", bundle)
+            Router.SEARCH -> navigate("search/{value}", bundle)
             Router.SETTING -> navigate(R.id.action_main_to_setting, bundle)
-            Router.SHARE_ARTICLE -> navigate("/share/article/{uid}", bundle)
-            Router.SYSTEM -> navigate("/system/{cid}", bundle)
-            Router.SYSTEM_URL -> navigate("/system/url/{url}", bundle)
-            Router.USER_AVATAR -> navigate("/user/avatar", bundle)
-            Router.USER_INFO -> navigate("/user/info", bundle)
-            Router.USER_LOGIN -> navigate("/user/login", bundle)
-            Router.USER_REGISTER -> navigate("/user/register", bundle)
-            Router.USER_SHARE -> navigate("/user/share", bundle)
-            Router.WEB -> navigate("/web/{url}", bundle)
+            Router.SHARE_ARTICLE -> navigate("share/article/{uid}", bundle)
+            Router.SYSTEM -> navigate("system/{cid}", bundle)
+            Router.SYSTEM_URL -> navigate("system/url/{url}", bundle)
+            Router.USER_AVATAR -> navigate("user/avatar", bundle)
+            Router.USER_INFO -> navigate("user/info", bundle)
+            Router.USER_LOGIN -> navigate("user/login", bundle)
+            Router.USER_REGISTER -> navigate("user/register", bundle)
+            Router.USER_SHARE -> navigate("user/share", bundle)
+            Router.WEB -> navigate("web/{url}", bundle)
         }
     }
 

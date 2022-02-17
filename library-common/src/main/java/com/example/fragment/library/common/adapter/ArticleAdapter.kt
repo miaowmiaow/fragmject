@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.lifecycle.MutableLiveData
 import androidx.viewbinding.ViewBinding
 import coil.load
 import coil.transform.CircleCropTransformation
@@ -24,14 +23,10 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.databinding.ArticleItemBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
 class ArticleAdapter : BaseAdapter<ArticleBean>() {
-
-    private var collectJob: Job? = null
-    private var unCollectJob: Job? = null
 
     private var avatarList: List<Int> = listOf(
         R.drawable.avatar_1_raster,
@@ -53,11 +48,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             val url = Uri.encode(item.link)
             activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
-        binding.author.text = if (item.author.isNotBlank()) {
-            item.author
-        } else {
-            "匿名"
-        }
+        binding.author.text = if (item.author.isNotBlank()) item.author else "匿名"
         binding.avatar.load(avatarList[position % 6]) {
             crossfade(true)
             transformations(CircleCropTransformation())
@@ -79,6 +70,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                 activity.navigation(Router.SYSTEM_URL, bundleOf(Keys.URL to url))
             }
         }
+        binding.tag.visibility = if (!item.tags.isNullOrEmpty()) View.VISIBLE else View.GONE
         binding.top.visibility = if (item.top) View.VISIBLE else View.GONE
         binding.image.visibility = if (item.envelopePic.isNotEmpty()) {
             binding.image.load(item.envelopePic)
@@ -105,30 +97,19 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             activity.navigation(Router.SYSTEM, args)
         }
         if (item.collect) {
-            binding.collect.setImageResource(R.drawable.ic_collect_checked)
+            binding.collect.load(R.drawable.ic_collect_checked)
         } else {
-            binding.collect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
+            binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
         }
         binding.collect.setOnClickListener {
             if (item.collect) {
-                unCollect(item.id).observe(activity, { result ->
-                    if (result.errorCode == "0") {
-                        item.collect = false
-                        binding.collect.setImageResource(R.drawable.ic_collect_unchecked_stroke)
-                    } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                        activity.showTips(result.errorMsg)
-                    }
-                })
+                binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
+                unCollect(item.id)
             } else {
-                collect(item.id).observe(activity, { result ->
-                    if (result.errorCode == "0") {
-                        item.collect = true
-                        binding.collect.setImageResource(R.drawable.ic_collect_checked)
-                    } else if (result.errorCode.isNotBlank() && result.errorMsg.isNotBlank()) {
-                        activity.showTips(result.errorMsg)
-                    }
-                })
+                binding.collect.load(R.drawable.ic_collect_checked)
+                collect(item.id)
             }
+            item.collect = !item.collect
         }
     }
 
@@ -163,23 +144,15 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         return s
     }
 
-    private fun collect(id: String): MutableLiveData<HttpResponse> {
-        val result = MutableLiveData<HttpResponse>()
-        collectJob = CoroutineScope(Dispatchers.Main).launch {
-            val request = HttpRequest("lg/collect/{id}/json").putPath("id", id)
-            val response = post<HttpResponse>(request)
-            result.postValue(response)
+    private fun collect(id: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            post<HttpResponse>(HttpRequest("lg/collect/{id}/json").putPath("id", id))
         }
-        return result
     }
 
-    private fun unCollect(id: String): MutableLiveData<HttpResponse> {
-        val result = MutableLiveData<HttpResponse>()
-        unCollectJob = CoroutineScope(Dispatchers.Main).launch {
-            val request = HttpRequest("lg/uncollect_originId/{id}/json").putPath("id", id)
-            val response = post<HttpResponse>(request)
-            result.postValue(response)
+    private fun unCollect(id: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            post<HttpResponse>(HttpRequest("lg/uncollect_originId/{id}/json").putPath("id", id))
         }
-        return result
     }
 }

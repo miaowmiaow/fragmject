@@ -66,8 +66,8 @@ class SystemArticleFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.systemArticleResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.systemArticleResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.datas)
                 } else {

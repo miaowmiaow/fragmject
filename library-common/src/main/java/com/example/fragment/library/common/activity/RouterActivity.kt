@@ -116,7 +116,7 @@ abstract class RouterActivity : BaseActivity() {
      * 通过正则匹配“{}”内的参数并替换
      */
     fun navigate(deepLink: String, args: Bundle? = null) {
-        var newDeepLink = "http://fragment.example.com$deepLink"
+        var newDeepLink = "http://fragment.example.com/$deepLink"
         args?.apply {
             val matcher = Pattern.compile("(\\{)(.+?)(\\})").matcher(newDeepLink)
             while (matcher.find()) {

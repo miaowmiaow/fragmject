@@ -127,8 +127,8 @@ class MainFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel? {
-        viewModel.hotKeyResult.observe(viewLifecycleOwner) { result ->
-            hotKeyAdapter.setNewData(result)
+        viewModel.hotKeyResult.observe(viewLifecycleOwner) {
+            hotKeyAdapter.setNewData(it)
             hotKeyHelper.startTimerTask()
         }
         return null
@@ -145,6 +145,7 @@ class MainFragment : RouterFragment() {
      */
     private fun search() {
         val position = hotKeyHelper.findItemPosition()
+        if (position == RecyclerView.NO_POSITION) return
         val title = hotKeyAdapter.getItem(position).name
         activity.navigation(Router.SEARCH, bundleOf(Keys.VALUE to title))
     }

@@ -72,8 +72,8 @@ class MyCoinFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userCoinResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.userCoinResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 result.data?.let { coinBean ->
                     val from = binding.coinCount.text.toString().toInt()
                     val to = coinBean.coinCount.toInt()
@@ -82,14 +82,13 @@ class MyCoinFragment : RouterFragment() {
                 }
             }
         }
-        viewModel.myCoinResult.observe(viewLifecycleOwner) { result ->
-            when (result.errorCode) {
-                "0" -> if (viewModel.isHomePage()) {
+        viewModel.myCoinResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
+                if (viewModel.isHomePage()) {
                     coinRecordAdapter.setNewData(result.data?.datas)
                 } else {
                     coinRecordAdapter.addData(result.data?.datas)
                 }
-                else -> activity.showTips(result.errorMsg)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

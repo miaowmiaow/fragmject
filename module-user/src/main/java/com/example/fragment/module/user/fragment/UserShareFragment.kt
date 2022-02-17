@@ -57,8 +57,8 @@ class UserShareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.shareArticleResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.shareArticleResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) {
                 activity.onBackPressed()
             }
         }

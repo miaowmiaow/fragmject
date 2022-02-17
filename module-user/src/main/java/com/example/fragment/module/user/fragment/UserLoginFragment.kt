@@ -55,8 +55,8 @@ class UserLoginFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.loginResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.loginResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 val userViewModel: UserViewModel by activityViewModels()
                 userViewModel.updateUser(result.data)
                 activity.onBackPressed()

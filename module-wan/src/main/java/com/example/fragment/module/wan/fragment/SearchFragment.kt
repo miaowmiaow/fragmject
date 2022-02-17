@@ -126,14 +126,14 @@ class SearchFragment : RouterFragment() {
                 binding.fbl.addView(tv)
             }
         }
-        viewModel.searchHistoryResult.observe(viewLifecycleOwner) { result ->
+        viewModel.searchHistoryResult.observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE
             binding.pullRefresh.visibility = GONE
-            binding.searchHistory.visibility = if (result.isNotEmpty()) VISIBLE else GONE
-            historySearchAdapter.setNewData(result)
+            binding.searchHistory.visibility = if (it.isNotEmpty()) VISIBLE else GONE
+            historySearchAdapter.setNewData(it)
         }
-        viewModel.searchResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.searchResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 result.data?.datas?.let { data ->
                     if (viewModel.isHomePage()) {
                         articleAdapter.setNewData(data)

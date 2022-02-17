@@ -66,8 +66,8 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.projectListResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.projectListResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.datas)
                 } else {

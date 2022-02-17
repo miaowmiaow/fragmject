@@ -60,8 +60,8 @@ class ShareArticleFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userShareArticleResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.userShareArticleResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 result.data?.coinInfo?.let { coin ->
                     binding.title.text = coin.username
                     binding.id.text = "id:$coin.userId"

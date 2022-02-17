@@ -55,8 +55,8 @@ class UserRegisterFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.registerResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.registerResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 val userViewModel: UserViewModel by activityViewModels()
                 userViewModel.updateUser(result.data)
                 activity.navigation(Router.MAIN)

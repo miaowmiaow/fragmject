@@ -57,10 +57,10 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.myCollectArticleResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        viewModel.myCollectArticleResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
                 result.data?.datas?.let { data ->
-                    data.forEach { it.collect = true }
+                    data.forEach { item -> item.collect = true }
                     if (viewModel.isHomePage()) {
                         articleAdapter.setNewData(data)
                     } else {

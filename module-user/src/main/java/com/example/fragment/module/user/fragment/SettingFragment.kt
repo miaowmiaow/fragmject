@@ -165,15 +165,15 @@ class SettingFragment : RouterFragment() {
                 "1" -> binding.screenRecord.setChecked(true)
             }
         }
-        settingViewModel.logoutResult.observe(viewLifecycleOwner) { result ->
-            wanSuccessCallback(result) {
+        settingViewModel.logoutResult.observe(viewLifecycleOwner) {
+            httpParseSuccess(it) {
                 userViewModel.updateUser(UserBean())
                 activity.onBackPressed()
             }
         }
-        settingViewModel.updateResult.observe(viewLifecycleOwner) { result ->
-            result?.apply {
-                wanSuccessCallback(this) {
+        settingViewModel.updateResult.observe(viewLifecycleOwner) {
+            it?.apply {
+                httpParseSuccess(this) {
                     data?.let { data ->
                         StandardDialog.newInstance()
                             .setTitle("有新版本更新啦♥~")
@@ -205,7 +205,7 @@ class SettingFragment : RouterFragment() {
         }
         settingViewModel.downloadApkResult.observe(viewLifecycleOwner) { result ->
             result?.apply {
-                wanSuccessCallback(this) {
+                httpParseSuccess(this) {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     val uri = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {

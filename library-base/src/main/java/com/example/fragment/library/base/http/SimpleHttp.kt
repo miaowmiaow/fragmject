@@ -2,18 +2,12 @@ package com.example.fragment.library.base.http
 
 import android.content.ContextWrapper
 import kotlinx.coroutines.CoroutineScope
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.http.*
 import java.io.File
-import java.io.UnsupportedEncodingException
-import java.net.URLConnection
-import java.net.URLEncoder
 
 /**
  * get请求
@@ -82,7 +76,7 @@ class SimpleHttp private constructor() {
         @Volatile
         private var INSTANCE: SimpleHttp? = null
 
-        fun instance() = INSTANCE ?: synchronized(this) {
+        fun instance() = INSTANCE ?: synchronized(SimpleHttp::class.java) {
             INSTANCE ?: SimpleHttp().also { INSTANCE = it }
         }
 
@@ -109,9 +103,7 @@ class SimpleHttp private constructor() {
     }
 
     private fun getService(): ApiService {
-        return service ?: getRetrofit().create(ApiService::class.java).also {
-            service = it
-        }
+        return service ?: getRetrofit().create(ApiService::class.java).also { service = it }
     }
 
     private fun getConverter(): Converter {
@@ -125,17 +117,12 @@ class SimpleHttp private constructor() {
     ): T {
         return try {
             progress?.invoke(0.0)
-            getConverter().converter(
-                getService().get(
-                    request.getUrl(baseUrl),
-                    request.getHeader()
-                ),
-                type
-            )
+            val responseBody = getService().get(request.getUrl(baseUrl), request.getHeader())
+            getConverter().converter(responseBody, type)
         } catch (e: Exception) {
-            val t = type.newInstance()
-            t.errorMsg = e.message.toString()
-            t
+            type.newInstance().apply {
+                errorMsg = e.message.toString()
+            }
         } finally {
             progress?.invoke(1.0)
         }
@@ -148,18 +135,16 @@ class SimpleHttp private constructor() {
     ): T {
         return try {
             progress?.invoke(0.0)
-            getConverter().converter(
-                getService().post(
-                    request.getUrl(baseUrl),
-                    request.getHeader(),
-                    request.getParam()
-                ),
-                type
+            val responseBody = getService().post(
+                request.getUrl(baseUrl),
+                request.getHeader(),
+                request.getParam()
             )
+            getConverter().converter(responseBody, type)
         } catch (e: Exception) {
-            val t = type.newInstance()
-            t.errorMsg = e.message.toString()
-            t
+            type.newInstance().apply {
+                errorMsg = e.message.toString()
+            }
         } finally {
             progress?.invoke(1.0)
         }
@@ -170,37 +155,18 @@ class SimpleHttp private constructor() {
         type: Class<T>,
         progress: ((Double) -> Unit)? = null
     ): T {
-        val body = MultipartBody.Builder().setType(MultipartBody.FORM)
-        request.getParam().forEach { map ->
-            body.addFormDataPart(map.key, map.value)
-        }
-        request.getFile().forEach { map ->
-            map.value.apply {
-                val lastIndex = absolutePath.lastIndexOf("/")
-                val fileName = absolutePath.substring(lastIndex)
-                if (fileName.isNotEmpty()) {
-                    body.addFormDataPart(
-                        map.key,
-                        fileName,
-                        asRequestBody(guessMimeType(fileName))
-                    )
-                }
-            }
-        }
         return try {
             progress?.invoke(0.0)
-            getConverter().converter(
-                getService().form(
-                    request.getUrl(baseUrl),
-                    request.getHeader(),
-                    body.build()
-                ),
-                type
+            val responseBody = getService().form(
+                request.getUrl(baseUrl),
+                request.getHeader(),
+                request.getMultipartBody()
             )
+            getConverter().converter(responseBody, type)
         } catch (e: Exception) {
-            val t = type.newInstance()
-            t.errorMsg = e.message.toString()
-            t
+            type.newInstance().apply {
+                errorMsg = e.message.toString()
+            }
         } finally {
             progress?.invoke(1.0)
         }
@@ -213,9 +179,9 @@ class SimpleHttp private constructor() {
     ): HttpResponse {
         return try {
             progress?.invoke(0.0)
-            getService().download(request.getUrl(), request.getHeader()).use { body ->
+            getService().download(request.getUrl(), request.getHeader()).use {
                 val file = File(filePathName)
-                body.byteStream().use { inputStream ->
+                it.byteStream().use { inputStream ->
                     file.writeBytes(inputStream.readBytes())
                 }
             }
@@ -225,21 +191,6 @@ class SimpleHttp private constructor() {
         } finally {
             progress?.invoke(1.0)
         }
-    }
-
-    private fun guessMimeType(path: String): MediaType {
-        val fileNameMap = URLConnection.getFileNameMap()
-        var contentTypeFor = "application/octet-stream"
-        try {
-            fileNameMap.getContentTypeFor(URLEncoder.encode(path, "UTF-8")).also {
-                if (it.isBlank()) {
-                    contentTypeFor = it
-                }
-            }
-        } catch (e: UnsupportedEncodingException) {
-            e.printStackTrace()
-        }
-        return contentTypeFor.toMediaType()
     }
 
     interface Converter {

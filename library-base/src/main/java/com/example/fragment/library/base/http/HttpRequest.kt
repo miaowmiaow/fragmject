@@ -1,7 +1,14 @@
 package com.example.fragment.library.base.http
 
 import android.text.TextUtils
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.io.UnsupportedEncodingException
+import java.net.URLConnection
+import java.net.URLEncoder
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.HashMap
@@ -97,6 +104,39 @@ open class HttpRequest @JvmOverloads constructor(
 
     fun getFile(): MutableMap<String, File> {
         return files
+    }
+
+    fun getMultipartBody(): MultipartBody {
+        val body = MultipartBody.Builder().setType(MultipartBody.FORM)
+        getParam().forEach {
+            body.addFormDataPart(it.key, it.value)
+        }
+        getFile().forEach {
+            it.value.apply {
+                val lastIndex = absolutePath.lastIndexOf("/")
+                val fileName = absolutePath.substring(lastIndex)
+                if (fileName.isNotEmpty()) {
+                    val requestBody = asRequestBody(guessMimeType(fileName))
+                    body.addFormDataPart(it.key, fileName, requestBody)
+                }
+            }
+        }
+        return body.build()
+    }
+
+    private fun guessMimeType(path: String): MediaType {
+        val fileNameMap = URLConnection.getFileNameMap()
+        var contentTypeFor = "application/octet-stream"
+        try {
+            fileNameMap.getContentTypeFor(URLEncoder.encode(path, "UTF-8")).also {
+                if (it.isBlank()) {
+                    contentTypeFor = it
+                }
+            }
+        } catch (e: UnsupportedEncodingException) {
+            e.printStackTrace()
+        }
+        return contentTypeFor.toMediaType()
     }
 
 }

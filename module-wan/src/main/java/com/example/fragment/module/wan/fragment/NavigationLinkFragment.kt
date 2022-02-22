@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.os.bundleOf
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
@@ -29,7 +29,7 @@ class NavigationLinkFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: NavigationViewModel by activityViewModels()
+    private val viewModel: NavigationViewModel by viewModels()
     private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -90,7 +90,7 @@ class NavigationLinkFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.navigationResult.value == null) {
-            viewModel.getNavigation(true)
+            viewModel.getNavigation()
         }
     }
 

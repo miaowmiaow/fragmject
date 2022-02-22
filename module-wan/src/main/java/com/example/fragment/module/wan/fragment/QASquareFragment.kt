@@ -81,7 +81,7 @@ class QASquareFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.userArticleResult.value == null) {
-            viewModel.getUserArticle()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

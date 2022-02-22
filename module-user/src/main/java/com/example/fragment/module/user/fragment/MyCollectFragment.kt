@@ -78,7 +78,7 @@ class MyCollectFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.myCollectArticleResult.value == null) {
-            viewModel.getMyCollectArticle()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

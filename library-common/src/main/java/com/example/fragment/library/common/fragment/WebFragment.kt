@@ -16,13 +16,6 @@ import com.tencent.smtt.sdk.WebView
 
 class WebFragment : RouterFragment() {
 
-    companion object {
-        @JvmStatic
-        fun newInstance(): WebFragment {
-            return WebFragment()
-        }
-    }
-
     private var _binding: WebFragmentBinding? = null
     private val binding get() = _binding!!
 

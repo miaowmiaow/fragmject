@@ -1,14 +1,11 @@
 package com.example.fragment.module.user.dialog
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.dialog.BottomDialog
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.utils.GsonUtil
 import com.example.fragment.library.base.utils.PinyinUtils
@@ -19,7 +16,6 @@ import com.example.fragment.module.user.bean.CityPickerBean
 import com.example.fragment.module.user.databinding.CityDialogBinding
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.sortWith
 
 class CityDialog : FullDialog() {
 
@@ -50,10 +46,6 @@ class CityDialog : FullDialog() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        dialog?.window?.apply {
-            setDimAmount(0F)
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
         super.onViewCreated(view, savedInstanceState)
         binding.black.setOnClickListener { dismiss() }
         binding.secrecy.setOnClickListener {
@@ -95,7 +87,7 @@ class CityDialog : FullDialog() {
         //按照字母排序
         cities.sortWith { city, t1 -> city.pinyin.compareTo(t1.pinyin) }
         cityAdapter.setCityData(cities)
-        cityAdapter.setOnCityClickListener(object : CityAdapter.OnCityClickListener{
+        cityAdapter.setOnCityClickListener(object : CityAdapter.OnCityClickListener {
             override fun onCityClick(name: String) {
                 listener?.onCity(name)
                 dismiss()

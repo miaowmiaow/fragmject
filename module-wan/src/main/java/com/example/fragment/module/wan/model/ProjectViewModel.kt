@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.bean.ProjectTreeListBean
@@ -12,28 +13,31 @@ import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
-    val projectTreeResult = MutableLiveData<List<ProjectTreeBean>>()
-    val projectListResult = MutableLiveData<ArticleListBean>()
+    val treeResult = MutableLiveData<List<ProjectTreeBean>>()
+    val listResult = MutableLiveData<Map<String, ArticleListBean>>()
+
+    val listMap: MutableMap<String, List<ArticleBean>> = HashMap()
+    val listScrollMap: MutableMap<String, Int> = HashMap()
 
     /**
      * 获取项目分类
      */
-    fun getProjectTree(show: Boolean = false) {
+    fun getProjectTree() {
         viewModelScope.launch {
             val request = HttpRequest("project/tree/json")
-            val response = get<ProjectTreeListBean>(request) { if (show) progress(it) }
+            val response = get<ProjectTreeListBean>(request) { updateProgress(it) }
             response.data?.let {
-                projectTreeResult.postValue(it)
+                treeResult.postValue(it)
             }
         }
     }
 
     fun getProject(cid: String) {
-        getProjectList(cid, getHomePage(1))
+        getProjectList(cid, getHomePage(1, cid))
     }
 
     fun getProjectNext(cid: String) {
-        getProjectList(cid, getNextPage())
+        getProjectList(cid, getNextPage(cid))
     }
 
     /**
@@ -49,11 +53,11 @@ class ProjectViewModel : BaseViewModel() {
                 .putPath("page", page.toString())
                 .putQuery("cid", cid)
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request) { progress(it) }
+            val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码
-            response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+            response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
             //通过LiveData通知界面更新
-            projectListResult.postValue(response)
+            listResult.postValue(mapOf(cid to response))
         }
     }
 }

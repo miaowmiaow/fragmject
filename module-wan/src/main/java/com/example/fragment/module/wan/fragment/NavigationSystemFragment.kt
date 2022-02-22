@@ -48,13 +48,13 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.systemTreeResult.observe(viewLifecycleOwner) { systemAdapter.setNewData(it) }
+        viewModel.treeResult.observe(viewLifecycleOwner) { systemAdapter.setNewData(it) }
         return viewModel
     }
 
     override fun initLoad() {
-        if (viewModel.systemTreeResult.value == null) {
-            viewModel.getSystemTree(true)
+        if (viewModel.treeResult.value == null) {
+            viewModel.getSystemTree()
         }
     }
 

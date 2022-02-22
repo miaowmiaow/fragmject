@@ -105,7 +105,7 @@ class HomeFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.articleListResult.value == null) {
-            viewModel.getArticle()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

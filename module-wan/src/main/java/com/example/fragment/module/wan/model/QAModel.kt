@@ -31,7 +31,7 @@ class QAModel : BaseViewModel() {
             //构建请求体，传入请求参数
             val request = HttpRequest("wenda/list/{page}/json").putPath("page", page.toString())
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request) { progress(it) }
+            val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt()) }
             //通过LiveData通知界面更新
@@ -58,7 +58,7 @@ class QAModel : BaseViewModel() {
             val request =
                 HttpRequest("user_article/list/{page}/json").putPath("page", page.toString())
             //以get方式发起网络请求
-            val result = get<ArticleListBean>(request) { progress(it) }
+            val result = get<ArticleListBean>(request)
             //根据接口返回更新总页码
             result.data?.pageCount?.let { updatePageCont(it.toInt()) }
             //通过LiveData通知界面更新

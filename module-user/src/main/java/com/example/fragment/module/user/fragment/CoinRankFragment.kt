@@ -124,7 +124,7 @@ class CoinRankFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.coinRankResult.value == null) {
-            viewModel.getCoinRank()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

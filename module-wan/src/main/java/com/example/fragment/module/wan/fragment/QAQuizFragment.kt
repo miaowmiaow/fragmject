@@ -81,7 +81,7 @@ class QAQuizFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.wendaResult.value == null) {
-            viewModel.getWenDa()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

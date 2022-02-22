@@ -100,7 +100,7 @@ class MyCoinFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.myCoinResult.value == null) {
-            viewModel.getMyCoin()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

@@ -15,7 +15,7 @@
   -->
 
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:duration="375"
+    android:duration="250"
     android:fillAfter="false"
     android:interpolator="@android:anim/decelerate_interpolator"
     android:shareInterpolator="true">

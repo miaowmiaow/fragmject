@@ -46,13 +46,13 @@ class ProjectFragment : RouterFragment() {
     override fun initView() {}
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.projectTreeResult.observe(viewLifecycleOwner) { updateView(it) }
+        viewModel.treeResult.observe(viewLifecycleOwner) { updateView(it) }
         return viewModel
     }
 
     override fun initLoad() {
-        if (viewModel.projectTreeResult.value == null) {
-            viewModel.getProjectTree(true)
+        if (viewModel.treeResult.value == null) {
+            viewModel.getProjectTree()
         }
     }
 

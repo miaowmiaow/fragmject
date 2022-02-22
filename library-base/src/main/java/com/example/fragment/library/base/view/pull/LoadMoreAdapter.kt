@@ -67,6 +67,7 @@ class LoadMoreAdapter(
         if (itemCount > 1 && position >= itemCount - PRELOADING_NUMBER) {
             if (parentView.canLoadMore()) {
                 parentView.loadMoreListener?.onLoadMore(parentView)
+                parentView.finishLoadMore()
             }
         }
     }

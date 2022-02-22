@@ -75,7 +75,7 @@ class MyShareFragment : RouterFragment() {
 
     override fun initLoad() {
         if (viewModel.myShareArticleResult.value == null) {
-            viewModel.getMyShareArticle()
+            binding.pullRefresh.setRefreshing()
         }
     }
 

@@ -4,43 +4,42 @@ import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
+import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
-import com.example.fragment.library.base.activity.BaseActivity
+import coil.clear
+import coil.load
+import com.example.fragment.library.base.R
 import com.example.fragment.library.base.model.BaseViewModel
 
 abstract class BaseFragment : Fragment() {
-
-    private var isVisibleToUser = false
-
-    private val start = { if (isVisibleToUser) (requireActivity() as BaseActivity).showProgress() }
-
-    private val end = { (requireActivity() as BaseActivity).dismissProgress() }
 
     /**
      * 在转场动画结束后加载数据，
      * 用于解决过度动画卡顿问题，
      * 建议大于等于转场动画时间。
      */
-    private var loadDelayMillis = 375L
+    private var loadDelayMillis = 250L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.isClickable = true
         view.isFocusable = true
+        val loadGif = ImageView(view.context)
+        val layout = view as RelativeLayout
+        layout.addView(loadGif, RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        ).also {
+            it.addRule(RelativeLayout.CENTER_IN_PARENT)
+        })
         initView()
-        initViewModel()?.progressState(viewLifecycleOwner, start, end)
+        initViewModel()?.progress(viewLifecycleOwner, {
+            loadGif.load(R.drawable.icons8_monkey)
+        }, {
+            loadGif.clear()
+        })
         view.postDelayed({ initLoad() }, loadDelayMillis)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        isVisibleToUser = true
-    }
-
-    override fun onPause() {
-        super.onPause()
-        isVisibleToUser = false
-        (requireActivity() as BaseActivity).dismissProgress()
     }
 
     abstract fun initView()

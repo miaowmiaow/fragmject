@@ -22,7 +22,7 @@ class UserShareModel : BaseViewModel() {
                 .putParam("title", title)
                 .putParam("link", link)
             //以get方式发起网络请求
-            val response = post<RegisterBean>(request) { progress(it) }
+            val response = post<RegisterBean>(request) { updateProgress(it) }
             //通过LiveData通知界面更新
             shareArticleResult.postValue(response)
         }

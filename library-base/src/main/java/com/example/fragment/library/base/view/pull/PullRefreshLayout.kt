@@ -39,6 +39,7 @@ class PullRefreshLayout @JvmOverloads constructor(
     private var targetViewOffset = 0
 
     private var refreshing = false
+    private var loading = false
     private var loadMore = false
     private var loadMoreAdapter: LoadMoreAdapter? = null
     var refreshListener: OnRefreshListener? = null
@@ -77,11 +78,16 @@ class PullRefreshLayout @JvmOverloads constructor(
         refreshListener = listener
     }
 
+    fun isLoading(): Boolean {
+        return loading
+    }
+
     fun canLoadMore(): Boolean {
         return loadMore
     }
 
     fun setLoadMore(b: Boolean) {
+        loading = b
         if (loadMore != b) {
             loadMore = b
             loadMoreAdapter?.apply {

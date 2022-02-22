@@ -14,6 +14,7 @@ open class FullDialog : TransparentDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         dialog?.window?.apply {
+            decorView.setPadding(0, 0, 0, 0)
             setLayout(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT

@@ -90,6 +90,10 @@ class PullRefreshLayout @JvmOverloads constructor(
         }
     }
 
+    fun finishLoadMore() {
+        loadMore = false
+    }
+
     fun setOnLoadMoreListener(
         recyclerView: RecyclerView,
         listener: OnLoadMoreListener

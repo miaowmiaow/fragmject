@@ -9,17 +9,11 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.module.user.model.UserViewModel
-import com.example.fragment.module.wan.model.NavigationViewModel
-import com.example.fragment.module.wan.model.ProjectViewModel
-import com.example.fragment.module.wan.model.SystemViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainActivityBinding
 
 class MainActivity : RouterActivity() {
 
-    private val navigationViewModel: NavigationViewModel by viewModels()
-    private val projectViewModel: ProjectViewModel by viewModels()
-    private val systemViewModel: SystemViewModel by viewModels()
     private val userViewModel: UserViewModel by viewModels()
     private var userBean = UserBean()
 
@@ -69,16 +63,6 @@ class MainActivity : RouterActivity() {
     }
 
     private fun initLoad() {
-        //接口预加载
-        if (navigationViewModel.navigationResult.value == null) {
-            navigationViewModel.getNavigation()
-        }
-        if (projectViewModel.projectTreeResult.value == null) {
-            projectViewModel.getProjectTree()
-        }
-        if (systemViewModel.systemTreeResult.value == null) {
-            systemViewModel.getSystemTree()
-        }
         if (userViewModel.userResult.value == null) {
             userViewModel.getUser()
         }

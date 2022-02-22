@@ -16,13 +16,13 @@ class NavigationViewModel : BaseViewModel() {
     /**
      * 获取导航数据
      */
-    fun getNavigation(show: Boolean = false) {
+    fun getNavigation() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
             val request = HttpRequest("navi/json")
             //以get方式发起网络请求
-            val response = get<NavigationListBean>(request) { if (show) progress(it) }
+            val response = get<NavigationListBean>(request) { updateProgress(it) }
             //通过LiveData通知界面更新
             response.data?.let {
                 navigationResult.postValue(it)

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.bean.SystemTreeBean
 import com.example.fragment.library.common.bean.SystemTreeListBean
@@ -12,28 +13,31 @@ import kotlinx.coroutines.launch
 
 class SystemViewModel : BaseViewModel() {
 
-    val systemTreeResult = MutableLiveData<List<SystemTreeBean>>()
-    val systemArticleResult = MutableLiveData<ArticleListBean>()
+    val treeResult = MutableLiveData<List<SystemTreeBean>>()
+    val listResult = MutableLiveData<Map<String, ArticleListBean>>()
+
+    val listMap: MutableMap<String, List<ArticleBean>> = HashMap()
+    val listScrollMap: MutableMap<String, Int> = HashMap()
 
     /**
      * 获取项目分类
      */
-    fun getSystemTree(show: Boolean = false) {
+    fun getSystemTree() {
         viewModelScope.launch {
             val request = HttpRequest("tree/json")
-            val response = get<SystemTreeListBean>(request) { if (show) progress(it) }
+            val response = get<SystemTreeListBean>(request) { updateProgress(it) }
             response.data?.let {
-                systemTreeResult.postValue(it)
+                treeResult.postValue(it)
             }
         }
     }
 
     fun getSystemArticle(cid: String) {
-        getSystemArticleList(cid, getHomePage())
+        getSystemArticleList(cid, getHomePage(key = cid))
     }
 
     fun getSystemArticleNext(cid: String) {
-        getSystemArticleList(cid, getNextPage())
+        getSystemArticleList(cid, getNextPage(cid))
     }
 
     /**
@@ -49,11 +53,11 @@ class SystemViewModel : BaseViewModel() {
                 .putPath("page", page.toString())
                 .putQuery("cid", cid)
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request) { progress(it) }
+            val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码
-            response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+            response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
             //通过LiveData通知界面更新
-            systemArticleResult.postValue(response)
+            listResult.postValue(mapOf(cid to response))
         }
     }
 

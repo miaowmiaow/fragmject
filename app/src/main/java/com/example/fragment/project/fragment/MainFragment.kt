@@ -104,7 +104,7 @@ class MainFragment : RouterFragment() {
             }
         }
         binding.viewpager2.isUserInputEnabled = false
-        binding.viewpager2.offscreenPageLimit = 2
+        binding.viewpager2.offscreenPageLimit = fragments.size
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 setColorFilter(tab.customView, R.color.text_fff)

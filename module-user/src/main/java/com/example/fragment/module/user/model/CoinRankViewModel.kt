@@ -30,7 +30,7 @@ class CoinRankViewModel : BaseViewModel() {
             //构建请求体，传入请求参数
             val request = HttpRequest("coin/rank/{page}/json").putPath("page", page.toString())
             //以get方式发起网络请求
-            val response = get<CoinRankBean>(request) { progress(it) }
+            val response = get<CoinRankBean>(request)
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt()) }
             //通过LiveData通知界面更新

@@ -53,7 +53,7 @@ class SystemFragment : RouterFragment() {
             cid = chapterId.toString()
         }
         requireArguments().takeIf { it.containsKey(Keys.CID) }?.let {
-            cid = it.getString(Keys.CID).toString()
+            cid = it.getString(Keys.CID, "0")
         }
         binding.black.setOnClickListener {
             activity.onBackPressed()
@@ -61,7 +61,7 @@ class SystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.systemTreeResult.observe(viewLifecycleOwner) {
+        viewModel.treeResult.observe(viewLifecycleOwner) {
             it.forEach { data ->
                 data.children?.forEachIndexed { index, children ->
                     if (children.id == cid) {
@@ -76,8 +76,8 @@ class SystemFragment : RouterFragment() {
     }
 
     override fun initLoad() {
-        if (viewModel.systemTreeResult.value == null) {
-            viewModel.getSystemTree(true)
+        if (viewModel.treeResult.value == null) {
+            viewModel.getSystemTree()
         }
     }
 

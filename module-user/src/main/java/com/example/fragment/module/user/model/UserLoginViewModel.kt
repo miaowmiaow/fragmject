@@ -22,7 +22,7 @@ class UserLoginViewModel : BaseViewModel() {
                 .putParam("username", username)
                 .putParam("password", password)
             //以post方式发起网络请求
-            val response = post<LoginBean>(request) { progress(it) }
+            val response = post<LoginBean>(request) { updateProgress(it) }
             //通过LiveData通知界面更新
             loginResult.postValue(response)
         }
@@ -34,7 +34,7 @@ class UserLoginViewModel : BaseViewModel() {
                 .putParam("username", username)
                 .putParam("password", password)
                 .putParam("repassword", repassword)
-            val response = post<RegisterBean>(request) { progress(it) }
+            val response = post<RegisterBean>(request) { updateProgress(it) }
             registerResult.postValue(response)
         }
     }

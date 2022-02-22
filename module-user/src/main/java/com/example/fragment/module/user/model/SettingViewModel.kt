@@ -38,7 +38,7 @@ class SettingViewModel : BaseViewModel() {
             //构建请求体，传入请求参数
             val request = HttpRequest("user/logout/json")
             //以get方式发起网络请求
-            val response = get<HttpResponse>(request) { progress(it) }
+            val response = get<HttpResponse>(request) { updateProgress(it) }
             //通过LiveData通知界面更新
             logoutResult.postValue(response)
         }
@@ -51,7 +51,7 @@ class SettingViewModel : BaseViewModel() {
             //构建请求体，传入请求参数
             val request = HttpRequest(url)
             //以get方式发起网络请求
-            val response = get<UpdateBean>(request) { progress(it) }
+            val response = get<UpdateBean>(request) { updateProgress(it) }
             //通过LiveData通知界面更新
             updateResult.postValue(response)
         }

@@ -19,16 +19,12 @@ class MyCoinViewModel : BaseViewModel() {
     fun getMyCoin() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //设置请求进度，0.0请求开始
-            progress(0.0)
             //通过async获取需要展示的数据
             val userCoin = async { userCoin() }
             val myCoin = async { getMyCoin(getHomePage(1)) }
             //通过LiveData通知界面更新
             userCoinResult.postValue(userCoin.await())
             myCoinResult.postValue(myCoin.await())
-            //设置请求进度，1.0请求结束
-            progress(1.0)
         }
     }
 

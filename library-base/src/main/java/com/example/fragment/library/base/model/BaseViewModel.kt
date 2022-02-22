@@ -6,60 +6,56 @@ import androidx.lifecycle.ViewModel
 
 abstract class BaseViewModel : ViewModel() {
 
-    private val progress = MutableLiveData<Double>()
-
-    private var homePage: MutableMap<String, Int> = HashMap()
-    private var curPage: MutableMap<String, Int> = HashMap()
-    private var pageCont: MutableMap<String, Int> = HashMap()
-
     companion object{
+        const val DEFAULT_KEY = "null"
         const val DEFAULT_PAGE = 0
         const val PAGE_CONT = 2
     }
 
     /**
-     * 获取首页
-     * 默认从0开始
+     *  通过 Map 来存储数据，方便 activityViewModels 使用
      */
-    fun getHomePage(page: Int = DEFAULT_PAGE, key: String = "null"): Int {
+    private var homePage: MutableMap<String, Int> = HashMap()
+    private var curPage: MutableMap<String, Int> = HashMap()
+    private var pageCont: MutableMap<String, Int> = HashMap()
+
+    private val progress = MutableLiveData<Double>()
+    /**
+     * 获取首页
+     */
+    fun getHomePage(page: Int = DEFAULT_PAGE, key: String = DEFAULT_KEY): Int {
         this.homePage[key] = page
         this.curPage[key] = page
         return page
     }
 
-    /**
-     * 获取下一页
-     */
-    fun getNextPage(key: String = "null"): Int {
-        val curPage = this.curPage[key] ?: DEFAULT_PAGE
-        val nextPage = curPage + 1
-        this.curPage[key] = nextPage
-        return nextPage
-    }
-
-    /**
-     * 更新总页码
-     */
-    fun updatePageCont(pageCont: Int = PAGE_CONT, key: String = "null") {
-        this.pageCont[key] = pageCont
-    }
-
-    /**
-     * 是否首页
-     */
-    fun isHomePage(key: String = "null"): Boolean {
+    fun isHomePage(key: String = DEFAULT_KEY): Boolean {
         val homePage = this.homePage[key] ?: DEFAULT_PAGE
         val curPage = this.curPage[key] ?: DEFAULT_PAGE
         return homePage == curPage
     }
 
     /**
-     * 还有下页
+     * 获取下一页
      */
-    fun hasNextPage(key: String = "null"): Boolean {
+    fun getNextPage(key: String = DEFAULT_KEY): Int {
+        val curPage = this.curPage[key] ?: DEFAULT_PAGE
+        val nextPage = curPage + 1
+        this.curPage[key] = nextPage
+        return nextPage
+    }
+
+    fun hasNextPage(key: String = DEFAULT_KEY): Boolean {
         val curPage = this.curPage[key] ?: DEFAULT_PAGE
         val pageCont = this.pageCont[key] ?: PAGE_CONT
         return curPage < pageCont
+    }
+
+    /**
+     * 更新总页码
+     */
+    fun updatePageCont(pageCont: Int = PAGE_CONT, key: String = DEFAULT_KEY) {
+        this.pageCont[key] = pageCont
     }
 
     fun progress(owner: LifecycleOwner, start: () -> Unit, end: () -> Unit) {
@@ -72,8 +68,7 @@ abstract class BaseViewModel : ViewModel() {
     }
 
     /**
-     * @param 0.0 请求开始
-     * @param 1.0 请求结束
+     * @param num: 0.0 请求开始, 1.0 请求结束
      */
     fun updateProgress(num: Double) {
         if (homePage == curPage) progress.postValue(num)

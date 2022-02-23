@@ -284,6 +284,12 @@ clip.saveBitmap()
   如果喜欢的话希望给个 Star 或 Fork ^_^  
   谢谢~~  
   
+## About me
+- QQ : 237934622
+- WeChat : zst_1116
+- Email : <zst_1116@icloud.com>
+- Juejin：[miaowmiaow](https://juejin.cn/user/3342971112791422)
+  
 ## LICENSE
 ```
 Copyright 2021 miaowmiaow

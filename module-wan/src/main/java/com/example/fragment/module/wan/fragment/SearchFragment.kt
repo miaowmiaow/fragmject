@@ -154,9 +154,7 @@ class SearchFragment : RouterFragment() {
         if (viewModel.hotKeyResult.value == null) {
             viewModel.getHotKey()
         }
-        if (viewModel.searchHistoryResult.value == null) {
-            viewModel.getSearchHistory()
-        }
+        viewModel.getSearchHistory()
     }
 
     private fun search(key: String) {

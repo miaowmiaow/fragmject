@@ -30,7 +30,7 @@ class HomeFragment : RouterFragment() {
     private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private var bannerHelper: BannerHelper? = null
+    private lateinit var bannerHelper: BannerHelper
     private val bannerAdapter = BannerAdapter()
     private val articleAdapter = ArticleAdapter()
 
@@ -45,12 +45,12 @@ class HomeFragment : RouterFragment() {
 
     override fun onResume() {
         super.onResume()
-        bannerHelper?.startTimerTask()
+        bannerHelper.startTimerTask()
     }
 
     override fun onPause() {
         super.onPause()
-        bannerHelper?.stopTimerTask()
+        bannerHelper.stopTimerTask()
     }
 
     override fun onDestroyView() {
@@ -61,7 +61,6 @@ class HomeFragment : RouterFragment() {
     override fun initView() {
         binding.banner.adapter = bannerAdapter
         bannerHelper = BannerHelper(binding.banner)
-        bannerHelper?.startTimerTask()
         //文章列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
@@ -87,6 +86,7 @@ class HomeFragment : RouterFragment() {
         viewModel.bannerResult.observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 bannerAdapter.setNewData(result.data)
+                bannerHelper.startTimerTask()
             }
         }
         viewModel.articleListResult.observe(viewLifecycleOwner) {

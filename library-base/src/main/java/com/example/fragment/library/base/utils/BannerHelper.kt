@@ -11,7 +11,7 @@ class BannerHelper(
     private val orientation: Int = RecyclerView.HORIZONTAL
 ) {
 
-    private var repeatLayoutManager = RepeatLayoutManager(recyclerView.context)
+    private var layoutManager = RepeatLayoutManager(recyclerView.context)
 
     private var smoothScrollDuration = 500
     private var bannerDelay = 5000L
@@ -21,15 +21,15 @@ class BannerHelper(
     private var isSettling = false
     private val timerTask = Runnable {
         recyclerView.post {
-            if (repeatLayoutManager.itemCount > 1) {
-                val position = repeatLayoutManager.findFirstVisibleItemPosition()
+            if (layoutManager.itemCount > 1) {
+                val position = layoutManager.findFirstVisibleItemPosition()
                 if (orientation == RecyclerView.VERTICAL) {
-                    repeatLayoutManager.getChildAt(position)?.let { view ->
-                        recyclerView.smoothScrollBy(0, view.bottom, null, smoothScrollDuration)
+                    layoutManager.findViewByPosition(position)?.let {
+                        recyclerView.smoothScrollBy(0, it.bottom, null, smoothScrollDuration)
                     }
                 } else if (orientation == RecyclerView.HORIZONTAL) {
-                    repeatLayoutManager.getChildAt(position)?.let { view ->
-                        recyclerView.smoothScrollBy(view.right, 0, null, smoothScrollDuration)
+                    layoutManager.findViewByPosition(position)?.let {
+                        recyclerView.smoothScrollBy(it.right, 0, null, smoothScrollDuration)
                     }
                 }
                 startTimerTask()
@@ -38,8 +38,8 @@ class BannerHelper(
     }
 
     init {
-        repeatLayoutManager.orientation = orientation
-        recyclerView.layoutManager = repeatLayoutManager
+        layoutManager.orientation = orientation
+        recyclerView.layoutManager = layoutManager
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -72,9 +72,9 @@ class BannerHelper(
     }
 
     private fun offsetItem() {
-        val position = repeatLayoutManager.childCount - 1
+        val position = layoutManager.childCount - 1
         if (orientation == RecyclerView.VERTICAL) {
-            repeatLayoutManager.getChildAt(position)?.let { view ->
+            layoutManager.getChildAt(position)?.let { view ->
                 val height = view.height
                 val offset = offsetY % height
                 if (abs(offset) >= height / 2) {
@@ -88,7 +88,7 @@ class BannerHelper(
                 }
             }
         } else if (orientation == RecyclerView.HORIZONTAL) {
-            repeatLayoutManager.getChildAt(position)?.let { view ->
+            layoutManager.getChildAt(position)?.let { view ->
                 val width = view.width
                 val offset = offsetX % width
                 if (abs(offset) >= width / 2) {
@@ -105,7 +105,7 @@ class BannerHelper(
     }
 
     fun findItemPosition(): Int {
-        return repeatLayoutManager.findLastVisibleItemPosition()
+        return layoutManager.findLastVisibleItemPosition()
     }
 
     fun startTimerTask() {
@@ -117,7 +117,6 @@ class BannerHelper(
     }
 
 }
-
 
 /**
  * 修改自jiarWang的RepeatLayoutManager

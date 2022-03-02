@@ -35,18 +35,24 @@ class NavigationLinkFragment : RouterFragment() {
 
     private val linkMenuAdapter = LinkMenuAdapter()
     private val linkMenuSelectedListener = object : BaseAdapter.OnItemSelectedListener {
-        override fun onItemSelected(holder: BaseAdapter.ViewBindHolder, position: Int) {
-            linkMenuAdapter.getItem(position).let { item ->
-                item.isSelected = true
-                linkMenuAdapter.notifyItemRangeChanged(position, 1)
-                fillFlexboxLayout(item.articles)
+        override fun onItemSelected(itemView: View, position: Int) {
+            val item = linkMenuAdapter.getItem(position)
+            item.isSelected = true
+            binding.menu.findViewHolderForAdapterPosition(position)?.apply {
+                if (this is BaseAdapter.ViewBindHolder) {
+                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.layer_while_item_bottom)
+                }
             }
+            fillFlexboxLayout(item.articles)
         }
 
-        override fun onItemUnselected(holder: BaseAdapter.ViewBindHolder, position: Int) {
-            linkMenuAdapter.getItem(position).let { item ->
-                item.isSelected = false
-                linkMenuAdapter.notifyItemRangeChanged(position, 1)
+        override fun onItemUnselected(itemView: View, position: Int) {
+            val item = linkMenuAdapter.getItem(position)
+            item.isSelected = false
+            binding.menu.findViewHolderForAdapterPosition(position)?.apply {
+                if (this is BaseAdapter.ViewBindHolder) {
+                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.layer_gray_item_bottom)
+                }
             }
         }
     }

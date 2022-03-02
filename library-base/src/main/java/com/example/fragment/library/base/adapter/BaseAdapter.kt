@@ -46,6 +46,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
 
     fun selectItem(position: Int) {
         currentPosition = position
+        notifyItemRangeChanged(position, 1)
     }
 
     fun setNewData(newData: List<T>? = null) {
@@ -109,13 +110,9 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
         holder.itemView.setOnClickListener {
             onItemClickListener?.onItemClick(holder, position)
-            if (position != INVALID_POSITION) {
-                onItemSelectedListener?.onItemSelected(holder, position)
-            }
-            if (currentPosition != INVALID_POSITION && currentPosition != position) {
-                onItemSelectedListener?.onItemUnselected(holder, currentPosition)
-            }
-            if (currentPosition != position) {
+            if (position != INVALID_POSITION && currentPosition != position) {
+                onItemSelectedListener?.onItemSelected(holder.itemView, position)
+                onItemSelectedListener?.onItemUnselected(holder.itemView, currentPosition)
                 currentPosition = position
             }
         }
@@ -152,7 +149,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     }
 
     interface OnItemSelectedListener {
-        fun onItemSelected(holder: ViewBindHolder, position: Int)
-        fun onItemUnselected(holder: ViewBindHolder, position: Int)
+        fun onItemSelected(itemView: View, position: Int)
+        fun onItemUnselected(itemView: View, position: Int)
     }
 }

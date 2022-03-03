@@ -3,7 +3,6 @@ package com.example.fragment.library.base.utils
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.math.abs
 
 class BannerHelper(
     private val recyclerView: RecyclerView,
@@ -12,28 +11,12 @@ class BannerHelper(
 ) {
 
     private var layoutManager = RepeatLayoutManager(recyclerView.context)
-
-    private var smoothScrollDuration = 500
+    private var isDragging = false
     private var bannerDelay = 5000L
-    private var offsetX = 0
-    private var offsetY = 0
-    private var isUp = false
-    private var isSettling = false
-    private val timerTask = Runnable {
+    private val bannerTask = Runnable {
         recyclerView.post {
-            if (layoutManager.itemCount > 1) {
-                val position = layoutManager.findFirstVisibleItemPosition()
-                if (orientation == RecyclerView.VERTICAL) {
-                    layoutManager.findViewByPosition(position)?.let {
-                        recyclerView.smoothScrollBy(0, it.bottom, null, smoothScrollDuration)
-                    }
-                } else if (orientation == RecyclerView.HORIZONTAL) {
-                    layoutManager.findViewByPosition(position)?.let {
-                        recyclerView.smoothScrollBy(it.right, 0, null, smoothScrollDuration)
-                    }
-                }
-                startTimerTask()
-            }
+            offsetItem()
+            startTimerTask()
         }
     }
 
@@ -44,61 +27,44 @@ class BannerHelper(
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    isSettling = false
-                    if (isUp) {
-                        isUp = false
+                    if (isDragging) {
+                        isDragging = false
                         offsetItem()
                         startTimerTask()
                     }
                 } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                    isUp = true
-                    if (!isSettling) {
-                        offsetX = 0
-                        offsetY = 0
-                    }
+                    isDragging = true
                     stopTimerTask()
                 } else if (newState == RecyclerView.SCROLL_STATE_SETTLING) {
-                    isSettling = true
                     stopTimerTask()
                 }
-            }
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                offsetX += dx
-                offsetY += dy
             }
         })
     }
 
     private fun offsetItem() {
-        val position = layoutManager.childCount - 1
-        if (orientation == RecyclerView.VERTICAL) {
-            layoutManager.getChildAt(position)?.let { view ->
-                val height = view.height
-                val offset = offsetY % height
-                if (abs(offset) >= height / 2) {
-                    if (offset >= 0) {
-                        recyclerView.smoothScrollBy(0, height - offset)
+        if (layoutManager.itemCount > 1) {
+            val position = layoutManager.findFirstVisibleItemPosition()
+            if (orientation == RecyclerView.VERTICAL) {
+                layoutManager.findViewByPosition(position)?.let {
+                    val height = it.height
+                    val bottom = it.bottom
+                    if (bottom > height / 2 && bottom < height) {
+                        recyclerView.smoothScrollBy(0, bottom - height)
                     } else {
-                        recyclerView.smoothScrollBy(0, abs(offset) - height)
+                        recyclerView.smoothScrollBy(0, bottom)
                     }
-                } else {
-                    recyclerView.smoothScrollBy(0, -offset)
+                    recyclerView.smoothScrollBy(0, it.bottom)
                 }
-            }
-        } else if (orientation == RecyclerView.HORIZONTAL) {
-            layoutManager.getChildAt(position)?.let { view ->
-                val width = view.width
-                val offset = offsetX % width
-                if (abs(offset) >= width / 2) {
-                    if (offset >= 0) {
-                        recyclerView.smoothScrollBy(width - offset, 0)
+            } else if (orientation == RecyclerView.HORIZONTAL) {
+                layoutManager.findViewByPosition(position)?.let {
+                    val width = it.width
+                    val right = it.right
+                    if (right > width / 2 && right < width) {
+                        recyclerView.smoothScrollBy(right - width, 0)
                     } else {
-                        recyclerView.smoothScrollBy(abs(offset) - width, 0)
+                        recyclerView.smoothScrollBy(right, 0)
                     }
-                } else {
-                    recyclerView.smoothScrollBy(-offset, 0)
                 }
             }
         }
@@ -109,11 +75,12 @@ class BannerHelper(
     }
 
     fun startTimerTask() {
-        recyclerView.postDelayed(timerTask, bannerDelay)
+        stopTimerTask()
+        recyclerView.postDelayed(bannerTask, bannerDelay)
     }
 
     fun stopTimerTask() {
-        recyclerView.removeCallbacks(timerTask)
+        recyclerView.removeCallbacks(bannerTask)
     }
 
 }

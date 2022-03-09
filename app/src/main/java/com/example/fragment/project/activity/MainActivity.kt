@@ -71,7 +71,7 @@ class MainActivity : RouterActivity() {
             Router.USER_AVATAR,
             Router.USER_SHARE
         )
-        return loginRouter.contains(name) && userViewModel.userBean.id.isBlank()
+        return loginRouter.contains(name) && userViewModel.getUserId().isBlank()
     }
 
 }

@@ -30,9 +30,9 @@ class HomeFragment : RouterFragment() {
     private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
 
+    private val articleAdapter = ArticleAdapter()
     private lateinit var bannerHelper: BannerHelper
     private val bannerAdapter = BannerAdapter()
-    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,

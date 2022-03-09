@@ -26,6 +26,7 @@ class BannerHelper(
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     if (isDragging) {
                         isDragging = false
+                        offsetItem()
                         start()
                     }
                 } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
@@ -46,11 +47,11 @@ class BannerHelper(
             var dx = if (itemView.width < lmWidth / 2) {
                 itemView.right
             } else {
-                val centerOffset = (lmWidth - itemView.width) / 2
+                val offset = (lmWidth - itemView.width) / 2
                 if (itemView.right < lmWidth / 2) {
-                    itemView.right - centerOffset
+                    itemView.right - offset
                 } else {
-                    centerOffset - (lmWidth - itemView.right)
+                    offset - (lmWidth - itemView.right)
                 }
             }
             if (dx == 0) {
@@ -62,11 +63,11 @@ class BannerHelper(
             var dy = if (itemView.height < lmHeight / 2) {
                 itemView.bottom
             } else {
-                val centerOffset = (lmHeight - itemView.bottom) / 2
+                val offset = (lmHeight - itemView.height) / 2
                 if (itemView.bottom < lmHeight / 2) {
-                    itemView.bottom - centerOffset
+                    itemView.bottom - offset
                 } else {
-                    centerOffset - (lmHeight - itemView.bottom)
+                    offset - (lmHeight - itemView.bottom)
                 }
             }
             if (dy == 0) {
@@ -110,9 +111,9 @@ open class RepeatLayoutManager(val context: Context) : LinearLayoutManager(conte
                 scrollHorizontallyBy(dx, recycler, state)
             }
         } else {
-            fillHorizontal(itemView.height * itemCount, recycler)
+            fillVertical(itemView.height * itemCount, recycler)
             if (itemView.height > height / 2) {
-                val offset = (height - itemView.bottom) / 2
+                val offset = (height - itemView.height) / 2
                 val dy = itemView.bottom - offset
                 scrollVerticallyBy(dy, recycler, state)
             }

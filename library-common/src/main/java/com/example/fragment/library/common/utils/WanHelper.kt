@@ -32,15 +32,13 @@ object WanHelper {
      */
     fun getSearchHistory(result: (List<String>) -> Unit) {
         KVDatabase.get(SEARCH_HISTORY) {
-            try {
+            val list: List<String> = try {
                 Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
             } catch (e: Exception) {
                 e.printStackTrace()
                 ArrayList()
             }
-            result.invoke(
-
-            )
+            result.invoke(list)
         }
     }
 

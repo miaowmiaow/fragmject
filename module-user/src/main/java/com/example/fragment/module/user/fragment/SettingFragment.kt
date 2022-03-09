@@ -156,8 +156,8 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        userViewModel.userResult.observe(viewLifecycleOwner) { result ->
-            binding.logout.visibility = if (result.id.isNotBlank()) View.VISIBLE else View.GONE
+        userViewModel.userResult.observe(viewLifecycleOwner) {
+            binding.logout.visibility = if (it.id.isNotBlank()) View.VISIBLE else View.GONE
         }
         settingViewModel.screenRecordResult.observe(viewLifecycleOwner) { result ->
             when (result) {

@@ -1,22 +1,27 @@
 package com.example.fragment.module.user.model
 
+import androidx.lifecycle.MutableLiveData
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.utils.WanHelper
 
 class UserViewModel : BaseViewModel() {
 
-    var userBean = UserBean()
+    val userResult = MutableLiveData<UserBean>()
+
+    fun getUserId(): String{
+        return userResult.value?.id ?: ""
+    }
 
     fun getUser() {
         WanHelper.getUser {
-            userBean = it
+            userResult.postValue(it)
         }
     }
 
     fun updateUser(userBean: UserBean) {
         WanHelper.setUser(userBean)
-        this.userBean = userBean
+        userResult.postValue(userBean)
     }
 
 }

@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import coil.load
+import coil.transform.CircleCropTransformation
+import coil.transform.RoundedCornersTransformation
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -42,7 +44,11 @@ class UserFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.logo.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
+        binding.avatar.load(R.drawable.avatar_1_raster) {
+            crossfade(true)
+            transformations(CircleCropTransformation())
+        }
+        binding.avatar.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
         binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
         binding.myCoin.setOnClickListener { activity.navigation(Router.MY_COIN) }
         binding.myCollection.setOnClickListener { activity.navigation(Router.MY_COLLECT) }
@@ -54,15 +60,21 @@ class UserFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
             if (userBean.id.isNotBlank()) {
                 if (userBean.avatar.isNotBlank()) {
-                    binding.logo.load(File(userBean.avatar))
+                    binding.avatar.load(File(userBean.avatar)) {
+                        crossfade(true)
+                        transformations(RoundedCornersTransformation(15f))
+                    }
                 }
                 binding.username.text = "欢迎回来！${userBean.username}"
-                binding.logo.setOnClickListener { activity.navigation(Router.USER_INFO) }
+                binding.avatar.setOnClickListener { activity.navigation(Router.USER_INFO) }
                 binding.username.setOnClickListener { activity.navigation(Router.USER_INFO) }
             } else {
-                binding.logo.load(R.drawable.avatar_1_raster)
+                binding.avatar.load(R.drawable.avatar_1_raster) {
+                    crossfade(true)
+                    transformations(CircleCropTransformation())
+                }
                 binding.username.text = "去登录"
-                binding.logo.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
+                binding.avatar.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
                 binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
             }
         }

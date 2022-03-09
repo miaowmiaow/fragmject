@@ -32,13 +32,14 @@ object WanHelper {
      */
     fun getSearchHistory(result: (List<String>) -> Unit) {
         KVDatabase.get(SEARCH_HISTORY) {
+            try {
+                Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ArrayList()
+            }
             result.invoke(
-                try {
-                    Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    ArrayList()
-                }
+
             )
         }
     }
@@ -83,8 +84,8 @@ object WanHelper {
         KVDatabase.set(SCREEN_RECORD, status)
     }
 
-    fun getScreenRecord(status: (String) -> Unit) {
-        KVDatabase.get(SCREEN_RECORD) { status.invoke(it) }
+    fun getScreenRecord(result: (String) -> Unit) {
+        KVDatabase.get(SCREEN_RECORD) { result.invoke(it) }
     }
 
     /**
@@ -97,16 +98,15 @@ object WanHelper {
     /**
      * 获取用户信息
      */
-    fun getUser(userBean: (UserBean) -> Unit) {
+    fun getUser(result: (UserBean) -> Unit) {
         KVDatabase.get(USER) {
-            userBean.invoke(
-                try {
-                    Gson().fromJson(it, UserBean::class.java) ?: UserBean()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    UserBean()
-                }
-            )
+            val userBean = try {
+                Gson().fromJson(it, UserBean::class.java) ?: UserBean()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                UserBean()
+            }
+            result.invoke(userBean)
         }
     }
 

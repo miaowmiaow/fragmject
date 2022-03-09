@@ -279,6 +279,9 @@ clip.saveBitmap()
 - [square/retrofit](https://github.com/square/retrofit)
 - [tencent/x5](https://x5.tencent.com/)
 
+## Gitee同步地址
+- [FragmentProject](https://gitee.com/zhao.git/FragmentProject.git)
+
 ## Thanks
   感谢所有优秀的开源项目 ^_^   
   如果喜欢的话希望给个 Star 或 Fork ^_^  

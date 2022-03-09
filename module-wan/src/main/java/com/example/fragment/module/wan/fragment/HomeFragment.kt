@@ -43,18 +43,9 @@ class HomeFragment : RouterFragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        bannerHelper.startTimerTask()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        bannerHelper.stopTimerTask()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
+        bannerHelper.stop()
         _binding = null
     }
 
@@ -85,8 +76,8 @@ class HomeFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.bannerResult.observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
-                bannerAdapter.setNewData(result.data)
-                bannerHelper.startTimerTask()
+                bannerAdapter.setNewData(result.data?.subList(0, 2))
+                bannerHelper.start()
             }
         }
         viewModel.articleListResult.observe(viewLifecycleOwner) {

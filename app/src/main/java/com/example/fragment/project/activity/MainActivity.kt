@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.viewModels
 import com.example.fragment.library.common.activity.RouterActivity
-import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.project.R
@@ -15,7 +14,6 @@ import com.example.fragment.project.databinding.MainActivityBinding
 class MainActivity : RouterActivity() {
 
     private val userViewModel: UserViewModel by viewModels()
-    private var userBean = UserBean()
 
     override fun controllerId(): Int {
         return R.id.nav_host_fragment_main
@@ -59,13 +57,10 @@ class MainActivity : RouterActivity() {
     }
 
     private fun initViewModel() {
-        userViewModel.userResult.observe(this) { userBean = it }
     }
 
     private fun initLoad() {
-        if (userViewModel.userResult.value == null) {
-            userViewModel.getUser()
-        }
+        userViewModel.getUser()
     }
 
     private fun loginRequired(name: Router): Boolean {
@@ -76,7 +71,7 @@ class MainActivity : RouterActivity() {
             Router.USER_AVATAR,
             Router.USER_SHARE
         )
-        return loginRouter.contains(name) && userBean.id.isBlank()
+        return loginRouter.contains(name) && userViewModel.userBean.id.isBlank()
     }
 
 }

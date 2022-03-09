@@ -6,7 +6,9 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
 import coil.load
+import coil.transform.RoundedCornersTransformation
 import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.fragment.library.base.utils.MetricsUtils
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.BannerBean
 import com.example.fragment.library.common.constant.Keys
@@ -21,11 +23,17 @@ class BannerAdapter : BaseAdapter<BannerBean>() {
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
         val binding = holder.binding as BannerItemBinding
-        if (item.imagePath.isNotEmpty()) {
-            binding.banner.load(item.imagePath)
+        binding.root.layoutParams.apply {
+            width = MetricsUtils.screenWidth - MetricsUtils.dp2px(100f).toInt()
         }
-        val baseActivity: RouterActivity = contextToActivity(binding.root.context)
+        if (item.imagePath.isNotEmpty()) {
+            binding.banner.load(item.imagePath) {
+                crossfade(true)
+                transformations(RoundedCornersTransformation(15f))
+            }
+        }
         binding.root.setOnClickListener {
+            val baseActivity: RouterActivity = contextToActivity(binding.root.context)
             val url = Uri.encode(item.url)
             baseActivity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }

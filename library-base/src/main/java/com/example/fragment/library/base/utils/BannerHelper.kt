@@ -10,14 +10,11 @@ class BannerHelper(
     private val orientation: Int = RecyclerView.HORIZONTAL
 ) {
 
-    private var layoutManager = RepeatLayoutManager(recyclerView.context)
+    private val layoutManager = RepeatLayoutManager(recyclerView.context)
     private var isDragging = false
-    private var bannerDelay = 5000L
     private val bannerTask = Runnable {
-        recyclerView.post {
-            offsetItem()
-            startTimerTask()
-        }
+        offsetItem()
+        start()
     }
 
     init {
@@ -29,44 +26,53 @@ class BannerHelper(
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     if (isDragging) {
                         isDragging = false
-                        offsetItem()
-                        startTimerTask()
+                        start()
                     }
                 } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
                     isDragging = true
-                    stopTimerTask()
+                    stop()
                 } else if (newState == RecyclerView.SCROLL_STATE_SETTLING) {
-                    stopTimerTask()
+                    stop()
                 }
             }
         })
     }
 
     private fun offsetItem() {
-        if (layoutManager.itemCount > 1) {
-            val position = layoutManager.findFirstVisibleItemPosition()
-            if (orientation == RecyclerView.VERTICAL) {
-                layoutManager.findViewByPosition(position)?.let {
-                    val height = it.height
-                    val bottom = it.bottom
-                    if (bottom > height / 2 && bottom < height) {
-                        recyclerView.smoothScrollBy(0, bottom - height)
-                    } else {
-                        recyclerView.smoothScrollBy(0, bottom)
-                    }
-                    recyclerView.smoothScrollBy(0, it.bottom)
-                }
-            } else if (orientation == RecyclerView.HORIZONTAL) {
-                layoutManager.findViewByPosition(position)?.let {
-                    val width = it.width
-                    val right = it.right
-                    if (right > width / 2 && right < width) {
-                        recyclerView.smoothScrollBy(right - width, 0)
-                    } else {
-                        recyclerView.smoothScrollBy(right, 0)
-                    }
+        val position = layoutManager.findFirstVisibleItemPosition()
+        val itemView = layoutManager.findViewByPosition(position) ?: return
+        if (orientation == RecyclerView.HORIZONTAL) {
+            val lmWidth = layoutManager.width
+            var dx = if (itemView.width < lmWidth / 2) {
+                itemView.right
+            } else {
+                val centerOffset = (lmWidth - itemView.width) / 2
+                if (itemView.right < lmWidth / 2) {
+                    itemView.right - centerOffset
+                } else {
+                    centerOffset - (lmWidth - itemView.right)
                 }
             }
+            if (dx == 0) {
+                dx = itemView.width
+            }
+            recyclerView.smoothScrollBy(dx, 0)
+        } else {
+            val lmHeight = layoutManager.height
+            var dy = if (itemView.height < lmHeight / 2) {
+                itemView.bottom
+            } else {
+                val centerOffset = (lmHeight - itemView.bottom) / 2
+                if (itemView.bottom < lmHeight / 2) {
+                    itemView.bottom - centerOffset
+                } else {
+                    centerOffset - (lmHeight - itemView.bottom)
+                }
+            }
+            if (dy == 0) {
+                dy = itemView.height
+            }
+            recyclerView.smoothScrollBy(0, dy)
         }
     }
 
@@ -74,12 +80,12 @@ class BannerHelper(
         return layoutManager.findLastVisibleItemPosition()
     }
 
-    fun startTimerTask() {
-        stopTimerTask()
-        recyclerView.postDelayed(bannerTask, bannerDelay)
+    fun start() {
+        recyclerView.removeCallbacks(bannerTask)
+        recyclerView.postDelayed(bannerTask, 5000)
     }
 
-    fun stopTimerTask() {
+    fun stop() {
         recyclerView.removeCallbacks(bannerTask)
     }
 
@@ -90,6 +96,28 @@ class BannerHelper(
  * https://github.com/jiarWang/RepeatLayoutManager
  */
 open class RepeatLayoutManager(val context: Context) : LinearLayoutManager(context) {
+
+    override fun onLayoutChildren(recycler: RecyclerView.Recycler, state: RecyclerView.State) {
+        super.onLayoutChildren(recycler, state)
+        if (itemCount <= 0 || state.isPreLayout) return
+        val position = findFirstVisibleItemPosition()
+        val itemView = findViewByPosition(position) ?: return
+        if (orientation == RecyclerView.HORIZONTAL) {
+            fillHorizontal(itemView.width * itemCount, recycler)
+            if (itemView.width > width / 2) {
+                val offset = (width - itemView.width) / 2
+                val dx = itemView.right - offset
+                scrollHorizontallyBy(dx, recycler, state)
+            }
+        } else {
+            fillHorizontal(itemView.height * itemCount, recycler)
+            if (itemView.height > height / 2) {
+                val offset = (height - itemView.bottom) / 2
+                val dy = itemView.bottom - offset
+                scrollVerticallyBy(dy, recycler, state)
+            }
+        }
+    }
 
     override fun scrollHorizontallyBy(
         dx: Int,
@@ -116,93 +144,77 @@ open class RepeatLayoutManager(val context: Context) : LinearLayoutManager(conte
     private fun fillHorizontal(dx: Int, recycler: RecyclerView.Recycler) {
         if (childCount == 0) return
         if (dx > 0) {
-            getChildAt(childCount - 1)?.let {
-                var anchorView = it
+            var anchorView = getChildAt(childCount - 1) ?: return
+            while (anchorView.right < width - paddingRight + dx) {
                 val anchorPosition = getPosition(anchorView)
-                while (anchorView.right < width - paddingRight + dx) {
-                    var position = (anchorPosition + 1) % itemCount
-                    if (position < 0) position += itemCount
-                    val scrapItem = recycler.getViewForPosition(position)
-                    addView(scrapItem)
-                    measureChildWithMargins(scrapItem, 0, 0)
-                    val left = anchorView.right
-                    val top = paddingTop
-                    val right = left + getDecoratedMeasuredWidth(scrapItem)
-                    val bottom = top + getDecoratedMeasuredHeight(scrapItem)
-                    layoutDecorated(scrapItem, left, top, right, bottom)
-                    anchorView = scrapItem
-                }
+                var position = (anchorPosition + 1) % itemCount
+                if (position < 0) position += itemCount
+                val scrapView = recycler.getViewForPosition(position)
+                addView(scrapView)
+                measureChildWithMargins(scrapView, 0, 0)
+                val left = anchorView.right
+                val right = left + getDecoratedMeasuredWidth(scrapView)
+                val top = paddingTop
+                val bottom = top + getDecoratedMeasuredHeight(scrapView)
+                layoutDecorated(scrapView, left, top, right, bottom)
+                anchorView = scrapView
             }
         } else {
-            getChildAt(0)?.let {
-                var anchorView = it
+            var anchorView = getChildAt(0) ?: return
+            while (anchorView.left > paddingLeft + dx) {
                 val anchorPosition = getPosition(anchorView)
-                while (anchorView.left > paddingLeft + dx) {
-                    var position = (anchorPosition - 1) % itemCount
-                    if (position < 0) position += itemCount
-                    val scrapItem = recycler.getViewForPosition(position)
-                    addView(scrapItem, 0)
-                    measureChildWithMargins(scrapItem, 0, 0)
-                    val right = anchorView.left
-                    val top = paddingTop
-                    val left = right - getDecoratedMeasuredWidth(scrapItem)
-                    val bottom = top + getDecoratedMeasuredHeight(scrapItem)
-                    layoutDecorated(
-                        scrapItem, left, top,
-                        right, bottom
-                    )
-                    anchorView = scrapItem
-                }
+                var position = (anchorPosition - 1) % itemCount
+                if (position < 0) position += itemCount
+                val scrapView = recycler.getViewForPosition(position)
+                addView(scrapView, 0)
+                measureChildWithMargins(scrapView, 0, 0)
+                val right = anchorView.left
+                val left = right - getDecoratedMeasuredWidth(scrapView)
+                val top = paddingTop
+                val bottom = top + getDecoratedMeasuredHeight(scrapView)
+                layoutDecorated(scrapView, left, top, right, bottom)
+                anchorView = scrapView
             }
         }
-        return
     }
 
     private fun fillVertical(dy: Int, recycler: RecyclerView.Recycler) {
         if (childCount == 0) return
         if (dy > 0) {
             //填充尾部
-            getChildAt(childCount - 1)?.let {
-                var anchorView = it
+            var anchorView = getChildAt(childCount - 1) ?: return
+            while (anchorView.bottom < height - paddingBottom + dy) {
                 val anchorPosition = getPosition(anchorView)
-                while (anchorView.bottom < height - paddingBottom + dy) {
-                    var position = (anchorPosition + 1) % itemCount
-                    if (position < 0) position += itemCount
-                    val scrapItem = recycler.getViewForPosition(position)
-                    addView(scrapItem)
-                    measureChildWithMargins(scrapItem, 0, 0)
-                    val left = paddingLeft
-                    val top = anchorView.bottom
-                    val right = left + getDecoratedMeasuredWidth(scrapItem)
-                    val bottom = top + getDecoratedMeasuredHeight(scrapItem)
-                    layoutDecorated(scrapItem, left, top, right, bottom)
-                    anchorView = scrapItem
-                }
+                var position = (anchorPosition + 1) % itemCount
+                if (position < 0) position += itemCount
+                val scrapView = recycler.getViewForPosition(position)
+                addView(scrapView)
+                measureChildWithMargins(scrapView, 0, 0)
+                val left = paddingLeft
+                val right = left + getDecoratedMeasuredWidth(scrapView)
+                val top = anchorView.bottom
+                val bottom = top + getDecoratedMeasuredHeight(scrapView)
+                layoutDecorated(scrapView, left, top, right, bottom)
+                anchorView = scrapView
             }
         } else {
             //填充头部
-            getChildAt(0)?.let {
-                var anchorView = it
+            var anchorView = getChildAt(0) ?: return
+            while (anchorView.top > paddingTop + dy) {
                 val anchorPosition = getPosition(anchorView)
-                while (anchorView.top > paddingTop + dy) {
-                    var position = (anchorPosition - 1) % itemCount
-                    if (position < 0) position += itemCount
-                    val scrapItem = recycler.getViewForPosition(position)
-                    addView(scrapItem, 0)
-                    measureChildWithMargins(scrapItem, 0, 0)
-                    val left = paddingLeft
-                    val right = left + getDecoratedMeasuredWidth(scrapItem)
-                    val bottom = anchorView.top
-                    val top = bottom - getDecoratedMeasuredHeight(scrapItem)
-                    layoutDecorated(
-                        scrapItem, left, top,
-                        right, bottom
-                    )
-                    anchorView = scrapItem
-                }
+                var position = (anchorPosition - 1) % itemCount
+                if (position < 0) position += itemCount
+                val scrapView = recycler.getViewForPosition(position)
+                addView(scrapView, 0)
+                measureChildWithMargins(scrapView, 0, 0)
+                val left = paddingLeft
+                val right = left + getDecoratedMeasuredWidth(scrapView)
+                val bottom = anchorView.top
+                val top = bottom - getDecoratedMeasuredHeight(scrapView)
+                layoutDecorated(scrapView, left, top, right, bottom)
+                anchorView = scrapView
             }
         }
-        return
     }
 
     /**

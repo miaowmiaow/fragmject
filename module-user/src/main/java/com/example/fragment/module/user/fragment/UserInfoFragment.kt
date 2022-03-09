@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.module.user.R
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
@@ -48,6 +50,10 @@ class UserInfoFragment : RouterFragment() {
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.avatar.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
+        binding.avatarImg.load(R.drawable.avatar_1_raster) {
+            crossfade(true)
+            transformations(CircleCropTransformation())
+        }
         binding.sex.setOnClickListener {
             SexDialog.newInstance()
                 .setSex(binding.sexInfo.text.toString())

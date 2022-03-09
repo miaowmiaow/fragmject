@@ -25,12 +25,13 @@ class HomeViewModel : BaseViewModel() {
             val banner = async { getBanner() }
             val articleTop = async { getArticleTop() }
             val articleList = async { getArticleList(getHomePage()) }
+            val bannerData = banner.await()
             //通过LiveData通知界面更新
             val articleData: MutableList<ArticleBean> = arrayListOf()
             articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
             articleList.await().data?.datas?.let { articleData.addAll(it) }
             articleListResult.postValue(articleData)
-            bannerResult.postValue(banner.await())
+            bannerResult.postValue(bannerData)
         }
     }
 

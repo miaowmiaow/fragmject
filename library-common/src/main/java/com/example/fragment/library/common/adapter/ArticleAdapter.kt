@@ -11,6 +11,7 @@ import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
 import coil.load
 import coil.transform.CircleCropTransformation
+import coil.transform.RoundedCornersTransformation
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
@@ -73,7 +74,10 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         binding.tag.visibility = if (!item.tags.isNullOrEmpty()) View.VISIBLE else View.GONE
         binding.top.visibility = if (item.top) View.VISIBLE else View.GONE
         binding.image.visibility = if (item.envelopePic.isNotEmpty()) {
-            binding.image.load(item.envelopePic)
+            binding.image.load(item.envelopePic) {
+                crossfade(true)
+                transformations(RoundedCornersTransformation(15f))
+            }
             View.VISIBLE
         } else {
             View.GONE

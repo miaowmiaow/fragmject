@@ -66,17 +66,8 @@ class MainFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        hotKeyHelper.stop()
         _binding = null
-    }
-
-    override fun onResume() {
-        super.onResume()
-        hotKeyHelper.startTimerTask()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        hotKeyHelper.stopTimerTask()
     }
 
     override fun initView() {
@@ -129,7 +120,7 @@ class MainFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel? {
         viewModel.hotKeyResult.observe(viewLifecycleOwner) {
             hotKeyAdapter.setNewData(it)
-            hotKeyHelper.startTimerTask()
+            hotKeyHelper.start()
         }
         return null
     }

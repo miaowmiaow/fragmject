@@ -40,8 +40,8 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/hot_key"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_marginEnd="15dp"
                 android:layout_toEndOf="@id/iv_search" />
 

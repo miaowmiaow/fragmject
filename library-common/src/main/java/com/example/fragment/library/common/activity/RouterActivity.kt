@@ -43,8 +43,9 @@ abstract class RouterActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         /**
-         * 纯粹为以下知识点服务：
-         * 1、SharedFlowBus 消息总线
+         * 单 Activity 通过 ViewModel 来实现消息总线更优雅（参考UserViewModel）
+         * 这边纯粹为以下知识点服务，为用而用：
+         * SharedFlowBus 消息总线
          */
         WanHelper.registerUIMode(this) { eventBean ->
             if (eventBean.key == WanHelper.UI_MODE) {

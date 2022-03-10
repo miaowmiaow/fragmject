@@ -141,12 +141,12 @@ dependencies {
 //            [
 //                    'owner' : 'android/telephony/TelephonyManager',
 //                    'name'  : 'getImei',
-//                    'desc'  : '()I;',
+//                    'desc'  : '()I',
 //            ],
 //            [
 //                    'owner' : 'android/telephony/TelephonyManager',
 //                    'name'  : 'getMeid',
-//                    'desc'  : '()I;',
+//                    'desc'  : '()I',
 //            ],
 //            [
 //                    'owner' : 'android/telephony/TelephonyManager',

@@ -76,7 +76,7 @@ class HomeFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.bannerResult.observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
-                bannerAdapter.setNewData(result.data?.subList(0, 2))
+                bannerAdapter.setNewData(result.data)
                 bannerHelper.start()
             }
         }

@@ -291,7 +291,7 @@ clip.saveBitmap()
 - QQ : 237934622
 - WeChat : zst_1116
 - Email : <zst_1116@icloud.com>
-- Juejin：[miaowmiaow](https://juejin.cn/user/3342971112791422)
+- JueJin：[miaowmiaow](https://juejin.cn/user/3342971112791422)
   
 ## LICENSE
 ```

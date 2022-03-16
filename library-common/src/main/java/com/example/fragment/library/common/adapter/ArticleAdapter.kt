@@ -9,13 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
-import coil.load
-import coil.transform.CircleCropTransformation
-import coil.transform.RoundedCornersTransformation
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
+import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
@@ -50,10 +48,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.author.text = if (item.author.isNotBlank()) item.author else "匿名"
-        binding.avatar.load(avatarList[position % 6]) {
-            crossfade(true)
-            transformations(CircleCropTransformation())
-        }
+        ImageLoader.loadCircleCrop(binding.avatar, avatarList[position % 6])
         binding.avatar.setOnClickListener {
             activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
         }
@@ -74,10 +69,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         binding.tag.visibility = if (!item.tags.isNullOrEmpty()) View.VISIBLE else View.GONE
         binding.top.visibility = if (item.top) View.VISIBLE else View.GONE
         binding.image.visibility = if (item.envelopePic.isNotEmpty()) {
-            binding.image.load(item.envelopePic) {
-                crossfade(true)
-                transformations(RoundedCornersTransformation(15f))
-            }
+            ImageLoader.loadRoundedCorners(binding.image, item.envelopePic, 15f)
             View.VISIBLE
         } else {
             View.GONE
@@ -101,16 +93,16 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             activity.navigation(Router.SYSTEM, args)
         }
         if (item.collect) {
-            binding.collect.load(R.drawable.ic_collect_checked)
+            ImageLoader.load(binding.collect, R.drawable.ic_collect_checked)
         } else {
-            binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
+            ImageLoader.load(binding.collect, R.drawable.ic_collect_unchecked_stroke)
         }
         binding.collect.setOnClickListener {
             if (item.collect) {
-                binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
+                ImageLoader.load(binding.collect, R.drawable.ic_collect_unchecked_stroke)
                 unCollect(item.id)
             } else {
-                binding.collect.load(R.drawable.ic_collect_checked)
+                ImageLoader.load(binding.collect, R.drawable.ic_collect_checked)
                 collect(item.id)
             }
             item.collect = !item.collect

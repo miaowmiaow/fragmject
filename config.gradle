@@ -37,6 +37,6 @@ ext {
             "squareup-okhttp"                        : "com.squareup.okhttp3:okhttp:$okhttp_version",
             "squareup-okhttp-logging-interceptor"    : "com.squareup.okhttp3:logging-interceptor:$okhttp_version",
             // 腾讯TBS
-            "tencent-tbs"                            : 'com.tencent.tbs:tbssdk:44153',
+            "tencent-tbs"                            : 'com.tencent.tbs:tbssdk:44165',
     ]
 }

@@ -4,16 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.BannerHelper
+import com.example.fragment.library.base.utils.MetricsUtils
+import com.example.fragment.library.base.utils.OnItemScrollListener
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.adapter.BannerAdapter
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.databinding.HomeFragmentBinding
 import com.example.fragment.module.wan.model.HomeViewModel
 
@@ -52,6 +56,12 @@ class HomeFragment : RouterFragment() {
     override fun initView() {
         binding.banner.adapter = bannerAdapter
         bannerHelper = BannerHelper(binding.banner)
+        bannerHelper.setOnItemScrollListener(object : OnItemScrollListener {
+            override fun onItemScroll(position: Int) {
+                println(position)
+                makeSureIndicator(position)
+            }
+        })
         //文章列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
@@ -78,6 +88,7 @@ class HomeFragment : RouterFragment() {
             httpParseSuccess(it) { result ->
                 bannerAdapter.setNewData(result.data)
                 bannerHelper.start()
+                result.data?.apply { initIndicator(size) }
             }
         }
         viewModel.articleListResult.observe(viewLifecycleOwner) {
@@ -97,6 +108,33 @@ class HomeFragment : RouterFragment() {
     override fun initLoad() {
         if (viewModel.articleListResult.value == null) {
             binding.pullRefresh.setRefreshing()
+        }
+    }
+
+    private fun initIndicator(itemCount: Int) {
+        if (itemCount > 0) {
+            val layoutParams = LinearLayout.LayoutParams(
+                MetricsUtils.dp2px(12f).toInt(),
+                MetricsUtils.dp2px(3f).toInt()
+            )
+            layoutParams.marginStart = MetricsUtils.dp2px(2.5f).toInt()
+            layoutParams.marginEnd = MetricsUtils.dp2px(2.5f).toInt()
+            for (i in 0 until itemCount) {
+                val point = View(binding.indicator.context)
+                point.setBackgroundResource(R.drawable.selector_indicator)
+                binding.indicator.addView(point, layoutParams)
+            }
+            binding.indicator.getChildAt(0).isSelected = true
+        }
+    }
+
+    private fun makeSureIndicator(position: Int) {
+        val itemCount = binding.indicator.childCount
+        if (position in 0 until itemCount) {
+            for (i in 0 until itemCount) {
+                binding.indicator.getChildAt(i).isSelected = false
+            }
+            binding.indicator.getChildAt(position).isSelected = true
         }
     }
 

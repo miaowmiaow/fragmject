@@ -9,6 +9,9 @@
         android:name="com.example.fragment.module.wan.fragment.SearchFragment"
         android:label="SearchFragment"
         tools:layout="@layout/search_fragment">
+        <!--
+            通过将占位符名称与已定义的参数（为深层链接目的地所定义）相匹配，尝试将占位符值解析为相应的类型
+        -->
         <argument android:name="value" />
         <deepLink app:uri="fragment.example.com/search/{value}" />
     </fragment>

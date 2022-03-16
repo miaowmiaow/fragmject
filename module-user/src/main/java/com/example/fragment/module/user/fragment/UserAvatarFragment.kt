@@ -7,14 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import coil.load
-import coil.transform.CircleCropTransformation
-import coil.transform.RoundedCornersTransformation
 import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStorage
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
+import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -50,10 +48,7 @@ class UserAvatarFragment : RouterFragment() {
 
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
-        binding.image.load(R.drawable.avatar_1_raster) {
-            crossfade(true)
-            transformations(CircleCropTransformation())
-        }
+        ImageLoader.loadCircleCrop(binding.image, R.drawable.avatar_1_raster)
         binding.album.setOnClickListener {
             activity.requestStorage(object : PermissionsCallback {
                 override fun allow() {
@@ -71,10 +66,7 @@ class UserAvatarFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) {
             userBean = it
             if (userBean.avatar.isNotBlank()) {
-                binding.image.load(File(userBean.avatar)) {
-                    crossfade(true)
-                    transformations(RoundedCornersTransformation(15f))
-                }
+                ImageLoader.loadRoundedCorners(binding.image, File(userBean.avatar), 15f)
             }
         }
         return viewModel

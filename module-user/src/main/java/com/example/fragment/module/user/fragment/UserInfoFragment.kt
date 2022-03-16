@@ -6,18 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
-import coil.load
-import coil.transform.CircleCropTransformation
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
 import com.example.fragment.module.user.dialog.CityDialog
 import com.example.fragment.module.user.dialog.SexDialog
+import com.example.fragment.module.user.model.UserViewModel
 import java.io.File
 
 /**
@@ -50,10 +49,7 @@ class UserInfoFragment : RouterFragment() {
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.avatar.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
-        binding.avatarImg.load(R.drawable.avatar_1_raster) {
-            crossfade(true)
-            transformations(CircleCropTransformation())
-        }
+        ImageLoader.loadCircleCrop(binding.avatarImg, R.drawable.avatar_1_raster)
         binding.sex.setOnClickListener {
             SexDialog.newInstance()
                 .setSex(binding.sexInfo.text.toString())
@@ -92,7 +88,7 @@ class UserInfoFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) {
             userBean = it
             if (userBean.avatar.isNotBlank()) {
-                binding.avatarImg.load(File(userBean.avatar))
+                ImageLoader.load(binding.avatarImg, File(userBean.avatar))
             }
             setUserInfo(binding.username, userBean.username)
             setUserInfo(binding.sexInfo, userBean.sex)

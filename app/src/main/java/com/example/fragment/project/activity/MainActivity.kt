@@ -21,6 +21,7 @@ class MainActivity : RouterActivity() {
 
     /**
      * 导航方法，根据路由名跳转Fragment
+     * [一文看懂Navigation](https://juejin.cn/post/7036296113573347364)
      */
     override fun navigation(name: Router, bundle: Bundle?) {
         //登录态校验

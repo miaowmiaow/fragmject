@@ -15,10 +15,24 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/banner"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="175dp" />
+                android:layout_height="175dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="175dp" />
+
+                <LinearLayout
+                    android:id="@+id/indicator"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="10dp"
+                    android:gravity="end"
+                    android:orientation="horizontal" />
+            </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"

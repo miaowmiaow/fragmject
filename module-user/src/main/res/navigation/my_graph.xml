@@ -9,6 +9,9 @@
         android:name="com.example.fragment.module.user.fragment.MyCoinFragment"
         android:label="MyCoinFragment"
         tools:layout="@layout/my_coin_fragment">
+        <!--
+            app:uri 通过 uri 跳转目的导航图
+        -->
         <deepLink app:uri="fragment.example.com/my/coin" />
     </fragment>
     <fragment

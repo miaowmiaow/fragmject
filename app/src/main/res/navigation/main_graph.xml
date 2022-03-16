@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    app:startDestination 设置开始导航图
+    [一文看懂Navigation](https://juejin.cn/post/7036296113573347364)
+-->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,6 +20,10 @@
         android:name="com.example.fragment.project.fragment.MainFragment"
         android:label="MainFragment"
         tools:layout="@layout/main_fragment">
+        <!--
+            android:id 通过 id 跳转目的导航图
+            app:destination 设置目的导航图
+        -->
         <action
             android:id="@+id/action_main_to_setting"
             app:destination="@id/setting_graph" />

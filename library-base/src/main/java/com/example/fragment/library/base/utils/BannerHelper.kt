@@ -11,6 +11,7 @@ class BannerHelper(
 ) {
 
     private val layoutManager = RepeatLayoutManager(recyclerView.context)
+    private var listener: OnItemScrollListener? = null
     private var isDragging = false
     private val bannerTask = Runnable {
         offsetItem()
@@ -75,10 +76,11 @@ class BannerHelper(
             }
             recyclerView.smoothScrollBy(0, dy)
         }
+        listener?.onItemScroll(findItemPosition())
     }
 
     fun findItemPosition(): Int {
-        return layoutManager.findLastVisibleItemPosition()
+        return layoutManager.findLastCompletelyVisibleItemPosition()
     }
 
     fun start() {
@@ -90,6 +92,14 @@ class BannerHelper(
         recyclerView.removeCallbacks(bannerTask)
     }
 
+    fun setOnItemScrollListener(listener: OnItemScrollListener) {
+        this.listener = listener
+    }
+
+}
+
+interface OnItemScrollListener {
+    fun onItemScroll(position: Int)
 }
 
 /**

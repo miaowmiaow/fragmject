@@ -58,7 +58,6 @@ class HomeFragment : RouterFragment() {
         bannerHelper = BannerHelper(binding.banner)
         bannerHelper.setOnItemScrollListener(object : OnItemScrollListener {
             override fun onItemScroll(position: Int) {
-                println(position)
                 makeSureIndicator(position)
             }
         })

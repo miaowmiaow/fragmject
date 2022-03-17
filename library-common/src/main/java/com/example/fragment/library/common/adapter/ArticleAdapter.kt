@@ -13,7 +13,9 @@ import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
-import com.example.fragment.library.base.utils.ImageLoader
+import com.example.fragment.library.base.utils.load
+import com.example.fragment.library.base.utils.loadCircleCrop
+import com.example.fragment.library.base.utils.loadRoundedCorners
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
@@ -48,7 +50,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.author.text = if (item.author.isNotBlank()) item.author else "匿名"
-        ImageLoader.loadCircleCrop(binding.avatar, avatarList[position % 6])
+        binding.avatar.loadCircleCrop(avatarList[position % 6])
         binding.avatar.setOnClickListener {
             activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
         }
@@ -69,7 +71,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         binding.tag.visibility = if (!item.tags.isNullOrEmpty()) View.VISIBLE else View.GONE
         binding.top.visibility = if (item.top) View.VISIBLE else View.GONE
         binding.image.visibility = if (item.envelopePic.isNotEmpty()) {
-            ImageLoader.loadRoundedCorners(binding.image, item.envelopePic, 15f)
+            binding.image.loadRoundedCorners(item.envelopePic, 15f)
             View.VISIBLE
         } else {
             View.GONE
@@ -93,16 +95,16 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             activity.navigation(Router.SYSTEM, args)
         }
         if (item.collect) {
-            ImageLoader.load(binding.collect, R.drawable.ic_collect_checked)
+            binding.collect.load(R.drawable.ic_collect_checked)
         } else {
-            ImageLoader.load(binding.collect, R.drawable.ic_collect_unchecked_stroke)
+            binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
         }
         binding.collect.setOnClickListener {
             if (item.collect) {
-                ImageLoader.load(binding.collect, R.drawable.ic_collect_unchecked_stroke)
+                binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
                 unCollect(item.id)
             } else {
-                ImageLoader.load(binding.collect, R.drawable.ic_collect_checked)
+                binding.collect.load(R.drawable.ic_collect_checked)
                 collect(item.id)
             }
             item.collect = !item.collect

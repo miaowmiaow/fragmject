@@ -7,9 +7,10 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
+import coil.clear
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.ImageLoader
+import com.example.fragment.library.base.utils.load
 
 abstract class BaseFragment : Fragment() {
 
@@ -34,9 +35,9 @@ abstract class BaseFragment : Fragment() {
         })
         initView()
         initViewModel()?.progress(viewLifecycleOwner, {
-            ImageLoader.load(loadGif, R.drawable.icons8_monkey)
+            loadGif.load(R.drawable.icons8_monkey)
         }, {
-            ImageLoader.clear(loadGif)
+            loadGif.clear()
         })
         view.postDelayed({ initLoad() }, loadDelayMillis)
     }

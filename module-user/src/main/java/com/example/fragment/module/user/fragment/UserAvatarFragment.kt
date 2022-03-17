@@ -12,8 +12,9 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStorage
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
-import com.example.fragment.library.base.utils.ImageLoader
 import com.example.fragment.library.base.utils.PermissionsCallback
+import com.example.fragment.library.base.utils.loadCircleCrop
+import com.example.fragment.library.base.utils.loadRoundedCorners
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
@@ -48,7 +49,7 @@ class UserAvatarFragment : RouterFragment() {
 
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
-        ImageLoader.loadCircleCrop(binding.image, R.drawable.avatar_1_raster)
+        binding.image.loadCircleCrop(R.drawable.avatar_1_raster)
         binding.album.setOnClickListener {
             activity.requestStorage(object : PermissionsCallback {
                 override fun allow() {
@@ -66,7 +67,7 @@ class UserAvatarFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) {
             userBean = it
             if (userBean.avatar.isNotBlank()) {
-                ImageLoader.loadRoundedCorners(binding.image, File(userBean.avatar), 15f)
+                binding.image.loadRoundedCorners(File(userBean.avatar), 15f)
             }
         }
         return viewModel

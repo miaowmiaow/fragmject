@@ -7,7 +7,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.ImageLoader
+import com.example.fragment.library.base.utils.load
+import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -49,7 +50,7 @@ class UserInfoFragment : RouterFragment() {
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.avatar.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
-        ImageLoader.loadCircleCrop(binding.avatarImg, R.drawable.avatar_1_raster)
+        binding.avatarImg.loadCircleCrop(R.drawable.avatar_1_raster)
         binding.sex.setOnClickListener {
             SexDialog.newInstance()
                 .setSex(binding.sexInfo.text.toString())
@@ -88,7 +89,7 @@ class UserInfoFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) {
             userBean = it
             if (userBean.avatar.isNotBlank()) {
-                ImageLoader.load(binding.avatarImg, File(userBean.avatar))
+                binding.avatarImg.load(File(userBean.avatar))
             }
             setUserInfo(binding.username, userBean.username)
             setUserInfo(binding.sexInfo, userBean.sex)

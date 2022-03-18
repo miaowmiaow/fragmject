@@ -88,11 +88,9 @@ class PullRefreshLayout @JvmOverloads constructor(
 
     fun setLoadMore(b: Boolean) {
         loading = b
-        if (loadMore != b) {
-            loadMore = b
-            loadMoreAdapter?.apply {
-                notifyItemRangeChanged(itemCount - 1, 1)
-            }
+        loadMore = b
+        loadMoreAdapter?.apply {
+            notifyItemRangeChanged(itemCount - 1, 1)
         }
     }
 

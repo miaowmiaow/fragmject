@@ -12,6 +12,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.activity.BaseActivity
+import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.utils.WanHelper
@@ -139,6 +140,17 @@ abstract class RouterActivity : BaseActivity() {
 
     fun popBackStack(@IdRes destinationId: Int, inclusive: Boolean) {
         navController.popBackStack(destinationId, inclusive)
+    }
+
+    /**
+     * 网络请求结果处理（不建议封装在网络请求框架中）
+     */
+    fun <T : HttpResponse> httpParseSuccess(result: T, success: ((T) -> Unit)) {
+        when (result.errorCode) {
+            "0" -> success.invoke(result)
+            "-1001" -> navigation(Router.USER_LOGIN)
+            else -> showTips(result.errorMsg)
+        }
     }
 
 }

@@ -60,7 +60,7 @@ class SearchViewModel : BaseViewModel() {
                 .putParam("k", k)
                 .putPath("page", page.toString())
             //以get方式发起网络请求
-            val result = post<ArticleListBean>(request) { updateProgress(it) }
+            val result = post<ArticleListBean>(request)
             //根据接口返回更新总页码
             result.data?.pageCount?.let { updatePageCont(it.toInt()) }
             //通过LiveData通知界面更新

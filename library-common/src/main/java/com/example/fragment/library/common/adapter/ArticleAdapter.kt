@@ -101,11 +101,23 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         }
         binding.collect.setOnClickListener {
             if (item.collect) {
-                binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
-                unCollect(item.id)
+                CoroutineScope(Dispatchers.Main).launch {
+                    val response = post<HttpResponse>(HttpRequest().apply {
+                        setUrl("lg/uncollect_originId/{id}/json")
+                        putPath("id", item.id)
+                    })
+                    activity.httpParseSuccess(response) {
+                        binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
+                    }
+                }
             } else {
-                binding.collect.load(R.drawable.ic_collect_checked)
-                collect(item.id)
+                CoroutineScope(Dispatchers.Main).launch {
+                    val request = HttpRequest("lg/collect/{id}/json").putPath("id", item.id)
+                    val response = post<HttpResponse>(request)
+                    activity.httpParseSuccess(response) {
+                        binding.collect.load(R.drawable.ic_collect_checked)
+                    }
+                }
             }
             item.collect = !item.collect
         }
@@ -142,15 +154,4 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         return s
     }
 
-    private fun collect(id: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            post<HttpResponse>(HttpRequest("lg/collect/{id}/json").putPath("id", id))
-        }
-    }
-
-    private fun unCollect(id: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            post<HttpResponse>(HttpRequest("lg/uncollect_originId/{id}/json").putPath("id", id))
-        }
-    }
 }

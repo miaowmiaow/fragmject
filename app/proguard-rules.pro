@@ -205,9 +205,6 @@
 # kept. Suspend functions are wrapped in continuations where the type argument
 # is used.
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
-#---------------------------- glide --------------------------------
--keep class **.glide.** {*;}
--keep interface **.glide.** {*;}
 ##-----------------------------------------腾讯TBS--------------------------------------------
 -dontwarn dalvik.**
 -dontwarn com.tencent.smtt.**

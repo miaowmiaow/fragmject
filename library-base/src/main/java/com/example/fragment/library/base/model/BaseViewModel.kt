@@ -9,7 +9,7 @@ abstract class BaseViewModel : ViewModel() {
     companion object{
         const val DEFAULT_KEY = "null"
         const val DEFAULT_PAGE = 0
-        const val PAGE_CONT = 2
+        const val PAGE_CONT = 1
     }
 
     /**
@@ -26,6 +26,7 @@ abstract class BaseViewModel : ViewModel() {
     fun getHomePage(page: Int = DEFAULT_PAGE, key: String = DEFAULT_KEY): Int {
         this.homePage[key] = page
         this.curPage[key] = page
+        this.pageCont[key] = page + 1
         return page
     }
 

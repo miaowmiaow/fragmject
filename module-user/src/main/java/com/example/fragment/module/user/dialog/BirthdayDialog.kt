@@ -1,5 +1,6 @@
 package com.example.fragment.module.user.dialog
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -91,11 +92,13 @@ class BirthdayDialog : BottomDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        setNavigationBar(binding.root, Color.TRANSPARENT, true)
         _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setNavigationBar(binding.root, Color.WHITE, true)
         binding.cancel.setOnClickListener { dismiss() }
         binding.secrecy.setOnClickListener {
             listener?.onBirthday("保密")

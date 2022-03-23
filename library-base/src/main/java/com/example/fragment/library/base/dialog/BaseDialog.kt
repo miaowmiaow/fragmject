@@ -1,5 +1,11 @@
 package com.example.fragment.library.base.dialog
 
+import android.app.Activity
+import android.view.ContextThemeWrapper
+import android.view.View
+import android.view.Window
+import androidx.annotation.ColorInt
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 
@@ -38,6 +44,21 @@ open class BaseDialog : DialogFragment() {
     fun show(manager: FragmentManager) {
         this.manager = manager
         show(manager, this::class.java.canonicalName)
+    }
+
+    /**
+     * 设置导航栏
+     */
+    fun setNavigationBar(view: View, @ColorInt color: Int, isLight: Boolean) {
+        val window: Window = try {
+            (context as Activity).window
+        } catch (e: Exception) {
+            ((context as ContextThemeWrapper).baseContext as Activity).window
+        }
+        window.navigationBarColor = color //设置导航栏白色底色
+        WindowCompat.getInsetsController(window, view)?.apply {
+            isAppearanceLightNavigationBars = isLight //设置导航栏亮起
+        }
     }
 
 }

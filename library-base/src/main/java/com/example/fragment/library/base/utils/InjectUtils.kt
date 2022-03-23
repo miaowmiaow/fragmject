@@ -4,7 +4,7 @@ import android.content.Context
 
 object InjectUtils {
 
-    fun Context.injectVConsoleJs(): String? {
+    fun Context.injectVConsoleJs(): String {
         return try {
             val vconsoleJs = resources.assets.open("js/vconsole.min.js").use {
                 val buffer = ByteArray(it.available())
@@ -16,7 +16,7 @@ object InjectUtils {
             """.trimIndent()
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            ""
         }
     }
 

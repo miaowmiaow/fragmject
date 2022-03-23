@@ -53,7 +53,7 @@ class UserCityFragment : RouterFragment() {
         binding.sideLetterBar.setOverlay(binding.letterOverlay)
         binding.searchText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                binding.city.layoutManager?.let {
+                binding.cityList.layoutManager?.let {
                     if (it is LinearLayoutManager) {
                         val firstPosition = it.findFirstCompletelyVisibleItemPosition()
                         val lastPosition = it.findLastCompletelyVisibleItemPosition()
@@ -71,10 +71,10 @@ class UserCityFragment : RouterFragment() {
         }
         binding.sideLetterBar.setOnLetterChangedListener { letter ->
             val position = cityAdapter.getLetterPosition(letter)
-            binding.city.scrollToPosition(position)
+            binding.cityList.scrollToPosition(position)
         }
-        binding.city.layoutManager = LinearLayoutManager(binding.city.context)
-        binding.city.adapter = cityAdapter
+        binding.cityList.layoutManager = LinearLayoutManager(binding.cityList.context)
+        binding.cityList.adapter = cityAdapter
         val json = ReadAssetsFileUtil.getJson(activity, "city.json")
         val bean = GsonUtil.getBean(json, CityPickerBean::class.java)
         val citys: HashSet<CityBean> = HashSet()

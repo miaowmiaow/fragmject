@@ -15,26 +15,26 @@ object SharedFlowBus {
     private var events = ConcurrentHashMap<Any, MutableSharedFlow<Any>>()
     private var stickyEvents = ConcurrentHashMap<Any, MutableSharedFlow<Any>>()
 
-    fun <T> with(objectKey: Class<T>): MutableSharedFlow<T> {
-        if (!events.containsKey(objectKey)) {
-            events[objectKey] = MutableSharedFlow(0, 1, BufferOverflow.DROP_OLDEST)
+    fun <T> with(key: Class<T>): MutableSharedFlow<T> {
+        if (!events.containsKey(key)) {
+            events[key] = MutableSharedFlow(0, 1, BufferOverflow.DROP_OLDEST)
         }
-        return events[objectKey] as MutableSharedFlow<T>
+        return events[key] as MutableSharedFlow<T>
     }
 
-    fun <T> withSticky(objectKey: Class<T>): MutableSharedFlow<T> {
-        if (!stickyEvents.containsKey(objectKey)) {
-            stickyEvents[objectKey] = MutableSharedFlow(1, 1, BufferOverflow.DROP_OLDEST)
+    fun <T> withSticky(key: Class<T>): MutableSharedFlow<T> {
+        if (!stickyEvents.containsKey(key)) {
+            stickyEvents[key] = MutableSharedFlow(1, 1, BufferOverflow.DROP_OLDEST)
         }
-        return stickyEvents[objectKey] as MutableSharedFlow<T>
+        return stickyEvents[key] as MutableSharedFlow<T>
     }
 
-    fun <T> on(objectKey: Class<T>): LiveData<T> {
-        return with(objectKey).asLiveData()
+    fun <T> on(key: Class<T>): LiveData<T> {
+        return with(key).asLiveData()
     }
 
-    fun <T> onSticky(objectKey: Class<T>): LiveData<T> {
-        return withSticky(objectKey).asLiveData()
+    fun <T> onSticky(key: Class<T>): LiveData<T> {
+        return withSticky(key).asLiveData()
     }
 
 }

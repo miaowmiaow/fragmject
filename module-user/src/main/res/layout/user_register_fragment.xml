@@ -1,138 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.fragment.library.base.view.FitsWindowsLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg">
 
     <RelativeLayout
-        android:id="@+id/title_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/black"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
             android:layout_alignParentStart="true"
             android:padding="18dp"
             android:src="@drawable/ic_back" />
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/black"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="125dp"
+                android:layout_height="125dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/ic_logo" />
+
+            <com.example.fragment.library.base.view.ClearEditText
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/logo"
+                android:layout_marginStart="50dp"
+                android:layout_marginTop="100dp"
+                android:layout_marginEnd="50dp"
+                android:background="@null"
+                android:hint="请输入用户名"
+                android:singleLine="true"
+                android:textColor="@color/text_fff"
+                android:textColorHint="@color/text_ccc"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/username"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:background="@color/white" />
+
+            <com.example.fragment.library.base.view.ClearEditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/username"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:background="@null"
+                android:hint="请输入密码"
+                android:inputType="textPassword"
+                android:singleLine="true"
+                android:textColor="@color/text_fff"
+                android:textColorHint="@color/text_ccc"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/password"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:background="@color/white" />
+
+            <com.example.fragment.library.base.view.ClearEditText
+                android:id="@+id/repassword"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_below="@id/password"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:background="@null"
+                android:hint="请确认密码"
+                android:inputType="textPassword"
+                android:singleLine="true"
+                android:textColor="@color/text_fff"
+                android:textColorHint="@color/text_ccc"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@id/repassword"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:background="@color/white" />
+
+            <TextView
+                android:id="@+id/login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/repassword"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="50dp"
+                android:layout_marginTop="25dp"
+                android:layout_marginEnd="50dp"
+                android:text="去登录"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/register"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_below="@id/login"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="25dp"
+                android:layout_marginBottom="25dp"
+                android:background="@drawable/shape_corners_solid_stroke_white"
+                android:paddingStart="100dp"
+                android:paddingEnd="100dp"
+                android:text="注册"
+                android:textColor="@color/text_fff"
+                android:textSize="16sp" />
+
+        </RelativeLayout>
+
     </RelativeLayout>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/title_bar"
-        android:gravity="center">
-
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="125dp"
-            android:layout_height="125dp"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_logo" />
-
-        <com.example.fragment.library.base.view.ClearEditText
-            android:id="@+id/username"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/logo"
-            android:layout_marginStart="50dp"
-            android:layout_marginTop="100dp"
-            android:layout_marginEnd="50dp"
-            android:background="@null"
-            android:hint="请输入用户名"
-            android:singleLine="true"
-            android:textColor="@color/text_fff"
-            android:textColorHint="@color/text_ccc"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/username"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@color/white" />
-
-        <com.example.fragment.library.base.view.ClearEditText
-            android:id="@+id/password"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/username"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@null"
-            android:hint="请输入密码"
-            android:inputType="textPassword"
-            android:singleLine="true"
-            android:textColor="@color/text_fff"
-            android:textColorHint="@color/text_ccc"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/password"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@color/white" />
-
-        <com.example.fragment.library.base.view.ClearEditText
-            android:id="@+id/repassword"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/password"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@null"
-            android:hint="请确认密码"
-            android:inputType="textPassword"
-            android:singleLine="true"
-            android:textColor="@color/text_fff"
-            android:textColorHint="@color/text_ccc"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/repassword"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:background="@color/white" />
-
-        <TextView
-            android:id="@+id/login"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/repassword"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="50dp"
-            android:layout_marginTop="25dp"
-            android:layout_marginEnd="50dp"
-            android:text="去登录"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/register"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_below="@id/login"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="25dp"
-            android:layout_marginBottom="25dp"
-            android:background="@drawable/shape_corners_solid_stroke_white"
-            android:paddingStart="100dp"
-            android:paddingEnd="100dp"
-            android:text="注册"
-            android:textColor="@color/text_fff"
-            android:textSize="16sp" />
-    </RelativeLayout>
-</RelativeLayout>
+</com.example.fragment.library.base.view.FitsWindowsLayout>

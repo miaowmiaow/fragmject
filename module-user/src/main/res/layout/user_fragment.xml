@@ -5,89 +5,82 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <RelativeLayout
+    <ImageView
+        android:id="@+id/avatar"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/avatar_1_raster" />
+
+    <TextView
+        android:id="@+id/username"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_below="@id/avatar"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="25dp"
+        android:gravity="center"
+        android:paddingStart="25dp"
+        android:paddingEnd="25dp"
+        android:text="去登录"
+        android:textColor="@color/text_333"
+        android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/avatar"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="50dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/avatar_1_raster" />
+    <TextView
+        android:id="@+id/my_coin"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/username"
+        android:background="@drawable/layer_white_bg"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:paddingEnd="25dp"
+        android:text="我的积分"
+        android:textColor="@color/text_333"
+        android:textSize="13sp"
+        app:drawableEndCompat="@drawable/ic_right" />
 
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/avatar"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="25dp"
-            android:gravity="center"
-            android:paddingStart="25dp"
-            android:paddingEnd="25dp"
-            android:text="去登录"
-            android:textColor="@color/text_333"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/my_collection"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/my_coin"
+        android:background="@drawable/layer_white_bg"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:paddingEnd="25dp"
+        android:text="我的收藏"
+        android:textColor="@color/text_333"
+        android:textSize="13sp"
+        app:drawableEndCompat="@drawable/ic_right" />
 
-        <TextView
-            android:id="@+id/my_coin"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/username"
-            android:background="@drawable/layer_white_bg"
-            android:gravity="center_vertical"
-            android:paddingStart="25dp"
-            android:paddingEnd="25dp"
-            android:text="我的积分"
-            android:textColor="@color/text_333"
-            android:textSize="13sp"
-            app:drawableEndCompat="@drawable/ic_right" />
+    <TextView
+        android:id="@+id/my_share"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/my_collection"
+        android:background="@drawable/layer_white_bg"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:paddingEnd="25dp"
+        android:text="我的分享"
+        android:textColor="@color/text_333"
+        android:textSize="13sp"
+        app:drawableEndCompat="@drawable/ic_right" />
 
-        <TextView
-            android:id="@+id/my_collection"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/my_coin"
-            android:background="@drawable/layer_white_bg"
-            android:gravity="center_vertical"
-            android:paddingStart="25dp"
-            android:paddingEnd="25dp"
-            android:text="我的收藏"
-            android:textColor="@color/text_333"
-            android:textSize="13sp"
-            app:drawableEndCompat="@drawable/ic_right" />
-
-        <TextView
-            android:id="@+id/my_share"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/my_collection"
-            android:background="@drawable/layer_white_bg"
-            android:gravity="center_vertical"
-            android:paddingStart="25dp"
-            android:paddingEnd="25dp"
-            android:text="我的分享"
-            android:textColor="@color/text_333"
-            android:textSize="13sp"
-            app:drawableEndCompat="@drawable/ic_right" />
-
-        <TextView
-            android:id="@+id/setting"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_below="@id/my_share"
-            android:background="@drawable/layer_white_bg"
-            android:gravity="center_vertical"
-            android:paddingStart="25dp"
-            android:paddingEnd="25dp"
-            android:text="系统设置"
-            android:textColor="@color/text_333"
-            android:textSize="14sp"
-            app:drawableEndCompat="@drawable/ic_right" />
-
-    </RelativeLayout>
-
+    <TextView
+        android:id="@+id/setting"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@id/my_share"
+        android:background="@drawable/layer_white_bg"
+        android:gravity="center_vertical"
+        android:paddingStart="25dp"
+        android:paddingEnd="25dp"
+        android:text="系统设置"
+        android:textColor="@color/text_333"
+        android:textSize="14sp"
+        app:drawableEndCompat="@drawable/ic_right" />
 </RelativeLayout>

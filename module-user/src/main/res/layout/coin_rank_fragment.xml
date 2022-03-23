@@ -1,208 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.fragment.library.base.view.FitsWindowsLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    app:status_bar_color="@color/theme">
 
     <RelativeLayout
-        android:id="@+id/title_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/theme">
+        android:layout_height="match_parent">
 
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
+        <RelativeLayout
+            android:id="@+id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@color/theme">
 
-        <ImageView
-            android:id="@+id/black"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentStart="true"
-            android:padding="18dp"
-            android:src="@drawable/ic_back" />
+            <ImageView
+                android:id="@+id/black"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentStart="true"
+                android:padding="18dp"
+                android:src="@drawable/ic_back" />
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_centerInParent="true"
-            android:layout_toStartOf="@id/rule"
-            android:layout_toEndOf="@id/black"
-            android:gravity="center"
-            android:text="积分排行榜"
-            android:textColor="@color/text_fff"
-            android:textSize="16sp" />
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:layout_toStartOf="@id/rule"
+                android:layout_toEndOf="@id/black"
+                android:gravity="center"
+                android:text="积分排行榜"
+                android:textColor="@color/text_fff"
+                android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/rule"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentEnd="true"
-            android:padding="16dp"
-            android:src="@drawable/ic_rule" />
+            <ImageView
+                android:id="@+id/rule"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentEnd="true"
+                android:padding="16dp"
+                android:src="@drawable/ic_rule" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/coin_rank_top"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_below="@id/title_bar"
+            android:background="@color/theme"
+            android:orientation="horizontal"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/crown_2"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="15dp"
+                    android:src="@drawable/ic_crown_2" />
+
+                <ImageView
+                    android:id="@+id/logo_2"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_below="@id/crown_2"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/ic_logo" />
+
+                <TextView
+                    android:id="@+id/name_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/logo_2"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+                    android:text="暂无上榜"
+                    android:textColor="@color/text_fff"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/coin_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/name_2"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/text_fff"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/crown_1"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/ic_crown_1" />
+
+                <ImageView
+                    android:id="@+id/logo_1"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_below="@id/crown_1"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/ic_logo" />
+
+                <TextView
+                    android:id="@+id/name_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/logo_1"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+                    android:text="暂无上榜"
+                    android:textColor="@color/text_fff"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/coin_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/name_1"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/text_fff"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/crown_3"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="25dp"
+                    android:src="@drawable/ic_crown_3" />
+
+                <ImageView
+                    android:id="@+id/logo_3"
+                    android:layout_width="65dp"
+                    android:layout_height="65dp"
+                    android:layout_below="@id/crown_3"
+                    android:layout_centerHorizontal="true"
+                    android:src="@drawable/ic_logo" />
+
+                <TextView
+                    android:id="@+id/name_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/logo_3"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
+                    android:text="暂无上榜"
+                    android:textColor="@color/text_fff"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/coin_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/name_3"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/text_fff"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <com.example.fragment.library.base.view.pull.PullRefreshLayout
+            android:id="@+id/pull_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/coin_rank_top">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.example.fragment.library.base.view.pull.PullRefreshLayout>
 
     </RelativeLayout>
 
-    <LinearLayout
-        android:id="@+id/coin_rank_top"
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_below="@id/title_bar"
-        android:background="@color/theme"
-        android:orientation="horizontal"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <ImageView
-                android:id="@+id/crown_2"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="15dp"
-                android:src="@drawable/ic_crown_2" />
-
-            <ImageView
-                android:id="@+id/logo_2"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_below="@id/crown_2"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_logo" />
-
-            <TextView
-                android:id="@+id/name_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/logo_2"
-                android:layout_centerHorizontal="true"
-                android:gravity="center"
-                android:text="暂无上榜"
-                android:textColor="@color/text_fff"
-                android:textSize="15sp" />
-
-            <TextView
-                android:id="@+id/coin_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/name_2"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="2dp"
-                android:gravity="center"
-                android:text="0"
-                android:textColor="@color/text_fff"
-                android:textSize="15sp" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <ImageView
-                android:id="@+id/crown_1"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_crown_1" />
-
-            <ImageView
-                android:id="@+id/logo_1"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_below="@id/crown_1"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_logo" />
-
-            <TextView
-                android:id="@+id/name_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/logo_1"
-                android:layout_centerHorizontal="true"
-                android:gravity="center"
-                android:text="暂无上榜"
-                android:textColor="@color/text_fff"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/coin_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/name_1"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="2dp"
-                android:gravity="center"
-                android:text="0"
-                android:textColor="@color/text_fff"
-                android:textSize="16sp" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <ImageView
-                android:id="@+id/crown_3"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="25dp"
-                android:src="@drawable/ic_crown_3" />
-
-            <ImageView
-                android:id="@+id/logo_3"
-                android:layout_width="65dp"
-                android:layout_height="65dp"
-                android:layout_below="@id/crown_3"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_logo" />
-
-            <TextView
-                android:id="@+id/name_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/logo_3"
-                android:layout_centerHorizontal="true"
-                android:gravity="center"
-                android:text="暂无上榜"
-                android:textColor="@color/text_fff"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/coin_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/name_3"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="2dp"
-                android:gravity="center"
-                android:text="0"
-                android:textColor="@color/text_fff"
-                android:textSize="14sp" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <com.example.fragment.library.base.view.pull.PullRefreshLayout
-        android:id="@+id/pull_refresh"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/coin_rank_top">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </com.example.fragment.library.base.view.pull.PullRefreshLayout>
-
-</RelativeLayout>
+</com.example.fragment.library.base.view.FitsWindowsLayout>

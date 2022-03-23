@@ -142,7 +142,10 @@
 -dontwarn sun.misc.SignalHandler
 -dontwarn java.lang.instrument.Instrumentation
 -dontwarn sun.misc.Signal
-##-----------------------------------------第三方依赖库--------------------------------------------
+##----------------------------------------- 第三方依赖库 --------------------------------------------
+#----------------------------- pinyin4j ---------------------------------
+-keep class com.hp.hpl.sparta.* {*;}
+-keep class net.sourceforge.pinyin4j.* {*;}
 #----------------------------- gson ---------------------------------
 # Gson specific classes
 -dontwarn sun.misc.**
@@ -164,7 +167,7 @@
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
 # A resource is loaded with a relative path so the package of this class must be preserved.
--keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
+-adaptresourcefilenames okhttp3/internal/publicsuffix/PublicSuffixDatabase.gz
 # Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
 -dontwarn org.codehaus.mojo.animal_sniffer.*
 # OkHttp platform used only on JVM and when Conscrypt and other security providers are available.
@@ -172,8 +175,6 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
-# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
--dontwarn org.codehaus.mojo.animal_sniffer.*
 #---------------------------- retrofit --------------------------------
 # Retrofit does reflection on generic parameters. InnerClasses is required to use Signature and
 # EnclosingMethod is required to use InnerClasses.
@@ -194,6 +195,7 @@
 -dontwarn kotlin.Unit
 # Top-level functions that can only be used by Kotlin.
 -dontwarn retrofit2.KotlinExtensions
+#-dontwarn retrofit2.KotlinExtensions$*
 # With R8 full mode, it sees no subtypes of Retrofit interfaces since they are created with a Proxy
 # and replaces all potential values with null. Explicitly keeping the interfaces prevents this.
 -if interface * { @retrofit2.http.* <methods>; }

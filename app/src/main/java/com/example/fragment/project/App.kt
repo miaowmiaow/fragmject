@@ -6,6 +6,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.decode.SvgDecoder
 import com.example.fragment.library.base.http.setBaseUrl
 import com.example.fragment.library.base.http.setHttpClient
 import com.example.fragment.library.base.utils.OkHelper
@@ -22,11 +23,12 @@ class App : Application(), ImageLoaderFactory {
             .crossfade(true)
             .okHttpClient { OkHelper.httpClient(applicationContext) }
             .componentRegistry {
-                if (Build.VERSION.SDK_INT >= 28) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder(applicationContext))
                 } else {
                     add(GifDecoder())
                 }
+                add(SvgDecoder(applicationContext))
             }
             .build()
     }

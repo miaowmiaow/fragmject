@@ -13,6 +13,7 @@ enum class Router {
     SYSTEM_URL,
     USER_SHARE,
     USER_AVATAR,
+    USER_CITY,
     USER_INFO,
     USER_LOGIN,
     USER_REGISTER,

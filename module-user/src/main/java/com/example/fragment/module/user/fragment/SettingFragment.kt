@@ -167,7 +167,7 @@ class SettingFragment : RouterFragment() {
         }
         settingViewModel.logoutResult.observe(viewLifecycleOwner) {
             httpParseSuccess(it) {
-                userViewModel.updateUser(UserBean())
+                userViewModel.updateUserBean(UserBean())
                 activity.onBackPressed()
             }
         }

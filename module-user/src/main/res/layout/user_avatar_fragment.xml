@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.fragment.library.base.view.FitsWindowsLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    app:status_bar_color="@color/theme">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -13,51 +15,46 @@
             android:layout_width="250dp"
             android:layout_height="250dp"
             android:layout_centerInParent="true"
-            android:src="@drawable/avatar_1_raster"
-            android:scaleType="centerCrop" />
-    </RelativeLayout>
+            android:scaleType="centerCrop"
+            android:src="@drawable/avatar_1_raster" />
 
-    <RelativeLayout
-        android:id="@+id/title_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/theme">
-
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
+        <RelativeLayout
+            android:id="@+id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@color/theme">
 
-        <ImageView
-            android:id="@+id/black"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentStart="true"
-            android:padding="18dp"
-            android:src="@drawable/ic_back" />
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:text="个人头像"
-            android:textColor="@color/text_fff"
-            android:textSize="16sp" />
+            <ImageView
+                android:id="@+id/black"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentStart="true"
+                android:padding="18dp"
+                android:src="@drawable/ic_back" />
 
-        <TextView
-            android:id="@+id/album"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentEnd="true"
-            android:gravity="center"
-            android:text="相册"
-            android:textColor="@color/text_fff"
-            android:textSize="12sp" />
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:text="个人头像"
+                android:textColor="@color/text_fff"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/album"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentEnd="true"
+                android:gravity="center"
+                android:text="相册"
+                android:textColor="@color/text_fff"
+                android:textSize="12sp" />
+
+        </RelativeLayout>
 
     </RelativeLayout>
-</RelativeLayout>
+
+</com.example.fragment.library.base.view.FitsWindowsLayout>

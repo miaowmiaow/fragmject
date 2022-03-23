@@ -14,16 +14,6 @@ android {
         targetSdkVersion Integer.valueOf(gradle.targetSdkVersion)
         versionCode Integer.valueOf(gradle.versionCode)
         versionName gradle.versionName
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
     }
 
     buildFeatures {
@@ -39,28 +29,26 @@ dependencies {
     api rootProject.ext.dependencies["androidx-fragment-ktx"]
     api rootProject.ext.dependencies["androidx-viewpager2"]
     api rootProject.ext.dependencies["androidx-webkit"]
-    api rootProject.ext.dependencies["androidx-lifecycle-viewmodel-ktx"]
-    api rootProject.ext.dependencies["androidx-lifecycle-livedata-ktx"]
-    api rootProject.ext.dependencies["androidx-navigation-fragment-ktx"]
-    api rootProject.ext.dependencies["androidx-navigation-ui-ktx"]
-    api rootProject.ext.dependencies["androidx-room-runtime"]
-    annotationProcessor rootProject.ext.dependencies["androidx-room-compiler"]
-    kapt rootProject.ext.dependencies["androidx-room-compiler"]
-    api rootProject.ext.dependencies["androidx-room-ktx"]
+    api rootProject.ext.dependencies["livedata-ktx"]
+    api rootProject.ext.dependencies["viewmodel-ktx"]
+    api rootProject.ext.dependencies["navigation-fragment-ktx"]
+    api rootProject.ext.dependencies["navigation-ui-ktx"]
+    annotationProcessor rootProject.ext.dependencies["room-compiler"]
+    kapt rootProject.ext.dependencies["room-compiler"]
+    api rootProject.ext.dependencies["room-ktx"]
+    api rootProject.ext.dependencies["room-runtime"]
     api rootProject.ext.dependencies["coil-kt"]
     api rootProject.ext.dependencies["coil-gif"]
+    api rootProject.ext.dependencies["coil-svg"]
     api rootProject.ext.dependencies["google-flexbox"]
     api rootProject.ext.dependencies["google-material"]
     api rootProject.ext.dependencies["google-gson"]
-    api rootProject.ext.dependencies["jetbrains-kotlin-stdlib"]
-    api rootProject.ext.dependencies["jetbrains-kotlinx-coroutines-android"]
+    api rootProject.ext.dependencies["kotlin-stdlib"]
+    api rootProject.ext.dependencies["kotlinx-coroutines-android"]
     api rootProject.ext.dependencies["meituan-walle"]
     api rootProject.ext.dependencies["squareup-retrofit"]
     api rootProject.ext.dependencies["squareup-okhttp"]
     api rootProject.ext.dependencies["squareup-okhttp-logging-interceptor"]
     api rootProject.ext.dependencies["tencent-tbs"]
 
-    api 'junit:junit:4.13.2'
-    api 'androidx.test.ext:junit:1.1.2'
-    api 'androidx.test.espresso:espresso-core:3.3.0'
 }

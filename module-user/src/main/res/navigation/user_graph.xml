@@ -7,9 +7,16 @@
     <fragment
         android:id="@+id/avatar"
         android:name="com.example.fragment.module.user.fragment.UserAvatarFragment"
-        android:label="AvatarFragment"
+        android:label="UserAvatarFragment"
         tools:layout="@layout/user_avatar_fragment">
         <deepLink app:uri="fragment.example.com/user/avatar" />
+    </fragment>
+    <fragment
+        android:id="@+id/city"
+        android:name="com.example.fragment.module.user.fragment.UserCityFragment"
+        android:label="UserCityFragment"
+        tools:layout="@layout/user_city_fragment">
+        <deepLink app:uri="fragment.example.com/user/city" />
     </fragment>
     <fragment
         android:id="@+id/info"
@@ -21,14 +28,14 @@
     <fragment
         android:id="@+id/login"
         android:name="com.example.fragment.module.user.fragment.UserLoginFragment"
-        android:label="LoginFragment"
+        android:label="UserLoginFragment"
         tools:layout="@layout/user_login_fragment">
         <deepLink app:uri="fragment.example.com/user/login" />
     </fragment>
     <fragment
         android:id="@+id/register"
         android:name="com.example.fragment.module.user.fragment.UserRegisterFragment"
-        android:label="RegisterFragment"
+        android:label="UserRegisterFragment"
         tools:layout="@layout/user_register_fragment">
         <deepLink app:uri="fragment.example.com/user/register" />
     </fragment>

@@ -11,17 +11,18 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
+import com.example.fragment.library.base.dialog.FullDialog
+import com.example.fragment.library.base.utils.ActivityCallback
+import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
 import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.databinding.PictureEditorDialogBinding
 import com.example.miaow.picture.editor.PictureEditorView
 import com.example.miaow.picture.editor.layer.OnStickerClickListener
-import com.example.miaow.picture.utils.ActivityCallback
-import com.example.miaow.picture.utils.ActivityHelper.startForResult
 import com.example.miaow.picture.utils.AlbumUtils.getImagePath
 import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
 import com.example.miaow.picture.utils.ColorUtils
 
-class PictureEditorDialog : PictureBaseDialog() {
+class PictureEditorDialog : FullDialog() {
 
     companion object {
         @JvmStatic
@@ -117,7 +118,7 @@ class PictureEditorDialog : PictureBaseDialog() {
                             tool.isSelected = false
                         }
                         3 -> {
-                            openClipDialog( binding.picEditor.saveBitmap())
+                            openClipDialog(binding.picEditor.saveBitmap())
                             tool.isSelected = false
                         }
                         4 -> {

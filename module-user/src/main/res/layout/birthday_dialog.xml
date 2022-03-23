@@ -65,10 +65,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="144dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="18dp"
-        android:layout_marginBottom="10dp">
+        android:layout_margin="18dp">
 
         <LinearLayout
             android:layout_width="wrap_content"

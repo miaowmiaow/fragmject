@@ -9,13 +9,11 @@ import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.load
 import com.example.fragment.library.base.utils.loadCircleCrop
-import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
-import com.example.fragment.module.user.dialog.CityDialog
 import com.example.fragment.module.user.dialog.SexDialog
 import com.example.fragment.module.user.model.UserViewModel
 import java.io.File
@@ -30,8 +28,6 @@ class UserInfoFragment : RouterFragment() {
     private val viewModel: UserViewModel by activityViewModels()
     private var _binding: UserInfoFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private var userBean = UserBean()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,8 +52,10 @@ class UserInfoFragment : RouterFragment() {
                 .setSex(binding.sexInfo.text.toString())
                 .setSexListener(object : SexDialog.SexListener {
                     override fun onSex(sex: String) {
-                        userBean.sex = sex
-                        viewModel.updateUser(userBean)
+                        viewModel.getUserBean().let {
+                            it.sex = sex
+                            viewModel.updateUserBean(it)
+                        }
                     }
                 })
                 .show(childFragmentManager)
@@ -67,34 +65,28 @@ class UserInfoFragment : RouterFragment() {
                 .setBirthday(binding.birthdayInfo.text.toString())
                 .setBirthdayListener(object : BirthdayDialog.BirthdayListener {
                     override fun onBirthday(time: String) {
-                        userBean.birthday = time
-                        viewModel.updateUser(userBean)
+                        viewModel.getUserBean().let {
+                            it.birthday = time
+                            viewModel.updateUserBean(it)
+                        }
                     }
                 })
                 .show(childFragmentManager)
         }
         binding.city.setOnClickListener {
-            CityDialog.newInstance()
-                .setCityListener(object : CityDialog.CityListener {
-                    override fun onCity(name: String) {
-                        userBean.city = name
-                        viewModel.updateUser(userBean)
-                    }
-                })
-                .show(childFragmentManager)
+            activity.navigation(Router.USER_CITY)
         }
     }
 
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) {
-            userBean = it
-            if (userBean.avatar.isNotBlank()) {
-                binding.avatarImg.load(File(userBean.avatar))
+            if (it.avatar.isNotBlank()) {
+                binding.avatarImg.load(File(it.avatar))
             }
-            setUserInfo(binding.username, userBean.username)
-            setUserInfo(binding.sexInfo, userBean.sex)
-            setUserInfo(binding.birthdayInfo, userBean.birthday)
-            setUserInfo(binding.cityInfo, userBean.city)
+            setUserInfo(binding.username, it.username)
+            setUserInfo(binding.sexInfo, it.sex)
+            setUserInfo(binding.birthdayInfo, it.birthday)
+            setUserInfo(binding.cityInfo, it.city)
         }
         return viewModel
     }

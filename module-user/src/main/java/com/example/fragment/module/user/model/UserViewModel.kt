@@ -13,15 +13,19 @@ class UserViewModel : BaseViewModel() {
         return userResult.value?.id ?: ""
     }
 
-    fun getUser() {
+    fun getUserBean(): UserBean{
+        return userResult.value ?: UserBean()
+    }
+
+    fun updateUserBean(userBean: UserBean) {
+        WanHelper.setUser(userBean)
+        userResult.postValue(userBean)
+    }
+
+    fun getUser(){
         WanHelper.getUser {
             userResult.postValue(it)
         }
-    }
-
-    fun updateUser(userBean: UserBean) {
-        WanHelper.setUser(userBean)
-        userResult.postValue(userBean)
     }
 
 }

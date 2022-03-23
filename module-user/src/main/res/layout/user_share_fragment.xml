@@ -112,7 +112,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="30dp"
                 android:layout_marginBottom="30dp"
-                android:background="@drawable/layer_corner_theme"
+                android:background="@drawable/layer_corner_solid_theme_stroke_line_r10"
                 android:paddingStart="100dp"
                 android:paddingEnd="100dp"
                 android:text="分享"

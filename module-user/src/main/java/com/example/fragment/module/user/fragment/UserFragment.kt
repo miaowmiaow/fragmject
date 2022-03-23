@@ -56,7 +56,7 @@ class UserFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
             if (userBean.id.isNotBlank()) {
                 if (userBean.avatar.isNotBlank()) {
-                    binding.avatar.loadRoundedCorners(File(userBean.avatar), 15f)
+                    binding.avatar.loadCircleCrop(File(userBean.avatar))
                 }
                 binding.username.text = "欢迎回来！${userBean.username}"
                 binding.avatar.setOnClickListener { activity.navigation(Router.USER_INFO) }

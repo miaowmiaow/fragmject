@@ -98,7 +98,7 @@ class MainFragment : RouterFragment() {
         binding.viewpager2.offscreenPageLimit = fragments.size
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                setColorFilter(tab.customView, R.color.gray_alpha)
+                setColorFilter(tab.customView, R.color.three_nine_gray)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {

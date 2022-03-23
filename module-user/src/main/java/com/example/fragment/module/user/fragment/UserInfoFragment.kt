@@ -81,7 +81,7 @@ class UserInfoFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) {
             if (it.avatar.isNotBlank()) {
-                binding.avatarImg.load(File(it.avatar))
+                binding.avatarImg.loadCircleCrop(File(it.avatar))
             }
             setUserInfo(binding.username, it.username)
             setUserInfo(binding.sexInfo, it.sex)

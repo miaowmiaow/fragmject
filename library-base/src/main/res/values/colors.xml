@@ -23,8 +23,9 @@
     <color name="orange">#ff7800</color>
     <color name="green">#33cc99</color>
     <color name="gray">#F5F5F5</color>
+    <color name="two_b_gray">#2bF5F5F5</color>
     <color name="gray_e5">#E5E5E5</color>
-    <color name="gray_alpha">#39F6F6F6</color>
+    <color name="three_nine_gray">#39F5F5F5</color>
     <color name="transparent">#00000000</color>
 
     <!--文字颜色-->

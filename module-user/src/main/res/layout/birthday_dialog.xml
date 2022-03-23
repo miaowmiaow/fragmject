@@ -17,7 +17,7 @@
             android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape_corner_gray_2_bg"
+            android:background="@drawable/shape_corner_gray_r2"
             android:paddingStart="10dp"
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toStartOf="@id/config"
-            android:background="@drawable/shape_corner_green_2_bg"
+            android:background="@drawable/shape_corner_green_r2"
             android:paddingStart="10dp"
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="10dp"
-            android:background="@drawable/shape_corner_blue_2_bg"
+            android:background="@drawable/shape_corner_blue_r2"
             android:paddingStart="10dp"
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
@@ -108,20 +108,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/mask"
-            android:background="@drawable/shape_corner_white_a4_bg" />
+            android:background="@drawable/shape_corner_bb_white_r4" />
 
         <View
             android:id="@+id/mask"
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_centerInParent="true"
-            android:background="@drawable/shape_corner_gray_a4_bg" />
+            android:background="@drawable/shape_corner_1b_black_r4" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/mask"
             android:layout_centerInParent="true"
-            android:background="@drawable/shape_corner_white_a4_bg" />
+            android:background="@drawable/shape_corner_bb_white_r4" />
     </RelativeLayout>
 </LinearLayout>

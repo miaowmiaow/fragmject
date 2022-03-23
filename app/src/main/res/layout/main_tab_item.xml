@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/icon"
         android:includeFontPadding="false"
-        android:textColor="@color/gray_alpha"
+        android:textColor="@color/three_nine_gray"
         android:textSize="12sp" />
 
 </RelativeLayout>

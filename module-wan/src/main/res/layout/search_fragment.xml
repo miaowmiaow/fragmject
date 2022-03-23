@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.example.fragment.library.base.view.FitsWindowsLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fits_windows_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    app:navigation_bar_color="@color/white"
     app:status_bar_color="@color/theme">
 
     <RelativeLayout
@@ -25,7 +25,7 @@
                 android:layout_marginBottom="12dp"
                 android:layout_toStartOf="@id/cancel"
                 android:alpha="0.7"
-                android:background="@drawable/shape_corners_solid_gray_alpha">
+                android:background="@drawable/shape_corners_39_gray_r15">
 
                 <ImageView
                     android:id="@+id/ic_search"
@@ -73,7 +73,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/title_bar"
-            android:background="@color/white"
             android:orientation="vertical">
 
             <LinearLayout

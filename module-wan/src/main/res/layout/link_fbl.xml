@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="7dp"
-    android:background="@drawable/selector_corners_gray"
+    android:background="@drawable/selector_corners_gray_r15"
     android:paddingLeft="15dp"
     android:paddingTop="5dp"
     android:paddingRight="15dp"

@@ -96,7 +96,7 @@
                 android:layout_centerInParent="true"
                 android:layout_marginTop="25dp"
                 android:layout_marginBottom="25dp"
-                android:background="@drawable/shape_corners_solid_stroke_white"
+                android:background="@drawable/shape_corners_stroke_white_r10"
                 android:paddingStart="100dp"
                 android:paddingEnd="100dp"
                 android:text="登录"

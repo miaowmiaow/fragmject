@@ -63,7 +63,7 @@ class UserAvatarFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) {
             if (it.avatar.isNotBlank()) {
-                binding.image.loadRoundedCorners(File(it.avatar), 15f)
+                binding.image.loadCircleCrop(File(it.avatar))
             }
         }
         return viewModel

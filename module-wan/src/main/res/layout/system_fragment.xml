@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    app:navigation_bar_color="@color/white"
     app:status_bar_color="@color/theme">
 
     <RelativeLayout

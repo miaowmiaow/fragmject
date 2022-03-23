@@ -8,6 +8,7 @@ import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.Window
 import android.widget.RelativeLayout
+import androidx.annotation.ColorInt
 import androidx.core.view.WindowCompat
 import com.example.fragment.library.base.R
 
@@ -60,7 +61,12 @@ class FitsWindowsLayout @JvmOverloads constructor(
             navigationBarLight = getBoolean(R.styleable.FitsWindowsLayout_navigation_bar_light, navigationBarLight)
             recycle()
         }
-        setDecorFitsSystemWindows(window)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+        //设置沉浸模式 true:不沉浸，false:沉浸
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setStatusBar(statusBarColor, statusBarLight)
+        setNavigationBar(navigationBarColor, navigationBarLight)
     }
 
     override fun onFinishInflate() {
@@ -83,17 +89,22 @@ class FitsWindowsLayout @JvmOverloads constructor(
     }
 
     /**
-     * 设置沉浸模式
+     * 设置状态栏
      */
-    fun setDecorFitsSystemWindows(window: Window) {
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-        WindowCompat.setDecorFitsSystemWindows(window, false) //true:不沉浸，false:沉浸
-        statusBar.setBackgroundColor(statusBarColor) //设置状态栏底色
+    fun setStatusBar(@ColorInt color: Int, isLight: Boolean) {
+        statusBar.setBackgroundColor(color) //设置状态栏底色
+        WindowCompat.getInsetsController(window, this)?.apply {
+            isAppearanceLightStatusBars = isLight //设置状态栏亮起
+        }
+    }
+
+    /**
+     * 设置导航栏
+     */
+    fun setNavigationBar(@ColorInt color: Int, isLight: Boolean) {
         navigationBar.setBackgroundColor(navigationBarColor) //设置导航栏底色
         WindowCompat.getInsetsController(window, this)?.apply {
-            isAppearanceLightStatusBars = statusBarLight //设置状态栏亮起
-            isAppearanceLightNavigationBars = navigationBarLight //设置导航栏亮起
+            isAppearanceLightNavigationBars = isLight //设置导航栏亮起
         }
     }
 

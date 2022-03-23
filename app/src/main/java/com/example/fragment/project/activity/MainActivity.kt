@@ -26,7 +26,7 @@ class MainActivity : RouterActivity() {
     override fun navigation(name: Router, bundle: Bundle?) {
         //登录态校验
         if (loginRequired(name)) {
-            navigate("user/login")
+            navigate("user/login", bundle)
         } else when (name) {
             Router.COIN2RANK -> navigate("coin/rank", bundle)
             Router.MAIN -> popBackStack(R.id.main, false)

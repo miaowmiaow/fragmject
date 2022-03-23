@@ -55,7 +55,7 @@ open class BaseDialog : DialogFragment() {
         } catch (e: Exception) {
             ((context as ContextThemeWrapper).baseContext as Activity).window
         }
-        window.navigationBarColor = color //设置导航栏白色底色
+        window.navigationBarColor = color //设置导航栏底色
         WindowCompat.getInsetsController(window, view)?.apply {
             isAppearanceLightNavigationBars = isLight //设置导航栏亮起
         }

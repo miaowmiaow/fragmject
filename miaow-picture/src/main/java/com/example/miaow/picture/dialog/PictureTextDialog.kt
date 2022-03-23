@@ -10,11 +10,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
+import com.example.fragment.library.base.dialog.FullDialog
 import com.example.miaow.picture.bean.StickerAttrs
 import com.example.miaow.picture.databinding.PictureTextDialogBinding
 import com.example.miaow.picture.utils.ColorUtils
 
-class PictureTextDialog : PictureBaseDialog() {
+class PictureTextDialog : FullDialog() {
 
     companion object {
         @JvmStatic

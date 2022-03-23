@@ -1,66 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.fragment.library.base.view.FitsWindowsLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/white"
+    app:status_bar_color="@color/white"
+    app:status_bar_light="true">
 
-    <com.example.fragment.library.base.view.StatusBar
-        android:id="@+id/status_bar"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/nav_bar"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/layer_web_nav_bar_bg"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/black"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/nav_bar"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_weight="1"
-            android:padding="17dp"
-            android:src="@drawable/ic_web_back" />
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/layer_nav_bar_bg"
+            android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/forward"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:padding="17dp"
-            android:src="@drawable/ic_web_forward" />
+            <ImageView
+                android:id="@+id/black"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:padding="17dp"
+                android:src="@drawable/ic_web_back" />
 
-        <ImageView
-            android:id="@+id/refresh"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:padding="15dp"
-            android:src="@drawable/ic_web_refresh" />
+            <ImageView
+                android:id="@+id/forward"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:padding="17dp"
+                android:src="@drawable/ic_web_forward" />
 
-        <ImageView
-            android:id="@+id/browse"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:padding="15dp"
-            android:src="@drawable/ic_web_browse" />
-    </LinearLayout>
+            <ImageView
+                android:id="@+id/refresh"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:src="@drawable/ic_web_refresh" />
 
-    <com.example.fragment.library.base.view.SnailBar
-        android:id="@+id/progress_bar"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_above="@id/nav_bar" />
+            <ImageView
+                android:id="@+id/browse"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:src="@drawable/ic_web_browse" />
+        </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/web_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/nav_bar"
-        android:layout_below="@id/status_bar" />
+        <com.example.fragment.library.base.view.SnailBar
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_above="@id/nav_bar" />
 
-</RelativeLayout>
+        <FrameLayout
+            android:id="@+id/web_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/nav_bar" />
+
+    </RelativeLayout>
+</com.example.fragment.library.base.view.FitsWindowsLayout>

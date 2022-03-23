@@ -98,11 +98,11 @@ class MainFragment : RouterFragment() {
         binding.viewpager2.offscreenPageLimit = fragments.size
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                setColorFilter(tab.customView, R.color.text_fff)
+                setColorFilter(tab.customView, R.color.gray_alpha)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {
-                setColorFilter(tab.customView, R.color.gray_alpha)
+                setColorFilter(tab.customView, R.color.text_theme)
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {}
@@ -110,9 +110,9 @@ class MainFragment : RouterFragment() {
         TabLayoutMediator(binding.tabLayout, binding.viewpager2, false, false) { tab, position ->
             val item = MainTabItemBinding.inflate(LayoutInflater.from(binding.root.context))
             item.icon.setImageResource(tabDrawable[position])
-            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.gray_alpha))
+            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.text_theme))
             item.name.text = tabTexts[position]
-            item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.gray_alpha))
+            item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.text_theme))
             tab.customView = item.root
         }.attach()
     }
@@ -141,12 +141,12 @@ class MainFragment : RouterFragment() {
         activity.navigation(Router.SEARCH, bundleOf(Keys.VALUE to title))
     }
 
-    private fun setColorFilter(view: View?, id: Int) {
+    private fun setColorFilter(view: View?, iconColor: Int, nameColor: Int = R.color.text_theme) {
         view?.apply {
             val icon = findViewById<ImageView>(R.id.icon)
             val name = findViewById<TextView>(R.id.name)
-            icon.setColorFilter(ContextCompat.getColor(icon.context, id))
-            name.setTextColor(ContextCompat.getColor(name.context, id))
+            icon.setColorFilter(ContextCompat.getColor(icon.context, iconColor))
+            name.setTextColor(ContextCompat.getColor(name.context, nameColor))
         }
     }
 }

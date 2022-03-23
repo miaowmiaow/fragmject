@@ -3,8 +3,8 @@ package com.example.fragment.library.base.activity
 import android.view.View
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.example.fragment.library.base.utils.StatusBarUtils
 import com.example.fragment.library.base.view.TipsView
+import com.example.fragment.library.base.view.statusBarHeight
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -19,7 +19,7 @@ abstract class BaseActivity : AppCompatActivity() {
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.WRAP_CONTENT
         ).also {
-            it.topMargin = StatusBarUtils.getStatusBarHeight(view.context)
+            it.topMargin = view.statusBarHeight()
         })
         super.setContentView(layout)
     }

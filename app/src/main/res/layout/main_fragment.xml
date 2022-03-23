@@ -1,79 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.fragment.library.base.view.FitsWindowsLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    app:navigation_bar_color="@color/white"
+    app:status_bar_color="@color/theme">
 
     <RelativeLayout
-        android:id="@+id/title_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/theme">
-
-        <com.example.fragment.library.base.view.StatusBar
-            android:id="@+id/status_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        android:layout_height="match_parent">
 
         <RelativeLayout
-            android:id="@+id/search"
+            android:id="@+id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="26dp"
-            android:layout_below="@id/status_bar"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginStart="15dp"
-            android:layout_toStartOf="@id/user_share"
-            android:alpha="0.7"
-            android:background="@drawable/shape_corners_solid_gray_alpha">
+            android:layout_height="wrap_content"
+            android:background="@color/theme">
+
+            <RelativeLayout
+                android:id="@+id/search"
+                android:layout_width="match_parent"
+                android:layout_height="26dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:layout_toStartOf="@id/user_share"
+                android:alpha="0.7"
+                android:background="@drawable/shape_corners_solid_gray_alpha">
+
+                <ImageView
+                    android:id="@+id/iv_search"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="10dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_search" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/hot_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="15dp"
+                    android:layout_toEndOf="@id/iv_search" />
+
+            </RelativeLayout>
 
             <ImageView
-                android:id="@+id/iv_search"
-                android:layout_width="13dp"
-                android:layout_height="13dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="15dp"
-                android:layout_marginEnd="10dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/ic_search" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/hot_key"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="15dp"
-                android:layout_toEndOf="@id/iv_search" />
+                android:id="@+id/user_share"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentEnd="true"
+                android:padding="15dp"
+                android:src="@drawable/ic_add" />
 
         </RelativeLayout>
 
-        <ImageView
-            android:id="@+id/user_share"
-            android:layout_width="50dp"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_below="@id/status_bar"
-            android:layout_alignParentEnd="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_add" />
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/layer_nav_bar_bg"
+            android:clipChildren="false"
+            app:tabIndicatorHeight="0dp"
+            app:tabMode="fixed"
+            app:tabRippleColor="@null" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewpager2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/tab_layout"
+            android:layout_below="@id/title_bar" />
 
     </RelativeLayout>
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/theme"
-        android:clipChildren="false"
-        app:tabIndicatorHeight="0dp"
-        app:tabMode="fixed"
-        app:tabRippleColor="@null" />
-
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewpager2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/title_bar"
-        android:layout_above="@id/tab_layout" />
-
-</RelativeLayout>
+</com.example.fragment.library.base.view.FitsWindowsLayout>

@@ -66,7 +66,6 @@ class WebFragment : RouterFragment() {
         if (!url.isNullOrBlank()) {
             webViewHelper.loadUrl(url)
         }
-        binding.statusBar.setStatusBarTheme(true)
         val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (!webViewHelper.canGoBack()) {
                 this.isEnabled = false

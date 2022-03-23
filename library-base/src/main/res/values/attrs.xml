@@ -1,0 +1,10 @@
+<resources>
+    <declare-styleable name="FitsWindowsLayout">
+        <attr name="status_bar_color" format="color" />
+        <attr name="status_bar_fits" format="boolean" />
+        <attr name="status_bar_light" format="boolean" />
+        <attr name="navigation_bar_color" format="color" />
+        <attr name="navigation_bar_fits" format="boolean" />
+        <attr name="navigation_bar_light" format="boolean" />
+    </declare-styleable>
+</resources>

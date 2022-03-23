@@ -13,7 +13,7 @@ import com.example.fragment.project.databinding.MainActivityBinding
 
 class MainActivity : RouterActivity() {
 
-    private val userViewModel: UserViewModel by viewModels()
+    private val viewModel: UserViewModel by viewModels()
 
     override fun controllerId(): Int {
         return R.id.nav_host_fragment_main
@@ -39,6 +39,7 @@ class MainActivity : RouterActivity() {
             Router.SYSTEM -> navigate("system/{cid}", bundle)
             Router.SYSTEM_URL -> navigate("system/url/{url}", bundle)
             Router.USER_AVATAR -> navigate("user/avatar", bundle)
+            Router.USER_CITY -> navigate("user/city", bundle)
             Router.USER_INFO -> navigate("user/info", bundle)
             Router.USER_LOGIN -> navigate("user/login", bundle)
             Router.USER_REGISTER -> navigate("user/register", bundle)
@@ -57,11 +58,10 @@ class MainActivity : RouterActivity() {
         initLoad()
     }
 
-    private fun initViewModel() {
-    }
+    private fun initViewModel() {}
 
     private fun initLoad() {
-        userViewModel.getUser()
+        viewModel.getUser()
     }
 
     private fun loginRequired(name: Router): Boolean {
@@ -72,7 +72,7 @@ class MainActivity : RouterActivity() {
             Router.USER_AVATAR,
             Router.USER_SHARE
         )
-        return loginRouter.contains(name) && userViewModel.getUserId().isBlank()
+        return loginRouter.contains(name) && viewModel.getUserId().isBlank()
     }
 
 }

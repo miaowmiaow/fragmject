@@ -15,7 +15,6 @@ import com.example.fragment.library.base.utils.ActivityResultHelper.startForResu
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.base.utils.loadRoundedCorners
-import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.UserAvatarFragmentBinding
@@ -30,8 +29,6 @@ class UserAvatarFragment : RouterFragment() {
     private val viewModel: UserViewModel by activityViewModels()
     private var _binding: UserAvatarFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private var userBean = UserBean()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,9 +62,8 @@ class UserAvatarFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) {
-            userBean = it
-            if (userBean.avatar.isNotBlank()) {
-                binding.image.loadRoundedCorners(File(userBean.avatar), 15f)
+            if (it.avatar.isNotBlank()) {
+                binding.image.loadRoundedCorners(File(it.avatar), 15f)
             }
         }
         return viewModel
@@ -96,8 +92,10 @@ class UserAvatarFragment : RouterFragment() {
             .setBitmapPath(path)
             .setEditorFinishCallback(object : EditorFinishCallback {
                 override fun onFinish(path: String) {
-                    userBean.avatar = path
-                    viewModel.updateUser(userBean)
+                    viewModel.getUserBean().let {
+                        it.avatar = path
+                        viewModel.updateUserBean(it)
+                    }
                 }
             })
             .show(childFragmentManager)

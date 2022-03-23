@@ -37,7 +37,7 @@ class CityAdapter : BaseAdapter<CityBean>() {
                 onCityClickListener?.onCityClick("广东省-广州市")
             }
             binding.shenzhen.setOnClickListener {
-                onCityClickListener?.onCityClick("上海市-深圳市")
+                onCityClickListener?.onCityClick("广东省-深圳市")
             }
         } else {
             val binding = holder.binding as CityItemBinding

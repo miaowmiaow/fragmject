@@ -1,42 +1,38 @@
-package com.example.fragment.module.user.dialog
+package com.example.fragment.module.user.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.dialog.FullDialog
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.GsonUtil
 import com.example.fragment.library.base.utils.PinyinUtils
 import com.example.fragment.library.base.utils.ReadAssetsFileUtil
+import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.adapter.CityAdapter
 import com.example.fragment.module.user.bean.CityBean
 import com.example.fragment.module.user.bean.CityPickerBean
-import com.example.fragment.module.user.databinding.CityDialogBinding
+import com.example.fragment.module.user.databinding.UserCityFragmentBinding
+import com.example.fragment.module.user.model.UserViewModel
 import java.util.*
 import kotlin.collections.ArrayList
 
-class CityDialog : FullDialog() {
+class UserCityFragment : RouterFragment() {
 
-    companion object {
-        @JvmStatic
-        fun newInstance(): CityDialog {
-            return CityDialog()
-        }
-    }
-
-    private var _binding: CityDialogBinding? = null
+    private val viewModel: UserViewModel by activityViewModels()
+    private var _binding: UserCityFragmentBinding? = null
     private val binding get() = _binding!!
     private var cityAdapter = CityAdapter()
-    private var listener: CityListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = CityDialogBinding.inflate(inflater, container, false)
+        _binding = UserCityFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -45,17 +41,30 @@ class CityDialog : FullDialog() {
         _binding = null
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.black.setOnClickListener { dismiss() }
+    override fun initView() {
+        binding.black.setOnClickListener { activity.onBackPressed() }
         binding.secrecy.setOnClickListener {
-            listener?.onCity("保密")
-            dismiss()
+            viewModel.getUserBean().let {
+                it.city = "保密"
+                viewModel.updateUserBean(it)
+            }
+            activity.onBackPressed()
         }
         binding.sideLetterBar.setOverlay(binding.letterOverlay)
         binding.searchText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                binding.city.scrollToPosition(cityAdapter.searchCity(binding.searchText.text.toString()))
+                binding.city.layoutManager?.let {
+                    if (it is LinearLayoutManager) {
+                        val firstPosition = it.findFirstCompletelyVisibleItemPosition()
+                        val lastPosition = it.findLastCompletelyVisibleItemPosition()
+                        val searchText = binding.searchText.text.toString()
+                        val cityPosition = cityAdapter.searchCity(searchText)
+                        val position = if (cityPosition > lastPosition) {
+                            cityPosition + (lastPosition - firstPosition)
+                        } else cityPosition
+                        it.scrollToPosition(position)
+                    }
+                }
                 return@setOnEditorActionListener true
             }
             false
@@ -83,26 +92,27 @@ class CityDialog : FullDialog() {
             }
         }
         //set转换list
-        val cities: java.util.ArrayList<CityBean> = ArrayList(citys)
+        val cities = ArrayList<CityBean>(citys)
         //按照字母排序
         cities.sortWith { city, t1 -> city.pinyin.compareTo(t1.pinyin) }
         cityAdapter.setCityData(cities)
         cityAdapter.setOnCityClickListener(object : CityAdapter.OnCityClickListener {
             override fun onCityClick(name: String) {
-                listener?.onCity(name)
-                dismiss()
+                viewModel.getUserBean().let {
+                    it.city = name
+                    viewModel.updateUserBean(it)
+                }
+                activity.onBackPressed()
             }
         })
     }
 
-    fun setCityListener(listener: CityListener): CityDialog {
-        this.listener = listener
-        return this
+    override fun initViewModel(): BaseViewModel {
+        return viewModel
     }
 
-    interface CityListener {
-        fun onCity(name: String)
+    override fun initLoad() {
+        viewModel.getUser()
     }
-
 
 }

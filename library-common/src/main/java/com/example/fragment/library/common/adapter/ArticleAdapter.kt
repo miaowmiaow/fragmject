@@ -7,12 +7,14 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
+import com.example.fragment.library.base.utils.buildSpannableString
 import com.example.fragment.library.base.utils.load
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.base.utils.loadRoundedCorners
@@ -46,61 +48,59 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         val binding = holder.binding as ArticleItemBinding
         val activity: RouterActivity = contextToActivity(binding.root.context)
         binding.root.setOnClickListener {
-            val url = Uri.encode(item.link)
-            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
+            activity.navigation(Router.WEB, bundleOf(Keys.URL to Uri.encode(item.link)))
         }
-        binding.author.text = if (item.author.isNotBlank()) item.author else "匿名"
         binding.avatar.loadCircleCrop(avatarList[position % 6])
         binding.avatar.setOnClickListener {
             activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
         }
+        val shareUser = "${item.author}${item.shareUser}"
+        binding.shareUser.text = if (shareUser.isNotBlank()) shareUser else "匿名"
         binding.time.text = item.niceDate
-        binding.newest.visibility = if (item.fresh) View.VISIBLE else View.GONE
-        binding.tag.visibility = if (!item.tags.isNullOrEmpty()) {
+        if (!item.tags.isNullOrEmpty()) {
+            binding.tag.visibility = View.VISIBLE
             binding.tag.text = item.tags[0].name
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
-        binding.tag.setOnClickListener {
-            item.tags?.let {
-                val url = Uri.encode(it[0].url)
+            binding.tag.setOnClickListener {
+                val url = Uri.encode(item.tags[0].url)
                 activity.navigation(Router.SYSTEM_URL, bundleOf(Keys.URL to url))
             }
-        }
-        binding.tag.visibility = if (!item.tags.isNullOrEmpty()) View.VISIBLE else View.GONE
-        binding.top.visibility = if (item.top) View.VISIBLE else View.GONE
-        binding.image.visibility = if (item.envelopePic.isNotEmpty()) {
-            binding.image.loadRoundedCorners(item.envelopePic, 15f)
-            View.VISIBLE
         } else {
-            View.GONE
+            binding.tag.visibility = View.GONE
         }
         binding.title.text = fromHtml(item.title)
-        if (TextUtils.isEmpty(item.desc)) {
+        if (item.desc.isNotBlank()) {
+            binding.title.isSingleLine = true
+            binding.desc.text = removeAllBank(fromHtml(item.desc), 2)
+            binding.desc.visibility = View.VISIBLE
+        } else {
             binding.title.isSingleLine = false
             binding.desc.visibility = View.GONE
-        } else {
-            binding.title.isSingleLine = true
-            var desc = fromHtml(item.desc)
-            desc = removeAllBank(desc, 2)
-            binding.desc.text = desc
-            binding.desc.visibility = View.VISIBLE
         }
-        binding.chapterName.text = fromHtml(
-            formatChapterName(item.superChapterName, item.chapterName)
-        )
+        if (item.envelopePic.isNotBlank()) {
+            binding.image.visibility = View.VISIBLE
+            binding.image.loadRoundedCorners(item.envelopePic, 15f)
+        } else {
+            binding.image.visibility = View.GONE
+        }
+        binding.chapterName.buildSpannableString {
+            if (item.fresh) {
+                append("新  ") {
+                    setColor(ContextCompat.getColor(binding.chapterName.context, R.color.blue))
+                }
+            }
+            if (item.top) {
+                append("置顶  ") {
+                    setColor(ContextCompat.getColor(binding.chapterName.context, R.color.orange))
+                }
+            }
+            append(fromHtml(formatChapterName(item.superChapterName, item.chapterName)))
+        }
         binding.chapterName.setOnClickListener {
-            val args = bundleOf(Keys.CID to item.chapterId)
-            activity.navigation(Router.SYSTEM, args)
+            activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
         }
         if (item.collect) {
             binding.collect.load(R.drawable.ic_collect_checked)
-        } else {
-            binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
-        }
-        binding.collect.setOnClickListener {
-            if (item.collect) {
+            binding.collect.setOnClickListener {
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = post<HttpResponse>(HttpRequest().apply {
                         setUrl("lg/uncollect_originId/{id}/json")
@@ -110,7 +110,11 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                         binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
                     }
                 }
-            } else {
+                item.collect = !item.collect
+            }
+        } else {
+            binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
+            binding.collect.setOnClickListener {
                 CoroutineScope(Dispatchers.Main).launch {
                     val request = HttpRequest("lg/collect/{id}/json").putPath("id", item.id)
                     val response = post<HttpResponse>(request)
@@ -118,8 +122,8 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
                         binding.collect.load(R.drawable.ic_collect_checked)
                     }
                 }
+                item.collect = !item.collect
             }
-            item.collect = !item.collect
         }
     }
 
@@ -135,9 +139,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         val format = StringBuilder()
         for (name in names) {
             if (!TextUtils.isEmpty(name)) {
-                if (format.isNotEmpty()) {
-                    format.append("·")
-                }
+                if (format.isNotEmpty()) format.append("·")
                 format.append(name)
             }
         }

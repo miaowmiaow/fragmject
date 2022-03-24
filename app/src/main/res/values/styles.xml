@@ -1,11 +1,13 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="windowNoTitle">true</item>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowBackground">@color/background</item>
+        <item name="android:navigationBarColor">@color/transparent</item>
     </style>
 
-    <style name="AppTheme.Splash" parent="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+    <style name="AppTheme.Splash" parent="AppTheme">
+        <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">@drawable/splash_bg</item>
     </style>
 

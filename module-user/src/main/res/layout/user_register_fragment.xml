@@ -108,7 +108,7 @@
                 android:layout_marginTop="25dp"
                 android:layout_marginEnd="50dp"
                 android:text="去登录"
-                android:textColor="@color/white"
+                android:textColor="@color/text_fff"
                 android:textSize="14sp" />
 
             <Button

@@ -2,6 +2,10 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item>
+        <color android:color="@color/theme"/>
+    </item>
+
+    <item android:top="24dp">
         <bitmap
             android:gravity="center"
             android:src="@drawable/bg" />

@@ -54,14 +54,15 @@ class WebViewHelper private constructor(parent: ViewGroup) {
                 view: WebView?,
                 request: WebResourceRequest?
             ): Boolean {
-                val uri = request?.url
-                if (view != null && uri != null && !("http" == uri.scheme || "https" == uri.scheme)) {
-                    try {
-                        view.context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                request?.url?.let { uri ->
+                    if (view != null && !("http" == uri.scheme || "https" == uri.scheme)) {
+//                    try {
+//                        view.context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    }
+                        return true
                     }
-                    return true
                 }
                 return false
             }
@@ -176,9 +177,12 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return canForward
     }
 
-    fun loadUrl(url: String) {
-        webView.loadUrl(url)
-        originalUrl = url
+    fun loadUrl(url: String?): WebViewHelper {
+        if (!url.isNullOrBlank()) {
+            webView.loadUrl(url)
+            originalUrl = url
+        }
+        return this
     }
 
     fun reload() {

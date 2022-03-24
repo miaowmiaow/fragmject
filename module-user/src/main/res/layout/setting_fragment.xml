@@ -57,7 +57,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:singleLine="true"
-                        android:text="跟随系统暗色模式"
+                        android:text="跟随系统深色模式"
                         android:textColor="@color/text_666"
                         android:textSize="14sp" />
 
@@ -80,7 +80,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:singleLine="true"
-                        android:text="暗色模式"
+                        android:text="深色模式"
                         android:textColor="@color/text_666"
                         android:textSize="14sp" />
 

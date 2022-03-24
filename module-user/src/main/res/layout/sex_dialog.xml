@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
         android:layout_marginTop="18dp"
-        android:layout_marginBottom="9dp"
+        android:layout_marginBottom="12dp"
         android:text="性别"
         android:textColor="@color/text_333"
         android:textSize="14sp" />

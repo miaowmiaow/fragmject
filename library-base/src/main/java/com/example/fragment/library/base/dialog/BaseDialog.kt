@@ -47,6 +47,21 @@ open class BaseDialog : DialogFragment() {
     }
 
     /**
+     * 设置状态栏
+     */
+    fun setStatusBar(view: View, @ColorInt color: Int, isLight: Boolean) {
+        val window: Window = try {
+            (context as Activity).window
+        } catch (e: Exception) {
+            ((context as ContextThemeWrapper).baseContext as Activity).window
+        }
+        window.statusBarColor = color //设置状态栏底色
+        WindowCompat.getInsetsController(window, view)?.apply {
+            isAppearanceLightStatusBars = isLight //设置状态栏亮起
+        }
+    }
+
+    /**
      * 设置导航栏
      */
     fun setNavigationBar(view: View, @ColorInt color: Int, isLight: Boolean) {

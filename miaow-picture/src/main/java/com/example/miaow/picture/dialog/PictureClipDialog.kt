@@ -1,6 +1,7 @@
 package com.example.miaow.picture.dialog
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,11 +48,15 @@ class PictureClipDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        setStatusBar(binding.root, Color.TRANSPARENT, true)
+        setNavigationBar(binding.root, Color.TRANSPARENT, true)
         _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setStatusBar(binding.root, Color.BLACK, false)
+        setNavigationBar(binding.root, Color.BLACK, false)
         binding.clip.setBitmapResource(bitmap)
         binding.rotate.setOnClickListener { binding.clip.rotate() }
         binding.reset.setOnClickListener { binding.clip.reset() }

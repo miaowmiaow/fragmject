@@ -52,15 +52,15 @@ class PictureTextDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        setStatusBar(binding.root, Color.TRANSPARENT, true)
+        setNavigationBar(binding.root, Color.TRANSPARENT, true)
         _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupView()
-    }
-
-    private fun setupView() {
+        setStatusBar(binding.root, Color.BLACK, false)
+        setNavigationBar(binding.root, Color.BLACK, false)
         textColors.add(binding.textWhite)
         textColors.add(binding.textBlack)
         textColors.add(binding.textRed)
@@ -68,9 +68,9 @@ class PictureTextDialog : FullDialog() {
         textColors.add(binding.textGreen)
         textColors.add(binding.textBlue)
         textColors.add(binding.textPurple)
-        textColors.forEachIndexed { index, view ->
-            view.setOnClickListener {
-                selectedColor(view)
+        textColors.forEachIndexed { index, colorView ->
+            colorView.setOnClickListener {
+                selectedColor(colorView)
                 binding.editText.setTextColor(ColorUtils.colorful[index])
             }
         }

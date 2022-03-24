@@ -63,9 +63,7 @@ class WebFragment : RouterFragment() {
                     binding.progressBar.progress = newProgress
                 }
             })
-        if (!url.isNullOrBlank()) {
-            webViewHelper.loadUrl(url)
-        }
+            .loadUrl(url)
         val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (!webViewHelper.canGoBack()) {
                 this.isEnabled = false

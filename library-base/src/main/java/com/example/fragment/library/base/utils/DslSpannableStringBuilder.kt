@@ -4,6 +4,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.*
 import android.text.style.DynamicDrawableSpan.ALIGN_BOTTOM
@@ -52,8 +53,13 @@ class DslSpanImpl : DslSpan {
         spans.add(BackgroundColorSpan(color))
     }
 
-    override fun setClick(onClick: (View) -> Unit) {
+    override fun setClick(color: Int, underlineText: Boolean, onClick: (View) -> Unit) {
         spans.add(object : ClickableSpan() {
+            override fun updateDrawState(ds: TextPaint) {
+                ds.color = color
+                ds.isUnderlineText = underlineText
+            }
+
             override fun onClick(widget: View) {
                 onClick(widget)
             }
@@ -98,7 +104,7 @@ interface DslSpan {
     fun setBackgroundColor(@ColorInt color: Int)
 
     //设置点击事件
-    fun setClick(onClick: (View) -> Unit)
+    fun setClick(@ColorInt color: Int, underlineText: Boolean, onClick: (View) -> Unit)
 
     //设置文字颜色
     fun setColor(@ColorInt color: Int)

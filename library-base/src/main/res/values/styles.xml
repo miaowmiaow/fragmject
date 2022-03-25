@@ -6,9 +6,8 @@
     </style>
 
     <style name="FullDialog" parent="BaseDialog">
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:background">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowIsFloating">true</item>
     </style>
 
     <style name="AnimRight" parent="@android:style/Animation">

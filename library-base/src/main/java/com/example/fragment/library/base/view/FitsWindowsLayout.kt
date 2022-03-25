@@ -3,6 +3,9 @@ package com.example.fragment.library.base.view
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
+import android.provider.Settings
+import android.provider.Settings.Secure
 import android.util.AttributeSet
 import android.view.ContextThemeWrapper
 import android.view.View
@@ -53,18 +56,29 @@ class FitsWindowsLayout @JvmOverloads constructor(
 
     init {
         context.obtainStyledAttributes(attrs, R.styleable.FitsWindowsLayout).apply {
-            statusBarColor = getColor(R.styleable.FitsWindowsLayout_status_bar_color, statusBarColor)
-            statusBarFits = getBoolean(R.styleable.FitsWindowsLayout_status_bar_fits, statusBarFits)
-            statusBarLight = getBoolean(R.styleable.FitsWindowsLayout_status_bar_light, statusBarLight)
-            navigationBarColor = getColor(R.styleable.FitsWindowsLayout_navigation_bar_color, navigationBarColor)
-            navigationBarFits = getBoolean(R.styleable.FitsWindowsLayout_navigation_bar_fits, navigationBarFits)
-            navigationBarLight = getBoolean(R.styleable.FitsWindowsLayout_navigation_bar_light, navigationBarLight)
+            statusBarColor = getColor(
+                R.styleable.FitsWindowsLayout_status_bar_color, statusBarColor
+            )
+            statusBarFits = getBoolean(
+                R.styleable.FitsWindowsLayout_status_bar_fits, statusBarFits
+            )
+            statusBarLight = getBoolean(
+                R.styleable.FitsWindowsLayout_status_bar_light, statusBarLight
+            )
+            navigationBarColor = getColor(
+                R.styleable.FitsWindowsLayout_navigation_bar_color, navigationBarColor
+            )
+            navigationBarFits = getBoolean(
+                R.styleable.FitsWindowsLayout_navigation_bar_fits, navigationBarFits
+            )
+            navigationBarLight = getBoolean(
+                R.styleable.FitsWindowsLayout_navigation_bar_light, navigationBarLight
+            )
             recycle()
         }
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
-        //设置沉浸模式 true:不沉浸，false:沉浸
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setDecorFitsSystemWindows(false)
         setStatusBar(statusBarColor, statusBarLight)
         setNavigationBar(navigationBarColor, navigationBarLight)
     }
@@ -89,6 +103,14 @@ class FitsWindowsLayout @JvmOverloads constructor(
     }
 
     /**
+     * 设置沉浸模式
+     * @param decorFitsSystemWindows true:不沉浸，false:沉浸
+     */
+    fun setDecorFitsSystemWindows(decorFitsSystemWindows: Boolean){
+        WindowCompat.setDecorFitsSystemWindows(window, decorFitsSystemWindows)
+    }
+
+    /**
      * 设置状态栏
      */
     fun setStatusBar(@ColorInt color: Int, isLight: Boolean) {
@@ -102,7 +124,7 @@ class FitsWindowsLayout @JvmOverloads constructor(
      * 设置导航栏
      */
     fun setNavigationBar(@ColorInt color: Int, isLight: Boolean) {
-        navigationBar.setBackgroundColor(navigationBarColor) //设置导航栏底色
+        navigationBar.setBackgroundColor(color) //设置导航栏底色
         WindowCompat.getInsetsController(window, this)?.apply {
             isAppearanceLightNavigationBars = isLight //设置导航栏亮起
         }
@@ -123,14 +145,43 @@ fun View.statusBarHeight(): Int {
 
 fun View.navigationBarHeight(): Int {
     var result = 0
-    context.resources.apply {
-        val showId = getIdentifier("config_showNavigationBar", "bool", "android")
+    if (hasNavigationBar()) {
+        val res = context.resources
+        val showId = res.getIdentifier("config_showNavigationBar", "bool", "android")
         if (showId > 0) {
-            val resourceId = getIdentifier("navigation_bar_height", "dimen", "android")
+            val resourceId = res.getIdentifier("navigation_bar_height", "dimen", "android")
             if (resourceId > 0) {
-                result = getDimensionPixelSize(resourceId)
+                result = res.getDimensionPixelSize(resourceId)
             }
         }
     }
     return result
+}
+
+fun View.hasNavigationBar() = when {
+    checkIsHuaweiRom() && isHuaWeiHideNav() -> false
+    checkIsVivoRom() && isVivoFullScreen() -> false
+    else -> true
+}
+
+/**
+ * 华为手机是否隐藏了虚拟导航栏
+ * @return true 表示隐藏了，false 表示未隐藏
+ */
+fun View.isHuaWeiHideNav(): Boolean {
+    return Settings.Global.getInt(context.contentResolver, "navigationbar_is_min", 0) != 0
+}
+
+/**
+ * Vivo手机是否开启手势操作
+ * @return true 表示使用的是手势，false 表示使用的是虚拟导航栏(NavigationBar)，默认是false
+ */
+fun View.isVivoFullScreen(): Boolean {
+    return Secure.getInt(context.contentResolver, "navigation_gesture_on", 0) != 0
+}
+
+fun checkIsHuaweiRom() = Build.MANUFACTURER.contains("HUAWEI")
+
+fun checkIsVivoRom(): Boolean {
+    return Build.MANUFACTURER.contains("VIVO") || Build.MANUFACTURER.contains("vivo")
 }

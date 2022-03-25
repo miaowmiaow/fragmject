@@ -3,7 +3,6 @@ package com.example.miaow.picture.dialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
@@ -39,16 +38,6 @@ class PictureEditorDialog : FullDialog() {
     private var bitmapPath = ""
     private var callback: EditorFinishCallback? = null
 
-    fun setBitmapPath(path: String): PictureEditorDialog {
-        this.bitmapPath = path
-        return this
-    }
-
-    fun setEditorFinishCallback(callback: EditorFinishCallback): PictureEditorDialog {
-        this.callback = callback
-        return this
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -60,15 +49,14 @@ class PictureEditorDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        setStatusBar(binding.root, Color.TRANSPARENT, true)
-        setNavigationBar(binding.root, Color.TRANSPARENT, true)
         _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setStatusBar(binding.root, Color.BLACK, false)
-        setNavigationBar(binding.root, Color.BLACK, false)
+        dialog?.window?.apply {
+            setDimAmount(1f)
+        }
         colors.add(binding.white)
         colors.add(binding.black)
         colors.add(binding.red)
@@ -136,6 +124,16 @@ class PictureEditorDialog : FullDialog() {
                 }
             }
         }
+    }
+
+    fun setBitmapPath(path: String): PictureEditorDialog {
+        this.bitmapPath = path
+        return this
+    }
+
+    fun setEditorFinishCallback(callback: EditorFinishCallback): PictureEditorDialog {
+        this.callback = callback
+        return this
     }
 
     private fun openAlbum() {

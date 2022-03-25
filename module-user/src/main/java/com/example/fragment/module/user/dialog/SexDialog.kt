@@ -65,6 +65,14 @@ class SexDialog : BottomDialog() {
         selectionSex(sexIndex)
     }
 
+    private fun selectionSex(index: Int) {
+        sexIndex = index
+        sexViews.forEach {
+            it.isSelected = false
+        }
+        sexViews[sexIndex].isSelected = true
+    }
+
     fun setSex(sex: String): SexDialog {
         if ("保密" == sex) {
             sexIndex = 0
@@ -81,14 +89,6 @@ class SexDialog : BottomDialog() {
     fun setSexListener(listener: SexListener): SexDialog {
         this.listener = listener
         return this
-    }
-
-    private fun selectionSex(index: Int) {
-        sexIndex = index
-        sexViews.forEach {
-            it.isSelected = false
-        }
-        sexViews[sexIndex].isSelected = true
     }
 
     interface SexListener {

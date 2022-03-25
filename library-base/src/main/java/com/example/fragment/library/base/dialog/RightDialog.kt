@@ -10,7 +10,7 @@ open class RightDialog : BaseDialog() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NO_FRAME, R.style.BaseDialog)
+        setStyle(STYLE_NO_TITLE, R.style.BaseDialog)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

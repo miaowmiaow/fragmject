@@ -31,16 +31,6 @@ class PictureTextDialog : FullDialog() {
     private val attrs get() = _attrs!!
     private var callback: TextFinishCallback? = null
 
-    fun setStickerAttrs(attrs: StickerAttrs?): PictureTextDialog {
-        this._attrs = attrs
-        return this
-    }
-
-    fun setTextFinishCallback(callback: TextFinishCallback): PictureTextDialog {
-        this.callback = callback
-        return this
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -52,15 +42,14 @@ class PictureTextDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        setStatusBar(binding.root, Color.TRANSPARENT, true)
-        setNavigationBar(binding.root, Color.TRANSPARENT, true)
         _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setStatusBar(binding.root, Color.BLACK, false)
-        setNavigationBar(binding.root, Color.BLACK, false)
+        dialog?.window?.apply {
+            setDimAmount(1f)
+        }
         textColors.add(binding.textWhite)
         textColors.add(binding.textBlack)
         textColors.add(binding.textRed)
@@ -138,6 +127,16 @@ class PictureTextDialog : FullDialog() {
         canvas.drawColor(Color.TRANSPARENT)
         binding.editText.draw(canvas)
         return bitmap
+    }
+
+    fun setStickerAttrs(attrs: StickerAttrs?): PictureTextDialog {
+        this._attrs = attrs
+        return this
+    }
+
+    fun setTextFinishCallback(callback: TextFinishCallback): PictureTextDialog {
+        this.callback = callback
+        return this
     }
 
 }

@@ -1,7 +1,6 @@
 package com.example.miaow.picture.dialog
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,17 +22,6 @@ class PictureClipDialog : FullDialog() {
     private lateinit var bitmap: Bitmap
     private var isSaving = false
     private var callback: ClipFinishCallback? = null
-
-    fun setBitmapResource(bitmap: Bitmap): PictureClipDialog {
-        this.bitmap = bitmap
-        return this
-    }
-
-    fun setClipFinishCallback(callback: ClipFinishCallback): PictureClipDialog {
-        this.callback = callback
-        return this
-    }
-
     private var _binding: PictureClipDialogBinding? = null
     private val binding get() = _binding!!
 
@@ -48,15 +36,14 @@ class PictureClipDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        setStatusBar(binding.root, Color.TRANSPARENT, true)
-        setNavigationBar(binding.root, Color.TRANSPARENT, true)
         _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setStatusBar(binding.root, Color.BLACK, false)
-        setNavigationBar(binding.root, Color.BLACK, false)
+        dialog?.window?.apply {
+            setDimAmount(1f)
+        }
         binding.clip.setBitmapResource(bitmap)
         binding.rotate.setOnClickListener { binding.clip.rotate() }
         binding.reset.setOnClickListener { binding.clip.reset() }
@@ -72,6 +59,16 @@ class PictureClipDialog : FullDialog() {
                 }
             }
         }
+    }
+
+    fun setBitmapResource(bitmap: Bitmap): PictureClipDialog {
+        this.bitmap = bitmap
+        return this
+    }
+
+    fun setClipFinishCallback(callback: ClipFinishCallback): PictureClipDialog {
+        this.callback = callback
+        return this
     }
 
 }

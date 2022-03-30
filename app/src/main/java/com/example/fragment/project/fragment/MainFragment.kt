@@ -64,6 +64,16 @@ class MainFragment : RouterFragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        hotKeyHelper.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hotKeyHelper.stop()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         hotKeyHelper.stop()

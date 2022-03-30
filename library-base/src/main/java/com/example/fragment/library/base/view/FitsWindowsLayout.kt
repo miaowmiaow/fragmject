@@ -1,15 +1,18 @@
 package com.example.fragment.library.base.view
 
 import android.app.Activity
+import android.app.Service
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.provider.Settings
 import android.provider.Settings.Secure
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import android.widget.RelativeLayout
 import androidx.annotation.ColorInt
 import androidx.core.view.WindowCompat
@@ -106,7 +109,7 @@ class FitsWindowsLayout @JvmOverloads constructor(
      * 设置沉浸模式
      * @param decorFitsSystemWindows true:不沉浸，false:沉浸
      */
-    fun setDecorFitsSystemWindows(decorFitsSystemWindows: Boolean){
+    fun setDecorFitsSystemWindows(decorFitsSystemWindows: Boolean) {
         WindowCompat.setDecorFitsSystemWindows(window, decorFitsSystemWindows)
     }
 
@@ -161,7 +164,7 @@ fun View.navigationBarHeight(): Int {
 fun View.hasNavigationBar() = when {
     checkIsHuaweiRom() && isHuaWeiHideNav() -> false
     checkIsVivoRom() && isVivoFullScreen() -> false
-    else -> true
+    else -> isHasNavigationBar()
 }
 
 /**
@@ -178,6 +181,30 @@ fun View.isHuaWeiHideNav(): Boolean {
  */
 fun View.isVivoFullScreen(): Boolean {
     return Secure.getInt(context.contentResolver, "navigation_gesture_on", 0) != 0
+}
+
+/**
+ * 根据屏幕真实高度与显示高度，判断虚拟导航栏是否显示
+ * @return true 表示虚拟导航栏显示，false 表示虚拟导航栏未显示
+ */
+fun View.isHasNavigationBar(): Boolean {
+    val windowManager = context.getSystemService(Service.WINDOW_SERVICE) as WindowManager
+    val display = windowManager.defaultDisplay
+    val realDisplayMetrics = DisplayMetrics()
+    display.getRealMetrics(realDisplayMetrics)
+    val realHeight = realDisplayMetrics.heightPixels
+    val realWidth = realDisplayMetrics.widthPixels
+    val displayMetrics = DisplayMetrics()
+    display.getMetrics(displayMetrics)
+    val displayHeight = displayMetrics.heightPixels
+    val displayWidth = displayMetrics.widthPixels
+    // 部分无良厂商的手势操作，显示高度竟然大于物理高度，对于这种情况，直接默认未启用导航栏
+    if (displayHeight > displayWidth) {
+        if (displayHeight > realHeight) return false
+    } else {
+        if (displayWidth > realWidth) return false
+    }
+    return realWidth - displayWidth > 0 || realHeight - displayHeight > 0
 }
 
 fun checkIsHuaweiRom() = Build.MANUFACTURER.contains("HUAWEI")

@@ -47,6 +47,16 @@ class HomeFragment : RouterFragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        bannerHelper.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bannerHelper.stop()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         bannerHelper.stop()

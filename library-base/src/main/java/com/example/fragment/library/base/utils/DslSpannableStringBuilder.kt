@@ -115,6 +115,7 @@ interface DslSpan {
     //设置字体大小
     fun setSize(size: Int)
 
+    //设置删除线
     fun setStrikethrough()
 
     //设置字体样式

@@ -122,6 +122,7 @@ class HomeFragment : RouterFragment() {
 
     private fun initIndicator(itemCount: Int) {
         if (itemCount > 0) {
+            binding.indicator.removeAllViews()
             val layoutParams = LinearLayout.LayoutParams(
                 MetricsUtils.dp2px(12f).toInt(),
                 MetricsUtils.dp2px(3f).toInt()

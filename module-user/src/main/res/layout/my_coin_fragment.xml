@@ -46,17 +46,17 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/coin"
+        <com.example.fragment.library.base.view.CoordinatorLayout
+            android:id="@+id/coordinator"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="match_parent"
             android:layout_below="@id/title_bar"
-            android:background="@color/theme">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/coinCount"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
+                android:layout_height="120dp"
                 android:background="@color/theme"
                 android:gravity="center"
                 android:lines="1"
@@ -64,19 +64,19 @@
                 android:textColor="@color/text_fff"
                 android:textSize="80sp" />
 
-        </RelativeLayout>
-
-        <com.example.fragment.library.base.view.pull.PullRefreshLayout
-            android:id="@+id/pull_refresh"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/coin">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/list"
+            <com.example.fragment.library.base.view.pull.PullRefreshLayout
+                android:id="@+id/pull_refresh"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </com.example.fragment.library.base.view.pull.PullRefreshLayout>
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </com.example.fragment.library.base.view.pull.PullRefreshLayout>
+
+        </com.example.fragment.library.base.view.CoordinatorLayout>
 
     </RelativeLayout>
 

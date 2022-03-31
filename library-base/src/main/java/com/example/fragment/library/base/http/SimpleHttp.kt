@@ -120,9 +120,7 @@ class SimpleHttp private constructor() {
             val responseBody = getService().get(request.getUrl(baseUrl), request.getHeader())
             getConverter().converter(responseBody, type)
         } catch (e: Exception) {
-            type.newInstance().apply {
-                errorMsg = e.message.toString()
-            }
+            buildResponse("-1", e.message.toString(), type)
         } finally {
             progress?.invoke(1.0)
         }
@@ -142,9 +140,7 @@ class SimpleHttp private constructor() {
             )
             getConverter().converter(responseBody, type)
         } catch (e: Exception) {
-            type.newInstance().apply {
-                errorMsg = e.message.toString()
-            }
+            buildResponse("-1", e.message.toString(), type)
         } finally {
             progress?.invoke(1.0)
         }
@@ -164,9 +160,7 @@ class SimpleHttp private constructor() {
             )
             getConverter().converter(responseBody, type)
         } catch (e: Exception) {
-            type.newInstance().apply {
-                errorMsg = e.message.toString()
-            }
+            buildResponse("-1", e.message.toString(), type)
         } finally {
             progress?.invoke(1.0)
         }
@@ -185,16 +179,29 @@ class SimpleHttp private constructor() {
                     file.writeBytes(inputStream.readBytes())
                 }
             }
-            HttpResponse("0", "success")
+            buildResponse("0", "success", HttpResponse::class.java)
         } catch (e: Exception) {
-            HttpResponse("-1", e.message.toString())
+            buildResponse("-1", e.message.toString(), HttpResponse::class.java)
         } finally {
             progress?.invoke(1.0)
         }
     }
 
+    private fun <T : HttpResponse> buildResponse(code: String, msg: String, type: Class<T>): T {
+        val json = """
+            {
+                "errorCode": "$code",
+                "errorMsg": "$msg"
+            }
+        """.trimIndent()
+        return getConverter().fromJson(json, type)
+    }
+
     interface Converter {
         fun <T> converter(responseBody: ResponseBody, type: Class<T>): T
+
+        @Throws(Exception::class)
+        fun <T> fromJson(json: String, classOfT: Class<T>): T
     }
 
 }

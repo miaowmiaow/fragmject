@@ -4,11 +4,11 @@ import com.example.fragment.library.base.http.HttpResponse
 import com.google.gson.Gson
 
 data class LoginBean(
-    val data: UserBean
+    val data: UserBean? = null
 ) : HttpResponse()
 
 data class RegisterBean(
-    val data: UserBean
+    val data: UserBean? = null
 ) : HttpResponse()
 
 data class UserBean @JvmOverloads constructor(

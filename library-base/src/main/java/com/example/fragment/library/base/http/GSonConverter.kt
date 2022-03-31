@@ -20,4 +20,9 @@ class GSonConverter : SimpleHttp.Converter {
             adapter.read(jsonReader)
         }
     }
+
+    override fun <T> fromJson(json: String, classOfT: Class<T>): T {
+        return gSon.fromJson(json, classOfT)
+    }
+
 }

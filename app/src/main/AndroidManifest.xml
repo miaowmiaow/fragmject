@@ -24,6 +24,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <meta-data android:name="android.notch_support" android:value="true"/>
+
             <nav-graph android:value="@navigation/user_graph" />
             <nav-graph android:value="@navigation/wan_graph" />
             <nav-graph android:value="@navigation/web_graph" />

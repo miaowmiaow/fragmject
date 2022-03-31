@@ -93,6 +93,10 @@ class CoinRankFragment : RouterFragment() {
                 viewModel.getCoinRankNext()
             }
         })
+        binding.coordinator.post {
+            binding.coordinator.setMaxScrollY(binding.coinRankTop.height)
+            binding.pullRefresh.layoutParams.height = binding.coordinator.height
+        }
     }
 
     override fun initViewModel(): BaseViewModel {

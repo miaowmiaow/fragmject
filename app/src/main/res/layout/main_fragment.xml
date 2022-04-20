@@ -26,7 +26,7 @@
                 android:layout_marginBottom="12dp"
                 android:layout_toStartOf="@id/user_share"
                 android:alpha="0.7"
-                android:background="@drawable/shape_corners_39_gray_r15">
+                android:background="@drawable/rectangle_solid_39_gray_corners15">
 
                 <ImageView
                     android:id="@+id/iv_search"
@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_alignParentBottom="true"
-            android:background="@drawable/layer_nav_bar_bg"
+            android:background="@drawable/rectangle_solid_white_top1_line"
             android:clipChildren="false"
             app:tabIndicatorHeight="0dp"
             app:tabMode="fixed"

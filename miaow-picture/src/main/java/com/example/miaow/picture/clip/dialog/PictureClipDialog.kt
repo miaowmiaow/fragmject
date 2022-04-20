@@ -1,14 +1,18 @@
-package com.example.miaow.picture.dialog
+package com.example.miaow.picture.clip.dialog
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import coil.clear
+import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
+import com.example.fragment.library.base.utils.load
 import com.example.miaow.picture.databinding.PictureClipDialogBinding
-import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
+import com.example.miaow.picture.utils.saveSystemAlbum
 
 class PictureClipDialog : FullDialog() {
 
@@ -51,9 +55,15 @@ class PictureClipDialog : FullDialog() {
         binding.confirm.setOnClickListener {
             if (!isSaving) {
                 isSaving = true
+                binding.confirm.isEnabled = false
+                binding.progress.visibility = View.VISIBLE
+                binding.progress.load(R.drawable.icons8_monkey)
                 Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_LONG).show()
-                it.context.saveSystemAlbum(binding.clip.saveBitmap()) { path ->
-                    callback?.onFinish(path)
+                it.context.saveSystemAlbum(binding.clip.saveBitmap()) { path, uri ->
+                    binding.confirm.isEnabled = true
+                    binding.progress.visibility = View.GONE
+                    binding.progress.clear()
+                    callback?.onFinish(path, uri)
                     isSaving = false
                     dismiss()
                 }
@@ -74,5 +84,5 @@ class PictureClipDialog : FullDialog() {
 }
 
 interface ClipFinishCallback {
-    fun onFinish(path: String)
+    fun onFinish(path: String, uri: Uri)
 }

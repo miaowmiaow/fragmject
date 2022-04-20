@@ -25,7 +25,7 @@
                 android:layout_marginBottom="12dp"
                 android:layout_toStartOf="@id/cancel"
                 android:alpha="0.7"
-                android:background="@drawable/shape_corners_39_gray_r15">
+                android:background="@drawable/rectangle_solid_39_gray_corners15">
 
                 <ImageView
                     android:id="@+id/ic_search"

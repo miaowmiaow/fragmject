@@ -3,9 +3,8 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
+//    id 'miaow'
     id 'walle'
-//    id 'privacy'
-//    id 'statistic'
 }
 
 android {
@@ -112,56 +111,8 @@ dependencies {
     implementation project(path: ':module-wan')
 }
 
-//privacy {
-//    //扫描APP隐私合规字段
-//    filedPoint = [
-//            [
-//                    'owner' : 'android/os/Build',
-//                    'name'  : 'BRAND',
-//                    'desc'  : 'Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner' : 'android/os/Build',
-//                    'name'  : 'MODEL',
-//                    'desc'  : 'Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner' : 'android/os/Build',
-//                    'name'  : 'SERIAL',
-//                    'desc'  : 'Ljava/lang/String;',
-//            ]
-//    ]
-//    //扫描APP隐私合规方法
-//    methodPoint = [
-//            [
-//                    'owner' : 'android/telephony/TelephonyManager',
-//                    'name'  : 'getDeviceId',
-//                    'desc'  : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner' : 'android/telephony/TelephonyManager',
-//                    'name'  : 'getImei',
-//                    'desc'  : '()I',
-//            ],
-//            [
-//                    'owner' : 'android/telephony/TelephonyManager',
-//                    'name'  : 'getMeid',
-//                    'desc'  : '()I',
-//            ],
-//            [
-//                    'owner' : 'android/telephony/TelephonyManager',
-//                    'name'  : 'getSimSerialNumber',
-//                    'desc'  : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner' : 'android/telephony/TelephonyManager',
-//                    'name'  : 'getSubscriberId',
-//                    'desc'  : '()Ljava/lang/String;',
-//            ]
-//    ]
-//}
-
-//statistic {
+//miaow {
+//    //埋点
 //    buryPoint = [
 //            [
 //                    //采集数据的方法的路径
@@ -200,13 +151,60 @@ dependencies {
 //                    ]
 //            ],
 //    ]
-//    methodTimer = [
+//    //扫描APP字段（个保法隐私合规）
+//    scanFiled = [
 //            [
-//                    'time'  : 500L,
+//                    'owner': 'android/os/Build',
+//                    'name' : 'BRAND',
+//                    'desc' : 'Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner': 'android/os/Build',
+//                    'name' : 'MODEL',
+//                    'desc' : 'Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner': 'android/os/Build',
+//                    'name' : 'SERIAL',
+//                    'desc' : 'Ljava/lang/String;',
+//            ]
+//    ]
+//    //扫描APP方法（个保法隐私合规）
+//    scanMethod = [
+//            [
+//                    'owner': 'android/telephony/TelephonyManager',
+//                    'name' : 'getDeviceId',
+//                    'desc' : '()Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner': 'android/telephony/TelephonyManager',
+//                    'name' : 'getImei',
+//                    'desc' : '()I',
+//            ],
+//            [
+//                    'owner': 'android/telephony/TelephonyManager',
+//                    'name' : 'getMeid',
+//                    'desc' : '()I',
+//            ],
+//            [
+//                    'owner': 'android/telephony/TelephonyManager',
+//                    'name' : 'getSimSerialNumber',
+//                    'desc' : '()Ljava/lang/String;',
+//            ],
+//            [
+//                    'owner': 'android/telephony/TelephonyManager',
+//                    'name' : 'getSubscriberId',
+//                    'desc' : '()Ljava/lang/String;',
+//            ]
+//    ]
+//    //方法耗时打印
+//    timeMethod = [
+//            [
+//                    'time' : 100L,
 //                    'owner': 'com/example/fragment',
 //            ],
 //            [
-//                    'time'  : 500L,
+//                    'time' : 100L,
 //                    'owner': 'com/google',
 //            ]
 //    ]

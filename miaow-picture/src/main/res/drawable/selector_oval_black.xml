@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/shape_solid_stroke_black_checked" android:state_selected="true" />
-    <item android:drawable="@drawable/shape_solid_stroke_black_unchecked" />
+    <item android:drawable="@drawable/oval_solid_black_stroke2_white" android:state_selected="true" />
+    <item android:drawable="@drawable/oval_solid_black_stroke1_white" />
 </selector>

@@ -1,4 +1,4 @@
-package com.example.fragment.plugin
+package com.example.miaow.plugin
 
 class MiaowExtension {
     List<Map<String, Object>> buryPoint = new ArrayList<>()

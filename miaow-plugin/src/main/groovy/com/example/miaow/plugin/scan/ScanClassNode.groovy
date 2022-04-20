@@ -1,14 +1,13 @@
-package com.example.fragment.plugin.scan
+package com.example.miaow.plugin.scan
 
-import com.example.fragment.plugin.MiaowPlugin
-import com.example.fragment.plugin.scan.bean.ScanBean
+import com.example.miaow.plugin.MiaowPlugin
 import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 
 class ScanClassNode extends ClassNode {
 
-    private ClassVisitor classVisitor;
+    private ClassVisitor classVisitor
 
     ScanClassNode(int api, ClassVisitor classVisitor) {
         super(api)
@@ -42,11 +41,13 @@ class ScanClassNode extends ClassNode {
                     }
                 }
                 if (find != null) {
-                    MethodNode newMethodNode = new MethodNode(api, methodNode.access, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions.toArray(new String[methodNode.exceptions.size()]))
-                    MethodVisitor methodVisitor = new ScanAdviceAdapter(api, newMethodNode, name, methodNode.access, methodNode.name, methodNode.desc)
-                    methodNode.accept(methodVisitor)
-                    methods.set(i, newMethodNode)
-                    println(name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n")
+                    String str = name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
+//                    InsnList il = new InsnList()
+//                    il.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"))
+//                    il.add(new LdcInsnNode(str))
+//                    il.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false))
+//                    instructions.insertBefore(insnNode, il)
+                    println(str)
                 }
             }
         }

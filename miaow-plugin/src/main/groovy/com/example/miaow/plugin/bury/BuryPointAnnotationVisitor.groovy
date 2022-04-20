@@ -1,4 +1,4 @@
-package com.example.fragment.plugin.bury
+package com.example.miaow.plugin.bury
 
 import org.objectweb.asm.AnnotationVisitor
 

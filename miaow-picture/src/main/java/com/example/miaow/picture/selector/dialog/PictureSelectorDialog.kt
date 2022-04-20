@@ -1,44 +1,47 @@
 package com.example.miaow.picture.selector.dialog
 
-import android.content.ContentUris
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.dialog.FullDialog
-import com.example.miaow.picture.databinding.AlbumSelectorDialogBinding
-import com.example.miaow.picture.selector.adapter.AlbumAdapter
-import com.example.miaow.picture.selector.bean.Album
-import com.example.miaow.picture.selector.bean.Bucket
-import com.example.miaow.picture.selector.pop.BucketSelectorPopupWindow
-import com.example.miaow.picture.utils.getImagePath
+import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
+import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
+import com.example.miaow.picture.selector.bean.MediaBean
+import com.example.miaow.picture.selector.model.PictureViewModel
+import com.example.miaow.picture.selector.pop.PictureAlbumPopupWindow
 
-class AlbumSelectorDialog : FullDialog() {
+class PictureSelectorDialog : FullDialog() {
 
     companion object {
         @JvmStatic
-        fun newInstance(): AlbumSelectorDialog {
-            return AlbumSelectorDialog()
+        fun newInstance(): PictureSelectorDialog {
+            return PictureSelectorDialog()
         }
     }
 
-    private var _binding: AlbumSelectorDialogBinding? = null
+    private val viewModel: PictureViewModel by activityViewModels()
+    private var _binding: PictureSelectorDialogBinding? = null
     private val binding get() = _binding!!
-    private val albumAdapter = AlbumAdapter()
+    private var pictureAlbumPopupWindow: PictureAlbumPopupWindow? = null
+    private val selectorAdapter = PictureSelectorAdapter()
+
+    private var pictureSelectorCallback: PictureSelectorCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = AlbumSelectorDialogBinding.inflate(inflater, container, false)
+        _binding = PictureSelectorDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -56,94 +59,92 @@ class AlbumSelectorDialog : FullDialog() {
             setWindowAnimations(R.style.AnimRight)
         }
         setStatusBar(binding.root, Color.parseColor("#555555"), false)
-        val bucketData: MutableList<Bucket> = ArrayList()
-        val albumData = view.context.queryAlbum().onEach { (key, value) ->
-            val bucket = Bucket(key, value[value.size - 1].path, value.size.toString())
-            if (key == "最近项目") bucketData.add(0, bucket) else bucketData.add(bucket)
-        }
-        val popupWindow = BucketSelectorPopupWindow(view.context)
-        popupWindow.setBucketData(bucketData, 0)
-        popupWindow.setOnBucketSelectedListener(
-            object : BucketSelectorPopupWindow.OnBucketSelectedListener {
-                override fun onBucketSelected(name: String) {
-                    binding.bucketName.text = name
-                    albumAdapter.setAlbumData(albumData[name])
-                }
-            })
-        popupWindow.setOnDismissListener {
-            binding.bucketBox.isSelected = false
-        }
+        pictureAlbumPopupWindow = PictureAlbumPopupWindow(view.context)
+        initView()
+        initViewModel()
+        initData(view.context)
+    }
+
+    private fun initView() {
         binding.back.setOnClickListener { dismiss() }
-        binding.bucket.setOnClickListener {
-            val isBucket = binding.bucketBox.isSelected
-            if (isBucket) {
-                popupWindow.dismiss()
+        binding.config.setOnClickListener {
+            pictureSelectorCallback?.onSelectedData(selectorAdapter.getSelectPositionData())
+            dismiss()
+        }
+        binding.album.setOnClickListener {
+            val isAlbum = binding.albumBox.isSelected
+            if (isAlbum) {
+                pictureAlbumPopupWindow?.dismiss()
             } else {
-                popupWindow.show(binding.titleBar)
+                pictureAlbumPopupWindow?.show(binding.titleBar)
             }
-            binding.bucketBox.isSelected = !isBucket
+            binding.albumBox.isSelected = !isAlbum
         }
         binding.preview.setOnClickListener {
-            AlbumPreviewDialog.newInstance()
-                .setSelectedImages(albumAdapter.getSelectedImage())
-                .show(childFragmentManager)
+            val data = selectorAdapter.getSelectPosition()
+            if (data.isNotEmpty()) {
+                PicturePreviewDialog.newInstance()
+                    .setSelectedPosition(data)
+                    .setPicturePreviewCallback(object : PicturePreviewCallback {
+                        override fun onSelectedPosition(data: List<Int>) {
+                            selectorAdapter.setSelectPosition(data)
+                        }
+                    })
+                    .show(childFragmentManager)
+            } else {
+                Toast.makeText(it.context, "请至少选择一张图片", Toast.LENGTH_SHORT).show()
+            }
         }
-        binding.originalBox.setOnClickListener {
-            val isOriginal = binding.originalBox.isSelected
-            binding.originalBox.isSelected = !isOriginal
-        }
-        binding.send.setOnClickListener { }
         binding.list.layoutManager = GridLayoutManager(binding.list.context, 4)
-        binding.list.adapter = albumAdapter
-        albumAdapter.setAlbumData(albumData["最近项目"])
-        albumAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
+        binding.list.adapter = selectorAdapter
+        selectorAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                AlbumPreviewDialog.newInstance()
-                    .setSelectedImages(arrayListOf(albumAdapter.getItem(position).path))
+                PicturePreviewDialog.newInstance()
+                    .setSelectedPosition(selectorAdapter.getSelectPosition(), position)
+                    .setPicturePreviewCallback(object : PicturePreviewCallback {
+                        override fun onSelectedPosition(data: List<Int>) {
+                            selectorAdapter.setSelectPosition(data)
+                        }
+                    })
                     .show(childFragmentManager)
             }
         })
     }
-}
 
-/**
- * 获取相册资源
- */
-fun Context.queryAlbum(): Map<String, List<Album>> {
-    val data = HashMap<String, MutableList<Album>>().apply {
-        this["最近项目"] = ArrayList()
-    }
-    val uri = MediaStore.Files.getContentUri("external")
-    contentResolver.query(
-        uri,
-        arrayOf(
-            MediaStore.Files.FileColumns._ID,
-            "bucket_display_name",
-            MediaStore.Files.FileColumns.DISPLAY_NAME,
-            MediaStore.Files.FileColumns.DATE_ADDED,
-            MediaStore.Files.FileColumns.MEDIA_TYPE
-        ),
-        null,
-        null,
-        MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
-    )?.apply {
-        while (moveToNext()) {
-            val mediaType = getInt(getColumnIndex(MediaStore.Files.FileColumns.MEDIA_TYPE))
-            if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE || mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-                val id = getLong(getColumnIndex(MediaStore.Files.FileColumns._ID))
-                val contentUri = ContentUris.withAppendedId(uri, id)
-                val bucketName = getString(getColumnIndex("bucket_display_name"))
-                val name = getString(getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME))
-                val date = getLong(getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED))
-                val media = Album(contentUri, bucketName, name, date, mediaType)
-                if (!data.containsKey(bucketName)) {
-                    data[bucketName] = ArrayList()
+    private fun initViewModel() {
+        viewModel.currAlbumResult.observe(viewLifecycleOwner) {
+            selectorAdapter.setAlbumData(it)
+        }
+        viewModel.albumResult.observe(viewLifecycleOwner) {
+            pictureAlbumPopupWindow?.let { popupWindow ->
+                popupWindow.setAlbumData(it, 0)
+                popupWindow.setOnAlbumSelectedListener(
+                    object : PictureAlbumPopupWindow.OnAlbumSelectedListener {
+                        override fun onAlbumSelected(name: String) {
+                            binding.albumName.text = name
+                            viewModel.updateCurrAlbum(name)
+                        }
+                    })
+                popupWindow.setOnDismissListener {
+                    binding.albumBox.isSelected = false
                 }
-                data[bucketName]?.add(media)
-                data["最近项目"]?.add(media)
             }
         }
-        close()
     }
-    return data
+
+    private fun initData(context: Context) {
+        if (viewModel.albumResult.value == null) {
+            viewModel.queryAlbum(context)
+        }
+    }
+
+    fun setPictureSelectorCallback(callback: PictureSelectorCallback): PictureSelectorDialog {
+        pictureSelectorCallback = callback
+        return this
+    }
+
+}
+
+interface PictureSelectorCallback {
+    fun onSelectedData(data: List<MediaBean>)
 }

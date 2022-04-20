@@ -5,19 +5,18 @@ plugins {
 
 repositories{
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
     implementation gradleApi()
     implementation localGroovy()
 
-    implementation 'org.ow2.asm:asm:7.2'
-    implementation 'org.ow2.asm:asm-commons:7.2'
-    implementation 'org.ow2.asm:asm-analysis:7.2'
-    implementation 'org.ow2.asm:asm-util:7.2'
-    implementation 'org.ow2.asm:asm-tree:7.2'
-    implementation 'com.android.tools.build:gradle:4.2.2', {
+    implementation 'org.ow2.asm:asm:9.1'
+    implementation 'org.ow2.asm:asm-commons:9.1'
+    implementation 'org.ow2.asm:asm-analysis:9.1'
+    implementation 'org.ow2.asm:asm-util:9.1'
+    implementation 'org.ow2.asm:asm-tree:9.1'
+    implementation "com.android.tools.build:gradle:$gradle_version", {
         exclude group:'org.ow2.asm'
     }
 }
@@ -25,11 +24,11 @@ dependencies {
 uploadArchives {
     repositories {
         mavenDeployer {
-            pom.groupId = 'com.example.plugin'
-            pom.artifactId = 'statistic'
+            pom.groupId = 'com.example.miaow'
+            pom.artifactId = 'plugin'
             pom.version = '1.0.0'
             // maven本地仓库的目录
-            repository(url: uri('../repos'))
+            repository(url: uri('../repository'))
         }
     }
 }

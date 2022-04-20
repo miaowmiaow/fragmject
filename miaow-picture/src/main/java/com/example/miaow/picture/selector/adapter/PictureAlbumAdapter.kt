@@ -6,20 +6,20 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.utils.load
-import com.example.miaow.picture.databinding.PictureBucketItemBinding
-import com.example.miaow.picture.selector.bean.Bucket
+import com.example.miaow.picture.databinding.PictureAlbumItemBinding
+import com.example.miaow.picture.selector.bean.AlbumBean
 
-class PictureBucketAdapter : BaseAdapter<Bucket>() {
+class PictureAlbumAdapter : BaseAdapter<AlbumBean>() {
 
     private var selPosition = 0
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
-        return PictureBucketItemBinding::inflate
+        return PictureAlbumItemBinding::inflate
     }
 
-    override fun onItemView(holder: ViewBindHolder, position: Int, item: Bucket) {
-        val binding = holder.binding as PictureBucketItemBinding
-        binding.image.load(item.coverPath)
+    override fun onItemView(holder: ViewBindHolder, position: Int, item: AlbumBean) {
+        val binding = holder.binding as PictureAlbumItemBinding
+        binding.image.load(item.uri)
         binding.name.text = item.name
         binding.size.text = "(${item.size})"
         binding.selected.visibility = if (selPosition == position) View.VISIBLE else View.INVISIBLE

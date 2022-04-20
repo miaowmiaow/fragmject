@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <com.example.miaow.picture.editor.PictureEditorView
+    <com.example.miaow.picture.editor.view.PictureEditorView
         android:id="@+id/pic_editor"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -15,6 +15,13 @@
         android:layout_height="45dp"
         android:padding="12dp"
         android:src="@drawable/pe_retake" />
+
+    <ImageView
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/color_bar"

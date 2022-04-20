@@ -1,4 +1,4 @@
-package com.example.miaow.picture.editor.layer
+package com.example.miaow.picture.editor.view.layer
 
 import android.graphics.*
 import android.view.MotionEvent
@@ -54,7 +54,7 @@ class StickerLayer(
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 adjustScale(detector.scaleFactor)
                 measureBitmap()
-                parent.invalidate()
+                parent.postInvalidate()
                 return true
             }
 
@@ -88,7 +88,7 @@ class StickerLayer(
                     downY = event.y
                     if (!inBorder) {
                         inBorder = true
-                        parent.invalidate()
+                        parent.postInvalidate()
                     }
                 }
                 MotionEvent.ACTION_POINTER_DOWN -> {
@@ -113,7 +113,7 @@ class StickerLayer(
                                 downY = currY
                             }
                         }
-                        parent.invalidate()
+                        parent.postInvalidate()
                     }
                 }
                 MotionEvent.ACTION_POINTER_UP -> {
@@ -163,7 +163,7 @@ class StickerLayer(
                     initRotation = currRotation
                     if (inBorder) {
                         inBorder = false
-                        parent.invalidate()
+                        parent.postInvalidate()
                     }
                     return false
                 }

@@ -1,7 +1,6 @@
-package com.example.fragment.plugin.time
+package com.example.miaow.plugin.time
 
-import com.example.fragment.plugin.MiaowPlugin
-import com.example.fragment.plugin.time.bean.TimeMethodBean
+import com.example.miaow.plugin.MiaowPlugin
 import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Type
@@ -22,7 +21,7 @@ class TimeMethodAdviceAdapter extends AdviceAdapter {
     @Override
     protected void onMethodEnter() {
         super.onMethodEnter()
-        for (TimeMethodBean bean : MiaowPlugin.METHOD_TIMER_LIST) {
+        for (TimeMethodBean bean : MiaowPlugin.TIME_METHODS) {
             if (methodOwner.contains(bean.getOwner())) {
                 slotIndex = newLocal(Type.LONG_TYPE)
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J", false)
@@ -33,7 +32,7 @@ class TimeMethodAdviceAdapter extends AdviceAdapter {
 
     @Override
     void onMethodExit(int opcode) {
-        for (TimeMethodBean bean : MiaowPlugin.METHOD_TIMER_LIST) {
+        for (TimeMethodBean bean : MiaowPlugin.TIME_METHODS) {
             if (methodOwner.contains(bean.getOwner())) {
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J", false)
                 mv.visitVarInsn(LLOAD, slotIndex)

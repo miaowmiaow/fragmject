@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="50dp"
     android:gravity="center"
-    android:background="@drawable/layer_gray_item_bottom"
+    android:background="@drawable/rectangle_solid_gray_bottom1_line"
     android:paddingStart="10dp"
     android:paddingEnd="10dp">
 

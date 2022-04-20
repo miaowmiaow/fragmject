@@ -50,7 +50,7 @@
         android:layout_alignParentEnd="true"
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
-        android:background="@drawable/shape_corners_stroke_blue_r3"
+        android:background="@drawable/rectangle_solid_transparent_stroke1_blue_corners3"
         android:gravity="center"
         android:paddingLeft="3dp"
         android:paddingRight="3dp"

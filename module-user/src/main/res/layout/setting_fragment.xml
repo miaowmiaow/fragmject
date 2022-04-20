@@ -49,7 +49,7 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -72,7 +72,7 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -95,7 +95,7 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -119,7 +119,7 @@
                     android:id="@+id/privacy_policy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -138,7 +138,7 @@
                     android:id="@+id/feedback"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -157,7 +157,7 @@
                     android:id="@+id/about"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -176,7 +176,7 @@
                     android:id="@+id/clear_cache"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -205,7 +205,7 @@
                     android:id="@+id/update"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/layer_while_item_bottom"
+                    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
                     android:padding="15dp">
 
                     <TextView
@@ -237,7 +237,7 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="30dp"
                     android:layout_marginBottom="30dp"
-                    android:background="@drawable/layer_corner_solid_theme_stroke_line_r10"
+                    android:background="@drawable/rectangle_solid_theme_stroke1_line_corners10"
                     android:paddingStart="100dp"
                     android:paddingEnd="100dp"
                     android:text="退出登录"

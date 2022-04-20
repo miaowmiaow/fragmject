@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/layer_while_item_bottom"
+    android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
     android:padding="16dp">
 
     <TextView

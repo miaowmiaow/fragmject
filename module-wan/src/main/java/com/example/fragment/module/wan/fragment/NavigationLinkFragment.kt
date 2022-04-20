@@ -40,7 +40,7 @@ class NavigationLinkFragment : RouterFragment() {
             item.isSelected = true
             binding.menu.findViewHolderForAdapterPosition(position)?.apply {
                 if (this is BaseAdapter.ViewBindHolder) {
-                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.layer_while_item_bottom)
+                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_white_top0_5bottom0_5_line)
                 }
             }
             fillFlexboxLayout(item.articles)
@@ -51,7 +51,7 @@ class NavigationLinkFragment : RouterFragment() {
             item.isSelected = false
             binding.menu.findViewHolderForAdapterPosition(position)?.apply {
                 if (this is BaseAdapter.ViewBindHolder) {
-                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.layer_gray_item_bottom)
+                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_gray_bottom1_line)
                 }
             }
         }

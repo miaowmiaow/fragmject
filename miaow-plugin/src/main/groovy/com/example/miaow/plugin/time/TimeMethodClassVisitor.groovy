@@ -1,4 +1,4 @@
-package com.example.fragment.plugin.time
+package com.example.miaow.plugin.time
 
 import org.objectweb.asm.*
 
@@ -6,8 +6,8 @@ class TimeMethodClassVisitor extends ClassVisitor {
 
     String methodOwner
 
-    TimeMethodClassVisitor(ClassVisitor classVisitor) {
-        super(Opcodes.ASM7, classVisitor)
+    TimeMethodClassVisitor(int api, ClassVisitor classVisitor) {
+        super(api, classVisitor)
     }
 
     /**

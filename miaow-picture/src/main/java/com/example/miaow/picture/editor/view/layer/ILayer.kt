@@ -1,4 +1,4 @@
-package com.example.miaow.picture.editor.layer
+package com.example.miaow.picture.editor.view.layer
 
 import android.graphics.Canvas
 import android.view.MotionEvent

@@ -40,6 +40,7 @@ dependencies {
     api rootProject.ext.dependencies["coil-kt"]
     api rootProject.ext.dependencies["coil-gif"]
     api rootProject.ext.dependencies["coil-svg"]
+    api rootProject.ext.dependencies["coil-video"]
     api rootProject.ext.dependencies["google-flexbox"]
     api rootProject.ext.dependencies["google-material"]
     api rootProject.ext.dependencies["google-gson"]

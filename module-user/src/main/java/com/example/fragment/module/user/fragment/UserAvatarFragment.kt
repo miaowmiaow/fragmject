@@ -1,28 +1,22 @@
 package com.example.fragment.module.user.fragment
 
-import android.content.Intent
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.requestStorage
-import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.base.utils.loadCircleCrop
-import com.example.fragment.library.base.utils.loadRoundedCorners
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.UserAvatarFragmentBinding
 import com.example.fragment.module.user.model.UserViewModel
-import com.example.miaow.picture.dialog.EditorFinishCallback
-import com.example.miaow.picture.dialog.PictureEditorDialog
-import com.example.miaow.picture.utils.AlbumUtils.getImagePath
-import java.io.File
+import com.example.miaow.picture.selector.bean.MediaBean
+import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
+import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
 
 class UserAvatarFragment : RouterFragment() {
 
@@ -50,7 +44,18 @@ class UserAvatarFragment : RouterFragment() {
         binding.album.setOnClickListener {
             activity.requestStorage(object : PermissionsCallback {
                 override fun allow() {
-                    openAlbum()
+                    PictureSelectorDialog.newInstance()
+                        .setPictureSelectorCallback(object : PictureSelectorCallback {
+                            override fun onSelectedData(data: List<MediaBean>) {
+                                if (data.isNotEmpty()) {
+                                    viewModel.getUserBean().let {
+                                        it.avatar = data[0].uri.toString()
+                                        viewModel.updateUserBean(it)
+                                    }
+                                }
+                            }
+                        })
+                        .show(childFragmentManager)
                 }
 
                 override fun deny() {
@@ -63,7 +68,7 @@ class UserAvatarFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) {
             if (it.avatar.isNotBlank()) {
-                binding.image.loadCircleCrop(File(it.avatar))
+                binding.image.loadCircleCrop(it.avatar)
             }
         }
         return viewModel
@@ -73,32 +78,6 @@ class UserAvatarFragment : RouterFragment() {
         if (viewModel.userResult.value == null) {
             viewModel.getUser()
         }
-    }
-
-    private fun openAlbum() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
-        activity.startForResult(intent, object : ActivityCallback {
-            override fun onActivityResult(resultCode: Int, data: Intent?) {
-                data?.data?.let { uri ->
-                    pictureEditor(activity.getImagePath(uri))
-                }
-            }
-        })
-    }
-
-    private fun pictureEditor(path: String) {
-        PictureEditorDialog.newInstance()
-            .setBitmapPath(path)
-            .setEditorFinishCallback(object : EditorFinishCallback {
-                override fun onFinish(path: String) {
-                    viewModel.getUserBean().let {
-                        it.avatar = path
-                        viewModel.updateUserBean(it)
-                    }
-                }
-            })
-            .show(childFragmentManager)
     }
 
 }

@@ -1,4 +1,4 @@
-package com.example.miaow.picture.dialog
+package com.example.miaow.picture.editor.dialog
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -11,9 +11,9 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
 import com.example.fragment.library.base.dialog.FullDialog
-import com.example.miaow.picture.bean.StickerAttrs
+import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.databinding.PictureTextDialogBinding
-import com.example.miaow.picture.utils.ColorUtils
+import com.example.miaow.picture.editor.utils.ColorUtils
 
 class PictureTextDialog : FullDialog() {
 

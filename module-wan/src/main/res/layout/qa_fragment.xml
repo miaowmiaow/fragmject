@@ -9,7 +9,7 @@
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@drawable/layer_while_item_top_bottom"
+        android:background="@drawable/rectangle_solid_white_top1bottom1_line"
         android:clipChildren="false"
         app:tabIndicatorColor="@color/black"
         app:tabIndicatorFullWidth="false"

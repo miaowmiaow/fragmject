@@ -1,4 +1,4 @@
-package com.example.miaow.plugin.time.bean
+package com.example.miaow.plugin.time
 
 class TimeMethodBean implements Cloneable {
 

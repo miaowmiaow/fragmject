@@ -1,4 +1,4 @@
-package com.example.miaow.picture.editor
+package com.example.miaow.picture.clip.view
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -34,10 +34,10 @@ class PictureClipView @JvmOverloads constructor(
     private var bitmapHeight = 0
     private lateinit var orgBitmap: Bitmap
     private lateinit var bitmap: Bitmap
+    private val bitmapMatrix = Matrix()
     private val bitmapRectF = RectF()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    private val pcMatrix = Matrix()
     private val clipRectF = RectF()
     private val maxClipRectF = RectF()
 
@@ -61,7 +61,7 @@ class PictureClipView @JvmOverloads constructor(
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             isScaling = true
-            val currScale = pcMatrix.values()[0]
+            val currScale = bitmapMatrix.values()[0]
             var scaleFactor = detector.scaleFactor
             if (currScale * scaleFactor <= MINIMUM_SCALE) {
                 scaleFactor = MINIMUM_SCALE / currScale
@@ -69,8 +69,8 @@ class PictureClipView @JvmOverloads constructor(
             if (currScale * scaleFactor >= MAXIMUM_SCALE) {
                 scaleFactor = MAXIMUM_SCALE / currScale
             }
-            pcMatrix.setScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
-            pcMatrix.mapRect(bitmapRectF)
+            bitmapMatrix.setScale(scaleFactor, scaleFactor, detector.focusX, detector.focusY)
+            bitmapMatrix.mapRect(bitmapRectF)
             return true
         }
 
@@ -82,32 +82,32 @@ class PictureClipView @JvmOverloads constructor(
         this.bitmap = bitmap
         bitmapWidth = bitmap.width
         bitmapHeight = bitmap.height
-        invalidate()
+        postInvalidate()
     }
 
     fun reset() {
         bitmap = orgBitmap
         bitmapWidth = bitmap.width
         bitmapHeight = bitmap.height
-        pcMatrix.reset()
+        bitmapMatrix.reset()
         computeBitmapRectF()
         computeDragRectF()
         clipBorderCenter()
-        invalidate()
+        postInvalidate()
     }
 
     fun rotate() {
-        pcMatrix.reset()
-        pcMatrix.setRotate(-90f, clipRectF.centerX(), clipRectF.centerY())
-        pcMatrix.mapRect(bitmapRectF)
-        pcMatrix.mapRect(clipRectF)
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmapHeight, pcMatrix, true)
+        bitmapMatrix.reset()
+        bitmapMatrix.setRotate(-90f, clipRectF.centerX(), clipRectF.centerY())
+        bitmapMatrix.mapRect(bitmapRectF)
+        bitmapMatrix.mapRect(clipRectF)
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmapHeight, bitmapMatrix, true)
         bitmapWidth = bitmap.width
         bitmapHeight = bitmap.height
         computeBitmapRectF()
         computeDragRectF()
         clipBorderCenter()
-        invalidate()
+        postInvalidate()
     }
 
     fun saveBitmap(): Bitmap {
@@ -180,16 +180,16 @@ class PictureClipView @JvmOverloads constructor(
                             val scaleFactor = clipRectF.width() / bitmapRectF.width()
                             val px = bitmapRectF.centerX()
                             val py = (bitmapRectF.top - DRAG_WIDTH) + clipRectF.centerY()
-                            pcMatrix.setScale(scaleFactor, scaleFactor, px, py)
-                            pcMatrix.mapRect(bitmapRectF)
+                            bitmapMatrix.setScale(scaleFactor, scaleFactor, px, py)
+                            bitmapMatrix.mapRect(bitmapRectF)
                             bitmapRectF.offset(clipRectF.left - bitmapRectF.left, 0f)
                         }
                         if (bitmapRectF.height() < clipRectF.height()) {
                             val scaleFactor = clipRectF.height() / bitmapRectF.height()
                             val px = (bitmapRectF.left - DRAG_WIDTH) + clipRectF.centerX()
                             val py = bitmapRectF.centerY()
-                            pcMatrix.setScale(scaleFactor, scaleFactor, px, py)
-                            pcMatrix.mapRect(bitmapRectF)
+                            bitmapMatrix.setScale(scaleFactor, scaleFactor, px, py)
+                            bitmapMatrix.mapRect(bitmapRectF)
                             bitmapRectF.offset(0f, clipRectF.top - bitmapRectF.top)
                         }
                     }
@@ -209,7 +209,7 @@ class PictureClipView @JvmOverloads constructor(
                 resetState()
             }
         }
-        invalidate()
+        postInvalidate()
         return true
     }
 
@@ -286,8 +286,8 @@ class PictureClipView @JvmOverloads constructor(
             val scale = max(a, b)
             val px = bitmapRectF.centerX()
             val py = bitmapRectF.centerY()
-            pcMatrix.setScale(scale, scale, px, py)
-            pcMatrix.mapRect(bitmapRectF)
+            bitmapMatrix.setScale(scale, scale, px, py)
+            bitmapMatrix.mapRect(bitmapRectF)
         }
         if (bitmapRectF.left > clipRectF.left) {
             bitmapRectF.offset(clipRectF.left - bitmapRectF.left, 0f)
@@ -322,9 +322,9 @@ class PictureClipView @JvmOverloads constructor(
         val a = maxClipRectF.width() / clipRectF.width()
         val b = maxClipRectF.height() / clipRectF.height()
         val scale = min(a, b)
-        pcMatrix.setScale(scale, scale, clipRectF.centerX(), clipRectF.centerY())
-        pcMatrix.mapRect(bitmapRectF)
-        pcMatrix.mapRect(clipRectF)
+        bitmapMatrix.setScale(scale, scale, clipRectF.centerX(), clipRectF.centerY())
+        bitmapMatrix.mapRect(bitmapRectF)
+        bitmapMatrix.mapRect(clipRectF)
         computeDragRectF()
     }
 

@@ -1,8 +1,9 @@
-package com.example.miaow.picture.dialog
+package com.example.miaow.picture.editor.dialog
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
@@ -11,16 +12,23 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
+import coil.clear
+import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
-import com.example.miaow.picture.bean.StickerAttrs
+import com.example.fragment.library.base.utils.load
+import com.example.miaow.picture.clip.dialog.ClipFinishCallback
+import com.example.miaow.picture.clip.dialog.PictureClipDialog
 import com.example.miaow.picture.databinding.PictureEditorDialogBinding
-import com.example.miaow.picture.editor.PictureEditorView
-import com.example.miaow.picture.editor.layer.OnStickerClickListener
-import com.example.miaow.picture.utils.AlbumUtils.getImagePath
-import com.example.miaow.picture.utils.AlbumUtils.saveSystemAlbum
-import com.example.miaow.picture.utils.ColorUtils
+import com.example.miaow.picture.editor.bean.StickerAttrs
+import com.example.miaow.picture.editor.utils.ColorUtils
+import com.example.miaow.picture.editor.view.PictureEditorView
+import com.example.miaow.picture.editor.view.layer.OnStickerClickListener
+import com.example.miaow.picture.utils.getBitmapFromPath
+import com.example.miaow.picture.utils.getBitmapFromUri
+import com.example.miaow.picture.utils.getBitmapPathFromUri
+import com.example.miaow.picture.utils.saveSystemAlbum
 
 class PictureEditorDialog : FullDialog() {
 
@@ -35,7 +43,8 @@ class PictureEditorDialog : FullDialog() {
     private val binding get() = _binding!!
     private val colors: MutableList<RelativeLayout> = arrayListOf()
     private val tools: MutableList<ImageView> = arrayListOf()
-    private var bitmapPath = ""
+    private var bitmapPath: String? = null
+    private var bitmapUri: Uri? = null
     private var callback: EditorFinishCallback? = null
 
     override fun onCreateView(
@@ -73,15 +82,24 @@ class PictureEditorDialog : FullDialog() {
         binding.complete.setOnClickListener {
             if (binding.complete.isEnabled) {
                 binding.complete.isEnabled = false
+                binding.progress.visibility = View.VISIBLE
+                binding.progress.load(R.drawable.icons8_monkey)
                 Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_SHORT).show()
-                it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path ->
-                    callback?.onFinish(path)
+                it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path, uri ->
                     binding.complete.isEnabled = true
+                    binding.progress.visibility = View.GONE
+                    binding.progress.clear()
+                    callback?.onFinish(path, uri)
                     dismiss()
                 }
             }
         }
-        binding.picEditor.setBitmapPath(bitmapPath)
+        bitmapPath?.let {
+            binding.picEditor.setBitmapPath(it)
+        }
+        bitmapUri?.let {
+            binding.picEditor.setBitmapUri(it)
+        }
         binding.colorUndo.setOnClickListener { binding.picEditor.graffitiUndo() }
         binding.mosaicUndo.setOnClickListener { binding.picEditor.mosaicUndo() }
         colors.forEachIndexed { index, color ->
@@ -126,8 +144,9 @@ class PictureEditorDialog : FullDialog() {
         }
     }
 
-    fun setBitmapPath(path: String): PictureEditorDialog {
+    fun setBitmapPathOrUri(path: String?, uri: Uri?): PictureEditorDialog {
         this.bitmapPath = path
+        this.bitmapUri = uri
         return this
     }
 
@@ -145,8 +164,14 @@ class PictureEditorDialog : FullDialog() {
             startForResult(intent, object : ActivityCallback {
                 override fun onActivityResult(resultCode: Int, data: Intent?) {
                     data?.data?.let { uri ->
-                        getBitmap(getImagePath(uri))?.let { bitmap ->
-                            binding.picEditor.setSticker(StickerAttrs(bitmap))
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            getBitmapFromUri(uri, 200)?.let { bitmap ->
+                                binding.picEditor.setSticker(StickerAttrs(bitmap))
+                            }
+                        } else {
+                            getBitmapFromPath(getBitmapPathFromUri(uri), 200)?.let { bitmap ->
+                                binding.picEditor.setSticker(StickerAttrs(bitmap))
+                            }
                         }
                     }
                 }
@@ -173,8 +198,8 @@ class PictureEditorDialog : FullDialog() {
         PictureClipDialog.newInstance()
             .setBitmapResource(bitmap)
             .setClipFinishCallback(object : ClipFinishCallback {
-                override fun onFinish(path: String) {
-                    callback?.onFinish(path)
+                override fun onFinish(path: String, uri: Uri) {
+                    callback?.onFinish(path, uri)
                     dismiss()
                 }
             })
@@ -195,25 +220,8 @@ class PictureEditorDialog : FullDialog() {
         view.isSelected = true
     }
 
-    private fun getBitmap(path: String): Bitmap? {
-        try {
-            val opts = BitmapFactory.Options()
-            opts.inJustDecodeBounds = true
-            BitmapFactory.decodeFile(path, opts)
-            opts.inJustDecodeBounds = false
-            opts.inScaled = true
-            opts.inDensity = opts.outWidth
-            opts.inTargetDensity = 200
-            return BitmapFactory.decodeFile(path, opts)
-        } catch (e: Exception) {
-            val text = "请确认存储权限。\n" + e.message
-            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-        }
-        return null
-    }
-
 }
 
 interface EditorFinishCallback {
-    fun onFinish(path: String)
+    fun onFinish(path: String, uri: Uri)
 }

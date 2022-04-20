@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -30,18 +31,19 @@
             android:src="@drawable/selector_as_right" />
     </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_above="@id/tab_bar"
-        android:layout_alignParentBottom="true"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/nav_bar"
         android:background="#f0555555"
-        android:padding="10dp"
-        android:visibility="gone" />
+        android:clipChildren="false"
+        app:tabIndicatorHeight="0dp"
+        app:tabMode="scrollable"
+        app:tabRippleColor="@null" />
 
     <RelativeLayout
-        android:id="@+id/tab_bar"
+        android:id="@+id/nav_bar"
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:layout_alignParentBottom="true"
@@ -64,7 +66,8 @@
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="invisible">
 
             <ImageView
                 android:id="@+id/original_box"
@@ -83,18 +86,18 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/send"
+            android:id="@+id/config"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="12dp"
-            android:background="@drawable/shape_rectangle_radius3_green"
+            android:background="@drawable/rectangle_solid_green_corners3"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
             android:paddingEnd="12dp"
             android:paddingBottom="3dp"
-            android:text="发送"
+            android:text="确定"
             android:textColor="#ffffff"
             android:textSize="14sp" />
 

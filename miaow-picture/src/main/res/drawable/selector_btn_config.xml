@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/shape_green_all_bg" android:state_enabled="true" />
-    <item android:drawable="@drawable/shape_gray_all_bg" />
+    <item android:drawable="@drawable/rectangle_solid_green_corners3" android:state_enabled="true" />
+    <item android:drawable="@drawable/rectangle_solid_gray_corners3" />
 </selector>

@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="1dp"
-        android:background="@drawable/shape_city_normal_bg"
+        android:background="@drawable/rectangle_solid_white_stroke1_f0f2f5"
         android:clickable="true"
         android:gravity="center_vertical"
         android:padding="15dp"

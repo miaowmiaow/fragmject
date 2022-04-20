@@ -18,7 +18,7 @@ class LinkMenuAdapter : BaseAdapter<NavigationBean>() {
         val binding = holder.binding as NavigationMenuItemBinding
         binding.tv.text = item.name
         binding.bg.setBackgroundResource(
-            if (item.isSelected) R.drawable.layer_while_item_bottom else R.drawable.layer_gray_item_bottom
+            if (item.isSelected) R.drawable.rectangle_solid_white_top0_5bottom0_5_line else R.drawable.rectangle_solid_gray_bottom1_line
         )
     }
 

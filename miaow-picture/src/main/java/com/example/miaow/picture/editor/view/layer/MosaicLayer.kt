@@ -1,4 +1,4 @@
-package com.example.miaow.picture.editor.layer
+package com.example.miaow.picture.editor.view.layer
 
 import android.graphics.*
 import android.view.MotionEvent
@@ -54,7 +54,7 @@ class MosaicLayer(private val parent: View) : ILayer {
             for (linePath in paintPaths) {
                 mosaicCanvas.drawPath(linePath.path, linePath.paint)
             }
-            parent.invalidate()
+            parent.postInvalidate()
         }
         return !paintPaths.empty()
     }
@@ -69,7 +69,7 @@ class MosaicLayer(private val parent: View) : ILayer {
             for (linePath in paintPaths) {
                 mosaicCanvas.drawPath(linePath.path, linePath.paint)
             }
-            parent.invalidate()
+            parent.postInvalidate()
         }
         return !redoPaths.empty()
     }
@@ -100,7 +100,7 @@ class MosaicLayer(private val parent: View) : ILayer {
                 }
             }
             mosaicCanvas.drawPath(path, paint)
-            parent.invalidate()
+            parent.postInvalidate()
         }
         return isEnabled
     }
@@ -122,7 +122,7 @@ class MosaicLayer(private val parent: View) : ILayer {
             for (linePath in paintPaths) {
                 mosaicCanvas.drawPath(linePath.path, linePath.paint)
             }
-            parent.invalidate()
+            parent.postInvalidate()
         }
     }
 

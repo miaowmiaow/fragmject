@@ -5,8 +5,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class Media(
+class MediaBean(
     val name: String,
-    val uri: Uri,
-    var selected: Boolean = false
+    var uri: Uri
 ) : Parcelable

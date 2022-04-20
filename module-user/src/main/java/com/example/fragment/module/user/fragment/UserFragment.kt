@@ -7,13 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.loadCircleCrop
-import com.example.fragment.library.base.utils.loadRoundedCorners
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.UserFragmentBinding
 import com.example.fragment.module.user.model.UserViewModel
-import java.io.File
 
 class UserFragment : RouterFragment() {
 
@@ -56,7 +54,7 @@ class UserFragment : RouterFragment() {
         viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
             if (userBean.id.isNotBlank()) {
                 if (userBean.avatar.isNotBlank()) {
-                    binding.avatar.loadCircleCrop(File(userBean.avatar))
+                    binding.avatar.loadCircleCrop(userBean.avatar)
                 }
                 binding.username.text = "欢迎回来！${userBean.username}"
                 binding.avatar.setOnClickListener { activity.navigation(Router.USER_INFO) }

@@ -4,12 +4,19 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <com.example.miaow.picture.editor.PictureClipView
+    <com.example.miaow.picture.clip.view.PictureClipView
         android:id="@+id/clip"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/confirm"
         android:layout_marginBottom="0.5dp" />
+
+    <ImageView
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
     <View
         android:layout_width="match_parent"
@@ -23,7 +30,7 @@
         android:layout_height="45dp"
         android:layout_above="@id/cancel"
         android:padding="12dp"
-        android:src="@drawable/pe_rotate" />
+        android:src="@drawable/pc_rotate" />
 
     <ImageView
         android:id="@+id/cancel"
@@ -31,7 +38,7 @@
         android:layout_height="45dp"
         android:layout_alignParentBottom="true"
         android:padding="15dp"
-        android:src="@drawable/pe_close" />
+        android:src="@drawable/p_close" />
 
     <ImageView
         android:id="@+id/confirm"
@@ -40,7 +47,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:padding="15dp"
-        android:src="@drawable/pe_right" />
+        android:src="@drawable/pc_right" />
 
     <TextView
         android:id="@+id/reset"

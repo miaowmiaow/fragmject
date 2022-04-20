@@ -10,17 +10,15 @@ buildscript {
         mavenCentral()
         jcenter()
         maven {
-            url uri('repos')
+            url uri('repository')
         }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$gradle_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+//        classpath 'com.example.miaow:plugin:1.0.0'
         classpath 'com.meituan.android.walle:plugin:1.1.7'
-        // 使用自定义插件
-//        classpath 'com.example.plugin:privacy:1.0.0'
-//        classpath 'com.example.plugin:statistic:1.0.0'
     }
 }
 

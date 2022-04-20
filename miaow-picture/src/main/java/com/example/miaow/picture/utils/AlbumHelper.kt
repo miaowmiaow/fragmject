@@ -1,6 +1,5 @@
 package com.example.miaow.picture.utils
 
-import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
@@ -9,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.FileUtils
-import android.provider.DocumentsContract
 import android.provider.MediaStore
 import com.example.fragment.library.base.utils.MainThreadExecutor
 import java.io.File
@@ -18,7 +16,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.net.URLConnection
 
-fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String) -> Unit) {
+fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String, Uri) -> Unit) {
     Thread {
         if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
             getExternalFilesDir(Environment.DIRECTORY_PICTURES)?.let {
@@ -56,7 +54,7 @@ fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String) -> Unit) {
                                 out?.close()
                             }
                             MainThreadExecutor.get().execute {
-                                onFinish.invoke(getImagePath(uri))
+                                onFinish.invoke(getBitmapPathFromUri(uri), uri)
                             }
                         }
                     } else {
@@ -64,9 +62,9 @@ fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String) -> Unit) {
                             this,
                             arrayOf(file.absolutePath),
                             arrayOf(mimeType)
-                        ) { path, _ ->
+                        ) { path, uri ->
                             MainThreadExecutor.get().execute {
-                                onFinish.invoke(path)
+                                onFinish.invoke(path, uri)
                             }
                         }
                     }
@@ -79,18 +77,4 @@ fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String) -> Unit) {
             }
         }
     }.start()
-}
-
-
-
-fun Context.contentResolverQuery(uri: Uri, selection: String = ""): String {
-    val cursor = contentResolver.query(uri, null, selection, null, null)
-    var path = ""
-    if (cursor != null) {
-        if (cursor.moveToFirst()) {
-            path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
-        }
-        cursor.close()
-    }
-    return path
 }

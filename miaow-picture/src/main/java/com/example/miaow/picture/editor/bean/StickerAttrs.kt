@@ -1,4 +1,4 @@
-package com.example.miaow.picture.bean
+package com.example.miaow.picture.editor.bean
 
 import android.graphics.Bitmap
 

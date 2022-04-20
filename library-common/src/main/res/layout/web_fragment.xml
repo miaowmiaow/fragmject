@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_alignParentBottom="true"
-            android:background="@drawable/layer_nav_bar_bg"
+            android:background="@drawable/rectangle_solid_white_top1_line"
             android:orientation="horizontal">
 
             <ImageView

@@ -1,4 +1,4 @@
-package com.example.miaow.plugin.scan.bean
+package com.example.miaow.plugin.scan
 
 class ScanBean implements Cloneable {
 

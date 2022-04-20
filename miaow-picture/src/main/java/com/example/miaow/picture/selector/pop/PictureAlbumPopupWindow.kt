@@ -8,21 +8,21 @@ import android.widget.PopupWindow
 import android.widget.RelativeLayout.LayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.miaow.picture.databinding.PictureBucketPopupWindowBinding
-import com.example.miaow.picture.selector.adapter.PictureBucketAdapter
-import com.example.miaow.picture.selector.bean.Bucket
+import com.example.miaow.picture.databinding.PictureAlbumPopupWindowBinding
+import com.example.miaow.picture.selector.adapter.PictureAlbumAdapter
+import com.example.miaow.picture.selector.bean.AlbumBean
 
 
-class PictureBucketPopupWindow(context: Context) : PopupWindow(context) {
+class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
 
-    private var _binding: PictureBucketPopupWindowBinding? = null
+    private var _binding: PictureAlbumPopupWindowBinding? = null
     private val binding get() = _binding!!
-    private val bucketAdapter = PictureBucketAdapter()
+    private val albumAdapter = PictureAlbumAdapter()
 
-    private var onBucketSelectedListener: OnBucketSelectedListener? = null
+    private var onAlbumSelectedListener: OnAlbumSelectedListener? = null
 
     init {
-        _binding = PictureBucketPopupWindowBinding.inflate(LayoutInflater.from(context))
+        _binding = PictureAlbumPopupWindowBinding.inflate(LayoutInflater.from(context))
         contentView = binding.root
         this.width = LayoutParams.MATCH_PARENT
         this.isFocusable = false
@@ -38,31 +38,31 @@ class PictureBucketPopupWindow(context: Context) : PopupWindow(context) {
 
     private fun initView() {
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
-        binding.list.adapter = bucketAdapter
-        bucketAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
+        binding.list.adapter = albumAdapter
+        albumAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-                bucketAdapter.setSelectedPosition(position)
-                onBucketSelectedListener?.onBucketSelected(bucketAdapter.getItem(position).name)
+                albumAdapter.setSelectedPosition(position)
+                onAlbumSelectedListener?.onAlbumSelected(albumAdapter.getItem(position).name)
                 dismiss()
             }
         })
     }
 
-    fun setBucketData(data: List<Bucket>, position: Int) {
-        bucketAdapter.setNewData(data)
-        bucketAdapter.setSelectedPosition(position)
+    fun setAlbumData(data: List<AlbumBean>, position: Int) {
+        albumAdapter.setNewData(data)
+        albumAdapter.setSelectedPosition(position)
     }
 
     fun show(parent: View) {
         showAsDropDown(parent)
     }
 
-    fun setOnBucketSelectedListener(listener: OnBucketSelectedListener) {
-        this.onBucketSelectedListener = listener
+    fun setOnAlbumSelectedListener(listener: OnAlbumSelectedListener) {
+        this.onAlbumSelectedListener = listener
     }
 
-    interface OnBucketSelectedListener {
-        fun onBucketSelected(name: String)
+    interface OnAlbumSelectedListener {
+        fun onAlbumSelected(name: String)
     }
 
 }

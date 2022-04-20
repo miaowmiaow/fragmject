@@ -1,78 +1,75 @@
-package com.example.fragment.module.wan.model
+package com.example.miaow.picture.selector.model
 
+import android.content.ContentUris
+import android.content.Context
+import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.library.common.bean.BannerListBean
-import com.example.fragment.library.common.bean.TopArticleBean
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import com.example.miaow.picture.selector.bean.AlbumBean
+import com.example.miaow.picture.selector.bean.MediaBean
 import kotlinx.coroutines.launch
 
-class HomeViewModel : BaseViewModel() {
+class PictureViewModel : BaseViewModel() {
 
-    val bannerResult = MutableLiveData<BannerListBean>()
-    val articleListResult = MutableLiveData<List<ArticleBean>>()
+    companion object {
+        private const val ID = MediaStore.Files.FileColumns._ID
+        private const val BUCKET_DISPLAY_NAME = "bucket_display_name"
+        private const val DISPLAY_NAME = MediaStore.Files.FileColumns.DISPLAY_NAME
+        private const val MEDIA_TYPE = MediaStore.Files.FileColumns.MEDIA_TYPE
+        private const val MEDIA_TYPE_IMAGE = MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+        private const val MEDIA_TYPE_VIDEO = MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+    }
 
-    fun getArticle() {
-        //通过viewModelScope创建一个协程
-        viewModelScope.launch {
-            //通过async获取首页需要展示的数据
-            val banner = async { getBanner() }
-            val articleTop = async { getArticleTop() }
-            val articleList = async { getArticleList(getHomePage()) }
-            val bannerData = banner.await()
-            //通过LiveData通知界面更新
-            val articleData: MutableList<ArticleBean> = arrayListOf()
-            articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
-            articleList.await().data?.datas?.let { articleData.addAll(it) }
-            articleListResult.postValue(articleData)
-            bannerResult.postValue(bannerData)
+    private val uri = MediaStore.Files.getContentUri("external")
+    private val projection = arrayOf(ID, BUCKET_DISPLAY_NAME, DISPLAY_NAME, MEDIA_TYPE)
+    private val sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
+
+    val mediaResult = MutableLiveData<Map<String, List<MediaBean>>>()
+    val albumResult = MutableLiveData<List<AlbumBean>>()
+    val currAlbumResult = MutableLiveData<List<MediaBean>>()
+
+    fun updateCurrAlbum(name: String) {
+        mediaResult.value?.let {
+            currAlbumResult.postValue(it[name])
         }
     }
 
-    fun getArticleNext() {
+    /**
+     * 获取相册资源
+     */
+    fun queryAlbum(context: Context) {
         viewModelScope.launch {
-            getArticleList(getNextPage()).data?.datas?.let { articleListResult.postValue(it) }
+            val mediaData = HashMap<String, MutableList<MediaBean>>().apply {
+                this["最近项目"] = ArrayList()
+            }
+            context.contentResolver.query(uri, projection, null, null, sortOrder)?.apply {
+                while (moveToNext()) {
+                    val mediaType = getInt(getColumnIndex(MEDIA_TYPE))
+                    if (mediaType == MEDIA_TYPE_IMAGE || mediaType == MEDIA_TYPE_VIDEO) {
+                        val id = getLong(getColumnIndex(ID))
+                        val contentUri = ContentUris.withAppendedId(uri, id)
+                        val bucketName = getString(getColumnIndex(BUCKET_DISPLAY_NAME))
+                        val name = getString(getColumnIndex(DISPLAY_NAME))
+                        val media = MediaBean(name, contentUri)
+                        if (!mediaData.containsKey(bucketName)) {
+                            mediaData[bucketName] = ArrayList()
+                        }
+                        mediaData[bucketName]?.add(media)
+                        mediaData["最近项目"]?.add(media)
+                    }
+                }
+                close()
+            }
+            val albumData: MutableList<AlbumBean> = ArrayList()
+            mediaData.onEach { (key, value) ->
+                val album = AlbumBean(key, value[value.size - 1].uri, value.size.toString())
+                if (key == "最近项目") albumData.add(0, album) else albumData.add(album)
+            }
+            mediaResult.postValue(mediaData)
+            albumResult.postValue(albumData)
+            currAlbumResult.postValue(mediaData[albumData[0].name])
         }
-    }
-
-    /**
-     * 获取banner
-     */
-    private suspend fun getBanner(): BannerListBean {
-        //构建请求体，传入请求参数
-        val request = HttpRequest("banner/json")
-        //以get方式发起网络请求
-        return coroutineScope { get(request) }
-    }
-
-    /**
-     * 获取置顶文章
-     */
-    private suspend fun getArticleTop(): TopArticleBean {
-        //构建请求体，传入请求参数
-        val request = HttpRequest("article/top/json")
-        //以get方式发起网络请求
-        return coroutineScope { get(request) }
-    }
-
-    /**
-     * 获取首页文章列表
-     * page 0开始
-     */
-    private suspend fun getArticleList(page: Int): ArticleListBean {
-        //构建请求体，传入请求参数
-        val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString())
-        //以get方式发起网络请求
-        val response = coroutineScope { get<ArticleListBean>(request) }
-        //根据接口返回更新总页码
-        response.data?.pageCount?.let { updatePageCont(it.toInt()) }
-        return response
     }
 
 }

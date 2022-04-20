@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.load
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -16,7 +15,6 @@ import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
 import com.example.fragment.module.user.dialog.SexDialog
 import com.example.fragment.module.user.model.UserViewModel
-import java.io.File
 
 /**
  * 纯粹为以下知识点服务：
@@ -81,7 +79,7 @@ class UserInfoFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) {
             if (it.avatar.isNotBlank()) {
-                binding.avatarImg.loadCircleCrop(File(it.avatar))
+                binding.avatarImg.loadCircleCrop(it.avatar)
             }
             setUserInfo(binding.username, it.username)
             setUserInfo(binding.sexInfo, it.sex)

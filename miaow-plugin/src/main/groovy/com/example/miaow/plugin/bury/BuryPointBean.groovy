@@ -1,4 +1,4 @@
-package com.example.miaow.plugin.bury.bean
+package com.example.miaow.plugin.bury
 
 class BuryPointBean implements Cloneable {
 

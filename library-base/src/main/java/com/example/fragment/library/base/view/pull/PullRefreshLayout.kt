@@ -363,9 +363,9 @@ class PullRefreshLayout @JvmOverloads constructor(
         type: Int,
         consumed: IntArray
     ) {
-        refreshViewMoveSpinner(-dyUnconsumed)
         var myDyConsumed = 0
         if (type == ViewCompat.TYPE_TOUCH && !canChildScrollUp()) {
+            refreshViewMoveSpinner(-dyUnconsumed)
             myDyConsumed = if (targetViewOffset + dyUnconsumed >= getMaxDragDistance()) {
                 getMaxDragDistance() - targetViewOffset
             } else {

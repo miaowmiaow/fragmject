@@ -17,7 +17,7 @@ class SnailBar @JvmOverloads constructor(
         isEnabled = false
         max = 100
         thumb = ContextCompat.getDrawable(context, R.drawable.animation_snail_bar)
-        progressDrawable = ContextCompat.getDrawable(context, R.drawable.layer_snail_bar)
+        progressDrawable = ContextCompat.getDrawable(context, R.drawable.rectangle_snail_bar)
     }
 
     override fun onAttachedToWindow() {

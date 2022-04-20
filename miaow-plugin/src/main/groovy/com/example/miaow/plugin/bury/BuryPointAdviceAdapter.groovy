@@ -1,7 +1,6 @@
-package com.example.fragment.plugin.bury
+package com.example.miaow.plugin.bury
 
-import com.example.fragment.plugin.MiaowPlugin
-import com.example.fragment.plugin.bury.bean.BuryPointBean
+import com.example.miaow.plugin.MiaowPlugin
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.Handle
 import org.objectweb.asm.MethodVisitor

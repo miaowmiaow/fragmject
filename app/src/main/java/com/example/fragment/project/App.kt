@@ -7,6 +7,7 @@ import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
+import coil.decode.VideoFrameDecoder
 import com.example.fragment.library.base.http.setBaseUrl
 import com.example.fragment.library.base.http.setHttpClient
 import com.example.fragment.library.base.utils.OkHelper
@@ -29,6 +30,7 @@ class App : Application(), ImageLoaderFactory {
                     add(GifDecoder())
                 }
                 add(SvgDecoder(applicationContext))
+                add(VideoFrameDecoder(applicationContext))
             }
             .build()
     }

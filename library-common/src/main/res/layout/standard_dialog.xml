@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/layer_corner_solid_white_stroke_line_r5"
+    android:background="@drawable/rectangle_solid_white_stroke1_line_corners5"
     android:orientation="vertical">
 
     <LinearLayout

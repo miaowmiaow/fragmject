@@ -22,7 +22,7 @@
         android:id="@+id/selected"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/layer_rectangle_stroke3_green"
+        android:background="@drawable/rectangle_solid_transparent_stroke3_green"
         android:visibility="invisible" />
 
 </RelativeLayout>

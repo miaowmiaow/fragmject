@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true" android:drawable="@drawable/layer_indicator_select" />
-    <item android:drawable="@drawable/layer_indicator_normal" />
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true" android:drawable="@drawable/rectangle_slid_fff_corners1_9_2" />
+    <item android:drawable="@drawable/rectangle_slid_88fff_corners1_9_2" />
 </selector>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle"
+    android:useLevel="false">
+    <solid android:color="@color/gray" />
+    <!-- 圆环大小 颜色-->
+    <stroke
+        android:width="0.5dp"
+        android:color="@color/two_b_gray" />
+    <corners android:radius="4dp" />
+</shape>
+

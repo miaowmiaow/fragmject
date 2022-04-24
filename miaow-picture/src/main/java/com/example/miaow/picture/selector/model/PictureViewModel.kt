@@ -25,7 +25,7 @@ class PictureViewModel : BaseViewModel() {
     private val projection = arrayOf(ID, BUCKET_DISPLAY_NAME, DISPLAY_NAME, MEDIA_TYPE)
     private val sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
 
-    val mediaResult = MutableLiveData<Map<String, List<MediaBean>>>()
+    private val mediaResult = MutableLiveData<Map<String, List<MediaBean>>>()
     val albumResult = MutableLiveData<List<AlbumBean>>()
     val currAlbumResult = MutableLiveData<List<MediaBean>>()
 
@@ -40,35 +40,45 @@ class PictureViewModel : BaseViewModel() {
      */
     fun queryAlbum(context: Context) {
         viewModelScope.launch {
-            val mediaData = HashMap<String, MutableList<MediaBean>>().apply {
-                this["最近项目"] = ArrayList()
-            }
-            context.contentResolver.query(uri, projection, null, null, sortOrder)?.apply {
-                while (moveToNext()) {
-                    val mediaType = getInt(getColumnIndex(MEDIA_TYPE))
-                    if (mediaType == MEDIA_TYPE_IMAGE || mediaType == MEDIA_TYPE_VIDEO) {
-                        val id = getLong(getColumnIndex(ID))
-                        val contentUri = ContentUris.withAppendedId(uri, id)
-                        val bucketName = getString(getColumnIndex(BUCKET_DISPLAY_NAME))
-                        val name = getString(getColumnIndex(DISPLAY_NAME))
-                        val media = MediaBean(name, contentUri)
-                        if (!mediaData.containsKey(bucketName)) {
-                            mediaData[bucketName] = ArrayList()
+            try {
+                val mediaData = HashMap<String, MutableList<MediaBean>>().apply {
+                    this["最近项目"] = ArrayList()
+                }
+                context.contentResolver.query(uri, projection, null, null, sortOrder)?.apply {
+                    while (moveToNext()) {
+                        val mediaTypeIndex = getColumnIndex(MEDIA_TYPE)
+                        val mediaType = getInt(mediaTypeIndex)
+                        if (mediaType == MEDIA_TYPE_IMAGE || mediaType == MEDIA_TYPE_VIDEO) {
+                            val idIndex = getColumnIndex(ID)
+                            val id = getLong(idIndex)
+                            val contentUri = ContentUris.withAppendedId(uri, id)
+                            val bucketNameIndex = getColumnIndex(BUCKET_DISPLAY_NAME)
+                            val bucketName = getString(bucketNameIndex)
+                            val nameIndex = getColumnIndex(DISPLAY_NAME)
+                            val name = getString(nameIndex)
+                            val media = MediaBean(name, contentUri)
+                            if (!mediaData.containsKey(bucketName)) {
+                                mediaData[bucketName] = ArrayList()
+                            }
+                            mediaData[bucketName]?.add(media)
+                            mediaData["最近项目"]?.add(media)
                         }
-                        mediaData[bucketName]?.add(media)
-                        mediaData["最近项目"]?.add(media)
+                    }
+                    close()
+                }
+                val albumData: MutableList<AlbumBean> = ArrayList()
+                mediaData.onEach { (key, value) ->
+                    if (value.size > 0) {
+                        val album = AlbumBean(key, value[value.size - 1].uri, value.size.toString())
+                        if (key == "最近项目") albumData.add(0, album) else albumData.add(album)
                     }
                 }
-                close()
+                mediaResult.postValue(mediaData)
+                albumResult.postValue(albumData)
+                currAlbumResult.postValue(mediaData[albumData[0].name])
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-            val albumData: MutableList<AlbumBean> = ArrayList()
-            mediaData.onEach { (key, value) ->
-                val album = AlbumBean(key, value[value.size - 1].uri, value.size.toString())
-                if (key == "最近项目") albumData.add(0, album) else albumData.add(album)
-            }
-            mediaResult.postValue(mediaData)
-            albumResult.postValue(albumData)
-            currAlbumResult.postValue(mediaData[albumData[0].name])
         }
     }
 

@@ -14,9 +14,7 @@
 
 ## 开发环境
 为了您能正常运行本项目，请使用 `Android Studio 小蜜蜂` 及以上版本
-
-[Download Android Studio](https://developer.android.google.cn/studio?hl=zh-cn#downloads/) 
-
+[Download Android Studio](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 或者切换至 [v1.2.6.1](https://github.com/miaowmiaow/fragmject/releases/tag/v1.2.6.1)
 
 ## 截图展示
@@ -71,19 +69,15 @@
 |       └── build.gradle                 模块构建配置
 | 
 ├── miaow-picture                        图片编辑器模块（目录同app，不再展开）
-├── module-user                          用户模块（目录同app，不再展开）
-├── module-wan                           玩Android功能模块（目录同app，不再展开）
-| 
-├── plugin-privacy                       隐私扫描模块（目录同统计插件模块，不再展开）
-├── plugin-statistic                     统计插件模块
+├── miaow-plugin                         插件模块
 |   └── src 
 |       └── main 
 |           └── groovy                   源码目录
-|           |   ├── bp                   埋点统计目录
-|           |   └── mt                   耗时统计目录
 |           | 
 |           └── resources                配置目录
 |               └── statistic.properties 插件配置
+├── module-user                          用户模块（目录同app，不再展开）
+├── module-wan                           玩Android功能模块（目录同app，不再展开）
 | 
 ├── repos                                插件生成目录
 |

@@ -2,6 +2,7 @@ package com.example.fragment.project
 
 import android.app.Application
 import android.os.Build
+import coil.ComponentRegistry
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
@@ -23,15 +24,15 @@ class App : Application(), ImageLoaderFactory {
         return ImageLoader.Builder(applicationContext)
             .crossfade(true)
             .okHttpClient { OkHelper.httpClient(applicationContext) }
-            .componentRegistry {
+            .components(fun ComponentRegistry.Builder.() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    add(ImageDecoderDecoder(applicationContext))
+                    add(ImageDecoderDecoder.Factory())
                 } else {
-                    add(GifDecoder())
+                    add(GifDecoder.Factory())
                 }
-                add(SvgDecoder(applicationContext))
-                add(VideoFrameDecoder(applicationContext))
-            }
+                add(SvgDecoder.Factory())
+                add(VideoFrameDecoder.Factory())
+            })
             .build()
     }
 
@@ -39,5 +40,4 @@ class App : Application(), ImageLoaderFactory {
         setBaseUrl("https://www.wanandroid.com/")
         setHttpClient(OkHelper.httpClient(applicationContext))
     }
-
 }

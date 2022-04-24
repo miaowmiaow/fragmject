@@ -4,7 +4,6 @@ import android.content.Context
 import com.example.fragment.library.base.fragment.BaseFragment
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.common.activity.RouterActivity
-import com.example.fragment.library.common.constant.Router
 
 abstract class RouterFragment : BaseFragment() {
 

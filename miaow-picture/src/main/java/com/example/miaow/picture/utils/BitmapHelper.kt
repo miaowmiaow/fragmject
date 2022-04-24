@@ -85,7 +85,8 @@ fun Context.crQueryPath(uri: Uri, selection: String = ""): String {
     var path = ""
     if (cursor != null) {
         if (cursor.moveToFirst()) {
-            path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+            val index = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
+            path = cursor.getString(index)
         }
         cursor.close()
     }

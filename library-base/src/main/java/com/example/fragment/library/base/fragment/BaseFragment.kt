@@ -7,10 +7,10 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
-import coil.clear
+import coil.dispose
+import coil.load
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.load
 
 abstract class BaseFragment : Fragment() {
 
@@ -36,8 +36,10 @@ abstract class BaseFragment : Fragment() {
         initView()
         initViewModel()?.progress(viewLifecycleOwner, {
             loadGif.load(R.drawable.icons8_monkey)
+            loadGif.visibility = View.VISIBLE
         }, {
-            loadGif.clear()
+            loadGif.dispose()
+            loadGif.visibility = View.GONE
         })
         view.postDelayed({ initLoad() }, loadDelayMillis)
     }

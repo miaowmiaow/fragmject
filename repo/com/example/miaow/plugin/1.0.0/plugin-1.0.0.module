@@ -1,0 +1,110 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.example.miaow",
+    "module": "plugin",
+    "version": "1.0.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "plugin-1.0.0.jar",
+          "url": "plugin-1.0.0.jar",
+          "size": 59594,
+          "sha512": "8bd4cfd627e95e1fe952fc997ea50f1e442eb8fc5318bdd8192ecdd4e05ca2de38c9e9c3593d5f82e015e9734d72f6d1c1f53382200047cd7630d40ef45bc642",
+          "sha256": "9fb674251fd3c59cb1a6644b98240ad1938feaa136def5edef4107d18ba035ce",
+          "sha1": "ca73fe399975ff32fa3c7d9baba429e9250e486b",
+          "md5": "b87a14dc3f6b17dbb272c0887256fc88"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.ow2.asm",
+          "module": "asm",
+          "version": {
+            "requires": "9.1"
+          }
+        },
+        {
+          "group": "org.ow2.asm",
+          "module": "asm-commons",
+          "version": {
+            "requires": "9.1"
+          }
+        },
+        {
+          "group": "org.ow2.asm",
+          "module": "asm-analysis",
+          "version": {
+            "requires": "9.1"
+          }
+        },
+        {
+          "group": "org.ow2.asm",
+          "module": "asm-util",
+          "version": {
+            "requires": "9.1"
+          }
+        },
+        {
+          "group": "org.ow2.asm",
+          "module": "asm-tree",
+          "version": {
+            "requires": "9.1"
+          }
+        },
+        {
+          "group": "com.android.tools.build",
+          "module": "gradle",
+          "version": {
+            "requires": "4.2.2"
+          },
+          "excludes": [
+            {
+              "group": "org.ow2.asm",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "plugin-1.0.0.jar",
+          "url": "plugin-1.0.0.jar",
+          "size": 59594,
+          "sha512": "8bd4cfd627e95e1fe952fc997ea50f1e442eb8fc5318bdd8192ecdd4e05ca2de38c9e9c3593d5f82e015e9734d72f6d1c1f53382200047cd7630d40ef45bc642",
+          "sha256": "9fb674251fd3c59cb1a6644b98240ad1938feaa136def5edef4107d18ba035ce",
+          "sha1": "ca73fe399975ff32fa3c7d9baba429e9250e486b",
+          "md5": "b87a14dc3f6b17dbb272c0887256fc88"
+        }
+      ]
+    }
+  ]
+}

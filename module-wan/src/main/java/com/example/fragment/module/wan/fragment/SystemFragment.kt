@@ -1,6 +1,5 @@
 package com.example.fragment.module.wan.fragment
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,18 +39,6 @@ class SystemFragment : RouterFragment() {
     }
 
     override fun initView() {
-        requireArguments().takeIf { it.containsKey(Keys.URL) }?.let {
-            val url = Uri.decode(it.getString(Keys.URL))
-            val uri = Uri.parse("https://www.wanandroid.com/${url}")
-            var chapterId = uri.getQueryParameter("cid")
-            if (chapterId.isNullOrBlank()) {
-                val paths = uri.pathSegments
-                if (paths != null && paths.size >= 3) {
-                    chapterId = paths[2]
-                }
-            }
-            cid = chapterId.toString()
-        }
         requireArguments().takeIf { it.containsKey(Keys.CID) }?.let {
             cid = it.getString(Keys.CID, "0")
         }

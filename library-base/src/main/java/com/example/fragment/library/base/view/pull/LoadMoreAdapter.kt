@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.view.pull
 
+import android.annotation.SuppressLint
 import android.view.Gravity
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
@@ -20,6 +21,7 @@ class LoadMoreAdapter(
     init {
         adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onChanged() {
                 super.onChanged()
                 notifyDataSetChanged()

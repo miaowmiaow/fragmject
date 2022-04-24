@@ -12,7 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.utils.MetricsUtils
+import com.example.fragment.library.base.utils.dp2px
 import kotlin.math.abs
 
 class SwitchButton @JvmOverloads constructor(
@@ -62,17 +62,17 @@ class SwitchButton @JvmOverloads constructor(
     /**
      * 边框宽度px
      */
-    private val borderWidth = MetricsUtils.dp2px(1f)
+    private val borderWidth = dp2px(1f)
 
     /**
      * 阴影半径
      */
-    private val shadowRadius = MetricsUtils.dp2px(2.5f)
+    private val shadowRadius = dp2px(2.5f)
 
     /**
      * 阴影Y偏移px
      */
-    private val shadowOffset = MetricsUtils.dp2px(1.5f)
+    private val shadowOffset = dp2px(1.5f)
 
     private var state = STATE.CLOSE
 

@@ -1,5 +1,6 @@
 package com.example.fragment.module.user.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
@@ -18,6 +19,7 @@ class MyCoinAdapter : BaseAdapter<MyCoinBean>() {
         return MyCoinItemBinding::inflate
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onItemView(holder: ViewBindHolder, position: Int, item: MyCoinBean) {
         val binding = holder.binding as MyCoinItemBinding
         val desc: String = item.desc

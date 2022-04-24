@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.fragment.library.base">
 
     <!--电池优化-->
@@ -43,7 +45,9 @@
 
     <!--存储-->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
 
     <!--振动-->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -59,7 +63,7 @@
 
     <application>
         <provider
-            android:name=".provider.BaseContent"
+            android:name=".provider.BaseContentProvider"
             android:authorities="${applicationId}.BaseProvider"
             android:exported="false" />
 

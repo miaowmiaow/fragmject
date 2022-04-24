@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import coil.clear
+import coil.dispose
+import coil.load
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
-import com.example.fragment.library.base.utils.load
 import com.example.miaow.picture.databinding.PictureClipDialogBinding
 import com.example.miaow.picture.utils.saveSystemAlbum
 
@@ -62,7 +62,7 @@ class PictureClipDialog : FullDialog() {
                 it.context.saveSystemAlbum(binding.clip.saveBitmap()) { path, uri ->
                     binding.confirm.isEnabled = true
                     binding.progress.visibility = View.GONE
-                    binding.progress.clear()
+                    binding.progress.dispose()
                     callback?.onFinish(path, uri)
                     isSaving = false
                     dismiss()
@@ -81,8 +81,8 @@ class PictureClipDialog : FullDialog() {
         return this
     }
 
-}
+    interface ClipFinishCallback {
+        fun onFinish(path: String, uri: Uri)
+    }
 
-interface ClipFinishCallback {
-    fun onFinish(path: String, uri: Uri)
 }

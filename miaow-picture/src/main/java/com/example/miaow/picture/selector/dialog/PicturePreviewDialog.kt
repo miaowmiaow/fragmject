@@ -8,12 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.widget.ViewPager2
+import coil.load
 import com.example.fragment.library.base.dialog.FullDialog
-import com.example.fragment.library.base.utils.load
 import com.example.miaow.picture.R
 import com.example.miaow.picture.databinding.PicturePreviewDialogBinding
 import com.example.miaow.picture.databinding.PicturePreviewTabBinding
-import com.example.miaow.picture.editor.dialog.EditorFinishCallback
 import com.example.miaow.picture.editor.dialog.PictureEditorDialog
 import com.example.miaow.picture.selector.adapter.PicturePreviewAdapter
 import com.example.miaow.picture.selector.bean.MediaBean
@@ -67,12 +66,14 @@ class PicturePreviewDialog : FullDialog() {
         initViewModel()
     }
 
+    override fun dismiss() {
+        super.dismiss()
+        picturePreviewCallback?.onSelectedPosition(currSelectPosition)
+    }
+
     private fun initView() {
         binding.back.setOnClickListener { dismiss() }
-        binding.config.setOnClickListener {
-            picturePreviewCallback?.onSelectedPosition(currSelectPosition)
-            dismiss()
-        }
+        binding.config.setOnClickListener { dismiss() }
         binding.selectBox.setOnClickListener {
             val origPosition = if (!isSinglePicture) {
                 origSelectPosition[binding.viewpager2.currentItem]
@@ -95,7 +96,7 @@ class PicturePreviewDialog : FullDialog() {
             val currentUri = previewAdapter.getItem(binding.viewpager2.currentItem).uri
             PictureEditorDialog.newInstance()
                 .setBitmapPathOrUri(null, currentUri)
-                .setEditorFinishCallback(object : EditorFinishCallback {
+                .setEditorFinishCallback(object : PictureEditorDialog.EditorFinishCallback {
                     override fun onFinish(path: String, uri: Uri) {
                         previewAdapter.getItem(binding.viewpager2.currentItem).uri = uri
                         previewAdapter.notifyItemChanged(binding.viewpager2.currentItem)
@@ -174,8 +175,8 @@ class PicturePreviewDialog : FullDialog() {
         return this
     }
 
-}
+    interface PicturePreviewCallback {
+        fun onSelectedPosition(data: List<Int>)
+    }
 
-interface PicturePreviewCallback {
-    fun onSelectedPosition(data: List<Int>)
 }

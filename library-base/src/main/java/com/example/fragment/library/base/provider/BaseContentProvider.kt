@@ -5,7 +5,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 
-class BaseContent : ContentProvider() {
+class BaseContentProvider : ContentProvider() {
 
     companion object {
 

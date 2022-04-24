@@ -18,7 +18,7 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
-import com.example.fragment.library.base.utils.SystemUtil
+import com.example.fragment.library.base.utils.getVersionName
 import com.example.fragment.library.base.view.SwitchButton
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.constant.Keys
@@ -124,7 +124,7 @@ class SettingFragment : RouterFragment() {
                 })
                 .show(childFragmentManager)
         }
-        binding.versionName.text = SystemUtil.getVersionName()
+        binding.versionName.text = activity.getVersionName()
         binding.update.setOnClickListener {
             settingViewModel.update()
         }
@@ -177,7 +177,7 @@ class SettingFragment : RouterFragment() {
                     data?.let { data ->
                         StandardDialog.newInstance()
                             .setTitle("有新版本更新啦♥~")
-                            .setContent("当前版本：${SystemUtil.getVersionName()}\n最新版本：${data.versionName}")
+                            .setContent("当前版本：${activity.getVersionName()}\n最新版本：${data.versionName}")
                             .setOnDialogClickListener(object :
                                 StandardDialog.OnDialogClickListener {
                                 override fun onConfirm(dialog: StandardDialog) {
@@ -210,7 +210,7 @@ class SettingFragment : RouterFragment() {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     val uri = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        val authority = "${SystemUtil.getPackageName()}.FileProvider"
+                        val authority = "${activity.packageName}.FileProvider"
                         FileProvider.getUriForFile(activity, authority, File(errorMsg))
                     } else {
                         Uri.parse("file://$errorMsg")

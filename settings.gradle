@@ -1,3 +1,50 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
+pluginManagement {
+
+    /**
+     * The pluginManagement {repositories {...}} block configures the
+     * repositories Gradle uses to search or download the Gradle plugins and
+     * their transitive dependencies. Gradle pre-configures support for remote
+     * repositories such as JCenter, Maven Central, and Ivy. You can also use
+     * local repositories or define your own remote repositories. The code below
+     * defines the Gradle Plugin Portal, Google's Maven repository,
+     * and the Maven Central Repository as the repositories Gradle should use to look for its dependencies.
+     */
+
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        maven {
+            url uri('repo')
+        }
+    }
+}
+dependencyResolutionManagement {
+
+    /**
+     * The dependencyResolutionManagement { repositories {...}}
+     * block is where you configure the repositories and dependencies used by
+     * all modules in your project, such as libraries that you are using to
+     * create your application. However, you should configure module-specific
+     * dependencies in each module-level build.gradle file. For new projects,
+     * Android Studio includes Google's Maven repository and the
+     * Maven Central Repository by
+     * default, but it does not configure any dependencies (unless you select a
+     * template that requires some).
+     */
+
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url 'https://jitpack.io'
+        }
+    }
+}
+
 def initGradleEnvironment(){
     // 从config.properties获取app配置信息，减少不必要的build
     Properties properties = new Properties()
@@ -16,11 +63,10 @@ def initGradleEnvironment(){
     gradle.ext.versionCode =properties.getProperty('app.versionCode')
     gradle.ext.versionName =properties.getProperty('app.versionName')
 }
-//初始化
+
 initGradleEnvironment()
 
 rootProject.name = "fragmject"
-
 include ':app'
 include ':library-base'
 include ':library-common'

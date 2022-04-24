@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -54,7 +55,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         if (newData != null) {
             this.data.addAll(newData)
         }
-        notifyDataSetChanged()
+        notifyDataChanged()
     }
 
     fun addOneData(data: T? = null) {
@@ -85,7 +86,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
 
     fun clearData() {
         this.data.clear()
-        notifyDataSetChanged()
+        notifyDataChanged()
     }
 
     fun getData(): MutableList<T> {
@@ -94,6 +95,11 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
 
     fun getItem(position: Int): T {
         return data[position]
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun notifyDataChanged() {
+        notifyDataSetChanged()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -113,7 +119,7 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
             if (position != INVALID_POSITION && currentPosition != position) {
                 onItemSelectedListener?.onItemSelected(holder.itemView, position)
                 onItemSelectedListener?.onItemUnselected(holder.itemView, currentPosition)
-                currentPosition = position
+                currentPosition = holder.adapterPosition
             }
         }
         onItemChildClickListener?.let { listener ->

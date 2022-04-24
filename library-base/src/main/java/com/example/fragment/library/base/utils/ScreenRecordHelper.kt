@@ -11,8 +11,6 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import androidx.fragment.app.FragmentActivity
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.ActivityResultHelper.requestPermissions
-import com.example.fragment.library.base.utils.ActivityResultHelper.startForResult
 
 object ScreenRecordHelper {
 
@@ -50,10 +48,10 @@ object ScreenRecordHelper {
                             val recordPath = path + "/" + System.currentTimeMillis() + ".mp4"
                             setOutputFile(recordPath)
                             //设置录屏时屏幕大小,这个可跟VirtualDisplay一起控制屏幕大小,VirtualDisplay是将屏幕设置成多大多小setVideoSize是输出文件时屏幕多大多小
-                            setVideoSize(MetricsUtils.screenWidth, MetricsUtils.screenHeight)
+                            setVideoSize(screenWidth(), screenHeight())
                             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)//音频编码
                             setVideoEncoder(MediaRecorder.VideoEncoder.H264)//图像编码
-                            val bitRate = MetricsUtils.screenWidth * MetricsUtils.screenHeight * 2.6
+                            val bitRate = screenWidth() * screenHeight() * 2.6
                             setVideoEncodingBitRate(bitRate.toInt())//设置码率
                             setVideoFrameRate(24)//设置帧率，该帧率必须是硬件支持的，可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
                             prepare()
@@ -63,9 +61,9 @@ object ScreenRecordHelper {
                         //获取录制屏幕的大小,像素,等等一些数据
                         virtualDisplay = mp.createVirtualDisplay(
                             "Screen Record Service",
-                            MetricsUtils.screenWidth,
-                            MetricsUtils.screenHeight,
-                            MetricsUtils.densityDpi,
+                            screenWidth(),
+                            screenHeight(),
+                            densityDpi(),
                             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                             mr.surface,
                             null, null

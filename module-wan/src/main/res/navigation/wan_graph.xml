@@ -26,10 +26,8 @@
     <fragment
         android:id="@+id/system"
         android:name="com.example.fragment.module.wan.fragment.SystemFragment"
-        android:label="SystemListFragment"
+        android:label="SystemFragment"
         tools:layout="@layout/system_fragment">
-        <argument android:name="url" />
-        <deepLink app:uri="fragment.example.com/system/url/{url}" />
         <argument android:name="cid" />
         <deepLink app:uri="fragment.example.com/system/{cid}" />
     </fragment>

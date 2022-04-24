@@ -17,7 +17,6 @@ import androidx.webkit.WebSettingsCompat.FORCE_DARK_ON
 import androidx.webkit.WebViewFeature
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.download
-import com.example.fragment.library.base.utils.InjectUtils.injectVConsoleJs
 import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 import com.tencent.smtt.export.external.interfaces.IX5WebSettings
 import com.tencent.smtt.export.external.interfaces.WebResourceRequest

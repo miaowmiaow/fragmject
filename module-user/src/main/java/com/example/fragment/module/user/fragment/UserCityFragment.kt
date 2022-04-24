@@ -8,7 +8,6 @@ import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.GsonUtil
 import com.example.fragment.library.base.utils.PinyinUtils
 import com.example.fragment.library.base.utils.ReadAssetsFileUtil
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -17,8 +16,7 @@ import com.example.fragment.module.user.bean.CityBean
 import com.example.fragment.module.user.bean.CityPickerBean
 import com.example.fragment.module.user.databinding.UserCityFragmentBinding
 import com.example.fragment.module.user.model.UserViewModel
-import java.util.*
-import kotlin.collections.ArrayList
+import com.google.gson.Gson
 
 class UserCityFragment : RouterFragment() {
 
@@ -76,7 +74,7 @@ class UserCityFragment : RouterFragment() {
         binding.cityList.layoutManager = LinearLayoutManager(binding.cityList.context)
         binding.cityList.adapter = cityAdapter
         val json = ReadAssetsFileUtil.getJson(activity, "city.json")
-        val bean = GsonUtil.getBean(json, CityPickerBean::class.java)
+        val bean = Gson().fromJson(json, CityPickerBean::class.java)
         val citys: HashSet<CityBean> = HashSet()
         for (areasBean in bean.data.areas) {
             for (childrenBeanX in areasBean.children) {

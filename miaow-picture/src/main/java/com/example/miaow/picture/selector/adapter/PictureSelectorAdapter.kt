@@ -1,11 +1,12 @@
 package com.example.miaow.picture.selector.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import coil.load
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.utils.MetricsUtils
-import com.example.fragment.library.base.utils.load
+import com.example.fragment.library.base.utils.screenWidth
 import com.example.miaow.picture.databinding.PictureSelectorItemBinding
 import com.example.miaow.picture.selector.bean.MediaBean
 
@@ -17,10 +18,11 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
         return PictureSelectorItemBinding::inflate
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onItemView(holder: ViewBindHolder, position: Int, item: MediaBean) {
         val binding = holder.binding as PictureSelectorItemBinding
         binding.root.layoutParams.apply {
-            height = MetricsUtils.screenWidth / 4
+            height = screenWidth() / 4
         }
         binding.image.load(item.uri)
         if (selectPosition.contains(position)) {
@@ -44,7 +46,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             } else if (selectPosition.size < 9) {
                 selectPosition.add(position)
             }
-            notifyDataSetChanged()
+            notifyDataChanged()
         }
     }
 
@@ -56,7 +58,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
     fun setSelectPosition(data: List<Int>) {
         selectPosition.clear()
         selectPosition.addAll(data)
-        notifyDataSetChanged()
+        notifyDataChanged()
     }
 
     fun getSelectPosition(): List<Int> {

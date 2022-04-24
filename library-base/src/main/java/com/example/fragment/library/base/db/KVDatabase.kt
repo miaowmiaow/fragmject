@@ -1,7 +1,7 @@
 package com.example.fragment.library.base.db
 
 import androidx.room.*
-import com.example.fragment.library.base.provider.BaseContent
+import com.example.fragment.library.base.provider.BaseContentProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,7 +20,7 @@ abstract class KVDatabase : RoomDatabase() {
 
         private fun getDB() = database ?: synchronized(KVDatabase::class.java) {
             database ?: Room.databaseBuilder(
-                BaseContent.get().applicationContext,
+                BaseContentProvider.get().applicationContext,
                 KVDatabase::class.java,
                 KVDatabase::class.java.simpleName
             ).build().also { db -> database = db }

@@ -1,26 +1,33 @@
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
 }
 
 android {
-    compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)
-    buildToolsVersion gradle.buildToolsVersion
+    compileSdk Integer.valueOf(gradle.compileSdkVersion)
 
     defaultConfig {
-        minSdkVersion Integer.valueOf(gradle.minSdkVersion)
-        targetSdkVersion Integer.valueOf(gradle.targetSdkVersion)
-        versionCode Integer.valueOf(gradle.versionCode)
-        versionName gradle.versionName
+        minSdk Integer.valueOf(gradle.minSdkVersion)
+        targetSdk Integer.valueOf(gradle.targetSdkVersion)
     }
 
-    buildFeatures {
-        viewBinding = true
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    viewBinding {
+        enabled = true
     }
 }
 
 dependencies {
-    implementation project(path: ':library-common')
+    api project(path: ':library-common')
 }

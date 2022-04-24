@@ -56,7 +56,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/title_bar"
-            android:layout_marginTop="12dp"
             android:background="@color/white"
             android:paddingStart="18dp"
             android:paddingTop="12dp"

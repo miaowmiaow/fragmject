@@ -5,11 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatDelegate
+import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainActivityBinding
+import com.tencent.smtt.export.external.TbsCoreSettings
+import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
@@ -37,7 +42,6 @@ class MainActivity : RouterActivity() {
             Router.SETTING -> navigate(R.id.action_main_to_setting, bundle)
             Router.SHARE_ARTICLE -> navigate("share/article/{uid}", bundle)
             Router.SYSTEM -> navigate("system/{cid}", bundle)
-            Router.SYSTEM_URL -> navigate("system/url/{url}", bundle)
             Router.USER_AVATAR -> navigate("user/avatar", bundle)
             Router.USER_CITY -> navigate("user/city", bundle)
             Router.USER_INFO -> navigate("user/info", bundle)
@@ -56,12 +60,63 @@ class MainActivity : RouterActivity() {
         setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
         initViewModel()
         initLoad()
+        initSDK()
+        initUIMode()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        WanHelper.close()
+        WebViewManager.destroy()
     }
 
     private fun initViewModel() {}
 
     private fun initLoad() {
         viewModel.getUser()
+    }
+
+    /**
+     * 注意: 第三方sdk需在用户同意隐私协议后初始化
+     */
+    private fun initSDK(){
+        Thread {
+            //X5内核初始化
+            val map = HashMap<String, Any>()
+            map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
+            map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
+            QbSdk.initTbsSettings(map)
+            QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
+                override fun onViewInitFinished(arg0: Boolean) {}
+
+                override fun onCoreInitFinished() {}
+            })
+        }.start()
+        //WebView预加载
+        WebViewManager.prepare(applicationContext)
+    }
+
+    /**
+     * 单 Activity 通过 ViewModel 来实现消息总线更优雅（参考UserViewModel）
+     * 此处为用而用: SharedFlowBus 消息总线
+     */
+    private fun initUIMode(){
+        WanHelper.registerUIMode(this) { eventBean ->
+            if (eventBean.key == WanHelper.UI_MODE) {
+                when (eventBean.value) {
+                    "1" -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        QbSdk.unForceSysWebView()
+                    }
+                    "2" -> {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        QbSdk.forceSysWebView()
+                    }
+                    else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                }
+            }
+        }
+        WanHelper.getUIMode()
     }
 
     private fun loginRequired(name: Router): Boolean {

@@ -6,8 +6,9 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.utils.MetricsUtils
+import com.example.fragment.library.base.utils.dp2px
 import com.example.fragment.library.base.utils.loadRoundedCorners
+import com.example.fragment.library.base.utils.screenWidth
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.BannerBean
 import com.example.fragment.library.common.constant.Keys
@@ -23,7 +24,7 @@ class BannerAdapter : BaseAdapter<BannerBean>() {
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
         val binding = holder.binding as BannerItemBinding
         binding.root.layoutParams.apply {
-            width = MetricsUtils.screenWidth - MetricsUtils.dp2px(60f).toInt()
+            width = screenWidth() - dp2px(60f).toInt()
         }
         if (item.imagePath.isNotEmpty()) {
             binding.banner.loadRoundedCorners(item.imagePath, 15f)

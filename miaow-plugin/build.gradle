@@ -1,10 +1,6 @@
 plugins {
     id 'groovy'
-    id 'maven'
-}
-
-repositories{
-    mavenCentral()
+    id 'maven-publish'
 }
 
 dependencies {
@@ -16,19 +12,24 @@ dependencies {
     implementation 'org.ow2.asm:asm-analysis:9.1'
     implementation 'org.ow2.asm:asm-util:9.1'
     implementation 'org.ow2.asm:asm-tree:9.1'
-    implementation "com.android.tools.build:gradle:$gradle_version", {
-        exclude group:'org.ow2.asm'
+    implementation "com.android.tools.build:gradle:4.2.2", {
+        exclude group: 'org.ow2.asm'
     }
 }
 
-uploadArchives {
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'com.example.miaow'
+            artifactId = 'plugin'
+            version = '1.0.0'
+
+            from components.java
+        }
+    }
     repositories {
-        mavenDeployer {
-            pom.groupId = 'com.example.miaow'
-            pom.artifactId = 'plugin'
-            pom.version = '1.0.0'
-            // maven本地仓库的目录
-            repository(url: uri('../repository'))
+        maven {
+            url  = parent.layout.projectDirectory.dir('repo')
         }
     }
 }

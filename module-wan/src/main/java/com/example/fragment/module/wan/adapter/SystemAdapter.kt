@@ -30,8 +30,7 @@ class SystemAdapter : BaseAdapter<SystemTreeBean>() {
             tv.text = treeBean.name
             tv.setOnClickListener {
                 item.childrenSelectPosition = index
-                val args = bundleOf(Keys.CID to treeBean.id)
-                baseActivity.navigation(Router.SYSTEM, args)
+                baseActivity.navigation(Router.SYSTEM, bundleOf(Keys.CID to treeBean.id))
             }
             binding.fbl.addView(tv)
         }

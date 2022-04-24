@@ -3,8 +3,8 @@ package com.example.miaow.picture.selector.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import coil.load
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.utils.load
 import com.example.miaow.picture.databinding.PicturePreviewItemBinding
 import com.example.miaow.picture.selector.bean.MediaBean
 

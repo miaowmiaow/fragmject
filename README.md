@@ -10,7 +10,14 @@
 - Kotlin（函数进阶，泛型，反射，协程...） 
 - MVVM（ViewModel，LiveData...）
 - 单Activity应用架构（Navigation...）
-- 屏幕录制、图片编辑、字节码插桩...
+- 常用封装(图片选择、图片编辑、屏幕录制、字节码插桩...)
+
+## 开发环境
+为了您能正常运行本项目，请使用 `Android Studio 小蜜蜂` 及以上版本
+
+[Android Studio Bumblebee 2021.1.1 Patch 3](https://developer.android.google.cn/studio?hl=zh-cn#downloads/) 
+
+或者切换至 [v1.2.6.1](https://github.com/miaowmiaow/fragmject/releases/tag/v1.2.6.1)
 
 ## 截图展示
 | ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095501.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095527.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-100242.png) |
@@ -272,7 +279,6 @@ clip.saveBitmap()
 ## 主要开源框架
 - [coil-kt/coil](https://github.com/coil-kt/coil)
 - [google/gson](https://github.com/google/gson)
-- [Meituan-Dianping/walle](https://github.com/Meituan-Dianping/walle)
 - [sourceforge/pinyin4j](http://pinyin4j.sourceforge.net/)
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)

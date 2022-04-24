@@ -1,55 +1,76 @@
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
 }
 
 android {
-    compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)
-    buildToolsVersion gradle.buildToolsVersion
+    compileSdk Integer.valueOf(gradle.compileSdkVersion)
 
     defaultConfig {
-        minSdkVersion Integer.valueOf(gradle.minSdkVersion)
-        targetSdkVersion Integer.valueOf(gradle.targetSdkVersion)
-        versionCode Integer.valueOf(gradle.versionCode)
-        versionName gradle.versionName
+        minSdk Integer.valueOf(gradle.minSdkVersion)
+        targetSdk Integer.valueOf(gradle.targetSdkVersion)
     }
 
-    buildFeatures {
-        viewBinding = true
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    viewBinding {
+        enabled = true
     }
 }
 
 dependencies {
+    def coil_version = "2.0.0-rc03"
+    def lifecycle_version = "2.4.1"
+    def navigation_version  = "2.4.2"
+    def okhttp_version = '5.0.0-alpha.6'
+    def room_version = "2.4.2"
+
     api fileTree(dir: "libs", include: ["*.jar"])
     api files('libs/pinyin4j-2.5.0.jar')
-    api rootProject.ext.dependencies["androidx-appcompat"]
-    api rootProject.ext.dependencies["androidx-core-ktx"]
-    api rootProject.ext.dependencies["androidx-fragment-ktx"]
-    api rootProject.ext.dependencies["androidx-viewpager2"]
-    api rootProject.ext.dependencies["androidx-webkit"]
-    api rootProject.ext.dependencies["livedata-ktx"]
-    api rootProject.ext.dependencies["viewmodel-ktx"]
-    api rootProject.ext.dependencies["navigation-fragment-ktx"]
-    api rootProject.ext.dependencies["navigation-ui-ktx"]
-    annotationProcessor rootProject.ext.dependencies["room-compiler"]
-    kapt rootProject.ext.dependencies["room-compiler"]
-    api rootProject.ext.dependencies["room-ktx"]
-    api rootProject.ext.dependencies["room-runtime"]
-    api rootProject.ext.dependencies["coil-kt"]
-    api rootProject.ext.dependencies["coil-gif"]
-    api rootProject.ext.dependencies["coil-svg"]
-    api rootProject.ext.dependencies["coil-video"]
-    api rootProject.ext.dependencies["google-flexbox"]
-    api rootProject.ext.dependencies["google-material"]
-    api rootProject.ext.dependencies["google-gson"]
-    api rootProject.ext.dependencies["kotlin-stdlib"]
-    api rootProject.ext.dependencies["kotlinx-coroutines-android"]
-    api rootProject.ext.dependencies["meituan-walle"]
-    api rootProject.ext.dependencies["squareup-retrofit"]
-    api rootProject.ext.dependencies["squareup-okhttp"]
-    api rootProject.ext.dependencies["squareup-okhttp-logging-interceptor"]
-    api rootProject.ext.dependencies["tencent-tbs"]
+
+    api 'androidx.appcompat:appcompat:1.4.1'
+    api 'androidx.core:core-ktx:1.7.0'
+    api 'androidx.fragment:fragment-ktx:1.4.1'
+    api 'androidx.viewpager2:viewpager2:1.0.0'
+    api 'androidx.webkit:webkit:1.4.0'
+    // viewModel 和 livedata
+    api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    // navigation
+    api "androidx.navigation:navigation-fragment-ktx:$navigation_version"
+    api "androidx.navigation:navigation-ui-ktx:$navigation_version"
+    // room
+    api "androidx.room:room-ktx:$room_version"
+    api "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    // coil
+    api "io.coil-kt:coil:$coil_version"
+    api "io.coil-kt:coil-gif:$coil_version"
+    api "io.coil-kt:coil-svg:$coil_version"
+    api "io.coil-kt:coil-video:$coil_version"
+    // google
+    api 'com.google.android.flexbox:flexbox:3.0.0'
+    api 'com.google.code.gson:gson:2.9.0'
+    api 'com.google.android.material:material:1.4.0'
+    // kotlin 和 协程
+    api "org.jetbrains.kotlin:kotlin-stdlib:1.6.1"
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
+    // okhttp 和 retrofit
+    api "com.squareup.okhttp3:okhttp:$okhttp_version"
+    api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
+    api "com.squareup.retrofit2:retrofit:2.9.0"
+    // 腾讯TBS
+    api 'com.tencent.tbs:tbssdk:44165'
 
 }

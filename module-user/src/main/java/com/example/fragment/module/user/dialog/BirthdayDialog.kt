@@ -1,5 +1,6 @@
 package com.example.fragment.module.user.dialog
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -50,6 +51,7 @@ class BirthdayDialog : BottomDialog() {
             return WheelItemBinding::inflate
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onItemView(holder: ViewBindHolder, position: Int, item: String) {
             val binding = holder.binding as WheelItemBinding
             binding.tv.text = "${item}月"
@@ -62,6 +64,7 @@ class BirthdayDialog : BottomDialog() {
             return WheelItemBinding::inflate
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onItemView(holder: ViewBindHolder, position: Int, item: String) {
             val binding = holder.binding as WheelItemBinding
             binding.tv.text = "${item}日"

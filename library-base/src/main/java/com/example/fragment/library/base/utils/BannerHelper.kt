@@ -1,9 +1,12 @@
 package com.example.fragment.library.base.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.view.MotionEvent
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+@SuppressLint("ClickableViewAccessibility")
 class BannerHelper(
     private val recyclerView: RecyclerView,
     @RecyclerView.Orientation
@@ -11,74 +14,81 @@ class BannerHelper(
 ) {
 
     private val layoutManager = RepeatLayoutManager(recyclerView.context)
-    private var listener: OnItemScrollListener? = null
-    private var isDragging = false
     private val bannerTask = Runnable {
-        offsetItem()
+        offsetItem(0, 0)
         start()
     }
+
+    private var listener: OnItemScrollListener? = null
 
     init {
         layoutManager.orientation = orientation
         recyclerView.layoutManager = layoutManager
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    if (isDragging) {
-                        isDragging = false
-                        offsetItem()
-                        start()
-                    }
-                } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                    isDragging = true
-                    stop()
-                } else if (newState == RecyclerView.SCROLL_STATE_SETTLING) {
+        recyclerView.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_MOVE -> {
                     stop()
                 }
+                else -> {
+                    offsetItem(0, 0)
+                    start()
+                }
             }
-        })
+            false
+        }
+        recyclerView.onFlingListener = object : RecyclerView.OnFlingListener() {
+            override fun onFling(velocityX: Int, velocityY: Int): Boolean {
+                offsetItem(velocityX, velocityY)
+                return true
+            }
+        }
     }
 
-    private fun offsetItem() {
+    private fun offsetItem(velocityX: Int, velocityY: Int) {
         val position = layoutManager.findFirstVisibleItemPosition()
         val itemView = layoutManager.findViewByPosition(position) ?: return
-        if (orientation == RecyclerView.HORIZONTAL) {
-            val lmWidth = layoutManager.width
-            var dx = if (itemView.width < lmWidth / 2) {
-                itemView.right
-            } else {
-                val offset = (lmWidth - itemView.width) / 2
-                if (itemView.right < lmWidth / 2) {
-                    itemView.right - offset
-                } else {
-                    offset - (lmWidth - itemView.right)
-                }
-            }
-            if (dx == 0) {
-                dx = itemView.width
-            }
-            recyclerView.smoothScrollBy(dx, 0)
-        } else {
-            val lmHeight = layoutManager.height
-            var dy = if (itemView.height < lmHeight / 2) {
-                itemView.bottom
-            } else {
-                val offset = (lmHeight - itemView.height) / 2
-                if (itemView.bottom < lmHeight / 2) {
-                    itemView.bottom - offset
-                } else {
-                    offset - (lmHeight - itemView.bottom)
-                }
-            }
-            if (dy == 0) {
-                dy = itemView.height
-            }
-            recyclerView.smoothScrollBy(0, dy)
-        }
         recyclerView.post {
-            listener?.onItemScroll(findItemPosition())
+            if (orientation == RecyclerView.HORIZONTAL) {
+                val lmWidth = layoutManager.width
+                var dx = itemView.width
+                if (itemView.width < lmWidth / 2) {
+                    dx = itemView.right
+                } else {
+                    val offset = (lmWidth - itemView.width) / 2
+                    if (velocityX > 0 || itemView.right < lmWidth / 2) {
+                        dx = itemView.right - offset
+                    }
+                    if (velocityX < 0 || itemView.right > lmWidth / 2) {
+                        dx = offset - (lmWidth - itemView.right)
+                    }
+                }
+                if (dx == 0) {
+                    dx = itemView.width
+                }
+                recyclerView.smoothScrollBy(dx, 0, null, 250)
+            } else {
+                val lmHeight = layoutManager.height
+                var dy = itemView.height
+                if (itemView.height < lmHeight / 2) {
+                    dy = itemView.bottom
+                } else {
+                    val offset = (lmHeight - itemView.height) / 2
+                    if (velocityY > 0 || itemView.bottom < lmHeight / 2) {
+                        dy = itemView.bottom - offset
+                    }
+                    if (velocityY < 0 || itemView.bottom > lmHeight / 2) {
+                        dy = offset - (lmHeight - itemView.bottom)
+                    }
+                }
+                if (dy == 0) {
+                    dy = itemView.height
+                }
+                recyclerView.smoothScrollBy(0, dy, null, 250)
+            }
         }
+        recyclerView.postDelayed({
+            listener?.onItemScroll(findItemPosition())
+        }, 300)
     }
 
     fun findItemPosition(): Int {
@@ -87,7 +97,7 @@ class BannerHelper(
 
     fun start() {
         recyclerView.removeCallbacks(bannerTask)
-        recyclerView.postDelayed(bannerTask, 5000)
+        recyclerView.postDelayed(bannerTask, 3000)
     }
 
     fun stop() {
@@ -104,10 +114,6 @@ interface OnItemScrollListener {
     fun onItemScroll(position: Int)
 }
 
-/**
- * 修改自jiarWang的RepeatLayoutManager
- * https://github.com/jiarWang/RepeatLayoutManager
- */
 open class RepeatLayoutManager(val context: Context) : LinearLayoutManager(context) {
 
     override fun onLayoutChildren(recycler: RecyclerView.Recycler, state: RecyclerView.State) {

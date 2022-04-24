@@ -12,7 +12,6 @@ import com.example.miaow.picture.databinding.PictureAlbumPopupWindowBinding
 import com.example.miaow.picture.selector.adapter.PictureAlbumAdapter
 import com.example.miaow.picture.selector.bean.AlbumBean
 
-
 class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
 
     private var _binding: PictureAlbumPopupWindowBinding? = null

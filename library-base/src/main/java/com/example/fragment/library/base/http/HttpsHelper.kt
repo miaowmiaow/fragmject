@@ -50,7 +50,7 @@ object HttpsHelper {
         return keyManagerFactory.keyManagers
     }
 
-    @SuppressLint("TrustAllX509TrustManager")
+    @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
     class UnSafeTrustManager : X509TrustManager {
         override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
         override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}

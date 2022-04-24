@@ -1,44 +1,16 @@
 package com.example.fragment.library.base.utils
 
 import android.widget.ImageView
-import coil.loadAny
-import coil.transform.BlurTransformation
+import coil.load
 import coil.transform.CircleCropTransformation
-import coil.transform.GrayscaleTransformation
 import coil.transform.RoundedCornersTransformation
 
-fun ImageView.load(data: Any, placeholderId: Int = 0, errorId: Int = 0) {
-    this.loadAny(data) {
-        crossfade(true)
-        placeholder(placeholderId)
-        error(errorId)
-    }
-}
-
-fun ImageView.loadBlur(data: Any, placeholderId: Int = 0, errorId: Int = 0) {
-    this.loadAny(data) {
-        crossfade(true)
-        placeholder(placeholderId)
-        error(errorId)
-        transformations(BlurTransformation(this@loadBlur.context))
-    }
-}
-
 fun ImageView.loadCircleCrop(data: Any, placeholderId: Int = 0, errorId: Int = 0) {
-    this.loadAny(data) {
+    this.load(data) {
         crossfade(true)
         placeholder(placeholderId)
         error(errorId)
         transformations(CircleCropTransformation())
-    }
-}
-
-fun ImageView.loadGrayscale(data: Any, placeholderId: Int, errorId: Int) {
-    this.loadAny(data) {
-        crossfade(true)
-        placeholder(placeholderId)
-        error(errorId)
-        transformations(GrayscaleTransformation())
     }
 }
 
@@ -65,7 +37,7 @@ fun ImageView.loadRoundedCorners(
     placeholderId: Int = 0,
     errorId: Int = 0
 ) {
-    this.loadAny(data) {
+    this.load(data) {
         crossfade(true)
         placeholder(placeholderId)
         error(errorId)

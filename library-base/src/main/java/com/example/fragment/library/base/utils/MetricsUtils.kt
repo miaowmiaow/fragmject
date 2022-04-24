@@ -1,83 +1,64 @@
 package com.example.fragment.library.base.utils
 
 import android.content.Context
-import com.example.fragment.library.base.provider.BaseContent
+import com.example.fragment.library.base.provider.BaseContentProvider
 
-object MetricsUtils {
-    /**
-     * 获取屏幕宽度
-     */
-    val screenWidth: Int
-        get() = getScreenWidth(BaseContent.get())
+/**
+ * 获取屏幕宽度
+ */
+fun screenWidth() = BaseContentProvider.get().getScreenWidth()
 
-    fun getScreenWidth(context: Context): Int {
-        val metrics = context.resources.displayMetrics
-        return metrics.widthPixels
-    }
+fun Context.getScreenWidth(): Int {
+    return resources.displayMetrics.widthPixels
+}
 
-    /**
-     * 获取屏幕高度
-     */
-    val screenHeight: Int
-        get() = getScreenHeight(BaseContent.get())
+/**
+ * 获取屏幕高度
+ */
+fun screenHeight() = BaseContentProvider.get().getScreenHeight()
 
-    fun getScreenHeight(context: Context): Int {
-        val metrics = context.resources.displayMetrics
-        return metrics.heightPixels
-    }
+fun Context.getScreenHeight(): Int {
+    return resources.displayMetrics.heightPixels
+}
 
-    val densityDpi: Int
-        get() = getDensityDpi(BaseContent.get())
+fun densityDpi() = BaseContentProvider.get().getDensityDpi()
 
-    fun getDensityDpi(context: Context): Int {
-        return context.resources.displayMetrics.densityDpi
-    }
+fun Context.getDensityDpi(): Int {
+    return resources.displayMetrics.densityDpi
+}
 
-    /**
-     * dp转px
-     */
-    fun dp2px(dp: Float): Float {
-        return dp2px(BaseContent.get(), dp)
-    }
+/**
+ * dp转px
+ */
+fun dp2px(dp: Float) = BaseContentProvider.get().dp2px(dp)
 
-    fun dp2px(context: Context, dp: Float): Float {
-        val scale = context.resources.displayMetrics.density
-        return (dp * scale + 0.5f)
-    }
+fun Context.dp2px(dp: Float): Float {
+    return (dp * resources.displayMetrics.density + 0.5f)
+}
 
-    /**
-     * px转dp
-     */
-    fun px2dp(px: Float): Float {
-        return px2dp(BaseContent.get(), px)
-    }
+/**
+ * px转dp
+ */
+fun px2dp(px: Float) = BaseContentProvider.get().px2dp(px)
 
-    fun px2dp(context: Context, px: Float): Float {
-        val scale = context.resources.displayMetrics.density
-        return (px / scale + 0.5f)
-    }
+fun Context.px2dp(px: Float): Float {
+    return (px / resources.displayMetrics.density + 0.5f)
+}
 
-    /**
-     * px转sp
-     */
-    fun px2sp(px: Float): Float {
-        return px2sp(BaseContent.get(), px)
-    }
+/**
+ * px转sp
+ */
+fun px2sp(px: Float) = BaseContentProvider.get().px2sp(px)
 
-    fun px2sp(context: Context, px: Float): Float {
-        val fontScale = context.resources.displayMetrics.scaledDensity
-        return (px / fontScale + 0.5f)
-    }
+fun Context.px2sp(px: Float): Float {
+    return (px / resources.displayMetrics.scaledDensity + 0.5f)
+}
 
-    /**
-     * sp转px
-     */
-    fun sp2px(sp: Float): Float {
-        return sp2px(BaseContent.get(), sp)
-    }
+/**
+ * sp转px
+ */
+fun sp2px(sp: Float) = BaseContentProvider.get().sp2px(sp)
 
-    fun sp2px(context: Context, sp: Float): Float {
-        val fontScale = context.resources.displayMetrics.scaledDensity
-        return (sp * fontScale + 0.5f)
-    }
+fun Context.sp2px(sp: Float): Float {
+    return (sp * resources.displayMetrics.scaledDensity + 0.5f)
 }

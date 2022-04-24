@@ -1,5 +1,6 @@
 package com.example.fragment.module.user.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -50,6 +51,7 @@ class UserFragment : RouterFragment() {
         binding.setting.setOnClickListener { activity.navigation(Router.SETTING) }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun initViewModel(): BaseViewModel {
         viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
             if (userBean.id.isNotBlank()) {

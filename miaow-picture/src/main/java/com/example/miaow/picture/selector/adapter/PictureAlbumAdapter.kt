@@ -1,11 +1,12 @@
 package com.example.miaow.picture.selector.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import coil.load
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.utils.load
 import com.example.miaow.picture.databinding.PictureAlbumItemBinding
 import com.example.miaow.picture.selector.bean.AlbumBean
 
@@ -17,6 +18,7 @@ class PictureAlbumAdapter : BaseAdapter<AlbumBean>() {
         return PictureAlbumItemBinding::inflate
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onItemView(holder: ViewBindHolder, position: Int, item: AlbumBean) {
         val binding = holder.binding as PictureAlbumItemBinding
         binding.image.load(item.uri)
@@ -27,7 +29,7 @@ class PictureAlbumAdapter : BaseAdapter<AlbumBean>() {
 
     fun setSelectedPosition(position: Int) {
         selPosition = position
-        notifyDataSetChanged()
+        notifyDataChanged()
     }
 
 }

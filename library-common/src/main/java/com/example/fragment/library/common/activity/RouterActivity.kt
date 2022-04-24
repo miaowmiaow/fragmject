@@ -6,18 +6,13 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.IdRes
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.activity.BaseActivity
 import com.example.fragment.library.base.http.HttpResponse
-import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.library.common.utils.WanHelper
-import com.tencent.smtt.export.external.TbsCoreSettings
-import com.tencent.smtt.sdk.QbSdk
 import java.util.regex.Pattern
 
 /**
@@ -40,51 +35,6 @@ abstract class RouterActivity : BaseActivity() {
         name: Router,
         bundle: Bundle? = null,
     )
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        /**
-         * 单 Activity 通过 ViewModel 来实现消息总线更优雅（参考UserViewModel）
-         * 这边纯粹为以下知识点服务，为用而用：
-         * SharedFlowBus 消息总线
-         */
-        WanHelper.registerUIMode(this) { eventBean ->
-            if (eventBean.key == WanHelper.UI_MODE) {
-                when (eventBean.value) {
-                    "1" -> {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        QbSdk.unForceSysWebView()
-                    }
-                    "2" -> {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        QbSdk.forceSysWebView()
-                    }
-                    else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-            }
-        }
-        WanHelper.getUIMode()
-        Thread {
-            //X5内核初始化
-            val map = HashMap<String, Any>()
-            map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-            map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-            QbSdk.initTbsSettings(map)
-            QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
-                override fun onViewInitFinished(arg0: Boolean) {}
-
-                override fun onCoreInitFinished() {}
-            })
-        }.start()
-        //WebView预加载
-        WebViewManager.prepare(applicationContext)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        WanHelper.close()
-        WebViewManager.destroy()
-    }
 
     override fun setContentView(view: View) {
         super.setContentView(view)

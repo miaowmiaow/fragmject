@@ -10,12 +10,12 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.viewbinding.ViewBinding
+import coil.load
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.utils.buildSpannableString
-import com.example.fragment.library.base.utils.load
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.base.utils.loadRoundedCorners
 import com.example.fragment.library.common.R
@@ -62,7 +62,15 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             binding.tag.text = item.tags[0].name
             binding.tag.setOnClickListener {
                 val url = Uri.encode(item.tags[0].url)
-                activity.navigation(Router.SYSTEM_URL, bundleOf(Keys.URL to url))
+                val uri = Uri.parse("https://www.wanandroid.com/${url}")
+                var chapterId = uri.getQueryParameter("cid")
+                if (chapterId.isNullOrBlank()) {
+                    val paths = uri.pathSegments
+                    if (paths != null && paths.size >= 3) {
+                        chapterId = paths[2]
+                    }
+                }
+                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to chapterId))
             }
         } else {
             binding.tag.visibility = View.GONE

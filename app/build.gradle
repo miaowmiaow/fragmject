@@ -1,20 +1,19 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
 //    id 'miaow'
-    id 'walle'
 }
 
 android {
-    compileSdkVersion Integer.valueOf(gradle.compileSdkVersion)
-    buildToolsVersion gradle.buildToolsVersion
+    compileSdk Integer.valueOf(gradle.compileSdkVersion)
 
     defaultConfig {
         applicationId gradle.applicationId
-        minSdkVersion Integer.valueOf(gradle.minSdkVersion)
-        targetSdkVersion Integer.valueOf(gradle.targetSdkVersion)
+        minSdk Integer.valueOf(gradle.minSdkVersion)
+        targetSdk Integer.valueOf(gradle.targetSdkVersion)
         versionCode Integer.valueOf(gradle.versionCode)
         versionName gradle.versionName
 
@@ -27,6 +26,26 @@ android {
                 ]
             }
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    dexOptions {
+        // 声明是否对依赖的库进行 dex 预处理来使你的增量构建更快速
+        preDexLibraries true
+        // 设置最大的线程数量使用当运行 dex-in-process 时,默认值是 4
+        maxProcessCount 8
+    }
+
+    viewBinding {
+        enabled = true
     }
 
     signingConfigs {
@@ -64,28 +83,24 @@ android {
         }
     }
 
-    buildFeatures {
-        viewBinding = true
+    flavorDimensions "default"
+
+    //获取渠道信息：Context.getMetaData("CHANNEL")
+    productFlavors {
+        huawei {}
+        xiaomi {}
+        oppo {}
+        vivo {}
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+    productFlavors.all { flavor ->
+        flavor.manifestPlaceholders = [CHANNEL_VALUE: name]
     }
 
-    kapt {
-        generateStubs = true
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    dexOptions {
-        // 声明是否对依赖的库进行 dex 预处理来使你的增量构建更快速
-        preDexLibraries true
-        // 设置最大的线程数量使用当运行 dex-in-process 时,默认值是 4
-        maxProcessCount 8
+    applicationVariants.all {
+        outputs.all {
+            outputFileName = "wan-${buildType.name}-${versionName}-${productFlavors[0].getAt('name')}.apk"
+        }
     }
 }
 
@@ -95,15 +110,6 @@ kapt {
     javacOptions {
         option("-Xmaxerrs", 500)
     }
-}
-
-walle {
-    // 指定渠道包的输出路径
-    apkOutputFolder = new File("${project.buildDir}/outputs/channels")
-    // 定制渠道包的APK的文件名称
-    apkFileNameFormat = '${appName}-${packageName}-${channel}-${buildType}-v${versionName}-${versionCode}-${buildTime}.apk'
-    // 渠道配置文件
-    channelFile = new File("${project.getProjectDir()}/channel")
 }
 
 dependencies {

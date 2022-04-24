@@ -10,7 +10,6 @@ enum class Router {
     SETTING,
     SHARE_ARTICLE,
     SYSTEM,
-    SYSTEM_URL,
     USER_SHARE,
     USER_AVATAR,
     USER_CITY,

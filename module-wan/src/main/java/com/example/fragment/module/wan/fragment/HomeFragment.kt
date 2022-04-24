@@ -8,8 +8,8 @@ import android.widget.LinearLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.utils.dp2px
 import com.example.fragment.library.base.utils.BannerHelper
-import com.example.fragment.library.base.utils.MetricsUtils
 import com.example.fragment.library.base.utils.OnItemScrollListener
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
@@ -124,11 +124,11 @@ class HomeFragment : RouterFragment() {
         if (itemCount > 0) {
             binding.indicator.removeAllViews()
             val layoutParams = LinearLayout.LayoutParams(
-                MetricsUtils.dp2px(12f).toInt(),
-                MetricsUtils.dp2px(3f).toInt()
+                dp2px(12f).toInt(),
+                dp2px(3f).toInt()
             )
-            layoutParams.marginStart = MetricsUtils.dp2px(2.5f).toInt()
-            layoutParams.marginEnd = MetricsUtils.dp2px(2.5f).toInt()
+            layoutParams.marginStart = dp2px(2.5f).toInt()
+            layoutParams.marginEnd = dp2px(2.5f).toInt()
             for (i in 0 until itemCount) {
                 val point = View(binding.indicator.context)
                 point.setBackgroundResource(R.drawable.selector_indicator)

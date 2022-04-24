@@ -27,7 +27,6 @@ import com.tencent.smtt.sdk.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
-import java.util.*
 
 class WebViewHelper private constructor(parent: ViewGroup) {
 
@@ -55,11 +54,11 @@ class WebViewHelper private constructor(parent: ViewGroup) {
             ): Boolean {
                 request?.url?.let { uri ->
                     if (view != null && !("http" == uri.scheme || "https" == uri.scheme)) {
-//                    try {
-//                        view.context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                    }
+                        try {
+                            view.context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                         return true
                     }
                 }

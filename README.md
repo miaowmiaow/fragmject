@@ -15,7 +15,7 @@
 ## 开发环境
 为了您能正常运行本项目，请使用 `Android Studio 小蜜蜂` 及以上版本
 
-[Android Studio Bumblebee 2021.1.1 Patch 3](https://developer.android.google.cn/studio?hl=zh-cn#downloads/) 
+[Download Android Studio](https://developer.android.google.cn/studio?hl=zh-cn#downloads/) 
 
 或者切换至 [v1.2.6.1](https://github.com/miaowmiaow/fragmject/releases/tag/v1.2.6.1)
 

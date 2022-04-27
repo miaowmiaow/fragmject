@@ -22,7 +22,7 @@ abstract class BaseViewModel : ViewModel() {
      *  通过 Map 来存储数据，方便 activityViewModels 使用
      */
     private var homePage: MutableMap<String, Int> = HashMap()
-    private var curPage: MutableMap<String, Int> = HashMap()
+    private var currPage: MutableMap<String, Int> = HashMap()
     private var pageCont: MutableMap<String, Int> = HashMap()
 
     private val progress = MutableLiveData<Double>()
@@ -31,31 +31,31 @@ abstract class BaseViewModel : ViewModel() {
      */
     fun getHomePage(page: Int = DEFAULT_PAGE, key: String = DEFAULT_KEY): Int {
         this.homePage[key] = page
-        this.curPage[key] = page
+        this.currPage[key] = page
         this.pageCont[key] = page + 1
         return page
     }
 
     fun isHomePage(key: String = DEFAULT_KEY): Boolean {
         val homePage = this.homePage[key] ?: DEFAULT_PAGE
-        val curPage = this.curPage[key] ?: DEFAULT_PAGE
-        return homePage == curPage
+        val currPage = this.currPage[key] ?: DEFAULT_PAGE
+        return homePage == currPage
     }
 
     /**
      * 获取下一页
      */
     fun getNextPage(key: String = DEFAULT_KEY): Int {
-        val curPage = this.curPage[key] ?: DEFAULT_PAGE
-        val nextPage = curPage + 1
-        this.curPage[key] = nextPage
+        val currPage = this.currPage[key] ?: DEFAULT_PAGE
+        val nextPage = currPage + 1
+        this.currPage[key] = nextPage
         return nextPage
     }
 
     fun hasNextPage(key: String = DEFAULT_KEY): Boolean {
-        val curPage = this.curPage[key] ?: DEFAULT_PAGE
+        val currPage = this.currPage[key] ?: DEFAULT_PAGE
         val pageCont = this.pageCont[key] ?: PAGE_CONT
-        return curPage < pageCont
+        return currPage < pageCont
     }
 
     /**
@@ -78,7 +78,7 @@ abstract class BaseViewModel : ViewModel() {
      * @param num: 0.0 请求开始, 1.0 请求结束
      */
     fun updateProgress(num: Double) {
-        if (homePage == curPage) progress.postValue(num)
+        if (homePage == currPage) progress.postValue(num)
     }
 
 }

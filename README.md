@@ -10,10 +10,10 @@
 - Kotlin（函数进阶，泛型，反射，协程...） 
 - MVVM（ViewModel，LiveData...）
 - 单Activity应用架构（Navigation...）
-- 常用封装(图片选择器、图片编辑器、日期控件、屏幕录制、字节码插桩...)
+- 常用封装(图片选择器、图片编辑器、日期控件、全面屏沉浸、屏幕录制、字节码插桩...)
 
 ## 开发环境
-为了您能正常运行本项目，请使用 `Android Studio 小蜜蜂` 或以上版本
+为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或以上版本
 
 [Download Android Studio](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 

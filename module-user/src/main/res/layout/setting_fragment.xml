@@ -50,13 +50,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="跟随系统深色模式"
                         android:textColor="@color/text_666"
@@ -66,7 +66,8 @@
                         android:id="@+id/system_theme"
                         android:layout_width="40dp"
                         android:layout_height="25dp"
-                        android:layout_alignParentEnd="true" />
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
 
                 </RelativeLayout>
 
@@ -74,13 +75,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="深色模式"
                         android:textColor="@color/text_666"
@@ -90,7 +91,8 @@
                         android:id="@+id/dark_theme"
                         android:layout_width="40dp"
                         android:layout_height="25dp"
-                        android:layout_alignParentEnd="true" />
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
 
                 </RelativeLayout>
 
@@ -98,13 +100,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="屏幕录制"
                         android:textColor="@color/text_666"
@@ -114,7 +116,8 @@
                         android:id="@+id/screen_record"
                         android:layout_width="40dp"
                         android:layout_height="25dp"
-                        android:layout_alignParentEnd="true" />
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true" />
 
                 </RelativeLayout>
 
@@ -123,19 +126,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/selector_transparent"
-                        android:drawableEnd="@drawable/ic_right"
                         android:gravity="center_vertical"
                         android:text="隐私政策"
                         android:textColor="@color/text_666"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        app:drawableEndCompat="@drawable/ic_right" />
 
                 </RelativeLayout>
 
@@ -144,19 +147,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/selector_transparent"
-                        android:drawableEnd="@drawable/ic_right"
                         android:gravity="center_vertical"
                         android:text="问题反馈"
                         android:textColor="@color/text_666"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        app:drawableEndCompat="@drawable/ic_right" />
 
                 </RelativeLayout>
 
@@ -165,19 +168,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/selector_transparent"
-                        android:drawableEnd="@drawable/ic_right"
                         android:gravity="center_vertical"
                         android:text="关于玩Android"
                         android:textColor="@color/text_666"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        app:drawableEndCompat="@drawable/ic_right" />
 
                 </RelativeLayout>
 
@@ -186,13 +189,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="清除缓存"
                         android:textColor="@color/text_666"
@@ -203,6 +206,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
                         android:layout_marginEnd="5dp"
                         android:singleLine="true"
                         android:text="0KB"
@@ -216,13 +220,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:gravity="center_vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="版本更新"
                         android:textColor="@color/text_666"
@@ -233,6 +237,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
                         android:layout_marginEnd="5dp"
                         android:singleLine="true"
                         android:text="已是最新版本"

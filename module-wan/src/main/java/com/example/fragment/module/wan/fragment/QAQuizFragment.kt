@@ -51,7 +51,7 @@ class QAQuizFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getWenDa()
+                viewModel.getWenDaHome()
             }
         })
         //加载更多
@@ -63,7 +63,7 @@ class QAQuizFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.wendaResult.observe(viewLifecycleOwner) {
+        viewModel.wendaResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.datas)
@@ -77,12 +77,6 @@ class QAQuizFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.wendaResult.value == null) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
 }

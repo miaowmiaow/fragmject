@@ -47,8 +47,8 @@ class SystemArticleFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listMap[cid] = articleAdapter.getData() as List<ArticleBean>
-        viewModel.listScrollMap[cid] = listOffsetY
+        viewModel.systemArticleResultMap[cid] = articleAdapter.getData() as List<ArticleBean>
+        viewModel.systemArticleScrollMap[cid] = listOffsetY
         _binding = null
     }
 
@@ -66,7 +66,7 @@ class SystemArticleFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getSystemArticle(cid)
+                viewModel.getSystemArticleHome(cid)
             }
         })
         //加载更多
@@ -75,16 +75,16 @@ class SystemArticleFragment : RouterFragment() {
                 viewModel.getSystemArticleNext(cid)
             }
         })
-        if (viewModel.listMap.containsKey(cid)) {
-            articleAdapter.setNewData(viewModel.listMap[cid])
+        if (viewModel.systemArticleResultMap.containsKey(cid)) {
+            articleAdapter.setNewData(viewModel.systemArticleResultMap[cid])
         }
-        if (viewModel.listScrollMap.containsKey(cid)) {
-            binding.list.scrollTo(0, viewModel.listScrollMap[cid] ?: 0)
+        if (viewModel.systemArticleScrollMap.containsKey(cid)) {
+            binding.list.scrollTo(0, viewModel.systemArticleScrollMap[cid] ?: 0)
         }
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.listResult.observe(viewLifecycleOwner) {
+        viewModel.systemArticleResult(cid).observe(viewLifecycleOwner) {
             if (it.containsKey(cid)) {
                 httpParseSuccess(it[cid] as ArticleListBean) { result ->
                     if (viewModel.isHomePage(cid)) {
@@ -100,12 +100,6 @@ class SystemArticleFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage(cid))
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.listMap[cid].isNullOrEmpty()) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
 }

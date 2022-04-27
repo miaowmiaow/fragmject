@@ -97,6 +97,4 @@ class WebFragment : RouterFragment() {
         return null
     }
 
-    override fun initLoad() {}
-
 }

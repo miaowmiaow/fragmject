@@ -45,7 +45,7 @@ class MyCollectFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getMyCollectArticle()
+                viewModel.getMyCollectArticleHome()
             }
         })
         //加载更多
@@ -57,7 +57,7 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.myCollectArticleResult.observe(viewLifecycleOwner) {
+        viewModel.myCollectArticleResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 result.data?.datas?.let { data ->
                     data.forEach { item -> item.collect = true }
@@ -74,12 +74,6 @@ class MyCollectFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.myCollectArticleResult.value == null) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
 }

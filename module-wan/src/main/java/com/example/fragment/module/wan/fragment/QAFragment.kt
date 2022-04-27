@@ -66,6 +66,4 @@ class QAFragment : RouterFragment() {
         return null
     }
 
-    override fun initLoad() {}
-
 }

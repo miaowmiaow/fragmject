@@ -18,16 +18,16 @@
 
             <ImageView
                 android:id="@+id/black"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_alignParentStart="true"
-                android:padding="18dp"
+                android:padding="15dp"
                 android:src="@drawable/ic_back" />
 
             <TextView
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
+                android:layout_height="45dp"
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:text="用户信息管理"
@@ -49,9 +49,10 @@
                 <RelativeLayout
                     android:id="@+id/avatar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -67,6 +68,7 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
                         android:scaleType="centerCrop"
                         android:src="@drawable/avatar_1_raster" />
 
@@ -74,9 +76,10 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -99,17 +102,17 @@
                         android:singleLine="true"
                         android:text="保密"
                         android:textColor="@color/text_666"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textSize="14sp" />
 
                 </RelativeLayout>
 
                 <RelativeLayout
                     android:id="@+id/sex"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -125,6 +128,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/selector_transparent"
                         android:drawableEnd="@drawable/ic_right"
                         android:drawablePadding="10dp"
@@ -137,9 +141,10 @@
                 <RelativeLayout
                     android:id="@+id/birthday"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -155,6 +160,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/selector_transparent"
                         android:drawableEnd="@drawable/ic_right"
                         android:drawablePadding="10dp"
@@ -167,9 +173,10 @@
                 <RelativeLayout
                     android:id="@+id/city"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -185,6 +192,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
                         android:background="@drawable/selector_transparent"
                         android:drawableEnd="@drawable/ic_right"
                         android:drawablePadding="10dp"

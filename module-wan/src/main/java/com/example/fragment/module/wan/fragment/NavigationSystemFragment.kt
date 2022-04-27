@@ -10,7 +10,7 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.SystemAdapter
 import com.example.fragment.module.wan.databinding.NavigationSystemFragmentBinding
-import com.example.fragment.module.wan.model.SystemViewModel
+import com.example.fragment.module.wan.model.SystemTreeViewModel
 
 class NavigationSystemFragment : RouterFragment() {
 
@@ -21,7 +21,7 @@ class NavigationSystemFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: SystemViewModel by activityViewModels()
+    private val viewModel: SystemTreeViewModel by activityViewModels()
     private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -48,14 +48,8 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.treeResult.observe(viewLifecycleOwner) { systemAdapter.setNewData(it) }
+        viewModel.systemTreeResult().observe(viewLifecycleOwner) { systemAdapter.setNewData(it) }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.treeResult.value == null) {
-            viewModel.getSystemTree()
-        }
     }
 
 }

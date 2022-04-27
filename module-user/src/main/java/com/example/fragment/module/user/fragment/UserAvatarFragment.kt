@@ -66,18 +66,12 @@ class UserAvatarFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult.observe(viewLifecycleOwner) {
+        viewModel.userResult().observe(viewLifecycleOwner) {
             if (it.avatar.isNotBlank()) {
                 binding.image.loadCircleCrop(it.avatar)
             }
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.userResult.value == null) {
-            viewModel.getUser()
-        }
     }
 
 }

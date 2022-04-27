@@ -153,23 +153,35 @@ class SettingFragment : RouterFragment() {
                 })
                 .show(childFragmentManager)
         }
+        WanHelper.registerUIMode(viewLifecycleOwner) { eventBean ->
+            if (eventBean.key == WanHelper.UI_MODE) {
+                when (eventBean.value) {
+                    "1" -> {
+                        binding.systemTheme.setChecked(false)
+                        binding.darkTheme.setChecked(false)
+                    }
+                    "2" -> {
+                        binding.systemTheme.setChecked(false)
+                        binding.darkTheme.setChecked(true)
+                    }
+                    else -> {
+                        binding.systemTheme.setChecked(true)
+                        binding.darkTheme.setChecked(false)
+                    }
+                }
+            }
+        }
     }
 
     override fun initViewModel(): BaseViewModel {
-        userViewModel.userResult.observe(viewLifecycleOwner) {
-            binding.logout.visibility = if (it.id.isNotBlank()) View.VISIBLE else View.GONE
-        }
-        settingViewModel.screenRecordResult.observe(viewLifecycleOwner) { result ->
+        settingViewModel.screenRecordResult().observe(viewLifecycleOwner) { result ->
             when (result) {
                 "0" -> binding.screenRecord.setChecked(false)
                 "1" -> binding.screenRecord.setChecked(true)
             }
         }
-        settingViewModel.logoutResult.observe(viewLifecycleOwner) {
-            httpParseSuccess(it) {
-                userViewModel.updateUserBean(UserBean())
-                activity.onBackPressed()
-            }
+        userViewModel.userResult().observe(viewLifecycleOwner) {
+            binding.logout.visibility = if (it.id.isNotBlank()) View.VISIBLE else View.GONE
         }
         settingViewModel.updateResult.observe(viewLifecycleOwner) {
             it?.apply {
@@ -222,33 +234,13 @@ class SettingFragment : RouterFragment() {
                 }
             }
         }
+        settingViewModel.logoutResult().observe(viewLifecycleOwner) {
+            httpParseSuccess(it) {
+                userViewModel.updateUserBean(UserBean())
+                activity.onBackPressed()
+            }
+        }
         return settingViewModel
     }
 
-    override fun initLoad() {
-        if (userViewModel.userResult.value == null) {
-            userViewModel.getUser()
-        }
-        if (settingViewModel.screenRecordResult.value == null) {
-            settingViewModel.getScreenRecord()
-        }
-        WanHelper.registerUIMode(viewLifecycleOwner) { eventBean ->
-            if (eventBean.key == WanHelper.UI_MODE) {
-                when (eventBean.value) {
-                    "1" -> {
-                        binding.systemTheme.setChecked(false)
-                        binding.darkTheme.setChecked(false)
-                    }
-                    "2" -> {
-                        binding.systemTheme.setChecked(false)
-                        binding.darkTheme.setChecked(true)
-                    }
-                    else -> {
-                        binding.systemTheme.setChecked(true)
-                        binding.darkTheme.setChecked(false)
-                    }
-                }
-            }
-        }
-    }
 }

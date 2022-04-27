@@ -1,5 +1,6 @@
 package com.example.fragment.module.user.model
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
@@ -11,8 +12,11 @@ import kotlinx.coroutines.launch
 
 class UserLoginViewModel : BaseViewModel() {
 
-    val loginResult = MutableLiveData<LoginBean>()
-    val registerResult = MutableLiveData<RegisterBean>()
+    private val loginResult = MutableLiveData<LoginBean>()
+
+    fun loginResult(): LiveData<LoginBean> {
+        return loginResult
+    }
 
     fun login(username: String, password: String) {
         //通过viewModelScope创建一个协程
@@ -26,6 +30,12 @@ class UserLoginViewModel : BaseViewModel() {
             //通过LiveData通知界面更新
             loginResult.postValue(response)
         }
+    }
+
+    private val registerResult = MutableLiveData<RegisterBean>()
+
+    fun registerResult(): LiveData<RegisterBean> {
+        return registerResult
     }
 
     fun register(username: String, password: String, repassword: String) {

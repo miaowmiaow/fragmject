@@ -57,15 +57,13 @@ class UserShareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.shareArticleResult.observe(viewLifecycleOwner) {
+        viewModel.shareArticleResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) {
                 activity.onBackPressed()
             }
         }
         return viewModel
     }
-
-    override fun initLoad() {}
 
     private fun checkParameter(link: String): Boolean {
         if (link.isBlank()) {

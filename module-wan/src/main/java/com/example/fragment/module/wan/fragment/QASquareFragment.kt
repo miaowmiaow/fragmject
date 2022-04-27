@@ -51,7 +51,7 @@ class QASquareFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getUserArticle()
+                viewModel.getUserArticleHome()
             }
         })
         //加载更多
@@ -63,7 +63,7 @@ class QASquareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userArticleResult.observe(viewLifecycleOwner) {
+        viewModel.userArticleResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.datas)
@@ -77,12 +77,6 @@ class QASquareFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.userArticleResult.value == null) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
 }

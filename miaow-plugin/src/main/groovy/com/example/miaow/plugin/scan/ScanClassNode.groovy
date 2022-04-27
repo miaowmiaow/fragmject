@@ -19,13 +19,7 @@ class ScanClassNode extends ClassNode {
         int size = methods.size()
         for (int i = 0; i < size; i++) {
             MethodNode methodNode = methods.get(i)
-            if (methodNode.name == "<init>" || methodNode.name == "<clinit>") {
-                continue
-            }
             InsnList instructions = methodNode.instructions
-            if (instructions.size() == 0) {
-                continue
-            }
             ListIterator<AbstractInsnNode> iterator = instructions.iterator()
             while (iterator.hasNext()) {
                 AbstractInsnNode insnNode = iterator.next()

@@ -77,7 +77,7 @@ class HomeFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getArticle()
+                viewModel.getArticleHome()
             }
         })
         //加载更多
@@ -93,14 +93,14 @@ class HomeFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.bannerResult.observe(viewLifecycleOwner) {
+        viewModel.bannerResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 bannerAdapter.setNewData(result.data)
                 bannerHelper.start()
                 result.data?.apply { initIndicator(size) }
             }
         }
-        viewModel.articleListResult.observe(viewLifecycleOwner) {
+        viewModel.articleListResult().observe(viewLifecycleOwner) {
             if (viewModel.isHomePage()) {
                 articleAdapter.setNewData(it)
             } else {
@@ -112,12 +112,6 @@ class HomeFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.articleListResult.value == null) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
     private fun initIndicator(itemCount: Int) {

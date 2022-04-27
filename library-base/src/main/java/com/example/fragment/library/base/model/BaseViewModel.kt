@@ -7,6 +7,12 @@ import androidx.lifecycle.ViewModel
 abstract class BaseViewModel : ViewModel() {
 
     companion object{
+        /**
+         * 在转场动画结束后加载数据，
+         * 用于解决过度动画卡顿问题，
+         * 建议大于等于转场动画时间。
+         */
+        const val LOAD_DELAY_MILLIS = 250L
         const val DEFAULT_KEY = "null"
         const val DEFAULT_PAGE = 0
         const val PAGE_CONT = 1

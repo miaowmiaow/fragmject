@@ -18,16 +18,16 @@
 
             <ImageView
                 android:id="@+id/black"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_alignParentStart="true"
-                android:padding="18dp"
+                android:padding="15dp"
                 android:src="@drawable/ic_back" />
 
             <TextView
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
+                android:layout_height="45dp"
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:text="设置"
@@ -48,14 +48,15 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="跟随系统深色模式"
                         android:textColor="@color/text_666"
@@ -63,22 +64,23 @@
 
                     <com.example.fragment.library.base.view.SwitchButton
                         android:id="@+id/system_theme"
-                        android:layout_width="45dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="25dp"
                         android:layout_alignParentEnd="true" />
 
                 </RelativeLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="深色模式"
                         android:textColor="@color/text_666"
@@ -86,22 +88,23 @@
 
                     <com.example.fragment.library.base.view.SwitchButton
                         android:id="@+id/dark_theme"
-                        android:layout_width="45dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="25dp"
                         android:layout_alignParentEnd="true" />
 
                 </RelativeLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="屏幕录制"
                         android:textColor="@color/text_666"
@@ -109,8 +112,8 @@
 
                     <com.example.fragment.library.base.view.SwitchButton
                         android:id="@+id/screen_record"
-                        android:layout_width="45dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="25dp"
                         android:layout_alignParentEnd="true" />
 
                 </RelativeLayout>
@@ -118,9 +121,11 @@
                 <RelativeLayout
                     android:id="@+id/privacy_policy"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -137,9 +142,11 @@
                 <RelativeLayout
                     android:id="@+id/feedback"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -156,9 +163,11 @@
                 <RelativeLayout
                     android:id="@+id/about"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -175,14 +184,15 @@
                 <RelativeLayout
                     android:id="@+id/clear_cache"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="清除缓存"
                         android:textColor="@color/text_666"
@@ -204,14 +214,15 @@
                 <RelativeLayout
                     android:id="@+id/update"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
-                    android:padding="15dp">
+                    android:gravity="center_vertical"
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
                         android:singleLine="true"
                         android:text="版本更新"
                         android:textColor="@color/text_666"

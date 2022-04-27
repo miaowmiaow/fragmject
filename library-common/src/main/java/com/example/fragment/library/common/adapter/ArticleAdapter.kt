@@ -55,22 +55,22 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
         }
         val shareUser = "${item.author}${item.shareUser}"
-        binding.shareUser.text = if (shareUser.isNotBlank()) shareUser else "匿名"
+        binding.shareUser.text = shareUser.ifBlank { "匿名" }
         binding.time.text = item.niceDate
         if (!item.tags.isNullOrEmpty()) {
             binding.tag.visibility = View.VISIBLE
             binding.tag.text = item.tags[0].name
             binding.tag.setOnClickListener {
-                val url = Uri.encode(item.tags[0].url)
-                val uri = Uri.parse("https://www.wanandroid.com/${url}")
-                var chapterId = uri.getQueryParameter("cid")
-                if (chapterId.isNullOrBlank()) {
+                val uriString = "https://www.wanandroid.com${item.tags[0].url}"
+                val uri = Uri.parse(uriString)
+                var cid = uri.getQueryParameter(Keys.CID)
+                if (cid.isNullOrBlank()) {
                     val paths = uri.pathSegments
                     if (paths != null && paths.size >= 3) {
-                        chapterId = paths[2]
+                        cid = paths[2]
                     }
                 }
-                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to chapterId))
+                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to cid))
             }
         } else {
             binding.tag.visibility = View.GONE

@@ -55,7 +55,7 @@ class UserRegisterFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.registerResult.observe(viewLifecycleOwner) {
+        viewModel.registerResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 result.data?.let { userBean ->
                     val userViewModel: UserViewModel by activityViewModels()
@@ -66,8 +66,6 @@ class UserRegisterFragment : RouterFragment() {
         }
         return viewModel
     }
-
-    override fun initLoad() {}
 
     private fun checkParameter(username: String, password: String, rePassword: String): Boolean {
         if (username.isBlank()) {

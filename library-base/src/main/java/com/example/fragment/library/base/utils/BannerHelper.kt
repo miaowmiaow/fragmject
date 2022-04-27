@@ -85,10 +85,10 @@ class BannerHelper(
                 }
                 recyclerView.smoothScrollBy(0, dy, null, 250)
             }
+            recyclerView.postDelayed({
+                listener?.onItemScroll(findItemPosition())
+            }, 300)
         }
-        recyclerView.postDelayed({
-            listener?.onItemScroll(findItemPosition())
-        }, 300)
     }
 
     fun findItemPosition(): Int {

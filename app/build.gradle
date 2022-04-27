@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
-//    id 'miaow'
+    id 'miaow'
 }
 
 android {
@@ -117,7 +117,53 @@ dependencies {
     implementation project(path: ':module-wan')
 }
 
-//miaow {
+miaow {
+    //扫描APP字段（个保法隐私合规）
+    scanFiled = [
+            [
+                    'owner': 'android/os/Build',
+                    'name' : 'BRAND',
+                    'desc' : 'Ljava/lang/String;',
+            ],
+            [
+                    'owner': 'android/os/Build',
+                    'name' : 'MODEL',
+                    'desc' : 'Ljava/lang/String;',
+            ],
+            [
+                    'owner': 'android/os/Build',
+                    'name' : 'SERIAL',
+                    'desc' : 'Ljava/lang/String;',
+            ]
+    ]
+    //扫描APP方法（个保法隐私合规）
+    scanMethod = [
+            [
+                    'owner': 'android/telephony/TelephonyManager',
+                    'name' : 'getDeviceId',
+                    'desc' : '()Ljava/lang/String;',
+            ],
+            [
+                    'owner': 'android/telephony/TelephonyManager',
+                    'name' : 'getImei',
+                    'desc' : '()I',
+            ],
+            [
+                    'owner': 'android/telephony/TelephonyManager',
+                    'name' : 'getMeid',
+                    'desc' : '()I',
+            ],
+            [
+                    'owner': 'android/telephony/TelephonyManager',
+                    'name' : 'getSimSerialNumber',
+                    'desc' : '()Ljava/lang/String;',
+            ],
+            [
+                    'owner': 'android/telephony/TelephonyManager',
+                    'name' : 'getSubscriberId',
+                    'desc' : '()Ljava/lang/String;',
+            ]
+    ]
 //    //埋点
 //    buryPoint = [
 //            [
@@ -157,52 +203,6 @@ dependencies {
 //                    ]
 //            ],
 //    ]
-//    //扫描APP字段（个保法隐私合规）
-//    scanFiled = [
-//            [
-//                    'owner': 'android/os/Build',
-//                    'name' : 'BRAND',
-//                    'desc' : 'Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/os/Build',
-//                    'name' : 'MODEL',
-//                    'desc' : 'Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/os/Build',
-//                    'name' : 'SERIAL',
-//                    'desc' : 'Ljava/lang/String;',
-//            ]
-//    ]
-//    //扫描APP方法（个保法隐私合规）
-//    scanMethod = [
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getDeviceId',
-//                    'desc' : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getImei',
-//                    'desc' : '()I',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getMeid',
-//                    'desc' : '()I',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getSimSerialNumber',
-//                    'desc' : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getSubscriberId',
-//                    'desc' : '()Ljava/lang/String;',
-//            ]
-//    ]
 //    //方法耗时打印
 //    timeMethod = [
 //            [
@@ -214,4 +214,4 @@ dependencies {
 //                    'owner': 'com/google',
 //            ]
 //    ]
-//}
+}

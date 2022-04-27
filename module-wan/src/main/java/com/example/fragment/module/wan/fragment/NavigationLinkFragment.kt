@@ -79,7 +79,7 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.navigationResult.observe(viewLifecycleOwner) {
+        viewModel.navigationResult().observe(viewLifecycleOwner) {
             var selectItem = 0
             it.forEachIndexed { index, bean ->
                 if (bean.isSelected) {
@@ -92,12 +92,6 @@ class NavigationLinkFragment : RouterFragment() {
             fillFlexboxLayout(it[selectItem].articles)
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.navigationResult.value == null) {
-            viewModel.getNavigation()
-        }
     }
 
     private fun fillFlexboxLayout(data: List<ArticleBean>? = null) {

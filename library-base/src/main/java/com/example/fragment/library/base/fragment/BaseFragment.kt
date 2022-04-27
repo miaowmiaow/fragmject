@@ -14,13 +14,6 @@ import com.example.fragment.library.base.model.BaseViewModel
 
 abstract class BaseFragment : Fragment() {
 
-    /**
-     * 在转场动画结束后加载数据，
-     * 用于解决过度动画卡顿问题，
-     * 建议大于等于转场动画时间。
-     */
-    private var loadDelayMillis = 250L
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.isClickable = true
@@ -41,20 +34,11 @@ abstract class BaseFragment : Fragment() {
             loadGif.dispose()
             loadGif.visibility = View.GONE
         })
-        view.postDelayed({ initLoad() }, loadDelayMillis)
     }
 
     abstract fun initView()
 
-    /**
-     * 用于ViewModel中的数据更新
-     */
     abstract fun initViewModel(): BaseViewModel?
-
-    /**
-     * 本地或网络数据请在这里加载
-     */
-    abstract fun initLoad()
 
     fun hideInputMethod() {
         val imm = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager

@@ -60,7 +60,7 @@ class MyCoinFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getMyCoin()
+                viewModel.getMyCoinHome()
             }
         })
         //加载更多
@@ -76,7 +76,7 @@ class MyCoinFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userCoinResult.observe(viewLifecycleOwner) {
+        viewModel.userCoinResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 result.data?.let { coinBean ->
                     val from = binding.coinCount.text.toString().toInt()
@@ -86,7 +86,7 @@ class MyCoinFragment : RouterFragment() {
                 }
             }
         }
-        viewModel.myCoinResult.observe(viewLifecycleOwner) {
+        viewModel.myCoinResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 if (viewModel.isHomePage()) {
                     coinRecordAdapter.setNewData(result.data?.datas)
@@ -100,12 +100,6 @@ class MyCoinFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.myCoinResult.value == null) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
 }

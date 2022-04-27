@@ -45,7 +45,7 @@ class MyShareFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getMyShareArticle()
+                viewModel.getMyShareArticleHome()
             }
         })
         //加载更多
@@ -57,7 +57,7 @@ class MyShareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.myShareArticleResult.observe(viewLifecycleOwner) {
+        viewModel.myShareArticleResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 if (viewModel.isHomePage()) {
                     articleAdapter.setNewData(result.data?.shareArticles?.datas)
@@ -71,12 +71,6 @@ class MyShareFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.myShareArticleResult.value == null) {
-            binding.pullRefresh.setRefreshing()
-        }
     }
 
 }

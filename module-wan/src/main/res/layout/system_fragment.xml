@@ -18,16 +18,16 @@
 
             <ImageView
                 android:id="@+id/black"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_alignParentStart="true"
-                android:padding="18dp"
+                android:padding="15dp"
                 android:src="@drawable/ic_back" />
 
             <TextView
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
-                android:layout_height="50dp"
+                android:layout_height="45dp"
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:textColor="@color/text_fff"
@@ -38,7 +38,7 @@
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="45dp"
             android:layout_below="@id/title_bar"
             android:background="@drawable/rectangle_solid_white_top1bottom1_line"
             android:clipChildren="false"

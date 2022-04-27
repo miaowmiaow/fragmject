@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.PinyinUtils
 import com.example.fragment.library.base.utils.ReadAssetsFileUtil
@@ -51,18 +52,8 @@ class UserCityFragment : RouterFragment() {
         binding.sideLetterBar.setOverlay(binding.letterOverlay)
         binding.searchText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                binding.cityList.layoutManager?.let {
-                    if (it is LinearLayoutManager) {
-                        val firstPosition = it.findFirstCompletelyVisibleItemPosition()
-                        val lastPosition = it.findLastCompletelyVisibleItemPosition()
-                        val searchText = binding.searchText.text.toString()
-                        val cityPosition = cityAdapter.searchCity(searchText)
-                        val position = if (cityPosition > lastPosition) {
-                            cityPosition + (lastPosition - firstPosition)
-                        } else cityPosition
-                        it.scrollToPosition(position)
-                    }
-                }
+                val searchText = binding.searchText.text.toString()
+                binding.cityList.toppingToPosition(cityAdapter.searchCity(searchText))
                 return@setOnEditorActionListener true
             }
             false
@@ -106,11 +97,40 @@ class UserCityFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
+        viewModel.userResult()
         return viewModel
     }
 
-    override fun initLoad() {
-        viewModel.getUser()
+    private fun RecyclerView.toppingToPosition(position: Int) {
+        layoutManager?.let { lm ->
+            if (lm is LinearLayoutManager) {
+                val firstItemPosition = lm.findFirstVisibleItemPosition()
+                val lastItemPosition = lm.findLastVisibleItemPosition()
+                when {
+                    position <= firstItemPosition -> {
+                        smoothScrollToPosition(position)
+                    }
+                    position <= lastItemPosition -> {
+                        val childView = getChildAt(position - firstItemPosition)
+                        smoothScrollBy(0, childView.top)
+                    }
+                    else -> {
+                        smoothScrollToPosition(position)
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrollStateChanged(
+                                recyclerView: RecyclerView,
+                                newState: Int
+                            ) {
+                                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                                    removeOnScrollListener(this)
+                                    toppingToPosition(position)
+                                }
+                            }
+                        })
+                    }
+                }
+            }
+        }
     }
 
 }

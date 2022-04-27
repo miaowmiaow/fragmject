@@ -1,5 +1,6 @@
 package com.example.fragment.module.user.model
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
@@ -12,7 +13,11 @@ import kotlinx.coroutines.launch
 
 class UserShareModel : BaseViewModel() {
 
-    val shareArticleResult = MutableLiveData<HttpResponse>()
+    private val shareArticleResult = MutableLiveData<HttpResponse>()
+
+    fun shareArticleResult(): LiveData<HttpResponse> {
+        return shareArticleResult
+    }
 
     fun getShareArticle(title: String, link: String) {
         //通过viewModelScope创建一个协程

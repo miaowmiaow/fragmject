@@ -77,7 +77,7 @@ class UserInfoFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult.observe(viewLifecycleOwner) {
+        viewModel.userResult().observe(viewLifecycleOwner) {
             if (it.avatar.isNotBlank()) {
                 binding.avatarImg.loadCircleCrop(it.avatar)
             }
@@ -87,12 +87,6 @@ class UserInfoFragment : RouterFragment() {
             setUserInfo(binding.cityInfo, it.city)
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.userResult.value == null) {
-            viewModel.getUser()
-        }
     }
 
     private fun setUserInfo(view: TextView, info: String) {

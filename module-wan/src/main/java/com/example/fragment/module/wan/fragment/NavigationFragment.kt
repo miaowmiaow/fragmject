@@ -66,6 +66,4 @@ class NavigationFragment : RouterFragment() {
         return null
     }
 
-    override fun initLoad() {}
-
 }

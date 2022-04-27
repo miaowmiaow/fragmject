@@ -1,5 +1,6 @@
 package com.example.fragment.module.wan.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -48,7 +49,7 @@ class ShareArticleFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getUserShareArticles(id)
+                viewModel.getUserShareArticlesHome(id)
             }
         })
         //加载更多
@@ -59,8 +60,9 @@ class ShareArticleFragment : RouterFragment() {
         })
     }
 
+    @SuppressLint("SetTextI18n")
     override fun initViewModel(): BaseViewModel {
-        viewModel.userShareArticleResult.observe(viewLifecycleOwner) {
+        viewModel.userShareArticleResult(id).observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 result.data?.coinInfo?.let { coin ->
                     binding.title.text = coin.username
@@ -79,12 +81,6 @@ class ShareArticleFragment : RouterFragment() {
             binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.userShareArticleResult.value == null) {
-            viewModel.getUserShareArticles(id)
-        }
     }
 
 }

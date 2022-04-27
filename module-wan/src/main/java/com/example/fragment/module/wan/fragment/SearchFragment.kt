@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
@@ -23,11 +24,13 @@ import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.SearchHistoryAdapter
 import com.example.fragment.module.wan.databinding.SearchFragmentBinding
+import com.example.fragment.module.wan.model.HotKeyViewModel
 import com.example.fragment.module.wan.model.SearchViewModel
 
 class SearchFragment : RouterFragment() {
 
-    private val viewModel: SearchViewModel by activityViewModels()
+    private val hotKeyViewModel: HotKeyViewModel by activityViewModels()
+    private val searchViewModel: SearchViewModel by viewModels()
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -80,7 +83,7 @@ class SearchFragment : RouterFragment() {
         binding.cancel.setOnClickListener { activity.onBackPressed() }
         //搜索
         binding.search.setOnTouchListener { _, _ ->
-            viewModel.getSearchHistory()
+            searchViewModel.getSearchHistory()
             false
         }
         binding.search.setOnEditorActionListener { _, actionId, _ ->
@@ -101,19 +104,19 @@ class SearchFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getSearch(binding.search.text.toString())
+                searchViewModel.getArticleQueryHome(binding.search.text.toString())
             }
         })
         //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.getSearchNext(binding.search.text.toString())
+                searchViewModel.getArticleQueryNext(binding.search.text.toString())
             }
         })
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.hotKeyResult.observe(viewLifecycleOwner) {
+        hotKeyViewModel.hotKeyResult().observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE
             binding.pullRefresh.visibility = GONE
             binding.hotKey.visibility = if (it.isNotEmpty()) VISIBLE else GONE
@@ -126,16 +129,17 @@ class SearchFragment : RouterFragment() {
                 binding.fbl.addView(tv)
             }
         }
-        viewModel.searchHistoryResult.observe(viewLifecycleOwner) {
+        searchViewModel.searchHistoryResult().observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE
             binding.pullRefresh.visibility = GONE
             binding.searchHistory.visibility = if (it.isNotEmpty()) VISIBLE else GONE
             historySearchAdapter.setNewData(it)
         }
-        viewModel.searchResult.observe(viewLifecycleOwner) {
+        val key = binding.search.text.toString()
+        searchViewModel.articleQueryResult(key).observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->
                 result.data?.datas?.let { data ->
-                    if (viewModel.isHomePage()) {
+                    if (searchViewModel.isHomePage()) {
                         articleAdapter.setNewData(data)
                     } else {
                         articleAdapter.addData(data)
@@ -145,16 +149,9 @@ class SearchFragment : RouterFragment() {
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
             //设置加载更多状态
-            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
+            binding.pullRefresh.setLoadMore(searchViewModel.hasNextPage())
         }
-        return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.hotKeyResult.value == null) {
-            viewModel.getHotKey()
-        }
-        viewModel.getSearchHistory()
+        return searchViewModel
     }
 
     private fun search(key: String) {

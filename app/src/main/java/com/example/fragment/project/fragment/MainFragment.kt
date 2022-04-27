@@ -24,7 +24,7 @@ import com.example.fragment.module.wan.fragment.HomeFragment
 import com.example.fragment.module.wan.fragment.NavigationFragment
 import com.example.fragment.module.wan.fragment.ProjectFragment
 import com.example.fragment.module.wan.fragment.QAFragment
-import com.example.fragment.module.wan.model.SearchViewModel
+import com.example.fragment.module.wan.model.HotKeyViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainFragmentBinding
 import com.example.fragment.project.databinding.MainTabItemBinding
@@ -33,7 +33,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
-    private val viewModel: SearchViewModel by activityViewModels()
+    private val viewModel: HotKeyViewModel by activityViewModels()
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -128,17 +128,11 @@ class MainFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel? {
-        viewModel.hotKeyResult.observe(viewLifecycleOwner) {
+        viewModel.hotKeyResult().observe(viewLifecycleOwner) {
             hotKeyAdapter.setNewData(it)
             hotKeyHelper.start()
         }
         return null
-    }
-
-    override fun initLoad() {
-        if (viewModel.hotKeyResult.value == null) {
-            viewModel.getHotKey()
-        }
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.example.fragment.module.wan.model
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
@@ -7,36 +8,32 @@ import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
-import com.example.fragment.library.common.bean.ProjectTreeBean
-import com.example.fragment.library.common.bean.ProjectTreeListBean
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
-    val treeResult = MutableLiveData<List<ProjectTreeBean>>()
-    val listResult = MutableLiveData<Map<String, ArticleListBean>>()
+    val projectListResultMap: MutableMap<String, List<ArticleBean>> = HashMap()
+    val projectListScrollMap: MutableMap<String, Int> = HashMap()
 
-    val listMap: MutableMap<String, List<ArticleBean>> = HashMap()
-    val listScrollMap: MutableMap<String, Int> = HashMap()
+    private var cid: String = ""
+    private val projectListResult = MutableLiveData<Map<String, ArticleListBean>>()
 
-    /**
-     * 获取项目分类
-     */
-    fun getProjectTree() {
-        viewModelScope.launch {
-            val request = HttpRequest("project/tree/json")
-            val response = get<ProjectTreeListBean>(request) { updateProgress(it) }
-            response.data?.let {
-                treeResult.postValue(it)
-            }
+    fun projectListResult(cid: String): LiveData<Map<String, ArticleListBean>> {
+        this.cid = cid
+        if (projectListResultMap[cid].isNullOrEmpty()) {
+            getProjectHome(cid)
         }
+        return projectListResult
     }
 
-    fun getProject(cid: String) {
+    fun getProjectHome(cid: String) {
+        this.cid = cid
         getProjectList(cid, getHomePage(1, cid))
     }
 
     fun getProjectNext(cid: String) {
+        this.cid = cid
         getProjectList(cid, getNextPage(cid))
     }
 
@@ -48,16 +45,20 @@ class ProjectViewModel : BaseViewModel() {
     private fun getProjectList(cid: String, page: Int) {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
+            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+            if (projectListResultMap[cid].isNullOrEmpty()) {
+                delay(LOAD_DELAY_MILLIS)
+            }
             //构建请求体，传入请求参数
             val request = HttpRequest("project/list/{page}/json")
                 .putPath("page", page.toString())
                 .putQuery("cid", cid)
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request)
+            val response = get<ArticleListBean>(request) { updateProgress(it) }
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
             //通过LiveData通知界面更新
-            listResult.postValue(mapOf(cid to response))
+            projectListResult.postValue(mapOf(cid to response))
         }
     }
 }

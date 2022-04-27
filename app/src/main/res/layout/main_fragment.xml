@@ -20,10 +20,10 @@
             <RelativeLayout
                 android:id="@+id/search"
                 android:layout_width="match_parent"
-                android:layout_height="26dp"
+                android:layout_height="25dp"
                 android:layout_marginStart="15dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:layout_toStartOf="@id/user_share"
                 android:alpha="0.7"
                 android:background="@drawable/rectangle_solid_39_gray_corners15">
@@ -49,8 +49,8 @@
 
             <ImageView
                 android:id="@+id/user_share"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_alignParentEnd="true"
                 android:padding="15dp"
                 android:src="@drawable/ic_add" />

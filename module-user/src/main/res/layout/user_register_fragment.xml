@@ -10,10 +10,10 @@
 
         <ImageView
             android:id="@+id/black"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:layout_alignParentStart="true"
-            android:padding="18dp"
+            android:padding="15dp"
             android:src="@drawable/ic_back" />
 
         <RelativeLayout

@@ -7,21 +7,21 @@
 
     <ImageView
         android:id="@+id/image"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:scaleType="centerCrop" />
 
     <View
         android:id="@+id/dim"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:alpha="0"
         android:background="#444444" />
 
     <View
         android:id="@+id/selected"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:background="@drawable/rectangle_solid_transparent_stroke3_green"
         android:visibility="invisible" />
 

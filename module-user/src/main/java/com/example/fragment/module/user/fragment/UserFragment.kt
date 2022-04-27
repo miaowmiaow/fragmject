@@ -53,7 +53,7 @@ class UserFragment : RouterFragment() {
 
     @SuppressLint("SetTextI18n")
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult.observe(viewLifecycleOwner) { userBean ->
+        viewModel.userResult().observe(viewLifecycleOwner) { userBean ->
             if (userBean.id.isNotBlank()) {
                 if (userBean.avatar.isNotBlank()) {
                     binding.avatar.loadCircleCrop(userBean.avatar)
@@ -69,12 +69,6 @@ class UserFragment : RouterFragment() {
             }
         }
         return viewModel
-    }
-
-    override fun initLoad() {
-        if (viewModel.userResult.value == null) {
-            viewModel.getUser()
-        }
     }
 
 }

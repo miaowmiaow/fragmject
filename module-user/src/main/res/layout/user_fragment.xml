@@ -31,7 +31,7 @@
     <TextView
         android:id="@+id/my_coin"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="45dp"
         android:layout_below="@id/username"
         android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
         android:gravity="center_vertical"
@@ -45,7 +45,7 @@
     <TextView
         android:id="@+id/my_collection"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="45dp"
         android:layout_below="@id/my_coin"
         android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
         android:gravity="center_vertical"
@@ -59,7 +59,7 @@
     <TextView
         android:id="@+id/my_share"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="45dp"
         android:layout_below="@id/my_collection"
         android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
         android:gravity="center_vertical"
@@ -73,7 +73,7 @@
     <TextView
         android:id="@+id/setting"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="45dp"
         android:layout_below="@id/my_share"
         android:background="@drawable/rectangle_solid_white_top0_5bottom0_5_line"
         android:gravity="center_vertical"

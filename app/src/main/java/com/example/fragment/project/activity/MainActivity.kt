@@ -59,7 +59,6 @@ class MainActivity : RouterActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
         initViewModel()
-        initLoad()
         initSDK()
         initUIMode()
     }
@@ -70,10 +69,8 @@ class MainActivity : RouterActivity() {
         WebViewManager.destroy()
     }
 
-    private fun initViewModel() {}
-
-    private fun initLoad() {
-        viewModel.getUser()
+    private fun initViewModel() {
+        viewModel.userResult()
     }
 
     /**

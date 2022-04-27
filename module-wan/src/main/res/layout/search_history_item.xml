@@ -18,10 +18,10 @@
 
     <ImageView
         android:id="@+id/delete"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:layout_marginStart="15dp"
-        android:padding="15dp"
+        android:padding="12dp"
         android:scaleType="fitXY"
         android:src="@drawable/ic_delete" />
 </LinearLayout>

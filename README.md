@@ -13,7 +13,7 @@
 - 常用封装(图片选择器、图片编辑器、日期控件、全面屏沉浸、屏幕录制、字节码插桩...)
 
 ## 开发环境
-为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或以上版本
+为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或者以上版本
 
 [Download Android Studio](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
@@ -283,13 +283,13 @@ clip.saveBitmap()
 ## Gitee镜像
 - [fragmject](https://gitee.com/zhao.git/FragmentProject.git)
 
-## Thanks
-  感谢所有优秀的开源项目 ^_^   
-  如果喜欢的话希望给个 Star 或 Fork ^_^  
-  谢谢~~  
-  
 ## About me
 - QQ : 237934622
 - WeChat : zst_1116
 - Email : <zst_1116@icloud.com>
 - JueJin：[miaowmiaow](https://juejin.cn/user/3342971112791422)
+
+## Thanks
+感谢所有优秀的开源项目 ^_^   
+如果喜欢的话希望给个 Star 或 Fork ^_^  
+谢谢~~  

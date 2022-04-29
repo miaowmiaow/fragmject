@@ -28,12 +28,7 @@ class SearchViewModel : BaseViewModel() {
     }
 
     private var key: String = ""
-
-    private val articleQueryResult: MutableLiveData<ArticleListBean> by lazy {
-        MutableLiveData<ArticleListBean>().also {
-            getArticleQueryHome(key)
-        }
-    }
+    private val articleQueryResult = MutableLiveData<ArticleListBean>()
 
     fun articleQueryResult(key: String): LiveData<ArticleListBean> {
         this.key = key

@@ -46,7 +46,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: ArticleBean) {
         val binding = holder.binding as ArticleItemBinding
-        val activity: RouterActivity = contextToActivity(binding.root.context)
+        val activity: RouterActivity = contextToT(binding.root.context)
         binding.root.setOnClickListener {
             activity.navigation(Router.WEB, bundleOf(Keys.URL to Uri.encode(item.link)))
         }

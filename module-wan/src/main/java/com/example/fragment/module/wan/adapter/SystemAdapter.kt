@@ -21,7 +21,7 @@ class SystemAdapter : BaseAdapter<SystemTreeBean>() {
 
     override fun onItemView(holder: ViewBindHolder, position: Int, item: SystemTreeBean) {
         val binding = holder.binding as SystemItemBinding
-        val baseActivity: RouterActivity = contextToActivity(binding.root.context)
+        val baseActivity: RouterActivity = contextToT(binding.root.context)
         binding.name.text = item.name
         binding.fbl.removeAllViews()
         item.children?.forEachIndexed { index, treeBean ->

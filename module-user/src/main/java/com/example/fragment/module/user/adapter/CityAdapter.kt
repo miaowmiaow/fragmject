@@ -83,7 +83,7 @@ class CityAdapter : BaseAdapter<CityBean>() {
                 letterIndexes[currentLetter] = index
             }
         }
-        notifyDataChanged()
+        notifyItemRangeChanged(0, getData().size)
     }
 
     fun getLetterPosition(letter: String?): Int {

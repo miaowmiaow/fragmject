@@ -30,7 +30,7 @@ class BannerAdapter : BaseAdapter<BannerBean>() {
             binding.banner.loadRoundedCorners(item.imagePath, 15f)
         }
         binding.root.setOnClickListener {
-            val baseActivity: RouterActivity = contextToActivity(binding.root.context)
+            val baseActivity: RouterActivity = contextToT(binding.root.context)
             val url = Uri.encode(item.url)
             baseActivity.navigation(Router.WEB, bundleOf(Keys.URL to url))
         }

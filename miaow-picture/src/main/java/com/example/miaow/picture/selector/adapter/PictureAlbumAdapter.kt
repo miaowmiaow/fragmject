@@ -28,8 +28,10 @@ class PictureAlbumAdapter : BaseAdapter<AlbumBean>() {
     }
 
     fun setSelectedPosition(position: Int) {
+        val orgPosition = selPosition
         selPosition = position
-        notifyDataChanged()
+        notifyItemChanged(orgPosition)
+        notifyItemChanged(selPosition)
     }
 
 }

@@ -46,7 +46,10 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             } else if (selectPosition.size < 9) {
                 selectPosition.add(position)
             }
-            notifyDataChanged()
+            notifyItemChanged(position)
+            selectPosition.forEach {
+                notifyItemChanged(it)
+            }
         }
     }
 
@@ -58,7 +61,6 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
     fun setSelectPosition(data: List<Int>) {
         selectPosition.clear()
         selectPosition.addAll(data)
-        notifyDataChanged()
     }
 
     fun getSelectPosition(): List<Int> {

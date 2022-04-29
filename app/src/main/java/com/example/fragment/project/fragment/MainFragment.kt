@@ -52,8 +52,8 @@ class MainFragment : RouterFragment() {
         ProjectFragment.newInstance(),
         UserFragment.newInstance()
     )
-    private val hotKeyAdapter = HotKeyAdapter()
     private lateinit var hotKeyHelper: BannerHelper
+    private val hotKeyAdapter = HotKeyAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -127,12 +127,12 @@ class MainFragment : RouterFragment() {
         }.attach()
     }
 
-    override fun initViewModel(): BaseViewModel? {
+    override fun initViewModel(): BaseViewModel {
         viewModel.hotKeyResult().observe(viewLifecycleOwner) {
             hotKeyAdapter.setNewData(it)
             hotKeyHelper.start()
         }
-        return null
+        return viewModel
     }
 
     /**

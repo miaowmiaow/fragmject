@@ -27,6 +27,11 @@ class LoadMoreAdapter(
                 notifyDataSetChanged()
             }
 
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) {
+                super.onItemRangeChanged(positionStart, itemCount, payload)
+                notifyItemRangeChanged(positionStart, itemCount, payload)
+            }
+
             override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
                 super.onItemRangeChanged(positionStart, itemCount)
                 notifyItemRangeChanged(positionStart, itemCount)

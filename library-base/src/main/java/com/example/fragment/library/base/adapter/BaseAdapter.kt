@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.viewbinding.ViewBinding
 
 /**
@@ -47,65 +48,64 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
 
     fun selectItem(position: Int) {
         currentPosition = position
-        notifyItemRangeChanged(position, 1)
+        notifyItemChanged(position)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setNewData(newData: List<T>? = null) {
-        this.data.clear()
         if (newData != null) {
+            this.data.clear()
             this.data.addAll(newData)
-        }
-        notifyDataChanged()
-    }
-
-    fun addOneData(data: T? = null) {
-        if (data != null) {
-            this.data.add(data)
-            notifyItemRangeChanged(this.data.size - 1, 1)
+            notifyDataSetChanged()
         }
     }
 
     fun addData(newData: List<T>? = null) {
         if (newData != null) {
             this.data.addAll(newData)
-            notifyItemRangeChanged(data.size - newData.size, newData.size)
+            notifyItemRangeChanged(this.data.size - newData.size, newData.size)
         }
     }
 
-    fun addData(index: Int, newData: List<T>) {
-        this.data.addAll(index, newData)
-        notifyItemRangeChanged(index, newData.size)
+    fun addData(index: Int, newData: List<T>? = null) {
+        if (newData != null) {
+            this.data.addAll(index, newData)
+            notifyItemRangeChanged(index, newData.size)
+        }
     }
 
     fun removeData(position: Int) {
-        if (position < 0 || position >= data.size) return
-        data.removeAt(position)
+        if (position < 0 || position >= this.data.size) return
+        this.data.removeAt(position)
         notifyItemRemoved(position)
-        notifyItemRangeChanged(position, data.size - position)
     }
 
     fun clearData() {
+        val itemCount = this.data.size
         this.data.clear()
-        notifyDataChanged()
+        notifyItemRangeRemoved(0, itemCount)
     }
 
     fun getData(): MutableList<T> {
-        return data
+        return this.data
     }
 
     fun getItem(position: Int): T {
-        return data[position]
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun notifyDataChanged() {
-        notifyDataSetChanged()
+        return this.data[position]
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> contextToActivity(context: Context): T {
+    fun <T> contextToT(context: Context): T {
         return context as T
     }
+
+//    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+//        super.onAttachedToRecyclerView(recyclerView)
+//        recyclerView.itemAnimator?.let {
+//            //通过关闭默认动画解决刷新闪烁问题
+//            (it as SimpleItemAnimator).supportsChangeAnimations = false
+//        }
+//    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
         return ViewBindHolder(
@@ -129,11 +129,11 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
                 }
             }
         }
-        onItemView(holder, position, data[position])
+        onItemView(holder, position, this.data[position])
     }
 
     override fun getItemCount(): Int {
-        return data.size
+        return this.data.size
     }
 
     abstract fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding

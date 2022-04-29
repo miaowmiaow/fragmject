@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="10dp"
-    android:layout_marginEnd="10dp"
     android:layout_marginTop="8dp"
+    android:layout_marginEnd="10dp"
     android:background="@drawable/selector_corners_white_r5"
     android:padding="15dp">
 
@@ -75,7 +75,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/avatar"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="8dp"
         android:layout_toStartOf="@id/image"
         android:ellipsize="end"
         android:includeFontPadding="false"
@@ -83,14 +83,15 @@
         android:maxLines="3"
         android:singleLine="false"
         android:textColor="@color/text_333"
-        android:textSize="14sp" />
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/title"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="8dp"
         android:layout_toStartOf="@id/image"
         android:ellipsize="end"
         android:includeFontPadding="true"
@@ -98,7 +99,7 @@
         android:maxLines="3"
         android:minHeight="55dp"
         android:textColor="@color/text_666"
-        android:textSize="12sp"
+        android:textSize="13sp"
         android:visibility="gone" />
 
     <TextView

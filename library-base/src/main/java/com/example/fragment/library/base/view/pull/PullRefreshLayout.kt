@@ -1,7 +1,6 @@
 package com.example.fragment.library.base.view.pull
 
 import android.content.Context
-import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
@@ -90,7 +89,7 @@ class PullRefreshLayout @JvmOverloads constructor(
         loading = b
         loadMore = b
         loadMoreAdapter?.apply {
-            notifyItemRangeChanged(itemCount - 1, 1)
+            notifyItemChanged(this.itemCount - 1)
         }
     }
 
@@ -102,11 +101,14 @@ class PullRefreshLayout @JvmOverloads constructor(
         recyclerView: RecyclerView,
         listener: OnLoadMoreListener
     ) {
-        recyclerView.adapter?.let {
-            loadMoreAdapter = LoadMoreAdapter(this, it)
+        val adapter = recyclerView.adapter
+        if (adapter != null) {
+            loadMoreAdapter = LoadMoreAdapter(this, adapter)
             recyclerView.adapter = loadMoreAdapter
+            loadMoreListener = listener
+        } else {
+            throw IllegalArgumentException("Not find RecyclerView adapter")
         }
-        loadMoreListener = listener
     }
 
     private fun canChildScrollUp(): Boolean {

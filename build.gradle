@@ -3,7 +3,7 @@ buildscript {
     ext.kotlin_version = '1.6.10'
 
     dependencies {
-        classpath 'com.example.miaow:plugin:1.0.0'
+//        classpath 'com.example.miaow:plugin:1.0.0'
     }
 }
 

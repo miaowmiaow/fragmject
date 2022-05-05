@@ -19,6 +19,13 @@ import com.tencent.smtt.sdk.QbSdk
 class MainActivity : RouterActivity() {
 
     private val viewModel: UserViewModel by viewModels()
+    private val loginRouter = arrayOf(
+        Router.MY_COIN,
+        Router.MY_COLLECT,
+        Router.MY_SHARE,
+        Router.USER_AVATAR,
+        Router.USER_SHARE
+    )
 
     override fun controllerId(): Int {
         return R.id.nav_host_fragment_main
@@ -117,13 +124,6 @@ class MainActivity : RouterActivity() {
     }
 
     private fun loginRequired(name: Router): Boolean {
-        val loginRouter = arrayOf(
-            Router.MY_COIN,
-            Router.MY_COLLECT,
-            Router.MY_SHARE,
-            Router.USER_AVATAR,
-            Router.USER_SHARE
-        )
         return loginRouter.contains(name) && viewModel.getUserId().isBlank()
     }
 

@@ -61,9 +61,9 @@ class ProjectFragment : RouterFragment() {
             }
 
             override fun createFragment(position: Int): Fragment {
-                val fragment = ProjectArticleFragment.newInstance()
-                fragment.arguments = bundleOf(Keys.CID to data[position].id)
-                return fragment
+                return ProjectArticleFragment.newInstance().apply {
+                    arguments = bundleOf(Keys.CID to data[position].id)
+                }
             }
         }
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->

@@ -23,12 +23,6 @@ class NavigationFragment : RouterFragment() {
     private var _binding: NavigationFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private val tabTexts = arrayOf("导航", "体系")
-    private val fragments = arrayListOf(
-        NavigationLinkFragment.newInstance(),
-        NavigationSystemFragment.newInstance()
-    )
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,20 +39,25 @@ class NavigationFragment : RouterFragment() {
 
     override fun initView() {
         //TabLayout与ViewPager2
+        val tabName = arrayOf("导航", "体系")
         binding.viewpager2.adapter = object : FragmentStateAdapter(
             childFragmentManager,
             viewLifecycleOwner.lifecycle
         ) {
             override fun getItemCount(): Int {
-                return fragments.size
+                return tabName.size
             }
 
             override fun createFragment(position: Int): Fragment {
-                return fragments[position]
+                return when (position) {
+                    0 -> NavigationLinkFragment.newInstance()
+                    1 -> NavigationSystemFragment.newInstance()
+                    else -> throw ArrayIndexOutOfBoundsException("length=${itemCount}; index=$position")
+                }
             }
         }
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
-            tab.text = tabTexts[position]
+            tab.text = tabName[position]
         }.attach()
     }
 

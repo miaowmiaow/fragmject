@@ -37,21 +37,6 @@ class MainFragment : RouterFragment() {
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private val tabTexts = arrayOf("首页", "导航", "问答", "项目", "我的")
-    private val tabDrawable = intArrayOf(
-        R.drawable.ic_bottom_bar_home,
-        R.drawable.ic_bottom_bar_navigation,
-        R.drawable.ic_bottom_bar_faq,
-        R.drawable.ic_bottom_bar_system,
-        R.drawable.ic_bottom_bar_project
-    )
-    private val fragments = arrayListOf(
-        HomeFragment.newInstance(),
-        NavigationFragment.newInstance(),
-        QAFragment.newInstance(),
-        ProjectFragment.newInstance(),
-        UserFragment.newInstance()
-    )
     private lateinit var hotKeyHelper: BannerHelper
     private val hotKeyAdapter = HotKeyAdapter()
 
@@ -92,20 +77,35 @@ class MainFragment : RouterFragment() {
         })
         hotKeyHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
         //TabLayout与ViewPager2
+        val tabName = arrayOf("首页", "导航", "问答", "项目", "我的")
+        val tabIcon = intArrayOf(
+            R.drawable.ic_bottom_bar_home,
+            R.drawable.ic_bottom_bar_navigation,
+            R.drawable.ic_bottom_bar_faq,
+            R.drawable.ic_bottom_bar_system,
+            R.drawable.ic_bottom_bar_project
+        )
         binding.viewpager2.adapter = object : FragmentStateAdapter(
             activity.supportFragmentManager,
             viewLifecycleOwner.lifecycle
         ) {
             override fun getItemCount(): Int {
-                return fragments.size
+                return tabName.size
             }
 
             override fun createFragment(position: Int): Fragment {
-                return fragments[position]
+                return when (position) {
+                    0 -> HomeFragment.newInstance()
+                    1 -> NavigationFragment.newInstance()
+                    2 -> QAFragment.newInstance()
+                    3 -> ProjectFragment.newInstance()
+                    4 -> UserFragment.newInstance()
+                    else -> throw ArrayIndexOutOfBoundsException("length=${itemCount}; index=$position")
+                }
             }
         }
         binding.viewpager2.isUserInputEnabled = false
-        binding.viewpager2.offscreenPageLimit = fragments.size
+        binding.viewpager2.offscreenPageLimit = tabName.size
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 setColorFilter(tab.customView, R.color.three_nine_gray)
@@ -119,10 +119,10 @@ class MainFragment : RouterFragment() {
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2, false, false) { tab, position ->
             val item = MainTabItemBinding.inflate(LayoutInflater.from(binding.root.context))
-            item.icon.setImageResource(tabDrawable[position])
-            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.text_theme))
-            item.name.text = tabTexts[position]
+            item.name.text = tabName[position]
             item.name.setTextColor(ContextCompat.getColor(item.name.context, R.color.text_theme))
+            item.icon.setImageResource(tabIcon[position])
+            item.icon.setColorFilter(ContextCompat.getColor(item.icon.context, R.color.text_theme))
             tab.customView = item.root
         }.attach()
     }

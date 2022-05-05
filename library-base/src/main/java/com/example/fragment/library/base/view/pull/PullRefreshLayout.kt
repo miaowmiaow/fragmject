@@ -107,7 +107,7 @@ class PullRefreshLayout @JvmOverloads constructor(
             recyclerView.adapter = loadMoreAdapter
             loadMoreListener = listener
         } else {
-            throw IllegalArgumentException("Not find RecyclerView adapter")
+            throw IllegalStateException("PullRefreshLayout attached before RecyclerView has an adapter")
         }
     }
 

@@ -23,12 +23,6 @@ class QAFragment : RouterFragment() {
     private var _binding: QaFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private val tabTexts = arrayOf("问答", "广场")
-    private val fragments = arrayListOf(
-        QAQuizFragment.newInstance(),
-        QASquareFragment.newInstance()
-    )
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,20 +39,25 @@ class QAFragment : RouterFragment() {
 
     override fun initView() {
         //TabLayout与ViewPager2
+        val tabName = arrayOf("问答", "广场")
         binding.viewpager2.adapter = object : FragmentStateAdapter(
             childFragmentManager,
             viewLifecycleOwner.lifecycle
         ) {
             override fun getItemCount(): Int {
-                return fragments.size
+                return tabName.size
             }
 
             override fun createFragment(position: Int): Fragment {
-                return fragments[position]
+                return when (position) {
+                    0 -> QAQuizFragment.newInstance()
+                    1 -> QASquareFragment.newInstance()
+                    else -> throw ArrayIndexOutOfBoundsException("length=${itemCount}; index=$position")
+                }
             }
         }
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
-            tab.text = tabTexts[position]
+            tab.text = tabName[position]
         }.attach()
     }
 

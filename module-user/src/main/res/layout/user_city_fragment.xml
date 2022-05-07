@@ -37,7 +37,7 @@
             <TextView
                 android:id="@+id/secrecy"
                 android:layout_width="wrap_content"
-                android:layout_height="30dp"
+                android:layout_height="25dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_margin="10dp"

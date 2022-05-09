@@ -26,7 +26,7 @@ class BannerHelper(
         recyclerView.layoutManager = layoutManager
         recyclerView.setOnTouchListener { _, event ->
             when (event.action) {
-                MotionEvent.ACTION_MOVE -> {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                     stop()
                 }
                 else -> {
@@ -50,16 +50,14 @@ class BannerHelper(
         recyclerView.post {
             if (orientation == RecyclerView.HORIZONTAL) {
                 val lmWidth = layoutManager.width
-                var dx = itemView.width
-                if (itemView.width < lmWidth / 2) {
-                    dx = itemView.right
+                var dx = if (itemView.width < lmWidth / 2) {
+                    itemView.right
                 } else {
                     val offset = (lmWidth - itemView.width) / 2
-                    if (velocityX > 0 || itemView.right < lmWidth / 2) {
-                        dx = itemView.right - offset
-                    }
-                    if (velocityX < 0 || itemView.right > lmWidth / 2) {
-                        dx = offset - (lmWidth - itemView.right)
+                    if (velocityX < 0) {
+                        offset - (lmWidth - itemView.right)
+                    } else {
+                        itemView.right - offset
                     }
                 }
                 if (dx == 0) {
@@ -68,16 +66,14 @@ class BannerHelper(
                 recyclerView.smoothScrollBy(dx, 0, null, 250)
             } else {
                 val lmHeight = layoutManager.height
-                var dy = itemView.height
-                if (itemView.height < lmHeight / 2) {
-                    dy = itemView.bottom
+                var dy = if (itemView.height < lmHeight / 2) {
+                    itemView.bottom
                 } else {
                     val offset = (lmHeight - itemView.height) / 2
-                    if (velocityY > 0 || itemView.bottom < lmHeight / 2) {
-                        dy = itemView.bottom - offset
-                    }
-                    if (velocityY < 0 || itemView.bottom > lmHeight / 2) {
-                        dy = offset - (lmHeight - itemView.bottom)
+                    if (velocityY < 0) {
+                        offset - (lmHeight - itemView.bottom)
+                    } else {
+                        itemView.bottom - offset
                     }
                 }
                 if (dy == 0) {

@@ -15,9 +15,9 @@ import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
+import com.example.fragment.library.base.utils.RoundViewOutlineProvider
 import com.example.fragment.library.base.utils.buildSpannableString
 import com.example.fragment.library.base.utils.loadCircleCrop
-import com.example.fragment.library.base.utils.loadRoundedCorners
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
@@ -86,7 +86,9 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         }
         if (item.envelopePic.isNotBlank()) {
             binding.image.visibility = View.VISIBLE
-            binding.image.loadRoundedCorners(item.envelopePic, 15f)
+            binding.image.load(item.envelopePic)
+            binding.image.outlineProvider = RoundViewOutlineProvider(15f)
+            binding.image.clipToOutline = true
         } else {
             binding.image.visibility = View.GONE
         }

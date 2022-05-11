@@ -49,19 +49,8 @@ class MainFragment : RouterFragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        hotKeyHelper.start()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        hotKeyHelper.stop()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        hotKeyHelper.stop()
         _binding = null
     }
 
@@ -75,7 +64,9 @@ class MainFragment : RouterFragment() {
                 search()
             }
         })
-        hotKeyHelper = BannerHelper(binding.hotKey, RecyclerView.VERTICAL)
+        hotKeyHelper = BannerHelper(
+            binding.hotKey, RecyclerView.VERTICAL, viewLifecycleOwner.lifecycle
+        )
         //TabLayout与ViewPager2
         val tabName = arrayOf("首页", "导航", "问答", "项目", "我的")
         val tabIcon = intArrayOf(

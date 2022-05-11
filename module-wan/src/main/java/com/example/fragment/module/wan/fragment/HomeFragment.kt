@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.dp2px
 import com.example.fragment.library.base.utils.BannerHelper
@@ -65,7 +66,9 @@ class HomeFragment : RouterFragment() {
 
     override fun initView() {
         binding.banner.adapter = bannerAdapter
-        bannerHelper = BannerHelper(binding.banner)
+        bannerHelper = BannerHelper(
+            binding.banner, RecyclerView.HORIZONTAL, viewLifecycleOwner.lifecycle
+        )
         bannerHelper.setOnItemScrollListener(object : OnItemScrollListener {
             override fun onItemScroll(position: Int) {
                 makeSureIndicator(position)

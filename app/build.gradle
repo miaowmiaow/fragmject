@@ -134,7 +134,7 @@ dependencies {
 //                    'owner': 'android/os/Build',
 //                    'name' : 'SERIAL',
 //                    'desc' : 'Ljava/lang/String;',
-//            ]
+//            ],
 //    ]
 //    //扫描APP方法（个保法隐私合规）
 //    scanMethod = [
@@ -162,7 +162,12 @@ dependencies {
 //                    'owner': 'android/telephony/TelephonyManager',
 //                    'name' : 'getSubscriberId',
 //                    'desc' : '()Ljava/lang/String;',
-//            ]
+//            ],
+//            [
+//                    'owner': 'android/hardware/SensorManager',
+//                    'name' : 'getSensorList', //传感器检测
+//                    'desc' : '(I)Ljava/util/List;',
+//            ],
 //    ]
 //    //埋点
 //    buryPoint = [

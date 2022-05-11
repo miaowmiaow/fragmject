@@ -83,7 +83,7 @@ class MainActivity : RouterActivity() {
     /**
      * 注意: 第三方sdk需在用户同意隐私协议后初始化
      */
-    private fun initSDK(){
+    private fun initSDK() {
         Thread {
             //X5内核初始化
             val map = HashMap<String, Any>()
@@ -104,7 +104,7 @@ class MainActivity : RouterActivity() {
      * 单 Activity 通过 ViewModel 来实现消息总线更优雅（参考UserViewModel）
      * 此处为用而用: SharedFlowBus 消息总线
      */
-    private fun initUIMode(){
+    private fun initUIMode() {
         WanHelper.registerUIMode(this) { eventBean ->
             if (eventBean.key == WanHelper.UI_MODE) {
                 when (eventBean.value) {

@@ -3,15 +3,19 @@ package com.example.fragment.library.base.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.MotionEvent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 @SuppressLint("ClickableViewAccessibility")
 class BannerHelper(
-    private val recyclerView: RecyclerView,
+    val recyclerView: RecyclerView,
     @RecyclerView.Orientation
-    private val orientation: Int = RecyclerView.HORIZONTAL
-) {
+    val orientation: Int,
+    lifecycle: Lifecycle
+) : DefaultLifecycleObserver {
 
     private val layoutManager = RepeatLayoutManager(recyclerView.context)
     private val bannerTask = Runnable {
@@ -22,6 +26,7 @@ class BannerHelper(
     private var listener: OnItemScrollListener? = null
 
     init {
+        lifecycle.addObserver(this)
         layoutManager.orientation = orientation
         recyclerView.layoutManager = layoutManager
         recyclerView.setOnTouchListener { _, event ->
@@ -87,10 +92,6 @@ class BannerHelper(
         }
     }
 
-    fun findItemPosition(): Int {
-        return layoutManager.findLastCompletelyVisibleItemPosition()
-    }
-
     fun start() {
         recyclerView.removeCallbacks(bannerTask)
         recyclerView.postDelayed(bannerTask, 3000)
@@ -100,8 +101,27 @@ class BannerHelper(
         recyclerView.removeCallbacks(bannerTask)
     }
 
+    fun findItemPosition(): Int {
+        return layoutManager.findLastCompletelyVisibleItemPosition()
+    }
+
     fun setOnItemScrollListener(listener: OnItemScrollListener) {
         this.listener = listener
+    }
+
+    // onResume时自动开始
+    override fun onResume(owner: LifecycleOwner) {
+        start()
+    }
+
+    // onPause时自动停止
+    override fun onPause(owner: LifecycleOwner) {
+        stop()
+    }
+
+    // onDestroy时停止观察
+    override fun onDestroy(owner: LifecycleOwner) {
+        owner.lifecycle.removeObserver(this)
     }
 
 }

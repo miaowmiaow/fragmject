@@ -2,6 +2,7 @@ package com.example.fragment.project.activity
 
 import android.graphics.PixelFormat
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
@@ -13,6 +14,7 @@ import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.model.SettingViewModel
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.databinding.MainActivityBinding
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 
@@ -79,7 +81,7 @@ class MainActivity : RouterActivity() {
 
                     override fun onCancel(dialog: StandardDialog) {
                         WanHelper.denyPrivacyAgreement()
-                        onBackPressed()
+                        finish()
                     }
                 })
                 .show(supportFragmentManager)
@@ -112,7 +114,7 @@ class MainActivity : RouterActivity() {
     private fun initContentView() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-        setContentView(R.layout.main_activity)
+        setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
         initSDK()
     }
 

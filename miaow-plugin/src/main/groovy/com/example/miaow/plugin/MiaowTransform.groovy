@@ -158,7 +158,7 @@ class MiaowTransform extends Transform {
         if (MiaowPlugin.BURY_POINT_MAP.size() > 0) {
             classBytes = buryClass(classBytes)
         }
-        if (MiaowPlugin.SCAN_FIELDS.size() > 0 || MiaowPlugin.SCAN_METHODS.size()) {
+        if (MiaowPlugin.SCAN_FIELDS.size() > 0 || MiaowPlugin.SCAN_METHODS.size() > 0) {
             classBytes = scanClass(classBytes)
         }
         if (MiaowPlugin.TIME_METHODS.size() > 0) {

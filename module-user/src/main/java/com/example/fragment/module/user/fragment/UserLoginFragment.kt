@@ -55,11 +55,11 @@ class UserLoginFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.loginResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
-                result.data?.let { userBean ->
+        viewModel.loginResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) { bean ->
+                bean.data?.let { data ->
                     val userViewModel: UserViewModel by activityViewModels()
-                    userViewModel.updateUserBean(userBean)
+                    userViewModel.updateUserBean(data)
                 }
                 activity.onBackPressed()
             }

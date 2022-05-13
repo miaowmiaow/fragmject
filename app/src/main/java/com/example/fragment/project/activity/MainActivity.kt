@@ -2,23 +2,24 @@ package com.example.fragment.project.activity
 
 import android.graphics.PixelFormat
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
+import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.utils.WanHelper
+import com.example.fragment.module.user.model.SettingViewModel
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.databinding.MainActivityBinding
 import com.tencent.smtt.export.external.TbsCoreSettings
 import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
-    private val viewModel: UserViewModel by viewModels()
+    private val settingViewModel: SettingViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
     private val loginRouter = arrayOf(
         Router.MY_COIN,
         Router.MY_COLLECT,
@@ -62,12 +63,27 @@ class MainActivity : RouterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
-        window.setFormat(PixelFormat.TRANSLUCENT)
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-        setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
-        initViewModel()
-        initSDK()
-        initUIMode()
+        WanHelper.privacyAgreement({
+            initViewModel()
+            initContentView()
+        }, {
+            StandardDialog.newInstance()
+                .setTitle(getString(R.string.privacy_agreement_title))
+                .setContent(getString(R.string.privacy_agreement_content))
+                .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
+                    override fun onConfirm(dialog: StandardDialog) {
+                        WanHelper.allowPrivacyAgreement()
+                        initViewModel()
+                        initContentView()
+                    }
+
+                    override fun onCancel(dialog: StandardDialog) {
+                        WanHelper.denyPrivacyAgreement()
+                        onBackPressed()
+                    }
+                })
+                .show(supportFragmentManager)
+        })
     }
 
     override fun onDestroy() {
@@ -77,54 +93,46 @@ class MainActivity : RouterActivity() {
     }
 
     private fun initViewModel() {
-        viewModel.userResult()
+        settingViewModel.uiModeResult().observe(this) { mode ->
+            when (mode) {
+                "1" -> {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    QbSdk.unForceSysWebView()
+                }
+                "2" -> {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    QbSdk.forceSysWebView()
+                }
+                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            }
+        }
+        userViewModel.userResult()
     }
 
-    /**
-     * 注意: 第三方sdk需在用户同意隐私协议后初始化
-     */
-    private fun initSDK() {
-        Thread {
-            //X5内核初始化
-            val map = HashMap<String, Any>()
-            map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-            map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-            QbSdk.initTbsSettings(map)
-            QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
-                override fun onViewInitFinished(arg0: Boolean) {}
+    private fun initContentView() {
+        window.setFormat(PixelFormat.TRANSLUCENT)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        setContentView(R.layout.main_activity)
+        initSDK()
+    }
 
-                override fun onCoreInitFinished() {}
-            })
-        }.start()
+    private fun initSDK() {
+        //X5内核初始化
+        val map = HashMap<String, Any>()
+        map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
+        map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
+        QbSdk.initTbsSettings(map)
+        QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
+            override fun onViewInitFinished(arg0: Boolean) {}
+
+            override fun onCoreInitFinished() {}
+        })
         //WebView预加载
         WebViewManager.prepare(applicationContext)
     }
 
-    /**
-     * 单 Activity 通过 ViewModel 来实现消息总线更优雅（参考UserViewModel）
-     * 此处为用而用: SharedFlowBus 消息总线
-     */
-    private fun initUIMode() {
-        WanHelper.registerUIMode(this) { eventBean ->
-            if (eventBean.key == WanHelper.UI_MODE) {
-                when (eventBean.value) {
-                    "1" -> {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                        QbSdk.unForceSysWebView()
-                    }
-                    "2" -> {
-                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                        QbSdk.forceSysWebView()
-                    }
-                    else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                }
-            }
-        }
-        WanHelper.getUIMode()
-    }
-
     private fun loginRequired(name: Router): Boolean {
-        return loginRouter.contains(name) && viewModel.getUserId().isBlank()
+        return loginRouter.contains(name) && userViewModel.getUserId().isBlank()
     }
 
 }

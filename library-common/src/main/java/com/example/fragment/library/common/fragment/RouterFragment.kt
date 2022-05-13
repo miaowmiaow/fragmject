@@ -20,7 +20,7 @@ abstract class RouterFragment : BaseFragment() {
     /**
      * 网络请求结果处理（不建议封装在网络请求框架中）
      */
-    fun <T : HttpResponse> httpParseSuccess(result: T, success: ((T) -> Unit)) {
+    fun <T : HttpResponse> httpParseSuccess(result: T?, success: ((T) -> Unit)) {
         activity.httpParseSuccess(result, success)
     }
 

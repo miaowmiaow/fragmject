@@ -86,13 +86,13 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.projectListResult(cid).observe(viewLifecycleOwner) {
-            if (it.containsKey(cid)) {
-                httpParseSuccess(it[cid] as ArticleListBean) { result ->
+        viewModel.projectListResult(cid).observe(viewLifecycleOwner) { result ->
+            if (result.containsKey(cid)) {
+                httpParseSuccess(result[cid] as ArticleListBean) {
                     if (viewModel.isHomePage(cid)) {
-                        articleAdapter.setNewData(result.data?.datas)
+                        articleAdapter.setNewData(it.data?.datas)
                     } else {
-                        articleAdapter.addData(result.data?.datas)
+                        articleAdapter.addData(it.data?.datas)
                     }
                 }
             }

@@ -1,11 +1,6 @@
 package com.example.fragment.library.common.utils
 
-import androidx.annotation.NonNull
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import com.example.fragment.library.base.bus.SharedFlowBus
 import com.example.fragment.library.base.db.KVDatabase
-import com.example.fragment.library.common.bean.EventBean
 import com.example.fragment.library.common.bean.UserBean
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -15,10 +10,28 @@ import com.google.gson.reflect.TypeToken
  */
 object WanHelper {
 
+    private const val PRIVACY_AGREEMENT = "privacy_agreement"
     private const val SCREEN_RECORD = "screen_record"
     private const val SEARCH_HISTORY = "search_history"
-    const val UI_MODE = "ui_mode"
+    private const val UI_MODE = "ui_mode"
     private const val USER = "user"
+
+    /**
+     * 隐私协议状态
+     */
+    fun privacyAgreement(allow: () -> Unit, deny: () -> Unit) {
+        KVDatabase.get(PRIVACY_AGREEMENT) {
+            if (it == "1") allow.invoke() else deny.invoke()
+        }
+    }
+
+    fun allowPrivacyAgreement() {
+        KVDatabase.set(PRIVACY_AGREEMENT, "1")
+    }
+
+    fun denyPrivacyAgreement() {
+        KVDatabase.set(PRIVACY_AGREEMENT, "0")
+    }
 
     /**
      * 设置搜索历史
@@ -48,9 +61,8 @@ object WanHelper {
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
-    fun setUIMode(mode: String) {
+    fun setUiMode(mode: String) {
         KVDatabase.set(UI_MODE, mode)
-        SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(UI_MODE, mode))
     }
 
     /**
@@ -60,17 +72,10 @@ object WanHelper {
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
-    fun getUIMode() {
+    fun getUiMode(result: (String) -> Unit) {
         KVDatabase.get(UI_MODE) {
-            SharedFlowBus.withSticky(EventBean::class.java).tryEmit(EventBean(UI_MODE, it))
+            result.invoke(it)
         }
-    }
-
-    /**
-     * 监听显示模式状态
-     */
-    fun registerUIMode(@NonNull owner: LifecycleOwner, @NonNull observer: Observer<EventBean>) {
-        SharedFlowBus.onSticky(EventBean::class.java).observe(owner, observer)
     }
 
     /**

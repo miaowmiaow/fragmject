@@ -63,12 +63,12 @@ class QAQuizFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.wendaResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
+        viewModel.wendaResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) {
                 if (viewModel.isHomePage()) {
-                    articleAdapter.setNewData(result.data?.datas)
+                    articleAdapter.setNewData(it.data?.datas)
                 } else {
-                    articleAdapter.addData(result.data?.datas)
+                    articleAdapter.addData(it.data?.datas)
                 }
             }
             //结束下拉刷新状态

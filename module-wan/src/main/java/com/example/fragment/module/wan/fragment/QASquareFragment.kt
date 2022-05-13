@@ -63,12 +63,12 @@ class QASquareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userArticleResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
+        viewModel.userArticleResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) {
                 if (viewModel.isHomePage()) {
-                    articleAdapter.setNewData(result.data?.datas)
+                    articleAdapter.setNewData(it.data?.datas)
                 } else {
-                    articleAdapter.addData(result.data?.datas)
+                    articleAdapter.addData(it.data?.datas)
                 }
             }
             //结束下拉刷新状态

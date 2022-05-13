@@ -76,10 +76,7 @@ class MainFragment : RouterFragment() {
             R.drawable.ic_bottom_bar_system,
             R.drawable.ic_bottom_bar_project
         )
-        binding.viewpager2.adapter = object : FragmentStateAdapter(
-            activity.supportFragmentManager,
-            viewLifecycleOwner.lifecycle
-        ) {
+        binding.viewpager2.adapter = object : FragmentStateAdapter(activity) {
             override fun getItemCount(): Int {
                 return tabName.size
             }

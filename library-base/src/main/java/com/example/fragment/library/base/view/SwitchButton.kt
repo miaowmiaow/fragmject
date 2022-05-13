@@ -285,6 +285,7 @@ class SwitchButton @JvmOverloads constructor(
         buttonX = viewRadius + paddingStart
         buttonY = viewRadius + paddingTop
         buttonRadius = viewRadius - borderWidth
+        postInvalidate()
     }
 
     override fun onDraw(canvas: Canvas) {

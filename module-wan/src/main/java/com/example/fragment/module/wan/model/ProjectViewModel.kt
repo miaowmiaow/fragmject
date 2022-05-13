@@ -21,7 +21,7 @@ class ProjectViewModel : BaseViewModel() {
 
     fun projectListResult(cid: String): LiveData<Map<String, ArticleListBean>> {
         this.cid = cid
-        if (projectListResultMap[cid].isNullOrEmpty()) {
+        if (!projectListResultMap.containsKey(cid)) {
             getProjectHome(cid)
         }
         return projectListResult

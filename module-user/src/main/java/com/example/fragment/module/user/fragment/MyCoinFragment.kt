@@ -76,11 +76,11 @@ class MyCoinFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userCoinResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
-                result.data?.let { coinBean ->
+        viewModel.userCoinResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) { bean ->
+                bean.data?.let {
                     val from = binding.coinCount.text.toString().toInt()
-                    val to = coinBean.coinCount.toInt()
+                    val to = it.coinCount.toInt()
                     coinCountAnimator.setIntValues(from, to)
                     coinCountAnimator.start()
                 }

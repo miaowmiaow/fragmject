@@ -23,7 +23,7 @@ class SystemViewModel : BaseViewModel() {
 
     fun systemArticleResult(cid: String): LiveData<Map<String, ArticleListBean>> {
         this.cid = cid
-        if (systemArticleResultMap[cid].isNullOrEmpty()) {
+        if (!systemArticleResultMap.containsKey(cid)) {
             getSystemArticleHome(cid)
         }
         return systemArticleResult

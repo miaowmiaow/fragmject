@@ -100,11 +100,11 @@ class CoinRankFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.coinRankResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
+        viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) {
                 val names = arrayListOf(binding.name1, binding.name2, binding.name3)
                 val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
-                val datas = result.data?.datas
+                val datas = it.data?.datas
                 if (viewModel.isHomePage() && !datas.isNullOrEmpty()) {
                     val size = if (datas.size < 3) datas.size else 3
                     for (i in 0 until size) {

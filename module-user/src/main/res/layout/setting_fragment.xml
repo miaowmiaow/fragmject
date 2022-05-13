@@ -62,10 +62,10 @@
                         android:textColor="@color/text_666"
                         android:textSize="14sp" />
 
-                    <com.example.fragment.library.base.view.SwitchButton
+                    <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/system_theme"
-                        android:layout_width="40dp"
-                        android:layout_height="25dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
 
@@ -87,10 +87,10 @@
                         android:textColor="@color/text_666"
                         android:textSize="14sp" />
 
-                    <com.example.fragment.library.base.view.SwitchButton
+                    <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/dark_theme"
-                        android:layout_width="40dp"
-                        android:layout_height="25dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
 
@@ -112,10 +112,10 @@
                         android:textColor="@color/text_666"
                         android:textSize="14sp" />
 
-                    <com.example.fragment.library.base.view.SwitchButton
+                    <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/screen_record"
-                        android:layout_width="40dp"
-                        android:layout_height="25dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true" />
 

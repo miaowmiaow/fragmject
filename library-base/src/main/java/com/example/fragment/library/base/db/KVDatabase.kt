@@ -5,6 +5,7 @@ import com.example.fragment.library.base.provider.BaseContentProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 对RoomDatabase进行封装
@@ -67,7 +68,9 @@ abstract class KVDatabase : RoomDatabase() {
                 e.printStackTrace()
                 ""
             }
-            result.invoke(value)
+            withContext(Dispatchers.Main) {
+                result.invoke(value)
+            }
         }
     }
 

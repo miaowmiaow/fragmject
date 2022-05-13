@@ -2,7 +2,6 @@ package com.example.fragment.library.common.activity
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.IdRes
@@ -36,10 +35,8 @@ abstract class RouterActivity : BaseActivity() {
         bundle: Bundle? = null,
     )
 
-    override fun setContentView(view: View) {
-        super.setContentView(view)
-        val navHostFragment = supportFragmentManager.findFragmentById(controllerId())
-        navController = (navHostFragment as NavHostFragment).navController
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (System.currentTimeMillis() - exitTime > 2000) {
@@ -51,6 +48,12 @@ abstract class RouterActivity : BaseActivity() {
                 }
             }
         })
+    }
+
+    override fun setContentView(layoutResID: Int) {
+        super.setContentView(layoutResID)
+        val navHostFragment = supportFragmentManager.findFragmentById(controllerId())
+        navController = (navHostFragment as NavHostFragment).navController
     }
 
     fun navigate(@IdRes resId: Int, args: Bundle? = null) {
@@ -93,13 +96,16 @@ abstract class RouterActivity : BaseActivity() {
     }
 
     /**
-     * 网络请求结果处理（不建议封装在网络请求框架中）
+     * 网络请求code处理
+     * 封装在网络框架中扩展太差，暂时写在此处待优化
      */
-    fun <T : HttpResponse> httpParseSuccess(result: T, success: ((T) -> Unit)) {
-        when (result.errorCode) {
-            "0" -> success.invoke(result)
-            "-1001" -> navigation(Router.USER_LOGIN)
-            else -> showTips(result.errorMsg)
+    fun <T : HttpResponse> httpParseSuccess(result: T?, success: ((T) -> Unit)) {
+        result?.let {
+            when (it.errorCode) {
+                "0" -> success.invoke(it)
+                "-1001" -> navigation(Router.USER_LOGIN)
+                else -> showTips(it.errorMsg)
+            }
         }
     }
 

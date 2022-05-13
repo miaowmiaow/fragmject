@@ -57,9 +57,9 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.myCollectArticleResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
-                result.data?.datas?.let { data ->
+        viewModel.myCollectArticleResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) { bean ->
+                bean.data?.datas?.let { data ->
                     data.forEach { item -> item.collect = true }
                     if (viewModel.isHomePage()) {
                         articleAdapter.setNewData(data)

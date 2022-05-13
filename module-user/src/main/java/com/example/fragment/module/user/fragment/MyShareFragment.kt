@@ -57,12 +57,12 @@ class MyShareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.myShareArticleResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
+        viewModel.myShareArticleResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) {
                 if (viewModel.isHomePage()) {
-                    articleAdapter.setNewData(result.data?.shareArticles?.datas)
+                    articleAdapter.setNewData(it.data?.shareArticles?.datas)
                 } else {
-                    articleAdapter.addData(result.data?.shareArticles?.datas)
+                    articleAdapter.addData(it.data?.shareArticles?.datas)
                 }
             }
             //结束下拉刷新状态

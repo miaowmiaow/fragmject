@@ -53,12 +53,12 @@ class UserFragment : RouterFragment() {
 
     @SuppressLint("SetTextI18n")
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult().observe(viewLifecycleOwner) { userBean ->
-            if (userBean.id.isNotBlank()) {
-                if (userBean.avatar.isNotBlank()) {
-                    binding.avatar.loadCircleCrop(userBean.avatar)
+        viewModel.userResult().observe(viewLifecycleOwner) {
+            if (it.id.isNotBlank()) {
+                if (it.avatar.isNotBlank()) {
+                    binding.avatar.loadCircleCrop(it.avatar)
                 }
-                binding.username.text = "欢迎回来！${userBean.username}"
+                binding.username.text = "欢迎回来！${it.username}"
                 binding.avatar.setOnClickListener { activity.navigation(Router.USER_INFO) }
                 binding.username.setOnClickListener { activity.navigation(Router.USER_INFO) }
             } else {

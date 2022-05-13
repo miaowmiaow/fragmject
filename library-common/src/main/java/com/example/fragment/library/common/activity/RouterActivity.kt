@@ -2,6 +2,7 @@ package com.example.fragment.library.common.activity
 
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.IdRes
@@ -50,8 +51,8 @@ abstract class RouterActivity : BaseActivity() {
         })
     }
 
-    override fun setContentView(layoutResID: Int) {
-        super.setContentView(layoutResID)
+    override fun setContentView(view: View) {
+        super.setContentView(view)
         val navHostFragment = supportFragmentManager.findFragmentById(controllerId())
         navController = (navHostFragment as NavHostFragment).navController
     }

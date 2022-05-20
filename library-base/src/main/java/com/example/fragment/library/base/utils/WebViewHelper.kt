@@ -346,10 +346,8 @@ class WebViewManager private constructor() {
         webSetting.setSupportZoom(true)
         webSetting.displayZoomControls = false
         webSetting.useWideViewPort = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            webSetting.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
-        }
+        webSetting.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         webView.settingsExtension?.apply {
             setContentCacheEnable(true)
             setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY)

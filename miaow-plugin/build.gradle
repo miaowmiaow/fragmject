@@ -1,5 +1,6 @@
 plugins {
-    id 'groovy'
+    id 'kotlin'
+    id 'kotlin-kapt'
     id 'maven-publish'
 }
 
@@ -12,7 +13,7 @@ dependencies {
     implementation 'org.ow2.asm:asm-analysis:9.3'
     implementation 'org.ow2.asm:asm-util:9.3'
     implementation 'org.ow2.asm:asm-tree:9.3'
-    implementation "com.android.tools.build:gradle:4.2.2", {
+    implementation "com.android.tools.build:gradle:$gradle_version", {
         exclude group: 'org.ow2.asm'
     }
 }

@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-parcelize'
-//    id 'miaow'
+    id 'miaow'
 }
 
 android {
@@ -35,13 +35,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
-    }
-
-    dexOptions {
-        // 声明是否对依赖的库进行 dex 预处理来使你的增量构建更快速
-        preDexLibraries true
-        // 设置最大的线程数量使用当运行 dex-in-process 时,默认值是 4
-        maxProcessCount 8
     }
 
     viewBinding {
@@ -116,107 +109,3 @@ dependencies {
     implementation project(path: ':module-user')
     implementation project(path: ':module-wan')
 }
-
-//miaow {
-//    //扫描APP字段（个保法隐私合规）
-//    scanFiled = [
-//            [
-//                    'owner': 'android/os/Build',
-//                    'name' : 'BRAND',
-//                    'desc' : 'Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/os/Build',
-//                    'name' : 'MODEL',
-//                    'desc' : 'Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/os/Build',
-//                    'name' : 'SERIAL',
-//                    'desc' : 'Ljava/lang/String;',
-//            ],
-//    ]
-//    //扫描APP方法（个保法隐私合规）
-//    scanMethod = [
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getDeviceId',
-//                    'desc' : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getImei',
-//                    'desc' : '()I',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getMeid',
-//                    'desc' : '()I',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getSimSerialNumber',
-//                    'desc' : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/telephony/TelephonyManager',
-//                    'name' : 'getSubscriberId',
-//                    'desc' : '()Ljava/lang/String;',
-//            ],
-//            [
-//                    'owner': 'android/hardware/SensorManager',
-//                    'name' : 'getSensorList', //传感器检测
-//                    'desc' : '(I)Ljava/util/List;',
-//            ],
-//    ]
-//    //埋点
-//    buryPoint = [
-//            [
-//                    //采集数据的方法的路径
-//                    'agentOwner' : 'com/example/fragment/library/common/utils/StatisticHelper',
-//                    //采集数据的方法名
-//                    'agentName'  : 'viewOnClick',
-//                    //采集数据的方法描述（参数应在methodDesc范围之内）
-//                    'agentDesc'  : '(Landroid/view/View;)V',
-//                    //插入的方法的实现接口
-//                    'methodOwner': 'Landroid/view/View$OnClickListener;',
-//                    //插入的方法名
-//                    'methodName' : 'onClick',
-//                    //插入的方法描述
-//                    'methodDesc' : '(Landroid/view/View;)V',
-//            ],
-//            [
-//                    //注解标识
-//                    'isAnnotation'    : true,
-//                    //方式插入时机，true方法退出前，false方法进入时
-//                    'isMethodExit'    : true,
-//                    //采集数据的方法的路径
-//                    'agentOwner'      : 'com/example/fragment/library/common/utils/StatisticHelper',
-//                    //采集数据的方法名
-//                    'agentName'       : 'testAnnotation',
-//                    //采集数据的方法描述（对照annotationParams，注意参数顺序）
-//                    'agentDesc'       : '(Ljava/lang/Object;ILjava/lang/String;)V',
-//                    //扫描的注解名称
-//                    'annotationDesc'  : 'Lcom/example/fragment/library/common/utils/TestAnnotation;',
-//                    //扫描的注解的参数
-//                    'annotationParams': [
-//                            //参数名 : 参数类型（对应的ASM指令，加载不同类型的参数需要不同的指令）
-//                            //this  : 所在方法的当前对象的引用（默认关键字，按需可选配置）
-//                            'this'   : 'Ljava/lang/Object;',
-//                            'code'   : 'I',
-//                            'message': 'Ljava/lang/String;',
-//                    ]
-//            ],
-//    ]
-//    //方法耗时打印
-//    timeMethod = [
-//            [
-//                    'time' : 100L,
-//                    'owner': 'com/example/fragment',
-//            ],
-//            [
-//                    'time' : 100L,
-//                    'owner': 'com/google',
-//            ]
-//    ]
-//}

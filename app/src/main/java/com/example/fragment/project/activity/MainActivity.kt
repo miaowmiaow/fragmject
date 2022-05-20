@@ -10,6 +10,7 @@ import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
+import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.model.SettingViewModel
 import com.example.fragment.module.user.model.UserViewModel
@@ -118,6 +119,7 @@ class MainActivity : RouterActivity() {
         initSDK()
     }
 
+    @TestAnnotation(code = 1, message = "qwe")
     private fun initSDK() {
         //X5内核初始化
         val map = HashMap<String, Any>()

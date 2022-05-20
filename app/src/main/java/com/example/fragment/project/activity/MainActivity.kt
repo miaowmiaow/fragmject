@@ -119,6 +119,7 @@ class MainActivity : RouterActivity() {
         initSDK()
     }
 
+    //测试自动埋点注解请忽略
     @TestAnnotation(code = 1, message = "qwe")
     private fun initSDK() {
         //X5内核初始化

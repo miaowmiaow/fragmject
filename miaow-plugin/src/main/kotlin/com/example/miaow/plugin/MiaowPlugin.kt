@@ -56,12 +56,12 @@ class MiaowPlugin : Plugin<Project> {
             ) {
                 it.listOfTimes.set(
                     listOf(
-                        TimeBean(
+                        TimeBean( //具体到方法名称
                             "com/example/fragment/project/activity/MainActivity",
                             "onCreate",
                             "(Landroid/os/Bundle;)V"
                         ),
-                        TimeBean(
+                        TimeBean( //以包名和执行时间为条件
                             owner = "com/example/fragment/library/base",
                             time = 50L
                         )

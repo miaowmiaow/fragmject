@@ -9,10 +9,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.Input
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.tree.AbstractInsnNode
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldInsnNode
-import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.*
 
 interface ScanParams : InstrumentationParameters {
     @get:Input
@@ -52,20 +49,40 @@ class ScanClassNode(
                     scans.find {
                         !it.isMethod && it.owner == insnNode.owner && it.name == insnNode.name && it.desc == insnNode.desc
                     }?.let {
-                        println(name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n")
+                        val str = name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
+
+                        printInfo(instructions, insnNode, str)
                     }
                 }
                 if (insnNode is MethodInsnNode) {
                     scans.find {
                         it.isMethod && it.owner == insnNode.owner && it.name == insnNode.name && it.desc == insnNode.desc
                     }?.let {
-                        println(name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n")
+                        val str = name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
+                        printInfo(instructions, insnNode, str)
                     }
                 }
             }
         }
         super.visitEnd()
         accept(classVisitor)
+    }
+
+    private fun printInfo(instructions: InsnList, insnNode: AbstractInsnNode, str: String) {
+        val il = InsnList()
+        il.add(FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"))
+        il.add(LdcInsnNode(str))
+        il.add(
+            MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL,
+                "java/io/PrintStream",
+                "println",
+                "(Ljava/lang/String;)V",
+                false
+            )
+        )
+        instructions.insertBefore(insnNode, il)
+        println(str)
     }
 
 }

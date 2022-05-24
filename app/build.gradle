@@ -67,8 +67,6 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.sign
-            //应用包名添加.debug后缀
-            applicationIdSuffix ".debug"
             //禁用PNG压缩。
             crunchPngs false
             //停用Crashlytics，以提高调试 build 的构建速度
@@ -76,18 +74,45 @@ android {
         }
     }
 
-    flavorDimensions "default"
+    flavorDimensions.add('default')
 
-    //获取渠道信息：Context.getMetaData("CHANNEL")
+    //获取渠道信息：Context.getMetaData("app_channel")
+    //创建产品风味
     productFlavors {
-        huawei {}
-        xiaomi {}
-        oppo {}
-        vivo {}
-    }
-
-    productFlavors.all { flavor ->
-        flavor.manifestPlaceholders = [CHANNEL_VALUE: name]
+        create("huawei") {
+            //应用包名添加后缀
+            applicationIdSuffix ".huawei"
+            //关联维度
+            dimension = "default"
+            manifestPlaceholders = [
+                    app_channel_value: name,
+                    app_name_value   : "玩Android-华为尊享版",
+            ]
+        }
+        create("xiaomi") {
+            applicationIdSuffix ".xiaomi"
+            dimension = "default"
+            manifestPlaceholders = [
+                    app_channel_value: name,
+                    app_name_value   : "玩Android-小米尊享版",
+            ]
+        }
+        create("oppo") {
+            applicationIdSuffix ".oppo"
+            dimension = "default"
+            manifestPlaceholders = [
+                    app_channel_value: name,
+                    app_name_value   : "玩Android-OPPO尊享版",
+            ]
+        }
+        create("vivo") {
+            applicationIdSuffix ".vivo"
+            dimension = "default"
+            manifestPlaceholders = [
+                    app_channel_value: name,
+                    app_name_value   : "玩Android-VIVO尊享版",
+            ]
+        }
     }
 
     applicationVariants.all {

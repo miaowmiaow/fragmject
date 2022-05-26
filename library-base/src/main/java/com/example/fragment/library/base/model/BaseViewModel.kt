@@ -3,16 +3,17 @@ package com.example.fragment.library.base.model
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.fragment.library.base.http.HttpRequest
+import com.example.fragment.library.base.http.HttpResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 abstract class BaseViewModel : ViewModel() {
 
-    companion object{
-        /**
-         * 在转场动画结束后加载数据，
-         * 用于解决过度动画卡顿问题，
-         * 建议大于等于转场动画时间。
-         */
-        const val LOAD_DELAY_MILLIS = 250L
+    companion object {
+        //动画时间见slide_in_xxx.xml
+        const val TRANSITION_ANIMATION_TIME = 300L
         const val DEFAULT_KEY = "null"
         const val DEFAULT_PAGE = 0
         const val PAGE_CONT = 1
@@ -26,6 +27,7 @@ abstract class BaseViewModel : ViewModel() {
     private var pageCont: MutableMap<String, Int> = HashMap()
 
     private val progress = MutableLiveData<Double>()
+
     /**
      * 获取首页
      */
@@ -81,4 +83,16 @@ abstract class BaseViewModel : ViewModel() {
         if (homePage == currPage) progress.postValue(num)
     }
 
+    /**
+     * 用于解决过度动画卡顿问题
+     */
+    suspend fun transitionAnimationEnd(request: HttpRequest, response: HttpResponse) {
+        withContext(Dispatchers.Main) {
+            //如果请求结束时间小于转场动画时间则等待转场动画结束后返回数据
+            val time = TRANSITION_ANIMATION_TIME - (response.time - request.time)
+            if (time > 0) {
+                delay(time)
+            }
+        }
+    }
 }

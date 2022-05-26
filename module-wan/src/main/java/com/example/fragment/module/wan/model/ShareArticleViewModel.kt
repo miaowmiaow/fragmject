@@ -7,7 +7,6 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.module.wan.bean.ShareArticleBean
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ShareArticleViewModel : BaseViewModel() {
@@ -41,16 +40,16 @@ class ShareArticleViewModel : BaseViewModel() {
     private fun getUserShareArticles(id: String, page: Int) {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (userShareArticleResult.value == null) {
-                delay(LOAD_DELAY_MILLIS)
-            }
             //构建请求体，传入请求参数
             val request = HttpRequest("user/{id}/share_articles/{page}/json")
                 .putPath("id", id)
                 .putPath("page", page.toString())
             //以get方式发起网络请求
             val response = get<ShareArticleBean>(request) { updateProgress(it) }
+            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+            if (userShareArticleResult.value == null) {
+                transitionAnimationEnd(request, response)
+            }
             //根据接口返回更新总页码
             response.data?.shareArticles?.pageCount?.let { updatePageCont(it.toInt()) }
             //通过LiveData通知界面更新

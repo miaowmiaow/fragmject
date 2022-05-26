@@ -29,7 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
-class ArticleAdapter : BaseAdapter<ArticleBean>() {
+class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<ArticleBean>() {
 
     private var avatarList: List<Int> = listOf(
         R.drawable.avatar_1_raster,
@@ -52,7 +52,9 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         }
         binding.avatar.loadCircleCrop(avatarList[position % 6])
         binding.avatar.setOnClickListener {
-            activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
+            if (isHomeFragment) {
+                activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
+            }
         }
         val shareUser = "${item.author}${item.shareUser}"
         binding.shareUser.text = shareUser.ifBlank { "匿名" }
@@ -61,16 +63,18 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             binding.tag.visibility = View.VISIBLE
             binding.tag.text = item.tags[0].name
             binding.tag.setOnClickListener {
-                val uriString = "https://www.wanandroid.com${item.tags[0].url}"
-                val uri = Uri.parse(uriString)
-                var cid = uri.getQueryParameter(Keys.CID)
-                if (cid.isNullOrBlank()) {
-                    val paths = uri.pathSegments
-                    if (paths != null && paths.size >= 3) {
-                        cid = paths[2]
+                if (isHomeFragment) {
+                    val uriString = "https://www.wanandroid.com${item.tags[0].url}"
+                    val uri = Uri.parse(uriString)
+                    var cid = uri.getQueryParameter(Keys.CID)
+                    if (cid.isNullOrBlank()) {
+                        val paths = uri.pathSegments
+                        if (paths != null && paths.size >= 3) {
+                            cid = paths[2]
+                        }
                     }
+                    activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to cid))
                 }
-                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to cid))
             }
         } else {
             binding.tag.visibility = View.GONE
@@ -106,7 +110,9 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
             append(fromHtml(formatChapterName(item.superChapterName, item.chapterName)))
         }
         binding.chapterName.setOnClickListener {
-            activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
+            if (isHomeFragment) {
+                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
+            }
         }
         if (item.collect) {
             binding.collect.load(R.drawable.ic_collect_checked)

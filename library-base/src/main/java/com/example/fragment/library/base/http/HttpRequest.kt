@@ -28,6 +28,12 @@ open class HttpRequest @JvmOverloads constructor(
     private var files: MutableMap<String, File> = HashMap()
 ) {
 
+    var time = 0L
+
+    init {
+        time = System.currentTimeMillis()
+    }
+
     fun setUrl(url: String): HttpRequest {
         this.url = url
         return this

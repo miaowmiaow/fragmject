@@ -71,6 +71,6 @@ dependencies {
     api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     api "com.squareup.retrofit2:retrofit:2.9.0"
     // 腾讯TBS
-    api 'com.tencent.tbs:tbssdk:44165'
+    api 'com.tencent.tbs:tbssdk:44181'
 
 }

@@ -10,7 +10,6 @@ import com.example.fragment.library.common.bean.MyCoinListBean
 import com.example.fragment.library.common.bean.UserCoinBean
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MyCoinViewModel : BaseViewModel() {
@@ -34,10 +33,6 @@ class MyCoinViewModel : BaseViewModel() {
     fun getMyCoinHome() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (myCoinResult.value == null) {
-                delay(LOAD_DELAY_MILLIS)
-            }
             //通过async获取需要展示的数据
             val userCoin = async { userCoin() }
             val myCoin = async { getMyCoin(getHomePage(1)) }
@@ -70,6 +65,10 @@ class MyCoinViewModel : BaseViewModel() {
         val request = HttpRequest("lg/coin/list/{page}/json").putPath("page", page.toString())
         //以get方式发起网络请求
         val response = coroutineScope { get<MyCoinListBean>(request) { updateProgress(it) } }
+        //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+        if (myCoinResult.value == null) {
+            transitionAnimationEnd(request, response)
+        }
         //根据接口返回更新总页码
         response.data?.pageCount?.let { updatePageCont(it.toInt()) }
         return response

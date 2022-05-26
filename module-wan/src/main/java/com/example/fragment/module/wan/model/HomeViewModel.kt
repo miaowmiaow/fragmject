@@ -12,7 +12,6 @@ import com.example.fragment.library.common.bean.BannerListBean
 import com.example.fragment.library.common.bean.TopArticleBean
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class HomeViewModel : BaseViewModel() {
@@ -36,10 +35,6 @@ class HomeViewModel : BaseViewModel() {
     fun getArticleHome() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (articleListResult.value == null) {
-                delay(LOAD_DELAY_MILLIS)
-            }
             //通过async获取首页需要展示的数据
             val banner = async { getBanner() }
             val articleTop = async { getArticleTop() }
@@ -89,6 +84,10 @@ class HomeViewModel : BaseViewModel() {
         val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString())
         //以get方式发起网络请求
         val response = coroutineScope { get<ArticleListBean>(request) { updateProgress(it) } }
+        //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+        if (articleListResult.value == null) {
+            transitionAnimationEnd(request, response)
+        }
         //根据接口返回更新总页码
         response.data?.pageCount?.let { updatePageCont(it.toInt()) }
         return response

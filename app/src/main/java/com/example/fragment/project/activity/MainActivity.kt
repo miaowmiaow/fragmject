@@ -65,10 +65,9 @@ class MainActivity : RouterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(R.style.AppTheme)
         WanHelper.privacyAgreement({
-            initViewModel()
             initContentView()
+            initViewModel()
         }, {
             StandardDialog.newInstance()
                 .setTitle(getString(R.string.privacy_agreement_title))
@@ -76,8 +75,8 @@ class MainActivity : RouterActivity() {
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
                         WanHelper.allowPrivacyAgreement()
-                        initViewModel()
                         initContentView()
+                        initViewModel()
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -113,6 +112,7 @@ class MainActivity : RouterActivity() {
     }
 
     private fun initContentView() {
+        setTheme(R.style.AppTheme)
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)

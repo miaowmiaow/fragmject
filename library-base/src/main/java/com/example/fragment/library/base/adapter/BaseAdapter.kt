@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.viewbinding.ViewBinding
 
 /**
@@ -67,10 +66,11 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun addData(index: Int, newData: List<T>? = null) {
         if (newData != null) {
             this.data.addAll(index, newData)
-            notifyItemRangeChanged(index, newData.size)
+            notifyDataSetChanged()
         }
     }
 
@@ -98,14 +98,6 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     fun <T> contextToT(context: Context): T {
         return context as T
     }
-
-//    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-//        super.onAttachedToRecyclerView(recyclerView)
-//        recyclerView.itemAnimator?.let {
-//            //通过关闭默认动画解决刷新闪烁问题
-//            (it as SimpleItemAnimator).supportsChangeAnimations = false
-//        }
-//    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
         return ViewBindHolder(

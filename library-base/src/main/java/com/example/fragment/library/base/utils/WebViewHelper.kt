@@ -7,7 +7,6 @@ import android.content.MutableContextWrapper
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Looper
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -242,7 +241,7 @@ class WebViewHelper private constructor(parent: ViewGroup) {
     ): WebResourceResponse? {
         try {
             val url = webRequest.url.toString()
-            val cachePath = CacheUtils.getCacheDirPath(context, "web_cache")
+            val cachePath = CacheUtils.getDirPath(context, "web_cache")
             val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
             val file = File(filePathName)
             if (!file.exists() || !file.isFile) {

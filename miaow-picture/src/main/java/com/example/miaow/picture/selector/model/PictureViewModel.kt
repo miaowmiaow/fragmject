@@ -13,26 +13,38 @@ import kotlinx.coroutines.launch
 class PictureViewModel : BaseViewModel() {
 
     companion object {
+        private const val DEFAULT_BUCKET_NAME = "所有照片"
         private const val ID = MediaStore.Files.FileColumns._ID
         private const val BUCKET_DISPLAY_NAME = "bucket_display_name"
+        private const val DATE_MODIFIED = MediaStore.Files.FileColumns.DATE_MODIFIED
         private const val DISPLAY_NAME = MediaStore.Files.FileColumns.DISPLAY_NAME
+        private const val HEIGHT = MediaStore.Files.FileColumns.HEIGHT
         private const val MEDIA_TYPE = MediaStore.Files.FileColumns.MEDIA_TYPE
         private const val MEDIA_TYPE_IMAGE = MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-        private const val MEDIA_TYPE_VIDEO = MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+        private const val MIME_TYPE = MediaStore.Files.FileColumns.MIME_TYPE
+        private const val WIDTH = MediaStore.Files.FileColumns.WIDTH
     }
 
     private val uri = MediaStore.Files.getContentUri("external")
-    private val projection = arrayOf(ID, BUCKET_DISPLAY_NAME, DISPLAY_NAME, MEDIA_TYPE)
-    private val sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
+    private val projection = arrayOf(
+        ID, BUCKET_DISPLAY_NAME, DATE_MODIFIED, DISPLAY_NAME, HEIGHT, MEDIA_TYPE, MIME_TYPE, WIDTH
+    )
+    private val sortOrder = "$DATE_MODIFIED DESC"
 
-    private val mediaResult = MutableLiveData<Map<String, List<MediaBean>>>()
+    private val mediaMap = HashMap<String, MutableList<MediaBean>>().apply {
+        this[DEFAULT_BUCKET_NAME] = ArrayList()
+    }
     val albumResult = MutableLiveData<List<AlbumBean>>()
     val currAlbumResult = MutableLiveData<List<MediaBean>>()
 
-    fun updateCurrAlbum(name: String) {
-        mediaResult.value?.let {
-            currAlbumResult.postValue(it[name])
+    fun updateMediaMap(bean: MediaBean) {
+        mediaMap.forEach {
+            it.value.add(0, bean)
         }
+    }
+
+    fun updateCurrAlbum(name: String) {
+        currAlbumResult.postValue(mediaMap[name])
     }
 
     /**
@@ -41,14 +53,11 @@ class PictureViewModel : BaseViewModel() {
     fun queryAlbum(context: Context) {
         viewModelScope.launch {
             try {
-                val mediaData = HashMap<String, MutableList<MediaBean>>().apply {
-                    this["最近项目"] = ArrayList()
-                }
                 context.contentResolver.query(uri, projection, null, null, sortOrder)?.apply {
                     while (moveToNext()) {
                         val mediaTypeIndex = getColumnIndex(MEDIA_TYPE)
                         val mediaType = getInt(mediaTypeIndex)
-                        if (mediaType == MEDIA_TYPE_IMAGE || mediaType == MEDIA_TYPE_VIDEO) {
+                        if (mediaType == MEDIA_TYPE_IMAGE) {
                             val idIndex = getColumnIndex(ID)
                             val id = getLong(idIndex)
                             val contentUri = ContentUris.withAppendedId(uri, id)
@@ -56,26 +65,33 @@ class PictureViewModel : BaseViewModel() {
                             val bucketName = getString(bucketNameIndex)
                             val nameIndex = getColumnIndex(DISPLAY_NAME)
                             val name = getString(nameIndex)
-                            val media = MediaBean(name, contentUri)
-                            if (!mediaData.containsKey(bucketName)) {
-                                mediaData[bucketName] = ArrayList()
+                            val mimeTypeIndex = getColumnIndex(MIME_TYPE)
+                            val mimeType = getString(mimeTypeIndex)
+                            val widthIndex = getColumnIndex(WIDTH)
+                            val width = getInt(widthIndex)
+                            val heightIndex = getColumnIndex(HEIGHT)
+                            val height = getInt(heightIndex)
+                            val media = MediaBean(name, contentUri, width, height, mimeType)
+                            if(bucketName != null){
+                                if (!mediaMap.containsKey(bucketName)) {
+                                    mediaMap[bucketName] = ArrayList()
+                                }
+                                mediaMap[bucketName]?.add(media)
                             }
-                            mediaData[bucketName]?.add(media)
-                            mediaData["最近项目"]?.add(media)
+                            mediaMap[DEFAULT_BUCKET_NAME]?.add(media)
                         }
                     }
                     close()
                 }
                 val albumData: MutableList<AlbumBean> = ArrayList()
-                mediaData.onEach { (key, value) ->
-                    if (value.size > 0) {
-                        val album = AlbumBean(key, value[value.size - 1].uri, value.size.toString())
-                        if (key == "最近项目") albumData.add(0, album) else albumData.add(album)
-                    }
+                mediaMap.onEach { (key, value) ->
+                    val album = AlbumBean(key, value[value.size - 1].uri, value.size.toString())
+                    if (key == DEFAULT_BUCKET_NAME)
+                        albumData.add(0, album)
+                    else albumData.add(album)
                 }
-                mediaResult.postValue(mediaData)
                 albumResult.postValue(albumData)
-                currAlbumResult.postValue(mediaData[albumData[0].name])
+                currAlbumResult.postValue(mediaMap[albumData[0].name])
             } catch (e: Exception) {
                 e.printStackTrace()
             }

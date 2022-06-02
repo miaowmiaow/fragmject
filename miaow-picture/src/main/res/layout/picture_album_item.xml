@@ -39,7 +39,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_margin="15dp"
-        android:src="@drawable/as_right"
+        android:src="@drawable/ps_right"
         android:visibility="invisible" />
 
     <View

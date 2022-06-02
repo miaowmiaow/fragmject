@@ -3,7 +3,7 @@ package com.example.fragment.library.base.http
 import com.google.gson.Gson
 import okhttp3.ResponseBody
 
-class GSonConverter : SimpleHttp.Converter {
+class GSonConverter : CoroutineHttp.Converter {
 
     companion object {
         fun create(): GSonConverter {

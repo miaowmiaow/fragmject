@@ -65,6 +65,7 @@ class MainActivity : RouterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(R.style.AppTheme)
         WanHelper.privacyAgreement({
             initContentView()
             initViewModel()
@@ -112,7 +113,6 @@ class MainActivity : RouterActivity() {
     }
 
     private fun initContentView() {
-        setTheme(R.style.AppTheme)
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)

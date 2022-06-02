@@ -32,7 +32,6 @@ class PictureEditorView @JvmOverloads constructor(
 
     companion object {
         private const val INVALID_ID = -1
-        private const val MAX_BITMAP_SIZE = 64f * 1024 * 1024
         private const val MOSAIC_COEFFICIENT = 36 //马赛克系数
         private const val BIN_WIDTH = 300
         private const val BIN_HEIGHT = 200
@@ -49,8 +48,6 @@ class PictureEditorView @JvmOverloads constructor(
 
     private var viewWidth = 0
     private var viewHeight = 0
-    private var bitmapWidth = 0
-    private var bitmapHeight = 0
     private var preScrollX = 0f
     private var preScrollY = 0f
     private val bitmapMatrix = Matrix()
@@ -76,6 +73,8 @@ class PictureEditorView @JvmOverloads constructor(
     private var bitmapPath: String? = null
     private var bitmapUri: Uri? = null
 
+    private var initScaleX = 1f
+    private var initScaleY = 1f
     private fun currScaleX() = bitmapMatrix.values()[0]
     private fun currScaleY() = bitmapMatrix.values()[4]
     fun currTranslateX() = bitmapMatrix.values()[2]
@@ -128,9 +127,10 @@ class PictureEditorView @JvmOverloads constructor(
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             e?.let { event ->
                 if (isDoubleTap) {
-                    onScale(1 / 2f, event.x, event.y)
+                    onScale(1 / initScaleY / currScaleX(), event.x, event.y)
                 } else {
-                    onScale(2f, event.x, event.y)
+                    val currBitmapWidth = bitmapRectF.width() * currScaleX()
+                    onScale(viewWidth / currBitmapWidth, event.x, event.y)
                 }
                 isDoubleTap = !isDoubleTap
             }
@@ -290,12 +290,12 @@ class PictureEditorView @JvmOverloads constructor(
         this.viewWidth = max(w, oldw)
         this.viewHeight = max(h, oldh)
         bitmapPath?.let {
-            context.getBitmapFromPath(it, viewWidth)?.let { bitmap ->
+            context.getBitmapFromPath(it)?.let { bitmap ->
                 setupBitmap(bitmap, w, h)
             }
         }
         bitmapUri?.let {
-            context.getBitmapFromUri(it, viewWidth)?.let { bitmap ->
+            context.getBitmapFromUri(it)?.let { bitmap ->
                 setupBitmap(bitmap, w, h)
             }
         }
@@ -346,35 +346,41 @@ class PictureEditorView @JvmOverloads constructor(
     }
 
     private fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
-        val sx = if (currScaleX() * scaleFactor > 1f) scaleFactor else 1 / currScaleX()
-        val sy = if (currScaleY() * scaleFactor > 1f) scaleFactor else 1 / currScaleY()
+        val sx =
+            if (currScaleX() * scaleFactor > initScaleX) scaleFactor else initScaleX / currScaleX()
+        val sy =
+            if (currScaleY() * scaleFactor > initScaleY) scaleFactor else initScaleY / currScaleY()
         bitmapMatrix.postScale(sx, sy, focusX, focusY)
         resetScaleOffset()
     }
 
     private fun resetScaleOffset() {
-        var dx = 0f
-        var dy = 0f
         val currBitmapWidth = bitmapRectF.width() * currScaleX()
-        val currBitmapHeight = bitmapRectF.height() * currScaleY()
-        if (bitmapWidth < viewWidth) {
-            dx = (viewWidth - currBitmapWidth) * 0.5f - currTranslateX()
+        val dx = if (currBitmapWidth < viewWidth) {
+            (viewWidth - currBitmapWidth) * 0.5f - currTranslateX()
         } else {
-            if (currTranslateX() > 0) {
-                dx = -currTranslateX()
-            }
-            if (currTranslateX() + currBitmapWidth < viewWidth) {
-                dx = viewWidth - currBitmapWidth - currTranslateX()
+            when {
+                currTranslateX() > 0 -> {
+                    -currTranslateX()
+                }
+                currTranslateX() + currBitmapWidth < viewWidth -> {
+                    viewWidth - currBitmapWidth - currTranslateX()
+                }
+                else -> 0f
             }
         }
-        if (bitmapHeight < viewHeight) {
-            dy = (viewHeight - currBitmapHeight) * 0.5f - currTranslateY()
+        val currBitmapHeight = bitmapRectF.height() * currScaleY()
+        val dy = if (currBitmapHeight < viewHeight) {
+            (viewHeight - currBitmapHeight) * 0.5f - currTranslateY()
         } else {
-            if (currTranslateY() > 0) {
-                dy = -currTranslateY()
-            }
-            if (currTranslateY() + currBitmapHeight < viewHeight) {
-                dy = viewHeight - currBitmapHeight - currTranslateY()
+            when {
+                currTranslateY() > 0 -> {
+                    -currTranslateY()
+                }
+                currTranslateY() + currBitmapHeight < viewHeight -> {
+                    viewHeight - currBitmapHeight - currTranslateY()
+                }
+                else -> 0f
             }
         }
         bitmapMatrix.postTranslate(dx, dy)
@@ -398,30 +404,30 @@ class PictureEditorView @JvmOverloads constructor(
     }
 
     private fun setupBitmap(bitmap: Bitmap, w: Int, h: Int) {
-        bitmapWidth = bitmap.width
-        bitmapHeight = bitmap.height
-        if (bitmap.byteCount > MAX_BITMAP_SIZE) {
-            val bitmapDensity = MAX_BITMAP_SIZE / bitmap.byteCount
-            bitmapWidth = (bitmapWidth * bitmapDensity).toInt()
-            bitmapHeight = (bitmapHeight * bitmapDensity).toInt()
-        }
-        bitmapRectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
-        if (bitmapWidth < viewWidth) {
-            val initTranslateX = (viewWidth - bitmapRectF.width() * currScaleX()) * 0.5f
+        bitmapRectF.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+        val currBitmapWidth = bitmapRectF.width() * currScaleX()
+        if (currBitmapWidth < viewWidth) {
+            val initTranslateX = (viewWidth - currBitmapWidth) * 0.5f
             val dx = initTranslateX - currTranslateX()
             bitmapMatrix.postTranslate(dx, 0f)
+        } else {
+            val scaleFactor = viewWidth.toFloat() / bitmap.width.toFloat()
+            initScaleX = scaleFactor
+            initScaleY = scaleFactor
+            bitmapMatrix.postScale(scaleFactor, scaleFactor)
         }
-        if (bitmapHeight < viewHeight) {
-            val initTranslateY = (viewHeight - bitmapRectF.height() * currScaleY()) * 0.5f
+        val currBitmapHeight = bitmapRectF.height() * currScaleY()
+        if (currBitmapHeight < viewHeight) {
+            val initTranslateY = (viewHeight - currBitmapHeight) * 0.5f
             val dy = initTranslateY - currTranslateY()
             bitmapMatrix.postTranslate(0f, dy)
         }
-        val mosaicWidth = bitmapWidth / MOSAIC_COEFFICIENT
-        val mosaicHeight = bitmapHeight / MOSAIC_COEFFICIENT
+        val mosaicWidth = bitmap.width / MOSAIC_COEFFICIENT
+        val mosaicHeight = bitmap.height / MOSAIC_COEFFICIENT
         mosaicBitmap = Bitmap.createScaledBitmap(bitmap, mosaicWidth, mosaicHeight, false)
         mosaicLayer.setParentBitmap(bitmap)
-        mosaicLayer.onSizeChanged(w, h, bitmapWidth, bitmapHeight)
-        graffitiLayer.onSizeChanged(w, h, bitmapWidth, bitmapHeight)
+        mosaicLayer.onSizeChanged(w, h, bitmap.width, bitmap.height)
+        graffitiLayer.onSizeChanged(w, h, bitmap.width, bitmap.height)
         computeBinRectF()
     }
 

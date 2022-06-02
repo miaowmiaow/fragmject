@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
 
-<!--    //context.getCacheDir()-->
+<!--    //调用：context.getCacheDir()-->
+<!--    //路径：/data/data/包名/cache-->
     <cache-path
         name="cache"
         path="." />
 
-<!--    //Environment.getExternalStorageDirectory()-->
-<!--    <external-path-->
-<!--        name="external"-->
-<!--        path="." />-->
+<!--    调用：Environment.getExternalStorageDirectory()-->
+<!--    路径：storage/emulate/0-->
+    <external-path
+        name="external"
+        path="." />
 
-<!--    //context.getExternalCacheDirs()-->
-<!--    <external-cache-path-->
-<!--        name="external-cache"-->
-<!--        path="." />-->
+<!--    调用：context.getExternalCacheDir()-->
+<!--    路径：storage/emulate/0/Android/data/包名/cache-->
+    <external-cache-path
+        name="external-cache"
+        path="." />
 
-<!--    //context.getExternalFilesDirs()-->
-<!--    <external-files-path-->
-<!--        name="external-files"-->
-<!--        path="." />-->
+<!--    调用：context.getExternalFilesDirs()-->
+<!--    路径：storage/emulate/0/Android/data/包名/files-->
+    <external-files-path
+        name="external-files"
+        path="." />
 
-<!--    //context.getFilesDir()-->
-<!--    <files-path-->
-<!--        name="files"-->
-<!--        path="." />-->
+<!--    调用：context.getExternalMediaDirs()-->
+<!--    路径：storage/emulate/0/Android/data/包名/files-->
+    <external-media-path
+        name="external-media"
+        path="." />
+
+<!--    调用：context.getFilesDir()-->
+<!--    路径：data/data/包名/cache-->
+    <files-path
+        name="files"
+        path="." />
 
 </paths>

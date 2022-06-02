@@ -5,11 +5,15 @@ import java.io.File
 
 object CacheUtils {
 
-    fun getCacheDirPath(context: Context, name: String): String {
-        return File(context.cacheDir, name).apply { mkdirs() }.absolutePath
+    fun getDirPath(context: Context, name: String): String {
+        return if (FileUtils.isSDCardAlive()) {
+            File(context.externalCacheDir, name).apply { mkdirs() }.absolutePath
+        } else {
+            File(context.cacheDir, name).apply { mkdirs() }.absolutePath
+        }
     }
 
-    fun getTotalCacheSize(context: Context): String {
+    fun getTotalSize(context: Context): String {
         var cacheSize = FileUtils.getSize(context.cacheDir)
         if (FileUtils.isSDCardAlive()) {
             context.externalCacheDir?.apply {
@@ -25,4 +29,5 @@ object CacheUtils {
             FileUtils.delete(context.externalCacheDir)
         }
     }
+
 }

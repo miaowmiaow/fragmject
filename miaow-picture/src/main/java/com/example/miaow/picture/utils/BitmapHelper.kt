@@ -13,45 +13,47 @@ import android.provider.MediaStore
 import android.widget.Toast
 import java.io.IOException
 
-fun Context.getBitmapFromPath(path: String, targetDensity: Int): Bitmap? {
+fun Context.getBitmapFromPath(path: String, targetDensity: Int? = null): Bitmap? {
     try {
         val bitmapOptions = BitmapFactory.Options()
-        bitmapOptions.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(path, bitmapOptions)
-        val bitmapWidth = bitmapOptions.outWidth
-        bitmapOptions.inJustDecodeBounds = false
-        bitmapOptions.inScaled = true
-        bitmapOptions.inDensity = bitmapWidth
-        bitmapOptions.inTargetDensity = targetDensity
+        if (targetDensity != null) {
+            bitmapOptions.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(path, bitmapOptions)
+            val bitmapWidth = bitmapOptions.outWidth
+            bitmapOptions.inJustDecodeBounds = false
+            bitmapOptions.inScaled = true
+            bitmapOptions.inDensity = bitmapWidth
+            bitmapOptions.inTargetDensity = targetDensity
+        }
         return BitmapFactory.decodeFile(path, bitmapOptions)
     } catch (e: Exception) {
         e.printStackTrace()
-        val text = "请确认存储权限。\n" + e.message
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
     }
     return null
 }
 
-fun Context.getBitmapFromUri(uri: Uri, targetDensity: Int): Bitmap? {
+fun Context.getBitmapFromUri(uri: Uri, targetDensity: Int? = null): Bitmap? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         val scheme = uri.scheme
         if (ContentResolver.SCHEME_CONTENT == scheme || ContentResolver.SCHEME_FILE == scheme) {
             try {
                 val src = ImageDecoder.createSource(contentResolver, uri)
                 return ImageDecoder.decodeBitmap(src) { decoder, info, _ ->
-                    val bitmapWidth = info.size.width
-                    val bitmapHeight = info.size.height
-                    val density = targetDensity.toFloat() / bitmapWidth.toFloat()
-                    decoder.setTargetSize(
-                        (bitmapWidth * density).toInt(),
-                        (bitmapHeight * density).toInt()
-                    )
+                    if (targetDensity != null) {
+                        val bitmapWidth = info.size.width
+                        val bitmapHeight = info.size.height
+                        val density = targetDensity.toFloat() / bitmapWidth.toFloat()
+                        decoder.setTargetSize(
+                            (bitmapWidth * density).toInt(),
+                            (bitmapHeight * density).toInt()
+                        )
+                    }
                     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
-                val text = "请确认存储权限。\n" + e.message
-                Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -82,13 +84,12 @@ fun Context.getBitmapPathFromUri(uri: Uri): String {
 
 fun Context.crQueryPath(uri: Uri, selection: String = ""): String {
     val cursor = contentResolver.query(uri, null, selection, null, null)
-    var path = ""
     if (cursor != null) {
         if (cursor.moveToFirst()) {
             val index = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
-            path = cursor.getString(index)
+            return cursor.getString(index)
         }
         cursor.close()
     }
-    return path
+    return ""
 }

@@ -92,14 +92,14 @@ class SettingFragment : RouterFragment() {
                 settingViewModel.updateScreenRecord("0")
             }
         }
-        binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
+        binding.cacheSize.text = CacheUtils.getTotalSize(activity)
         binding.clearCache.setOnClickListener {
             StandardDialog.newInstance()
                 .setContent("确定要清除缓存吗？")
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
                         CacheUtils.clearAllCache(activity)
-                        binding.cacheSize.text = CacheUtils.getTotalCacheSize(activity)
+                        binding.cacheSize.text = CacheUtils.getTotalSize(activity)
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -168,7 +168,7 @@ class SettingFragment : RouterFragment() {
                     val listener = object : StandardDialog.OnDialogClickListener {
                         override fun onConfirm(dialog: StandardDialog) {
                             val apkUrl = data.download_url
-                            val cachePath = CacheUtils.getCacheDirPath(activity, "apk")
+                            val cachePath = CacheUtils.getDirPath(activity, "apk")
                             val apkName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1)
                             val filePathName = cachePath + File.separator + apkName
                             val file = File(filePathName)

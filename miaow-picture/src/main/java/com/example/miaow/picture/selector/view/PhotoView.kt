@@ -29,6 +29,8 @@ class PhotoView @JvmOverloads constructor(
         return displayRectF
     }
 
+    private fun currScaleX() = imageMatrix.values()[0]
+    private fun currScaleY() = imageMatrix.values()[4]
     private fun currTranslateX() = imageMatrix.values()[2]
     private fun currTranslateY() = imageMatrix.values()[5]
     private fun currImageWidth() = getDisplayRectF().width()
@@ -153,7 +155,9 @@ class PhotoView @JvmOverloads constructor(
     }
 
     private fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
-        imageMatrix.postScale(scaleFactor, scaleFactor, focusX, focusY)
+        val sx = if (currScaleX() * scaleFactor > 1f) scaleFactor else 1 / currScaleX()
+        val sy = if (currScaleY() * scaleFactor > 1f) scaleFactor else 1 / currScaleY()
+        imageMatrix.postScale(sx, sy, focusX, focusY)
         checkMatrixBounds()
     }
 
@@ -182,6 +186,14 @@ class PhotoView @JvmOverloads constructor(
         }
         imageMatrix.postTranslate(dx, dy)
         postInvalidate()
+    }
+
+    fun canScrollDown(): Boolean {
+        return if (currImageHeight() < height) {
+            false
+        } else {
+            currTranslateY() != 0f
+        }
     }
 
 }

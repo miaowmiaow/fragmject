@@ -18,7 +18,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     request: HttpRequest,
     noinline progress: ((Double) -> Unit)? = null
 ): T {
-    return SimpleHttp.instance().get(request, T::class.java, progress)
+    return CoroutineHttp.instance().get(request, T::class.java, progress)
 }
 
 /**
@@ -30,7 +30,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
     request: HttpRequest,
     noinline progress: ((Double) -> Unit)? = null
 ): T {
-    return SimpleHttp.instance().post(request, T::class.java, progress)
+    return CoroutineHttp.instance().post(request, T::class.java, progress)
 }
 
 /**
@@ -42,7 +42,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
     request: HttpRequest,
     noinline progress: ((Double) -> Unit)? = null
 ): T {
-    return SimpleHttp.instance().form(request, T::class.java, progress)
+    return CoroutineHttp.instance().form(request, T::class.java, progress)
 }
 
 /**
@@ -55,29 +55,29 @@ suspend inline fun CoroutineScope.download(
     filePathName: String,
     noinline progress: ((Double) -> Unit)? = null
 ): HttpResponse {
-    return SimpleHttp.instance().download(request, filePathName, progress)
+    return CoroutineHttp.instance().download(request, filePathName, progress)
 }
 
 fun ContextWrapper.setBaseUrl(baseUrl: String) {
-    SimpleHttp.instance().setBaseUrl(baseUrl)
+    CoroutineHttp.instance().setBaseUrl(baseUrl)
 }
 
 fun ContextWrapper.setHttpClient(client: OkHttpClient) {
-    SimpleHttp.instance().setHttpClient(client)
+    CoroutineHttp.instance().setHttpClient(client)
 }
 
 /**
  * retrofit + coroutines 封装的Http工具类
  */
-class SimpleHttp private constructor() {
+class CoroutineHttp private constructor() {
 
     companion object {
 
         @Volatile
-        private var INSTANCE: SimpleHttp? = null
+        private var INSTANCE: CoroutineHttp? = null
 
-        fun instance() = INSTANCE ?: synchronized(SimpleHttp::class.java) {
-            INSTANCE ?: SimpleHttp().also { INSTANCE = it }
+        fun instance() = INSTANCE ?: synchronized(CoroutineHttp::class.java) {
+            INSTANCE ?: CoroutineHttp().also { INSTANCE = it }
         }
 
     }

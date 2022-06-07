@@ -290,12 +290,12 @@ class PictureEditorView @JvmOverloads constructor(
         this.viewWidth = max(w, oldw)
         this.viewHeight = max(h, oldh)
         bitmapPath?.let {
-            context.getBitmapFromPath(it)?.let { bitmap ->
+            context.getBitmapFromPath(it, viewWidth)?.let { bitmap ->
                 setupBitmap(bitmap, w, h)
             }
         }
         bitmapUri?.let {
-            context.getBitmapFromUri(it)?.let { bitmap ->
+            context.getBitmapFromUri(it, viewWidth)?.let { bitmap ->
                 setupBitmap(bitmap, w, h)
             }
         }

@@ -71,7 +71,13 @@ data class ArticleBean(
     val userId: String = "",
     val visible: String = "",
     val zan: String = ""
-) : Parcelable
+) : Parcelable {
+
+    fun getHttpsEnvelopePic(): String {
+        return envelopePic.replace("http://", "https://")
+    }
+
+}
 
 @Parcelize
 data class ArticleTagBean(

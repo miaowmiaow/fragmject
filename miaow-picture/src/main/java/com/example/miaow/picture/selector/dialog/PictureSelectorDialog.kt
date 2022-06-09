@@ -21,7 +21,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
+import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.utils.ActivityCallback
+import com.example.fragment.library.base.utils.PermissionsCallback
+import com.example.fragment.library.base.utils.requestCamera
 import com.example.fragment.library.base.utils.startForResult
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
@@ -165,44 +168,52 @@ class PictureSelectorDialog : FullDialog() {
         if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
             return
         }
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // 适配android 10
-            val url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            contentResolver.insert(url, ContentValues())?.let {
-                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, it)
-                startForResult(intent, object : ActivityCallback {
-                    override fun onActivityResult(resultCode: Int, data: Intent?) {
-                        val bean = MediaBean("拍照", it)
-                        selectorAdapter.addData(1, listOf(bean))
-                        viewModel.updateMediaMap(bean)
+        requestCamera(object : PermissionsCallback {
+            override fun allow() {
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    // 适配android 10
+                    val url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    contentResolver.insert(url, ContentValues())?.let {
+                        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, it)
+                        startForResult(intent, object : ActivityCallback {
+                            override fun onActivityResult(resultCode: Int, data: Intent?) {
+                                val bean = MediaBean("拍照", it)
+                                selectorAdapter.addData(1, listOf(bean))
+                                viewModel.updateMediaMap(bean)
+                            }
+                        })
                     }
-                })
-            }
-        } else {
-            File(externalCacheDir, "wan").let { parentFile ->
-                parentFile.mkdirs()
-                val imageFile = File(parentFile, "${System.currentTimeMillis()}.png")
-                val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
-                    val authority = "${packageName}.FileProvider"
-                    FileProvider.getUriForFile(this, authority, imageFile)
                 } else {
-                    Uri.fromFile(imageFile)
-                }
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-                startForResult(intent, object : ActivityCallback {
-                    override fun onActivityResult(resultCode: Int, data: Intent?) {
-                        saveSystemAlbum(BitmapFactory.decodeFile(imageFile.absolutePath)) { _, _ ->
-                            val bean = MediaBean("拍照", uri)
-                            selectorAdapter.addData(1, listOf(bean))
-                            viewModel.updateMediaMap(bean)
+                    File(externalCacheDir, "wan").let { parentFile ->
+                        parentFile.mkdirs()
+                        val imageFile = File(parentFile, "${System.currentTimeMillis()}.png")
+                        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
+                            val authority = "${packageName}.FileProvider"
+                            FileProvider.getUriForFile(this@takePicture, authority, imageFile)
+                        } else {
+                            Uri.fromFile(imageFile)
                         }
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+                        startForResult(intent, object : ActivityCallback {
+                            override fun onActivityResult(resultCode: Int, data: Intent?) {
+                                saveSystemAlbum(BitmapFactory.decodeFile(imageFile.absolutePath)) { _, _ ->
+                                    val bean = MediaBean("拍照", uri)
+                                    selectorAdapter.addData(1, listOf(bean))
+                                    viewModel.updateMediaMap(bean)
+                                }
+                            }
+                        })
                     }
-                })
+                }
             }
-        }
+
+            override fun deny() {
+                PermissionDialog.alert(this@takePicture, "相机")
+            }
+        })
     }
 
     fun setPictureSelectorCallback(callback: PictureSelectorCallback): PictureSelectorDialog {

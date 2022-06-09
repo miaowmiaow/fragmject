@@ -52,29 +52,25 @@ class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<
         }
         binding.avatar.loadCircleCrop(avatarList[position % 6])
         binding.avatar.setOnClickListener {
-            if (isHomeFragment) {
-                activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
-            }
+            activity.navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
         }
         val shareUser = "${item.author}${item.shareUser}"
         binding.shareUser.text = shareUser.ifBlank { "匿名" }
         binding.time.text = item.niceDate
         if (!item.tags.isNullOrEmpty()) {
-            binding.tag.visibility = View.VISIBLE
+            binding.tag.visibility = if (isHomeFragment) View.VISIBLE else View.GONE
             binding.tag.text = item.tags[0].name
             binding.tag.setOnClickListener {
-                if (isHomeFragment) {
-                    val uriString = "https://www.wanandroid.com${item.tags[0].url}"
-                    val uri = Uri.parse(uriString)
-                    var cid = uri.getQueryParameter(Keys.CID)
-                    if (cid.isNullOrBlank()) {
-                        val paths = uri.pathSegments
-                        if (paths != null && paths.size >= 3) {
-                            cid = paths[2]
-                        }
+                val uriString = "https://www.wanandroid.com${item.tags[0].url}"
+                val uri = Uri.parse(uriString)
+                var cid = uri.getQueryParameter(Keys.CID)
+                if (cid.isNullOrBlank()) {
+                    val paths = uri.pathSegments
+                    if (paths != null && paths.size >= 3) {
+                        cid = paths[2]
                     }
-                    activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to cid))
                 }
+                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to cid))
             }
         } else {
             binding.tag.visibility = View.GONE
@@ -90,7 +86,7 @@ class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<
         }
         if (item.envelopePic.isNotBlank()) {
             binding.image.visibility = View.VISIBLE
-            binding.image.load(item.envelopePic)
+            binding.image.load(item.getHttpsEnvelopePic())
             binding.image.outlineProvider = RoundViewOutlineProvider(15f)
             binding.image.clipToOutline = true
         } else {

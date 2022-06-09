@@ -32,7 +32,7 @@ dependencies {
     def coil_version = '2.1.0'
     def lifecycle_version = "2.4.1"
     def navigation_version  = "2.4.2"
-    def okhttp_version = '5.0.0-alpha.7'
+    def okhttp_version = '5.0.0-alpha.8'
     def room_version = "2.4.2"
 
     api fileTree(dir: "libs", include: ["*.jar"])
@@ -65,7 +65,7 @@ dependencies {
     api 'com.google.android.material:material:1.6.0'
     // kotlin 和 协程
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2'
     // okhttp 和 retrofit
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
     api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"

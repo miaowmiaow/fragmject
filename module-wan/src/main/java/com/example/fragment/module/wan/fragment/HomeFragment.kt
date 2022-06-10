@@ -9,9 +9,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.dp2px
 import com.example.fragment.library.base.utils.BannerHelper
 import com.example.fragment.library.base.utils.OnItemScrollListener
+import com.example.fragment.library.base.utils.dp2px
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout

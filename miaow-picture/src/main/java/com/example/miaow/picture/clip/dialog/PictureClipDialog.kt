@@ -25,7 +25,7 @@ class PictureClipDialog : FullDialog() {
 
     private lateinit var bitmap: Bitmap
     private var isSaving = false
-    private var callback: ClipFinishCallback? = null
+    private var callback: PictureClipCallback? = null
     private var _binding: PictureClipDialogBinding? = null
     private val binding get() = _binding!!
 
@@ -76,13 +76,13 @@ class PictureClipDialog : FullDialog() {
         return this
     }
 
-    fun setClipFinishCallback(callback: ClipFinishCallback): PictureClipDialog {
+    fun setPictureClipCallback(callback: PictureClipCallback): PictureClipDialog {
         this.callback = callback
         return this
     }
 
-    interface ClipFinishCallback {
-        fun onFinish(path: String, uri: Uri)
-    }
+}
 
+interface PictureClipCallback {
+    fun onFinish(path: String, uri: Uri)
 }

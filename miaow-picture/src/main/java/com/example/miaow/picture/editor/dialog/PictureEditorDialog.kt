@@ -18,6 +18,7 @@ import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.utils.ActivityCallback
 import com.example.fragment.library.base.utils.startForResult
+import com.example.miaow.picture.clip.dialog.PictureClipCallback
 import com.example.miaow.picture.clip.dialog.PictureClipDialog
 import com.example.miaow.picture.databinding.PictureEditorDialogBinding
 import com.example.miaow.picture.editor.bean.StickerAttrs
@@ -44,7 +45,7 @@ class PictureEditorDialog : FullDialog() {
     private val tools: MutableList<ImageView> = arrayListOf()
     private var bitmapPath: String? = null
     private var bitmapUri: Uri? = null
-    private var callback: EditorFinishCallback? = null
+    private var callback: PictureEditorCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -149,7 +150,7 @@ class PictureEditorDialog : FullDialog() {
         return this
     }
 
-    fun setEditorFinishCallback(callback: EditorFinishCallback): PictureEditorDialog {
+    fun setPictureEditorCallback(callback: PictureEditorCallback): PictureEditorDialog {
         this.callback = callback
         return this
     }
@@ -181,7 +182,7 @@ class PictureEditorDialog : FullDialog() {
     private fun openTextDialog(attrs: StickerAttrs? = null) {
         PictureTextDialog.newInstance()
             .setStickerAttrs(attrs)
-            .setTextFinishCallback(object : PictureTextDialog.TextFinishCallback {
+            .setPictureTextCallback(object : PictureTextCallback {
                 override fun onFinish(attrs: StickerAttrs) {
                     binding.picEditor.setSticker(attrs, object : OnStickerClickListener {
                         override fun onClick(attrs: StickerAttrs) {
@@ -196,7 +197,7 @@ class PictureEditorDialog : FullDialog() {
     private fun openClipDialog(bitmap: Bitmap) {
         PictureClipDialog.newInstance()
             .setBitmapResource(bitmap)
-            .setClipFinishCallback(object : PictureClipDialog.ClipFinishCallback {
+            .setPictureClipCallback(object : PictureClipCallback {
                 override fun onFinish(path: String, uri: Uri) {
                     callback?.onFinish(path, uri)
                     dismiss()
@@ -219,8 +220,8 @@ class PictureEditorDialog : FullDialog() {
         view.isSelected = true
     }
 
-    interface EditorFinishCallback {
-        fun onFinish(path: String, uri: Uri)
-    }
+}
 
+interface PictureEditorCallback {
+    fun onFinish(path: String, uri: Uri)
 }

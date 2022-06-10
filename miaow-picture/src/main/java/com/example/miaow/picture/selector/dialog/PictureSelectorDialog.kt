@@ -101,12 +101,11 @@ class PictureSelectorDialog : FullDialog() {
             if (data.isNotEmpty()) {
                 PicturePreviewDialog.newInstance()
                     .setSelectedPosition(data)
-                    .setPicturePreviewCallback(
-                        object : PicturePreviewDialog.PicturePreviewCallback {
-                            override fun onSelectedPosition(data: List<Int>) {
-                                selectorAdapter.setSelectPosition(data)
-                            }
-                        })
+                    .setPicturePreviewCallback(object : PicturePreviewCallback {
+                        override fun onFinish(selectPosition: List<Int>) {
+                            selectorAdapter.setSelectPosition(selectPosition)
+                        }
+                    })
                     .show(childFragmentManager)
             } else {
                 Toast.makeText(it.context, "请至少选择一张图片", Toast.LENGTH_SHORT).show()
@@ -122,12 +121,11 @@ class PictureSelectorDialog : FullDialog() {
             override fun onSelectClick(position: Int) {
                 PicturePreviewDialog.newInstance()
                     .setSelectedPosition(selectorAdapter.getSelectPosition(), position)
-                    .setPicturePreviewCallback(
-                        object : PicturePreviewDialog.PicturePreviewCallback {
-                            override fun onSelectedPosition(data: List<Int>) {
-                                selectorAdapter.setSelectPosition(data)
-                            }
-                        })
+                    .setPicturePreviewCallback(object : PicturePreviewCallback {
+                        override fun onFinish(selectPosition: List<Int>) {
+                            selectorAdapter.setSelectPosition(selectPosition)
+                        }
+                    })
                     .show(childFragmentManager)
             }
         })
@@ -221,8 +219,8 @@ class PictureSelectorDialog : FullDialog() {
         return this
     }
 
-    interface PictureSelectorCallback {
-        fun onSelectedData(data: List<MediaBean>)
-    }
+}
 
+interface PictureSelectorCallback {
+    fun onSelectedData(data: List<MediaBean>)
 }

@@ -13,6 +13,7 @@ import com.example.fragment.library.base.dialog.FullDialog
 import com.example.miaow.picture.R
 import com.example.miaow.picture.databinding.PicturePreviewDialogBinding
 import com.example.miaow.picture.databinding.PicturePreviewTabBinding
+import com.example.miaow.picture.editor.dialog.PictureEditorCallback
 import com.example.miaow.picture.editor.dialog.PictureEditorDialog
 import com.example.miaow.picture.selector.adapter.PicturePreviewAdapter
 import com.example.miaow.picture.selector.bean.MediaBean
@@ -66,14 +67,12 @@ class PicturePreviewDialog : FullDialog() {
         initViewModel()
     }
 
-    override fun dismiss() {
-        super.dismiss()
-        picturePreviewCallback?.onSelectedPosition(currSelectPosition)
-    }
-
     private fun initView() {
         binding.back.setOnClickListener { dismiss() }
-        binding.config.setOnClickListener { dismiss() }
+        binding.config.setOnClickListener {
+            picturePreviewCallback?.onFinish(currSelectPosition)
+            dismiss()
+        }
         binding.selectBox.setOnClickListener {
             val origPosition = if (!isSinglePicture) {
                 origSelectPosition[binding.viewpager2.currentItem]
@@ -96,7 +95,7 @@ class PicturePreviewDialog : FullDialog() {
             val currentUri = previewAdapter.getItem(binding.viewpager2.currentItem).uri
             PictureEditorDialog.newInstance()
                 .setBitmapPathOrUri(null, currentUri)
-                .setEditorFinishCallback(object : PictureEditorDialog.EditorFinishCallback {
+                .setPictureEditorCallback(object : PictureEditorCallback {
                     override fun onFinish(path: String, uri: Uri) {
                         previewAdapter.getItem(binding.viewpager2.currentItem).uri = uri
                         previewAdapter.notifyItemChanged(binding.viewpager2.currentItem)
@@ -160,11 +159,11 @@ class PicturePreviewDialog : FullDialog() {
         }
     }
 
-    fun setSelectedPosition(position: List<Int>, previewPosition: Int = -1): PicturePreviewDialog {
+    fun setSelectedPosition(selectPosition: List<Int>, previewPosition: Int = -1): PicturePreviewDialog {
         origSelectPosition.clear()
         currSelectPosition.clear()
-        origSelectPosition.addAll(position)
-        currSelectPosition.addAll(position)
+        origSelectPosition.addAll(selectPosition)
+        currSelectPosition.addAll(selectPosition)
         currPreviewPosition = previewPosition
         isSinglePicture = previewPosition != -1
         return this
@@ -175,8 +174,8 @@ class PicturePreviewDialog : FullDialog() {
         return this
     }
 
-    interface PicturePreviewCallback {
-        fun onSelectedPosition(data: List<Int>)
-    }
+}
 
+interface PicturePreviewCallback {
+    fun onFinish(selectPosition: List<Int>)
 }

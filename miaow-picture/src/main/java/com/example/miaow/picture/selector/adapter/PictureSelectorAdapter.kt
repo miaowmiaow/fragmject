@@ -23,7 +23,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
         private const val TYPE_CAMERA = 220531
     }
 
-    private val selectPosition: MutableList<Int> = ArrayList()
+    private val currSelectPosition: MutableList<Int> = ArrayList()
     private var onPictureClickListener: OnPictureClickListener? = null
 
     init {
@@ -84,30 +84,30 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             binding.image.load(item.uri)
             binding.originalBox.visibility = View.VISIBLE
         }
-        val realSelectPosition = position - 1
-        if (selectPosition.contains(realSelectPosition)) {
-            if (!selectPosition.contains(realSelectPosition)) {
-                selectPosition.add(realSelectPosition)
+        val realPosition = position - 1
+        if (currSelectPosition.contains(realPosition)) {
+            if (!currSelectPosition.contains(realPosition)) {
+                currSelectPosition.add(realPosition)
             }
             binding.dim.alpha = 0.5f
-            binding.serial.text = (selectPosition.indexOf(realSelectPosition) + 1).toString()
+            binding.serial.text = (currSelectPosition.indexOf(realPosition) + 1).toString()
             binding.originalBox.isSelected = true
         } else {
-            if (selectPosition.contains(realSelectPosition)) {
-                selectPosition.remove(realSelectPosition)
+            if (currSelectPosition.contains(realPosition)) {
+                currSelectPosition.remove(realPosition)
             }
-            binding.dim.alpha = if (selectPosition.size < 9) 0f else 0.9f
+            binding.dim.alpha = if (currSelectPosition.size < 9) 0f else 0.9f
             binding.serial.text = ""
             binding.originalBox.isSelected = false
         }
         binding.originalBox.setOnClickListener {
-            if (selectPosition.contains(realSelectPosition)) {
-                selectPosition.remove(realSelectPosition)
-            } else if (selectPosition.size < 9) {
-                selectPosition.add(realSelectPosition)
+            if (currSelectPosition.contains(realPosition)) {
+                currSelectPosition.remove(realPosition)
+            } else if (currSelectPosition.size < 9) {
+                currSelectPosition.add(realPosition)
             }
             notifyItemChanged(position)
-            selectPosition.forEach {
+            currSelectPosition.forEach {
                 notifyItemChanged(it + 1)
             }
         }
@@ -134,29 +134,42 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
     }
 
     fun setAlbumData(data: List<MediaBean>) {
-        selectPosition.clear()
+        currSelectPosition.clear()
         val newData: MutableList<MediaBean> = ArrayList()
         newData.add(MediaBean("相机", Uri.EMPTY))
         newData.addAll(data)
         setNewData(newData)
     }
 
-    fun setSelectPosition(data: List<Int>) {
-        selectPosition.clear()
-        data.forEach {
-            val realSelectPosition = it + 1
-            selectPosition.add(realSelectPosition)
-            notifyItemChanged(realSelectPosition)
+    fun setSelectPosition(selectPosition: List<Int>) {
+        val notifyPosition: MutableList<Int> = ArrayList()
+        notifyPosition.addAll(currSelectPosition)
+        currSelectPosition.forEach {
+            val realPosition = it + 1
+            if(!notifyPosition.contains(realPosition)){
+                notifyPosition.add(realPosition)
+            }
+        }
+        currSelectPosition.clear()
+        selectPosition.forEach {
+            currSelectPosition.add(it)
+            val realPosition = it + 1
+            if(!notifyPosition.contains(realPosition)){
+                notifyPosition.add(realPosition)
+            }
+        }
+        notifyPosition.forEach {
+            notifyItemChanged(it)
         }
     }
 
     fun getSelectPosition(): List<Int> {
-        return selectPosition
+        return currSelectPosition
     }
 
     fun getSelectPositionData(): List<MediaBean> {
         val data: MutableList<MediaBean> = ArrayList()
-        selectPosition.forEach { position ->
+        currSelectPosition.forEach { position ->
             data.add(getItem(position))
         }
         return data

@@ -29,7 +29,7 @@ class PictureTextDialog : FullDialog() {
     private val textColors: MutableList<RelativeLayout> = arrayListOf()
     private var _attrs: StickerAttrs? = null
     private val attrs get() = _attrs!!
-    private var callback: TextFinishCallback? = null
+    private var callback: PictureTextCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -134,12 +134,13 @@ class PictureTextDialog : FullDialog() {
         return this
     }
 
-    fun setTextFinishCallback(callback: TextFinishCallback): PictureTextDialog {
+    fun setPictureTextCallback(callback: PictureTextCallback): PictureTextDialog {
         this.callback = callback
         return this
     }
 
-    interface TextFinishCallback {
-        fun onFinish(attrs: StickerAttrs)
-    }
+}
+
+interface PictureTextCallback {
+    fun onFinish(attrs: StickerAttrs)
 }

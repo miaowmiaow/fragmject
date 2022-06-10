@@ -110,9 +110,9 @@ class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<
                 activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
             }
         }
-        if (item.collect) {
-            binding.collect.load(R.drawable.ic_collect_checked)
-            binding.collect.setOnClickListener {
+        binding.collect.load(if (item.collect) R.drawable.ic_collect_checked else R.drawable.ic_collect_unchecked_stroke)
+        binding.collect.setOnClickListener {
+            if (item.collect) {
                 CoroutineScope(Dispatchers.Main).launch {
                     val response = post<HttpResponse>(HttpRequest().apply {
                         setUrl("lg/uncollect_originId/{id}/json")
@@ -120,21 +120,18 @@ class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<
                     })
                     activity.httpParseSuccess(response) {
                         binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
+                        item.collect = false
                     }
                 }
-                item.collect = !item.collect
-            }
-        } else {
-            binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
-            binding.collect.setOnClickListener {
+            } else {
                 CoroutineScope(Dispatchers.Main).launch {
                     val request = HttpRequest("lg/collect/{id}/json").putPath("id", item.id)
                     val response = post<HttpResponse>(request)
                     activity.httpParseSuccess(response) {
                         binding.collect.load(R.drawable.ic_collect_checked)
+                        item.collect = true
                     }
                 }
-                item.collect = !item.collect
             }
         }
     }

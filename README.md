@@ -1,31 +1,26 @@
 ## 前言
 刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解。   
-开源的项目业务复杂，层层封装，用来上手实在不合适，于是便有了 `fragmject` 项目。   
+开源项目为了满足业务需求，代码层层封装，用来上手实在不合适，于是便有了 `fragmject` 项目。   
 在此感谢 [玩Android](https://www.wanandroid.com/) 提供的 [开放API](https://wanandroid.com/blog/show/2) 。
 
 ## 简介
-`fragment` 是一个为初学者准备的入门级项目，通过对 `Kotlin` 和 `Jetpack` 的系统运用，实现的一个功能完备符合主流市场标准App。
-
-本项目没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 的代码写法。
-
-代码简单，内容全面，快速上手，快速增加项目经验，对理解其他项目设计思想和封装技巧也很有帮助。
+`fragment` 是一个为初学者准备的上手项目。   
+通过对 `Kotlin` 和 `Jetpack` 的系统运用，实现的一个功能完备符合主流市场标准 App。   
+`fragment` 没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 官方的写法。   
+代码简单，内容全面，快速上手，对理解其他项目设计思想和封装技巧也很有帮助。   
 
 学习本项目你将有如下收获： 
 - Kotlin（函数进阶，泛型，反射，协程...） 
 - MVVM（ViewModel，LiveData...）
-- 单Activity应用架构（Navigation...）
+- 单 Activity 应用架构（Navigation...）
 - 常用封装(图片选择器、图片编辑器、日期控件、全面屏沉浸、屏幕录制、字节码插桩...)
 
 ## 开发环境
-为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或者以上版本。
-
-如果您不方便升级开发工具，请切换至tag [v1.2.6.1](https://github.com/miaowmiaow/fragmject/releases/tag/v1.2.6.1)
-
+为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或者以上版本。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## 前置知识
 在学习前希望您能了解以下知识，这将帮助您更快的上手本项目。
-
 - [Kotlin 语言学习 | Android Developer](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
 - [Kotlin 代码示例 | Android Developer](https://play.kotlinlang.org/byExample/overview)
 - [ViewBinding 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
@@ -106,9 +101,6 @@
 └── settings.gradle                      项目依赖配置
 ```
 
-## WebView 优化及 H5 秒开实践
-[满满的WebView优化干货，让你的H5实现秒开体验](https://juejin.cn/post/7043706765879279629)
-
 ## KVDatabase
 通过对 `RoomDatabase` 进行封装，从而更方便的实现数据持久化。   
 
@@ -121,8 +113,11 @@ KVDatabase.set(key: String, value: String)
 KVDatabase.get(key: String)
 ```
 
+## WebView 优化及 H5 秒开实践
+[满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
+
 ## SharedFlowBus
-基于SharedFlow封装的消息总线。   
+基于 `SharedFlow` 封装的消息总线。   
 
 [SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
 
@@ -158,22 +153,6 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 ### 截图展示
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-#### 接入
-第 1 步:在工程的 `build.gradle` 中添加：
-```
-allprojects {
-    repositories {
-		...
-		mavenCentral()
-	}
-}
-```
-第2步：在应用的 `build.gradle` 中添加：
-```
-dependencies {
-    implementation 'com.github.miaowmiaow.fragmject:miaow-picture:1.2.6'
-}
-```
 #### 快速使用
 ```
 PictureEditorDialog.newInstance()

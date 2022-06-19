@@ -26,8 +26,8 @@ class CoinRankFragment : RouterFragment() {
     private val viewModel: CoinRankViewModel by viewModels()
     private var _binding: CoinRankFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val coinRankAdapter = CoinRankAdapter()
+    private var _coinRankAdapter: CoinRankAdapter? = null
+    private val coinRankAdapter get() = _coinRankAdapter!!
     private val backPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             backPressedDialog()
@@ -40,6 +40,7 @@ class CoinRankFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = CoinRankFragmentBinding.inflate(inflater, container, false)
+        _coinRankAdapter = CoinRankAdapter()
         return binding.root
     }
 
@@ -67,6 +68,7 @@ class CoinRankFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _coinRankAdapter = null
         _binding = null
     }
 

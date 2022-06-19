@@ -19,9 +19,10 @@ class SexDialog : BottomDialog() {
 
     private var _binding: SexDialogBinding? = null
     private val binding get() = _binding!!
+    private var _listener: SexListener? = null
+    private val listener get() = _listener!!
     private val sexViews = arrayListOf<View>()
     private var sexIndex = -1
-    private var listener: SexListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +36,7 @@ class SexDialog : BottomDialog() {
     override fun onDestroyView() {
         super.onDestroyView()
         setNavigationBar(binding.root, Color.TRANSPARENT, true)
+        _listener = null
         _binding = null
     }
 
@@ -49,17 +51,17 @@ class SexDialog : BottomDialog() {
         }
         binding.secrecy.setOnClickListener {
             selectionSex(0)
-            listener?.onSex("保密")
+            listener.onSex("保密")
             dismiss()
         }
         binding.male.setOnClickListener {
             selectionSex(1)
-            listener?.onSex("男生")
+            listener.onSex("男生")
             dismiss()
         }
         binding.female.setOnClickListener {
             selectionSex(2)
-            listener?.onSex("女生")
+            listener.onSex("女生")
             dismiss()
         }
         selectionSex(sexIndex)
@@ -87,7 +89,7 @@ class SexDialog : BottomDialog() {
     }
 
     fun setSexListener(listener: SexListener): SexDialog {
-        this.listener = listener
+        this._listener = listener
         return this
     }
 

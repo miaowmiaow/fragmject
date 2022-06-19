@@ -26,11 +26,13 @@ class BirthdayDialog : BottomDialog() {
 
     private var _binding: BirthdayDialogBinding? = null
     private val binding get() = _binding!!
+    private var _listener: BirthdayListener? = null
+    private val listener get() = _listener!!
     private val yearData: MutableList<String> = arrayListOf()
     private val monthData: MutableList<String> = arrayListOf()
     private val dayData: MutableList<String> = arrayListOf()
     private var birthday = TimeUtil.currentData("yyyy-MM-dd")
-    private var listener: BirthdayListener? = null
+
 
     private val yearAdapter = object : BaseAdapter<String>() {
 
@@ -96,6 +98,7 @@ class BirthdayDialog : BottomDialog() {
     override fun onDestroyView() {
         super.onDestroyView()
         setNavigationBar(binding.root, Color.TRANSPARENT, true)
+        _listener = null
         _binding = null
     }
 
@@ -104,14 +107,14 @@ class BirthdayDialog : BottomDialog() {
         setNavigationBar(binding.root, Color.WHITE, true)
         binding.cancel.setOnClickListener { dismiss() }
         binding.secrecy.setOnClickListener {
-            listener?.onBirthday("保密")
+            listener.onBirthday("保密")
             dismiss()
         }
         binding.config.setOnClickListener {
             val currYear = yearData[binding.year.findCenterItemPosition()]
             val currMonth = monthData[binding.month.findCenterItemPosition()]
             val currDay = dayData[binding.day.findCenterItemPosition()]
-            listener?.onBirthday("$currYear-${currMonth}-${currDay}")
+            listener.onBirthday("$currYear-${currMonth}-${currDay}")
             dismiss()
         }
         binding.year.layoutManager = LinearLayoutManager(binding.year.context)
@@ -142,7 +145,7 @@ class BirthdayDialog : BottomDialog() {
     }
 
     fun setBirthdayListener(listener: BirthdayListener): BirthdayDialog {
-        this.listener = listener
+        this._listener = listener
         return this
     }
 

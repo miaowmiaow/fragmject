@@ -23,18 +23,10 @@ class MyCoinFragment : RouterFragment() {
     private val viewModel: MyCoinViewModel by viewModels()
     private var _binding: MyCoinFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val coinRecordAdapter = MyCoinAdapter()
-    private val coinCountAnimator = ValueAnimator()
-
-    init {
-        coinCountAnimator.addUpdateListener {
-            val value = it.animatedValue as Int
-            binding.coinCount.text = String.format("%d", value)
-        }
-        coinCountAnimator.duration = 1000
-        coinCountAnimator.interpolator = DecelerateInterpolator()
-    }
+    private var _coinRecordAdapter: MyCoinAdapter? = null
+    private val coinRecordAdapter get() = _coinRecordAdapter!!
+    private var _coinCountAnimator: ValueAnimator? = null
+    private val coinCountAnimator get() = _coinCountAnimator!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,12 +34,22 @@ class MyCoinFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = MyCoinFragmentBinding.inflate(inflater, container, false)
+        _coinRecordAdapter = MyCoinAdapter()
+        _coinCountAnimator = ValueAnimator()
+        coinCountAnimator.addUpdateListener {
+            val value = it.animatedValue as Int
+            binding.coinCount.text = String.format("%d", value)
+        }
+        coinCountAnimator.duration = 1000
+        coinCountAnimator.interpolator = DecelerateInterpolator()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         coinCountAnimator.cancel()
+        _coinCountAnimator = null
+        _coinRecordAdapter = null
         _binding = null
     }
 

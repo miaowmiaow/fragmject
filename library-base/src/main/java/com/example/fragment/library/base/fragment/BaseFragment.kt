@@ -12,6 +12,9 @@ import coil.load
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.model.BaseViewModel
 
+/**
+ * 注意：Fragment 的存在时间比其视图长。请务必在 Fragment 的 onDestroyView() 方法中清除对视图的所有引用。
+ */
 abstract class BaseFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -34,6 +37,13 @@ abstract class BaseFragment : Fragment() {
             loadGif.dispose()
             loadGif.visibility = View.GONE
         })
+    }
+
+    /**
+     * Fragment 的存在时间比其视图长，所有视图的引用都必须在此进行清除
+     */
+    override fun onDestroyView() {
+        super.onDestroyView()
     }
 
     abstract fun initView()

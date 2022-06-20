@@ -106,6 +106,7 @@ class PicturePreviewDialog : FullDialog() {
                 .show(childFragmentManager)
         }
         binding.viewpager2.adapter = previewAdapter
+        binding.viewpager2.offscreenPageLimit = 2
         binding.viewpager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)

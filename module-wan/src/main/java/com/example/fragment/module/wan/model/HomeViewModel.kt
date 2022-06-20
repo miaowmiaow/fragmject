@@ -16,15 +16,14 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel : BaseViewModel() {
 
-    private val bannerResult = MutableLiveData<BannerListBean>()
-
-    fun bannerResult(): LiveData<BannerListBean> {
-        return bannerResult
-    }
+    var listScroll: Int = 0
+    var listData: List<ArticleBean> = ArrayList()
 
     private val articleListResult: MutableLiveData<List<ArticleBean>> by lazy {
         MutableLiveData<List<ArticleBean>>().also {
-            getArticleHome()
+            if (listData.isNullOrEmpty()) {
+                getArticleHome()
+            }
         }
     }
 
@@ -39,13 +38,12 @@ class HomeViewModel : BaseViewModel() {
             val banner = async { getBanner() }
             val articleTop = async { getArticleTop() }
             val articleList = async { getArticleList(getHomePage()) }
-            val bannerData = banner.await()
             //通过LiveData通知界面更新
             val articleData: MutableList<ArticleBean> = arrayListOf()
+            banner.await().data?.let { articleData.add(ArticleBean(banners = it, viewType = 0)) }
             articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
             articleList.await().data?.datas?.let { articleData.addAll(it) }
             articleListResult.postValue(articleData)
-            bannerResult.postValue(bannerData)
         }
     }
 

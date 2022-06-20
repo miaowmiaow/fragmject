@@ -18,7 +18,8 @@ class WebFragment : RouterFragment() {
 
     private var _binding: WebFragmentBinding? = null
     private val binding get() = _binding!!
-    private lateinit var webViewHelper: WebViewHelper
+    private var _webViewHelper: WebViewHelper? = null
+    private val webViewHelper get() = _webViewHelper!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,12 +43,13 @@ class WebFragment : RouterFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         webViewHelper.onDestroyView()
+        _webViewHelper = null
         _binding = null
     }
 
     override fun initView() {
         val url = Uri.decode(requireArguments().getString(Keys.URL))
-        webViewHelper = WebViewHelper.with(binding.webContainer)
+        _webViewHelper = WebViewHelper.with(binding.webContainer)
             .injectVConsole(false)
             .setOnPageChangedListener(object : WebViewHelper.OnPageChangedListener {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {

@@ -1,11 +1,15 @@
 package com.example.fragment.library.common.bean
 
+import android.os.Parcelable
 import com.example.fragment.library.base.http.HttpResponse
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class BannerListBean(
     val data: List<BannerBean>? = null
-) : HttpResponse()
+) : HttpResponse(), Parcelable
 
+@Parcelize
 data class BannerBean(
     val desc: String = "",
     val id: String = "",
@@ -15,4 +19,4 @@ data class BannerBean(
     val title: String = "",
     val type: String = "",
     val url: String = ""
-)
+) : Parcelable

@@ -12,15 +12,15 @@ import kotlinx.coroutines.launch
 
 class SystemViewModel : BaseViewModel() {
 
-    val systemArticleResultMap: MutableMap<String, List<ArticleBean>> = HashMap()
-    val systemArticleScrollMap: MutableMap<String, Int> = HashMap()
+    val listDataMap: MutableMap<String, List<ArticleBean>> = HashMap()
+    val listScrollMap: MutableMap<String, Int> = HashMap()
 
     private var cid: String = ""
     private val systemArticleResult = MutableLiveData<Map<String, ArticleListBean>>()
 
     fun systemArticleResult(cid: String): LiveData<Map<String, ArticleListBean>> {
         this.cid = cid
-        if (!systemArticleResultMap.containsKey(cid)) {
+        if (!listDataMap.containsKey(cid)) {
             getSystemArticleHome(cid)
         }
         return systemArticleResult
@@ -51,7 +51,7 @@ class SystemViewModel : BaseViewModel() {
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request) { updateProgress(it) }
             //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (!systemArticleResultMap.containsKey(cid)) {
+            if (!listDataMap.containsKey(cid)) {
                 transitionAnimationEnd(request, response)
             }
             //根据接口返回更新总页码

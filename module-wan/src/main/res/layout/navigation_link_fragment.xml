@@ -10,14 +10,14 @@
         android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/menu"
+            android:id="@+id/list"
             android:layout_width="150dp"
             android:layout_height="match_parent" />
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_toEndOf="@id/menu"
+            android:layout_toEndOf="@id/list"
             android:background="@color/white"
             android:paddingLeft="11dp"
             android:paddingTop="5dp"

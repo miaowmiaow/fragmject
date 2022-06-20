@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.launch
@@ -27,9 +28,9 @@ class SearchViewModel : BaseViewModel() {
     }
 
     private var key: String = ""
-    private val articleQueryResult = MutableLiveData<ArticleListBean>()
+    private val articleQueryResult = MutableLiveData<List<ArticleBean>>()
 
-    fun articleQueryResult(key: String): LiveData<ArticleListBean> {
+    fun articleQueryResult(key: String): LiveData<List<ArticleBean>> {
         this.key = key
         return articleQueryResult
     }
@@ -65,7 +66,7 @@ class SearchViewModel : BaseViewModel() {
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt()) }
             //通过LiveData通知界面更新
-            articleQueryResult.postValue(response)
+            response.data?.datas?.let { articleQueryResult.postValue(it) }
         }
     }
 

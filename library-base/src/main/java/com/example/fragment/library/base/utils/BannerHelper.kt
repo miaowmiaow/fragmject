@@ -14,7 +14,7 @@ class BannerHelper(
     val recyclerView: RecyclerView,
     @RecyclerView.Orientation
     val orientation: Int,
-    lifecycle: Lifecycle
+    lifecycle: Lifecycle? = null
 ) : DefaultLifecycleObserver {
 
     private val layoutManager = RepeatLayoutManager(recyclerView.context)
@@ -26,7 +26,7 @@ class BannerHelper(
     private var listener: OnItemScrollListener? = null
 
     init {
-        lifecycle.addObserver(this)
+        lifecycle?.addObserver(this)
         layoutManager.orientation = orientation
         recyclerView.layoutManager = layoutManager
         recyclerView.setOnTouchListener { _, event ->

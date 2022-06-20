@@ -12,15 +12,15 @@ import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
-    val projectListResultMap: MutableMap<String, List<ArticleBean>> = HashMap()
-    val projectListScrollMap: MutableMap<String, Int> = HashMap()
+    val listScrollMap: MutableMap<String, Int> = HashMap()
+    val listDataMap: MutableMap<String, List<ArticleBean>> = HashMap()
 
     private var cid: String = ""
     private val projectListResult = MutableLiveData<Map<String, ArticleListBean>>()
 
     fun projectListResult(cid: String): LiveData<Map<String, ArticleListBean>> {
         this.cid = cid
-        if (!projectListResultMap.containsKey(cid)) {
+        if (!listDataMap.containsKey(cid)) {
             getProjectHome(cid)
         }
         return projectListResult
@@ -51,7 +51,7 @@ class ProjectViewModel : BaseViewModel() {
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request) { updateProgress(it) }
             //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (projectListResultMap[cid].isNullOrEmpty()) {
+            if (listDataMap[cid].isNullOrEmpty()) {
                 transitionAnimationEnd(request, response)
             }
             //根据接口返回更新总页码

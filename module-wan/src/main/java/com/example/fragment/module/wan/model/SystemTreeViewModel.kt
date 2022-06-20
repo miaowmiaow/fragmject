@@ -6,15 +6,22 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.bean.NavigationBean
 import com.example.fragment.library.common.bean.SystemTreeBean
 import com.example.fragment.library.common.bean.SystemTreeListBean
 import kotlinx.coroutines.launch
 
 class SystemTreeViewModel : BaseViewModel() {
 
+    var listData: List<SystemTreeBean> = ArrayList()
+    var listScroll: Int = 0
+
     private val systemTreeResult: MutableLiveData<List<SystemTreeBean>> by lazy {
         MutableLiveData<List<SystemTreeBean>>().also {
-            getSystemTree()
+            if (listData.isEmpty()) {
+                getSystemTree()
+            }
         }
     }
 

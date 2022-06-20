@@ -70,7 +70,9 @@ data class ArticleBean(
     val type: String = "",
     val userId: String = "",
     val visible: String = "",
-    val zan: String = ""
+    val zan: String = "",
+    val banners: List<BannerBean>? = null,
+    var viewType: Int = 1
 ) : Parcelable {
 
     fun getHttpsEnvelopePic(): String {

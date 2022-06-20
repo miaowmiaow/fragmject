@@ -34,7 +34,6 @@ class ProjectArticleFragment : RouterFragment() {
     private var _articleAdapter: ArticleAdapter? = null
     private val articleAdapter get() = _articleAdapter!!
     private var cid = ""
-    private var listOffsetY = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,8 +48,7 @@ class ProjectArticleFragment : RouterFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         //将数据缓存在 ViewModel 中来提升用户体验
-        viewModel.projectListResultMap[cid] = articleAdapter.getData() as List<ArticleBean>
-        viewModel.projectListScrollMap[cid] = listOffsetY
+        viewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
         _articleAdapter = null
         _binding = null
     }
@@ -63,7 +61,7 @@ class ProjectArticleFragment : RouterFragment() {
         binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                listOffsetY += dy
+                viewModel.listScrollMap[cid]?.plus(dy)
             }
         })
         //下拉刷新
@@ -79,11 +77,11 @@ class ProjectArticleFragment : RouterFragment() {
             }
         })
         //将数据从 ViewModel 取出渲染
-        if (viewModel.projectListResultMap.containsKey(cid)) {
-            articleAdapter.setNewData(viewModel.projectListResultMap[cid])
+        if (viewModel.listDataMap.containsKey(cid)) {
+            articleAdapter.setNewData(viewModel.listDataMap[cid])
         }
-        if (viewModel.projectListScrollMap.containsKey(cid)) {
-            binding.list.scrollTo(0, viewModel.projectListScrollMap[cid] ?: 0)
+        if (viewModel.listScrollMap.containsKey(cid)) {
+            binding.list.scrollTo(0, viewModel.listScrollMap[cid] ?: 0)
         }
     }
 

@@ -141,14 +141,10 @@ class SearchFragment : RouterFragment() {
         }
         val key = binding.search.text.toString()
         searchViewModel.articleQueryResult(key).observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
-                result.data?.datas?.let { data ->
-                    if (searchViewModel.isHomePage()) {
-                        articleAdapter.setNewData(data)
-                    } else {
-                        articleAdapter.addData(data)
-                    }
-                }
+            if (searchViewModel.isHomePage()) {
+                articleAdapter.setNewData(it)
+            } else {
+                articleAdapter.addData(it)
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()

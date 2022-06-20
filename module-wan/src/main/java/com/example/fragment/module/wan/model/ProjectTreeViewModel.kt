@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.bean.ProjectTreeListBean
 import kotlinx.coroutines.launch

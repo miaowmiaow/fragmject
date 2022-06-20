@@ -9,36 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.example.fragment.library.base.view.CoordinatorLayout
-            android:id="@+id/coordinator"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="175dp">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="175dp" />
-
-                <LinearLayout
-                    android:id="@+id/indicator"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_margin="10dp"
-                    android:gravity="center"
-                    android:orientation="horizontal" />
-            </RelativeLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </com.example.fragment.library.base.view.CoordinatorLayout>
+            android:layout_height="match_parent" />
 
     </com.example.fragment.library.base.view.pull.PullRefreshLayout>
 

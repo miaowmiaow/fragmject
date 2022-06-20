@@ -50,7 +50,7 @@ class MainFragment : RouterFragment() {
         _hotKeyAdapter = HotKeyAdapter()
         binding.hotKey.adapter = hotKeyAdapter
         _hotKeyHelper = BannerHelper(
-            binding.hotKey, RecyclerView.HORIZONTAL, viewLifecycleOwner.lifecycle
+            binding.hotKey, RecyclerView.VERTICAL, viewLifecycleOwner.lifecycle
         )
         return binding.root
     }

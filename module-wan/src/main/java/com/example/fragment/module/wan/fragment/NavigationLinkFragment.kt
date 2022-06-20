@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
@@ -47,19 +48,26 @@ class NavigationLinkFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.listData = linkMenuAdapter.getData()
         _linkMenuAdapter = null
         _binding = null
     }
 
     override fun initView() {
         //导航列表
-        binding.menu.layoutManager = LinearLayoutManager(binding.menu.context)
-        binding.menu.adapter = linkMenuAdapter
+        binding.list.layoutManager = LinearLayoutManager(binding.list.context)
+        binding.list.adapter = linkMenuAdapter
+        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                viewModel.listScroll += dy
+            }
+        })
         linkMenuAdapter.setOnItemSelectedListener(object : BaseAdapter.OnItemSelectedListener {
             override fun onItemSelected(itemView: View, position: Int) {
                 val item = linkMenuAdapter.getItem(position)
                 item.isSelected = true
-                binding.menu.findViewHolderForAdapterPosition(position)?.apply {
+                binding.list.findViewHolderForAdapterPosition(position)?.apply {
                     if (this is BaseAdapter.ViewBindHolder) {
                         getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_white_top0_5bottom0_5_line)
                     }
@@ -70,13 +78,20 @@ class NavigationLinkFragment : RouterFragment() {
             override fun onItemUnselected(itemView: View, position: Int) {
                 val item = linkMenuAdapter.getItem(position)
                 item.isSelected = false
-                binding.menu.findViewHolderForAdapterPosition(position)?.apply {
+                binding.list.findViewHolderForAdapterPosition(position)?.apply {
                     if (this is BaseAdapter.ViewBindHolder) {
                         getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_gray_bottom1_line)
                     }
                 }
             }
         })
+        //将数据从 ViewModel 取出渲染
+        if (viewModel.listData.isNotEmpty()) {
+            linkMenuAdapter.setNewData(viewModel.listData)
+        }
+        if (viewModel.listScroll > 0) {
+            binding.list.scrollTo(0, viewModel.listScroll)
+        }
     }
 
     override fun initViewModel(): BaseViewModel {

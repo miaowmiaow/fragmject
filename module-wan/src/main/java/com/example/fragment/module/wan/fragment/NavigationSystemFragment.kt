@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.SystemAdapter
@@ -39,6 +40,7 @@ class NavigationSystemFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.listData = systemAdapter.getData()
         _systemAdapter = null
         _binding = null
     }
@@ -47,6 +49,12 @@ class NavigationSystemFragment : RouterFragment() {
         //体系列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = systemAdapter
+        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                viewModel.listScroll += dy
+            }
+        })
     }
 
     override fun initViewModel(): BaseViewModel {

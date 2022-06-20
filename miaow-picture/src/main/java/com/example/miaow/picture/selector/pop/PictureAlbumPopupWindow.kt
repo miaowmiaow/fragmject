@@ -16,13 +16,11 @@ class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
 
     private var _binding: PictureAlbumPopupWindowBinding? = null
     private val binding get() = _binding!!
-    private var _albumAdapter: PictureAlbumAdapter? = null
-    private val albumAdapter get() = _albumAdapter!!
-    private var _listener: OnAlbumSelectedListener? = null
+    private var albumAdapter = PictureAlbumAdapter()
+    private var listener: OnAlbumSelectedListener? = null
 
     init {
         _binding = PictureAlbumPopupWindowBinding.inflate(LayoutInflater.from(context))
-        _albumAdapter = PictureAlbumAdapter()
         contentView = binding.root
         this.width = LayoutParams.MATCH_PARENT
         this.isFocusable = false
@@ -33,8 +31,6 @@ class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
 
     override fun dismiss() {
         super.dismiss()
-        _albumAdapter = null
-        _listener = null
         _binding = null
     }
 
@@ -44,7 +40,7 @@ class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
         albumAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 albumAdapter.setSelectedPosition(position)
-                _listener?.onAlbumSelected(albumAdapter.getItem(position).name)
+                listener?.onAlbumSelected(albumAdapter.getItem(position).name)
                 dismiss()
             }
         })
@@ -60,7 +56,7 @@ class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
     }
 
     fun setOnAlbumSelectedListener(listener: OnAlbumSelectedListener) {
-        this._listener = listener
+        this.listener = listener
     }
 
     interface OnAlbumSelectedListener {

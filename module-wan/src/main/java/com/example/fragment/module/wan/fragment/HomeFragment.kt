@@ -34,10 +34,12 @@ class HomeFragment : RouterFragment() {
     private val viewModel: HomeViewModel by viewModels()
     private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val articleAdapter = ArticleAdapter(true)
-    private lateinit var bannerHelper: BannerHelper
-    private val bannerAdapter = BannerAdapter()
+    private var _bannerHelper: BannerHelper? = null
+    private val bannerHelper get() = _bannerHelper!!
+    private var _bannerAdapter: BannerAdapter? = null
+    private val bannerAdapter get() = _bannerAdapter!!
+    private var _articleAdapter: ArticleAdapter? = null
+    private val articleAdapter get() = _articleAdapter!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,30 +47,24 @@ class HomeFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = HomeFragmentBinding.inflate(inflater, container, false)
+        _articleAdapter = ArticleAdapter()
+        _bannerAdapter = BannerAdapter()
+        binding.banner.adapter = bannerAdapter
+        _bannerHelper = BannerHelper(
+            binding.banner, RecyclerView.HORIZONTAL, viewLifecycleOwner.lifecycle
+        )
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        bannerHelper.start()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        bannerHelper.stop()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        bannerHelper.stop()
+        _articleAdapter = null
+        _bannerAdapter = null
+        _bannerHelper = null
         _binding = null
     }
 
     override fun initView() {
-        binding.banner.adapter = bannerAdapter
-        bannerHelper = BannerHelper(
-            binding.banner, RecyclerView.HORIZONTAL, viewLifecycleOwner.lifecycle
-        )
         bannerHelper.setOnItemScrollListener(object : OnItemScrollListener {
             override fun onItemScroll(position: Int) {
                 makeSureIndicator(position)
@@ -136,12 +132,14 @@ class HomeFragment : RouterFragment() {
     }
 
     private fun makeSureIndicator(position: Int) {
-        val itemCount = binding.indicator.childCount
-        if (position in 0 until itemCount) {
-            for (i in 0 until itemCount) {
-                binding.indicator.getChildAt(i).isSelected = false
+        binding.indicator.post {
+            val itemCount = binding.indicator.childCount
+            if (position in 0 until itemCount) {
+                for (i in 0 until itemCount) {
+                    binding.indicator.getChildAt(i).isSelected = false
+                }
+                binding.indicator.getChildAt(position).isSelected = true
             }
-            binding.indicator.getChildAt(position).isSelected = true
         }
     }
 

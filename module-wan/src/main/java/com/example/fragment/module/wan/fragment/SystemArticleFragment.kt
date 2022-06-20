@@ -31,8 +31,8 @@ class SystemArticleFragment : RouterFragment() {
     private val viewModel: SystemViewModel by activityViewModels()
     private var _binding: SystemArticleFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val articleAdapter = ArticleAdapter()
+    private var _articleAdapter: ArticleAdapter? = null
+    private val articleAdapter get() = _articleAdapter!!
     private var cid = ""
     private var listOffsetY = 0
 
@@ -42,6 +42,7 @@ class SystemArticleFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = SystemArticleFragmentBinding.inflate(inflater, container, false)
+        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
@@ -49,6 +50,7 @@ class SystemArticleFragment : RouterFragment() {
         super.onDestroyView()
         viewModel.systemArticleResultMap[cid] = articleAdapter.getData() as List<ArticleBean>
         viewModel.systemArticleScrollMap[cid] = listOffsetY
+        _articleAdapter = null
         _binding = null
     }
 

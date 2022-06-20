@@ -33,30 +33,10 @@ class SearchFragment : RouterFragment() {
     private val searchViewModel: SearchViewModel by viewModels()
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val historySearchAdapter = SearchHistoryAdapter()
-    private val historySearchClickListener = object : BaseAdapter.OnItemClickListener {
-        override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
-            historySearchAdapter.getItem(position).apply {
-                search(this)
-            }
-        }
-    }
-    private val historySearchChildClickListener = object : BaseAdapter.OnItemChildClickListener {
-        override fun onItemChildClick(
-            view: View,
-            holder: BaseAdapter.ViewBindHolder,
-            position: Int
-        ) {
-            if (view.id == R.id.delete) {
-                historySearchAdapter.removeData(position)
-                val data = historySearchAdapter.getData()
-                binding.searchHistory.visibility = if (data.isNotEmpty()) VISIBLE else GONE
-                WanHelper.setSearchHistory(data)
-            }
-        }
-    }
-    private val articleAdapter = ArticleAdapter()
+    private var _articleAdapter: ArticleAdapter? = null
+    private val articleAdapter get() = _articleAdapter!!
+    private var _historySearchAdapter: SearchHistoryAdapter? = null
+    private val historySearchAdapter get() = _historySearchAdapter!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,6 +44,8 @@ class SearchFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = SearchFragmentBinding.inflate(inflater, container, false)
+        _articleAdapter = ArticleAdapter()
+        _historySearchAdapter = SearchHistoryAdapter()
         return binding.root
     }
 
@@ -74,6 +56,8 @@ class SearchFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _articleAdapter = null
+        _historySearchAdapter = null
         _binding = null
     }
 
@@ -96,8 +80,28 @@ class SearchFragment : RouterFragment() {
         //搜索历史
         binding.historyList.layoutManager = LinearLayoutManager(binding.list.context)
         binding.historyList.adapter = historySearchAdapter
-        historySearchAdapter.setOnItemClickListener(historySearchClickListener)
-        historySearchAdapter.setOnItemChildClickListener(historySearchChildClickListener)
+        historySearchAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
+            override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
+                historySearchAdapter.getItem(position).apply {
+                    search(this)
+                }
+            }
+        })
+        historySearchAdapter.setOnItemChildClickListener(
+            object : BaseAdapter.OnItemChildClickListener {
+                override fun onItemChildClick(
+                    view: View,
+                    holder: BaseAdapter.ViewBindHolder,
+                    position: Int
+                ) {
+                    if (view.id == R.id.delete) {
+                        historySearchAdapter.removeData(position)
+                        val data = historySearchAdapter.getData()
+                        binding.searchHistory.visibility = if (data.isNotEmpty()) VISIBLE else GONE
+                        WanHelper.setSearchHistory(data)
+                    }
+                }
+            })
         //搜索结果列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter

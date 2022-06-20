@@ -5,11 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.MutableContextWrapper
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Looper
+import android.util.Base64
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.URLUtil
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebSettingsCompat.FORCE_DARK_OFF
 import androidx.webkit.WebSettingsCompat.FORCE_DARK_ON
@@ -115,9 +119,22 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         }
         webView.setOnLongClickListener {
             val result = webView.hitTestResult
+            var data = result.extra
             when (result.type) {
                 IMAGE_TYPE, SRC_IMAGE_ANCHOR_TYPE -> {
-                    println(result.extra)
+                    if (URLUtil.isValidUrl(data)) {
+                        webView.context.imageDownload(data, {
+                            val bitmap = (it as BitmapDrawable).bitmap
+                            webView.context.saveSystemAlbum(bitmap) { _, _ -> }
+                        })
+                    } else {
+                        if (data.contains(",")) {
+                            data = data.split(",")[1]
+                        }
+                        val array = Base64.decode(data, Base64.NO_WRAP)
+                        val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
+                        webView.context.saveSystemAlbum(bitmap) { _, _ -> }
+                    }
                     true
                 }
                 else -> false
@@ -387,6 +404,8 @@ class WebViewManager private constructor() {
             if (parent != null) {
                 (parent as ViewGroup).removeView(webView)
             }
+            val contextWrapper = webView.context as MutableContextWrapper
+            contextWrapper.baseContext = webView.context.applicationContext
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {

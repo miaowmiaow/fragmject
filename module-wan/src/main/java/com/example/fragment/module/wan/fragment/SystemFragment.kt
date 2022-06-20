@@ -21,7 +21,6 @@ class SystemFragment : RouterFragment() {
     private val viewModel: SystemTreeViewModel by activityViewModels()
     private var _binding: SystemFragmentBinding? = null
     private val binding get() = _binding!!
-
     private var cid = ""
 
     override fun onCreateView(
@@ -66,7 +65,10 @@ class SystemFragment : RouterFragment() {
         binding.title.text = treeBean.name
         treeBean.children?.let { data ->
             //TabLayout与ViewPager2
-            binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
+            binding.viewpager2.adapter = object : FragmentStateAdapter(
+                childFragmentManager,
+                viewLifecycleOwner.lifecycle
+            ) {
                 override fun getItemCount(): Int {
                     return data.size
                 }

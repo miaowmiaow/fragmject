@@ -36,9 +36,10 @@ class MainFragment : RouterFragment() {
     private val viewModel: HotKeyViewModel by activityViewModels()
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private lateinit var hotKeyHelper: BannerHelper
-    private val hotKeyAdapter = HotKeyAdapter()
+    private var _hotKeyHelper: BannerHelper? = null
+    private val hotKeyHelper get() = _hotKeyHelper!!
+    private var _hotKeyAdapter: HotKeyAdapter? = null
+    private val hotKeyAdapter get() = _hotKeyAdapter!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,11 +47,18 @@ class MainFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
+        _hotKeyAdapter = HotKeyAdapter()
+        binding.hotKey.adapter = hotKeyAdapter
+        _hotKeyHelper = BannerHelper(
+            binding.hotKey, RecyclerView.HORIZONTAL, viewLifecycleOwner.lifecycle
+        )
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _hotKeyAdapter = null
+        _hotKeyHelper = null
         _binding = null
     }
 
@@ -58,15 +66,11 @@ class MainFragment : RouterFragment() {
         binding.search.setOnClickListener { search() }
         binding.userShare.setOnClickListener { activity.navigation(Router.USER_SHARE) }
         //滚动热词
-        binding.hotKey.adapter = hotKeyAdapter
         hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
                 search()
             }
         })
-        hotKeyHelper = BannerHelper(
-            binding.hotKey, RecyclerView.VERTICAL, viewLifecycleOwner.lifecycle
-        )
         //TabLayout与ViewPager2
         val tabName = arrayOf("首页", "导航", "问答", "项目", "我的")
         val tabIcon = intArrayOf(
@@ -76,7 +80,10 @@ class MainFragment : RouterFragment() {
             R.drawable.ic_bottom_bar_system,
             R.drawable.ic_bottom_bar_project
         )
-        binding.viewpager2.adapter = object : FragmentStateAdapter(activity) {
+        binding.viewpager2.adapter = object : FragmentStateAdapter(
+            childFragmentManager,
+            viewLifecycleOwner.lifecycle
+        ) {
             override fun getItemCount(): Int {
                 return tabName.size
             }

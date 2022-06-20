@@ -12,7 +12,7 @@ import coil.load
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.miaow.picture.databinding.PictureClipDialogBinding
-import com.example.miaow.picture.utils.saveSystemAlbum
+import com.example.fragment.library.base.utils.saveSystemAlbum
 
 class PictureClipDialog : FullDialog() {
 
@@ -25,9 +25,9 @@ class PictureClipDialog : FullDialog() {
 
     private lateinit var bitmap: Bitmap
     private var isSaving = false
-    private var callback: PictureClipCallback? = null
     private var _binding: PictureClipDialogBinding? = null
     private val binding get() = _binding!!
+    private var _callback: PictureClipCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +40,7 @@ class PictureClipDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _callback = null
         _binding = null
     }
 
@@ -63,7 +64,7 @@ class PictureClipDialog : FullDialog() {
                     binding.confirm.isEnabled = true
                     binding.progress.visibility = View.GONE
                     binding.progress.dispose()
-                    callback?.onFinish(path, uri)
+                    _callback?.onFinish(path, uri)
                     isSaving = false
                     dismiss()
                 }
@@ -77,7 +78,7 @@ class PictureClipDialog : FullDialog() {
     }
 
     fun setPictureClipCallback(callback: PictureClipCallback): PictureClipDialog {
-        this.callback = callback
+        this._callback = callback
         return this
     }
 

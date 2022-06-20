@@ -18,7 +18,6 @@ class WebFragment : RouterFragment() {
 
     private var _binding: WebFragmentBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var webViewHelper: WebViewHelper
 
     override fun onCreateView(

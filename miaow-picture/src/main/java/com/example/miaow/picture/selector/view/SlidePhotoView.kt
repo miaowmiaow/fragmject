@@ -46,7 +46,7 @@ class SlidePhotoView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val moveX = event.rawX.toInt()
                 val moveY = event.rawY.toInt()
-                if (downY - moveY > mTouchSlop && abs(downX - moveX) < mTouchSlop) {
+                if (moveY - downY > mTouchSlop && abs(moveX - downX) < mTouchSlop) {
                     return true
                 }
             }
@@ -61,20 +61,20 @@ class SlidePhotoView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val moveX = event.rawX.toInt()
                 val moveY = event.rawY.toInt()
-                if (downY - moveY > mTouchSlop && abs(downX - moveX) < mTouchSlop) {
+                if (moveY - downY > mTouchSlop && abs(moveX - downX) < mTouchSlop) {
                     isSliding = true
                 }
-                if (downY - moveY > 0 && isSliding) {
-                    scrollTo(0, downY - moveY)
+                if (moveY - downY > 0 && isSliding) {
+                    scrollTo(0, moveY - downY)
                 } else {
                     scrollTo(0, 0)
                 }
             }
             MotionEvent.ACTION_UP -> {
                 isSliding = false
-                if (scrollY >= viewHeight / 3) {
+                if (scrollY >= viewHeight * 0.75) {
                     isFinish = true
-                    scrollTop()
+                    scrollBottom()
                 } else {
                     scrollOrigin()
                     isFinish = false
@@ -92,7 +92,7 @@ class SlidePhotoView @JvmOverloads constructor(
         }
     }
 
-    private fun scrollTop() {
+    private fun scrollBottom() {
         val delta = viewHeight - scrollY
         mScroller.startScroll(0, scrollY, 0, delta, SlideLayout.ANIMATION_TIME)
         postInvalidate()
@@ -116,7 +116,7 @@ class SlidePhotoView @JvmOverloads constructor(
     }
 
     fun dismiss() {
-        scrollTop()
+        scrollBottom()
         postDelayed({ visibility = GONE }, SlideLayout.ANIMATION_TIME.toLong())
     }
 

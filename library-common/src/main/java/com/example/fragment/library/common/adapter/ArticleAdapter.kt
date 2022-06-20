@@ -29,7 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
-class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<ArticleBean>() {
+class ArticleAdapter : BaseAdapter<ArticleBean>() {
 
     private var avatarList: List<Int> = listOf(
         R.drawable.avatar_1_raster,
@@ -58,7 +58,6 @@ class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<
         binding.shareUser.text = shareUser.ifBlank { "匿名" }
         binding.time.text = item.niceDate
         if (!item.tags.isNullOrEmpty()) {
-            binding.tag.visibility = if (isHomeFragment) View.VISIBLE else View.GONE
             binding.tag.text = item.tags[0].name
             binding.tag.setOnClickListener {
                 val uriString = "https://www.wanandroid.com${item.tags[0].url}"
@@ -106,28 +105,23 @@ class ArticleAdapter(private val isHomeFragment: Boolean = false) : BaseAdapter<
             append(fromHtml(formatChapterName(item.superChapterName, item.chapterName)))
         }
         binding.chapterName.setOnClickListener {
-            if (isHomeFragment) {
-                activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
-            }
+            activity.navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
         }
         binding.collect.load(if (item.collect) R.drawable.ic_collect_checked else R.drawable.ic_collect_unchecked_stroke)
         binding.collect.setOnClickListener {
-            if (item.collect) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    val response = post<HttpResponse>(HttpRequest().apply {
-                        setUrl("lg/uncollect_originId/{id}/json")
-                        putPath("id", item.id)
-                    })
-                    activity.httpParseSuccess(response) {
+            CoroutineScope(Dispatchers.Main).launch {
+                if (item.collect) {
+                    val url = "lg/uncollect_originId/{id}/json"
+                    val request = HttpRequest(url).putPath("id", item.id)
+                    val response = post<HttpResponse>(request)
+                    if (response.errorCode == "0") {
                         binding.collect.load(R.drawable.ic_collect_unchecked_stroke)
                         item.collect = false
                     }
-                }
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
+                } else {
                     val request = HttpRequest("lg/collect/{id}/json").putPath("id", item.id)
                     val response = post<HttpResponse>(request)
-                    activity.httpParseSuccess(response) {
+                    if (response.errorCode == "0") {
                         binding.collect.load(R.drawable.ic_collect_checked)
                         item.collect = true
                     }

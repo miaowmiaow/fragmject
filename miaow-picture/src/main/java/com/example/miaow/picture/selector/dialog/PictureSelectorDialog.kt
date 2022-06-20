@@ -22,17 +22,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.ActivityCallback
-import com.example.fragment.library.base.utils.PermissionsCallback
-import com.example.fragment.library.base.utils.requestCamera
-import com.example.fragment.library.base.utils.startForResult
+import com.example.fragment.library.base.utils.*
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
 import com.example.miaow.picture.selector.bean.MediaBean
 import com.example.miaow.picture.selector.model.PictureViewModel
 import com.example.miaow.picture.selector.pop.PictureAlbumPopupWindow
-import com.example.miaow.picture.utils.saveSystemAlbum
 import java.io.File
 
 class PictureSelectorDialog : FullDialog() {
@@ -47,10 +43,11 @@ class PictureSelectorDialog : FullDialog() {
     private val viewModel: PictureViewModel by activityViewModels()
     private var _binding: PictureSelectorDialogBinding? = null
     private val binding get() = _binding!!
-    private var pictureAlbumPopupWindow: PictureAlbumPopupWindow? = null
-    private val selectorAdapter = PictureSelectorAdapter()
-
-    private var pictureSelectorCallback: PictureSelectorCallback? = null
+    private var _selectorAdapter: PictureSelectorAdapter? = null
+    private val selectorAdapter get() = _selectorAdapter!!
+    private var _callback: PictureSelectorCallback? = null
+    private var _pictureAlbumPopupWindow: PictureAlbumPopupWindow? = null
+    private val pictureAlbumPopupWindow get() = _pictureAlbumPopupWindow!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,12 +55,16 @@ class PictureSelectorDialog : FullDialog() {
         savedInstanceState: Bundle?
     ): View {
         _binding = PictureSelectorDialogBinding.inflate(inflater, container, false)
+        _selectorAdapter = PictureSelectorAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         setStatusBar(binding.root, Color.parseColor("#00000000"), false)
+        _pictureAlbumPopupWindow = null
+        _selectorAdapter = null
+        _callback = null
         _binding = null
     }
 
@@ -75,7 +76,7 @@ class PictureSelectorDialog : FullDialog() {
             setWindowAnimations(R.style.AnimRight)
         }
         setStatusBar(binding.root, Color.parseColor("#555555"), false)
-        pictureAlbumPopupWindow = PictureAlbumPopupWindow(view.context)
+        _pictureAlbumPopupWindow = PictureAlbumPopupWindow(view.context)
         initView()
         initViewModel()
         initData(view.context)
@@ -84,7 +85,7 @@ class PictureSelectorDialog : FullDialog() {
     private fun initView() {
         binding.back.setOnClickListener { dismiss() }
         binding.config.setOnClickListener {
-            pictureSelectorCallback?.onSelectedData(selectorAdapter.getSelectPositionData())
+            _callback?.onSelectedData(selectorAdapter.getSelectPositionData())
             dismiss()
         }
         binding.album.setOnClickListener {
@@ -136,7 +137,7 @@ class PictureSelectorDialog : FullDialog() {
             selectorAdapter.setAlbumData(it)
         }
         viewModel.albumResult.observe(viewLifecycleOwner) { result ->
-            pictureAlbumPopupWindow?.let { popupWindow ->
+            pictureAlbumPopupWindow.let { popupWindow ->
                 binding.albumName.text = result[0].name
                 popupWindow.setAlbumData(result, 0)
                 popupWindow.setOnAlbumSelectedListener(
@@ -215,7 +216,7 @@ class PictureSelectorDialog : FullDialog() {
     }
 
     fun setPictureSelectorCallback(callback: PictureSelectorCallback): PictureSelectorDialog {
-        pictureSelectorCallback = callback
+        _callback = callback
         return this
     }
 

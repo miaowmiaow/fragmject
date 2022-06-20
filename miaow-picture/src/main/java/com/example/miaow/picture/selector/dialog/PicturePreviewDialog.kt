@@ -33,14 +33,13 @@ class PicturePreviewDialog : FullDialog() {
     private val viewModel: PictureViewModel by activityViewModels()
     private var _binding: PicturePreviewDialogBinding? = null
     private val binding get() = _binding!!
-    private val previewAdapter = PicturePreviewAdapter()
-
+    private var _previewAdapter: PicturePreviewAdapter? = null
+    private val previewAdapter get() = _previewAdapter!!
+    private var _callback: PicturePreviewCallback? = null
     private val origSelectPosition: MutableList<Int> = ArrayList()
     private val currSelectPosition: MutableList<Int> = ArrayList()
     private var currPreviewPosition = -1
     private var isSinglePicture = false
-
-    private var picturePreviewCallback: PicturePreviewCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,11 +47,14 @@ class PicturePreviewDialog : FullDialog() {
         savedInstanceState: Bundle?
     ): View {
         _binding = PicturePreviewDialogBinding.inflate(inflater, container, false)
+        _previewAdapter = PicturePreviewAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _previewAdapter = null
+        _callback = null
         _binding = null
     }
 
@@ -70,7 +72,7 @@ class PicturePreviewDialog : FullDialog() {
     private fun initView() {
         binding.back.setOnClickListener { dismiss() }
         binding.config.setOnClickListener {
-            picturePreviewCallback?.onFinish(currSelectPosition)
+            _callback?.onFinish(currSelectPosition)
             dismiss()
         }
         binding.selectBox.setOnClickListener {
@@ -170,7 +172,7 @@ class PicturePreviewDialog : FullDialog() {
     }
 
     fun setPicturePreviewCallback(callback: PicturePreviewCallback): PicturePreviewDialog {
-        picturePreviewCallback = callback
+        this._callback = callback
         return this
     }
 

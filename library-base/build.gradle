@@ -36,10 +36,9 @@ dependencies {
     def room_version = "2.4.2"
 
     api fileTree(dir: "libs", include: ["*.jar"])
-    api files('libs/pinyin4j-2.5.0.jar')
 
-    api 'androidx.appcompat:appcompat:1.4.1'
-    api 'androidx.core:core-ktx:1.7.0'
+    api 'androidx.appcompat:appcompat:1.4.2'
+    api 'androidx.core:core-ktx:1.8.0'
     api 'androidx.fragment:fragment-ktx:1.4.1'
     api 'androidx.viewpager2:viewpager2:1.0.0'
     api 'androidx.webkit:webkit:1.4.0'
@@ -62,7 +61,7 @@ dependencies {
     // google
     api 'com.google.android.flexbox:flexbox:3.0.0'
     api 'com.google.code.gson:gson:2.9.0'
-    api 'com.google.android.material:material:1.6.0'
+    api 'com.google.android.material:material:1.6.1'
     // kotlin 和 协程
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2'
@@ -70,7 +69,8 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
     api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     api "com.squareup.retrofit2:retrofit:2.9.0"
+    // leakcanary
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
     // 腾讯TBS
     api 'com.tencent.tbs:tbssdk:44181'
-
 }

@@ -32,30 +32,8 @@ class NavigationLinkFragment : RouterFragment() {
     private val viewModel: NavigationViewModel by viewModels()
     private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val linkMenuAdapter = LinkMenuAdapter()
-    private val linkMenuSelectedListener = object : BaseAdapter.OnItemSelectedListener {
-        override fun onItemSelected(itemView: View, position: Int) {
-            val item = linkMenuAdapter.getItem(position)
-            item.isSelected = true
-            binding.menu.findViewHolderForAdapterPosition(position)?.apply {
-                if (this is BaseAdapter.ViewBindHolder) {
-                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_white_top0_5bottom0_5_line)
-                }
-            }
-            fillFlexboxLayout(item.articles)
-        }
-
-        override fun onItemUnselected(itemView: View, position: Int) {
-            val item = linkMenuAdapter.getItem(position)
-            item.isSelected = false
-            binding.menu.findViewHolderForAdapterPosition(position)?.apply {
-                if (this is BaseAdapter.ViewBindHolder) {
-                    getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_gray_bottom1_line)
-                }
-            }
-        }
-    }
+    private var _linkMenuAdapter: LinkMenuAdapter? = null
+    private val linkMenuAdapter get() = _linkMenuAdapter!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,11 +41,13 @@ class NavigationLinkFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = NavigationLinkFragmentBinding.inflate(inflater, container, false)
+        _linkMenuAdapter = LinkMenuAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _linkMenuAdapter = null
         _binding = null
     }
 
@@ -75,7 +55,28 @@ class NavigationLinkFragment : RouterFragment() {
         //导航列表
         binding.menu.layoutManager = LinearLayoutManager(binding.menu.context)
         binding.menu.adapter = linkMenuAdapter
-        linkMenuAdapter.setOnItemSelectedListener(linkMenuSelectedListener)
+        linkMenuAdapter.setOnItemSelectedListener(object : BaseAdapter.OnItemSelectedListener {
+            override fun onItemSelected(itemView: View, position: Int) {
+                val item = linkMenuAdapter.getItem(position)
+                item.isSelected = true
+                binding.menu.findViewHolderForAdapterPosition(position)?.apply {
+                    if (this is BaseAdapter.ViewBindHolder) {
+                        getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_white_top0_5bottom0_5_line)
+                    }
+                }
+                fillFlexboxLayout(item.articles)
+            }
+
+            override fun onItemUnselected(itemView: View, position: Int) {
+                val item = linkMenuAdapter.getItem(position)
+                item.isSelected = false
+                binding.menu.findViewHolderForAdapterPosition(position)?.apply {
+                    if (this is BaseAdapter.ViewBindHolder) {
+                        getView<View>(R.id.bg)?.setBackgroundResource(R.drawable.rectangle_solid_gray_bottom1_line)
+                    }
+                }
+            }
+        })
     }
 
     override fun initViewModel(): BaseViewModel {

@@ -122,6 +122,7 @@ class BannerHelper(
     // onDestroy时停止观察
     override fun onDestroy(owner: LifecycleOwner) {
         owner.lifecycle.removeObserver(this)
+        stop()
     }
 
 }

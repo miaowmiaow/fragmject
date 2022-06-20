@@ -24,8 +24,8 @@ class NavigationSystemFragment : RouterFragment() {
     private val viewModel: SystemTreeViewModel by activityViewModels()
     private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val systemAdapter = SystemAdapter()
+    private var _systemAdapter: SystemAdapter? = null
+    private val systemAdapter get() = _systemAdapter!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,11 +33,13 @@ class NavigationSystemFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = NavigationSystemFragmentBinding.inflate(inflater, container, false)
+        _systemAdapter = SystemAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _systemAdapter = null
         _binding = null
     }
 

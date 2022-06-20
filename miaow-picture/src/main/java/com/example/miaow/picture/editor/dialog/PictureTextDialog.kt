@@ -26,10 +26,11 @@ class PictureTextDialog : FullDialog() {
 
     private var _binding: PictureTextDialogBinding? = null
     private val binding get() = _binding!!
+    private var _callback: PictureTextCallback? = null
     private val textColors: MutableList<RelativeLayout> = arrayListOf()
     private var _attrs: StickerAttrs? = null
     private val attrs get() = _attrs!!
-    private var callback: PictureTextCallback? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,7 +83,7 @@ class PictureTextDialog : FullDialog() {
                     attrs.bitmap = saveBitmap()
                 }
                 attrs.description = description
-                callback?.onFinish(attrs)
+                _callback?.onFinish(attrs)
             }
             dismiss()
         }
@@ -135,7 +136,7 @@ class PictureTextDialog : FullDialog() {
     }
 
     fun setPictureTextCallback(callback: PictureTextCallback): PictureTextDialog {
-        this.callback = callback
+        this._callback = callback
         return this
     }
 

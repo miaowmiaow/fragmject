@@ -27,8 +27,8 @@ class QAQuizFragment : RouterFragment() {
     private val viewModel: QAModel by viewModels()
     private var _binding: QaQuizFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val articleAdapter = ArticleAdapter()
+    private var _articleAdapter: ArticleAdapter? = null
+    private val articleAdapter get() = _articleAdapter!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,11 +36,13 @@ class QAQuizFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = QaQuizFragmentBinding.inflate(inflater, container, false)
+        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _articleAdapter = null
         _binding = null
     }
 

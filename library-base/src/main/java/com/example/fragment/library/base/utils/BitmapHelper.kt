@@ -1,4 +1,4 @@
-package com.example.miaow.picture.utils
+package com.example.fragment.library.base.utils
 
 import android.content.ContentResolver
 import android.content.ContentUris

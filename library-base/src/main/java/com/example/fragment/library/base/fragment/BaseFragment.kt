@@ -39,13 +39,6 @@ abstract class BaseFragment : Fragment() {
         })
     }
 
-    /**
-     * Fragment 的存在时间比其视图长，所有视图的引用都必须在此进行清除
-     */
-    override fun onDestroyView() {
-        super.onDestroyView()
-    }
-
     abstract fun initView()
 
     abstract fun initViewModel(): BaseViewModel?

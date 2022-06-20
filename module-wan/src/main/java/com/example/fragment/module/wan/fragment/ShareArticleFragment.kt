@@ -22,8 +22,8 @@ class ShareArticleFragment : RouterFragment() {
     private val viewModel: ShareArticleViewModel by viewModels()
     private var _binding: ShareArticleFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private val articleAdapter = ArticleAdapter()
+    private var _articleAdapter: ArticleAdapter? = null
+    private val articleAdapter get() = _articleAdapter!!
     private var id: String = ""
 
     override fun onCreateView(
@@ -32,11 +32,13 @@ class ShareArticleFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = ShareArticleFragmentBinding.inflate(inflater, container, false)
+        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _articleAdapter = null
         _binding = null
     }
 

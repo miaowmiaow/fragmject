@@ -146,7 +146,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
         notifyPosition.addAll(currSelectPosition)
         currSelectPosition.forEach {
             val realPosition = it + 1
-            if(!notifyPosition.contains(realPosition)){
+            if (!notifyPosition.contains(realPosition)) {
                 notifyPosition.add(realPosition)
             }
         }
@@ -154,7 +154,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
         selectPosition.forEach {
             currSelectPosition.add(it)
             val realPosition = it + 1
-            if(!notifyPosition.contains(realPosition)){
+            if (!notifyPosition.contains(realPosition)) {
                 notifyPosition.add(realPosition)
             }
         }
@@ -170,7 +170,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
     fun getSelectPositionData(): List<MediaBean> {
         val data: MutableList<MediaBean> = ArrayList()
         currSelectPosition.forEach { position ->
-            data.add(getItem(position))
+            data.add(getItem(position + 1))
         }
         return data
     }

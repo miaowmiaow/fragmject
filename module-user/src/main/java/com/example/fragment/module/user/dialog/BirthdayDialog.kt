@@ -27,7 +27,6 @@ class BirthdayDialog : BottomDialog() {
     private var _binding: BirthdayDialogBinding? = null
     private val binding get() = _binding!!
     private var _listener: BirthdayListener? = null
-    private val listener get() = _listener!!
     private val yearData: MutableList<String> = arrayListOf()
     private val monthData: MutableList<String> = arrayListOf()
     private val dayData: MutableList<String> = arrayListOf()
@@ -40,6 +39,7 @@ class BirthdayDialog : BottomDialog() {
             return WheelItemBinding::inflate
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onItemView(holder: ViewBindHolder, position: Int, item: String) {
             val binding = holder.binding as WheelItemBinding
             binding.tv.text = "${item}年"
@@ -107,14 +107,14 @@ class BirthdayDialog : BottomDialog() {
         setNavigationBar(binding.root, Color.WHITE, true)
         binding.cancel.setOnClickListener { dismiss() }
         binding.secrecy.setOnClickListener {
-            listener.onBirthday("保密")
+            _listener?.onBirthday("保密")
             dismiss()
         }
         binding.config.setOnClickListener {
             val currYear = yearData[binding.year.findCenterItemPosition()]
             val currMonth = monthData[binding.month.findCenterItemPosition()]
             val currDay = dayData[binding.day.findCenterItemPosition()]
-            listener.onBirthday("$currYear-${currMonth}-${currDay}")
+            _listener?.onBirthday("$currYear-${currMonth}-${currDay}")
             dismiss()
         }
         binding.year.layoutManager = LinearLayoutManager(binding.year.context)

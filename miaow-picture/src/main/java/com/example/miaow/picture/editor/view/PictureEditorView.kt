@@ -18,8 +18,8 @@ import com.example.miaow.picture.editor.view.layer.GraffitiLayer
 import com.example.miaow.picture.editor.view.layer.MosaicLayer
 import com.example.miaow.picture.editor.view.layer.OnStickerClickListener
 import com.example.miaow.picture.editor.view.layer.StickerLayer
-import com.example.miaow.picture.utils.getBitmapFromPath
-import com.example.miaow.picture.utils.getBitmapFromUri
+import com.example.fragment.library.base.utils.getBitmapFromPath
+import com.example.fragment.library.base.utils.getBitmapFromUri
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max

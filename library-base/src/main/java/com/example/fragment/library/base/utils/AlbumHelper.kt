@@ -1,4 +1,4 @@
-package com.example.miaow.picture.utils
+package com.example.fragment.library.base.utils
 
 import android.content.ContentValues
 import android.content.Context
@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Environment
 import android.os.FileUtils
 import android.provider.MediaStore
-import com.example.fragment.library.base.utils.MainThreadExecutor
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream

@@ -1,7 +1,12 @@
 package com.example.fragment.library.base.utils
 
+import android.content.Context
+import android.graphics.drawable.Drawable
 import android.widget.ImageView
+import coil.ImageLoader
+import coil.imageLoader
 import coil.load
+import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import coil.transform.RoundedCornersTransformation
 
@@ -50,4 +55,20 @@ fun ImageView.loadRoundedCorners(
             )
         )
     }
+}
+
+fun Context.imageDownload(
+    data: Any,
+    onSuccess: (result: Drawable) -> Unit = {},
+    onStart: (placeholder: Drawable?) -> Unit = {},
+    onError: (error: Drawable?) -> Unit = {},
+    imageLoader: ImageLoader = this.imageLoader,
+    builder: ImageRequest.Builder.() -> Unit = {}
+){
+    val request = ImageRequest.Builder(this)
+        .data(data)
+        .target(onStart, onError, onSuccess)
+        .apply(builder)
+        .build()
+    imageLoader.enqueue(request)
 }

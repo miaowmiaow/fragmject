@@ -20,7 +20,6 @@ class SexDialog : BottomDialog() {
     private var _binding: SexDialogBinding? = null
     private val binding get() = _binding!!
     private var _listener: SexListener? = null
-    private val listener get() = _listener!!
     private val sexViews = arrayListOf<View>()
     private var sexIndex = -1
 
@@ -51,17 +50,17 @@ class SexDialog : BottomDialog() {
         }
         binding.secrecy.setOnClickListener {
             selectionSex(0)
-            listener.onSex("保密")
+            _listener?.onSex("保密")
             dismiss()
         }
         binding.male.setOnClickListener {
             selectionSex(1)
-            listener.onSex("男生")
+            _listener?.onSex("男生")
             dismiss()
         }
         binding.female.setOnClickListener {
             selectionSex(2)
-            listener.onSex("女生")
+            _listener?.onSex("女生")
             dismiss()
         }
         selectionSex(sexIndex)

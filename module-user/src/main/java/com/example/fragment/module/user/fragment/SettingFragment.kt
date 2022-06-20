@@ -76,9 +76,26 @@ class SettingFragment : RouterFragment() {
     override fun initView() {
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) settingViewModel.updateUiMode("-1") else settingViewModel.updateUiMode("1")
+            if (isChecked) {
+                binding.systemTheme.isChecked = true
+                binding.darkTheme.isChecked = false
+                settingViewModel.updateUiMode("-1")
+            } else {
+                binding.systemTheme.isChecked = false
+                binding.darkTheme.isChecked = false
+                settingViewModel.updateUiMode("1")
+            }
         }
         binding.darkTheme.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.systemTheme.isChecked = false
+                binding.darkTheme.isChecked = true
+                settingViewModel.updateUiMode("2")
+            } else {
+                binding.systemTheme.isChecked = false
+                binding.darkTheme.isChecked = false
+                settingViewModel.updateUiMode("1")
+            }
             if (isChecked) settingViewModel.updateUiMode("2") else settingViewModel.updateUiMode("1")
         }
         binding.screenRecord.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -146,22 +163,6 @@ class SettingFragment : RouterFragment() {
             when (it) {
                 "0" -> binding.screenRecord.isChecked = false
                 "1" -> binding.screenRecord.isChecked = true
-            }
-        }
-        settingViewModel.uiModeResult().observe(viewLifecycleOwner) {
-            when (it) {
-                "1" -> {
-                    binding.systemTheme.isChecked = false
-                    binding.darkTheme.isChecked = false
-                }
-                "2" -> {
-                    binding.systemTheme.isChecked = false
-                    binding.darkTheme.isChecked = true
-                }
-                else -> {
-                    binding.systemTheme.isChecked = true
-                    binding.darkTheme.isChecked = false
-                }
             }
         }
         updateViewModel.updateResult.observe(viewLifecycleOwner) { result ->

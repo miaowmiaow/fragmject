@@ -25,10 +25,10 @@ import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.utils.ColorUtils
 import com.example.miaow.picture.editor.view.PictureEditorView
 import com.example.miaow.picture.editor.view.layer.OnStickerClickListener
-import com.example.miaow.picture.utils.getBitmapFromPath
-import com.example.miaow.picture.utils.getBitmapFromUri
-import com.example.miaow.picture.utils.getBitmapPathFromUri
-import com.example.miaow.picture.utils.saveSystemAlbum
+import com.example.fragment.library.base.utils.getBitmapFromPath
+import com.example.fragment.library.base.utils.getBitmapFromUri
+import com.example.fragment.library.base.utils.getBitmapPathFromUri
+import com.example.fragment.library.base.utils.saveSystemAlbum
 
 class PictureEditorDialog : FullDialog() {
 
@@ -41,11 +41,11 @@ class PictureEditorDialog : FullDialog() {
 
     private var _binding: PictureEditorDialogBinding? = null
     private val binding get() = _binding!!
+    private var _callback: PictureEditorCallback? = null
     private val colors: MutableList<RelativeLayout> = arrayListOf()
     private val tools: MutableList<ImageView> = arrayListOf()
     private var bitmapPath: String? = null
     private var bitmapUri: Uri? = null
-    private var callback: PictureEditorCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,7 +89,7 @@ class PictureEditorDialog : FullDialog() {
                     binding.complete.isEnabled = true
                     binding.progress.visibility = View.GONE
                     binding.progress.dispose()
-                    callback?.onFinish(path, uri)
+                    _callback?.onFinish(path, uri)
                     dismiss()
                 }
             }
@@ -151,7 +151,7 @@ class PictureEditorDialog : FullDialog() {
     }
 
     fun setPictureEditorCallback(callback: PictureEditorCallback): PictureEditorDialog {
-        this.callback = callback
+        this._callback = callback
         return this
     }
 
@@ -199,7 +199,7 @@ class PictureEditorDialog : FullDialog() {
             .setBitmapResource(bitmap)
             .setPictureClipCallback(object : PictureClipCallback {
                 override fun onFinish(path: String, uri: Uri) {
-                    callback?.onFinish(path, uri)
+                    _callback?.onFinish(path, uri)
                     dismiss()
                 }
             })

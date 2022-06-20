@@ -40,7 +40,10 @@ class QAFragment : RouterFragment() {
     override fun initView() {
         //TabLayout与ViewPager2
         val tabName = arrayOf("问答", "广场")
-        binding.viewpager2.adapter = object : FragmentStateAdapter(this) {
+        binding.viewpager2.adapter = object : FragmentStateAdapter(
+            childFragmentManager,
+            viewLifecycleOwner.lifecycle
+        ) {
             override fun getItemCount(): Int {
                 return tabName.size
             }

@@ -48,9 +48,10 @@ class MyCoinFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.listData = coinRecordAdapter.getData()
+        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
         coinCountAnimator.cancel()
         _coinCountAnimator = null
-        viewModel.listData = coinRecordAdapter.getData()
         _coinRecordAdapter = null
         _binding = null
     }
@@ -61,12 +62,6 @@ class MyCoinFragment : RouterFragment() {
         //我的积分列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRecordAdapter
-        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                viewModel.listScroll += dy
-            }
-        })
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
@@ -79,13 +74,6 @@ class MyCoinFragment : RouterFragment() {
                 viewModel.getMyCoinNext()
             }
         })
-        //将数据从 ViewModel 取出渲染
-        if (viewModel.listData.isNotEmpty()) {
-            coinRecordAdapter.setNewData(viewModel.listData)
-        }
-        if (viewModel.listScroll > 0) {
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         binding.coordinator.post {
             binding.coordinator.setMaxScrollY(binding.coinCount.height)
             binding.pullRefresh.layoutParams.height = binding.coordinator.height
@@ -103,18 +91,23 @@ class MyCoinFragment : RouterFragment() {
                 }
             }
         }
-        viewModel.myCoinResult().observe(viewLifecycleOwner) {
-            httpParseSuccess(it) { result ->
-                if (viewModel.isHomePage()) {
-                    coinRecordAdapter.setNewData(result.data?.datas)
-                } else {
-                    coinRecordAdapter.addData(result.data?.datas)
+        if (viewModel.listData.isNullOrEmpty()) {
+            viewModel.myCoinResult().observe(viewLifecycleOwner) {
+                httpParseSuccess(it) { result ->
+                    if (viewModel.isHomePage()) {
+                        coinRecordAdapter.setNewData(result.data?.datas)
+                    } else {
+                        coinRecordAdapter.addData(result.data?.datas)
+                    }
                 }
+                //结束下拉刷新状态
+                binding.pullRefresh.finishRefresh()
+                //设置加载更多状态
+                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
             }
-            //结束下拉刷新状态
-            binding.pullRefresh.finishRefresh()
-            //设置加载更多状态
-            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
+        } else {
+            coinRecordAdapter.setNewData(viewModel.listData)
+            binding.list.scrollTo(0, viewModel.listScroll)
         }
         return viewModel
     }

@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
@@ -49,6 +48,7 @@ class NavigationLinkFragment : RouterFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.listData = linkMenuAdapter.getData()
+        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
         _linkMenuAdapter = null
         _binding = null
     }
@@ -57,12 +57,6 @@ class NavigationLinkFragment : RouterFragment() {
         //导航列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = linkMenuAdapter
-        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                viewModel.listScroll += dy
-            }
-        })
         linkMenuAdapter.setOnItemSelectedListener(object : BaseAdapter.OnItemSelectedListener {
             override fun onItemSelected(itemView: View, position: Int) {
                 val item = linkMenuAdapter.getItem(position)
@@ -85,27 +79,25 @@ class NavigationLinkFragment : RouterFragment() {
                 }
             }
         })
-        //将数据从 ViewModel 取出渲染
-        if (viewModel.listData.isNotEmpty()) {
-            linkMenuAdapter.setNewData(viewModel.listData)
-        }
-        if (viewModel.listScroll > 0) {
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.navigationResult().observe(viewLifecycleOwner) {
-            var selectItem = 0
-            it.forEachIndexed { index, bean ->
-                if (bean.isSelected) {
-                    selectItem = index
+        if (viewModel.listData.isNullOrEmpty()) {
+            viewModel.navigationResult().observe(viewLifecycleOwner) {
+                var selectItem = 0
+                it.forEachIndexed { index, bean ->
+                    if (bean.isSelected) {
+                        selectItem = index
+                    }
                 }
+                it[selectItem].isSelected = true
+                linkMenuAdapter.setNewData(it)
+                linkMenuAdapter.selectItem(selectItem)
+                fillFlexboxLayout(it[selectItem].articles)
             }
-            it[selectItem].isSelected = true
-            linkMenuAdapter.setNewData(it)
-            linkMenuAdapter.selectItem(selectItem)
-            fillFlexboxLayout(it[selectItem].articles)
+        } else {
+            linkMenuAdapter.setNewData(viewModel.listData)
+            binding.list.scrollTo(0, viewModel.listScroll)
         }
         return viewModel
     }

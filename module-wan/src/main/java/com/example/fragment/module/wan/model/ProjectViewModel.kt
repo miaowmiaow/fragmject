@@ -20,9 +20,7 @@ class ProjectViewModel : BaseViewModel() {
 
     fun projectListResult(cid: String): LiveData<Map<String, ArticleListBean>> {
         this.cid = cid
-        if (!listDataMap.containsKey(cid)) {
-            getProjectHome(cid)
-        }
+        getProjectHome(cid)
         return projectListResult
     }
 

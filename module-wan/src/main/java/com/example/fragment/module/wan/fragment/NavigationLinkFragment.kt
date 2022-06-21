@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.bean.NavigationBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -84,22 +85,26 @@ class NavigationLinkFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         if (viewModel.listData.isNullOrEmpty()) {
             viewModel.navigationResult().observe(viewLifecycleOwner) {
-                var selectItem = 0
-                it.forEachIndexed { index, bean ->
-                    if (bean.isSelected) {
-                        selectItem = index
-                    }
-                }
-                it[selectItem].isSelected = true
-                linkMenuAdapter.setNewData(it)
-                linkMenuAdapter.selectItem(selectItem)
-                fillFlexboxLayout(it[selectItem].articles)
+                updateView(it)
             }
         } else {
-            linkMenuAdapter.setNewData(viewModel.listData)
+            updateView(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
         }
         return viewModel
+    }
+
+    private fun updateView(data: List<NavigationBean>) {
+        var selectItem = 0
+        data.forEachIndexed { index, bean ->
+            if (bean.isSelected) {
+                selectItem = index
+            }
+        }
+        data[selectItem].isSelected = true
+        linkMenuAdapter.setNewData(data)
+        linkMenuAdapter.selectItem(selectItem)
+        fillFlexboxLayout(data[selectItem].articles)
     }
 
     private fun fillFlexboxLayout(data: List<ArticleBean>? = null) {

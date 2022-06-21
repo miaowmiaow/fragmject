@@ -21,9 +21,7 @@ class HomeViewModel : BaseViewModel() {
 
     private val articleListResult: MutableLiveData<List<ArticleBean>> by lazy {
         MutableLiveData<List<ArticleBean>>().also {
-            if (listData.isNullOrEmpty()) {
-                getArticleHome()
-            }
+            getArticleHome()
         }
     }
 

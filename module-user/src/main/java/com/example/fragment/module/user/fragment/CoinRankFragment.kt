@@ -9,11 +9,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
+import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
@@ -70,6 +70,7 @@ class CoinRankFragment : RouterFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.listData = coinRankAdapter.getData()
+        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
         _coinRankAdapter = null
         _binding = null
     }
@@ -85,12 +86,6 @@ class CoinRankFragment : RouterFragment() {
         //积分排行榜列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRankAdapter
-        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                viewModel.listScroll += dy
-            }
-        })
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
@@ -103,53 +98,43 @@ class CoinRankFragment : RouterFragment() {
                 viewModel.getCoinRankNext()
             }
         })
-        //将数据从 ViewModel 取出渲染
-        if (viewModel.listData.isNotEmpty()) {
-            val names = arrayListOf(binding.name1, binding.name2, binding.name3)
-            val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
-            val size = if (viewModel.listData.size < 3) viewModel.listData.size else 3
-            for (i in 0 until size) {
-                names[i].text = viewModel.listData[i].username
-                coins[i].text = viewModel.listData[i].coinCount
-            }
-            if (viewModel.listData.size > 3) {
-                coinRankAdapter.setNewData(viewModel.listData.subList(2, viewModel.listData.size))
-            }
-        }
-        if (viewModel.listScroll > 0) {
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
-        binding.coordinator.post {
-            binding.coordinator.setMaxScrollY(binding.coinRankTop.height)
-            binding.pullRefresh.layoutParams.height = binding.coordinator.height
-        }
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
-            httpParseSuccess(result) {
-                val names = arrayListOf(binding.name1, binding.name2, binding.name3)
-                val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
-                val datas = it.data?.datas
-                if (viewModel.isHomePage() && !datas.isNullOrEmpty()) {
-                    val size = if (datas.size < 3) datas.size else 3
-                    for (i in 0 until size) {
-                        names[i].text = datas[i].username
-                        coins[i].text = datas[i].coinCount
+        if (viewModel.listData.isNullOrEmpty()) {
+            viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
+                httpParseSuccess(result) { it ->
+                    it.data?.datas?.apply {
+                        updateView(this)
                     }
-                    if (datas.size > 3) {
-                        coinRankAdapter.setNewData(datas.subList(2, datas.size))
-                    }
-                } else {
-                    coinRankAdapter.addData(datas)
                 }
+                //结束下拉刷新状态
+                binding.pullRefresh.finishRefresh()
+                //设置加载更多状态
+                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
             }
-            //结束下拉刷新状态
-            binding.pullRefresh.finishRefresh()
-            //设置加载更多状态
-            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
+        } else {
+            updateView(viewModel.listData)
+            binding.list.scrollTo(0, viewModel.listScroll)
         }
         return viewModel
+    }
+
+    private fun updateView(data: List<CoinBean>) {
+        val names = arrayListOf(binding.name1, binding.name2, binding.name3)
+        val coins = arrayListOf(binding.coin1, binding.coin2, binding.coin3)
+        if (viewModel.isHomePage()) {
+            val size = if (data.size < 3) data.size else 3
+            for (i in 0 until size) {
+                names[i].text = data[i].username
+                coins[i].text = data[i].coinCount
+            }
+            if (data.size > 3) {
+                coinRankAdapter.setNewData(data.subList(2, data.size))
+            }
+        } else {
+            coinRankAdapter.addData(data)
+        }
     }
 
 }

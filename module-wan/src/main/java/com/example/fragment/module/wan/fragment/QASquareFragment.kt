@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
@@ -44,6 +43,7 @@ class QASquareFragment : RouterFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.listData = articleAdapter.getData()
+        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
         _articleAdapter = null
         _binding = null
     }
@@ -52,12 +52,6 @@ class QASquareFragment : RouterFragment() {
         //广场列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter
-        binding.list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                viewModel.listScroll += dy
-            }
-        })
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
@@ -70,28 +64,26 @@ class QASquareFragment : RouterFragment() {
                 viewModel.getUserArticleNext()
             }
         })
-        //将数据从 ViewModel 取出渲染
-        if (viewModel.listData.isNotEmpty()) {
-            articleAdapter.setNewData(viewModel.listData)
-        }
-        if (viewModel.listScroll > 0) {
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userArticleResult().observe(viewLifecycleOwner) { result ->
-            httpParseSuccess(result) {
-                if (viewModel.isHomePage()) {
-                    articleAdapter.setNewData(it.data?.datas)
-                } else {
-                    articleAdapter.addData(it.data?.datas)
+        if (viewModel.listData.isNullOrEmpty()) {
+            viewModel.userArticleResult().observe(viewLifecycleOwner) { result ->
+                httpParseSuccess(result) {
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(it.data?.datas)
+                    } else {
+                        articleAdapter.addData(it.data?.datas)
+                    }
                 }
+                //结束下拉刷新状态
+                binding.pullRefresh.finishRefresh()
+                //设置加载更多状态
+                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
             }
-            //结束下拉刷新状态
-            binding.pullRefresh.finishRefresh()
-            //设置加载更多状态
-            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
+        } else {
+            articleAdapter.setNewData(viewModel.listData)
+            binding.list.scrollTo(0, viewModel.listScroll)
         }
         return viewModel
     }

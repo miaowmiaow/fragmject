@@ -17,9 +17,7 @@ class QASquareModel : BaseViewModel() {
 
     private val userArticleResult: MutableLiveData<ArticleListBean> by lazy {
         MutableLiveData<ArticleListBean>().also {
-            if (listData.isEmpty()) {
-                getUserArticleHome()
-            }
+            getUserArticleHome()
         }
     }
 

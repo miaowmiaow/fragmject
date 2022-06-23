@@ -101,21 +101,20 @@ class CoinRankFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
-                httpParseSuccess(result) { it ->
-                    it.data?.datas?.apply {
-                        updateView(this)
-                    }
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             updateView(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) { it ->
+                it.data?.datas?.apply {
+                    updateView(this)
+                }
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }

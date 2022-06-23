@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
@@ -91,23 +90,22 @@ class MyCoinFragment : RouterFragment() {
                 }
             }
         }
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.myCoinResult().observe(viewLifecycleOwner) {
-                httpParseSuccess(it) { result ->
-                    if (viewModel.isHomePage()) {
-                        coinRecordAdapter.setNewData(result.data?.datas)
-                    } else {
-                        coinRecordAdapter.addData(result.data?.datas)
-                    }
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             coinRecordAdapter.setNewData(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.myCoinResult().observe(viewLifecycleOwner) {
+            httpParseSuccess(it) { result ->
+                if (viewModel.isHomePage()) {
+                    coinRecordAdapter.setNewData(result.data?.datas)
+                } else {
+                    coinRecordAdapter.addData(result.data?.datas)
+                }
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }

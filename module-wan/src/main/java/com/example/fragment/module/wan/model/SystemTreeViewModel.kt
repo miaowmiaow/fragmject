@@ -17,7 +17,9 @@ class SystemTreeViewModel : BaseViewModel() {
 
     private val systemTreeResult: MutableLiveData<List<SystemTreeBean>> by lazy {
         MutableLiveData<List<SystemTreeBean>>().also {
-            getSystemTree()
+            if (listData.isNullOrEmpty()) {
+                getSystemTree()
+            }
         }
     }
 

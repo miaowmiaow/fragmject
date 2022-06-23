@@ -61,26 +61,25 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.myCollectArticleResult().observe(viewLifecycleOwner) { result ->
-                httpParseSuccess(result) { bean ->
-                    bean.data?.datas?.let { data ->
-                        data.forEach { item -> item.collect = true }
-                        if (viewModel.isHomePage()) {
-                            articleAdapter.setNewData(data)
-                        } else {
-                            articleAdapter.addData(data)
-                        }
-                    }
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             articleAdapter.setNewData(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.myCollectArticleResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) { bean ->
+                bean.data?.datas?.let { data ->
+                    data.forEach { item -> item.collect = true }
+                    if (viewModel.isHomePage()) {
+                        articleAdapter.setNewData(data)
+                    } else {
+                        articleAdapter.addData(data)
+                    }
+                }
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }

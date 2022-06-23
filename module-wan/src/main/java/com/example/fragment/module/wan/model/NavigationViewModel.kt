@@ -18,7 +18,9 @@ class NavigationViewModel : BaseViewModel() {
 
     private val navigationResult: MutableLiveData<List<NavigationBean>> by lazy {
         MutableLiveData<List<NavigationBean>>().also {
-            getNavigation()
+            if (listData.isNullOrEmpty()) {
+                getNavigation()
+            }
         }
     }
 

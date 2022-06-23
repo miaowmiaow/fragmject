@@ -49,7 +49,7 @@ class WebFragment : RouterFragment() {
 
     override fun initView() {
         val url = Uri.decode(requireArguments().getString(Keys.URL))
-        _webViewHelper = WebViewHelper.with(binding.webContainer)
+        _webViewHelper = WebViewHelper.with(activity)
             .injectVConsole(false)
             .setOnPageChangedListener(object : WebViewHelper.OnPageChangedListener {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -64,7 +64,10 @@ class WebFragment : RouterFragment() {
                     binding.progressBar.progress = newProgress
                 }
             })
-            .loadUrl(url)
+        binding.webContainer.addView(webViewHelper.loadUrl(url), ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ))
         val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (!webViewHelper.canGoBack()) {
                 this.isEnabled = false

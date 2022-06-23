@@ -31,15 +31,15 @@ import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 
-class WebViewHelper private constructor(parent: ViewGroup) {
+class WebViewHelper private constructor(context: Context) {
 
     companion object {
-        fun with(parent: ViewGroup): WebViewHelper {
-            return WebViewHelper(parent)
+        fun with(context: Context): WebViewHelper {
+            return WebViewHelper(context)
         }
     }
 
-    private val webView = WebViewManager.obtain(parent.context)
+    private val webView = WebViewManager.obtain(context)
 
     private var onPageChangedListener: OnPageChangedListener? = null
 
@@ -48,7 +48,6 @@ class WebViewHelper private constructor(parent: ViewGroup) {
     private var originalUrl = "about:blank"
 
     init {
-        parent.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(
@@ -191,12 +190,12 @@ class WebViewHelper private constructor(parent: ViewGroup) {
         return canForward
     }
 
-    fun loadUrl(url: String?): WebViewHelper {
+    fun loadUrl(url: String?): WebView {
         if (!url.isNullOrBlank()) {
             webView.loadUrl(url)
             originalUrl = url
         }
-        return this
+        return webView
     }
 
     fun reload() {

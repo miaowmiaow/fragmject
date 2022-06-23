@@ -67,23 +67,22 @@ class QAQuizFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.wendaResult().observe(viewLifecycleOwner) { result ->
-                httpParseSuccess(result) {
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(it.data?.datas)
-                    } else {
-                        articleAdapter.addData(it.data?.datas)
-                    }
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             articleAdapter.setNewData(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.wendaResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) {
+                if (viewModel.isHomePage()) {
+                    articleAdapter.setNewData(it.data?.datas)
+                } else {
+                    articleAdapter.addData(it.data?.datas)
+                }
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }

@@ -52,13 +52,12 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.systemTreeResult().observe(viewLifecycleOwner) {
-                systemAdapter.setNewData(it)
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             systemAdapter.setNewData(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.systemTreeResult().observe(viewLifecycleOwner) {
+            systemAdapter.setNewData(it)
         }
         return viewModel
     }

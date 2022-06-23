@@ -73,25 +73,24 @@ class ProjectArticleFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listDataMap.containsKey(cid)) {
-            viewModel.projectListResult(cid).observe(viewLifecycleOwner) { result ->
-                if (result.containsKey(cid)) {
-                    httpParseSuccess(result[cid] as ArticleListBean) {
-                        if (viewModel.isHomePage(cid)) {
-                            articleAdapter.setNewData(it.data?.datas)
-                        } else {
-                            articleAdapter.addData(it.data?.datas)
-                        }
-                    }
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage(cid))
-            }
-        } else {
+        if (viewModel.listDataMap.containsKey(cid)) {
             articleAdapter.setNewData(viewModel.listDataMap[cid])
             binding.list.scrollTo(0, viewModel.listScrollMap[cid] ?: 0)
+        }
+        viewModel.projectListResult(cid).observe(viewLifecycleOwner) { result ->
+            if (result.containsKey(cid)) {
+                httpParseSuccess(result[cid] as ArticleListBean) {
+                    if (viewModel.isHomePage(cid)) {
+                        articleAdapter.setNewData(it.data?.datas)
+                    } else {
+                        articleAdapter.addData(it.data?.datas)
+                    }
+                }
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage(cid))
         }
         return viewModel
     }

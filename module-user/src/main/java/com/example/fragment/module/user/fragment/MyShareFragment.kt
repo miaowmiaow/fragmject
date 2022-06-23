@@ -62,22 +62,21 @@ class MyShareFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.myShareArticleResult().observe(viewLifecycleOwner) { result ->
-                httpParseSuccess(result) {
-                    if (viewModel.isHomePage()) {
-                        articleAdapter.setNewData(it.data?.shareArticles?.datas)
-                    } else {
-                        articleAdapter.addData(it.data?.shareArticles?.datas)
-                    }
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
-            }
-        } else {
             articleAdapter.setNewData(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.myShareArticleResult().observe(viewLifecycleOwner) { result ->
+            httpParseSuccess(result) {
+                if (viewModel.isHomePage()) {
+                    articleAdapter.setNewData(it.data?.shareArticles?.datas)
+                } else {
+                    articleAdapter.addData(it.data?.shareArticles?.datas)
+                }
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }

@@ -17,7 +17,9 @@ class QAQuizModel : BaseViewModel() {
 
     private val wendaResult: MutableLiveData<ArticleListBean> by lazy {
         MutableLiveData<ArticleListBean>().also {
-            getWenDaHome()
+            if (listData.isNullOrEmpty()) {
+                getWenDaHome()
+            }
         }
     }
 

@@ -70,21 +70,20 @@ class HomeFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.articleListResult().observe(viewLifecycleOwner) {
-                if (viewModel.isHomePage()) {
-                    articleAdapter.setNewData(it)
-                } else {
-                    articleAdapter.addData(it)
-                }
-                //结束下拉刷新状态
-                binding.pullRefresh.finishRefresh()
-                //设置加载更多状态
-                binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             articleAdapter.setNewData(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.articleListResult().observe(viewLifecycleOwner) {
+            if (viewModel.isHomePage()) {
+                articleAdapter.setNewData(it)
+            } else {
+                articleAdapter.addData(it)
+            }
+            //结束下拉刷新状态
+            binding.pullRefresh.finishRefresh()
+            //设置加载更多状态
+            binding.pullRefresh.setLoadMore(viewModel.hasNextPage())
         }
         return viewModel
     }

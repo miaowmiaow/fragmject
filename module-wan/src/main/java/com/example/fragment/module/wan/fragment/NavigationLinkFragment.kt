@@ -83,13 +83,12 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            viewModel.navigationResult().observe(viewLifecycleOwner) {
-                updateView(it)
-            }
-        } else {
+        if (!viewModel.listData.isNullOrEmpty()) {
             updateView(viewModel.listData)
             binding.list.scrollTo(0, viewModel.listScroll)
+        }
+        viewModel.navigationResult().observe(viewLifecycleOwner) {
+            updateView(it)
         }
         return viewModel
     }

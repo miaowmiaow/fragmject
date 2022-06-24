@@ -11,7 +11,7 @@ import androidx.viewbinding.ViewBinding
 /**
  * Adapter简单封装，使其支持ViewBinding
  */
-abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>() {
+abstract class BaseAdapter<T>(newData: List<T>? = null) : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>() {
 
     companion object {
         private const val INVALID_POSITION = -1
@@ -24,6 +24,10 @@ abstract class BaseAdapter<T> : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>
     private var onItemClickListener: OnItemClickListener? = null
     private var onItemChildClickListener: OnItemChildClickListener? = null
     private var onItemSelectedListener: OnItemSelectedListener? = null
+
+    init {
+        setNewData(newData)
+    }
 
     fun addOnClickListener(id: Int) {
         ids.add(id)

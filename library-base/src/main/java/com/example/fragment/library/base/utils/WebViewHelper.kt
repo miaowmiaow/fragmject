@@ -12,7 +12,6 @@ import android.net.Uri
 import android.os.Looper
 import android.util.Base64
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.URLUtil
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebSettingsCompat.FORCE_DARK_OFF
@@ -31,15 +30,7 @@ import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 
-class WebViewHelper private constructor(context: Context) {
-
-    companion object {
-        fun with(context: Context): WebViewHelper {
-            return WebViewHelper(context)
-        }
-    }
-
-    private val webView = WebViewManager.obtain(context)
+class WebViewHelper(private val webView: WebView) {
 
     private var onPageChangedListener: OnPageChangedListener? = null
 
@@ -211,6 +202,7 @@ class WebViewHelper private constructor(context: Context) {
     }
 
     fun onDestroyView() {
+        onPageChangedListener = null
         WebViewManager.recycle(webView)
     }
 

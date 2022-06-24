@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.addCallback
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.WebViewHelper
+import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.databinding.WebFragmentBinding
 import com.tencent.smtt.sdk.WebView
@@ -49,9 +50,15 @@ class WebFragment : RouterFragment() {
 
     override fun initView() {
         val url = Uri.decode(requireArguments().getString(Keys.URL))
-        _webViewHelper = WebViewHelper.with(activity)
-            .injectVConsole(false)
-            .setOnPageChangedListener(object : WebViewHelper.OnPageChangedListener {
+        val webView = WebViewManager.obtain(activity)
+        binding.webContainer.addView(
+            webView, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+        _webViewHelper = WebViewHelper(webView).apply {
+            setOnPageChangedListener(object : WebViewHelper.OnPageChangedListener {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     binding.progressBar.visibility = View.VISIBLE
                 }
@@ -64,10 +71,8 @@ class WebFragment : RouterFragment() {
                     binding.progressBar.progress = newProgress
                 }
             })
-        binding.webContainer.addView(webViewHelper.loadUrl(url), ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        ))
+            loadUrl(url)
+        }
         val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (!webViewHelper.canGoBack()) {
                 this.isEnabled = false

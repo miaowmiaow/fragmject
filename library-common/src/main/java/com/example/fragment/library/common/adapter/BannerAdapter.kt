@@ -15,7 +15,7 @@ import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.databinding.BannerItemBinding
 
-class BannerAdapter : BaseAdapter<BannerBean>() {
+class BannerAdapter(newData: List<BannerBean>? = null) : BaseAdapter<BannerBean>(newData) {
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
         return BannerItemBinding::inflate

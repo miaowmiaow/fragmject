@@ -30,7 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
-class ArticleAdapter : BaseAdapter<ArticleBean>() {
+class ArticleAdapter() : BaseAdapter<ArticleBean>() {
 
     private var avatarList: List<Int> = listOf(
         R.drawable.avatar_1_raster,
@@ -53,9 +53,7 @@ class ArticleAdapter : BaseAdapter<ArticleBean>() {
         if (item.viewType == 0) {
             val binding = holder.binding as ArticleBannerItemBinding
             item.banners?.let { data ->
-                val bannerAdapter = BannerAdapter()
-                binding.banner.adapter = bannerAdapter
-                bannerAdapter.setNewData(data)
+                binding.banner.adapter = BannerAdapter(data)
                 initIndicator(binding.indicator, data.size)
                 BannerHelper(binding.banner, RecyclerView.HORIZONTAL).apply {
                     setOnItemScrollListener(object : OnItemScrollListener {

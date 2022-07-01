@@ -96,7 +96,6 @@ class SettingFragment : RouterFragment() {
                 binding.darkTheme.isChecked = false
                 settingViewModel.updateUiMode("1")
             }
-            if (isChecked) settingViewModel.updateUiMode("2") else settingViewModel.updateUiMode("1")
         }
         binding.screenRecord.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
@@ -163,6 +162,22 @@ class SettingFragment : RouterFragment() {
             when (it) {
                 "0" -> binding.screenRecord.isChecked = false
                 "1" -> binding.screenRecord.isChecked = true
+            }
+        }
+        settingViewModel.uiModeResult().observe(viewLifecycleOwner) {
+            when (it) {
+                "-1" -> {
+                    binding.systemTheme.isChecked = true
+                    binding.darkTheme.isChecked = false
+                }
+                "1" -> {
+                    binding.systemTheme.isChecked = false
+                    binding.darkTheme.isChecked = false
+                }
+                "2" -> {
+                    binding.systemTheme.isChecked = false
+                    binding.darkTheme.isChecked = true
+                }
             }
         }
         updateViewModel.updateResult.observe(viewLifecycleOwner) { result ->

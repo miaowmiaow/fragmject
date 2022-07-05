@@ -23,10 +23,12 @@ class MyCoinFragment : RouterFragment() {
     private val viewModel: MyCoinViewModel by viewModels()
     private var _binding: MyCoinFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _coinRecordAdapter: MyCoinAdapter? = null
-    private val coinRecordAdapter get() = _coinRecordAdapter!!
-    private var _coinCountAnimator: ValueAnimator? = null
-    private val coinCountAnimator get() = _coinCountAnimator!!
+    private val coinRecordAdapter = MyCoinAdapter()
+    private var coinCountAnimator = ValueAnimator()
+    private val animatorUpdateListener = ValueAnimator.AnimatorUpdateListener {
+        val value = it.animatedValue as Int
+        binding.coinCount.text = String.format("%d", value)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,28 +36,22 @@ class MyCoinFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = MyCoinFragmentBinding.inflate(inflater, container, false)
-        _coinRecordAdapter = MyCoinAdapter()
-        _coinCountAnimator = ValueAnimator()
-        coinCountAnimator.addUpdateListener {
-            val value = it.animatedValue as Int
-            binding.coinCount.text = String.format("%d", value)
-        }
-        coinCountAnimator.duration = 1000
-        coinCountAnimator.interpolator = DecelerateInterpolator()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = coinRecordAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
+        coinCountAnimator.removeUpdateListener(animatorUpdateListener)
         coinCountAnimator.cancel()
-        _coinCountAnimator = null
-        _coinRecordAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 
     override fun initView() {
+        coinCountAnimator.addUpdateListener(animatorUpdateListener)
+        coinCountAnimator.duration = 1000
+        coinCountAnimator.interpolator = DecelerateInterpolator()
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.rank.setOnClickListener { activity.navigation(Router.COIN2RANK) }
         //我的积分列表
@@ -89,10 +85,6 @@ class MyCoinFragment : RouterFragment() {
                     coinCountAnimator.start()
                 }
             }
-        }
-        if (!viewModel.listData.isNullOrEmpty()) {
-            coinRecordAdapter.setNewData(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
         }
         viewModel.myCoinResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) { result ->

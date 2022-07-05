@@ -38,7 +38,9 @@ class SystemFragment : RouterFragment() {
     }
 
     override fun initView() {
-        requireArguments().takeIf { it.containsKey(Keys.CID) }?.let {
+        requireArguments().takeIf {
+            it.containsKey(Keys.CID)
+        }?.let {
             cid = it.getString(Keys.CID, "0")
         }
         binding.black.setOnClickListener {

@@ -33,10 +33,8 @@ class SearchFragment : RouterFragment() {
     private val searchViewModel: SearchViewModel by viewModels()
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
-    private var _historySearchAdapter: SearchHistoryAdapter? = null
-    private val historySearchAdapter get() = _historySearchAdapter!!
+    private val articleAdapter = ArticleAdapter()
+    private val historySearchAdapter = SearchHistoryAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,8 +42,6 @@ class SearchFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = SearchFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
-        _historySearchAdapter = SearchHistoryAdapter()
         return binding.root
     }
 
@@ -56,8 +52,9 @@ class SearchFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _articleAdapter = null
-        _historySearchAdapter = null
+        binding.pullRefresh.recycler()
+        binding.historyList.adapter = null
+        binding.list.adapter = null
         _binding = null
     }
 

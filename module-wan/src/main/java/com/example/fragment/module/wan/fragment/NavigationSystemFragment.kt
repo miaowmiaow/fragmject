@@ -24,8 +24,7 @@ class NavigationSystemFragment : RouterFragment() {
     private val viewModel: SystemTreeViewModel by activityViewModels()
     private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _systemAdapter: SystemAdapter? = null
-    private val systemAdapter get() = _systemAdapter!!
+    private val systemAdapter = SystemAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,15 +32,12 @@ class NavigationSystemFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = NavigationSystemFragmentBinding.inflate(inflater, container, false)
-        _systemAdapter = SystemAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = systemAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _systemAdapter = null
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -52,10 +48,6 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listData.isNullOrEmpty()) {
-            systemAdapter.setNewData(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.systemTreeResult().observe(viewLifecycleOwner) {
             systemAdapter.setNewData(it)
         }

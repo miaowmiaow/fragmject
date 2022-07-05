@@ -98,9 +98,11 @@ class PicturePreviewDialog : FullDialog() {
             PictureEditorDialog.newInstance()
                 .setBitmapPathOrUri(null, currentUri)
                 .setPictureEditorCallback(object : PictureEditorCallback {
-                    override fun onFinish(path: String, uri: Uri) {
-                        previewAdapter.getItem(binding.viewpager2.currentItem).uri = uri
-                        previewAdapter.notifyItemChanged(binding.viewpager2.currentItem)
+                    override fun onFinish(path: String?, uri: Uri?) {
+                        uri?.let {
+                            previewAdapter.getItem(binding.viewpager2.currentItem).uri = it
+                            previewAdapter.notifyItemChanged(binding.viewpager2.currentItem)
+                        }
                     }
                 })
                 .show(childFragmentManager)

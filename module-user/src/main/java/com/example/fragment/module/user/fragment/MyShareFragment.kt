@@ -20,8 +20,7 @@ class MyShareFragment : RouterFragment() {
     private val viewModel: MyShareViewModel by viewModels()
     private var _binding: MyShareFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
+    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,15 +28,13 @@ class MyShareFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = MyShareFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = articleAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _articleAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -61,10 +58,6 @@ class MyShareFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listData.isNullOrEmpty()) {
-            articleAdapter.setNewData(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.myShareArticleResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) {
                 if (viewModel.isHomePage()) {

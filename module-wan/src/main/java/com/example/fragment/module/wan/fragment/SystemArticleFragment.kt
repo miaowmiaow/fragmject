@@ -11,7 +11,6 @@ import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
-import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -30,8 +29,7 @@ class SystemArticleFragment : RouterFragment() {
     private val viewModel: SystemViewModel by activityViewModels()
     private var _binding: SystemArticleFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
+    private val articleAdapter = ArticleAdapter()
     private var cid = ""
 
     override fun onCreateView(
@@ -40,15 +38,13 @@ class SystemArticleFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = SystemArticleFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
-        viewModel.listScrollMap[cid] = binding.list.computeVerticalScrollOffset()
-        _articleAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 

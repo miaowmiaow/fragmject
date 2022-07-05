@@ -38,8 +38,7 @@ class MainFragment : RouterFragment() {
     private val binding get() = _binding!!
     private var _hotKeyHelper: BannerHelper? = null
     private val hotKeyHelper get() = _hotKeyHelper!!
-    private var _hotKeyAdapter: HotKeyAdapter? = null
-    private val hotKeyAdapter get() = _hotKeyAdapter!!
+    private val hotKeyAdapter = HotKeyAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,22 +46,21 @@ class MainFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
-        _hotKeyAdapter = HotKeyAdapter()
-        binding.hotKey.adapter = hotKeyAdapter
-        _hotKeyHelper = BannerHelper(
-            binding.hotKey, RecyclerView.VERTICAL, viewLifecycleOwner.lifecycle
-        )
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _hotKeyAdapter = null
+        binding.hotKey.adapter = null
         _hotKeyHelper = null
         _binding = null
     }
 
     override fun initView() {
+        binding.hotKey.adapter = hotKeyAdapter
+        _hotKeyHelper = BannerHelper(
+            binding.hotKey, RecyclerView.VERTICAL, viewLifecycleOwner.lifecycle
+        )
         binding.search.setOnClickListener { search() }
         binding.userShare.setOnClickListener { activity.navigation(Router.USER_SHARE) }
         //滚动热词

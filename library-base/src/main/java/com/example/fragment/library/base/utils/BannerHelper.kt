@@ -98,7 +98,7 @@ class BannerHelper(
 
     fun start() {
         recyclerView.removeCallbacks(bannerTask)
-        recyclerView.postDelayed(bannerTask, 3000)
+        recyclerView.postDelayed(bannerTask, 5000)
     }
 
     fun stop() {

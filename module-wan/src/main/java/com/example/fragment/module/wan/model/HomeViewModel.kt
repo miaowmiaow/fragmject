@@ -16,14 +16,9 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel : BaseViewModel() {
 
-    var listScroll: Int = 0
-    var listData: List<ArticleBean> = ArrayList()
-
     private val articleListResult: MutableLiveData<List<ArticleBean>> by lazy {
         MutableLiveData<List<ArticleBean>>().also {
-            if (listData.isNullOrEmpty()) {
-                getArticleHome()
-            }
+            getArticleHome()
         }
     }
 

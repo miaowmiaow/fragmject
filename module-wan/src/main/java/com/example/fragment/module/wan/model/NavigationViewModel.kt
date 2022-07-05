@@ -12,15 +12,9 @@ import kotlinx.coroutines.launch
 
 class NavigationViewModel : BaseViewModel() {
 
-    var listScroll: Int = 0
-    var svScroll: Int = 0
-    var listData: List<NavigationBean> = ArrayList()
-
     private val navigationResult: MutableLiveData<List<NavigationBean>> by lazy {
         MutableLiveData<List<NavigationBean>>().also {
-            if (listData.isNullOrEmpty()) {
-                getNavigation()
-            }
+            getNavigation()
         }
     }
 

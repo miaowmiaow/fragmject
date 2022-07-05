@@ -6,20 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import kotlinx.coroutines.launch
 
 class QASquareModel : BaseViewModel() {
 
-    var listScroll: Int = 0
-    var listData: List<ArticleBean> = ArrayList()
-
     private val userArticleResult: MutableLiveData<ArticleListBean> by lazy {
         MutableLiveData<ArticleListBean>().also {
-            if (listData.isNullOrEmpty()) {
-                getUserArticleHome()
-            }
+            getUserArticleHome()
         }
     }
 

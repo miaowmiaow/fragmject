@@ -33,8 +33,7 @@ class NavigationLinkFragment : RouterFragment() {
     private val viewModel: NavigationViewModel by viewModels()
     private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _linkMenuAdapter: LinkMenuAdapter? = null
-    private val linkMenuAdapter get() = _linkMenuAdapter!!
+    private val linkMenuAdapter = LinkMenuAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,15 +41,12 @@ class NavigationLinkFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = NavigationLinkFragmentBinding.inflate(inflater, container, false)
-        _linkMenuAdapter = LinkMenuAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = linkMenuAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _linkMenuAdapter = null
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -83,10 +79,6 @@ class NavigationLinkFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listData.isNullOrEmpty()) {
-            updateView(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.navigationResult().observe(viewLifecycleOwner) {
             updateView(it)
         }

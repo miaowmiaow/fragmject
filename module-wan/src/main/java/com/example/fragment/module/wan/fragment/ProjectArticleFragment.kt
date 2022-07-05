@@ -30,8 +30,7 @@ class ProjectArticleFragment : RouterFragment() {
     private val viewModel: ProjectViewModel by activityViewModels()
     private var _binding: ProjectArticleFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
+    private val articleAdapter = ArticleAdapter()
     private var cid = ""
 
     override fun onCreateView(
@@ -40,7 +39,6 @@ class ProjectArticleFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = ProjectArticleFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
@@ -49,7 +47,8 @@ class ProjectArticleFragment : RouterFragment() {
         //将数据缓存在 ViewModel 中来提升用户体验
         viewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
         viewModel.listScrollMap[cid] = binding.list.computeVerticalScrollOffset()
-        _articleAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 

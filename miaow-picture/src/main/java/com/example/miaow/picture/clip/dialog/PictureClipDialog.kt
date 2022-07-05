@@ -85,5 +85,5 @@ class PictureClipDialog : FullDialog() {
 }
 
 interface PictureClipCallback {
-    fun onFinish(path: String, uri: Uri)
+    fun onFinish(path: String?, uri: Uri?)
 }

@@ -27,8 +27,7 @@ class HomeFragment : RouterFragment() {
     private val viewModel: HomeViewModel by viewModels()
     private var _binding: HomeFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
+    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,18 +35,14 @@ class HomeFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = HomeFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         // Fragment 的存在时间比其视图长。请务必在 Fragment 的 onDestroyView() 方法中清除对视图的所有引用。
-        // 因此要再 onDestroyView() 里对页面状态进行保存，以便在返回的时候恢复状态。
-        // 此处应该有更好的解决方式，限于个人知识储备只能这么处理
-        viewModel.listData = articleAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _articleAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -70,10 +65,6 @@ class HomeFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listData.isNullOrEmpty()) {
-            articleAdapter.setNewData(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.articleListResult().observe(viewLifecycleOwner) {
             if (viewModel.isHomePage()) {
                 articleAdapter.setNewData(it)

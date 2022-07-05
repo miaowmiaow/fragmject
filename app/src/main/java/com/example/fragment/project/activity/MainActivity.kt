@@ -70,6 +70,7 @@ class MainActivity : RouterActivity() {
             initContentView()
             initViewModel()
         }, {
+            window.setBackgroundDrawableResource(R.drawable.bg)
             StandardDialog.newInstance()
                 .setTitle(getString(R.string.privacy_agreement_title))
                 .setContent(getString(R.string.privacy_agreement_content))

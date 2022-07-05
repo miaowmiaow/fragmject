@@ -49,7 +49,7 @@ abstract class BaseViewModel : ViewModel() {
      */
     fun getNextPage(key: String = DEFAULT_KEY): Int {
         val currPage = this.currPage[key] ?: DEFAULT_PAGE
-        val nextPage = currPage + 1
+        val nextPage = if (hasNextPage(key)) currPage + 1 else currPage
         this.currPage[key] = nextPage
         return nextPage
     }

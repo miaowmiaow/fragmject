@@ -24,8 +24,7 @@ class UserCityFragment : RouterFragment() {
     private val viewModel: UserViewModel by activityViewModels()
     private var _binding: UserCityFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _cityAdapter: CityAdapter? = null
-    private val cityAdapter get() = _cityAdapter!!
+    private val cityAdapter = CityAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,13 +32,12 @@ class UserCityFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = UserCityFragmentBinding.inflate(inflater, container, false)
-        _cityAdapter = CityAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _cityAdapter = null
+        binding.cityList.adapter = null
         _binding = null
     }
 

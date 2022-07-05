@@ -6,21 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.bean.CoinBean
 import com.example.fragment.library.common.bean.CoinRankBean
 import kotlinx.coroutines.launch
 
 class CoinRankViewModel : BaseViewModel() {
 
-    var listScroll: Int = 0
-    var listData: List<CoinBean> = ArrayList()
-
     private val coinRankResult: MutableLiveData<CoinRankBean> by lazy {
         MutableLiveData<CoinRankBean>().also {
-            if(listData.isNullOrEmpty()){
-                getCoinRankHome()
-            }
+            getCoinRankHome()
         }
     }
 

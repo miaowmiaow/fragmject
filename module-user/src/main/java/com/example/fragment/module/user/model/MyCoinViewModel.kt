@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.bean.MyCoinBean
 import com.example.fragment.library.common.bean.MyCoinListBean
 import com.example.fragment.library.common.bean.UserCoinBean
 import kotlinx.coroutines.async
@@ -22,14 +20,9 @@ class MyCoinViewModel : BaseViewModel() {
         return userCoinResult
     }
 
-    var listScroll: Int = 0
-    var listData: List<MyCoinBean> = ArrayList()
-
     private val myCoinResult: MutableLiveData<MyCoinListBean> by lazy {
         MutableLiveData<MyCoinListBean>().also {
-            if(listData.isNullOrEmpty()){
-                getMyCoinHome()
-            }
+            getMyCoinHome()
         }
     }
 

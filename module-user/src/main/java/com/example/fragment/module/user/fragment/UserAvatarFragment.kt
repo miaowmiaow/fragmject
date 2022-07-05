@@ -23,6 +23,28 @@ class UserAvatarFragment : RouterFragment() {
     private val viewModel: UserViewModel by activityViewModels()
     private var _binding: UserAvatarFragmentBinding? = null
     private val binding get() = _binding!!
+    private var _permissionsCallback: PermissionsCallback? = object : PermissionsCallback {
+        override fun allow() {
+            PictureSelectorDialog.newInstance()
+                .setPictureSelectorCallback(object : PictureSelectorCallback {
+                    override fun onSelectedData(data: List<MediaBean>) {
+                        if (data.isNullOrEmpty()) {
+                            return
+                        }
+                        viewModel.getUserBean().let {
+                            it.avatar = data[0].uri.toString()
+                            viewModel.updateUserBean(it)
+                        }
+                    }
+                })
+                .show(childFragmentManager)
+        }
+
+        override fun deny() {
+            PermissionDialog.alert(activity, "存储")
+        }
+    }
+    private var permissionsCallback = _permissionsCallback!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +57,7 @@ class UserAvatarFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _permissionsCallback = null
         _binding = null
     }
 
@@ -42,27 +65,7 @@ class UserAvatarFragment : RouterFragment() {
         binding.black.setOnClickListener { activity.onBackPressed() }
         binding.image.loadCircleCrop(R.drawable.avatar_1_raster)
         binding.album.setOnClickListener {
-            activity.requestStorage(object : PermissionsCallback {
-                override fun allow() {
-                    PictureSelectorDialog.newInstance()
-                        .setPictureSelectorCallback(object : PictureSelectorCallback {
-                            override fun onSelectedData(data: List<MediaBean>) {
-                                if (data.isNullOrEmpty()) {
-                                    return
-                                }
-                                viewModel.getUserBean().let {
-                                    it.avatar = data[0].uri.toString()
-                                    viewModel.updateUserBean(it)
-                                }
-                            }
-                        })
-                        .show(childFragmentManager)
-                }
-
-                override fun deny() {
-                    PermissionDialog.alert(activity, "存储")
-                }
-            })
+            activity.requestStorage(permissionsCallback)
         }
     }
 

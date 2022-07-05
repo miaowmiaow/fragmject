@@ -198,7 +198,7 @@ class PictureEditorDialog : FullDialog() {
         PictureClipDialog.newInstance()
             .setBitmapResource(bitmap)
             .setPictureClipCallback(object : PictureClipCallback {
-                override fun onFinish(path: String, uri: Uri) {
+                override fun onFinish(path: String?, uri: Uri?) {
                     _callback?.onFinish(path, uri)
                     dismiss()
                 }
@@ -223,5 +223,5 @@ class PictureEditorDialog : FullDialog() {
 }
 
 interface PictureEditorCallback {
-    fun onFinish(path: String, uri: Uri)
+    fun onFinish(path: String?, uri: Uri?)
 }

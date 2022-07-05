@@ -40,9 +40,9 @@ class PullRefreshLayout @JvmOverloads constructor(
     private var refreshing = false
     private var loading = false
     private var loadMore = false
-    private var loadMoreAdapter: LoadMoreAdapter? = null
     var refreshListener: OnRefreshListener? = null
     var loadMoreListener: OnLoadMoreListener? = null
+    private var loadMoreAdapter: LoadMoreAdapter? = null
 
     init {
         setWillNotDraw(false)
@@ -103,12 +103,34 @@ class PullRefreshLayout @JvmOverloads constructor(
     ) {
         val adapter = recyclerView.adapter
         if (adapter != null) {
-            loadMoreAdapter = LoadMoreAdapter(this, adapter)
+            loadMoreAdapter = LoadMoreAdapter(adapter)
+            loadMoreAdapter?.setLoadMoreAdapterListener(object : LoadMoreAdapterListener{
+                override fun isLoading(): Boolean {
+                    return this@PullRefreshLayout.isLoading()
+                }
+
+                override fun canLoadMore(): Boolean {
+                    return this@PullRefreshLayout.canLoadMore()
+                }
+
+                override fun onLoadMore() {
+                    loadMoreListener?.onLoadMore(this@PullRefreshLayout)
+                    finishLoadMore()
+                }
+
+            })
             recyclerView.adapter = loadMoreAdapter
             loadMoreListener = listener
         } else {
-            throw IllegalStateException("PullRefreshLayout attached before RecyclerView has an adapter")
+            throw IllegalStateException("PullRefreshLayout: You must set the adapter of recyclerview first")
         }
+    }
+
+    fun recycler(){
+        refreshListener = null
+        loadMoreListener = null
+        loadMoreAdapter?.setLoadMoreAdapterListener(null)
+        loadMoreAdapter = null
     }
 
     private fun canChildScrollUp(): Boolean {

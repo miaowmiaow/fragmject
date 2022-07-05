@@ -12,14 +12,9 @@ import kotlinx.coroutines.launch
 
 class SystemTreeViewModel : BaseViewModel() {
 
-    var listData: List<SystemTreeBean> = ArrayList()
-    var listScroll: Int = 0
-
     private val systemTreeResult: MutableLiveData<List<SystemTreeBean>> by lazy {
         MutableLiveData<List<SystemTreeBean>>().also {
-            if (listData.isNullOrEmpty()) {
-                getSystemTree()
-            }
+            getSystemTree()
         }
     }
 

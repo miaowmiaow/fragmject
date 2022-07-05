@@ -27,8 +27,7 @@ class QAQuizFragment : RouterFragment() {
     private val viewModel: QAQuizModel by viewModels()
     private var _binding: QaQuizFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
+    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,15 +35,13 @@ class QAQuizFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = QaQuizFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = articleAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _articleAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -67,10 +64,6 @@ class QAQuizFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listData.isNullOrEmpty()) {
-            articleAdapter.setNewData(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.wendaResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) {
                 if (viewModel.isHomePage()) {

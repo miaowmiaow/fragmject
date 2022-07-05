@@ -15,7 +15,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.net.URLConnection
 
-fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String, Uri) -> Unit) {
+fun Context.saveSystemAlbum(bitmap: Bitmap, onFinish: (String?, Uri?) -> Unit) {
     Thread {
         if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
             return@Thread

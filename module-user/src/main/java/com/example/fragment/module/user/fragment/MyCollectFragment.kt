@@ -20,8 +20,7 @@ class MyCollectFragment : RouterFragment() {
     private val viewModel: MyCollectViewModel by viewModels()
     private var _binding: MyCollectFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _articleAdapter: ArticleAdapter? = null
-    private val articleAdapter get() = _articleAdapter!!
+    private val articleAdapter = ArticleAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,15 +28,13 @@ class MyCollectFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = MyCollectFragmentBinding.inflate(inflater, container, false)
-        _articleAdapter = ArticleAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = articleAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _articleAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -61,10 +58,6 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listData.isNullOrEmpty()) {
-            articleAdapter.setNewData(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.myCollectArticleResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) { bean ->
                 bean.data?.datas?.let { data ->

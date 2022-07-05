@@ -39,8 +39,21 @@ class SettingFragment : RouterFragment() {
     private val userLoginViewModel: UserLoginViewModel by activityViewModels()
     private var _binding: SettingFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _countDownTimer: CountDownTimer? = null
-    private val countDownTimer get() = _countDownTimer!!
+    private var countDownTimer = object : CountDownTimer(5000, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+            activity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
+        }
+
+        override fun onFinish() {
+            activity.dismissTips()
+            activity.startScreenRecord { code, message ->
+                if (code != Activity.RESULT_OK) {
+                    activity.showTips(message)
+                    binding.screenRecord.isChecked = false
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,28 +61,12 @@ class SettingFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = SettingFragmentBinding.inflate(inflater, container, false)
-        _countDownTimer = object : CountDownTimer(5000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                activity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
-            }
-
-            override fun onFinish() {
-                activity.dismissTips()
-                activity.startScreenRecord { code, message ->
-                    if (code != Activity.RESULT_OK) {
-                        activity.showTips(message)
-                        binding.screenRecord.isChecked = false
-                    }
-                }
-            }
-        }
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         countDownTimer.cancel()
-        _countDownTimer = null
         _binding = null
     }
 

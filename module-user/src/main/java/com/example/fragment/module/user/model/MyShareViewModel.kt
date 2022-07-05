@@ -6,20 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ShareArticleListBean
 import kotlinx.coroutines.launch
 
 class MyShareViewModel : BaseViewModel() {
 
-    var listScroll: Int = 0
-    var listData: List<ArticleBean> = ArrayList()
-
     private val myShareArticleResult: MutableLiveData<ShareArticleListBean> by lazy {
         MutableLiveData<ShareArticleListBean>().also {
-            if (listData.isNullOrEmpty()) {
-                getMyShareArticleHome()
-            }
+            getMyShareArticleHome()
         }
     }
 

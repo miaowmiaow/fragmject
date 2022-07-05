@@ -27,8 +27,7 @@ class CoinRankFragment : RouterFragment() {
     private val viewModel: CoinRankViewModel by viewModels()
     private var _binding: CoinRankFragmentBinding? = null
     private val binding get() = _binding!!
-    private var _coinRankAdapter: CoinRankAdapter? = null
-    private val coinRankAdapter get() = _coinRankAdapter!!
+    private val coinRankAdapter = CoinRankAdapter()
     private val backPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             backPressedDialog()
@@ -41,7 +40,6 @@ class CoinRankFragment : RouterFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = CoinRankFragmentBinding.inflate(inflater, container, false)
-        _coinRankAdapter = CoinRankAdapter()
         return binding.root
     }
 
@@ -69,9 +67,8 @@ class CoinRankFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.listData = coinRankAdapter.getData()
-        viewModel.listScroll = binding.list.computeVerticalScrollOffset()
-        _coinRankAdapter = null
+        binding.pullRefresh.recycler()
+        binding.list.adapter = null
         _binding = null
     }
 
@@ -101,10 +98,6 @@ class CoinRankFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (!viewModel.listData.isNullOrEmpty()) {
-            updateView(viewModel.listData)
-            binding.list.scrollTo(0, viewModel.listScroll)
-        }
         viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) { it ->
                 it.data?.datas?.apply {

@@ -43,8 +43,7 @@ class PictureSelectorDialog : FullDialog() {
     private val viewModel: PictureViewModel by activityViewModels()
     private var _binding: PictureSelectorDialogBinding? = null
     private val binding get() = _binding!!
-    private var _selectorAdapter: PictureSelectorAdapter? = null
-    private val selectorAdapter get() = _selectorAdapter!!
+    private val selectorAdapter = PictureSelectorAdapter()
     private var _callback: PictureSelectorCallback? = null
     private var _pictureAlbumPopupWindow: PictureAlbumPopupWindow? = null
     private val pictureAlbumPopupWindow get() = _pictureAlbumPopupWindow!!
@@ -55,15 +54,14 @@ class PictureSelectorDialog : FullDialog() {
         savedInstanceState: Bundle?
     ): View {
         _binding = PictureSelectorDialogBinding.inflate(inflater, container, false)
-        _selectorAdapter = PictureSelectorAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         setStatusBar(binding.root, Color.parseColor("#00000000"), false)
+        binding.list.adapter = null
         _pictureAlbumPopupWindow = null
-        _selectorAdapter = null
         _callback = null
         _binding = null
     }

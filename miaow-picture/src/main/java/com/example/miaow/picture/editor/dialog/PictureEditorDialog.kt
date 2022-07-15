@@ -58,6 +58,7 @@ class PictureEditorDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _callback = null
         _binding = null
     }
 

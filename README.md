@@ -4,9 +4,9 @@
 在此感谢 [玩Android](https://www.wanandroid.com/) 提供的 [开放API](https://wanandroid.com/blog/show/2) 。
 
 ## 简介
-`fragment` 是一个为初学者准备的上手项目。   
+`fragmject` 是一个为初学者准备的上手项目。   
 通过对 `Kotlin` 和 `Jetpack` 的系统运用，实现的一个功能完备符合主流市场标准 App。   
-`fragment` 没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 官方的写法。   
+`fragmject` 没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 官方的写法。   
 代码简单，内容全面，快速上手，对理解其他项目设计思想和封装技巧也很有帮助。   
 
 学习本项目你将有如下收获： 

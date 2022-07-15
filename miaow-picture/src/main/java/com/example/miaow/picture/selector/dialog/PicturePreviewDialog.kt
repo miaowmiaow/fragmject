@@ -33,8 +33,7 @@ class PicturePreviewDialog : FullDialog() {
     private val viewModel: PictureViewModel by activityViewModels()
     private var _binding: PicturePreviewDialogBinding? = null
     private val binding get() = _binding!!
-    private var _previewAdapter: PicturePreviewAdapter? = null
-    private val previewAdapter get() = _previewAdapter!!
+    private val previewAdapter = PicturePreviewAdapter()
     private var _callback: PicturePreviewCallback? = null
     private val origSelectPosition: MutableList<Int> = ArrayList()
     private val currSelectPosition: MutableList<Int> = ArrayList()
@@ -47,13 +46,12 @@ class PicturePreviewDialog : FullDialog() {
         savedInstanceState: Bundle?
     ): View {
         _binding = PicturePreviewDialogBinding.inflate(inflater, container, false)
-        _previewAdapter = PicturePreviewAdapter()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _previewAdapter = null
+        binding.viewpager2.adapter = null
         _callback = null
         _binding = null
     }
@@ -164,7 +162,10 @@ class PicturePreviewDialog : FullDialog() {
         }
     }
 
-    fun setSelectedPosition(selectPosition: List<Int>, previewPosition: Int = -1): PicturePreviewDialog {
+    fun setSelectedPosition(
+        selectPosition: List<Int>,
+        previewPosition: Int = -1
+    ): PicturePreviewDialog {
         origSelectPosition.clear()
         currSelectPosition.clear()
         origSelectPosition.addAll(selectPosition)

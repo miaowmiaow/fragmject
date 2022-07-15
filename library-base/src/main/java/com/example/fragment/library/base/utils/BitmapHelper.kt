@@ -12,13 +12,15 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.widget.Toast
 import java.io.IOException
+import kotlin.math.sqrt
 
 //java.lang.RuntimeException: Canvas: trying to draw too large(xxx bytes) bitmap.
-//上述异常由 android.graphics.RecordingCanvas.java 或 android.view.DisplayListCanvas.java （SDK版本差异）的 throwIfCannotDraw(Bitmap bitmap) 抛出。
-//控制图片的加载内存即可。（ps:此处为什么限制为64 MB，因为八八六十四~。~）
+//该异常由 android.graphics.RecordingCanvas.java 或 android.view.DisplayListCanvas.java （SDK版本差异）的 throwIfCannotDraw(Bitmap bitmap) 抛出。
+//阅读源码可知加载的图片内存大小超过 MAX_BITMAP_SIZE，因此控制图片的加载内存即可解决。
+//此处为什么限制为64 MB？ 因为64 = 100 0000 = 2^6 = 2^3 * 2^3 = 8 * 8 即八八六十四，又因8谐音“发”，故有发发之意 ~。~ (ps: 纯属瞎扯淡，逗大家一乐)
 const val MAX_BITMAP_SIZE = 64f * 1024 * 1024 // 64 MB
 
-fun Context.getBitmapFromPath(path: String, targetDensity: Int = 0): Bitmap? {
+fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
     try {
         val bitmapOptions = BitmapFactory.Options()
         bitmapOptions.inJustDecodeBounds = true
@@ -27,12 +29,12 @@ fun Context.getBitmapFromPath(path: String, targetDensity: Int = 0): Bitmap? {
         val bitmapHeight = bitmapOptions.outHeight
         //bitmapSize = 图片宽度 * 图片高度 * 色彩模式 （ARGB_8888 = 4byte）
         val bitmapSize = bitmapWidth * bitmapHeight * 4
-        if (bitmapSize > MAX_BITMAP_SIZE || targetDensity > 0) {
-            val maxDensity = (bitmapWidth * MAX_BITMAP_SIZE / bitmapSize).toInt()
+        if (bitmapSize > MAX_BITMAP_SIZE || targetWidth > 0) {
+            val maxWidth = (bitmapWidth * sqrt(MAX_BITMAP_SIZE / bitmapSize)).toInt()
             bitmapOptions.inJustDecodeBounds = false
             bitmapOptions.inScaled = true
             bitmapOptions.inDensity = bitmapWidth
-            bitmapOptions.inTargetDensity = targetDensity.coerceAtMost(maxDensity)
+            bitmapOptions.inTargetDensity = targetWidth.coerceAtMost(maxWidth)
         }
         return BitmapFactory.decodeFile(path, bitmapOptions)
     } catch (e: Exception) {
@@ -42,27 +44,24 @@ fun Context.getBitmapFromPath(path: String, targetDensity: Int = 0): Bitmap? {
     return null
 }
 
-fun Context.getBitmapFromUri(uri: Uri, targetDensity: Int? = null): Bitmap? {
+fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         val scheme = uri.scheme
         if (ContentResolver.SCHEME_CONTENT == scheme || ContentResolver.SCHEME_FILE == scheme) {
             try {
                 val src = ImageDecoder.createSource(contentResolver, uri)
                 return ImageDecoder.decodeBitmap(src) { decoder, info, _ ->
-                    if (targetDensity != null) {
-                        val bitmapWidth = info.size.width
-                        val bitmapHeight = info.size.height
-                        //bitmapSize = 图片宽度 * 图片高度 * 色彩模式 （ARGB_8888 = 4byte）
-                        val bitmapSize = bitmapWidth * bitmapHeight * 4
-                        if (bitmapSize > MAX_BITMAP_SIZE || targetDensity > 0) {
-                            val maxDensity = (bitmapWidth * MAX_BITMAP_SIZE / bitmapSize).toInt()
-                            val density = targetDensity.coerceAtMost(maxDensity)
-                            val scale = density.toFloat() / bitmapWidth.toFloat()
-                            decoder.setTargetSize(
-                                (bitmapWidth * scale).toInt(),
-                                (bitmapHeight * scale).toInt()
-                            )
-                        }
+                    val bitmapWidth = info.size.width
+                    val bitmapHeight = info.size.height
+                    //bitmapSize = 图片宽度 * 图片高度 * 色彩模式 （ARGB_8888 = 4byte）
+                    val bitmapSize = bitmapWidth * bitmapHeight * 4
+                    if (bitmapSize > MAX_BITMAP_SIZE || targetWidth > 0) {
+                        val maxWidth = bitmapWidth * sqrt(MAX_BITMAP_SIZE / bitmapSize)
+                        val scale = targetWidth.toFloat().coerceAtMost(maxWidth) / bitmapWidth
+                        decoder.setTargetSize(
+                            (bitmapWidth * scale).toInt(),
+                            (bitmapHeight * scale).toInt()
+                        )
                     }
                     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                 }

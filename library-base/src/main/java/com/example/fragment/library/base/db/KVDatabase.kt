@@ -27,12 +27,14 @@ abstract class KVDatabase : RoomDatabase() {
             ).build().also { db -> database = db }
         }
 
+        @JvmStatic
         fun set(key: String, value: String) {
-            getDB().set(key, value)
+            getDB().setValue(key, value)
         }
 
+        @JvmStatic
         fun get(key: String, result: (String) -> Unit) {
-            getDB().get(key, result)
+            getDB().getValue(key, result)
         }
 
         fun closeDatabase() {
@@ -43,7 +45,7 @@ abstract class KVDatabase : RoomDatabase() {
 
     abstract fun getDao(): KVDao
 
-    fun set(key: String, value: String) {
+    fun setValue(key: String, value: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 var kv = getDao().findByKey(key)
@@ -60,7 +62,7 @@ abstract class KVDatabase : RoomDatabase() {
         }
     }
 
-    fun get(key: String, result: (String) -> Unit) {
+    fun getValue(key: String, result: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             val value = try {
                 getDao().findByKey(key)?.value ?: ""

@@ -4,22 +4,6 @@ import java.io.Serializable
 
 class TraceBean(
     /**
-     * 方式插入时机, 0: 方法退出前; 1: 方法进入时
-     */
-    var onMethod: Int = 0,
-    /**
-     * 埋点类名(全路径)
-     */
-    var traceOwner: String = "",
-    /**
-     * 埋点方法名
-     */
-    var traceName: String = "",
-    /**
-     * 埋点方法描述
-     */
-    var traceDesc: String = "",
-    /**
      * 需要埋点类名(全路径)
      */
     var owner: String = "",
@@ -47,6 +31,22 @@ class TraceBean(
      * Object:参数值
      */
     var annotationData: MutableMap<String, Any?> = HashMap(),
+    /**
+     * 埋点类名(全路径)
+     */
+    var traceOwner: String = "",
+    /**
+     * 埋点方法名
+     */
+    var traceName: String = "",
+    /**
+     * 埋点方法描述
+     */
+    var traceDesc: String = "",
+    /**
+     * 方式插入时机, 0: 方法退出前; 1: 方法进入时
+     */
+    var onMethod: Int = 0,
 ) : Cloneable, Serializable {
 
     public override fun clone(): TraceBean {

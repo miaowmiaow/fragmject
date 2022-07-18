@@ -6,12 +6,16 @@ import com.android.build.api.instrumentation.ClassData
 import com.android.build.api.instrumentation.InstrumentationParameters
 import com.example.miaow.plugin.bean.ScanBean
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.*
 
 interface ScanParams : InstrumentationParameters {
+    @get:Input
+    val ignoreOwner: Property<String>
+
     @get:Input
     val listOfScans: ListProperty<ScanBean>
 }
@@ -29,7 +33,7 @@ abstract class ScanClassVisitorFactory : AsmClassVisitorFactory<ScanParams> {
     }
 
     override fun isInstrumentable(classData: ClassData): Boolean {
-        return true
+        return !classData.className.startsWith(parameters.get().ignoreOwner.get().replace("/", "."))
     }
 
 }
@@ -44,22 +48,35 @@ class ScanClassNode(
             val instructions = methodNode.instructions
             val iterator = instructions.iterator()
             while (iterator.hasNext()) {
-                val insnNode: AbstractInsnNode = iterator.next()
+                val insnNode = iterator.next()
                 if (insnNode is FieldInsnNode) {
                     scans.find {
-                        !it.isMethod && it.owner == insnNode.owner && it.name == insnNode.name && it.desc == insnNode.desc
+                        it.owner == insnNode.owner && it.name == insnNode.name && it.desc == insnNode.desc
                     }?.let {
-                        val str = name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
-
-                        printInfo(instructions, insnNode, str)
+                        instructions.set(insnNode, newInsnNode(it))
+                        println(
+                            StringBuilder()
+                                .append(name).append(".").append(methodNode.name).append("->")
+                                .append(methodNode.desc).append(" \n")
+                                .append(insnNode.owner).append(".").append(insnNode.name)
+                                .append("->")
+                                .append(insnNode.desc).append(" \n").toString()
+                        )
                     }
                 }
                 if (insnNode is MethodInsnNode) {
                     scans.find {
-                        it.isMethod && it.owner == insnNode.owner && it.name == insnNode.name && it.desc == insnNode.desc
+                        it.owner == insnNode.owner && it.name == insnNode.name && it.desc == insnNode.desc
                     }?.let {
-                        val str = name + "." + methodNode.name + "->" + methodNode.desc + " \n" + insnNode.owner + "." + insnNode.name + "->" + insnNode.desc + " \n"
-                        printInfo(instructions, insnNode, str)
+                        instructions.set(insnNode, newInsnNode(it))
+                        println(
+                            StringBuilder()
+                                .append(name).append(".").append(methodNode.name).append("->")
+                                .append(methodNode.desc).append(" \n")
+                                .append(insnNode.owner).append(".").append(insnNode.name)
+                                .append("->")
+                                .append(insnNode.desc).append(" \n").toString()
+                        )
                     }
                 }
             }
@@ -68,7 +85,26 @@ class ScanClassNode(
         accept(classVisitor)
     }
 
-    private fun printInfo(instructions: InsnList, insnNode: AbstractInsnNode, str: String) {
+    private fun newInsnNode(bean: ScanBean): AbstractInsnNode {
+        return if (!bean.replaceDesc.startsWith("(")) {
+            FieldInsnNode(
+                bean.replaceOpcode,
+                bean.replaceOwner,
+                bean.replaceName,
+                bean.replaceDesc
+            )
+        } else {
+            MethodInsnNode(
+                bean.replaceOpcode,
+                bean.replaceOwner,
+                bean.replaceName,
+                bean.replaceDesc,
+                false
+            )
+        }
+    }
+
+    private fun insertInfo(instructions: InsnList, insnNode: AbstractInsnNode, str: String) {
         val il = InsnList()
         il.add(FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"))
         il.add(LdcInsnNode(str))

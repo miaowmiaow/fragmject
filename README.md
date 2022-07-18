@@ -145,6 +145,66 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 
 [最通俗易懂的字节码插桩实战 —— 自动埋点](https://juejin.cn/post/6985366891447451662)
 
+#### 隐私合规 ———— 替换目标字段或方法
+在 `MiaowPlugin` 添加 `ScanBean` 并配置目标字段或方法以及对应的替换字段或方法
+```
+ScanBean(
+    owner = "android/os/Build",
+    name = "BRAND",
+    desc = "Ljava/lang/String;",
+    replaceOpcode = Opcodes.INVOKESTATIC,
+    replaceOwner = "com/example/fragment/library/common/utils/BuildUtils",
+    replaceName = "getBrand",
+    "()Ljava/lang/String;"
+)
+```
+#### 性能扫描 ———— 打印方法执行时间
+在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围
+```
+TimeBean( //以包名和执行时间为条件
+    "com/example/fragment/library/base",
+    time = 50L
+)
+```
+#### 性能扫描 ———— 打印方法执行时间
+在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法
+```
+TraceBean(
+    owner = "Landroid/view/View\$OnClickListener;",
+    name = "onClick",
+    desc = "(Landroid/view/View;)V",
+    traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
+    traceName = "viewOnClick",
+    traceDesc = "(Landroid/view/View;)V" //参数应在desc范围之内
+)
+```
+
+配置完成后 `gradle` 执行 `publish` 任务生成插件
+在根目录 `setting.gradle` 添加本地插件源
+```
+pluginManagement {
+    repositories {
+        maven {
+            url uri('repo')
+        }
+    }
+}
+```
+在根目录 `build.gradle` 添加插件依赖
+```
+buildscript {
+    dependencies {
+        classpath 'com.example.miaow:plugin:1.0.0'
+    }
+}
+```
+在app目录 `build.gradle` apply插件
+```
+plugins {
+    id 'miaow'
+}
+```
+
 ## 动态权限申请
 [自己动手撸一个动态权限申请库](https://juejin.cn/post/6991471901704978440)
 

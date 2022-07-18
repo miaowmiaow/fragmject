@@ -1,24 +1,39 @@
-package cn.colg.base.util;
+package com.example.fragment.library.common.utils;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.text.TextUtils;
 
-import cn.colg.base.utilcode.util.SPUtils;
+import com.example.fragment.library.base.db.KVDatabase;
 
-@SuppressLint("HardwareIds")
-public class DevUtils {
+public class BuildUtils {
 
-    private static DevUtils singleton;
+    private static BuildUtils singleton;
 
-    private DevUtils() {
+    public static String getBrand() {
+        return BuildUtils.get().brand();
     }
 
-    public static DevUtils get() {
+    public static String getModel(){
+        return BuildUtils.get().model();
+    }
+
+    public static String getSerial(){
+        return BuildUtils.get().serial();
+    }
+
+    public static String getManufacturer(){
+        return BuildUtils.get().manufacturer();
+    }
+
+    private BuildUtils() {
+    }
+
+    public static BuildUtils get() {
         if (singleton == null) {
-            synchronized (ForumUtils.class) {
+            synchronized (BuildUtils.class) {
                 if (singleton == null) {
-                    singleton = new DevUtils();
+                    singleton = new BuildUtils();
                 }
             }
         }
@@ -29,61 +44,62 @@ public class DevUtils {
     private String model;
     private String serial;
     private String manufacturer;
-    private String release;
 
-    public String getBrand() {
+    public String brand() {
         if (TextUtils.isEmpty(brand)) {
-            brand = SPUtils.getInstance().getString("BRAND");
+            KVDatabase.get("BRAND", s -> {
+                brand = s;
+                return null;
+            });
             if (TextUtils.isEmpty(brand)) {
                 brand = Build.BRAND;
-                SPUtils.getInstance().put("BRAND", brand);
+                KVDatabase.set("BRAND", brand);
             }
         }
         return brand;
     }
 
-    public String getModel() {
+    public String model() {
         if (TextUtils.isEmpty(model)) {
-            model = SPUtils.getInstance().getString("MODEL");
+            KVDatabase.get("MODEL", s -> {
+                model = s;
+                return null;
+            });
             if (TextUtils.isEmpty(model)) {
                 model = Build.MODEL;
-                SPUtils.getInstance().put("MODEL", model);
+                KVDatabase.set("MODEL", model);
             }
         }
         return model;
     }
 
-    public String getSerial() {
+    @SuppressLint("HardwareIds")
+    public String serial() {
         if (TextUtils.isEmpty(serial)) {
-            serial = SPUtils.getInstance().getString("SERIAL");
+            KVDatabase.get("SERIAL", s -> {
+                serial = s;
+                return null;
+            });
             if (TextUtils.isEmpty(serial)) {
                 serial = Build.SERIAL;
-                SPUtils.getInstance().put("SERIAL", serial);
+                KVDatabase.set("SERIAL", serial);
             }
         }
         return serial;
     }
 
-    public String getManufacturer() {
+    public String manufacturer() {
         if (TextUtils.isEmpty(manufacturer)) {
-            manufacturer = SPUtils.getInstance().getString("MANUFACTURER");
+            KVDatabase.get("MANUFACTURER", s -> {
+                manufacturer = s;
+                return null;
+            });
             if (TextUtils.isEmpty(manufacturer)) {
                 manufacturer = Build.MANUFACTURER;
-                SPUtils.getInstance().put("MANUFACTURER", manufacturer);
+                KVDatabase.set("MANUFACTURER", manufacturer);
             }
         }
         return manufacturer;
-    }
-
-    public String getRelease() {
-        if (TextUtils.isEmpty(release)) {
-            release = SPUtils.getInstance().getString("MANUFACTURER");
-            if (TextUtils.isEmpty(release)) {
-                release = Build.VERSION.RELEASE;
-                SPUtils.getInstance().put("MANUFACTURER", release);
-            }
-        }
-        return release;
     }
 
 }

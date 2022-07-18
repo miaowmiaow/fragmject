@@ -8,4 +8,4 @@
 .externalNativeBuild
 .cxx
 /.idea/
-/plugin_statistic/build/
+/miaow-plugin/build/

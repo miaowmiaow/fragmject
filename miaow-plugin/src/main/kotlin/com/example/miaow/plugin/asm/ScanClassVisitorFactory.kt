@@ -86,21 +86,14 @@ class ScanClassNode(
     }
 
     private fun newInsnNode(bean: ScanBean): AbstractInsnNode {
+        val opcode = bean.replaceOpcode
+        val owner = bean.replaceOwner
+        val name = bean.replaceName
+        val descriptor = bean.replaceDesc
         return if (!bean.replaceDesc.startsWith("(")) {
-            FieldInsnNode(
-                bean.replaceOpcode,
-                bean.replaceOwner,
-                bean.replaceName,
-                bean.replaceDesc
-            )
+            FieldInsnNode(opcode, owner, name, descriptor)
         } else {
-            MethodInsnNode(
-                bean.replaceOpcode,
-                bean.replaceOwner,
-                bean.replaceName,
-                bean.replaceDesc,
-                false
-            )
+            MethodInsnNode(opcode, owner, name, descriptor, false)
         }
     }
 

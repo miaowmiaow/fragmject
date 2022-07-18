@@ -87,13 +87,16 @@ class TraceClassVisitor(
 
             /**
              * 扫描类的注解时调用
-             * @param descriptor 注解名称
+             * @param annotationDescriptor 注解名称
              * @param visible
              * @return
              */
-            override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
-                var annotationVisitor = super.visitAnnotation(descriptor, visible)
-                traceMap[descriptor]?.let { trace ->
+            override fun visitAnnotation(
+                annotationDescriptor: String?,
+                visible: Boolean
+            ): AnnotationVisitor {
+                var annotationVisitor = super.visitAnnotation(annotationDescriptor, visible)
+                traceMap[annotationDescriptor]?.let { trace ->
                     val newTrace = trace.clone()
                     annotationVisitor = object : AnnotationVisitor(api, annotationVisitor) {
                         override fun visit(name: String?, value: Any?) {

@@ -158,7 +158,7 @@ ScanBean(
     "()Ljava/lang/String;"
 )
 ```
-#### 性能扫描 ———— 打印方法执行时间
+#### 耗时扫描 ———— 打印方法执行时间
 在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围
 ```
 TimeBean( //以包名和执行时间为条件
@@ -166,7 +166,7 @@ TimeBean( //以包名和执行时间为条件
     time = 50L
 )
 ```
-#### 性能扫描 ———— 打印方法执行时间
+#### 埋点统计 ———— 自动埋点
 在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法
 ```
 TraceBean(

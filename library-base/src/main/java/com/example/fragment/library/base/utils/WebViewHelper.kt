@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.MutableContextWrapper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -29,6 +30,7 @@ import com.tencent.smtt.sdk.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
+import kotlin.math.sqrt
 
 class WebViewHelper(private val webView: WebView) {
 
@@ -191,6 +193,31 @@ class WebViewHelper(private val webView: WebView) {
 
     fun reload() {
         webView.reload()
+    }
+
+    fun getX5WebViewBtpBase64Str(callback: (Bitmap) -> Unit) {
+        val maxBitmapSize = 10f * 1024 * 1024 //微信分享限制图片大小为 10 MB
+        var wholeWidth = webView.computeHorizontalScrollRange()
+        var wholeHeight = webView.computeVerticalScrollRange()
+        if (wholeWidth == 0 || wholeHeight == 0 || webView.x5WebViewExtension == null) {
+            return
+        }
+        var x5bitmap = Bitmap.createBitmap(wholeWidth, wholeHeight, Bitmap.Config.ARGB_8888)
+        val bitmapSize = x5bitmap.byteCount
+        if (bitmapSize > maxBitmapSize) {
+            val scale = sqrt(maxBitmapSize / bitmapSize)
+            wholeWidth *= scale.toInt()
+            wholeHeight *= scale.toInt()
+            x5bitmap = Bitmap.createBitmap(wholeWidth, wholeHeight, Bitmap.Config.ARGB_8888)
+        }
+        val x5canvas = Canvas(x5bitmap)
+        x5canvas.scale(
+            wholeWidth.toFloat() / webView.contentWidth,
+            wholeHeight.toFloat() / webView.contentHeight
+        )
+        webView.x5WebViewExtension.snapshotWholePage(x5canvas, false, false) {
+            callback.invoke(x5bitmap)
+        }
     }
 
     fun onResume() {

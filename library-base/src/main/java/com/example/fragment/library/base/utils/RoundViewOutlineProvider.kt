@@ -12,3 +12,35 @@ class RoundViewOutlineProvider(val radius: Float) : ViewOutlineProvider() {
     }
 
 }
+
+class LeftRoundViewOutlineProvider(val radius: Float) : ViewOutlineProvider() {
+
+    override fun getOutline(view: View, outline: Outline) {
+        outline.setRoundRect(Rect(-radius.toInt(), 0, view.width, view.height), radius)
+    }
+
+}
+
+class TopRoundViewOutlineProvider(val radius: Float) : ViewOutlineProvider() {
+
+    override fun getOutline(view: View, outline: Outline) {
+        outline.setRoundRect(Rect(0, 0, view.width, view.height + radius.toInt()), radius)
+    }
+
+}
+
+class RightRoundViewOutlineProvider(val radius: Float) : ViewOutlineProvider() {
+
+    override fun getOutline(view: View, outline: Outline) {
+        outline.setRoundRect(Rect(0, 0, view.width + radius.toInt(), view.height), radius)
+    }
+
+}
+
+class BottomRoundViewOutlineProvider(val radius: Float) : ViewOutlineProvider() {
+
+    override fun getOutline(view: View, outline: Outline) {
+        outline.setRoundRect(Rect(0, -radius.toInt(), view.width, view.height), radius)
+    }
+
+}

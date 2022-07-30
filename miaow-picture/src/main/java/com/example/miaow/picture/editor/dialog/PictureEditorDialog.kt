@@ -96,10 +96,10 @@ class PictureEditorDialog : FullDialog() {
             }
         }
         bitmapPath?.let {
-            binding.picEditor.setBitmapPath(it)
+            binding.picEditor.setBitmapPathOrUri(it, null)
         }
         bitmapUri?.let {
-            binding.picEditor.setBitmapUri(it)
+            binding.picEditor.setBitmapPathOrUri(null, it)
         }
         binding.colorUndo.setOnClickListener { binding.picEditor.graffitiUndo() }
         binding.mosaicUndo.setOnClickListener { binding.picEditor.mosaicUndo() }

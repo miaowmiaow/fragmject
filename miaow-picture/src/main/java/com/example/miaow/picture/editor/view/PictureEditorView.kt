@@ -162,14 +162,10 @@ class PictureEditorView @JvmOverloads constructor(
         binTextBaselineY = abs(binTextPaint.ascent() + binTextPaint.descent()) / 2
     }
 
-    fun setBitmapPath(path: String) {
+    fun setBitmapPathOrUri(path: String?, uri: Uri?) {
         this.bitmapPath = path
-        postInvalidate()
-    }
-
-    fun setBitmapUri(uri: Uri) {
         this.bitmapUri = uri
-        postInvalidate()
+        initBitmap()
     }
 
     fun setMode(mode: Mode) {
@@ -289,16 +285,6 @@ class PictureEditorView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         this.viewWidth = max(w, oldw)
         this.viewHeight = max(h, oldh)
-        bitmapPath?.let {
-            context.getBitmapFromPath(it, viewWidth)?.let { bitmap ->
-                setupBitmap(bitmap, w, h)
-            }
-        }
-        bitmapUri?.let {
-            context.getBitmapFromUri(it, viewWidth)?.let { bitmap ->
-                setupBitmap(bitmap, w, h)
-            }
-        }
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -401,6 +387,23 @@ class PictureEditorView @JvmOverloads constructor(
         binTextX = binRectF.centerX() - binTextWidth / currScaleX() / 2
         binTextY = binRectF.bottom - BIN_ROUND / currScaleY()
         binTextSize = BIN_TEXT_SIZE / currScaleX()
+    }
+
+    private fun initBitmap(){
+        post {
+            bitmapPath?.let {
+                context.getBitmapFromPath(it, viewWidth)?.let { bitmap ->
+                    setupBitmap(bitmap, width, height)
+                    postInvalidate()
+                }
+            }
+            bitmapUri?.let {
+                context.getBitmapFromUri(it, viewWidth)?.let { bitmap ->
+                    setupBitmap(bitmap, width, height)
+                    postInvalidate()
+                }
+            }
+        }
     }
 
     private fun setupBitmap(bitmap: Bitmap, w: Int, h: Int) {

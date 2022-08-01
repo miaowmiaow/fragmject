@@ -22,8 +22,14 @@ class BannerHelper(
         offsetItem(0, 0)
         start()
     }
-
-    private var listener: OnItemScrollListener? = null
+    private var _onFlingListener: RecyclerView.OnFlingListener? =
+        object : RecyclerView.OnFlingListener() {
+            override fun onFling(velocityX: Int, velocityY: Int): Boolean {
+                offsetItem(velocityX, velocityY)
+                return true
+            }
+        }
+    private var _onItemScrollListener: OnItemScrollListener? = null
 
     init {
         lifecycle?.addObserver(this)
@@ -41,12 +47,7 @@ class BannerHelper(
             }
             false
         }
-        recyclerView.onFlingListener = object : RecyclerView.OnFlingListener() {
-            override fun onFling(velocityX: Int, velocityY: Int): Boolean {
-                offsetItem(velocityX, velocityY)
-                return true
-            }
-        }
+        recyclerView.onFlingListener = _onFlingListener
     }
 
     private fun offsetItem(velocityX: Int, velocityY: Int) {
@@ -91,7 +92,7 @@ class BannerHelper(
                 }
             }
             recyclerView.postDelayed({
-                listener?.onItemScroll(findItemPosition())
+                _onItemScrollListener?.onItemScroll(findItemPosition())
             }, 300)
         }
     }
@@ -110,7 +111,7 @@ class BannerHelper(
     }
 
     fun setOnItemScrollListener(listener: OnItemScrollListener) {
-        this.listener = listener
+        this._onItemScrollListener = listener
     }
 
     // onResume时自动开始
@@ -126,6 +127,8 @@ class BannerHelper(
     // onDestroy时停止观察
     override fun onDestroy(owner: LifecycleOwner) {
         owner.lifecycle.removeObserver(this)
+        _onFlingListener = null
+        _onItemScrollListener = null
         stop()
     }
 

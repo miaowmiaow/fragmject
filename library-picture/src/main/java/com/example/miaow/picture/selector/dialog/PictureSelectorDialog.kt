@@ -89,9 +89,9 @@ class PictureSelectorDialog : FullDialog() {
         binding.album.setOnClickListener {
             val isAlbum = binding.albumBox.isSelected
             if (isAlbum) {
-                pictureAlbumPopupWindow?.dismiss()
+                pictureAlbumPopupWindow.dismiss()
             } else {
-                pictureAlbumPopupWindow?.show(binding.titleBar)
+                pictureAlbumPopupWindow.show(binding.titleBar)
             }
             binding.albumBox.isSelected = !isAlbum
         }

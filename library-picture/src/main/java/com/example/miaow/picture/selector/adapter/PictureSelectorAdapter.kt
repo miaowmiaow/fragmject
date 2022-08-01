@@ -24,16 +24,16 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
     }
 
     private val currSelectPosition: MutableList<Int> = ArrayList()
-    private var onPictureClickListener: OnPictureClickListener? = null
+    private var _onPictureClickListener: OnPictureClickListener? = null
 
     init {
         setOnItemClickListener(object : OnItemClickListener {
             override fun onItemClick(holder: ViewBindHolder, position: Int) {
                 if (position == 0) {
-                    onPictureClickListener?.onCamera()
+                    _onPictureClickListener?.onCamera()
                 } else {
                     val realSelectPosition = position - 1
-                    onPictureClickListener?.onSelectClick(realSelectPosition)
+                    _onPictureClickListener?.onSelectClick(realSelectPosition)
                 }
             }
         })
@@ -45,6 +45,11 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             //通过关闭默认动画解决刷新闪烁问题
             (it as SimpleItemAnimator).supportsChangeAnimations = false
         }
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        _onPictureClickListener = null
     }
 
     override fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding {
@@ -176,7 +181,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
     }
 
     fun setOnPictureClickListener(listener: OnPictureClickListener) {
-        onPictureClickListener = listener
+        _onPictureClickListener = listener
     }
 
 }

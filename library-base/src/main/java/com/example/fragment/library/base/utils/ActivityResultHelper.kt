@@ -215,7 +215,7 @@ class ResultFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionsCallbacks[requestCode]?.apply {
+        permissionsCallbacks.remove(requestCode)?.apply {
             val length: Int = grantResults.size
             for (i in 0 until length) {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {

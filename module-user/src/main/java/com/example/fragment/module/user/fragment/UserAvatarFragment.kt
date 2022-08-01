@@ -23,20 +23,23 @@ class UserAvatarFragment : RouterFragment() {
     private val viewModel: UserViewModel by activityViewModels()
     private var _binding: UserAvatarFragmentBinding? = null
     private val binding get() = _binding!!
+    private var _pictureSelectorCallback: PictureSelectorCallback? =
+        object : PictureSelectorCallback {
+            override fun onSelectedData(data: List<MediaBean>) {
+                if (data.isNullOrEmpty()) {
+                    return
+                }
+                viewModel.getUserBean().let {
+                    it.avatar = data[0].uri.toString()
+                    viewModel.updateUserBean(it)
+                }
+            }
+        }
+    private val pictureSelectorCallback = _pictureSelectorCallback!!
     private var _permissionsCallback: PermissionsCallback? = object : PermissionsCallback {
         override fun allow() {
             PictureSelectorDialog.newInstance()
-                .setPictureSelectorCallback(object : PictureSelectorCallback {
-                    override fun onSelectedData(data: List<MediaBean>) {
-                        if (data.isNullOrEmpty()) {
-                            return
-                        }
-                        viewModel.getUserBean().let {
-                            it.avatar = data[0].uri.toString()
-                            viewModel.updateUserBean(it)
-                        }
-                    }
-                })
+                .setPictureSelectorCallback(pictureSelectorCallback)
                 .show(childFragmentManager)
         }
 
@@ -44,7 +47,7 @@ class UserAvatarFragment : RouterFragment() {
             PermissionDialog.alert(activity, "存储")
         }
     }
-    private var permissionsCallback = _permissionsCallback!!
+    private val permissionsCallback = _permissionsCallback!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +60,7 @@ class UserAvatarFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _pictureSelectorCallback = null
         _permissionsCallback = null
         _binding = null
     }

@@ -30,8 +30,8 @@ android {
 
 dependencies {
     def coil_version = '2.1.0'
-    def lifecycle_version = "2.4.1"
-    def navigation_version  = "2.4.2"
+    def lifecycle_version = "2.5.1"
+    def navigation_version  = "2.5.1"
     def okhttp_version = '5.0.0-alpha.8'
     def room_version = "2.4.2"
 
@@ -39,7 +39,7 @@ dependencies {
 
     api 'androidx.appcompat:appcompat:1.4.2'
     api 'androidx.core:core-ktx:1.8.0'
-    api 'androidx.fragment:fragment-ktx:1.4.1'
+    api 'androidx.fragment:fragment-ktx:1.5.1'
     api 'androidx.viewpager2:viewpager2:1.0.0'
     api 'androidx.webkit:webkit:1.4.0'
     // viewModel 和 livedata
@@ -49,7 +49,9 @@ dependencies {
     api "androidx.navigation:navigation-fragment-ktx:$navigation_version"
     api "androidx.navigation:navigation-ui-ktx:$navigation_version"
     // room
+    //noinspection GradleDependency
     api "androidx.room:room-ktx:$room_version"
+    //noinspection GradleDependency
     api "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"

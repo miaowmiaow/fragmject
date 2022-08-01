@@ -30,4 +30,5 @@ android {
 
 dependencies {
     api project(path: ':library-base')
+    api project(path: ':library-picture')
 }

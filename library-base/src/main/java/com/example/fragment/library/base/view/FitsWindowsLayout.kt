@@ -118,7 +118,7 @@ class FitsWindowsLayout @JvmOverloads constructor(
      */
     fun setStatusBar(@ColorInt color: Int, isLight: Boolean) {
         statusBar.setBackgroundColor(color) //设置状态栏底色
-        WindowCompat.getInsetsController(window, this)?.apply {
+        WindowCompat.getInsetsController(window, this).apply {
             isAppearanceLightStatusBars = isLight //设置状态栏亮起
         }
     }
@@ -128,7 +128,7 @@ class FitsWindowsLayout @JvmOverloads constructor(
      */
     fun setNavigationBar(@ColorInt color: Int, isLight: Boolean) {
         navigationBar.setBackgroundColor(color) //设置导航栏底色
-        WindowCompat.getInsetsController(window, this)?.apply {
+        WindowCompat.getInsetsController(window, this).apply {
             isAppearanceLightNavigationBars = isLight //设置导航栏亮起
         }
     }

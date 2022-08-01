@@ -11,7 +11,8 @@ import androidx.viewbinding.ViewBinding
 /**
  * Adapter简单封装，使其支持ViewBinding
  */
-abstract class BaseAdapter<T>(newData: List<T>? = null) : RecyclerView.Adapter<BaseAdapter.ViewBindHolder>() {
+abstract class BaseAdapter<T>(newData: List<T>? = null) :
+    RecyclerView.Adapter<BaseAdapter.ViewBindHolder>() {
 
     companion object {
         private const val INVALID_POSITION = -1
@@ -21,12 +22,48 @@ abstract class BaseAdapter<T>(newData: List<T>? = null) : RecyclerView.Adapter<B
 
     private val ids: MutableList<Int> = ArrayList()
     private var data: MutableList<T> = ArrayList()
-    private var onItemClickListener: OnItemClickListener? = null
-    private var onItemChildClickListener: OnItemChildClickListener? = null
-    private var onItemSelectedListener: OnItemSelectedListener? = null
+    private var _onItemClickListener: OnItemClickListener? = null
+    private var _onItemChildClickListener: OnItemChildClickListener? = null
+    private var _onItemSelectedListener: OnItemSelectedListener? = null
 
     init {
         setNewData(newData)
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        _onItemClickListener = null
+        _onItemChildClickListener = null
+        _onItemSelectedListener = null
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
+        return ViewBindHolder(
+            onCreateViewBinding(viewType).invoke(LayoutInflater.from(parent.context), parent, false)
+        )
+    }
+
+    override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
+        holder.itemView.setOnClickListener {
+            _onItemClickListener?.onItemClick(holder, position)
+            if (position != INVALID_POSITION && currentPosition != position) {
+                _onItemSelectedListener?.onItemSelected(holder.itemView, position)
+                _onItemSelectedListener?.onItemUnselected(holder.itemView, currentPosition)
+                currentPosition = holder.adapterPosition
+            }
+        }
+        _onItemChildClickListener?.let { listener ->
+            for (id in ids) {
+                holder.getView<View>(id)?.setOnClickListener {
+                    listener.onItemChildClick(it, holder, position)
+                }
+            }
+        }
+        onItemView(holder, position, this.data[position])
+    }
+
+    override fun getItemCount(): Int {
+        return this.data.size
     }
 
     fun addOnClickListener(id: Int) {
@@ -34,19 +71,19 @@ abstract class BaseAdapter<T>(newData: List<T>? = null) : RecyclerView.Adapter<B
     }
 
     fun setOnItemClickListener(listener: OnItemClickListener) {
-        onItemClickListener = listener
+        _onItemClickListener = listener
     }
 
     fun getOnItemClickListener(): OnItemClickListener? {
-        return onItemClickListener
+        return _onItemClickListener
     }
 
     fun setOnItemChildClickListener(listener: OnItemChildClickListener) {
-        onItemChildClickListener = listener
+        _onItemChildClickListener = listener
     }
 
     fun setOnItemSelectedListener(listener: OnItemSelectedListener) {
-        onItemSelectedListener = listener
+        _onItemSelectedListener = listener
     }
 
     fun selectItem(position: Int) {
@@ -101,35 +138,6 @@ abstract class BaseAdapter<T>(newData: List<T>? = null) : RecyclerView.Adapter<B
     @Suppress("UNCHECKED_CAST")
     fun <T> contextToT(context: Context): T {
         return context as T
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindHolder {
-        return ViewBindHolder(
-            onCreateViewBinding(viewType).invoke(LayoutInflater.from(parent.context), parent, false)
-        )
-    }
-
-    override fun onBindViewHolder(holder: ViewBindHolder, position: Int) {
-        holder.itemView.setOnClickListener {
-            onItemClickListener?.onItemClick(holder, position)
-            if (position != INVALID_POSITION && currentPosition != position) {
-                onItemSelectedListener?.onItemSelected(holder.itemView, position)
-                onItemSelectedListener?.onItemUnselected(holder.itemView, currentPosition)
-                currentPosition = holder.adapterPosition
-            }
-        }
-        onItemChildClickListener?.let { listener ->
-            for (id in ids) {
-                holder.getView<View>(id)?.setOnClickListener {
-                    listener.onItemChildClick(it, holder, position)
-                }
-            }
-        }
-        onItemView(holder, position, this.data[position])
-    }
-
-    override fun getItemCount(): Int {
-        return this.data.size
     }
 
     abstract fun onCreateViewBinding(viewType: Int): (LayoutInflater, ViewGroup, Boolean) -> ViewBinding

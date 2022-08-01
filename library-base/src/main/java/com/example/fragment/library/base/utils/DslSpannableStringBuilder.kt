@@ -1,5 +1,8 @@
 package com.example.fragment.library.base.utils
 
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.text.Spannable
@@ -7,11 +10,11 @@ import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.*
-import android.text.style.DynamicDrawableSpan.ALIGN_BOTTOM
+import android.text.style.DynamicDrawableSpan.ALIGN_BASELINE
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.ColorInt
-import java.util.*
+
 
 //为 TextView 创建扩展函数，其参数为接口的扩展函数
 fun TextView.buildSpannableString(init: DslSpannableStringBuilder.() -> Unit) {
@@ -70,9 +73,13 @@ class DslSpanImpl : DslSpan {
         spans.add(ForegroundColorSpan(color))
     }
 
-    override fun setImage(drawable: Drawable, verticalAlignment: Int) {
-        drawable.setBounds(0,0,drawable.intrinsicWidth, drawable.intrinsicHeight)
-        spans.add(ImageSpan(drawable, verticalAlignment))
+    override fun setImage(drawable: Drawable, bounds: Rect?) {
+        if (bounds != null) {
+            drawable.bounds = bounds
+        } else {
+            drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        }
+        spans.add(VerticalAlignImageSpan(drawable, ALIGN_BASELINE))
     }
 
     override fun setSize(size: Int) {
@@ -89,6 +96,33 @@ class DslSpanImpl : DslSpan {
 
     override fun setUnderLine(use: Boolean) {
         if (use) spans.add(UnderlineSpan())
+    }
+}
+
+class VerticalAlignImageSpan(drawable: Drawable, verticalAlignment: Int) :
+    ImageSpan(drawable, verticalAlignment) {
+
+    override fun draw(
+        canvas: Canvas,
+        text: CharSequence?,
+        start: Int,
+        end: Int,
+        x: Float,
+        top: Int,
+        y: Int,
+        bottom: Int,
+        paint: Paint
+    ) {
+        val drawable = drawable
+        val ascent = paint.fontMetrics.ascent
+        val descent = paint.fontMetrics.descent
+        val boundBottom = drawable.bounds.bottom
+        val boundTop = drawable.bounds.top
+        val transY = ((y + ascent + y + descent) / 2 - (boundBottom + boundTop) / 2)
+        canvas.save()
+        canvas.translate(x, transY)
+        drawable.draw(canvas)
+        canvas.restore()
     }
 }
 
@@ -110,7 +144,7 @@ interface DslSpan {
     fun setColor(@ColorInt color: Int)
 
     //设置图片
-    fun setImage(drawable: Drawable, verticalAlignment: Int = ALIGN_BOTTOM)
+    fun setImage(drawable: Drawable, bounds: Rect? = null)
 
     //设置字体大小
     fun setSize(size: Int)

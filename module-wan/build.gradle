@@ -29,5 +29,6 @@ android {
 }
 
 dependencies {
-    api project(path: ':library-common')
+    api project(path: ':module-common')
 }
+

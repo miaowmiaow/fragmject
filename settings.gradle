@@ -69,8 +69,8 @@ initGradleEnvironment()
 rootProject.name = "fragmject"
 include ':app'
 include ':library-base'
-include ':library-common'
-include ':miaow-picture'
-include ':miaow-plugin'
+include ':library-picture'
+include ':library-plugin'
+include ':module-common'
 include ':module-user'
 include ':module-wan'

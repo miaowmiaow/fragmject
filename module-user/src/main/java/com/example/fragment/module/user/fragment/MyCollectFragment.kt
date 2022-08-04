@@ -33,6 +33,7 @@ class MyCollectFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.clearMyCollectArticleResult()
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

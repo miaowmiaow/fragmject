@@ -26,6 +26,10 @@ class SystemViewModel : BaseViewModel() {
         return systemArticleResult
     }
 
+    fun clearSystemArticleResult(cid: String) {
+        systemArticleResult.value = mapOf(cid to ArticleListBean())
+    }
+
     fun getSystemArticleHome(cid: String) {
         this.cid = cid
         getSystemArticleList(cid, getHomePage(key = cid))

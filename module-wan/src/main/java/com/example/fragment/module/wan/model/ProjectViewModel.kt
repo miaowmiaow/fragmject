@@ -26,6 +26,10 @@ class ProjectViewModel : BaseViewModel() {
         return projectListResult
     }
 
+    fun clearProjectListResult(cid: String){
+        projectListResult.value = mapOf(cid to ArticleListBean())
+    }
+
     fun getProjectHome(cid: String) {
         this.cid = cid
         getProjectList(cid, getHomePage(1, cid))

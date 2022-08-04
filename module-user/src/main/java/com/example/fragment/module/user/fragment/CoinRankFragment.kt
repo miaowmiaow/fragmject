@@ -67,6 +67,7 @@ class CoinRankFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.clearCoinRankResult()
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

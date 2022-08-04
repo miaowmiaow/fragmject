@@ -30,6 +30,10 @@ class MyCoinViewModel : BaseViewModel() {
         return myCoinResult
     }
 
+    fun clearMyCoinResult() {
+        myCoinResult.value = null
+    }
+
     fun getMyCoinHome() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {

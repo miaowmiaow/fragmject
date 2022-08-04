@@ -40,6 +40,7 @@ class QAQuizFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.clearWendaResult()
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

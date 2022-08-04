@@ -33,6 +33,7 @@ class MyShareFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.clearMyShareArticleResult()
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

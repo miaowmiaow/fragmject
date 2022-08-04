@@ -47,6 +47,7 @@ class ProjectArticleFragment : RouterFragment() {
         //将数据缓存在 ViewModel 中来提升用户体验
         viewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
         viewModel.listScrollMap[cid] = binding.list.computeVerticalScrollOffset()
+        viewModel.clearProjectListResult(cid)
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

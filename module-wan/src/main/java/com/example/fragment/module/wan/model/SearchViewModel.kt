@@ -23,6 +23,10 @@ class SearchViewModel : BaseViewModel() {
         return searchHistoryResult
     }
 
+    fun clearSearchHistoryResult() {
+        searchHistoryResult.value = null
+    }
+
     fun getSearchHistory() {
         WanHelper.getSearchHistory { searchHistoryResult.postValue(it) }
     }
@@ -33,6 +37,10 @@ class SearchViewModel : BaseViewModel() {
     fun articleQueryResult(key: String): LiveData<List<ArticleBean>> {
         this.key = key
         return articleQueryResult
+    }
+
+    fun clearArticleQueryResult() {
+        articleQueryResult.value = listOf()
     }
 
     fun getArticleQueryHome(key: String) {

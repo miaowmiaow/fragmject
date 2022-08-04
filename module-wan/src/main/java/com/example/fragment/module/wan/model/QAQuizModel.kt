@@ -21,6 +21,10 @@ class QAQuizModel : BaseViewModel() {
         return wendaResult
     }
 
+    fun clearWendaResult() {
+        wendaResult.value = null
+    }
+
     fun getWenDaHome() {
         getWenDaList(getHomePage(1))
     }

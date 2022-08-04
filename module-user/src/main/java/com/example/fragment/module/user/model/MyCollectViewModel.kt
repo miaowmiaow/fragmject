@@ -21,6 +21,10 @@ class MyCollectViewModel : BaseViewModel() {
         return myCollectArticleResult
     }
 
+    fun clearMyCollectArticleResult() {
+        myCollectArticleResult.value = null
+    }
+
     fun getMyCollectArticleHome() {
         getMyCollectArticle(getHomePage())
     }

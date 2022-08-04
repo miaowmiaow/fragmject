@@ -26,6 +26,10 @@ class HomeViewModel : BaseViewModel() {
         return articleListResult
     }
 
+    fun clearArticleListResult() {
+        articleListResult.value = listOf()
+    }
+
     fun getArticleHome() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {

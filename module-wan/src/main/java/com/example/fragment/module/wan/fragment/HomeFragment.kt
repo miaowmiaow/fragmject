@@ -40,6 +40,9 @@ class HomeFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 解决 LiveData 粘性事件问题，防止缓存的数据都重复添加到List
+        // 还可以通过 SingleLiveEvent 解决该问题，但是个人不太推荐
+        viewModel.clearArticleListResult()
         // Fragment 的存在时间比其视图长。请务必在 Fragment 的 onDestroyView() 方法中清除对视图的所有引用。
         binding.pullRefresh.recycler()
         binding.list.adapter = null

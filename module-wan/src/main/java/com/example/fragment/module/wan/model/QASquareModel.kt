@@ -21,6 +21,10 @@ class QASquareModel : BaseViewModel() {
         return userArticleResult
     }
 
+    fun clearUserArticleResult() {
+        userArticleResult.value = null
+    }
+
     fun getUserArticleHome() {
         getUserArticleList(getHomePage())
     }

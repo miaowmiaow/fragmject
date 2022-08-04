@@ -23,6 +23,10 @@ class ShareArticleViewModel : BaseViewModel() {
         return userShareArticleResult
     }
 
+    fun clearUserShareArticleResult() {
+        userShareArticleResult.value = null
+    }
+
     fun getUserShareArticlesHome(id: String) {
         this.id = id
         getUserShareArticles(id, getHomePage(1))

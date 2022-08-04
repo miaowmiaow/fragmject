@@ -21,6 +21,10 @@ class CoinRankViewModel : BaseViewModel() {
         return coinRankResult
     }
 
+    fun clearCoinRankResult() {
+        coinRankResult.value = null
+    }
+
     fun getCoinRankHome() {
         getCoinRank(getHomePage(1))
     }

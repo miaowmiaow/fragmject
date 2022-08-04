@@ -21,6 +21,10 @@ class MyShareViewModel : BaseViewModel() {
         return myShareArticleResult
     }
 
+    fun clearMyShareArticleResult() {
+        myShareArticleResult.value = null
+    }
+
     fun getMyShareArticleHome() {
         getMyShareArticle(getHomePage(1))
     }

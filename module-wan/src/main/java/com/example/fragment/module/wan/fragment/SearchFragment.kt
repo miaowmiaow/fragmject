@@ -52,6 +52,9 @@ class SearchFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        hotKeyViewModel.clearHotKeyResult()
+        searchViewModel.clearSearchHistoryResult()
+        searchViewModel.clearArticleQueryResult()
         binding.pullRefresh.recycler()
         binding.historyList.adapter = null
         binding.list.adapter = null

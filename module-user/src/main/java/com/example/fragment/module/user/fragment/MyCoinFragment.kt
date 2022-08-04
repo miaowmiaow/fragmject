@@ -43,6 +43,7 @@ class MyCoinFragment : RouterFragment() {
         super.onDestroyView()
         coinCountAnimator.removeUpdateListener(animatorUpdateListener)
         coinCountAnimator.cancel()
+        viewModel.clearMyCoinResult()
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

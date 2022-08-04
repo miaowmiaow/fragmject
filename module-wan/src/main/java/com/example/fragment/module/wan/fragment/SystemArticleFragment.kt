@@ -11,6 +11,7 @@ import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -43,6 +44,10 @@ class SystemArticleFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        //将数据缓存在 ViewModel 中来提升用户体验
+        viewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
+        viewModel.listScrollMap[cid] = binding.list.computeVerticalScrollOffset()
+        viewModel.clearSystemArticleResult(cid)
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

@@ -40,6 +40,7 @@ class QASquareFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.clearUserArticleResult()
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null

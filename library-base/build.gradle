@@ -71,6 +71,8 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
     api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     api "com.squareup.retrofit2:retrofit:2.9.0"
+    // android-gif-drawable
+    api "pl.droidsonroids.gif:android-gif-drawable:1.2.24"
     // leakcanary
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
     // 腾讯TBS

@@ -29,8 +29,7 @@ class PictureAlbumPopupWindow(context: Context) : PopupWindow(context) {
         initView()
     }
 
-    override fun dismiss() {
-        super.dismiss()
+    fun onDestroy() {
         binding.list.adapter = null
         _listener = null
         _binding = null

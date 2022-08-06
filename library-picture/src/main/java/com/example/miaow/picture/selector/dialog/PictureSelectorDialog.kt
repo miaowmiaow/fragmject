@@ -61,6 +61,7 @@ class PictureSelectorDialog : FullDialog() {
         super.onDestroyView()
         setStatusBar(binding.root, Color.parseColor("#00000000"), false)
         binding.list.adapter = null
+        pictureAlbumPopupWindow.onDestroy()
         _pictureAlbumPopupWindow = null
         _callback = null
         _binding = null

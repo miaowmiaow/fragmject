@@ -101,7 +101,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             if (currSelectPosition.contains(realPosition)) {
                 currSelectPosition.remove(realPosition)
             }
-            binding.dim.alpha = if (currSelectPosition.size < 9) 0f else 0.9f
+            binding.dim.alpha = 0f
             binding.serial.text = ""
             binding.originalBox.isSelected = false
         }

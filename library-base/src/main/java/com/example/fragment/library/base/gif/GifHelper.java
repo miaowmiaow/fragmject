@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import pl.droidsonroids.gif.GifDrawable;
 
 /**
- * 感谢 android-gif-drawable 和 android-gif-encoder ，在此基础上实现GIF格式图片压缩
+ * 在 android-gif-drawable 和 android-gif-encoder 基础上实现GIF格式图片压缩
+ * https://github.com/koral--/android-gif-drawable
+ * https://github.com/nbadal/android-gif-encoder
  */
 public class GifHelper {
 

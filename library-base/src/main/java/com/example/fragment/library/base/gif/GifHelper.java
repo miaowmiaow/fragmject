@@ -12,38 +12,50 @@ import java.util.ArrayList;
 import pl.droidsonroids.gif.GifDrawable;
 
 /**
- * GIF加载使用
- * https://github.com/koral--/android-gif-drawable
- * GIF合成使用
- * https://github.com/nbadal/android-gif-encoder
+ * 感谢 android-gif-drawable 和 android-gif-encoder ，在此基础上实现GIF格式图片压缩
  */
 public class GifHelper {
 
     public static void generateGIF(ArrayList<Bitmap> bitmaps, String savePath) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            AnimatedGifEncoder encoder = new AnimatedGifEncoder();
-            encoder.start(bos);
-            for (Bitmap bitmap : bitmaps) {
-                encoder.addFrame(bitmap);
+        new Thread(() -> {
+            ByteArrayOutputStream bos = null;
+            FileOutputStream outStream = null;
+            try {
+                bos = new ByteArrayOutputStream();
+                AnimatedGifEncoder encoder = new AnimatedGifEncoder();
+                encoder.start(bos);
+                for (Bitmap bitmap : bitmaps) {
+                    encoder.addFrame(bitmap);
+                }
+                encoder.finish();
+                outStream = new FileOutputStream(savePath);
+                outStream.write(bos.toByteArray());
+                outStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (bos != null) {
+                        bos.close();
+                    }
+                    if (outStream != null) {
+                        outStream.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            encoder.finish();
-            FileOutputStream outStream = new FileOutputStream(savePath);
-            outStream.write(bos.toByteArray());
-            outStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     /**
-     * 先把GIF分解成一张张bitmap，然后进行减帧操作，最后合成一张新的GIF
+     * 先把GIF分解成bitmap，进行减帧操作，最后合成一张新的GIF
      *
      * @param gifFile      gif文件
      * @param targetLength 压缩的目标体积
      * @param savePath     压缩后的保存路径
      */
-    public static void frameCompress(File gifFile, long targetLength, String savePath) {
+    public static void compressFrame(File gifFile, long targetLength, String savePath) {
         new Thread(() -> {
             GifDrawable gifDrawable = null;
             ByteArrayOutputStream bos = null;
@@ -78,7 +90,6 @@ public class GifHelper {
                     encoder.finish();
                     outStream = new FileOutputStream(savePath);
                     outStream.write(bos.toByteArray());
-                    outStream.close();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -101,13 +112,13 @@ public class GifHelper {
     }
 
     /**
-     * 先把GIF分解成一张张bitmap，然后进行减帧操作，最后合成一张新的GIF
+     * 先把GIF分解成bitmap，进行减帧操作，最后合成一张新的GIF
      *
      * @param gifFile   gif文件
      * @param maxFrames 最大帧数
      * @param savePath  压缩后的保存路径
      */
-    public static void frameCompress(File gifFile, int maxFrames, String savePath) {
+    public static void compressFrame(File gifFile, int maxFrames, String savePath) {
         new Thread(() -> {
             GifDrawable gifDrawable = null;
             ByteArrayOutputStream bos = null;
@@ -141,7 +152,6 @@ public class GifHelper {
                     encoder.finish();
                     outStream = new FileOutputStream(savePath);
                     outStream.write(bos.toByteArray());
-
                 }
             } catch (Exception e) {
                 e.printStackTrace();

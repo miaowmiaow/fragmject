@@ -83,7 +83,7 @@ class PicturePreviewDialog : FullDialog() {
                 binding.tabLayout.getTabAt(binding.viewpager2.currentItem)?.customView?.let { tab ->
                     tab.findViewById<View>(R.id.dim).alpha = 0.75f
                 }
-            } else {
+            } else if (currSelectPosition.size < 9) {
                 currSelectPosition.add(origPosition)
                 binding.selectBox.isSelected = true
                 binding.tabLayout.getTabAt(binding.viewpager2.currentItem)?.customView?.let { tab ->

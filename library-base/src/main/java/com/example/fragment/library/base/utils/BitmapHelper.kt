@@ -29,9 +29,9 @@ fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
         val bitmapHeight = bitmapOptions.outHeight
         //bitmapSize = 图片宽度 * 图片高度 * 色彩模式 （ARGB_8888 = 4byte）
         val bitmapSize = bitmapWidth * bitmapHeight * 4
+        bitmapOptions.inJustDecodeBounds = false
         if (bitmapSize > MAX_BITMAP_SIZE || targetWidth > 0) {
             val maxWidth = (bitmapWidth * sqrt(MAX_BITMAP_SIZE / bitmapSize)).toInt()
-            bitmapOptions.inJustDecodeBounds = false
             bitmapOptions.inScaled = true
             bitmapOptions.inDensity = bitmapWidth
             bitmapOptions.inTargetDensity = targetWidth.coerceAtMost(maxWidth)

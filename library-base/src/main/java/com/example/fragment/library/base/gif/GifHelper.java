@@ -1,6 +1,7 @@
 package com.example.fragment.library.base.gif;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 
 import com.example.fragment.library.base.gif.encoder.AnimatedGifEncoder;
 
@@ -50,44 +51,42 @@ public class GifHelper {
         }).start();
     }
 
+
     /**
-     * 先把GIF分解成bitmap，进行减帧操作，最后合成一张新的GIF
+     * 先把GIF分解成bitmap，进行缩放操作，最后合成一张新的GIF
      *
      * @param gifFile      gif文件
-     * @param targetLength 压缩的目标体积
+     * @param targetLength 压缩的目标Length
      * @param savePath     压缩后的保存路径
      */
-    public static void compressFrame(File gifFile, long targetLength, String savePath) {
+    public static void compressScale(File gifFile, long targetLength, String savePath) {
         new Thread(() -> {
             GifDrawable gifDrawable = null;
             ByteArrayOutputStream bos = null;
             FileOutputStream outStream = null;
             try {
                 long gifFileLength = gifFile.length();
-                gifDrawable = new GifDrawable(gifFile);
-                int gifFrames = gifDrawable.getNumberOfFrames();
-                int gifDuration = gifDrawable.getDuration();
                 if (gifFileLength > targetLength) {
+                    gifDrawable = new GifDrawable(gifFile);
+                    int gifFrames = gifDrawable.getNumberOfFrames();
+                    int gifDuration = gifDrawable.getDuration();
                     bos = new ByteArrayOutputStream();
                     AnimatedGifEncoder encoder = new AnimatedGifEncoder();
                     encoder.setRepeat(0);
                     encoder.start(bos);
                     encoder.setDelay(gifDuration / gifFrames);
-                    if (targetLength > gifFileLength / 2) {
-                        long surplusLength = gifFileLength - targetLength;
-                        int mold = (int) Math.ceil(gifFileLength * 1.0 / surplusLength);
-                        for (int i = 0; i < gifFrames; i++) {
-                            if (i % mold != 1) {
-                                encoder.addFrame(gifDrawable.seekToFrameAndGet(i));
-                            }
-                        }
-                    } else {
-                        int mold = (int) Math.ceil(gifFileLength * 1.0 / targetLength);
-                        for (int i = 0; i < gifFrames; i++) {
-                            if (i % mold == 0) {
-                                encoder.addFrame(gifDrawable.seekToFrameAndGet(i));
-                            }
-                        }
+                    //把 targetLength 除以 gifFileLength 的商开平方就得到缩放值
+                    float scale = (float) Math.sqrt(targetLength / (double) gifFileLength);
+                    //将每一帧图片缩放，最后合成新的 gif
+                    //按照此算法合成的 gif 总比预期大，希望有大佬指出原因
+                    for (int i = 0; i < gifFrames; i++) {
+                        Bitmap src = gifDrawable.seekToFrameAndGet(i);
+                        Matrix m = new Matrix();
+                        m.setScale(scale, scale);
+                        int width = src.getWidth();
+                        int height = src.getHeight();
+                        src = Bitmap.createBitmap(src, 0, 0, width, height, m, true);
+                        encoder.addFrame(src);
                     }
                     encoder.finish();
                     outStream = new FileOutputStream(savePath);
@@ -137,14 +136,14 @@ public class GifHelper {
                     encoder.setDelay(gifDuration / gifFrames);
                     if (maxFrames > gifFrames / 2) {
                         long surplusFrames = gifFrames - maxFrames;
-                        int mold = (int) Math.ceil(gifFrames * 1.0 / surplusFrames);
+                        int mold = (int) Math.ceil(gifFrames / (double) surplusFrames);
                         for (int i = 0; i < gifFrames; i++) {
                             if (i % mold != 1) {
                                 encoder.addFrame(gifDrawable.seekToFrameAndGet(i));
                             }
                         }
                     } else {
-                        int mold = (int) Math.ceil(gifFrames * 1.0 / maxFrames);
+                        int mold = (int) Math.ceil(gifFrames / (double) maxFrames);
                         for (int i = 0; i < gifFrames; i++) {
                             if (i % mold == 0) {
                                 encoder.addFrame(gifDrawable.seekToFrameAndGet(i));

@@ -47,10 +47,10 @@ class WebViewHelper(private val webView: WebView) {
                 view: WebView?,
                 request: WebResourceRequest?
             ): Boolean {
-                request?.url?.let { uri ->
-                    if (view != null && !("http" == uri.scheme || "https" == uri.scheme)) {
+                if (view != null && request != null && request.url != null) {
+                    if ("http" != request.url.scheme && "https" != request.url.scheme) {
                         try {
-                            view.context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                            view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }

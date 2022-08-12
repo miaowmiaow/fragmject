@@ -26,7 +26,7 @@ class UserAvatarFragment : RouterFragment() {
     private var _pictureSelectorCallback: PictureSelectorCallback? =
         object : PictureSelectorCallback {
             override fun onSelectedData(data: List<MediaBean>) {
-                if (data.isNullOrEmpty()) {
+                if (data.isEmpty()) {
                     return
                 }
                 viewModel.getUserBean().let {

@@ -100,7 +100,7 @@ class CoinRankFragment : RouterFragment() {
 
     override fun initViewModel(): BaseViewModel {
         viewModel.coinRankResult().observe(viewLifecycleOwner) { result ->
-            httpParseSuccess(result) { it ->
+            httpParseSuccess(result) {
                 it.data?.datas?.apply {
                     updateView(this)
                 }

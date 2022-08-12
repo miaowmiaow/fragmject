@@ -68,17 +68,10 @@ class UserCityFragment : RouterFragment() {
         val json = ReadAssetsFileUtil.getJson(activity, "city.json")
         val bean = Gson().fromJson(json, CityPickerBean::class.java)
         val citys: HashSet<CityBean> = HashSet()
-        for (areasBean in bean.data.areas) {
-            for (childrenBeanX in areasBean.children) {
-                citys.add(
-                    CityBean(
-                        childrenBeanX.id,
-                        childrenBeanX.name,
-                        areasBean.name,
-                        PinyinUtils.getPinYin(childrenBeanX.name),
-                        false
-                    )
-                )
+        for (areas in bean.data.areas) {
+            for (children in areas.children) {
+                val pinyin = PinyinUtils.getPinYin(children.name)
+                citys.add(CityBean(children.id, children.name, areas.name, pinyin, false))
             }
         }
         //set转换list
@@ -103,32 +96,25 @@ class UserCityFragment : RouterFragment() {
     }
 
     private fun RecyclerView.toppingToPosition(position: Int) {
-        if (layoutManager != null && layoutManager is LinearLayoutManager) {
-            val lm = layoutManager as LinearLayoutManager
-            val firstItemPosition = lm.findFirstVisibleItemPosition()
-            val lastItemPosition = lm.findLastVisibleItemPosition()
-            when {
-                position <= firstItemPosition -> {
-                    smoothScrollToPosition(position)
-                }
-                position <= lastItemPosition -> {
-                    val childView = getChildAt(position - firstItemPosition)
-                    smoothScrollBy(0, childView.top)
-                }
-                else -> {
-                    smoothScrollToPosition(position)
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrollStateChanged(
-                            recyclerView: RecyclerView,
-                            newState: Int
-                        ) {
-                            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                                removeOnScrollListener(this)
-                                toppingToPosition(position)
-                            }
-                        }
-                    })
-                }
+        if (layoutManager == null || layoutManager !is LinearLayoutManager) return
+        val lm = layoutManager as LinearLayoutManager
+        val firstItemPosition = lm.findFirstVisibleItemPosition()
+        val lastItemPosition = lm.findLastVisibleItemPosition()
+        when {
+            position <= firstItemPosition -> smoothScrollToPosition(position)
+            position <= lastItemPosition -> {
+                val childView = getChildAt(position - firstItemPosition)
+                smoothScrollBy(0, childView.top)
+            }
+            else -> {
+                smoothScrollToPosition(position)
+                addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        if (newState != RecyclerView.SCROLL_STATE_IDLE) return
+                        removeOnScrollListener(this)
+                        toppingToPosition(position)
+                    }
+                })
             }
         }
     }

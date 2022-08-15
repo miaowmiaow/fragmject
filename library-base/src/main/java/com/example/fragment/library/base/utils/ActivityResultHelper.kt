@@ -205,8 +205,9 @@ class ResultFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val callback: ActivityCallback? = activityCallbacks[requestCode]
-        callback?.onActivityResult(resultCode, data)
+        activityCallbacks.remove(requestCode)?.apply {
+            onActivityResult(resultCode, data)
+        }
     }
 
     override fun onRequestPermissionsResult(

@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 
 class ProjectViewModel : BaseViewModel() {
 
-    val listScrollMap: MutableMap<String, Int> = HashMap()
     val listDataMap: MutableMap<String, List<ArticleBean>> = HashMap()
+    val listScrollMap: MutableMap<String, Int> = HashMap()
 
     private var cid: String = ""
     private val projectListResult = MutableLiveData<Map<String, ArticleListBean>>()

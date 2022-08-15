@@ -128,7 +128,7 @@ abstract class BaseAdapter<T>(newData: List<T>? = null) :
     }
 
     fun getData(): MutableList<T> {
-        return this.data
+        return ArrayList(this.data)
     }
 
     fun getItem(position: Int): T {

@@ -29,9 +29,8 @@ public class ReadAssetsFileUtil {
             is.read(buffer);
             is.close();
             // Convert the buffer into a string.
-            String text = new String(buffer, "utf-8");
             // Finally stick the string into the text view.
-            return text;
+            return new String(buffer, "utf-8");
         } catch (IOException e) {
             // Should never happen!
             e.printStackTrace();

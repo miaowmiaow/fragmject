@@ -6,7 +6,10 @@ import com.example.fragment.library.base.provider.BaseContentProvider
 /**
  * 获取屏幕宽度
  */
-fun screenWidth() = BaseContentProvider.get().getScreenWidth()
+fun screenWidth(): Int {
+    val width = BaseContentProvider.get().getScreenWidth()
+    return if (width % 2 == 0) width else width + 1
+}
 
 fun Context.getScreenWidth(): Int {
     return resources.displayMetrics.widthPixels
@@ -15,7 +18,10 @@ fun Context.getScreenWidth(): Int {
 /**
  * 获取屏幕高度
  */
-fun screenHeight() = BaseContentProvider.get().getScreenHeight()
+fun screenHeight() : Int {
+    val height = BaseContentProvider.get().getScreenHeight()
+    return if (height % 2 == 0) height else height + 1
+}
 
 fun Context.getScreenHeight(): Int {
     return resources.displayMetrics.heightPixels

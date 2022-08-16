@@ -13,7 +13,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:background="#f0555555">
+        android:background="#555555">
 
         <ImageView
             android:id="@+id/back"
@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:layout_alignParentBottom="true"
-        android:background="#f0555555">
+        android:background="#555555">
 
         <TextView
             android:id="@+id/editor"

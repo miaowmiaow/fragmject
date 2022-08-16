@@ -93,26 +93,23 @@ abstract class BaseAdapter<T>(newData: List<T>? = null) :
 
     @SuppressLint("NotifyDataSetChanged")
     fun setNewData(newData: List<T>? = null) {
-        if (!newData.isNullOrEmpty()) {
-            this.data.clear()
-            this.data.addAll(newData)
-            notifyDataSetChanged()
-        }
+        if (newData.isNullOrEmpty()) return
+        this.data.clear()
+        this.data.addAll(newData)
+        notifyDataSetChanged()
     }
 
     fun addData(newData: List<T>? = null) {
-        if (!newData.isNullOrEmpty()) {
-            this.data.addAll(newData)
-            notifyItemRangeChanged(this.data.size - newData.size, newData.size)
-        }
+        if (newData.isNullOrEmpty()) return
+        this.data.addAll(newData)
+        notifyItemRangeChanged(this.data.size - newData.size, newData.size)
     }
 
     @SuppressLint("NotifyDataSetChanged")
     fun addData(index: Int, newData: List<T>? = null) {
-        if (newData != null) {
-            this.data.addAll(index, newData)
-            notifyDataSetChanged()
-        }
+        if (newData == null) return
+        this.data.addAll(index, newData)
+        notifyDataSetChanged()
     }
 
     fun removeData(position: Int) {

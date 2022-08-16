@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
 import java.io.IOException
 import kotlin.math.sqrt
 
@@ -43,31 +42,34 @@ fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
     return null
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
 fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap? {
-    if (ContentResolver.SCHEME_CONTENT == uri.scheme || ContentResolver.SCHEME_FILE == uri.scheme) {
-        try {
-            val src = ImageDecoder.createSource(contentResolver, uri)
-            return ImageDecoder.decodeBitmap(src) { decoder, info, _ ->
-                val bitmapWidth = info.size.width
-                val bitmapHeight = info.size.height
-                //bitmapSize = 图片宽度 * 图片高度 * 色彩模式 （ARGB_8888 = 4byte）
-                val bitmapSize = bitmapWidth * bitmapHeight * 4
-                if (bitmapSize > MAX_BITMAP_SIZE || targetWidth > 0) {
-                    val maxWidth = bitmapWidth * sqrt(MAX_BITMAP_SIZE / bitmapSize)
-                    val scale = targetWidth.toFloat().coerceAtMost(maxWidth) / bitmapWidth
-                    decoder.setTargetSize(
-                        (bitmapWidth * scale).toInt(),
-                        (bitmapHeight * scale).toInt()
-                    )
-                }
-                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        return null
     }
-    return null
+    if (ContentResolver.SCHEME_CONTENT != uri.scheme && ContentResolver.SCHEME_FILE != uri.scheme) {
+        return null
+    }
+    return try {
+        val src = ImageDecoder.createSource(contentResolver, uri)
+        ImageDecoder.decodeBitmap(src) { decoder, info, _ ->
+            val bitmapWidth = info.size.width
+            val bitmapHeight = info.size.height
+            //bitmapSize = 图片宽度 * 图片高度 * 色彩模式 （ARGB_8888 = 4byte）
+            val bitmapSize = bitmapWidth * bitmapHeight * 4
+            if (bitmapSize > MAX_BITMAP_SIZE || targetWidth > 0) {
+                val maxWidth = bitmapWidth * sqrt(MAX_BITMAP_SIZE / bitmapSize)
+                val scale = targetWidth.toFloat().coerceAtMost(maxWidth) / bitmapWidth
+                decoder.setTargetSize(
+                    (bitmapWidth * scale).toInt(),
+                    (bitmapHeight * scale).toInt()
+                )
+            }
+            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
 }
 
 fun Context.getBitmapPathFromUri(uri: Uri): String {

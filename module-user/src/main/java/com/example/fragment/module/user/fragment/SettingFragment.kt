@@ -97,14 +97,14 @@ class SettingFragment : RouterFragment() {
         binding.screenRecord.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 countDownTimer.start()
-                settingViewModel.updateScreenRecord("1")
+                binding.screenRecord.isChecked = true
             } else {
                 countDownTimer.cancel()
                 buttonView.postDelayed({
                     activity.dismissTips()
                     activity.stopScreenRecord()
                 }, 1000)
-                settingViewModel.updateScreenRecord("0")
+                binding.screenRecord.isChecked = false
             }
         }
         binding.cacheSize.text = CacheUtils.getTotalSize(activity)
@@ -155,12 +155,6 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        settingViewModel.screenRecordResult().observe(viewLifecycleOwner) {
-            when (it) {
-                "0" -> binding.screenRecord.isChecked = false
-                "1" -> binding.screenRecord.isChecked = true
-            }
-        }
         settingViewModel.uiModeResult().observe(viewLifecycleOwner) {
             when (it) {
                 "-1" -> {

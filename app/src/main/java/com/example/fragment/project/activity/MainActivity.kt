@@ -66,26 +66,23 @@ class MainActivity : RouterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
-        WanHelper.privacyAgreement({
-            initContentView()
-            initViewModel()
-        }, {
+        WanHelper.privacyAgreement({ initContentView() }, {
             window.setBackgroundDrawableResource(R.drawable.bg)
+            val listener = object : StandardDialog.OnDialogClickListener {
+                override fun onConfirm(dialog: StandardDialog) {
+                    WanHelper.allowPrivacyAgreement()
+                    initContentView()
+                }
+
+                override fun onCancel(dialog: StandardDialog) {
+                    WanHelper.denyPrivacyAgreement()
+                    finish()
+                }
+            }
             StandardDialog.newInstance()
                 .setTitle(getString(R.string.privacy_agreement_title))
                 .setContent(getString(R.string.privacy_agreement_content))
-                .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
-                    override fun onConfirm(dialog: StandardDialog) {
-                        WanHelper.allowPrivacyAgreement()
-                        initContentView()
-                        initViewModel()
-                    }
-
-                    override fun onCancel(dialog: StandardDialog) {
-                        WanHelper.denyPrivacyAgreement()
-                        finish()
-                    }
-                })
+                .setOnDialogClickListener(listener)
                 .show(supportFragmentManager)
         })
     }
@@ -94,6 +91,14 @@ class MainActivity : RouterActivity() {
         super.onDestroy()
         WanHelper.close()
         WebViewManager.destroy()
+    }
+
+    private fun initContentView() {
+        window.setFormat(PixelFormat.TRANSLUCENT)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
+        initViewModel()
+        initSDK()
     }
 
     private fun initViewModel() {
@@ -111,13 +116,6 @@ class MainActivity : RouterActivity() {
             }
         }
         userViewModel.userResult()
-    }
-
-    private fun initContentView() {
-        window.setFormat(PixelFormat.TRANSLUCENT)
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-        setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
-        initSDK()
     }
 
     //测试自动埋点注解请忽略

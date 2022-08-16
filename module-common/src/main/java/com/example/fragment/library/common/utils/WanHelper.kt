@@ -79,19 +79,6 @@ object WanHelper {
     }
 
     /**
-     * status :
-     *       0 : 关闭,
-     *       1 : 开启,
-     */
-    fun setScreenRecord(status: String) {
-        KVDatabase.set(SCREEN_RECORD, status)
-    }
-
-    fun getScreenRecord(result: (String) -> Unit) {
-        KVDatabase.get(SCREEN_RECORD) { result.invoke(it) }
-    }
-
-    /**
      * 设置用户信息
      */
     fun setUser(userBean: UserBean) {

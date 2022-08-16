@@ -7,27 +7,6 @@ import com.example.fragment.library.common.utils.WanHelper
 
 class SettingViewModel : BaseViewModel() {
 
-    private val screenRecordResult: MutableLiveData<String> by lazy {
-        MutableLiveData<String>().also {
-            getScreenRecord()
-        }
-    }
-
-    fun screenRecordResult(): LiveData<String> {
-        return screenRecordResult
-    }
-
-    fun updateScreenRecord(status: String) {
-        WanHelper.setScreenRecord(status)
-        screenRecordResult.postValue(status)
-    }
-
-    private fun getScreenRecord() {
-        WanHelper.getScreenRecord {
-            screenRecordResult.postValue(it)
-        }
-    }
-
     private val uiModeResult: MutableLiveData<String> by lazy {
         MutableLiveData<String>().also {
             getUiMode()

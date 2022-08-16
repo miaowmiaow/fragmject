@@ -56,40 +56,34 @@ class BannerHelper(
         recyclerView.post {
             if (orientation == RecyclerView.HORIZONTAL) {
                 val lmWidth = layoutManager.width
-                if (lmWidth > 0) {
-                    var dx = if (itemView.width < lmWidth / 2) {
-                        itemView.right
+                if (lmWidth < 0) return@post
+                var dx = if (itemView.width < lmWidth / 2) {
+                    itemView.right
+                } else {
+                    val offset = (lmWidth - itemView.width) / 2
+                    if (velocityX < 0) {
+                        offset - (lmWidth - itemView.right)
                     } else {
-                        val offset = (lmWidth - itemView.width) / 2
-                        if (velocityX < 0) {
-                            offset - (lmWidth - itemView.right)
-                        } else {
-                            itemView.right - offset
-                        }
+                        itemView.right - offset
                     }
-                    if (dx == 0) {
-                        dx = itemView.width
-                    }
-                    recyclerView.smoothScrollBy(dx, 0, null, 250)
                 }
+                if (dx == 0) dx = itemView.width
+                recyclerView.smoothScrollBy(dx, 0, null, 250)
             } else {
                 val lmHeight = layoutManager.height
-                if (lmHeight > 0) {
-                    var dy = if (itemView.height < lmHeight / 2) {
-                        itemView.bottom
+                if (lmHeight < 0) return@post
+                var dy = if (itemView.height < lmHeight / 2) {
+                    itemView.bottom
+                } else {
+                    val offset = (lmHeight - itemView.height) / 2
+                    if (velocityY < 0) {
+                        offset - (lmHeight - itemView.bottom)
                     } else {
-                        val offset = (lmHeight - itemView.height) / 2
-                        if (velocityY < 0) {
-                            offset - (lmHeight - itemView.bottom)
-                        } else {
-                            itemView.bottom - offset
-                        }
+                        itemView.bottom - offset
                     }
-                    if (dy == 0) {
-                        dy = itemView.height
-                    }
-                    recyclerView.smoothScrollBy(0, dy, null, 250)
                 }
+                if (dy == 0) dy = itemView.height
+                recyclerView.smoothScrollBy(0, dy, null, 250)
             }
             recyclerView.postDelayed({
                 _onItemScrollListener?.onItemScroll(findItemPosition())

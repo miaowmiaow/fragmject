@@ -22,10 +22,6 @@ class HotKeyViewModel : BaseViewModel() {
         return hotKeyResult
     }
 
-    fun clearHotKeyResult() {
-        hotKeyResult.value = listOf()
-    }
-
     /**
      * 获取搜索热词
      */

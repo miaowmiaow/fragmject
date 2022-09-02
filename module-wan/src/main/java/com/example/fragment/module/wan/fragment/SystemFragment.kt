@@ -44,7 +44,7 @@ class SystemFragment : RouterFragment() {
             cid = it.getString(Keys.CID, "0")
         }
         binding.black.setOnClickListener {
-            activity.onBackPressed()
+            onBackPressed()
         }
     }
 

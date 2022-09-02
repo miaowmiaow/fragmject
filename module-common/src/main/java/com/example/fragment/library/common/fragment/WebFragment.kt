@@ -50,7 +50,7 @@ class WebFragment : RouterFragment() {
 
     override fun initView() {
         val url = Uri.decode(requireArguments().getString(Keys.URL))
-        val webView = WebViewManager.obtain(activity)
+        val webView = WebViewManager.obtain(requireActivity())
         binding.webContainer.addView(
             webView, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -73,16 +73,16 @@ class WebFragment : RouterFragment() {
             })
             loadUrl(url)
         }
-        val onBackPressed = activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            if (!webViewHelper.canGoBack()) {
-                this.isEnabled = false
-                activity.onBackPressed()
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+                if (!webViewHelper.canGoBack()) {
+                    this.isEnabled = false
+                    onBackPressed()
+                }
             }
-        }
         binding.black.setOnClickListener {
             if (!webViewHelper.canGoBack()) {
-                onBackPressed.isEnabled = false
-                activity.onBackPressed()
+                callback.isEnabled = false
+                onBackPressed()
             }
         }
         binding.forward.setOnClickListener {
@@ -95,7 +95,7 @@ class WebFragment : RouterFragment() {
             try {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                activity.startActivity(intent)
+                requireActivity().startActivity(intent)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

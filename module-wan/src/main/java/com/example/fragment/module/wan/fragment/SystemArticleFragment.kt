@@ -12,7 +12,6 @@ import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.databinding.SystemArticleFragmentBinding
@@ -83,12 +82,10 @@ class SystemArticleFragment : RouterFragment() {
         }
         viewModel.systemArticleResult(cid).observe(viewLifecycleOwner) { result ->
             if (result.containsKey(cid)) {
-                httpParseSuccess(result[cid] as ArticleListBean) {
-                    if (viewModel.isHomePage(cid)) {
-                        articleAdapter.setNewData(it.data?.datas)
-                    } else {
-                        articleAdapter.addData(it.data?.datas)
-                    }
+                if (viewModel.isHomePage(cid)) {
+                    articleAdapter.setNewData(result[cid])
+                } else {
+                    articleAdapter.addData(result[cid])
                 }
             }
             //结束下拉刷新状态

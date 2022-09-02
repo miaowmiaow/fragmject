@@ -1,6 +1,6 @@
 buildscript {
-    ext.gradle_version = "7.1.2"
-    ext.kotlin_version = '1.6.21'
+    ext.gradle_version = '7.2.2'
+    ext.kotlin_version = '1.7.10'
 
     dependencies {
 //        classpath 'com.example.miaow:plugin:1.0.0'

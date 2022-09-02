@@ -44,7 +44,7 @@ class UserAvatarFragment : RouterFragment() {
         }
 
         override fun deny() {
-            PermissionDialog.alert(activity, "存储")
+            PermissionDialog.alert(requireActivity(), "存储")
         }
     }
     private val permissionsCallback = _permissionsCallback!!
@@ -66,10 +66,10 @@ class UserAvatarFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.onBackPressed() }
+        binding.black.setOnClickListener { onBackPressed() }
         binding.image.loadCircleCrop(R.drawable.avatar_1_raster)
         binding.album.setOnClickListener {
-            activity.requestStorage(permissionsCallback)
+            requireActivity().requestStorage(permissionsCallback)
         }
     }
 

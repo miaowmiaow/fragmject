@@ -12,8 +12,10 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.databinding.ProjectFragmentBinding
 import com.example.fragment.module.wan.model.ProjectTreeViewModel
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ProjectFragment : RouterFragment() {
@@ -25,7 +27,8 @@ class ProjectFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: ProjectTreeViewModel by activityViewModels()
+    private val eventViewModel: TabEventViewMode by activityViewModels()
+    private val projectTreeViewModel: ProjectTreeViewModel by activityViewModels()
     private var _binding: ProjectFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -46,8 +49,8 @@ class ProjectFragment : RouterFragment() {
     override fun initView() {}
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.projectTreeResult().observe(viewLifecycleOwner) { updateView(it) }
-        return viewModel
+        projectTreeViewModel.projectTreeResult().observe(viewLifecycleOwner) { updateView(it) }
+        return projectTreeViewModel
     }
 
     private fun updateView(data: List<ProjectTreeBean>) {
@@ -66,6 +69,17 @@ class ProjectFragment : RouterFragment() {
                 }
             }
         }
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                eventViewModel.setProjectTab(1)
+            }
+        })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
             tab.text = data[position].name
         }.attach()

@@ -16,9 +16,9 @@ class ProjectViewModel : BaseViewModel() {
     val listScrollMap: MutableMap<String, Int> = HashMap()
 
     private var cid: String = ""
-    private val projectListResult = MutableLiveData<Map<String, ArticleListBean>>()
+    private val projectListResult = MutableLiveData<Map<String, List<ArticleBean>>>()
 
-    fun projectListResult(cid: String): LiveData<Map<String, ArticleListBean>> {
+    fun projectListResult(cid: String): LiveData<Map<String, List<ArticleBean>>> {
         this.cid = cid
         if (!listDataMap.containsKey(cid)) {
             getProjectHome(cid)
@@ -26,8 +26,8 @@ class ProjectViewModel : BaseViewModel() {
         return projectListResult
     }
 
-    fun clearProjectListResult(cid: String){
-        projectListResult.value = mapOf(cid to ArticleListBean())
+    fun clearProjectListResult(cid: String) {
+        projectListResult.value = mapOf(cid to listOf())
     }
 
     fun getProjectHome(cid: String) {
@@ -61,7 +61,7 @@ class ProjectViewModel : BaseViewModel() {
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
             //通过LiveData通知界面更新
-            projectListResult.postValue(mapOf(cid to response))
+            response.data?.datas?.let { projectListResult.postValue(mapOf(cid to it)) }
         }
     }
 }

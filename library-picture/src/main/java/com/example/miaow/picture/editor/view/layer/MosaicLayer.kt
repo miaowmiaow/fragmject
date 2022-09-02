@@ -87,8 +87,8 @@ class MosaicLayer(private val parent: View) : ILayer {
                     val dx = abs(event.x - touchX)
                     val dy = abs(event.y - touchY)
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        val x = (event.x + touchX) / 2
-                        val y = (event.y + touchY) / 2
+                        val x = (event.x + touchX) * 0.5f
+                        val y = (event.y + touchY) * 0.5f
                         path.quadTo(touchX, touchY, x, y)
                         touchX = event.x
                         touchY = event.y

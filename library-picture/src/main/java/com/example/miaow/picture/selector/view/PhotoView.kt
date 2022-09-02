@@ -43,8 +43,8 @@ class PhotoView @JvmOverloads constructor(
     private val gListener = object : GestureDetector.SimpleOnGestureListener() {
 
         override fun onScroll(
-            e1: MotionEvent?,
-            e2: MotionEvent?,
+            e1: MotionEvent,
+            e2: MotionEvent,
             distanceX: Float,
             distanceY: Float
         ): Boolean {
@@ -53,8 +53,8 @@ class PhotoView @JvmOverloads constructor(
         }
 
         override fun onFling(
-            e1: MotionEvent?,
-            e2: MotionEvent?,
+            e1: MotionEvent,
+            e2: MotionEvent,
             velocityX: Float,
             velocityY: Float
         ): Boolean {
@@ -68,15 +68,13 @@ class PhotoView @JvmOverloads constructor(
             return true
         }
 
-        override fun onDoubleTap(e: MotionEvent?): Boolean {
-            e?.let { event ->
-                if (isDoubleTap) {
-                    onScale(1 / 2f, event.x, event.y)
-                } else {
-                    onScale(2f, event.x, event.y)
-                }
-                isDoubleTap = !isDoubleTap
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            if (isDoubleTap) {
+                onScale(0.5f, e.x, e.y)
+            } else {
+                onScale(2f, e.x, e.y)
             }
+            isDoubleTap = !isDoubleTap
             return true
         }
     }

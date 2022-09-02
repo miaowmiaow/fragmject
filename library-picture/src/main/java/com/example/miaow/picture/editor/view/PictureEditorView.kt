@@ -12,14 +12,14 @@ import android.view.View
 import android.widget.Scroller
 import androidx.annotation.ColorInt
 import androidx.core.graphics.values
+import com.example.fragment.library.base.utils.getBitmapFromPath
+import com.example.fragment.library.base.utils.getBitmapFromUri
 import com.example.miaow.picture.R
 import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.view.layer.GraffitiLayer
 import com.example.miaow.picture.editor.view.layer.MosaicLayer
 import com.example.miaow.picture.editor.view.layer.OnStickerClickListener
 import com.example.miaow.picture.editor.view.layer.StickerLayer
-import com.example.fragment.library.base.utils.getBitmapFromPath
-import com.example.fragment.library.base.utils.getBitmapFromUri
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -83,22 +83,22 @@ class PictureEditorView @JvmOverloads constructor(
     private val scroller = Scroller(context)
     private val gListener = object : GestureDetector.SimpleOnGestureListener() {
 
-        override fun onDown(e: MotionEvent?): Boolean {
+        override fun onDown(e: MotionEvent): Boolean {
             if (!scroller.isFinished) {
                 scroller.forceFinished(true)
             }
             return false
         }
 
-        override fun onShowPress(e: MotionEvent?) {}
+        override fun onShowPress(e: MotionEvent) {}
 
-        override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
             return false
         }
 
         override fun onScroll(
-            e1: MotionEvent?,
-            e2: MotionEvent?,
+            e1: MotionEvent,
+            e2: MotionEvent,
             distanceX: Float,
             distanceY: Float
         ): Boolean {
@@ -106,11 +106,11 @@ class PictureEditorView @JvmOverloads constructor(
             return true
         }
 
-        override fun onLongPress(e: MotionEvent?) {}
+        override fun onLongPress(e: MotionEvent) {}
 
         override fun onFling(
-            e1: MotionEvent?,
-            e2: MotionEvent?,
+            e1: MotionEvent,
+            e2: MotionEvent,
             velocityX: Float,
             velocityY: Float
         ): Boolean {
@@ -124,16 +124,14 @@ class PictureEditorView @JvmOverloads constructor(
             return true
         }
 
-        override fun onDoubleTap(e: MotionEvent?): Boolean {
-            e?.let { event ->
-                if (isDoubleTap) {
-                    onScale(1 / initScaleY / currScaleX(), event.x, event.y)
-                } else {
-                    val currBitmapWidth = bitmapRectF.width() * currScaleX()
-                    onScale(viewWidth / currBitmapWidth, event.x, event.y)
-                }
-                isDoubleTap = !isDoubleTap
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            if (isDoubleTap) {
+                onScale(1 / initScaleY / currScaleX(), e.x, e.y)
+            } else {
+                val currBitmapWidth = bitmapRectF.width() * currScaleX()
+                onScale(viewWidth / currBitmapWidth, e.x, e.y)
             }
+            isDoubleTap = !isDoubleTap
             return true
         }
     }
@@ -159,7 +157,7 @@ class PictureEditorView @JvmOverloads constructor(
         binTextPaint.textSize = binTextSize
         binTextPaint.style = Paint.Style.STROKE
         binTextWidth = binTextPaint.measureText(BIN_TEXT)
-        binTextBaselineY = abs(binTextPaint.ascent() + binTextPaint.descent()) / 2
+        binTextBaselineY = abs(binTextPaint.ascent() + binTextPaint.descent()) * 0.5f
     }
 
     fun setBitmapPathOrUri(path: String?, uri: Uri?) {
@@ -174,14 +172,18 @@ class PictureEditorView @JvmOverloads constructor(
         stickerLayers.forEach { sticker ->
             sticker.isEnabled = false
         }
-        if (mode == Mode.GRAFFITI || mode == Mode.ERASER) {
-            graffitiLayer.isEnabled = true
-            graffitiLayer.setPaintMode(mode)
-        } else if (mode == Mode.MOSAIC) {
-            mosaicLayer.isEnabled = true
-        } else if (mode == Mode.STICKER) {
-            stickerLayers.forEach { layer ->
-                layer.isEnabled = true
+        when (mode) {
+            Mode.GRAFFITI, Mode.ERASER -> {
+                graffitiLayer.isEnabled = true
+                graffitiLayer.setPaintMode(mode)
+            }
+            Mode.MOSAIC -> {
+                mosaicLayer.isEnabled = true
+            }
+            Mode.STICKER -> {
+                stickerLayers.forEach { layer ->
+                    layer.isEnabled = true
+                }
             }
         }
     }
@@ -379,17 +381,17 @@ class PictureEditorView @JvmOverloads constructor(
         val binRight = binLeft + BIN_WIDTH / currScaleX()
         val binBottom = binTop + BIN_HEIGHT / currScaleY()
         binRectF.set(binLeft, binTop, binRight, binBottom)
-        val binIconLeft = binRectF.centerX() - BIN_ICON_WIDTH / currScaleX() / 2
+        val binIconLeft = binRectF.centerX() - (BIN_ICON_WIDTH / currScaleX()) * 0.5f
         val binIconTop = binRectF.top + BIN_ROUND / currScaleX()
-        val binIconRight = binRectF.centerX() + BIN_ICON_WIDTH / currScaleX() / 2
+        val binIconRight = binRectF.centerX() + (BIN_ICON_WIDTH / currScaleX()) * 0.5f
         val binIconBottom = binRectF.top + (BIN_ROUND + BIN_ICON_WIDTH) / currScaleY()
         binIconRectF.set(binIconLeft, binIconTop, binIconRight, binIconBottom)
-        binTextX = binRectF.centerX() - binTextWidth / currScaleX() / 2
+        binTextX = binRectF.centerX() - (binTextWidth / currScaleX()) * 0.5f
         binTextY = binRectF.bottom - BIN_ROUND / currScaleY()
         binTextSize = BIN_TEXT_SIZE / currScaleX()
     }
 
-    private fun initBitmap(){
+    private fun initBitmap() {
         post {
             bitmapPath?.let {
                 context.getBitmapFromPath(it, viewWidth)?.let { bitmap ->

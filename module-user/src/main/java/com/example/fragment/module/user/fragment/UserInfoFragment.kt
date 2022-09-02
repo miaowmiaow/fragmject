@@ -42,8 +42,8 @@ class UserInfoFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.onBackPressed() }
-        binding.avatar.setOnClickListener { activity.navigation(Router.USER_AVATAR) }
+        binding.black.setOnClickListener { onBackPressed() }
+        binding.avatar.setOnClickListener { navigation(Router.USER_AVATAR) }
         binding.avatarImg.loadCircleCrop(R.drawable.avatar_1_raster)
         binding.sex.setOnClickListener {
             SexDialog.newInstance()
@@ -72,7 +72,7 @@ class UserInfoFragment : RouterFragment() {
                 .show(childFragmentManager)
         }
         binding.city.setOnClickListener {
-            activity.navigation(Router.USER_CITY)
+            navigation(Router.USER_CITY)
         }
     }
 

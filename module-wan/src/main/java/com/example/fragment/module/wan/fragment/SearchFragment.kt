@@ -52,8 +52,6 @@ class SearchFragment : RouterFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        hotKeyViewModel.clearHotKeyResult()
-        searchViewModel.clearSearchHistoryResult()
         searchViewModel.clearArticleQueryResult()
         binding.pullRefresh.recycler()
         binding.historyList.adapter = null
@@ -64,7 +62,7 @@ class SearchFragment : RouterFragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun initView() {
         binding.search.setText(requireArguments().getString(Keys.VALUE).toString())
-        binding.cancel.setOnClickListener { activity.onBackPressed() }
+        binding.cancel.setOnClickListener { onBackPressed() }
         //搜索
         binding.search.setOnTouchListener { _, _ ->
             searchViewModel.getSearchHistory()
@@ -122,8 +120,7 @@ class SearchFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         hotKeyViewModel.hotKeyResult().observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE
-            binding.pullRefresh.visibility = GONE
-            binding.hotKey.visibility = if (it.isNotEmpty()) VISIBLE else GONE
+            binding.hotKey.visibility = VISIBLE
             binding.fbl.removeAllViews()
             it.forEach { hotKey ->
                 val inflater = LayoutInflater.from(binding.fbl.context)
@@ -132,12 +129,13 @@ class SearchFragment : RouterFragment() {
                 tv.setOnClickListener { search(hotKey.name) }
                 binding.fbl.addView(tv)
             }
+            binding.pullRefresh.visibility = GONE
         }
         searchViewModel.searchHistoryResult().observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE
-            binding.pullRefresh.visibility = GONE
-            binding.searchHistory.visibility = if (it.isNotEmpty()) VISIBLE else GONE
+            binding.searchHistory.visibility = VISIBLE
             historySearchAdapter.setNewData(it)
+            binding.pullRefresh.visibility = GONE
         }
         val key = binding.search.text.toString()
         searchViewModel.articleQueryResult(key).observe(viewLifecycleOwner) {
@@ -150,6 +148,7 @@ class SearchFragment : RouterFragment() {
             binding.pullRefresh.finishRefresh()
             //设置加载更多状态
             binding.pullRefresh.setLoadMore(searchViewModel.hasNextPage())
+            binding.pullRefresh.visibility = if (articleAdapter.itemCount > 0) VISIBLE else GONE
         }
         return searchViewModel
     }
@@ -171,7 +170,7 @@ class SearchFragment : RouterFragment() {
 
     private fun checkParameter(title: String): Boolean {
         if (title.isBlank()) {
-            activity.showTips("搜索关键词不能为空")
+            showTips("搜索关键词不能为空")
             return false
         }
         return true

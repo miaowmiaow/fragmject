@@ -44,7 +44,7 @@ class ShareArticleFragment : RouterFragment() {
 
     override fun initView() {
         id = requireArguments().getString(Keys.UID).toString()
-        binding.black.setOnClickListener { activity.onBackPressed() }
+        binding.black.setOnClickListener { onBackPressed() }
         //用户分享 列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter

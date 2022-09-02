@@ -45,7 +45,10 @@ class CoinRankFragment : RouterFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPressedCallback)
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            backPressedCallback
+        )
     }
 
     private fun backPressedDialog() {
@@ -54,12 +57,12 @@ class CoinRankFragment : RouterFragment() {
             .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                 override fun onConfirm(dialog: StandardDialog) {
                     backPressedCallback.isEnabled = true
-                    activity.navigation(Router.MAIN)
+                    navigation(Router.MAIN)
                 }
 
                 override fun onCancel(dialog: StandardDialog) {
                     backPressedCallback.isEnabled = false
-                    activity.onBackPressed()
+                    onBackPressed()
                 }
             })
             .show(childFragmentManager)
@@ -75,11 +78,11 @@ class CoinRankFragment : RouterFragment() {
 
     override fun initView() {
         binding.black.setOnClickListener {
-            activity.onBackPressed()
+            onBackPressed()
         }
         binding.rule.setOnClickListener {
             val url = Uri.encode("https://www.wanandroid.com/blog/show/2653")
-            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
+            navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         //积分排行榜列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)

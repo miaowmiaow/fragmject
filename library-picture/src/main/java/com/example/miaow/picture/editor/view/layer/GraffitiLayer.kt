@@ -97,8 +97,8 @@ class GraffitiLayer(private val parent: View) : ILayer {
                     val dx = abs(event.x - this.touchX)
                     val dy = abs(event.y - this.touchY)
                     if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-                        val x = (event.x + this.touchX) / 2
-                        val y = (event.y + this.touchY) / 2
+                        val x = (event.x + this.touchX) * 0.5f
+                        val y = (event.y + this.touchY) * 0.5f
                         path.quadTo(this.touchX, this.touchY, x, y)
                         this.touchX = event.x
                         this.touchY = event.y

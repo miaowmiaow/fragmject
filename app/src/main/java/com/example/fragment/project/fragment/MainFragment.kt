@@ -19,6 +19,7 @@ import com.example.fragment.library.common.adapter.HotKeyAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.user.fragment.UserFragment
 import com.example.fragment.module.wan.fragment.HomeFragment
 import com.example.fragment.module.wan.fragment.NavigationFragment
@@ -33,7 +34,8 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
-    private val viewModel: HotKeyViewModel by activityViewModels()
+    private val tabEventViewModel: TabEventViewMode by activityViewModels()
+    private val hotKeyViewModel: HotKeyViewModel by activityViewModels()
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
     private var _hotKeyHelper: BannerHelper? = null
@@ -62,7 +64,7 @@ class MainFragment : RouterFragment() {
             binding.hotKey, RecyclerView.VERTICAL, viewLifecycleOwner.lifecycle
         )
         binding.search.setOnClickListener { search() }
-        binding.userShare.setOnClickListener { activity.navigation(Router.USER_SHARE) }
+        binding.userShare.setOnClickListener { navigation(Router.USER_SHARE) }
         //滚动热词
         hotKeyAdapter.setOnItemClickListener(object : BaseAdapter.OnItemClickListener {
             override fun onItemClick(holder: BaseAdapter.ViewBindHolder, position: Int) {
@@ -74,9 +76,9 @@ class MainFragment : RouterFragment() {
         val tabIcon = intArrayOf(
             R.drawable.ic_bottom_bar_home,
             R.drawable.ic_bottom_bar_navigation,
-            R.drawable.ic_bottom_bar_faq,
-            R.drawable.ic_bottom_bar_system,
-            R.drawable.ic_bottom_bar_project
+            R.drawable.ic_bottom_bar_qa,
+            R.drawable.ic_bottom_bar_project,
+            R.drawable.ic_bottom_bar_user
         )
         binding.viewpager2.adapter = object : FragmentStateAdapter(
             childFragmentManager,
@@ -108,7 +110,16 @@ class MainFragment : RouterFragment() {
                 setColorFilter(tab.customView, R.color.text_theme)
             }
 
-            override fun onTabReselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                when (tab.position) {
+                    0 -> tabEventViewModel.setHomeTab(1)
+                    1 -> tabEventViewModel.setNavigationTab(1)
+                    2 -> tabEventViewModel.setQATab(1)
+                    3 -> tabEventViewModel.setProjectTab(1)
+                    4 -> tabEventViewModel.setUserTab(1)
+                    else -> throw ArrayIndexOutOfBoundsException("index=${tab.position}")
+                }
+            }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2, false, false) { tab, position ->
             val item = MainTabItemBinding.inflate(LayoutInflater.from(binding.root.context))
@@ -121,11 +132,11 @@ class MainFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.hotKeyResult().observe(viewLifecycleOwner) {
+        hotKeyViewModel.hotKeyResult().observe(viewLifecycleOwner) {
             hotKeyAdapter.setNewData(it)
             hotKeyHelper.start()
         }
-        return viewModel
+        return hotKeyViewModel
     }
 
     /**
@@ -135,7 +146,7 @@ class MainFragment : RouterFragment() {
         val position = hotKeyHelper.findItemPosition()
         if (position == RecyclerView.NO_POSITION) return
         val title = hotKeyAdapter.getItem(position).name
-        activity.navigation(Router.SEARCH, bundleOf(Keys.VALUE to title))
+        navigation(Router.SEARCH, bundleOf(Keys.VALUE to title))
     }
 
     private fun setColorFilter(view: View?, iconColor: Int, nameColor: Int = R.color.text_theme) {

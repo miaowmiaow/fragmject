@@ -39,7 +39,7 @@ class UserLoginFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.navigation(Router.MAIN) }
+        binding.black.setOnClickListener { navigation(Router.MAIN) }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.login.setOnClickListener {
@@ -50,7 +50,7 @@ class UserLoginFragment : RouterFragment() {
             }
         }
         binding.register.setOnClickListener {
-            activity.navigation(Router.USER_REGISTER)
+            navigation(Router.USER_REGISTER)
         }
     }
 
@@ -61,19 +61,19 @@ class UserLoginFragment : RouterFragment() {
                     val userViewModel: UserViewModel by activityViewModels()
                     userViewModel.updateUserBean(data)
                 }
-                activity.onBackPressed()
+                onBackPressed()
             }
         }
         return viewModel
     }
 
-    private fun checkParameter(username: String, password: String): Boolean {
+    fun checkParameter(username: String, password: String): Boolean {
         if (username.isBlank()) {
-            activity.showTips("用户名不能为空")
+            showTips("用户名不能为空")
             return false
         }
         if (password.isBlank()) {
-            activity.showTips("密码不能为空")
+            showTips("密码不能为空")
             return false
         }
         return true

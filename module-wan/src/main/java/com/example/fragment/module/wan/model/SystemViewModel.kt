@@ -16,9 +16,9 @@ class SystemViewModel : BaseViewModel() {
     val listScrollMap: MutableMap<String, Int> = HashMap()
 
     private var cid: String = ""
-    private val systemArticleResult = MutableLiveData<Map<String, ArticleListBean>>()
+    private val systemArticleResult = MutableLiveData<Map<String, List<ArticleBean>>>()
 
-    fun systemArticleResult(cid: String): LiveData<Map<String, ArticleListBean>> {
+    fun systemArticleResult(cid: String): LiveData<Map<String, List<ArticleBean>>> {
         this.cid = cid
         if (!listDataMap.containsKey(cid)) {
             getSystemArticleHome(cid)
@@ -27,7 +27,7 @@ class SystemViewModel : BaseViewModel() {
     }
 
     fun clearSystemArticleResult(cid: String) {
-        systemArticleResult.value = mapOf(cid to ArticleListBean())
+        systemArticleResult.value = mapOf(cid to listOf())
     }
 
     fun getSystemArticleHome(cid: String) {
@@ -61,7 +61,7 @@ class SystemViewModel : BaseViewModel() {
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
             //通过LiveData通知界面更新
-            systemArticleResult.postValue(mapOf(cid to response))
+            response.data?.datas?.let { systemArticleResult.postValue(mapOf(cid to it)) }
         }
     }
 

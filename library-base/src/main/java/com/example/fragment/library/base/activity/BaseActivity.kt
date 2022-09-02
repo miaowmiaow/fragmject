@@ -24,17 +24,17 @@ abstract class BaseActivity : AppCompatActivity() {
         super.setContentView(layout)
     }
 
-    fun showTips(text: String?) {
-        if (!text.isNullOrBlank()) {
-            tipsView.setMessage(text)
-            tipsView.show()
-        }
-    }
-
     fun alwaysShowTips(text: String?) {
         if (!text.isNullOrBlank()) {
             tipsView.setMessage(text)
             tipsView.alwaysShow()
+        }
+    }
+
+    fun showTips(text: String?) {
+        if (!text.isNullOrBlank()) {
+            tipsView.setMessage(text)
+            tipsView.show()
         }
     }
 

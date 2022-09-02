@@ -96,18 +96,4 @@ abstract class RouterActivity : BaseActivity() {
         navController.popBackStack(destinationId, inclusive)
     }
 
-    /**
-     * 网络请求code处理
-     * 封装在网络框架中扩展太差，暂时写在此处待优化
-     */
-    fun <T : HttpResponse> httpParseSuccess(result: T?, success: ((T) -> Unit)) {
-        result?.let {
-            when (it.errorCode) {
-                "0" -> success.invoke(it)
-                "-1001" -> navigation(Router.USER_LOGIN)
-                else -> showTips(it.errorMsg)
-            }
-        }
-    }
-
 }

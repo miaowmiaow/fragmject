@@ -40,11 +40,11 @@ class UserShareFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.onBackPressed() }
+        binding.black.setOnClickListener { onBackPressed() }
         binding.browser.setOnClickListener {
             val url = Uri.encode(binding.link.text.toString())
             if (checkParameter(url)) {
-                activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
+                navigation(Router.WEB, bundleOf(Keys.URL to url))
             }
         }
         binding.share.setOnClickListener {
@@ -59,7 +59,7 @@ class UserShareFragment : RouterFragment() {
     override fun initViewModel(): BaseViewModel {
         viewModel.shareArticleResult().observe(viewLifecycleOwner) {
             httpParseSuccess(it) {
-                activity.onBackPressed()
+                onBackPressed()
             }
         }
         return viewModel
@@ -67,7 +67,7 @@ class UserShareFragment : RouterFragment() {
 
     private fun checkParameter(link: String): Boolean {
         if (link.isBlank()) {
-            activity.showTips("分享链接不能为空")
+            showTips("分享链接不能为空")
             return false
         }
         return true

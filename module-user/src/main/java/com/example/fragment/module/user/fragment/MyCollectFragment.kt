@@ -40,7 +40,7 @@ class MyCollectFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.onBackPressed() }
+        binding.black.setOnClickListener { onBackPressed() }
         //我的收藏列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = articleAdapter

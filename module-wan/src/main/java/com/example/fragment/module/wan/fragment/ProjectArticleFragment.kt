@@ -7,14 +7,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.utils.toppingToPosition
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
 import com.example.fragment.library.common.adapter.ArticleAdapter
 import com.example.fragment.library.common.bean.ArticleBean
-import com.example.fragment.library.common.bean.ArticleListBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
+import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.databinding.ProjectArticleFragmentBinding
 import com.example.fragment.module.wan.model.ProjectViewModel
 
@@ -27,7 +28,8 @@ class ProjectArticleFragment : RouterFragment() {
         }
     }
 
-    private val viewModel: ProjectViewModel by activityViewModels()
+    private val eventViewModel: TabEventViewMode by activityViewModels()
+    private val projectViewModel: ProjectViewModel by activityViewModels()
     private var _binding: ProjectArticleFragmentBinding? = null
     private val binding get() = _binding!!
     private val articleAdapter = ArticleAdapter()
@@ -42,16 +44,31 @@ class ProjectArticleFragment : RouterFragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        eventViewModel.projectTab().observe(viewLifecycleOwner) {
+            if (it == 1) {
+                binding.list.toppingToPosition(0)
+                eventViewModel.setProjectTab(0)
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        eventViewModel.projectTab().removeObservers(viewLifecycleOwner)
+    }
+
     override fun onStop() {
         super.onStop()
         //将数据缓存在 ViewModel 中来提升用户体验
-        viewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
-        viewModel.listScrollMap[cid] = binding.list.computeVerticalScrollOffset()
+        projectViewModel.listDataMap[cid] = articleAdapter.getData() as List<ArticleBean>
+        projectViewModel.listScrollMap[cid] = binding.list.computeVerticalScrollOffset()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.clearProjectListResult(cid)
+        projectViewModel.clearProjectListResult(cid)
         binding.pullRefresh.recycler()
         binding.list.adapter = null
         _binding = null
@@ -65,38 +82,36 @@ class ProjectArticleFragment : RouterFragment() {
         //下拉刷新
         binding.pullRefresh.setOnRefreshListener(object : OnRefreshListener {
             override fun onRefresh(refreshLayout: PullRefreshLayout) {
-                viewModel.getProjectHome(cid)
+                projectViewModel.getProjectHome(cid)
             }
         })
         //加载更多
         binding.pullRefresh.setOnLoadMoreListener(binding.list, object : OnLoadMoreListener {
             override fun onLoadMore(refreshLayout: PullRefreshLayout) {
-                viewModel.getProjectNext(cid)
+                projectViewModel.getProjectNext(cid)
             }
         })
     }
 
     override fun initViewModel(): BaseViewModel {
-        if (viewModel.listDataMap.containsKey(cid)) {
-            articleAdapter.setNewData(viewModel.listDataMap[cid])
-            binding.list.scrollTo(0, viewModel.listScrollMap[cid] ?: 0)
+        if (projectViewModel.listDataMap.containsKey(cid)) {
+            articleAdapter.setNewData(projectViewModel.listDataMap[cid])
+            binding.list.scrollTo(0, projectViewModel.listScrollMap[cid] ?: 0)
         }
-        viewModel.projectListResult(cid).observe(viewLifecycleOwner) { result ->
+        projectViewModel.projectListResult(cid).observe(viewLifecycleOwner) { result ->
             if (result.containsKey(cid)) {
-                httpParseSuccess(result[cid] as ArticleListBean) {
-                    if (viewModel.isHomePage(cid)) {
-                        articleAdapter.setNewData(it.data?.datas)
-                    } else {
-                        articleAdapter.addData(it.data?.datas)
-                    }
+                if (projectViewModel.isHomePage(cid)) {
+                    articleAdapter.setNewData(result[cid])
+                } else {
+                    articleAdapter.addData(result[cid])
                 }
             }
             //结束下拉刷新状态
             binding.pullRefresh.finishRefresh()
             //设置加载更多状态
-            binding.pullRefresh.setLoadMore(viewModel.hasNextPage(cid))
+            binding.pullRefresh.setLoadMore(projectViewModel.hasNextPage(cid))
         }
-        return viewModel
+        return projectViewModel
     }
 
 }

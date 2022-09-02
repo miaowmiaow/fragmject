@@ -23,10 +23,6 @@ class SearchViewModel : BaseViewModel() {
         return searchHistoryResult
     }
 
-    fun clearSearchHistoryResult() {
-        searchHistoryResult.value = null
-    }
-
     fun getSearchHistory() {
         WanHelper.getSearchHistory { searchHistoryResult.postValue(it) }
     }

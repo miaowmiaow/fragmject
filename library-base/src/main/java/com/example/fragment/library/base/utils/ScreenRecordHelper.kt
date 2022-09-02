@@ -38,53 +38,50 @@ object ScreenRecordHelper {
                 startForResult(manager.createScreenCaptureIntent(), object : ActivityCallback {
 
                     override fun onActivityResult(resultCode: Int, data: Intent?) {
-                        if (resultCode == Activity.RESULT_OK && data != null) {
-                            try {
-                                if (mediaProjection == null) {
-                                    //MediaProjectionManager申请权限MediaProjection获取申请结果,防止别人调取隐私
-                                    mediaProjection = manager.getMediaProjection(resultCode, data)
-                                }
-                                if (mediaRecorder == null) {
-                                    mediaRecorder = MediaRecorder().apply {
-                                        setAudioSource(MediaRecorder.AudioSource.MIC)//设置音频源
-                                        setVideoSource(MediaRecorder.VideoSource.SURFACE)//设置视频源
-                                        setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)//设置输出的编码格式
-                                        //设置录屏时屏幕大小,这个可跟VirtualDisplay一起控制屏幕大小,VirtualDisplay是将屏幕设置成多大多小setVideoSize是输出文件时屏幕多大多小
-                                        setVideoSize(screenWidth(), screenHeight())
-                                        setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)//音频编码
-                                        setVideoEncoder(MediaRecorder.VideoEncoder.H264)//图像编码
-                                        val bitRate = screenWidth() * screenHeight() * 2.6
-                                        setVideoEncodingBitRate(bitRate.toInt())//设置码率
-                                        setVideoFrameRate(24)//设置帧率，该帧率必须是硬件支持的，可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
-                                        val path =
-                                            CacheUtils.getDirPath(this@startScreenRecord, "movies")
-                                        val recordPath =
-                                            path + "/" + System.currentTimeMillis() + ".mp4"
-                                        setOutputFile(recordPath)
-                                        prepare()
-                                    }
-                                }
-                                if (virtualDisplay == null) {
-                                    //获取录制屏幕的大小,像素,等等一些数据
-                                    virtualDisplay = mediaProjection?.createVirtualDisplay(
-                                        "Screen Record Service",
-                                        screenWidth(),
-                                        screenHeight(),
-                                        densityDpi(),
-                                        DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                                        mediaRecorder?.surface,
-                                        null, null
-                                    )
-                                }
-                                mediaRecorder?.start()
-                                isRunning = true
-                                onCallback.invoke(Activity.RESULT_OK, "屏幕录制中")
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                onCallback.invoke(Activity.RESULT_CANCELED, "屏幕录制异常:${e.message}")
-                            }
-                        } else {
+                        if (resultCode != Activity.RESULT_OK || data == null) {
                             onCallback.invoke(resultCode, "没有屏幕录制权限")
+                            return
+                        }
+                        try {
+                            if (mediaProjection == null) {
+                                //MediaProjectionManager申请权限MediaProjection获取申请结果,防止别人调取隐私
+                                mediaProjection = manager.getMediaProjection(resultCode, data)
+                            }
+                            if (mediaRecorder == null) {
+                                mediaRecorder = MediaRecorder()
+                                mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)//设置音频源
+                                mediaRecorder?.setVideoSource(MediaRecorder.VideoSource.SURFACE)//设置视频源
+                                mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)//设置输出的编码格式
+                                //设置录屏时屏幕大小,这个可跟VirtualDisplay一起控制屏幕大小,VirtualDisplay是将屏幕设置成多大多小setVideoSize是输出文件时屏幕多大多小,需要传偶数否则会报错
+                                mediaRecorder?.setVideoSize(screenWidth(), screenHeight())
+                                mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)//音频编码
+                                mediaRecorder?.setVideoEncoder(MediaRecorder.VideoEncoder.H264)//图像编码
+                                val bitRate = screenWidth() * screenHeight() * 2.6
+                                mediaRecorder?.setVideoEncodingBitRate(bitRate.toInt())//设置码率
+                                mediaRecorder?.setVideoFrameRate(24)//设置帧率，该帧率必须是硬件支持的，可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
+                                val path = CacheUtils.getDirPath(this@startScreenRecord, "movies")
+                                val recordPath = path + "/" + System.currentTimeMillis() + ".mp4"
+                                mediaRecorder?.setOutputFile(recordPath)
+                                mediaRecorder?.prepare()
+                            }
+                            if (virtualDisplay == null) {
+                                //获取录制屏幕的大小,像素,等等一些数据
+                                virtualDisplay = mediaProjection?.createVirtualDisplay(
+                                    "Screen Record Service",
+                                    screenWidth(),
+                                    screenHeight(),
+                                    densityDpi(),
+                                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                                    mediaRecorder?.surface,
+                                    null, null
+                                )
+                            }
+                            mediaRecorder?.start()
+                            isRunning = true
+                            onCallback.invoke(Activity.RESULT_OK, "屏幕录制中")
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            onCallback.invoke(Activity.RESULT_CANCELED, "屏幕录制异常:${e.message}")
                         }
                     }
                 })

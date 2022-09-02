@@ -43,12 +43,12 @@ class UserFragment : RouterFragment() {
 
     override fun initView() {
         binding.avatar.loadCircleCrop(R.drawable.avatar_1_raster)
-        binding.avatar.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
-        binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
-        binding.myCoin.setOnClickListener { activity.navigation(Router.MY_COIN) }
-        binding.myCollection.setOnClickListener { activity.navigation(Router.MY_COLLECT) }
-        binding.myShare.setOnClickListener { activity.navigation(Router.MY_SHARE) }
-        binding.setting.setOnClickListener { activity.navigation(Router.SETTING) }
+        binding.avatar.setOnClickListener { navigation(Router.USER_LOGIN) }
+        binding.username.setOnClickListener { navigation(Router.USER_LOGIN) }
+        binding.myCoin.setOnClickListener { navigation(Router.MY_COIN) }
+        binding.myCollection.setOnClickListener { navigation(Router.MY_COLLECT) }
+        binding.myShare.setOnClickListener { navigation(Router.MY_SHARE) }
+        binding.setting.setOnClickListener { navigation(Router.SETTING) }
     }
 
     @SuppressLint("SetTextI18n")
@@ -59,13 +59,13 @@ class UserFragment : RouterFragment() {
                     binding.avatar.loadCircleCrop(it.avatar)
                 }
                 binding.username.text = "欢迎回来！${it.username}"
-                binding.avatar.setOnClickListener { activity.navigation(Router.USER_INFO) }
-                binding.username.setOnClickListener { activity.navigation(Router.USER_INFO) }
+                binding.avatar.setOnClickListener { navigation(Router.USER_INFO) }
+                binding.username.setOnClickListener { navigation(Router.USER_INFO) }
             } else {
                 binding.avatar.loadCircleCrop(R.drawable.avatar_1_raster)
                 binding.username.text = "去登录"
-                binding.avatar.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
-                binding.username.setOnClickListener { activity.navigation(Router.USER_LOGIN) }
+                binding.avatar.setOnClickListener { navigation(Router.USER_LOGIN) }
+                binding.username.setOnClickListener { navigation(Router.USER_LOGIN) }
             }
         }
         return viewModel

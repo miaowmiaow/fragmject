@@ -39,11 +39,11 @@ class UserRegisterFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.navigation(Router.MAIN) }
+        binding.black.setOnClickListener { navigation(Router.MAIN) }
         binding.username.addKeyboardListener(binding.root)
         binding.password.addKeyboardListener(binding.root)
         binding.repassword.addKeyboardListener(binding.root)
-        binding.login.setOnClickListener { activity.onBackPressed() }
+        binding.login.setOnClickListener { onBackPressed() }
         binding.register.setOnClickListener {
             val username = binding.username.text.toString()
             val password = binding.password.text.toString()
@@ -61,7 +61,7 @@ class UserRegisterFragment : RouterFragment() {
                     val userViewModel: UserViewModel by activityViewModels()
                     userViewModel.updateUserBean(data)
                 }
-                activity.navigation(Router.MAIN)
+                navigation(Router.MAIN)
             }
         }
         return viewModel
@@ -69,19 +69,19 @@ class UserRegisterFragment : RouterFragment() {
 
     private fun checkParameter(username: String, password: String, rePassword: String): Boolean {
         if (username.isBlank()) {
-            activity.showTips("用户名不能为空")
+            showTips("用户名不能为空")
             return false
         }
         if (password.isBlank()) {
-            activity.showTips("密码不能为空")
+            showTips("密码不能为空")
             return false
         }
         if (rePassword.isBlank()) {
-            activity.showTips("确认密码不能为空")
+            showTips("确认密码不能为空")
             return false
         }
         if (password != rePassword) {
-            activity.showTips("两次密码不一样")
+            showTips("两次密码不一样")
             return false
         }
         return true

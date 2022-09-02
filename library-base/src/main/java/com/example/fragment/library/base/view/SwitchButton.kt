@@ -136,10 +136,10 @@ class SwitchButton @JvmOverloads constructor(
             postInvalidate()
         }
         toggleAnimator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator?) {
+            override fun onAnimationStart(animation: Animator) {
             }
 
-            override fun onAnimationEnd(animation: Animator?) {
+            override fun onAnimationEnd(animation: Animator) {
                 if (buttonOffset == 0f) {
                     state = STATE.CLOSE
                     downAnimator(false)
@@ -150,10 +150,10 @@ class SwitchButton @JvmOverloads constructor(
                 }
             }
 
-            override fun onAnimationCancel(animation: Animator?) {
+            override fun onAnimationCancel(animation: Animator) {
             }
 
-            override fun onAnimationRepeat(animation: Animator?) {
+            override fun onAnimationRepeat(animation: Animator) {
             }
         })
         toggleAnimator.start()
@@ -196,10 +196,10 @@ class SwitchButton @JvmOverloads constructor(
             postInvalidate()
         }
         originAnimator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator?) {
+            override fun onAnimationStart(animation: Animator) {
             }
 
-            override fun onAnimationEnd(animation: Animator?) {
+            override fun onAnimationEnd(animation: Animator) {
                 if (buttonOffset == 0f) {
                     state = STATE.CLOSE
                     downAnimator(false)
@@ -210,10 +210,10 @@ class SwitchButton @JvmOverloads constructor(
                 }
             }
 
-            override fun onAnimationCancel(animation: Animator?) {
+            override fun onAnimationCancel(animation: Animator) {
             }
 
-            override fun onAnimationRepeat(animation: Animator?) {
+            override fun onAnimationRepeat(animation: Animator) {
             }
         })
         originAnimator.start()

@@ -53,8 +53,8 @@ class MyCoinFragment : RouterFragment() {
         coinCountAnimator.addUpdateListener(animatorUpdateListener)
         coinCountAnimator.duration = 1000
         coinCountAnimator.interpolator = DecelerateInterpolator()
-        binding.black.setOnClickListener { activity.onBackPressed() }
-        binding.rank.setOnClickListener { activity.navigation(Router.COIN2RANK) }
+        binding.black.setOnClickListener { onBackPressed() }
+        binding.rank.setOnClickListener { navigation(Router.COIN2RANK) }
         //我的积分列表
         binding.list.layoutManager = LinearLayoutManager(binding.list.context)
         binding.list.adapter = coinRecordAdapter

@@ -56,7 +56,7 @@ class BannerHelper(
         recyclerView.post {
             if (orientation == RecyclerView.HORIZONTAL) {
                 val lmWidth = layoutManager.width
-                if (lmWidth < 0) return@post
+                if (lmWidth <= 0) return@post
                 var dx = if (itemView.width < lmWidth / 2) {
                     itemView.right
                 } else {
@@ -71,7 +71,7 @@ class BannerHelper(
                 recyclerView.smoothScrollBy(dx, 0, null, 250)
             } else {
                 val lmHeight = layoutManager.height
-                if (lmHeight < 0) return@post
+                if (lmHeight <= 0) return@post
                 var dy = if (itemView.height < lmHeight / 2) {
                     itemView.bottom
                 } else {

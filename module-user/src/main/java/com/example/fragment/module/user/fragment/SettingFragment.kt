@@ -41,14 +41,14 @@ class SettingFragment : RouterFragment() {
     private val binding get() = _binding!!
     private var countDownTimer = object : CountDownTimer(5000, 1000) {
         override fun onTick(millisUntilFinished: Long) {
-            activity.alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
+            alwaysShowTips("${(millisUntilFinished / 1000) + 1}s后开始录屏")
         }
 
         override fun onFinish() {
-            activity.dismissTips()
-            activity.startScreenRecord { code, message ->
+            dismissTips()
+            requireActivity().startScreenRecord { code, message ->
                 if (code != Activity.RESULT_OK) {
-                    activity.showTips(message)
+                    showTips(message)
                     binding.screenRecord.isChecked = false
                 }
             }
@@ -71,7 +71,7 @@ class SettingFragment : RouterFragment() {
     }
 
     override fun initView() {
-        binding.black.setOnClickListener { activity.onBackPressed() }
+        binding.black.setOnClickListener { onBackPressed() }
         binding.systemTheme.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 binding.systemTheme.isChecked = true
@@ -101,20 +101,20 @@ class SettingFragment : RouterFragment() {
             } else {
                 countDownTimer.cancel()
                 buttonView.postDelayed({
-                    activity.dismissTips()
-                    activity.stopScreenRecord()
+                    dismissTips()
+                    requireActivity().stopScreenRecord()
                 }, 1000)
                 binding.screenRecord.isChecked = false
             }
         }
-        binding.cacheSize.text = CacheUtils.getTotalSize(activity)
+        binding.cacheSize.text = CacheUtils.getTotalSize(requireActivity())
         binding.clearCache.setOnClickListener {
             StandardDialog.newInstance()
                 .setContent("确定要清除缓存吗？")
                 .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
                     override fun onConfirm(dialog: StandardDialog) {
-                        CacheUtils.clearAllCache(activity)
-                        binding.cacheSize.text = CacheUtils.getTotalSize(activity)
+                        CacheUtils.clearAllCache(requireActivity())
+                        binding.cacheSize.text = CacheUtils.getTotalSize(requireActivity())
                     }
 
                     override fun onCancel(dialog: StandardDialog) {
@@ -122,21 +122,21 @@ class SettingFragment : RouterFragment() {
                 })
                 .show(childFragmentManager)
         }
-        binding.versionName.text = activity.getVersionName()
+        binding.versionName.text = requireActivity().getVersionName()
         binding.update.setOnClickListener {
             updateViewModel.update()
         }
         binding.about.setOnClickListener {
             val url = Uri.encode("https://wanandroid.com")
-            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
+            navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.privacyPolicy.setOnClickListener {
             val url = Uri.encode("file:///android_asset/privacy_policy.html")
-            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
+            navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.feedback.setOnClickListener {
             val url = Uri.encode("https://github.com/miaowmiaow/fragmject/issues")
-            activity.navigation(Router.WEB, bundleOf(Keys.URL to url))
+            navigation(Router.WEB, bundleOf(Keys.URL to url))
         }
         binding.logout.setOnClickListener {
             val listener = object : StandardDialog.OnDialogClickListener {
@@ -177,7 +177,7 @@ class SettingFragment : RouterFragment() {
                     val listener = object : StandardDialog.OnDialogClickListener {
                         override fun onConfirm(dialog: StandardDialog) {
                             val apkUrl = data.download_url
-                            val cachePath = CacheUtils.getDirPath(activity, "apk")
+                            val cachePath = CacheUtils.getDirPath(requireActivity(), "apk")
                             val apkName = apkUrl.substring(apkUrl.lastIndexOf("/") + 1)
                             val filePathName = cachePath + File.separator + apkName
                             val file = File(filePathName)
@@ -196,7 +196,7 @@ class SettingFragment : RouterFragment() {
                     }
                     StandardDialog.newInstance()
                         .setTitle("有新版本更新啦♥~")
-                        .setContent("当前版本：${activity.getVersionName()}\n最新版本：${data.versionName}")
+                        .setContent("当前版本：${requireActivity().getVersionName()}\n最新版本：${data.versionName}")
                         .setOnDialogClickListener(listener)
                         .show(childFragmentManager)
                 }
@@ -208,14 +208,14 @@ class SettingFragment : RouterFragment() {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 val uri = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    val authority = "${activity.packageName}.FileProvider"
-                    FileProvider.getUriForFile(activity, authority, File(it.errorMsg))
+                    val authority = "${requireActivity().packageName}.FileProvider"
+                    FileProvider.getUriForFile(requireActivity(), authority, File(it.errorMsg))
                 } else {
                     Uri.parse("file://${it.errorMsg}")
                 }
                 val type = "application/vnd.android.package-archive"
                 intent.setDataAndType(uri, type)
-                activity.startActivity(intent)
+                requireActivity().startActivity(intent)
                 updateViewModel.downloadApkResult.postValue(null)
             }
         }
@@ -225,7 +225,7 @@ class SettingFragment : RouterFragment() {
         userLoginViewModel.logoutResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) {
                 userViewModel.updateUserBean(UserBean())
-                activity.onBackPressed()
+                onBackPressed()
             }
         }
         return settingViewModel

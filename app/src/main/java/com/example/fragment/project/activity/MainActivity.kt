@@ -21,7 +21,7 @@ import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
-    private val uiModeEventViewModel: SettingViewModel by viewModels()
+    private val settingViewModel: SettingViewModel by viewModels()
     private val userViewModel: UserViewModel by viewModels()
     private val loginRouter = arrayOf(
         Router.MY_COIN,
@@ -102,7 +102,7 @@ class MainActivity : RouterActivity() {
     }
 
     private fun initViewModel() {
-        uiModeEventViewModel.uiMode().observe(this) { mode ->
+        settingViewModel.uiModeResult().observe(this) { mode ->
             when (mode) {
                 "1" -> {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)

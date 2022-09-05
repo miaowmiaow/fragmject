@@ -74,11 +74,11 @@ class WebFragment : RouterFragment() {
             loadUrl(url)
         }
         val callback = requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                if (!webViewHelper.canGoBack()) {
-                    this.isEnabled = false
-                    onBackPressed()
-                }
+            if (!webViewHelper.canGoBack()) {
+                this.isEnabled = false
+                onBackPressed()
             }
+        }
         binding.black.setOnClickListener {
             if (!webViewHelper.canGoBack()) {
                 callback.isEnabled = false

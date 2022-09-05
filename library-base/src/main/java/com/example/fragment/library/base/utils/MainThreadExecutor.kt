@@ -17,6 +17,7 @@ class MainThreadExecutor private constructor() : Executor {
 
         private val INSTANCE = MainThreadExecutor()
 
+        @JvmStatic
         fun get(): MainThreadExecutor {
             return INSTANCE
         }

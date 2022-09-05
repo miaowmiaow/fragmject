@@ -75,7 +75,7 @@ dependencies {
     // android-gif-drawable
     api "pl.droidsonroids.gif:android-gif-drawable:1.2.24"
     // 腾讯TBS
-    api 'com.tencent.tbs:tbssdk:44181'
+    api 'com.tencent.tbs:tbssdk:44216'
     // leakcanary
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
     // 单元测试

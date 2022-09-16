@@ -24,7 +24,7 @@ class BannerAdapter(newData: List<BannerBean>? = null) : BaseAdapter<BannerBean>
     override fun onItemView(holder: ViewBindHolder, position: Int, item: BannerBean) {
         val binding = holder.binding as BannerItemBinding
         binding.root.layoutParams.apply {
-            width = screenWidth() - dp2px(60f).toInt()
+            width = screenWidth() - dp2px(45f).toInt()
         }
         if (item.imagePath.isNotEmpty()) {
             binding.banner.loadRoundedCorners(item.imagePath, 15f)

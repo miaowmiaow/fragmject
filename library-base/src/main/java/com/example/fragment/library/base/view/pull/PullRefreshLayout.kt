@@ -3,12 +3,12 @@ package com.example.fragment.library.base.view.pull
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Transformation
 import android.widget.ImageView
 import android.widget.ListView
+import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
@@ -19,7 +19,7 @@ class PullRefreshLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : ViewGroup(context, attrs, defStyleAttr), NestedScrollingParent3, NestedScrollingChild3 {
+) : RelativeLayout(context, attrs, defStyleAttr), NestedScrollingParent3, NestedScrollingChild3 {
 
     companion object {
         private const val DEFAULT_MAX_DRAG_DISTANCE = 250
@@ -104,7 +104,7 @@ class PullRefreshLayout @JvmOverloads constructor(
         val adapter = recyclerView.adapter
         if (adapter != null) {
             loadMoreAdapter = LoadMoreAdapter(adapter)
-            loadMoreAdapter?.setLoadMoreAdapterListener(object : LoadMoreAdapterListener{
+            loadMoreAdapter?.setLoadMoreAdapterListener(object : LoadMoreAdapterListener {
                 override fun isLoading(): Boolean {
                     return this@PullRefreshLayout.isLoading()
                 }
@@ -126,7 +126,7 @@ class PullRefreshLayout @JvmOverloads constructor(
         }
     }
 
-    fun recycler(){
+    fun recycler() {
         refreshListener = null
         loadMoreListener = null
         loadMoreAdapter?.setLoadMoreAdapterListener(null)

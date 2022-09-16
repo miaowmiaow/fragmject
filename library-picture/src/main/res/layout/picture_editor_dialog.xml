@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
@@ -14,25 +15,28 @@
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:padding="12dp"
-        android:src="@drawable/pe_retake" />
+        android:src="@drawable/pe_retake"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/color_bar"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_above="@id/tool_bar"
+        android:layout_height="wrap_content"
         android:background="#69000000"
         android:orientation="horizontal"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/tool_bar">
 
         <RelativeLayout
             android:id="@+id/white"
@@ -125,49 +129,31 @@
                 android:background="@drawable/selector_oval_purple" />
         </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/color_undo"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:padding="10dp"
-                android:src="@drawable/pe_revoke" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <RelativeLayout
-        android:id="@+id/mosaic_undo"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_above="@id/tool_bar"
-        android:background="#69000000"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:visibility="gone">
-
         <ImageView
+            android:id="@+id/color_undo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
             android:padding="10dp"
             android:src="@drawable/pe_revoke" />
-    </RelativeLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/mosaic_undo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:src="@drawable/pe_revoke"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/tool_bar"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/tool_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:background="#69000000"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
             android:id="@+id/graffiti"
@@ -214,24 +200,17 @@
             android:padding="10dp"
             android:src="@drawable/selector_mosaic" />
 
-        <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="45dp"
-            android:layout_weight="1"
+        <TextView
+            android:id="@+id/complete"
+            android:layout_width="50dp"
+            android:layout_height="25dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/selector_btn_config"
             android:gravity="center"
-            android:padding="10dp">
-
-            <TextView
-                android:id="@+id/complete"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/selector_btn_config"
-                android:gravity="center"
-                android:text="完成"
-                android:textColor="#ffffff"
-                android:textSize="12sp" />
-        </RelativeLayout>
+            android:text="完成"
+            android:textColor="#ffffff"
+            android:textSize="12sp" />
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 

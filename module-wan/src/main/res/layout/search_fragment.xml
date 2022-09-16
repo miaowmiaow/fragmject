@@ -6,74 +6,73 @@
     android:layout_height="match_parent"
     app:status_bar_color="@color/theme">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
+        <ImageView
             android:id="@+id/title_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/theme">
+            android:layout_height="45dp"
+            android:background="@color/theme"
+            android:paddingStart="15dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="45dp"
+            android:paddingBottom="10dp"
+            android:src="@drawable/rectangle_solid_39_gray_corners15"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="25dp"
-                android:layout_marginStart="15dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:layout_toStartOf="@id/cancel"
-                android:alpha="0.7"
-                android:background="@drawable/rectangle_solid_39_gray_corners15">
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="30dp"
+            android:src="@drawable/ic_search"
+            app:layout_constraintBottom_toBottomOf="@id/title_bar"
+            app:layout_constraintStart_toStartOf="@id/title_bar"
+            app:layout_constraintTop_toTopOf="@id/title_bar" />
 
-                <ImageView
-                    android:id="@+id/ic_search"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="10dp"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/ic_search" />
+        <com.example.fragment.library.base.view.ClearEditText
+            android:id="@+id/search"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="10dp"
+            android:hint="多个关键词请用空格隔开"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:singleLine="true"
+            android:background="@color/transparent"
+            android:textColor="@color/text_fff"
+            android:textColorHint="@color/text_ccc"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@id/title_bar"
+            app:layout_constraintEnd_toStartOf="@id/cancel"
+            app:layout_constraintStart_toStartOf="@id/title_bar"
+            app:layout_constraintTop_toTopOf="@id/title_bar" />
 
-                <com.example.fragment.library.base.view.ClearEditText
-                    android:id="@+id/search"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="15dp"
-                    android:layout_toEndOf="@id/ic_search"
-                    android:background="@color/transparent"
-                    android:hint="多个关键词请用空格隔开"
-                    android:imeOptions="actionSearch"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:textColor="@color/text_fff"
-                    android:textColorHint="@color/text_ccc"
-                    android:textSize="12sp" />
-
-            </RelativeLayout>
-
-            <TextView
-                android:id="@+id/cancel"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_alignParentEnd="true"
-                android:gravity="center"
-                android:src="@drawable/ic_add"
-                android:text="取消"
-                android:textColor="@color/text_fff"
-                android:textSize="14sp" />
-
-        </RelativeLayout>
+        <TextView
+            android:id="@+id/cancel"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:gravity="center"
+            android:src="@drawable/ic_add"
+            android:text="取消"
+            android:textColor="@color/text_fff"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
             android:id="@+id/history"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/title_bar"
+            android:layout_height="0dp"
             android:background="@color/background"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar">
 
             <LinearLayout
                 android:id="@+id/hot_key"
@@ -122,10 +121,11 @@
         <com.example.fragment.library.base.view.pull.PullRefreshLayout
             android:id="@+id/pull_refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/title_bar"
+            android:layout_height="0dp"
             android:background="@color/background"
-            android:visibility="gone">
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"
@@ -133,6 +133,6 @@
                 android:layout_height="match_parent" />
         </com.example.fragment.library.base.view.pull.PullRefreshLayout>
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.example.fragment.library.base.view.FitsWindowsLayout>

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import coil.dispose
 import coil.load
@@ -22,13 +23,25 @@ abstract class BaseFragment : Fragment() {
         view.isClickable = true
         view.isFocusable = true
         val loadGif = ImageView(view.context)
-        val layout = view as RelativeLayout
-        layout.addView(loadGif, RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
-        ).also {
-            it.addRule(RelativeLayout.CENTER_IN_PARENT)
-        })
+        if (view is RelativeLayout) {
+            view.addView(loadGif, RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+            ).also {
+                it.addRule(RelativeLayout.CENTER_IN_PARENT)
+            })
+        } else if (view is ConstraintLayout) {
+            loadGif.layoutParams = ConstraintLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+            ).also {
+                it.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+                it.startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+                it.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+                it.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            }
+            view.addView(loadGif)
+        }
         initView()
         initViewModel()?.progress(viewLifecycleOwner, {
             loadGif.load(R.drawable.icons8_monkey)

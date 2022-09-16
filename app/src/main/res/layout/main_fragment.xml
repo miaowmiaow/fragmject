@@ -7,73 +7,69 @@
     app:navigation_bar_color="@color/white"
     app:status_bar_color="@color/theme">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:id="@+id/title_bar"
+        <ImageView
+            android:id="@+id/search"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/theme">
+            android:layout_height="45dp"
+            android:background="@color/theme"
+            android:paddingStart="15dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="45dp"
+            android:paddingBottom="10dp"
+            android:src="@drawable/rectangle_solid_39_gray_corners15"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <RelativeLayout
-                android:id="@+id/search"
-                android:layout_width="match_parent"
-                android:layout_height="25dp"
-                android:layout_marginStart="15dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:layout_toStartOf="@id/user_share"
-                android:alpha="0.7"
-                android:background="@drawable/rectangle_solid_39_gray_corners15">
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginStart="30dp"
+            android:src="@drawable/ic_search"
+            app:layout_constraintBottom_toBottomOf="@id/search"
+            app:layout_constraintStart_toStartOf="@id/search"
+            app:layout_constraintTop_toTopOf="@id/search" />
 
-                <ImageView
-                    android:id="@+id/iv_search"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="10dp"
-                    android:scaleType="fitXY"
-                    android:src="@drawable/ic_search" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/hot_key"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginEnd="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/search"
+            app:layout_constraintEnd_toStartOf="@id/user_share"
+            app:layout_constraintStart_toStartOf="@id/search"
+            app:layout_constraintTop_toTopOf="@id/search" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/hot_key"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="15dp"
-                    android:layout_toEndOf="@id/iv_search" />
+        <ImageView
+            android:id="@+id/user_share"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="15dp"
+            android:src="@drawable/ic_add"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            </RelativeLayout>
-
-            <ImageView
-                android:id="@+id/user_share"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_alignParentEnd="true"
-                android:padding="15dp"
-                android:src="@drawable/ic_add" />
-
-        </RelativeLayout>
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewpager2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/tab_layout"
+            app:layout_constraintTop_toBottomOf="@id/search" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_alignParentBottom="true"
             android:background="@drawable/rectangle_solid_white_top1_line"
             android:clipChildren="false"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:tabIndicatorHeight="0dp"
             app:tabMode="fixed"
             app:tabRippleColor="@null" />
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewpager2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@id/tab_layout"
-            android:layout_below="@id/title_bar" />
-
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.example.fragment.library.base.view.FitsWindowsLayout>

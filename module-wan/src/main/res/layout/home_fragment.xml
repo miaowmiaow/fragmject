@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.fragment.library.base.view.pull.PullRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pull_refresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <com.example.fragment.library.base.view.pull.PullRefreshLayout
-        android:id="@+id/pull_refresh"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </com.example.fragment.library.base.view.pull.PullRefreshLayout>
-
-</RelativeLayout>
+</com.example.fragment.library.base.view.pull.PullRefreshLayout>

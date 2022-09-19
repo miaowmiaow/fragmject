@@ -22,6 +22,7 @@ abstract class BaseFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         view.isClickable = true
         view.isFocusable = true
+        //添加loading动画
         val loadGif = ImageView(view.context)
         if (view is RelativeLayout) {
             view.addView(loadGif, RelativeLayout.LayoutParams(
@@ -43,6 +44,7 @@ abstract class BaseFragment : Fragment() {
             view.addView(loadGif)
         }
         initView()
+        //更新loading动画状态
         initViewModel()?.progress(viewLifecycleOwner, {
             loadGif.load(R.drawable.icons8_monkey)
             loadGif.visibility = View.VISIBLE

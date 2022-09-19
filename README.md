@@ -17,7 +17,7 @@
 - 字节码插桩(ASM...)
 
 ## 开发环境
-为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或者以上版本。   
+为了您能正常运行本项目，请使用 `Android Studio Chipmunk (2021.2.1) 🐿️` 和 `Android Gradle 7.2.2` 或者以上版本。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## 前置知识

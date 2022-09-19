@@ -44,9 +44,10 @@
     <LinearLayout
         android:id="@+id/text_color_bar"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="10dp"
+        android:padding="10dp"
         android:layout_marginEnd="10dp"
         android:orientation="horizontal">
 

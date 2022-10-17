@@ -4,106 +4,111 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg">
 
-    <RelativeLayout
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--        <ImageView-->
+<!--            android:id="@+id/black"-->
+<!--            android:layout_width="45dp"-->
+<!--            android:layout_height="45dp"-->
+<!--            android:layout_alignParentStart="true"-->
+<!--            android:padding="15dp"-->
+<!--            android:src="@drawable/ic_back" />-->
+
+<!--        <RelativeLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_below="@id/black"-->
+<!--            android:gravity="center">-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/logo"-->
+<!--                android:layout_width="125dp"-->
+<!--                android:layout_height="125dp"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:src="@drawable/ic_logo" />-->
+
+<!--            <com.example.fragment.library.base.view.ClearEditText-->
+<!--                android:id="@+id/username"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:layout_below="@id/logo"-->
+<!--                android:layout_marginStart="50dp"-->
+<!--                android:layout_marginTop="100dp"-->
+<!--                android:layout_marginEnd="50dp"-->
+<!--                android:background="@null"-->
+<!--                android:hint="请输入用户名"-->
+<!--                android:singleLine="true"-->
+<!--                android:textColor="@color/text_fff"-->
+<!--                android:textColorHint="@color/text_ccc"-->
+<!--                android:textSize="14sp" />-->
+
+<!--            <View-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:layout_below="@id/username"-->
+<!--                android:layout_marginStart="50dp"-->
+<!--                android:layout_marginEnd="50dp"-->
+<!--                android:background="@color/white" />-->
+
+<!--            <com.example.fragment.library.base.view.ClearEditText-->
+<!--                android:id="@+id/password"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:layout_below="@id/username"-->
+<!--                android:layout_marginStart="50dp"-->
+<!--                android:layout_marginEnd="50dp"-->
+<!--                android:background="@null"-->
+<!--                android:hint="请输入密码"-->
+<!--                android:inputType="textPassword"-->
+<!--                android:singleLine="true"-->
+<!--                android:textColor="@color/text_fff"-->
+<!--                android:textColorHint="@color/text_ccc"-->
+<!--                android:textSize="14sp" />-->
+
+<!--            <View-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:layout_below="@id/password"-->
+<!--                android:layout_marginStart="50dp"-->
+<!--                android:layout_marginEnd="50dp"-->
+<!--                android:background="@color/white" />-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/register"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/password"-->
+<!--                android:layout_alignParentEnd="true"-->
+<!--                android:layout_marginStart="50dp"-->
+<!--                android:layout_marginTop="75dp"-->
+<!--                android:layout_marginEnd="50dp"-->
+<!--                android:text="去注册"-->
+<!--                android:textColor="@color/text_fff"-->
+<!--                android:textSize="14sp" />-->
+
+<!--            <Button-->
+<!--                android:id="@+id/login"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="50dp"-->
+<!--                android:layout_below="@id/register"-->
+<!--                android:layout_centerInParent="true"-->
+<!--                android:layout_marginTop="25dp"-->
+<!--                android:layout_marginBottom="25dp"-->
+<!--                android:background="@drawable/rectangle_solid_transparent_stroke1_white_corners10"-->
+<!--                android:paddingStart="100dp"-->
+<!--                android:paddingEnd="100dp"-->
+<!--                android:text="登录"-->
+<!--                android:textColor="@color/text_fff"-->
+<!--                android:textSize="16sp" />-->
+<!--        </RelativeLayout>-->
+
+<!--    </RelativeLayout>-->
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/black"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:layout_alignParentStart="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_back" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/black"
-            android:gravity="center">
-
-            <ImageView
-                android:id="@+id/logo"
-                android:layout_width="125dp"
-                android:layout_height="125dp"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/ic_logo" />
-
-            <com.example.fragment.library.base.view.ClearEditText
-                android:id="@+id/username"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/logo"
-                android:layout_marginStart="50dp"
-                android:layout_marginTop="100dp"
-                android:layout_marginEnd="50dp"
-                android:background="@null"
-                android:hint="请输入用户名"
-                android:singleLine="true"
-                android:textColor="@color/text_fff"
-                android:textColorHint="@color/text_ccc"
-                android:textSize="14sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_below="@id/username"
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
-                android:background="@color/white" />
-
-            <com.example.fragment.library.base.view.ClearEditText
-                android:id="@+id/password"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_below="@id/username"
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
-                android:background="@null"
-                android:hint="请输入密码"
-                android:inputType="textPassword"
-                android:singleLine="true"
-                android:textColor="@color/text_fff"
-                android:textColorHint="@color/text_ccc"
-                android:textSize="14sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_below="@id/password"
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
-                android:background="@color/white" />
-
-            <TextView
-                android:id="@+id/register"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/password"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="50dp"
-                android:layout_marginTop="75dp"
-                android:layout_marginEnd="50dp"
-                android:text="去注册"
-                android:textColor="@color/text_fff"
-                android:textSize="14sp" />
-
-            <Button
-                android:id="@+id/login"
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:layout_below="@id/register"
-                android:layout_centerInParent="true"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="25dp"
-                android:background="@drawable/rectangle_solid_transparent_stroke1_white_corners10"
-                android:paddingStart="100dp"
-                android:paddingEnd="100dp"
-                android:text="登录"
-                android:textColor="@color/text_fff"
-                android:textSize="16sp" />
-        </RelativeLayout>
-
-    </RelativeLayout>
+        android:layout_height="match_parent"/>
 
 </com.example.fragment.library.base.view.FitsWindowsLayout>

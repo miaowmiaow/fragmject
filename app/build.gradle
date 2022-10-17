@@ -17,28 +17,10 @@ android {
         versionCode Integer.valueOf(gradle.versionCode)
         versionName gradle.versionName
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += [
-                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
-                        "room.incremental"     : "true",
-                        "room.expandProjection": "true"
-                ]
-            }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
         }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-
-    viewBinding {
-        enabled = true
     }
 
     signingConfigs {
@@ -72,6 +54,15 @@ android {
             //停用Crashlytics，以提高调试 build 的构建速度
             ext.enableCrashlytics = false
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
     }
 
     flavorDimensions.add('default')
@@ -119,6 +110,24 @@ android {
         outputs.all {
             outputFileName = "wan-${buildType.name}-${versionName}-${productFlavors[0].getAt('name')}.apk"
         }
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion  = compose_version
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+
+    viewBinding {
+        enabled = true
     }
 }
 

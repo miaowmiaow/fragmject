@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
@@ -21,6 +19,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,27 +33,30 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.theme.WanTheme
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.databinding.UserLoginFragmentBinding
 import com.example.fragment.module.user.model.UserLoginViewModel
 import com.example.fragment.module.user.model.UserViewModel
-import com.example.fragment.module.user.view.WanTextField
+import com.example.fragment.module.user.view.WhiteTextField
 
 class UserLoginFragment : RouterFragment() {
 
     private val viewModel: UserLoginViewModel by viewModels()
-    private var _binding: UserLoginFragmentBinding? = null
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = UserLoginFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        return ComposeView(requireContext()).apply {
+            setContent {
+                WanTheme {
+                    UserLoginPage()
+                }
+            }
+        }
     }
 
     override fun onPause() {
@@ -60,17 +64,7 @@ class UserLoginFragment : RouterFragment() {
         hideInputMethod()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     override fun initView() {
-        binding.composeView.setContent {
-            MaterialTheme {
-                UserLoginPage()
-            }
-        }
     }
 
     override fun initViewModel(): BaseViewModel {
@@ -102,20 +96,26 @@ class UserLoginFragment : RouterFragment() {
     fun UserLoginPage() {
         var usernameText by rememberSaveable { mutableStateOf("") }
         var passwordText by rememberSaveable { mutableStateOf("") }
-        ConstraintLayout {
-            val (black, welcome, wan, username, password, login, sign_in, sign_up, forgot_passwords) = createRefs()
-            val topBarrier = createTopBarrier(login)
-            val bottomBarrier = createBottomBarrier(login)
-            val startGuideline = createGuidelineFromStart(40.dp)
-            val endGuideline = createGuidelineFromEnd(40.dp)
+        ConstraintLayout(
+            Modifier
+                .fillMaxSize()
+                .paint(
+                    painter = painterResource(id = R.drawable.bg),
+                    contentScale = ContentScale.Fit
+                )
+                .padding(start = 40.dp, end = 40.dp)
+                .systemBarsPadding()
+        ) {
+            val (black, welcome, wan, username, password, login, sign_in, sign_up) = createRefs()
+            val loginTopBarrier = createTopBarrier(login)
+            val loginBottomBarrier = createBottomBarrier(login)
             Image(
                 painter = painterResource(R.drawable.ic_back),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(45.dp)
-                    .padding(15.dp)
+                    .size(20.dp)
                     .constrainAs(black) {
-                        top.linkTo(parent.top)
+                        top.linkTo(parent.top, margin = 15.dp)
                     }
                     .clickable {
                         navigation(Router.MAIN)
@@ -127,63 +127,58 @@ class UserLoginFragment : RouterFragment() {
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(welcome) {
-                        top.linkTo(black.bottom, 40.dp)
-                        start.linkTo(startGuideline)
+                        top.linkTo(black.bottom, 50.dp)
                     }
             )
             Text(
                 text = "玩Android",
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.h4,
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(wan) {
                         top.linkTo(welcome.bottom, 10.dp)
-                        start.linkTo(startGuideline)
                     }
             )
-            WanTextField(
+            WhiteTextField(
                 value = usernameText,
                 onValueChange = {
                     usernameText = it
                 },
                 placeholder = {
-                    Text("Username")
+                    Text("请输入用户名")
                 },
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(50.dp)
                     .constrainAs(username) {
-                        bottom.linkTo(password.top, 40.dp)
-                        start.linkTo(startGuideline)
-                        end.linkTo(endGuideline)
+                        bottom.linkTo(password.top, 25.dp)
                     }
             )
-            WanTextField(
+            WhiteTextField(
                 value = passwordText,
                 onValueChange = {
                     passwordText = it
                 },
                 placeholder = {
-                    Text("Password")
+                    Text("请输入用户密码")
                 },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(50.dp)
                     .constrainAs(password) {
-                        bottom.linkTo(login.top, 40.dp)
-                        start.linkTo(startGuideline)
-                        end.linkTo(endGuideline)
+                        bottom.linkTo(login.top, 25.dp)
                     }
             )
             Text(
-                text = "Sign in",
+                text = "登录",
                 fontSize = 25.sp,
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(sign_in) {
-                        top.linkTo(topBarrier)
-                        bottom.linkTo(bottomBarrier)
-                        start.linkTo(startGuideline)
+                        top.linkTo(loginTopBarrier)
+                        bottom.linkTo(loginBottomBarrier)
                     }
             )
             Image(
@@ -192,11 +187,11 @@ class UserLoginFragment : RouterFragment() {
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(colorResource(R.color.theme_orange))
-                    .size(80.dp)
+                    .size(75.dp)
                     .padding(25.dp)
                     .constrainAs(login) {
-                        bottom.linkTo(forgot_passwords.top, 80.dp)
-                        end.linkTo(endGuideline)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(sign_up.top, 60.dp)
                     }
                     .clickable {
                         if (checkParameter(usernameText, passwordText)) {
@@ -205,33 +200,19 @@ class UserLoginFragment : RouterFragment() {
                     }
             )
             Text(
-                text = "Sign up",
+                text = "去注册",
                 textDecoration = TextDecoration.Underline,
                 fontSize = 18.sp,
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(sign_up) {
-                        bottom.linkTo(parent.bottom, 50.dp)
-                        start.linkTo(startGuideline)
+                        bottom.linkTo(parent.bottom, 40.dp)
                     }
                     .clickable {
                         navigation(Router.USER_REGISTER)
                     }
             )
-            Text(
-                text = "Forgot Passwords",
-                textDecoration = TextDecoration.Underline,
-                fontSize = 18.sp,
-                color = colorResource(id = R.color.white),
-                modifier = Modifier
-                    .constrainAs(forgot_passwords) {
-                        bottom.linkTo(parent.bottom, margin = 50.dp)
-                        end.linkTo(endGuideline)
-                    }
-                    .clickable {
-                        showTips("敬请期待")
-                    }
-            )
         }
     }
+
 }

@@ -64,8 +64,9 @@ dependencies {
     api 'androidx.appcompat:appcompat:1.5.1'
     api 'androidx.core:core-ktx:1.9.0'
     api "androidx.compose.ui:ui:$compose_version"
-    api "androidx.compose.material:material:$compose_version"
     api "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
     api 'androidx.activity:activity-compose:1.6.0'

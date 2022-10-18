@@ -10,9 +10,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.VisualTransformation
 import com.example.fragment.module.user.R
 
-
 @Composable
-fun WanTextField(
+fun WhiteTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: @Composable (() -> Unit)? = null,

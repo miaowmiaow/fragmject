@@ -106,11 +106,11 @@ class UserRegisterFragment : RouterFragment() {
         var passwordText by rememberSaveable { mutableStateOf("") }
         var againPasswordText by rememberSaveable { mutableStateOf("") }
         ConstraintLayout(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .paint(
                     painter = painterResource(id = R.drawable.bg),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.FillBounds
                 )
                 .padding(start = 40.dp, end = 40.dp)
                 .systemBarsPadding()
@@ -122,7 +122,7 @@ class UserRegisterFragment : RouterFragment() {
                 painter = painterResource(R.drawable.ic_back),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(15.dp)
                     .constrainAs(black) {
                         top.linkTo(parent.top, margin = 15.dp)
                     }
@@ -136,12 +136,12 @@ class UserRegisterFragment : RouterFragment() {
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(welcome) {
-                        top.linkTo(black.bottom, 50.dp)
+                        top.linkTo(black.bottom, 60.dp)
                     }
             )
             Text(
                 text = "Account",
-                style = MaterialTheme.typography.h4,
+                style = MaterialTheme.typography.h5,
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(wan) {
@@ -228,7 +228,7 @@ class UserRegisterFragment : RouterFragment() {
             Text(
                 text = "去登录",
                 textDecoration = TextDecoration.Underline,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 color = colorResource(R.color.white),
                 modifier = Modifier
                     .constrainAs(sign_in) {

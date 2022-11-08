@@ -286,6 +286,9 @@ clip.saveBitmap()
 ## WebView 优化及 H5 秒开实践
 [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
 
+## Jetpack Compose(长期更新)
+[Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
+
 ## 主要开源框架
 - [coil-kt/coil](https://github.com/coil-kt/coil)
 - [google/gson](https://github.com/google/gson)
@@ -299,6 +302,7 @@ clip.saveBitmap()
 
 ## About me
 - QQ : 237934622
+- QQ群 : 389499839
 - WeChat : zst_1116
 - Email : <zst_1116@icloud.com>
 - JueJin：[miaowmiaow](https://juejin.cn/user/3342971112791422)

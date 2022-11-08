@@ -191,7 +191,7 @@ class CoroutineHttp private constructor() {
         val json = """
             {
                 "errorCode": "$code",
-                "errorMsg": "$msg"
+                "errorMsg": "${msg.replace("\"", "")}"
             }
         """.trimIndent()
         return getConverter().fromJson(json, type)

@@ -17,7 +17,7 @@
 - 字节码插桩(ASM...)
 
 ## 开发环境
-为了您能正常运行本项目，请使用 `Android Studio Bumblebee (2021.1.1) 🐝` 和 `Android Gradle 7.1.2` 或者以上版本。   
+为了您能正常运行本项目，请使用 `Android Studio Chipmunk (2021.2.1) 🐿️` 和 `Android Gradle 7.2.2` 或者以上版本。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## 前置知识
@@ -27,8 +27,10 @@
 - [ViewBinding 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
 - [LiveData 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 - [ViewModel 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
-- [协程 使用入门 | Android Developer](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
+- [Coroutines 使用入门 | Android Developer](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
 - [Navigation 使用入门 | Android Developer](https://developer.android.google.cn/guide/navigation/navigation-getting-started?hl=zh_cn)
+- [Room 使用入门 | Android Developer](https://developer.android.google.cn/training/data-storage/room?hl=zh_cn)
+- [Compose 使用入门 | Android Developer](https://developer.android.google.cn/jetpack/compose)
 - [一文看懂MVVM | 掘金](https://juejin.cn/post/7058542176375930887)
 
 ## 截图展示

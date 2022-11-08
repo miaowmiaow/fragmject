@@ -12,6 +12,16 @@ android {
     defaultConfig {
         minSdk Integer.valueOf(gradle.minSdkVersion)
         targetSdk Integer.valueOf(gradle.targetSdkVersion)
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "true"
+                ]
+            }
+        }
     }
 
     compileOptions {
@@ -21,6 +31,20 @@ android {
 
     kotlinOptions {
         jvmTarget = "11"
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion  = compose_version
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 
     viewBinding {
@@ -39,11 +63,18 @@ dependencies {
 
     api 'androidx.appcompat:appcompat:1.5.1'
     api 'androidx.core:core-ktx:1.9.0'
+    api "androidx.compose.ui:ui:$compose_version"
+    api "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
-    api 'androidx.fragment:fragment-ktx:1.5.2'
+    api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    api 'androidx.activity:activity-compose:1.6.0'
+    api 'androidx.fragment:fragment-ktx:1.5.3'
     api 'androidx.viewpager2:viewpager2:1.0.0'
     api 'androidx.webkit:webkit:1.5.0'
     // viewModel 和 livedata
+    api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     // navigation
@@ -87,4 +118,7 @@ dependencies {
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 }

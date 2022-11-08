@@ -67,6 +67,9 @@ abstract class BaseViewModel : ViewModel() {
         this.pageCont[key] = pageCont
     }
 
+    /**
+     * 请求进度，0.0 请求开始, 1.0 请求结束
+     */
     fun progress(owner: LifecycleOwner, start: () -> Unit, end: () -> Unit) {
         progress.observe(owner) {
             when (it) {
@@ -77,6 +80,7 @@ abstract class BaseViewModel : ViewModel() {
     }
 
     /**
+     * 更新进度
      * @param num: 0.0 请求开始, 1.0 请求结束
      */
     fun updateProgress(num: Double) {

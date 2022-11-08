@@ -11,7 +11,6 @@ import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.activity.BaseActivity
-import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.common.constant.Router
 import java.util.regex.Pattern
 

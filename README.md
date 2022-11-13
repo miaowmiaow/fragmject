@@ -289,7 +289,13 @@ clip.saveBitmap()
 [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
 
 ## Jetpack Compose(长期更新)
-[Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
+未来计划分三步将 fragmject 迁移到 Compose 。
+1. 使用 ComposeView 容器替换简单的 XML 布局 。
+2. 使用 Compose 来编写部分功能。
+3. 使用 Compose 来重新设计界面。
+通过这种极具灵活性的方法，循序渐进的学习 Compose 。
+如果你暂时不需要 `Compose` ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
+- [Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
 
 ## 主要开源框架
 - [coil-kt/coil](https://github.com/coil-kt/coil)

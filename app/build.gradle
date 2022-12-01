@@ -108,7 +108,7 @@ android {
 
     applicationVariants.all {
         outputs.all {
-            outputFileName = "wan-${buildType.name}-${versionName}-${productFlavors[0].getAt('name')}.apk"
+            outputFileName = "wan-${buildType.name}-${versionName}-${productFlavors[0]['name']}.apk"
         }
     }
 

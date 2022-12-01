@@ -12,33 +12,33 @@ abstract class RouterFragment : BaseFragment() {
     /**
      * 获取RouterActivity方便调用navigation进行页面切换
      */
-    private var activity: RouterActivity? = null
+    private var routerActivity: RouterActivity? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is RouterActivity) {
-            activity = context
+            routerActivity = context
         }
     }
 
     fun onBackPressed(){
-        activity?.onBackPressedDispatcher?.onBackPressed()
+        routerActivity?.onBackPressedDispatcher?.onBackPressed()
     }
 
     fun navigation(name: Router, bundle: Bundle? = null) {
-        activity?.navigation(name, bundle)
+        routerActivity?.navigation(name, bundle)
     }
 
     fun alwaysShowTips(text: String?) {
-        activity?.alwaysShowTips(text)
+        routerActivity?.alwaysShowTips(text)
     }
 
     fun showTips(text: String?) {
-        activity?.showTips(text)
+        routerActivity?.showTips(text)
     }
 
     fun dismissTips() {
-        activity?.dismissTips()
+        routerActivity?.dismissTips()
     }
 
     /**

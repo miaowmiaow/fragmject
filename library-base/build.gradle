@@ -53,9 +53,9 @@ android {
 }
 
 dependencies {
-    def coil_version = '2.2.1'
+    def coil_version = '2.2.2'
     def lifecycle_version = "2.5.1"
-    def navigation_version  = "2.5.2"
+    def navigation_version  = "2.5.3"
     def okhttp_version = '5.0.0-alpha.8'
     def room_version = "2.4.3"
 
@@ -69,8 +69,8 @@ dependencies {
     api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-    api 'androidx.activity:activity-compose:1.6.0'
-    api 'androidx.fragment:fragment-ktx:1.5.3'
+    api 'androidx.activity:activity-compose:1.6.1'
+    api 'androidx.fragment:fragment-ktx:1.5.4'
     api 'androidx.viewpager2:viewpager2:1.0.0'
     api 'androidx.webkit:webkit:1.5.0'
     // viewModel 和 livedata
@@ -92,10 +92,11 @@ dependencies {
     api "io.coil-kt:coil-gif:$coil_version"
     api "io.coil-kt:coil-svg:$coil_version"
     api "io.coil-kt:coil-video:$coil_version"
+    api "io.coil-kt:coil-compose:$coil_version"
     // google
     api 'com.google.android.flexbox:flexbox:3.0.0'
     api 'com.google.code.gson:gson:2.9.1'
-    api 'com.google.android.material:material:1.6.1'
+    api 'com.google.android.material:material:1.7.0'
     // kotlin 和 协程
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
@@ -116,8 +117,8 @@ dependencies {
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
     //对于InstantTaskExecutorRule
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"

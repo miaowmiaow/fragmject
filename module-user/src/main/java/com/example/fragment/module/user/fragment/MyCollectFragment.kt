@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
-import com.example.fragment.library.base.compose.PullRefreshLazyColumn
+import com.example.fragment.library.base.compose.PullRefreshLayout
+import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.theme.WanTheme
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.constant.Keys
@@ -107,11 +107,10 @@ class MyCollectFragment : RouterFragment() {
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            PullRefreshLazyColumn(
+            PullRefreshLayout(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                items = articleResult,
                 refreshing = refreshing,
                 onRefresh = {
                     refreshing = true
@@ -121,7 +120,8 @@ class MyCollectFragment : RouterFragment() {
                 onLoad = {
                     loading = false
                     viewModel.getMyCollectArticleNext()
-                }
+                },
+                items = articleResult,
             ) { index, item ->
                 ArticleCard(
                     index,

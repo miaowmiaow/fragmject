@@ -142,4 +142,13 @@ kapt {
 dependencies {
     implementation project(path: ':module-user')
     implementation project(path: ':module-wan')
+    // 单元测试
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'io.mockk:mockk:1.12.7'
+    //对于runBlockingTest, CoroutineDispatcher等
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
+    //对于InstantTaskExecutorRule
+    testImplementation 'androidx.arch.core:core-testing:2.1.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 }

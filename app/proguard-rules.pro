@@ -33,8 +33,9 @@
 -allowaccessmodification                                                        # 优化时允许访问并修改有修饰符的类及类的成员
 -renamesourcefileattribute SourceFile                                           # 将源码中有意义的类名转换成SourceFile，用于混淆具体崩溃代码
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 指定混淆时采用的算法
--keepattributes *Annotation*d                                                   # 保留注解
+-keepattributes *Annotation*d,InnerClasses                                      # 保留注解、内部类
 -keepattributes Signature                                                       # 保留泛型
+-keepattributes SourceFile,LineNumberTable                                      # 抛出异常时保留代码行号，在异常分析中可以方便定位
 
 # 指定外部模糊字典
 -obfuscationdictionary ./dictionary
@@ -52,22 +53,47 @@
 -keep public class * extends android.app.backup.BackupAgentHelper
 -keep public class * extends android.preference.Preference
 -keep public class * extends android.view.View
+
+#保留四大组件相关
+-keep public class * extends android.app.Activity
+-keep public class * extends android.app.Application
+-keep public class * extends android.app.Service
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.content.ContentProvider
+-keep public class * extends android.app.backup.BackupAgentHelper
+-keep public class * extends android.preference.Preference
+-keep public class * extends android.view.View
+
 # 保留support下的所有类及其内部类
 -dontwarn android.support.**
 -keep class android.support.* {*;}
+
 # 保留support下的类的继承类及其内部类
 -keep public class * extends android.support.v4.*
 -keep public class * extends android.support.v7.*
 -keep public class * extends android.support.annotation.*
+
+# 保留androidx相关
+-dontwarn androidx.**
+-keep class androidx.** {*;}
+-keep public class * extends androidx.**
+-keep interface androidx.** {*;}
+-printconfiguration
+-keep,allowobfuscation @interface androidx.annotation.Keep
+-keep @androidx.annotation.Keep class *
+-keepclassmembers class * { @androidx.annotation.Keep *; }
+
 # 不混淆资源类
 -keep class **.R$* {*;}
 -keepclassmembers class **.R$* {
     public static <fields>;
 }
+
 # 保留本地native方法不被混淆
 -keepclasseswithmembernames class * {
     native <methods>;
 }
+
 # 保留方法参数是view的方法，使@OnClick等不会被影响
 -keepclassmembers class * extends android.app.Activity {
    public void *(android.view.View);
@@ -75,28 +101,37 @@
 -keepclassmembers class * extends androidx.fragment.app.Fragment {
    public void *(android.view.View);
 }
+
 # 对于带有回调函数的onXXEvent、**On*Listener的，不能被混淆
 -keepclassmembers class * {
     void *(**On*Event);
     void *(**On*Listener);
 }
-# 不混淆自定义控件（继承自View）不被混淆
+
+#保留自定义控件（继承自 View）不被混淆
 -keep public class * extends android.view.View{
-    *** get*();
-    void set*(***);
-    public <init>(android.content.Context);
-    public <init>(android.content.Context, android.util.AttributeSet);
-    public <init>(android.content.Context, android.util.AttributeSet, int);
+  *** get*();
+  void set*(***);
+  public <init>(android.content.Context);
+  public <init>(android.content.Context, android.util.AttributeSet);
+  public <init>(android.content.Context, android.util.AttributeSet, int);
 }
+-keepclasseswithmembers class * {
+  public <init>(android.content.Context, android.util.AttributeSet);
+  public <init>(android.content.Context, android.util.AttributeSet, int);
+}
+
 # 不混淆枚举类
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
 # 保留Parcelable序列化类不被混淆
 -keepclassmembers class * implements android.os.Parcelable {
     public static final android.os.Parcelable$Creator *;
 }
+
 # 保留Serializable序列化的类不被混淆
 -keepclassmembers class * implements java.io.Serializable {
     static final long serialVersionUID;
@@ -109,6 +144,7 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
 # 避免Log打印输出
 -assumenosideeffects class android.util.Log {
    public static *** v(...);
@@ -116,14 +152,17 @@
    public static *** i(...);
    public static *** w(...);
 }
-#解决webview和js的交互问题
-#其中的xx.xx.xx.xxx换成自己的完整包名
-#如果是内部类使用了webview与js的交互功能，则需要添加“$”后面跟着的是内部类名
-#如果不使用内部类，直接xx.xx.xx.xxx就可以了
-#-keepclassmembers class xx.xx.xx.xxx$InJavaScriptLocalObj {
-#   public *;
-#}
-#-keepattributes JavascriptInterface
+
+#不混淆js接口
+-keepattributes *JavascriptInterface*
+-keepclassmembers class * extends android.webkit.WebViewClient {
+  public void *(android.webkit.WebView, java.lang.String, android.graphics.Bitmap);
+  public boolean *(android.webkit.WebView, java.lang.String);
+}
+-keepclassmembers class * extends android.webkit.WebViewClient {
+  public void *(android.webkit.WebView, java.lang.String);
+}
+
 #----------------------------- kotlinx.coroutines ---------------------------------
 # ServiceLoader support
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}

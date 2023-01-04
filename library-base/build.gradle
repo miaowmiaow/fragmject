@@ -66,11 +66,14 @@ dependencies {
     api "androidx.compose.ui:ui:$compose_version"
     api "androidx.compose.ui:ui-tooling-preview:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
     api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
     api 'androidx.activity:activity-compose:1.6.1'
-    api 'androidx.fragment:fragment-ktx:1.5.4'
+    api 'androidx.fragment:fragment-ktx:1.5.5'
     api 'androidx.viewpager2:viewpager2:1.0.0'
     api 'androidx.webkit:webkit:1.5.0'
     // viewModel 和 livedata
@@ -107,7 +110,7 @@ dependencies {
     // android-gif-drawable
     api 'pl.droidsonroids.gif:android-gif-drawable:1.2.25'
     // 腾讯TBS
-    api 'com.tencent.tbs:tbssdk:44216'
+    api 'com.tencent.tbs:tbssdk:44226'
     // leakcanary
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
     // 单元测试
@@ -119,7 +122,4 @@ dependencies {
     testImplementation 'androidx.arch.core:core-testing:2.1.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 }

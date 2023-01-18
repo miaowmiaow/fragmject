@@ -282,9 +282,6 @@ clip.saveBitmap()
 
 `PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`
 
-## 动态权限申请
-[自己动手撸一个动态权限申请库](https://juejin.cn/post/6991471901704978440)
-
 ## WebView 优化及 H5 秒开实践
 [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
 

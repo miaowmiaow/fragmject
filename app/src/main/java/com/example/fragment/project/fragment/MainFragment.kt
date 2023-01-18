@@ -114,7 +114,7 @@ class MainFragment : RouterFragment() {
                 when (tab.position) {
                     0 -> tabEventViewModel.setHomeTab(1)
                     1 -> tabEventViewModel.setNavigationTab(1)
-                    2 -> tabEventViewModel.setQATab(1)
+                    2 -> tabEventViewModel.setQATabIndex(1)
                     3 -> tabEventViewModel.setProjectTab(1)
                     4 -> tabEventViewModel.setUserTab(1)
                     else -> throw ArrayIndexOutOfBoundsException("index=${tab.position}")

@@ -4,9 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.pullrefresh.*
 import androidx.compose.runtime.*
@@ -32,6 +30,7 @@ import kotlin.math.pow
 @Composable
 fun <T> PullRefreshLayout(
     modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     refreshing: Boolean,
@@ -73,6 +72,7 @@ fun <T> PullRefreshLayout(
             modifier = modifier.graphicsLayer {
                 translationY = state.position
             },
+            state = listState,
             contentPadding = contentPadding,
             verticalArrangement = verticalArrangement,
         ) {
@@ -171,7 +171,7 @@ class PullRefreshLayoutState internal constructor(
     private val animationScope: CoroutineScope,
     private val onRefreshState: State<() -> Unit>,
     private val refreshingOffset: Float,
-    internal val threshold: Float
+    private val threshold: Float
 ) {
     /**
      * A float representing how far the user has pulled as a percentage of the refreshThreshold.

@@ -49,7 +49,7 @@ class MyCollectFragment : RouterFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 WanTheme {
-                    MyCollectPage()
+                    MyCollectScreen()
                 }
             }
         }
@@ -83,7 +83,7 @@ class MyCollectFragment : RouterFragment() {
     }
 
     @Composable
-    fun MyCollectPage() {
+    fun MyCollectScreen() {
         Column {
             Box(
                 modifier = Modifier

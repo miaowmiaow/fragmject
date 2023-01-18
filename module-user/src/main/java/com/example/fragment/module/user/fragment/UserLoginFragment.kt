@@ -53,7 +53,7 @@ class UserLoginFragment : RouterFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 WanTheme {
-                    UserLoginPage()
+                    UserLoginScreen()
                 }
             }
         }
@@ -93,7 +93,7 @@ class UserLoginFragment : RouterFragment() {
     }
 
     @Composable
-    fun UserLoginPage() {
+    fun UserLoginScreen() {
         var usernameText by rememberSaveable { mutableStateOf("") }
         var passwordText by rememberSaveable { mutableStateOf("") }
         ConstraintLayout(

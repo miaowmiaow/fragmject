@@ -22,17 +22,17 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
-import com.example.fragment.library.base.R
-
-private val LightColorPalette = lightColors(
-)
 
 private val DarkColorPalette = darkColors(
+    primary = Color(0xFF000000)
+)
+
+private val LightColorPalette = lightColors(
+    primary = Color(0xFF272A36)
 )
 
 @Composable
-fun WanTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
+fun WanTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colors = if (darkTheme) {
         DarkColorPalette
     } else {

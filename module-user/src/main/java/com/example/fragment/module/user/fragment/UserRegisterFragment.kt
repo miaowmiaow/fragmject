@@ -53,7 +53,7 @@ class UserRegisterFragment : RouterFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 WanTheme {
-                    UserRegisterPage()
+                    UserRegisterScreen()
                 }
             }
         }
@@ -101,7 +101,7 @@ class UserRegisterFragment : RouterFragment() {
     }
 
     @Composable
-    fun UserRegisterPage() {
+    fun UserRegisterScreen() {
         var usernameText by rememberSaveable { mutableStateOf("") }
         var passwordText by rememberSaveable { mutableStateOf("") }
         var againPasswordText by rememberSaveable { mutableStateOf("") }

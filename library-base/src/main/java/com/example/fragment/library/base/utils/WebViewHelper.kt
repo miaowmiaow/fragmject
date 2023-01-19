@@ -193,6 +193,13 @@ class WebViewHelper(private val webView: WebView) {
 
     fun x5SnapshotVisible(callback: (Bitmap) -> Unit) {
         Thread {
+            try {
+                webView.isVerticalScrollBarEnabled = false
+                webView.view.isVerticalScrollBarEnabled = false
+                webView.x5WebViewExtension.isVerticalScrollBarEnabled = false
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             var contentHeight = webView.contentHeight * webView.width / webView.contentWidth
             webView.measure(0, 0)
             val measuredHeight = webView.measuredHeight

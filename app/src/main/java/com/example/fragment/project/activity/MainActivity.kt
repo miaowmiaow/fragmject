@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
@@ -16,8 +15,6 @@ import com.example.fragment.module.user.model.SettingViewModel
 import com.example.fragment.module.user.model.UserViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainActivityBinding
-import com.tencent.smtt.export.external.TbsCoreSettings
-import com.tencent.smtt.sdk.QbSdk
 
 class MainActivity : RouterActivity() {
 
@@ -90,27 +87,19 @@ class MainActivity : RouterActivity() {
     override fun onDestroy() {
         super.onDestroy()
         WanHelper.close()
-        WebViewManager.destroy()
     }
 
     private fun initContentView() {
         window.setFormat(PixelFormat.TRANSLUCENT)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         setContentView(MainActivityBinding.inflate(LayoutInflater.from(this)).root)
-        initViewModel()
-        initSDK()
-    }
-
-    private fun initViewModel() {
         settingViewModel.uiModeResult().observe(this) { mode ->
             when (mode) {
                 "1" -> {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                    QbSdk.unForceSysWebView()
                 }
                 "2" -> {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                    QbSdk.forceSysWebView()
                 }
                 else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             }
@@ -120,21 +109,6 @@ class MainActivity : RouterActivity() {
 
     //测试自动埋点注解请忽略
     @TestAnnotation(code = 1, message = "qwe")
-    private fun initSDK() {
-        //X5内核初始化
-        val map = HashMap<String, Any>()
-        map[TbsCoreSettings.TBS_SETTINGS_USE_SPEEDY_CLASSLOADER] = true
-        map[TbsCoreSettings.TBS_SETTINGS_USE_DEXLOADER_SERVICE] = true
-        QbSdk.initTbsSettings(map)
-        QbSdk.initX5Environment(applicationContext, object : QbSdk.PreInitCallback {
-            override fun onViewInitFinished(arg0: Boolean) {}
-
-            override fun onCoreInitFinished() {}
-        })
-        //WebView预加载
-        WebViewManager.prepare(applicationContext)
-    }
-
     private fun loginRequired(name: Router): Boolean {
         return loginRouter.contains(name) && userViewModel.getUserId().isBlank()
     }

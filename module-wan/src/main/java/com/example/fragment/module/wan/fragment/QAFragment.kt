@@ -12,10 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.PullRefreshLayout
@@ -29,11 +31,9 @@ import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.model.QAQuizModel
 import com.example.fragment.module.wan.model.QASquareModel
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 class QAFragment : RouterFragment() {
 
@@ -74,7 +74,6 @@ class QAFragment : RouterFragment() {
         val scope = rememberCoroutineScope()
         val pagerState = rememberPagerState(eventViewModel.qaTabIndex())
         eventViewModel.setQATabIndex(pagerState.currentPage)
-
         Column {
             ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -136,7 +135,24 @@ class QAFragment : RouterFragment() {
                     }
                 }
                 PullRefreshLayout(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+                            lerp(
+                                start = 0.85f,
+                                stop = 1f,
+                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                            ).also { scale ->
+                                scaleX = scale
+                                scaleY = scale
+                            }
+                            alpha = lerp(
+                                start = 0.5f,
+                                stop = 1f,
+                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                            )
+                        },
                     listState = listState,
                     contentPadding = PaddingValues(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),

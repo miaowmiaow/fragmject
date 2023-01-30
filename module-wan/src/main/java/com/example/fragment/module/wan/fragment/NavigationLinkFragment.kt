@@ -50,17 +50,17 @@ class NavigationLinkFragment : RouterFragment() {
 
     override fun onResume() {
         super.onResume()
-        tabEventViewModel.navigationTab().observe(viewLifecycleOwner) {
+        tabEventViewModel.mainTabReselected().observe(viewLifecycleOwner) {
             if (it == 1) {
                 binding.list.toppingToPosition(0)
-                tabEventViewModel.setNavigationTab(0)
+                tabEventViewModel.resetMainTabReselected()
             }
         }
     }
 
     override fun onPause() {
         super.onPause()
-        tabEventViewModel.navigationTab().removeObservers(viewLifecycleOwner)
+        tabEventViewModel.mainTabReselected().removeObservers(viewLifecycleOwner)
     }
 
     override fun onDestroyView() {

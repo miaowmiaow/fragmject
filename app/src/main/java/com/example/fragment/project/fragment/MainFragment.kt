@@ -111,14 +111,7 @@ class MainFragment : RouterFragment() {
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                when (tab.position) {
-                    0 -> tabEventViewModel.setHomeTab(1)
-                    1 -> tabEventViewModel.setNavigationTab(1)
-                    2 -> tabEventViewModel.setQATabIndex(1)
-                    3 -> tabEventViewModel.setProjectTab(1)
-                    4 -> tabEventViewModel.setUserTab(1)
-                    else -> throw ArrayIndexOutOfBoundsException("index=${tab.position}")
-                }
+                tabEventViewModel.setMainTabReselected(tab.position)
             }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2, false, false) { tab, position ->

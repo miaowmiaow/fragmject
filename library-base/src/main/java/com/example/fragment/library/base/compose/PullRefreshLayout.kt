@@ -1,5 +1,6 @@
 package com.example.fragment.library.base.compose
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.pow
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun <T> PullRefreshLayout(
     modifier: Modifier = Modifier,
@@ -104,19 +105,23 @@ fun <T> PullRefreshLayout(
             }
         }
         // Custom progress indicator
-        val id = if (refreshing) loadingAnimate else state.position % loadingResId.size
-        if (refreshing || (state.position >= loadingHeightPx * 0.5f)) {
+        AnimatedVisibility(
+            visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
+            modifier = Modifier
+                .size(40.dp, 16.dp)
+                .align(Alignment.TopCenter)
+                .graphicsLayer {
+                    translationY = state.position * 0.5f
+                },
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut()
+        ) {
+            val id = if (refreshing) loadingAnimate else state.position % loadingResId.size
             Image(
                 painter = painterResource(loadingResId[id.toInt()]),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(40.dp, 16.dp)
-                    .align(Alignment.TopCenter)
-                    .graphicsLayer {
-                        translationY = state.position * 0.5f
-                    }
-            )
+                )
         }
     }
 }

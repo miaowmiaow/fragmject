@@ -13,10 +13,7 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.URLUtil
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
+import android.webkit.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -90,7 +87,7 @@ class WebFragment : RouterFragment() {
         ) {
             var injectState by remember { mutableStateOf(false) }
             //注入VConsole以便于H5调试
-            val injectVConsole by remember { mutableStateOf(false) }
+            val injectVConsole by remember { mutableStateOf(true) }
             var progress by remember { mutableStateOf(0f) }
 
             val client = object : AccompanistWebViewClient() {

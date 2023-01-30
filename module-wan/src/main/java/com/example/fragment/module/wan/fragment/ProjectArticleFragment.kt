@@ -46,17 +46,17 @@ class ProjectArticleFragment : RouterFragment() {
 
     override fun onResume() {
         super.onResume()
-        eventViewModel.projectTab().observe(viewLifecycleOwner) {
-            if (it == 1) {
+        eventViewModel.mainTabReselected().observe(viewLifecycleOwner) {
+            if (it == 3) {
                 binding.list.toppingToPosition(0)
-                eventViewModel.setProjectTab(0)
+                eventViewModel.resetMainTabReselected()
             }
         }
     }
 
     override fun onPause() {
         super.onPause()
-        eventViewModel.projectTab().removeObservers(viewLifecycleOwner)
+        eventViewModel.mainTabReselected().removeObservers(viewLifecycleOwner)
     }
 
     override fun onStop() {

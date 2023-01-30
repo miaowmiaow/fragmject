@@ -72,10 +72,10 @@ class HomeFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        tabEventViewModel.homeTab().observe(viewLifecycleOwner) {
-            if (it == 1) {
+        tabEventViewModel.mainTabReselected().observe(viewLifecycleOwner) {
+            if (it == 0) {
                 binding.list.toppingToPosition(0)
-                tabEventViewModel.setHomeTab(0)
+                tabEventViewModel.resetMainTabReselected()
             }
         }
         homeViewModel.articleListResult().observe(viewLifecycleOwner) {

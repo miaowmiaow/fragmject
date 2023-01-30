@@ -77,7 +77,7 @@ class ProjectFragment : RouterFragment() {
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                eventViewModel.setProjectTab(1)
+                eventViewModel.setMainTabReselected(3)
             }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->

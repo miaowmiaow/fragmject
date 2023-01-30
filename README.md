@@ -15,6 +15,7 @@
 - 单 Activity 应用架构（Navigation...）
 - 常用控件封装(图片选择器、图片编辑器、日期控件、全面屏沉浸、屏幕录制...)
 - 字节码插桩(ASM...)
+- Compose
 
 ## 开发环境
 为了您能正常运行本项目，请使用 `Android Studio Chipmunk (2021.2.1) 🐿️` 和 `Android Gradle 7.2.2` 或者以上版本。   
@@ -295,15 +296,15 @@ clip.saveBitmap()
 
 [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
 
+[Jetpack Compose : WebView的使用与优化](https://juejin.cn/post/7194360493866221628)
+
 如果你暂时不需要 Compose ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
 
 ## 主要开源框架
 - [coil-kt/coil](https://github.com/coil-kt/coil)
 - [google/gson](https://github.com/google/gson)
-- [sourceforge/pinyin4j](http://pinyin4j.sourceforge.net/)
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
-- [tencent/x5](https://x5.tencent.com/)
 
 ## Gitee镜像
 - [fragmject](https://gitee.com/zhao.git/FragmentProject.git)

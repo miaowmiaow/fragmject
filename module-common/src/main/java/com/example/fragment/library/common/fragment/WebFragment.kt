@@ -3,17 +3,14 @@ package com.example.fragment.library.common.fragment
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.*
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,17 +21,13 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.webkit.WebSettingsCompat
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
-import com.example.fragment.library.base.utils.WebViewHelper
-import com.example.fragment.library.base.utils.imageDownload
-import com.example.fragment.library.base.utils.injectVConsoleJs
-import com.example.fragment.library.base.utils.saveSystemAlbum
+import com.example.fragment.library.base.utils.*
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.constant.Keys
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -50,10 +43,7 @@ class WebFragment : RouterFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 WanTheme {
-                    val url = Uri.decode(requireArguments().getString(Keys.URL))
-                    val state = rememberWebViewState(url)
-                    val navigator = rememberWebViewNavigator()
-                    WebScreen(state, navigator)
+                    WebScreen(Uri.decode(requireArguments().getString(Keys.URL)))
                 }
             }
         }
@@ -65,19 +55,22 @@ class WebFragment : RouterFragment() {
         return null
     }
 
-    @SuppressLint("SetJavaScriptEnabled", "RequiresFeature")
+    @SuppressLint("SetJavaScriptEnabled")
     @Composable
     fun WebScreen(
-        state: WebViewState,
-        navigator: WebViewNavigator = rememberWebViewNavigator(),
+        originalUrl: String
     ) {
-        val statusBarColor = colorResource(R.color.white)
+        var webView by remember { mutableStateOf<WebView?>(null) }
+        val state = rememberWebViewState(originalUrl)
+        val navigator = rememberWebViewNavigator()
         val systemUiController = rememberSystemUiController()
         SideEffect {
-            systemUiController.setStatusBarColor(
-                statusBarColor,
-                darkIcons = !requireContext().isNightMode()
-            )
+            systemUiController.statusBarDarkContentEnabled = true
+        }
+        DisposableEffect(LocalLifecycleOwner.current) {
+            onDispose {
+                systemUiController.statusBarDarkContentEnabled = false
+            }
         }
         Column(
             modifier = Modifier
@@ -154,55 +147,19 @@ class WebFragment : RouterFragment() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
+                captureBackPresses = false,
                 navigator = navigator,
                 onCreated = { webView ->
-                    webView.setBackgroundColor(Color.TRANSPARENT)
                     webView.settings.javaScriptEnabled = true
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        val isAppDarkMode = webView.context.isNightMode()
-                        WebSettingsCompat.setForceDark(
-                            webView.settings,
-                            if (isAppDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
-                        )
-                    }
-                    webView.setDownloadListener { url, _, _, _, _ ->
-                        try {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                            intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                            webView.context.startActivity(intent)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                    webView.setOnLongClickListener {
-                        val result = webView.hitTestResult
-                        when (result.type) {
-                            WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                                result.extra?.let { data ->
-                                    if (URLUtil.isValidUrl(data)) {
-                                        webView.context.imageDownload(data, {
-                                            val bitmap = (it as BitmapDrawable).bitmap
-                                            webView.context.saveSystemAlbum(bitmap) { _, _ -> }
-                                        })
-                                    } else {
-                                        var str = data
-                                        if (str.contains(",")) {
-                                            str = str.split(",")[1]
-                                        }
-                                        val array = Base64.decode(str, Base64.NO_WRAP)
-                                        val bitmap =
-                                            BitmapFactory.decodeByteArray(array, 0, array.size)
-                                        webView.context.saveSystemAlbum(bitmap) { _, _ -> }
-                                    }
-                                }
-                                true
-                            }
-                            else -> false
-                        }
-                    }
+                    WebViewHelper.setDownloadListener(webView)
+                    WebViewHelper.setOnLongClickListener(webView)
+                },
+                onDispose = { webView ->
+                    WebViewManager.recycle(webView)
                 },
                 client = client,
                 chromeClient = chromeClient,
+                factory = { context -> WebViewManager.obtain(context).also { webView = it } }
             )
             AnimatedVisibility(visible = (progress > 0f && progress < 1f)) {
                 LinearProgressIndicator(
@@ -228,10 +185,10 @@ class WebFragment : RouterFragment() {
                         .fillMaxHeight()
                         .padding(17.dp)
                         .clickable {
-                            if (navigator.canGoBack) {
-                                navigator.navigateBack()
-                            } else {
-                                onBackPressed()
+                            webView?.let {
+                                if (!WebViewHelper.goBack(it, originalUrl)) {
+                                    onBackPressed()
+                                }
                             }
                         }
                 )

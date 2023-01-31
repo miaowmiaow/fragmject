@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
@@ -87,6 +88,7 @@ class MainActivity : RouterActivity() {
     override fun onDestroy() {
         super.onDestroy()
         WanHelper.close()
+        WebViewManager.destroy()
     }
 
     private fun initContentView() {
@@ -105,6 +107,8 @@ class MainActivity : RouterActivity() {
             }
         }
         userViewModel.userResult()
+        //WebView预加载
+        WebViewManager.prepare(applicationContext)
     }
 
     //测试自动埋点注解请忽略

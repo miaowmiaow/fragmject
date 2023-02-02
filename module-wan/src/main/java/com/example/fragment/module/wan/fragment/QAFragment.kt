@@ -97,7 +97,7 @@ class QAFragment : RouterFragment() {
                         text = { Text(title) },
                         onClick = {
                             scope.launch {
-                                pagerState.scrollToPage(index)
+                                pagerState.animateScrollToPage(index)
                             }
                             eventViewModel.setQATabIndex(index)
                         },

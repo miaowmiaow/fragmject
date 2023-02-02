@@ -197,10 +197,10 @@ fun ArticleCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .weight(1f)
                             .padding(end = 35.dp)
                             .clickable(onClick = chapterNameClick),
                     )
+                    Spacer(Modifier.height(20.dp).weight(1f))
                     Image(painter = painterResource(id = collectResId),
                         contentDescription = "",
                         modifier = Modifier

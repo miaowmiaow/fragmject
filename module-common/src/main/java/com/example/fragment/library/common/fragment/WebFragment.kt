@@ -80,7 +80,7 @@ class WebFragment : RouterFragment() {
         ) {
             var injectState by remember { mutableStateOf(false) }
             //注入VConsole以便于H5调试
-            val injectVConsole by remember { mutableStateOf(true) }
+            val injectVConsole by remember { mutableStateOf(false) }
             var progress by remember { mutableStateOf(0f) }
 
             val client = object : AccompanistWebViewClient() {

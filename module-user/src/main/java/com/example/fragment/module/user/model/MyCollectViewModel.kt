@@ -1,37 +1,38 @@
 package com.example.fragment.module.user.model
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import kotlinx.coroutines.launch
 
 class MyCollectViewModel : BaseViewModel() {
 
-    private val myCollectArticleResult: MutableLiveData<ArticleListBean> by lazy {
-        MutableLiveData<ArticleListBean>().also {
-            getMyCollectArticleHome()
-        }
-    }
+    val result = ArrayList<ArticleBean>().toMutableStateList()
 
-    fun myCollectArticleResult(): LiveData<ArticleListBean> {
-        return myCollectArticleResult
-    }
+    var refreshing by mutableStateOf(false)
+    var loading by mutableStateOf(true)
 
-    fun clearMyCollectArticleResult() {
-        myCollectArticleResult.value = null
+    init {
+        getMyCollectArticleHome()
     }
 
     fun getMyCollectArticleHome() {
+        refreshing = true
         getMyCollectArticle(getHomePage())
     }
 
     fun getMyCollectArticleNext() {
+        loading = false
         getMyCollectArticle(getNextPage())
     }
+
 
     /**
      * 获取收藏文章
@@ -46,13 +47,21 @@ class MyCollectViewModel : BaseViewModel() {
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request) { updateProgress(it) }
             //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (myCollectArticleResult.value == null) {
+            if (result.isEmpty()) {
                 transitionAnimationEnd(request, response)
             }
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt()) }
-            //通过LiveData通知界面更新
-            myCollectArticleResult.postValue(response)
+            response.data?.datas?.let {
+                if (isHomePage()) {
+                    result.clear()
+                }
+                result.addAll(it)
+            }
+            //设置下拉刷新状态
+            refreshing = false
+            //设置加载更多状态
+            loading = hasNextPage()
         }
     }
 

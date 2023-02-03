@@ -28,7 +28,6 @@ class ProjectArticleFragment : RouterFragment() {
         }
     }
 
-    private val eventViewModel: TabEventViewMode by activityViewModels()
     private val projectViewModel: ProjectViewModel by activityViewModels()
     private var _binding: ProjectArticleFragmentBinding? = null
     private val binding get() = _binding!!
@@ -42,21 +41,6 @@ class ProjectArticleFragment : RouterFragment() {
     ): View {
         _binding = ProjectArticleFragmentBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        eventViewModel.mainTabReselected().observe(viewLifecycleOwner) {
-            if (it == 3) {
-                binding.list.toppingToPosition(0)
-                eventViewModel.resetMainTabReselected()
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        eventViewModel.mainTabReselected().removeObservers(viewLifecycleOwner)
     }
 
     override fun onStop() {

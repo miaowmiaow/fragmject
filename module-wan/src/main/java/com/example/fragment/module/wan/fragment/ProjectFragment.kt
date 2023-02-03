@@ -12,7 +12,6 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.databinding.ProjectFragmentBinding
 import com.example.fragment.module.wan.model.ProjectTreeViewModel
 import com.google.android.material.tabs.TabLayout
@@ -27,7 +26,6 @@ class ProjectFragment : RouterFragment() {
         }
     }
 
-    private val eventViewModel: TabEventViewMode by activityViewModels()
     private val projectTreeViewModel: ProjectTreeViewModel by activityViewModels()
     private var _binding: ProjectFragmentBinding? = null
     private val binding get() = _binding!!
@@ -77,7 +75,6 @@ class ProjectFragment : RouterFragment() {
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                eventViewModel.setMainTabReselected(3)
             }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->

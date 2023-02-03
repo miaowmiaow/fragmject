@@ -6,8 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material.*
-import androidx.compose.material.pullrefresh.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Text
+import androidx.compose.material.pullrefresh.PullRefreshDefaults
+import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +40,10 @@ fun <T> PullRefreshLayout(
     onRefresh: () -> Unit,
     loading: Boolean,
     onLoad: () -> Unit,
+    onNoData: () -> Unit = {},
     items: List<T>,
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
-
     val loadingResId = listOf(
         R.drawable.loading_big_1,
         R.drawable.loading_big_4,
@@ -67,61 +69,67 @@ fun <T> PullRefreshLayout(
     )
 
     val state = rememberPullRefreshLayoutState(refreshing, onRefresh)
-
-    Box(Modifier.pullRefreshLayout(state)) {
-        LazyColumn(
-            modifier = modifier.graphicsLayer {
-                translationY = state.position
-            },
-            state = listState,
-            contentPadding = contentPadding,
-            verticalArrangement = verticalArrangement,
-        ) {
-            itemsIndexed(items) { index, item ->
-                itemContent(index, item)
-                if (loading && items.size - index < 5) {
-                    LaunchedEffect(items.size) {
-                        onLoad()
-                    }
-                }
-            }
-            if (items.isNotEmpty()) {
-                item {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
+    if (items.isEmpty() && !refreshing) {
+        NotNetworkLayout {
+            onNoData()
+        }
+    } else {
+        Box(Modifier.pullRefreshLayout(state)) {
+            LazyColumn(
+                modifier = modifier.graphicsLayer {
+                    translationY = state.position
+                },
+                state = listState,
+                contentPadding = contentPadding,
+                verticalArrangement = verticalArrangement,
+            ) {
+                itemsIndexed(items) { index, item ->
+                    itemContent(index, item)
+                    if (loading && items.size - index < 5) {
+                        LaunchedEffect(items.size) {
                             onLoad()
                         }
-                    ) {
-                        Text(
-                            text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
-                            fontSize = 12.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.align(alignment = Alignment.Center)
-                        )
+                    }
+                }
+                if (items.isNotEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .clickable {
+                                    onLoad()
+                                }
+                        ) {
+                            Text(
+                                text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
+                                fontSize = 12.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.align(alignment = Alignment.Center)
+                            )
+                        }
                     }
                 }
             }
-        }
-        // Custom progress indicator
-        AnimatedVisibility(
-            visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
-            modifier = Modifier
-                .size(40.dp, 16.dp)
-                .align(Alignment.TopCenter)
-                .graphicsLayer {
-                    translationY = state.position * 0.5f
-                },
-            enter = fadeIn() + scaleIn(),
-            exit = fadeOut() + scaleOut()
-        ) {
-            val id = if (refreshing) loadingAnimate else state.position % loadingResId.size
-            Image(
-                painter = painterResource(loadingResId[id.toInt()]),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            // Custom progress indicator
+            AnimatedVisibility(
+                visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
+                modifier = Modifier
+                    .size(40.dp, 16.dp)
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        translationY = state.position * 0.5f
+                    },
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()
+            ) {
+                val id = if (refreshing) loadingAnimate else state.position % loadingResId.size
+                Image(
+                    painter = painterResource(loadingResId[id.toInt()]),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                 )
+            }
         }
     }
 }
@@ -146,8 +154,6 @@ fun rememberPullRefreshLayoutState(
         refreshingOffsetPx = refreshingOffset.toPx()
     }
 
-    // refreshThreshold and refreshingOffset should not be changed after instantiation, so any
-    // changes to these values are ignored.
     val state = remember(scope) {
         PullRefreshLayoutState(scope, onRefreshState, refreshingOffsetPx, thresholdPx)
     }
@@ -178,14 +184,7 @@ class PullRefreshLayoutState internal constructor(
     private val refreshingOffset: Float,
     private val threshold: Float
 ) {
-    /**
-     * A float representing how far the user has pulled as a percentage of the refreshThreshold.
-     *
-     * If the component has not been pulled at all, progress is zero. If the pull has reached
-     * halfway to the threshold, progress is 0.5f. A value greater than 1 indicates that pull has
-     * gone beyond the refreshThreshold - e.g. a value of 2f indicates that the user has pulled to
-     * two times the refreshThreshold.
-     */
+
     val progress get() = adjustedDistancePulled / threshold
 
     internal val refreshing get() = _refreshing
@@ -233,16 +232,11 @@ class PullRefreshLayoutState internal constructor(
     }
 
     private fun calculateIndicatorPosition(): Float = when {
-        // If drag hasn't gone past the threshold, the position is the adjustedDistancePulled.
         adjustedDistancePulled <= threshold -> adjustedDistancePulled
         else -> {
-            // How far beyond the threshold pull has gone, as a percentage of the threshold.
             val overshootPercent = abs(progress) - 1.0f
-            // Limit the overshoot to 200%. Linear between 0 and 200.
             val linearTension = overshootPercent.coerceIn(0f, 2f)
-            // Non-linear tension. Increases with linearTension, but at a decreasing rate.
             val tensionPercent = linearTension - linearTension.pow(2) / 4
-            // The additional offset beyond the threshold.
             val extraOffset = threshold * tensionPercent
             threshold + extraOffset
         }

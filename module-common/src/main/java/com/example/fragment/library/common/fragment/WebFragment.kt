@@ -64,10 +64,8 @@ class WebFragment : RouterFragment() {
         val state = rememberWebViewState(originalUrl)
         val navigator = rememberWebViewNavigator()
         val systemUiController = rememberSystemUiController()
-        SideEffect {
-            systemUiController.statusBarDarkContentEnabled = true
-        }
         DisposableEffect(LocalLifecycleOwner.current) {
+            systemUiController.statusBarDarkContentEnabled = true
             onDispose {
                 systemUiController.statusBarDarkContentEnabled = false
             }

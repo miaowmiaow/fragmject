@@ -7,18 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.os.bundleOf
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.toppingToPosition
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.NavigationBean
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.LinkMenuAdapter
 import com.example.fragment.module.wan.databinding.NavigationLinkFragmentBinding
@@ -33,7 +30,6 @@ class NavigationLinkFragment : RouterFragment() {
         }
     }
 
-    private val tabEventViewModel: TabEventViewMode by activityViewModels()
     private val navigationViewModel: NavigationViewModel by viewModels()
     private var _binding: NavigationLinkFragmentBinding? = null
     private val binding get() = _binding!!
@@ -46,21 +42,6 @@ class NavigationLinkFragment : RouterFragment() {
     ): View {
         _binding = NavigationLinkFragmentBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        tabEventViewModel.mainTabReselected().observe(viewLifecycleOwner) {
-            if (it == 1) {
-                binding.list.toppingToPosition(0)
-                tabEventViewModel.resetMainTabReselected()
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        tabEventViewModel.mainTabReselected().removeObservers(viewLifecycleOwner)
     }
 
     override fun onDestroyView() {

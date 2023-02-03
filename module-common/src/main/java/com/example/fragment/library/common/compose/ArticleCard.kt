@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
+import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
-import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.bean.ArticleBean
 import kotlinx.coroutines.launch
@@ -40,12 +40,13 @@ import java.util.regex.Pattern
 
 @Composable
 fun ArticleCard(
-    position: Int,
+    modifier: Modifier = Modifier,
     item: ArticleBean,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     avatarClick: () -> Unit = {},
     tagClick: () -> Unit = {},
     chapterNameClick: () -> Unit = {},
+    onSignIn: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by rememberSaveable {
@@ -68,7 +69,7 @@ fun ArticleCard(
     )
     val shareUser = "${item.author}${item.shareUser}".ifBlank { "匿名" }
     val title = fromHtml(item.title)
-    Box {
+    Box(modifier) {
         Card(elevation = 2.dp) {
             Column(
                 Modifier
@@ -78,7 +79,7 @@ fun ArticleCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = avatarList[position % 6]),
+                        painter = painterResource(id = avatarList[item.id.toInt() % 6]),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -93,7 +94,8 @@ fun ArticleCard(
                             .padding(start = 10.dp, end = 10.dp)
                     ) {
                         val (share_user, nice_date) = createRefs()
-                        Text(text = shareUser,
+                        Text(
+                            text = shareUser,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = colorResource(R.color.text_666),
@@ -102,7 +104,8 @@ fun ArticleCard(
                             modifier = Modifier.constrainAs(share_user) {
                                 top.linkTo(parent.top)
                             })
-                        Text(text = item.niceDate,
+                        Text(
+                            text = item.niceDate,
                             fontSize = 12.sp,
                             color = colorResource(R.color.text_999),
                             maxLines = 1,
@@ -200,8 +203,13 @@ fun ArticleCard(
                             .padding(end = 35.dp)
                             .clickable(onClick = chapterNameClick),
                     )
-                    Spacer(Modifier.height(20.dp).weight(1f))
-                    Image(painter = painterResource(id = collectResId),
+                    Spacer(
+                        Modifier
+                            .height(20.dp)
+                            .weight(1f)
+                    )
+                    Image(
+                        painter = painterResource(id = collectResId),
                         contentDescription = "",
                         modifier = Modifier
                             .size(20.dp)
@@ -214,6 +222,8 @@ fun ArticleCard(
                                         if (response.errorCode == "0") {
                                             item.collect = false
                                             collectResId = R.drawable.ic_collect_unchecked_stroke
+                                        } else if (response.errorCode == "-1001") {
+                                            onSignIn()
                                         }
                                     } else {
                                         val request = HttpRequest("lg/collect/{id}/json")
@@ -222,6 +232,8 @@ fun ArticleCard(
                                         if (response.errorCode == "0") {
                                             item.collect = true
                                             collectResId = R.drawable.ic_collect_checked
+                                        } else if (response.errorCode == "-1001") {
+                                            onSignIn()
                                         }
                                     }
                                 }
@@ -236,15 +248,18 @@ fun ArticleCard(
 @Composable
 fun ArticleCardPreview() {
     WanTheme {
-        ArticleCard(0, ArticleBean(
-            niceDate = "2022-10-13 11:11",
-            title = "我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户",
-            desc = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
-            fresh = true,
-            top = true,
-            superChapterName = "问答",
-            chapterName = "官方"
-        ), {})
+        ArticleCard(
+            item = ArticleBean(
+                niceDate = "2022-10-13 11:11",
+                title = "我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户",
+                desc = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
+                fresh = true,
+                top = true,
+                superChapterName = "问答",
+                chapterName = "官方"
+            ),
+            onClick = {}
+        )
     }
 }
 

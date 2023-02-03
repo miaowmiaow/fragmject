@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.base.utils.toppingToPosition
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.adapter.SystemAdapter
 import com.example.fragment.module.wan.databinding.NavigationSystemFragmentBinding
 import com.example.fragment.module.wan.model.SystemTreeViewModel
@@ -23,7 +21,6 @@ class NavigationSystemFragment : RouterFragment() {
         }
     }
 
-    private val tabEventViewModel: TabEventViewMode by activityViewModels()
     private val systemTreeViewModel: SystemTreeViewModel by activityViewModels()
     private var _binding: NavigationSystemFragmentBinding? = null
     private val binding get() = _binding!!
@@ -36,21 +33,6 @@ class NavigationSystemFragment : RouterFragment() {
     ): View {
         _binding = NavigationSystemFragmentBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        tabEventViewModel.mainTabReselected().observe(viewLifecycleOwner) {
-            if (it == 1) {
-                binding.list.toppingToPosition(0)
-                tabEventViewModel.resetMainTabReselected()
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        tabEventViewModel.mainTabReselected().removeObservers(viewLifecycleOwner)
     }
 
     override fun onDestroyView() {

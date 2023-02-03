@@ -40,10 +40,12 @@ class QASquareModel : QAModel() {
             if (result.isEmpty()) {
                 transitionAnimationEnd(request, response)
             }
-            if (isHomePage()) {
-                result.clear()
+            response.data?.datas?.let {
+                if (isHomePage()) {
+                    result.clear()
+                }
+                result.addAll(it)
             }
-            response.data?.datas?.let { result.addAll(it) }
             //设置下拉刷新状态
             refreshing = false
             //设置加载更多状态

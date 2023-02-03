@@ -12,12 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.PullRefreshLayout
@@ -33,7 +31,6 @@ import com.example.fragment.module.wan.model.QAQuizModel
 import com.example.fragment.module.wan.model.QASquareModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 
 class QAFragment : RouterFragment() {
 
@@ -71,7 +68,7 @@ class QAFragment : RouterFragment() {
     fun QAScreen(
         eventViewModel: TabEventViewMode = viewModel()
     ) {
-        val scope = rememberCoroutineScope()
+        val coroutineScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(eventViewModel.qaTabIndex())
         eventViewModel.setQATabIndex(pagerState.currentPage)
         Column {
@@ -96,7 +93,7 @@ class QAFragment : RouterFragment() {
                     Tab(
                         text = { Text(title) },
                         onClick = {
-                            scope.launch {
+                            coroutineScope.launch {
                                 pagerState.animateScrollToPage(index)
                             }
                             eventViewModel.setQATabIndex(index)
@@ -135,24 +132,7 @@ class QAFragment : RouterFragment() {
                     }
                 }
                 PullRefreshLayout(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
-                            lerp(
-                                start = 0.85f,
-                                stop = 1f,
-                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                            ).also { scale ->
-                                scaleX = scale
-                                scaleY = scale
-                            }
-                            alpha = lerp(
-                                start = 0.5f,
-                                stop = 1f,
-                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                            )
-                        },
+                    modifier = Modifier.fillMaxSize(),
                     listState = listState,
                     contentPadding = PaddingValues(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -164,11 +144,13 @@ class QAFragment : RouterFragment() {
                     onLoad = {
                         viewModel.getNext()
                     },
+                    onNoData = {
+                        viewModel.getHome()
+                    },
                     items = viewModel.result,
-                ) { index, item ->
+                ) { _, item ->
                     ArticleCard(
-                        index,
-                        item,
+                        item = item,
                         onClick = {
                             navigation(Router.WEB, bundleOf(Keys.URL to Uri.encode(item.link)))
                         },
@@ -189,6 +171,9 @@ class QAFragment : RouterFragment() {
                         },
                         chapterNameClick = {
                             navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
+                        },
+                        onSignIn = {
+                            navigation(Router.USER_LOGIN)
                         }
                     )
                 }

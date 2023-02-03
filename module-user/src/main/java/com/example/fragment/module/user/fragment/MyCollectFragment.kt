@@ -12,7 +12,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -20,26 +21,19 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.os.bundleOf
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.PullRefreshLayout
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.model.MyCollectViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 class MyCollectFragment : RouterFragment() {
-
-    private val viewModel: MyCollectViewModel by viewModels()
-
-    private var refreshing by mutableStateOf(false)
-    private var loading by mutableStateOf(true)
-    private val _articleResult = ArrayList<ArticleBean>().toMutableStateList()
-    private val articleResult get() = _articleResult
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,44 +49,35 @@ class MyCollectFragment : RouterFragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewModel.clearMyCollectArticleResult()
-    }
+    override fun initView() {}
 
-    override fun initView() {
-    }
-
-    override fun initViewModel(): BaseViewModel {
-        viewModel.myCollectArticleResult().observe(viewLifecycleOwner) { result ->
-            httpParseSuccess(result) { bean ->
-                bean.data?.datas?.let { data ->
-                    data.forEach { item -> item.collect = true }
-                    if (viewModel.isHomePage()) {
-                        _articleResult.clear()
-                    }
-                    _articleResult.addAll(data)
-                }
-            }
-            //设置下拉刷新状态
-            refreshing = false
-            //设置加载更多状态
-            loading = viewModel.hasNextPage()
-        }
-        return viewModel
+    override fun initViewModel(): BaseViewModel? {
+        return null
     }
 
     @Composable
     fun MyCollectScreen() {
-        Column {
+        val statusBarColor = colorResource(R.color.theme)
+        val systemUiController = rememberSystemUiController()
+        SideEffect {
+            systemUiController.setStatusBarColor(
+                statusBarColor,
+                darkIcons = false
+            )
+        }
+        Column(
+            modifier = Modifier.systemBarsPadding()
+        ) {
+            val viewModel: MyCollectViewModel = viewModel()
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(45.dp)
                     .background(colorResource(R.color.theme))
-                    .systemBarsPadding()
             ) {
                 IconButton(
-                    onClick = { onBackPressed() }, modifier = Modifier.height(45.dp)
+                    modifier = Modifier.height(45.dp),
+                    onClick = { onBackPressed() }
                 ) {
                     Icon(
                         Icons.Filled.ArrowBack,
@@ -111,21 +96,21 @@ class MyCollectFragment : RouterFragment() {
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                refreshing = refreshing,
+                refreshing = viewModel.refreshing,
                 onRefresh = {
-                    refreshing = true
                     viewModel.getMyCollectArticleHome()
                 },
-                loading = loading,
+                loading = viewModel.loading,
                 onLoad = {
-                    loading = false
                     viewModel.getMyCollectArticleNext()
                 },
-                items = articleResult,
-            ) { index, item ->
+                onNoData = {
+                    viewModel.getMyCollectArticleHome()
+                },
+                items = viewModel.result,
+            ) { _, item ->
                 ArticleCard(
-                    index,
-                    item,
+                    item = item,
                     onClick = {
                         navigation(Router.WEB, bundleOf(Keys.URL to Uri.encode(item.link)))
                     },
@@ -146,6 +131,9 @@ class MyCollectFragment : RouterFragment() {
                     },
                     chapterNameClick = {
                         navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
+                    },
+                    onSignIn = {
+                        navigation(Router.USER_LOGIN)
                     }
                 )
             }

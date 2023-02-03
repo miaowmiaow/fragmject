@@ -5,11 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.databinding.NavigationFragmentBinding
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -23,7 +21,6 @@ class NavigationFragment : RouterFragment() {
         }
     }
 
-    private val tabEventViewModel: TabEventViewMode by activityViewModels()
     private var _binding: NavigationFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -68,7 +65,6 @@ class NavigationFragment : RouterFragment() {
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                tabEventViewModel.setMainTabReselected(1)
             }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->

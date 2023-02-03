@@ -34,7 +34,6 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : RouterFragment() {
 
-    private val tabEventViewModel: TabEventViewMode by activityViewModels()
     private val hotKeyViewModel: HotKeyViewModel by activityViewModels()
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
@@ -111,7 +110,6 @@ class MainFragment : RouterFragment() {
             }
 
             override fun onTabReselected(tab: TabLayout.Tab) {
-                tabEventViewModel.setMainTabReselected(tab.position)
             }
         })
         TabLayoutMediator(binding.tabLayout, binding.viewpager2, false, false) { tab, position ->

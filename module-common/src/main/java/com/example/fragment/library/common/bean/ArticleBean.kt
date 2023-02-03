@@ -51,7 +51,7 @@ data class ArticleBean(
     var top: Boolean = false,
     val fresh: Boolean = false,
     val host: String = "",
-    val id: String = "",
+    val id: String = "0",
     val link: String = "",
     val niceDate: String = "",
     val niceShareDate: String = "",

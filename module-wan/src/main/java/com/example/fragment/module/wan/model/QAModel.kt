@@ -14,8 +14,8 @@ abstract class QAModel : BaseViewModel() {
     var refreshing by mutableStateOf(false)
     var loading by mutableStateOf(true)
 
-    var pagerColumnItemIndex = 0
-    var pagerColumnItemScrollOffset = 0
+    var pagerItemIndex = 0
+    var pagerItemScrollOffset = 0
 
     abstract fun getHome()
 

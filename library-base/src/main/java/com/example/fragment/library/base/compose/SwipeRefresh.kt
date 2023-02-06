@@ -31,17 +31,17 @@ import kotlin.math.pow
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun <T> PullRefreshLayout(
+fun <T> SwipeRefresh(
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     refreshing: Boolean,
-    onRefresh: () -> Unit,
     loading: Boolean,
+    onRefresh: () -> Unit,
     onLoad: () -> Unit,
     onNoData: () -> Unit = {},
-    items: List<T>,
+    data: List<T>?,
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
     val loadingResId = listOf(
@@ -69,12 +69,15 @@ fun <T> PullRefreshLayout(
     )
 
     val state = rememberPullRefreshLayoutState(refreshing, onRefresh)
-    if (items.isEmpty() && !refreshing) {
-        NotNetworkLayout {
-            onNoData()
+
+    if (data.isNullOrEmpty()) {
+        if (!refreshing) {
+            NotNetwork {
+                onNoData()
+            }
         }
     } else {
-        Box(Modifier.pullRefreshLayout(state)) {
+        Box(Modifier.swipeRefresh(state)) {
             LazyColumn(
                 modifier = modifier.graphicsLayer {
                     translationY = state.position
@@ -83,35 +86,32 @@ fun <T> PullRefreshLayout(
                 contentPadding = contentPadding,
                 verticalArrangement = verticalArrangement,
             ) {
-                itemsIndexed(items) { index, item ->
+                itemsIndexed(data) { index, item ->
                     itemContent(index, item)
-                    if (loading && items.size - index < 5) {
-                        LaunchedEffect(items.size) {
+                    if (loading && data.size - index < 5) {
+                        LaunchedEffect(data.size) {
                             onLoad()
                         }
                     }
                 }
-                if (items.isNotEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable {
-                                    onLoad()
-                                }
-                        ) {
-                            Text(
-                                text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
-                                fontSize = 12.sp,
-                                color = Color.Gray,
-                                modifier = Modifier.align(alignment = Alignment.Center)
-                            )
-                        }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable {
+                                onLoad()
+                            }
+                    ) {
+                        Text(
+                            text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.align(alignment = Alignment.Center)
+                        )
                     }
                 }
             }
-            // Custom progress indicator
             AnimatedVisibility(
                 visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
                 modifier = Modifier
@@ -141,7 +141,7 @@ fun rememberPullRefreshLayoutState(
     onRefresh: () -> Unit,
     refreshThreshold: Dp = PullRefreshDefaults.RefreshThreshold,
     refreshingOffset: Dp = PullRefreshDefaults.RefreshingOffset,
-): PullRefreshLayoutState {
+): SwipeRefreshState {
     require(refreshThreshold > 0.dp) { "The refresh trigger must be greater than zero!" }
 
     val scope = rememberCoroutineScope()
@@ -155,7 +155,7 @@ fun rememberPullRefreshLayoutState(
     }
 
     val state = remember(scope) {
-        PullRefreshLayoutState(scope, onRefreshState, refreshingOffsetPx, thresholdPx)
+        SwipeRefreshState(scope, onRefreshState, refreshingOffsetPx, thresholdPx)
     }
 
     SideEffect {
@@ -166,8 +166,8 @@ fun rememberPullRefreshLayoutState(
 }
 
 @ExperimentalMaterialApi
-fun Modifier.pullRefreshLayout(
-    state: PullRefreshLayoutState,
+fun Modifier.swipeRefresh(
+    state: SwipeRefreshState,
     enabled: Boolean = true
 ) = inspectable(inspectorInfo = debugInspectorInfo {
     name = "pullRefresh"
@@ -178,7 +178,7 @@ fun Modifier.pullRefreshLayout(
 }
 
 @ExperimentalMaterialApi
-class PullRefreshLayoutState internal constructor(
+class SwipeRefreshState internal constructor(
     private val animationScope: CoroutineScope,
     private val onRefreshState: State<() -> Unit>,
     private val refreshingOffset: Float,

@@ -5,20 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
@@ -32,8 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.compose.theme.WanTheme
+import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
@@ -181,24 +178,31 @@ class UserLoginFragment : RouterFragment() {
                         bottom.linkTo(loginBottomBarrier)
                     }
             )
-            Image(
-                painter = painterResource(R.drawable.ic_right_arrow),
-                contentDescription = null,
+            Button(
+                onClick = {
+                    if (checkParameter(usernameText, passwordText)) {
+                        viewModel.login(usernameText, passwordText)
+                    }
+                },
+                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = colorResource(R.color.theme_orange),
+                    contentColor = colorResource(R.color.white)
+                ),
+                contentPadding = PaddingValues(25.dp),
                 modifier = Modifier
-                    .clip(CircleShape)
-                    .background(colorResource(R.color.theme_orange))
                     .size(75.dp)
-                    .padding(25.dp)
                     .constrainAs(login) {
                         end.linkTo(parent.end)
                         bottom.linkTo(sign_up.top, 60.dp)
                     }
-                    .clickable {
-                        if (checkParameter(usernameText, passwordText)) {
-                            viewModel.login(usernameText, passwordText)
-                        }
-                    }
-            )
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_right_arrow),
+                    contentDescription = null
+                )
+            }
             Text(
                 text = "去注册",
                 textDecoration = TextDecoration.Underline,

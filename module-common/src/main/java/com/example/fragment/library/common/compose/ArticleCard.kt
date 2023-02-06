@@ -1,14 +1,17 @@
 package com.example.fragment.library.common.compose
 
+import android.net.Uri
 import android.os.Build
 import android.text.Html
 import android.text.TextUtils
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -17,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -28,25 +32,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.core.os.bundleOf
 import coil.compose.AsyncImage
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
 import com.example.fragment.library.common.R
+import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.bean.ArticleBean
+import com.example.fragment.library.common.constant.Keys
+import com.example.fragment.library.common.constant.Router
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
 @Composable
 fun ArticleCard(
     modifier: Modifier = Modifier,
-    item: ArticleBean,
-    onClick: () -> Unit = {},
-    avatarClick: () -> Unit = {},
-    tagClick: () -> Unit = {},
-    chapterNameClick: () -> Unit = {},
-    onSignIn: () -> Unit = {},
+    item: ArticleBean
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by rememberSaveable {
@@ -68,12 +71,28 @@ fun ArticleCard(
         R.drawable.avatar_6_raster,
     )
     val shareUser = "${item.author}${item.shareUser}".ifBlank { "匿名" }
+
     val title = fromHtml(item.title)
+
+    val context = LocalContext.current
+
+    var routerActivity: RouterActivity? = null
+
+    if (context is RouterActivity) {
+        routerActivity = context
+    }
+
+
     Box(modifier) {
         Card(elevation = 2.dp) {
             Column(
                 Modifier
-                    .clickable(onClick = onClick)
+                    .clickable(onClick = {
+                        routerActivity?.navigation(
+                            Router.WEB,
+                            bundleOf(Keys.URL to Uri.encode(item.link))
+                        )
+                    })
                     .padding(16.dp)
                     .fillMaxWidth()
             ) {
@@ -85,7 +104,12 @@ fun ArticleCard(
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
-                            .clickable(onClick = avatarClick)
+                            .clickable(onClick = {
+                                routerActivity?.navigation(
+                                    Router.SHARE_ARTICLE,
+                                    bundleOf(Keys.UID to item.userId)
+                                )
+                            })
                     )
                     ConstraintLayout(
                         modifier = Modifier
@@ -115,17 +139,37 @@ fun ArticleCard(
                             })
                     }
                     if (!item.tags.isNullOrEmpty()) {
-                        Text(
-                            text = item.tags[0].name,
-                            fontSize = 12.sp,
-                            color = colorResource(R.color.blue),
-                            modifier = Modifier
-                                .border(
-                                    1.dp, colorResource(R.color.blue), RoundedCornerShape(3.dp)
+                        Button(
+                            onClick = {
+                                val uriString = "https://www.wanandroid.com${item.tags[0].url}"
+                                val uri = Uri.parse(uriString)
+                                var cid = uri.getQueryParameter(Keys.CID)
+                                if (cid.isNullOrBlank()) {
+                                    val paths = uri.pathSegments
+                                    if (paths != null && paths.size >= 3) {
+                                        cid = paths[2]
+                                    }
+                                }
+                                routerActivity?.navigation(
+                                    Router.SYSTEM,
+                                    bundleOf(Keys.CID to cid.toString())
                                 )
-                                .padding(5.dp, 3.dp, 5.dp, 3.dp)
-                                .clickable(onClick = tagClick)
-                        )
+                            },
+                            modifier = Modifier.height(25.dp),
+                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                            shape = RoundedCornerShape(3.dp),
+                            border = BorderStroke(1.dp, colorResource(R.color.blue)),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = colorResource(R.color.white),
+                                contentColor = colorResource(R.color.blue)
+                            ),
+                            contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
+                        ) {
+                            Text(
+                                text = item.tags[0].name,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.size(10.dp))
@@ -201,7 +245,12 @@ fun ArticleCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .padding(end = 35.dp)
-                            .clickable(onClick = chapterNameClick),
+                            .clickable(onClick = {
+                                routerActivity?.navigation(
+                                    Router.SYSTEM,
+                                    bundleOf(Keys.CID to item.chapterId)
+                                )
+                            }),
                     )
                     Spacer(
                         Modifier
@@ -219,21 +268,18 @@ fun ArticleCard(
                                         val url = "lg/uncollect_originId/{id}/json"
                                         val request = HttpRequest(url).putPath("id", item.id)
                                         val response = post<HttpResponse>(request)
-                                        if (response.errorCode == "0") {
+                                        routerActivity?.httpParseSuccess(response) {
                                             item.collect = false
-                                            collectResId = R.drawable.ic_collect_unchecked_stroke
-                                        } else if (response.errorCode == "-1001") {
-                                            onSignIn()
+                                            collectResId =
+                                                R.drawable.ic_collect_unchecked_stroke
                                         }
                                     } else {
                                         val request = HttpRequest("lg/collect/{id}/json")
                                             .putPath("id", item.id)
                                         val response = post<HttpResponse>(request)
-                                        if (response.errorCode == "0") {
+                                        routerActivity?.httpParseSuccess(response) {
                                             item.collect = true
                                             collectResId = R.drawable.ic_collect_checked
-                                        } else if (response.errorCode == "-1001") {
-                                            onSignIn()
                                         }
                                     }
                                 }
@@ -257,8 +303,7 @@ fun ArticleCardPreview() {
                 top = true,
                 superChapterName = "问答",
                 chapterName = "官方"
-            ),
-            onClick = {}
+            )
         )
     }
 }

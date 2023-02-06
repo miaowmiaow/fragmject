@@ -1,6 +1,5 @@
 package com.example.fragment.module.wan.fragment
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,20 +15,19 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.compose.PullRefreshLayout
+import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.compose.ArticleCard
-import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.R
+import com.example.fragment.module.wan.model.QAModel
 import com.example.fragment.module.wan.model.QAQuizModel
 import com.example.fragment.module.wan.model.QASquareModel
 import com.google.accompanist.pager.*
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class QAFragment : RouterFragment() {
@@ -68,116 +66,122 @@ class QAFragment : RouterFragment() {
     fun QAScreen(
         eventViewModel: TabEventViewMode = viewModel()
     ) {
-        val coroutineScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(eventViewModel.qaTabIndex())
+
         eventViewModel.setQATabIndex(pagerState.currentPage)
+
+        val coroutineScope = rememberCoroutineScope()
+        DisposableEffect(Unit) {
+            onDispose {
+                coroutineScope.cancel()
+            }
+        }
+
         Column {
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp),
-                backgroundColor = colorResource(R.color.white),
-                edgePadding = 0.dp,
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                        color = colorResource(R.color.theme)
-                    )
+            QATab(
+                pagerState = pagerState,
+                onTabClick = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(it)
+                    }
+                    eventViewModel.setQATabIndex(it)
                 },
-                divider = {
-                    TabRowDefaults.Divider(color = colorResource(R.color.transparent))
-                }
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        text = { Text(title) },
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                            eventViewModel.setQATabIndex(index)
-                        },
-                        selected = pagerState.currentPage == index,
-                        selectedContentColor = colorResource(R.color.theme),
-                        unselectedContentColor = colorResource(R.color.text_999)
-                    )
-                }
-            }
-            TabRowDefaults.Divider(color = colorResource(R.color.line))
-            HorizontalPager(
-                count = tabs.size,
-                state = pagerState,
-            ) { page ->
-                val viewModel = when (page) {
-                    0 -> {
-                        val qaQuizModel: QAQuizModel = viewModel()
-                        qaQuizModel
-                    }
-                    1 -> {
-                        val qaSquareModel: QASquareModel = viewModel()
-                        qaSquareModel
-                    }
-                    else -> throw ArrayIndexOutOfBoundsException("length=${tabs.size}; index=$page")
-                }
-                val listState = rememberLazyListState(
-                    viewModel.pagerColumnItemIndex,
-                    viewModel.pagerColumnItemScrollOffset
+                data = tabs
+            )
+            QAPager(count = tabs.size, pagerState = pagerState)
+        }
+    }
+
+    @OptIn(ExperimentalPagerApi::class)
+    @Composable
+    fun QATab(
+        pagerState: PagerState,
+        onTabClick: (index: Int) -> Unit,
+        data: Array<String>
+    ) {
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp),
+            backgroundColor = colorResource(R.color.white),
+            edgePadding = 0.dp,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                    color = colorResource(R.color.theme)
                 )
-                DisposableEffect(LocalLifecycleOwner.current) {
-                    onDispose {
-                        viewModel.pagerColumnItemIndex = listState.firstVisibleItemIndex
-                        viewModel.pagerColumnItemScrollOffset =
-                            listState.firstVisibleItemScrollOffset
-                    }
-                }
-                PullRefreshLayout(
-                    modifier = Modifier.fillMaxSize(),
-                    listState = listState,
-                    contentPadding = PaddingValues(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    refreshing = viewModel.refreshing,
-                    onRefresh = {
-                        viewModel.getHome()
-                    },
-                    loading = viewModel.loading,
-                    onLoad = {
-                        viewModel.getNext()
-                    },
-                    onNoData = {
-                        viewModel.getHome()
-                    },
-                    items = viewModel.result,
-                ) { _, item ->
-                    ArticleCard(
-                        item = item,
-                        onClick = {
-                            navigation(Router.WEB, bundleOf(Keys.URL to Uri.encode(item.link)))
-                        },
-                        avatarClick = {
-                            navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
-                        },
-                        tagClick = {
-                            val uriString = "https://www.wanandroid.com${item.tags?.get(0)?.url}"
-                            val uri = Uri.parse(uriString)
-                            var cid = uri.getQueryParameter(Keys.CID)
-                            if (cid.isNullOrBlank()) {
-                                val paths = uri.pathSegments
-                                if (paths != null && paths.size >= 3) {
-                                    cid = paths[2]
-                                }
-                            }
-                            navigation(Router.SYSTEM, bundleOf(Keys.CID to cid.toString()))
-                        },
-                        chapterNameClick = {
-                            navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
-                        },
-                        onSignIn = {
-                            navigation(Router.USER_LOGIN)
-                        }
-                    )
-                }
+            },
+            divider = {
+                TabRowDefaults.Divider(color = colorResource(R.color.transparent))
             }
+        ) {
+            data.forEachIndexed { index, text ->
+                Tab(
+                    text = { Text(text) },
+                    onClick = { onTabClick(index) },
+                    selected = pagerState.currentPage == index,
+                    selectedContentColor = colorResource(R.color.theme),
+                    unselectedContentColor = colorResource(R.color.text_999)
+                )
+            }
+        }
+        TabRowDefaults.Divider(color = colorResource(R.color.line))
+    }
+
+    @OptIn(ExperimentalPagerApi::class)
+    @Composable
+    fun QAPager(
+        count: Int,
+        pagerState: PagerState
+    ) {
+        HorizontalPager(
+            count = count,
+            state = pagerState,
+        ) { page ->
+            when (page) {
+                0 -> {
+                    val qaQuizModel: QAQuizModel = viewModel()
+                    QAList(qaQuizModel)
+                }
+                1 -> {
+                    val qaSquareModel: QASquareModel = viewModel()
+                    QAList(qaSquareModel)
+                }
+                else -> throw ArrayIndexOutOfBoundsException("length=${count}; index=$page")
+            }
+        }
+    }
+
+    @Composable
+    fun QAList(
+        viewModel: QAModel
+    ) {
+        val listState = rememberLazyListState(
+            viewModel.pagerItemIndex,
+            viewModel.pagerItemScrollOffset
+        )
+
+        DisposableEffect(LocalLifecycleOwner.current) {
+            onDispose {
+                viewModel.pagerItemIndex = listState.firstVisibleItemIndex
+                viewModel.pagerItemScrollOffset = listState.firstVisibleItemScrollOffset
+            }
+        }
+
+        SwipeRefresh(
+            modifier = Modifier.fillMaxSize(),
+            listState = listState,
+            contentPadding = PaddingValues(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            refreshing = viewModel.refreshing,
+            loading = viewModel.loading,
+            onRefresh = { viewModel.getHome() },
+            onLoad = { viewModel.getNext() },
+            onNoData = { viewModel.getHome() },
+            data = viewModel.result,
+        ) { _, item ->
+            ArticleCard(item = item)
         }
     }
 }

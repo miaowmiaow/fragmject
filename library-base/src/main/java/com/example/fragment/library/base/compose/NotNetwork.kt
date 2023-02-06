@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fragment.library.base.R
 
 @Composable
-fun NotNetworkLayout(
+fun NotNetwork(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {

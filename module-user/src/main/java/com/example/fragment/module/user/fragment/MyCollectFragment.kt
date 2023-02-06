@@ -1,6 +1,5 @@
 package com.example.fragment.module.user.fragment
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,21 +12,18 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.compose.PullRefreshLayout
+import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.compose.ArticleCard
-import com.example.fragment.library.common.constant.Keys
-import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.model.MyCollectViewModel
@@ -57,18 +53,22 @@ class MyCollectFragment : RouterFragment() {
 
     @Composable
     fun MyCollectScreen() {
+        val viewModel: MyCollectViewModel = viewModel()
+
         val statusBarColor = colorResource(R.color.theme)
+
         val systemUiController = rememberSystemUiController()
-        SideEffect {
+
+        LaunchedEffect(Unit) {
             systemUiController.setStatusBarColor(
                 statusBarColor,
                 darkIcons = false
             )
         }
+
         Column(
             modifier = Modifier.systemBarsPadding()
         ) {
-            val viewModel: MyCollectViewModel = viewModel()
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -92,50 +92,24 @@ class MyCollectFragment : RouterFragment() {
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            PullRefreshLayout(
+            SwipeRefresh(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 refreshing = viewModel.refreshing,
+                loading = viewModel.loading,
                 onRefresh = {
                     viewModel.getMyCollectArticleHome()
                 },
-                loading = viewModel.loading,
                 onLoad = {
                     viewModel.getMyCollectArticleNext()
                 },
                 onNoData = {
                     viewModel.getMyCollectArticleHome()
                 },
-                items = viewModel.result,
+                data = viewModel.result,
             ) { _, item ->
-                ArticleCard(
-                    item = item,
-                    onClick = {
-                        navigation(Router.WEB, bundleOf(Keys.URL to Uri.encode(item.link)))
-                    },
-                    avatarClick = {
-                        navigation(Router.SHARE_ARTICLE, bundleOf(Keys.UID to item.userId))
-                    },
-                    tagClick = {
-                        val uriString = "https://www.wanandroid.com${item.tags?.get(0)?.url}"
-                        val uri = Uri.parse(uriString)
-                        var cid = uri.getQueryParameter(Keys.CID)
-                        if (cid.isNullOrBlank()) {
-                            val paths = uri.pathSegments
-                            if (paths != null && paths.size >= 3) {
-                                cid = paths[2]
-                            }
-                        }
-                        navigation(Router.SYSTEM, bundleOf(Keys.CID to cid))
-                    },
-                    chapterNameClick = {
-                        navigation(Router.SYSTEM, bundleOf(Keys.CID to item.chapterId))
-                    },
-                    onSignIn = {
-                        navigation(Router.USER_LOGIN)
-                    }
-                )
+                ArticleCard(item = item)
             }
         }
 

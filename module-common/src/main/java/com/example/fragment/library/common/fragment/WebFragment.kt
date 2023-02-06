@@ -12,12 +12,10 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
-import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -175,65 +173,101 @@ class WebFragment : RouterFragment() {
                     .background(colorResource(R.color.white))
                     .height(50.dp)
             ) {
-                Image(
-                    painter = painterResource(R.drawable.ic_web_back),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .padding(17.dp)
-                        .clickable {
-                            webView?.let {
-                                if (!WebViewHelper.goBack(it, originalUrl)) {
-                                    onBackPressed()
-                                }
+                Button(
+                    onClick = {
+                        webView?.let {
+                            if (!WebViewHelper.goBack(it, originalUrl)) {
+                                onBackPressed()
                             }
                         }
-                )
-                Image(
-                    painter = painterResource(R.drawable.ic_web_forward),
-                    contentDescription = null,
+                    },
+                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                    shape = RoundedCornerShape(0),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = colorResource(R.color.white),
+                        contentColor = colorResource(R.color.theme)
+                    ),
+                    contentPadding = PaddingValues(17.dp),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .padding(17.dp)
-                        .clickable {
-                            if (navigator.canGoForward) {
-                                navigator.navigateForward()
-                            }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_web_back),
+                        contentDescription = null
+                    )
+                }
+                Button(
+                    onClick = {
+                        if (navigator.canGoForward) {
+                            navigator.navigateForward()
                         }
-                )
-                Image(
-                    painter = painterResource(R.drawable.ic_web_refresh),
-                    contentDescription = null,
+                    },
+                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                    shape = RoundedCornerShape(0),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = colorResource(R.color.white),
+                        contentColor = colorResource(R.color.theme)
+                    ),
+                    contentPadding = PaddingValues(17.dp),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .padding(17.dp)
-                        .clickable {
-                            navigator.reload()
-                        }
-                )
-                Image(
-                    painter = painterResource(R.drawable.ic_web_browse),
-                    contentDescription = null,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_web_forward),
+                        contentDescription = null
+                    )
+                }
+                Button(
+                    onClick = {
+                        navigator.reload()
+                    },
+                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                    shape = RoundedCornerShape(0),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = colorResource(R.color.white),
+                        contentColor = colorResource(R.color.theme)
+                    ),
+                    contentPadding = PaddingValues(17.dp),
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .padding(17.dp)
-                        .clickable {
-                            try {
-                                val intent = Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse(state.content.getCurrentUrl())
-                                )
-                                intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                                requireActivity().startActivity(intent)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_web_refresh),
+                        contentDescription = null
+                    )
+                }
+                Button(
+                    onClick = {
+                        try {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(state.content.getCurrentUrl())
+                            )
+                            intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                            requireActivity().startActivity(intent)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                )
+                    },
+                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                    shape = RoundedCornerShape(0),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = colorResource(R.color.white),
+                        contentColor = colorResource(R.color.theme)
+                    ),
+                    contentPadding = PaddingValues(17.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_web_browse),
+                        contentDescription = null
+                    )
+                }
             }
         }
     }

@@ -13,12 +13,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.base.compose.theme.WanTheme
@@ -52,8 +54,9 @@ class MyCollectFragment : RouterFragment() {
     }
 
     @Composable
-    fun MyCollectScreen() {
-        val viewModel: MyCollectViewModel = viewModel()
+    fun MyCollectScreen(viewModel: MyCollectViewModel = viewModel()) {
+
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
         val statusBarColor = colorResource(R.color.theme)
 
@@ -96,18 +99,18 @@ class MyCollectFragment : RouterFragment() {
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                refreshing = viewModel.refreshing,
-                loading = viewModel.loading,
+                refreshing = uiState.refreshing,
+                loading = uiState.loading,
                 onRefresh = {
-                    viewModel.getMyCollectArticleHome()
+                    viewModel.getHome()
                 },
                 onLoad = {
-                    viewModel.getMyCollectArticleNext()
+                    viewModel.getNext()
                 },
-                onNoData = {
-                    viewModel.getMyCollectArticleHome()
+                onRetry = {
+                    viewModel.getHome()
                 },
-                data = viewModel.result,
+                data = uiState.result,
             ) { _, item ->
                 ArticleCard(item = item)
             }

@@ -17,36 +17,29 @@ import androidx.compose.ui.unit.sp
 import com.example.fragment.library.base.R
 
 @Composable
-fun NotNetwork(
-    modifier: Modifier = Modifier,
+fun Empty(
     onClick: () -> Unit = {}
 ) {
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
-                painter = painterResource(R.drawable.not_network),
+                painter = painterResource(R.drawable.empty),
                 contentDescription = null,
             )
-            Spacer(Modifier.size(5.dp))
-            Text(
-                text = "网络不给力",
-                fontSize = 14.sp,
-                color = colorResource(R.color.text_666)
-            )
-            Spacer(Modifier.size(5.dp))
+            Spacer(Modifier.size(10.dp))
             Button(
                 onClick = onClick,
                 shape = RoundedCornerShape(10),
-                border = BorderStroke(1.dp, colorResource(R.color.orange)),
+                border = BorderStroke(1.dp, colorResource(R.color.theme)),
                 colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(R.color.background)),
             ) {
                 Text(
                     text = "重试",
                     fontSize = 14.sp,
-                    color = colorResource(R.color.orange)
+                    color = colorResource(R.color.theme)
                 )
             }
         }

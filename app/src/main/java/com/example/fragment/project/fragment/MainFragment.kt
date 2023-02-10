@@ -19,7 +19,6 @@ import com.example.fragment.library.common.adapter.HotKeyAdapter
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.user.fragment.UserFragment
 import com.example.fragment.module.wan.fragment.HomeFragment
 import com.example.fragment.module.wan.fragment.NavigationFragment

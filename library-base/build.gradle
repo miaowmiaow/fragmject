@@ -38,7 +38,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion  = compose_version
+        kotlinCompilerExtensionVersion  = '1.4.0'
     }
 
     packagingOptions {
@@ -50,22 +50,23 @@ android {
     viewBinding {
         enabled = true
     }
+    namespace 'com.example.fragment.library.base'
 }
 
 dependencies {
-    def accompanist_version = '0.29.0-alpha'
+    def accompanist_version = '0.28.0'
     def coil_version = '2.2.2'
-    def lifecycle_version = "2.5.1"
+    def compose_version = '1.4.0-alpha05'
+    def lifecycle_version = "2.6.0-alpha05"
     def navigation_version  = "2.5.3"
     def okhttp_version = '5.0.0-alpha.8'
-    def room_version = "2.4.3"
+    def room_version = "2.5.0"
 
     api fileTree(dir: "libs", include: ["*.jar"])
 
     api 'androidx.appcompat:appcompat:1.6.0'
     api 'androidx.core:core-ktx:1.9.0'
     api 'androidx.activity:activity-compose:1.6.1'
-    api "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
     api "androidx.compose.ui:ui:$compose_version"
     api "androidx.compose.ui:ui-util:$compose_version"
     api "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -82,6 +83,8 @@ dependencies {
     api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    api "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+    api "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
     // navigation
     api "androidx.navigation:navigation-fragment-ktx:$navigation_version"
     api "androidx.navigation:navigation-ui-ktx:$navigation_version"
@@ -100,14 +103,14 @@ dependencies {
     api "io.coil-kt:coil-compose:$coil_version"
     // google
     api 'com.google.android.flexbox:flexbox:3.0.0'
-    api 'com.google.code.gson:gson:2.9.1'
-    api 'com.google.android.material:material:1.7.0'
+    api 'com.google.code.gson:gson:2.10.1'
+    api 'com.google.android.material:material:1.8.0'
     api "com.google.accompanist:accompanist-pager:$accompanist_version"
     api "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
     api "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     api "com.google.accompanist:accompanist-webview:$accompanist_version"
     // kotlin 和 协程
-    api "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    api 'org.jetbrains.kotlin:kotlin-stdlib:1.8.0'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
     // okhttp 和 retrofit
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
@@ -116,7 +119,7 @@ dependencies {
     // android-gif-drawable
     api 'pl.droidsonroids.gif:android-gif-drawable:1.2.25'
     // leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
     // 单元测试
     testImplementation "junit:junit:$junit_version"
     testImplementation "io.mockk:mockk:$mockk_version"

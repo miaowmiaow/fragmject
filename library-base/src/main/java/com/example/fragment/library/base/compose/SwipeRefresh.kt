@@ -29,6 +29,15 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.pow
 
+/**
+ * 自定义下拉刷新&加载更多
+ * @param refreshing 设置下拉刷新状态
+ * @param loading    设置加载更多状态
+ * @param onRefresh  下拉刷新回调
+ * @param onLoad     加载更多回调
+ * @param onRetry    重试回调
+ * @param data       列表数据
+ */
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun <T> SwipeRefresh(
@@ -40,7 +49,7 @@ fun <T> SwipeRefresh(
     loading: Boolean,
     onRefresh: () -> Unit,
     onLoad: () -> Unit,
-    onNoData: () -> Unit = {},
+    onRetry: () -> Unit = {},
     data: List<T>?,
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
@@ -72,8 +81,8 @@ fun <T> SwipeRefresh(
 
     if (data.isNullOrEmpty()) {
         if (!refreshing) {
-            NotNetwork {
-                onNoData()
+            Empty {
+                onRetry()
             }
         }
     } else {

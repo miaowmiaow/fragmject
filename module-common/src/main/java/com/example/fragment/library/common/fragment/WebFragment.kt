@@ -59,15 +59,20 @@ class WebFragment : RouterFragment() {
         originalUrl: String
     ) {
         var webView by remember { mutableStateOf<WebView?>(null) }
+
         val state = rememberWebViewState(originalUrl)
+
         val navigator = rememberWebViewNavigator()
+
         val systemUiController = rememberSystemUiController()
+
         DisposableEffect(LocalLifecycleOwner.current) {
             systemUiController.statusBarDarkContentEnabled = true
             onDispose {
                 systemUiController.statusBarDarkContentEnabled = false
             }
         }
+
         Column(
             modifier = Modifier
                 .background(colorResource(R.color.white))

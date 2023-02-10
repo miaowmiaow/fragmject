@@ -15,23 +15,28 @@ abstract class BaseViewModel : ViewModel() {
         //动画时间见slide_in_xxx.xml
         const val TRANSITION_ANIMATION_TIME = 300L
         const val DEFAULT_KEY = "null"
-        const val DEFAULT_PAGE = 0
+        const val DEFAULT_VALUE = 0
         const val PAGE_CONT = 1
     }
 
     /**
-     *  通过 Map 来存储数据，方便 activityViewModels 使用
+     *  通过 Map 来存储数据，方便 ViewModel 使用
      */
-    private var homePage: MutableMap<String, Int> = HashMap()
-    private var currPage: MutableMap<String, Int> = HashMap()
-    private var pageCont: MutableMap<String, Int> = HashMap()
+    private val homePage: MutableMap<String, Int> = HashMap()
+    private val currPage: MutableMap<String, Int> = HashMap()
+    private val pageCont: MutableMap<String, Int> = HashMap()
+
+    private val tabIndex: MutableMap<String, Int> = HashMap()
+
+    private val listIndex: MutableMap<String, Int> = HashMap()
+    private val listScrollOffset: MutableMap<String, Int> = HashMap()
 
     private val progress = MutableLiveData<Double>()
 
     /**
      * 获取首页
      */
-    fun getHomePage(page: Int = DEFAULT_PAGE, key: String = DEFAULT_KEY): Int {
+    fun getHomePage(page: Int = DEFAULT_VALUE, key: String = DEFAULT_KEY): Int {
         this.homePage[key] = page
         this.currPage[key] = page
         this.pageCont[key] = page + 1
@@ -39,8 +44,8 @@ abstract class BaseViewModel : ViewModel() {
     }
 
     fun isHomePage(key: String = DEFAULT_KEY): Boolean {
-        val homePage = this.homePage[key] ?: DEFAULT_PAGE
-        val currPage = this.currPage[key] ?: DEFAULT_PAGE
+        val homePage = this.homePage[key] ?: DEFAULT_VALUE
+        val currPage = this.currPage[key] ?: DEFAULT_VALUE
         return homePage == currPage
     }
 
@@ -48,14 +53,14 @@ abstract class BaseViewModel : ViewModel() {
      * 获取下一页
      */
     fun getNextPage(key: String = DEFAULT_KEY): Int {
-        val currPage = this.currPage[key] ?: DEFAULT_PAGE
+        val currPage = this.currPage[key] ?: DEFAULT_VALUE
         val nextPage = if (hasNextPage(key)) currPage + 1 else currPage
         this.currPage[key] = nextPage
         return nextPage
     }
 
     fun hasNextPage(key: String = DEFAULT_KEY): Boolean {
-        val currPage = this.currPage[key] ?: DEFAULT_PAGE
+        val currPage = this.currPage[key] ?: DEFAULT_VALUE
         val pageCont = this.pageCont[key] ?: PAGE_CONT
         return currPage < pageCont
     }
@@ -65,6 +70,48 @@ abstract class BaseViewModel : ViewModel() {
      */
     fun updatePageCont(pageCont: Int = PAGE_CONT, key: String = DEFAULT_KEY) {
         this.pageCont[key] = pageCont
+    }
+
+    /**
+     * 获取列表item位置
+     */
+    fun getTabIndex(key: String = DEFAULT_KEY): Int {
+        return tabIndex[key] ?: DEFAULT_VALUE
+    }
+
+    /**
+     * 更新列表item位置
+     */
+    fun updateTabIndex(index: Int, key: String = DEFAULT_KEY) {
+        tabIndex[key] = index
+    }
+
+    /**
+     * 获取列表item位置
+     */
+    fun getListIndex(key: String = DEFAULT_KEY): Int {
+        return listIndex[key] ?: DEFAULT_VALUE
+    }
+
+    /**
+     * 更新列表item位置
+     */
+    fun updateListIndex(index: Int, key: String = DEFAULT_KEY) {
+        listIndex[key] = index
+    }
+
+    /**
+     * 获取列表item偏移
+     */
+    fun getListScrollOffset(key: String = DEFAULT_KEY): Int {
+        return listScrollOffset[key] ?: DEFAULT_VALUE
+    }
+
+    /**
+     * 更新列表item偏移
+     */
+    fun updateListScrollOffset(offset: Int, key: String = DEFAULT_KEY) {
+        listScrollOffset[key] = offset
     }
 
     /**

@@ -4,23 +4,40 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.activityViewModels
-import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragment.library.base.compose.FullScreenLoading
+import com.example.fragment.library.base.compose.SwipeRefresh
+import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.SystemTreeBean
+import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.module.wan.databinding.SystemFragmentBinding
+import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.model.SystemTreeViewModel
-import com.google.android.material.tabs.TabLayoutMediator
+import com.example.fragment.module.wan.model.SystemViewModel
+import com.google.accompanist.pager.*
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class SystemFragment : RouterFragment() {
 
-    private val viewModel: SystemTreeViewModel by activityViewModels()
-    private var _binding: SystemFragmentBinding? = null
-    private val binding get() = _binding!!
     private var cid = ""
 
     override fun onCreateView(
@@ -28,65 +45,200 @@ class SystemFragment : RouterFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = SystemFragmentBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    override fun initView() {
         requireArguments().takeIf {
             it.containsKey(Keys.CID)
         }?.let {
             cid = it.getString(Keys.CID, "0")
         }
-        binding.black.setOnClickListener {
-            onBackPressed()
-        }
-    }
 
-    override fun initViewModel(): BaseViewModel {
-        viewModel.systemTreeResult().observe(viewLifecycleOwner) {
-            it.forEach { data ->
-                data.children?.forEachIndexed { index, children ->
-                    if (children.id == cid) {
-                        data.childrenSelectPosition = index
-                        updateView(data)
-                        return@observe
-                    }
+        val treeViewModel: SystemTreeViewModel by activityViewModels()
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                WanTheme {
+                    SystemScreen(treeViewModel)
                 }
             }
         }
-        return viewModel
     }
 
-    private fun updateView(treeBean: SystemTreeBean) {
-        binding.title.text = treeBean.name
-        treeBean.children?.let { data ->
-            //TabLayout与ViewPager2
-            binding.viewpager2.adapter = object : FragmentStateAdapter(
-                childFragmentManager,
-                viewLifecycleOwner.lifecycle
+    override fun initView() {}
+
+    override fun initViewModel(): BaseViewModel? {
+        return null
+    }
+
+    @OptIn(ExperimentalPagerApi::class)
+    @Composable
+    fun SystemScreen(
+        treeViewModel: SystemTreeViewModel
+    ) {
+
+        val statusBarColor = colorResource(R.color.theme)
+        val systemUiController = rememberSystemUiController()
+
+        LaunchedEffect(Unit) {
+            treeViewModel.init(cid)
+            systemUiController.setStatusBarColor(
+                statusBarColor,
+                darkIcons = false
+            )
+        }
+
+        val uiState by treeViewModel.uiState.collectAsStateWithLifecycle()
+
+        val pagerState = rememberPagerState(treeViewModel.getTabIndex(cid))
+
+        val coroutineScope = rememberCoroutineScope()
+
+        DisposableEffect(Unit) {
+            onDispose {
+                coroutineScope.cancel()
+            }
+        }
+
+        Column(
+            modifier = Modifier.systemBarsPadding()
+        ) {
+            TitleBar(uiState.title)
+            SystemTab(
+                pagerState = pagerState,
+                onTabClick = {
+                    coroutineScope.launch {
+                        treeViewModel.updateTabIndex(it, cid)
+                        pagerState.animateScrollToPage(it)
+                    }
+                },
+                data = uiState.result
+            )
+            SystemPager(uiState.result, pagerState)
+        }
+    }
+
+    @Composable
+    fun TitleBar(title: String) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp)
+                .background(colorResource(R.color.theme))
+        ) {
+            IconButton(
+                modifier = Modifier.height(45.dp),
+                onClick = { onBackPressed() }
             ) {
-                override fun getItemCount(): Int {
-                    return data.size
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = colorResource(R.color.white)
+                )
+            }
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                color = colorResource(R.color.text_fff),
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+
+    @OptIn(ExperimentalPagerApi::class)
+    @Composable
+    fun SystemTab(
+        pagerState: PagerState,
+        onTabClick: (index: Int) -> Unit,
+        data: List<SystemTreeBean>?
+    ) {
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp),
+            backgroundColor = colorResource(R.color.white),
+            edgePadding = 0.dp,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                    color = colorResource(R.color.theme)
+                )
+            },
+            divider = {
+                TabRowDefaults.Divider(color = colorResource(R.color.transparent))
+            }
+        ) {
+            data?.forEachIndexed { index, item ->
+                Tab(
+                    text = { Text(item.name) },
+                    onClick = { onTabClick(index) },
+                    selected = pagerState.currentPage == index,
+                    selectedContentColor = colorResource(R.color.theme),
+                    unselectedContentColor = colorResource(R.color.text_999)
+                )
+            }
+        }
+        TabRowDefaults.Divider(color = colorResource(R.color.line))
+    }
+
+    @OptIn(ExperimentalPagerApi::class)
+    @Composable
+    fun SystemPager(
+        tabData: List<SystemTreeBean>,
+        pagerState: PagerState
+    ) {
+        if (tabData.isNotEmpty()) {
+            HorizontalPager(
+                count = tabData.size,
+                state = pagerState,
+            ) { page ->
+                val cid = tabData[page].id
+
+                val viewModel: SystemViewModel = viewModel()
+
+                LaunchedEffect(Unit) {
+                    viewModel.init(cid)
                 }
 
-                override fun createFragment(position: Int): Fragment {
-                    return SystemArticleFragment.newInstance().apply {
-                        arguments = bundleOf(Keys.CID to data[position].id)
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                val listState = rememberLazyListState(
+                    viewModel.getListIndex(cid),
+                    viewModel.getListScrollOffset(cid)
+                )
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        viewModel.updateListIndex(listState.firstVisibleItemIndex, cid)
+                        viewModel.updateListScrollOffset(
+                            listState.firstVisibleItemScrollOffset,
+                            cid
+                        )
+                    }
+                }
+                if (uiState.getRefreshing(cid) && !uiState.getLoading(cid)) {
+                    FullScreenLoading()
+                } else {
+                    SwipeRefresh(
+                        modifier = Modifier.fillMaxSize(),
+                        listState = listState,
+                        contentPadding = PaddingValues(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        refreshing = uiState.getRefreshing(cid),
+                        loading = uiState.getLoading(cid),
+                        onRefresh = {
+                            viewModel.getHome(cid)
+                        },
+                        onLoad = {
+                            viewModel.getNext(cid)
+                        },
+                        onRetry = {
+                            viewModel.getHome(cid)
+                        },
+                        data = uiState.getResult(cid),
+                    ) { _, item ->
+                        ArticleCard(item = item)
                     }
                 }
             }
-            TabLayoutMediator(binding.tabLayout, binding.viewpager2) { tab, position ->
-                tab.text = data[position].name
-            }.attach()
-            var selectPosition = binding.tabLayout.selectedTabPosition
-            if (selectPosition == 0) selectPosition = treeBean.childrenSelectPosition
-            binding.viewpager2.setCurrentItem(selectPosition, false)
         }
     }
 

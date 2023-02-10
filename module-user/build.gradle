@@ -28,7 +28,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion  = compose_version
+        kotlinCompilerExtensionVersion  = '1.4.0'
     }
 
     packagingOptions {
@@ -40,6 +40,7 @@ android {
     viewBinding {
         enabled = true
     }
+    namespace 'com.example.fragment.module.user'
 }
 
 dependencies {

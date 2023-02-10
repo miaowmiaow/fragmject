@@ -5,12 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.adapter.SystemAdapter
 import com.example.fragment.module.wan.databinding.NavigationSystemFragmentBinding
 import com.example.fragment.module.wan.model.SystemTreeViewModel
+import kotlinx.coroutines.launch
 
 class NavigationSystemFragment : RouterFragment() {
 
@@ -48,8 +52,13 @@ class NavigationSystemFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        systemTreeViewModel.systemTreeResult().observe(viewLifecycleOwner) {
-            systemAdapter.setNewData(it)
+        systemTreeViewModel.init("")
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                systemTreeViewModel.uiState.collect {
+                    systemAdapter.setNewData(it.response)
+                }
+            }
         }
         return systemTreeViewModel
     }

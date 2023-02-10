@@ -7,25 +7,22 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragment.library.base.compose.FullScreenLoading
 import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.fragment.RouterFragment
-import com.example.fragment.library.common.model.TabEventViewMode
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.model.QAModel
-import com.example.fragment.module.wan.model.QAQuizModel
-import com.example.fragment.module.wan.model.QASquareModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -64,15 +61,14 @@ class QAFragment : RouterFragment() {
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     fun QAScreen(
-        eventViewModel: TabEventViewMode = viewModel()
+        viewModel: QAModel = viewModel()
     ) {
-        val pagerState = rememberPagerState(eventViewModel.qaTabIndex())
-
-        eventViewModel.setQATabIndex(pagerState.currentPage)
+        val pagerState = rememberPagerState(viewModel.getTabIndex())
 
         val coroutineScope = rememberCoroutineScope()
         DisposableEffect(Unit) {
             onDispose {
+                viewModel.updateTabIndex(pagerState.currentPage)
                 coroutineScope.cancel()
             }
         }
@@ -84,11 +80,10 @@ class QAFragment : RouterFragment() {
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(it)
                     }
-                    eventViewModel.setQATabIndex(it)
                 },
                 data = tabs
             )
-            QAPager(count = tabs.size, pagerState = pagerState)
+            QAPager(count = tabs.size, pagerState = pagerState, viewModel = viewModel)
         }
     }
 
@@ -133,55 +128,50 @@ class QAFragment : RouterFragment() {
     @Composable
     fun QAPager(
         count: Int,
-        pagerState: PagerState
+        pagerState: PagerState,
+        viewModel: QAModel
     ) {
         HorizontalPager(
             count = count,
             state = pagerState,
         ) { page ->
-            when (page) {
-                0 -> {
-                    val qaQuizModel: QAQuizModel = viewModel()
-                    QAList(qaQuizModel)
+
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                viewModel.init(tabs[page])
+            }
+
+            val listState = rememberLazyListState(
+                viewModel.getListIndex(),
+                viewModel.getListScrollOffset()
+            )
+
+            DisposableEffect(LocalLifecycleOwner.current) {
+                onDispose {
+                    viewModel.updateListIndex(listState.firstVisibleItemIndex)
+                    viewModel.updateListScrollOffset(listState.firstVisibleItemScrollOffset)
                 }
-                1 -> {
-                    val qaSquareModel: QASquareModel = viewModel()
-                    QAList(qaSquareModel)
+            }
+            if (uiState.getRefreshing(tabs[page]) && !uiState.getLoading(tabs[page])) {
+                FullScreenLoading()
+            } else {
+                SwipeRefresh(
+                    modifier = Modifier.fillMaxSize(),
+                    listState = listState,
+                    contentPadding = PaddingValues(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    refreshing = uiState.getRefreshing(tabs[page]),
+                    loading = uiState.getLoading(tabs[page]),
+                    onRefresh = { viewModel.getHome(tabs[page]) },
+                    onLoad = { viewModel.getNext(tabs[page]) },
+                    onRetry = { viewModel.getHome(tabs[page]) },
+                    data = uiState.getResult(tabs[page]),
+                ) { _, item ->
+                    ArticleCard(item = item)
                 }
-                else -> throw ArrayIndexOutOfBoundsException("length=${count}; index=$page")
             }
         }
     }
 
-    @Composable
-    fun QAList(
-        viewModel: QAModel
-    ) {
-        val listState = rememberLazyListState(
-            viewModel.pagerItemIndex,
-            viewModel.pagerItemScrollOffset
-        )
-
-        DisposableEffect(LocalLifecycleOwner.current) {
-            onDispose {
-                viewModel.pagerItemIndex = listState.firstVisibleItemIndex
-                viewModel.pagerItemScrollOffset = listState.firstVisibleItemScrollOffset
-            }
-        }
-
-        SwipeRefresh(
-            modifier = Modifier.fillMaxSize(),
-            listState = listState,
-            contentPadding = PaddingValues(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            refreshing = viewModel.refreshing,
-            loading = viewModel.loading,
-            onRefresh = { viewModel.getHome() },
-            onLoad = { viewModel.getNext() },
-            onNoData = { viewModel.getHome() },
-            data = viewModel.result,
-        ) { _, item ->
-            ArticleCard(item = item)
-        }
-    }
 }

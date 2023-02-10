@@ -1,43 +1,62 @@
 package com.example.fragment.module.wan.model
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class SystemState(
+    val refreshing: MutableMap<String, Boolean> = HashMap(),
+    val loading: MutableMap<String, Boolean> = HashMap(),
+    val result: MutableMap<String, ArrayList<ArticleBean>> = HashMap(),
+    var time: Long = 0
+) {
+    fun getRefreshing(cid: String): Boolean {
+        return refreshing[cid] ?: false
+    }
+
+    fun getLoading(cid: String): Boolean {
+        return loading[cid] ?: false
+    }
+
+    fun getResult(cid: String): ArrayList<ArticleBean>? {
+        return result[cid]
+    }
+
+}
 
 class SystemViewModel : BaseViewModel() {
 
-    val listDataMap: MutableMap<String, List<ArticleBean>> = HashMap()
-    val listScrollMap: MutableMap<String, Int> = HashMap()
+    private val _uiState = MutableStateFlow(ProjectState(time = 0))
 
-    private var cid: String = ""
-    private val systemArticleResult = MutableLiveData<Map<String, List<ArticleBean>>>()
+    val uiState: StateFlow<ProjectState> = _uiState
 
-    fun systemArticleResult(cid: String): LiveData<Map<String, List<ArticleBean>>> {
-        this.cid = cid
-        if (!listDataMap.containsKey(cid)) {
-            getSystemArticleHome(cid)
+    fun init(cid: String) {
+        if (!uiState.value.result.containsKey(cid)) {
+            getHome(cid)
         }
-        return systemArticleResult
     }
 
-    fun clearSystemArticleResult(cid: String) {
-        systemArticleResult.value = mapOf(cid to listOf())
+    fun getHome(cid: String) {
+        _uiState.update {
+            it.refreshing[cid] = true
+            it.copy(time = System.currentTimeMillis())
+        }
+        getList(cid, getHomePage(key = cid))
     }
 
-    fun getSystemArticleHome(cid: String) {
-        this.cid = cid
-        getSystemArticleList(cid, getHomePage(key = cid))
-    }
-
-    fun getSystemArticleNext(cid: String) {
-        this.cid = cid
-        getSystemArticleList(cid, getNextPage(cid))
+    fun getNext(cid: String) {
+        _uiState.update {
+            it.loading[cid] = false
+            it.copy(time = System.currentTimeMillis())
+        }
+        getList(cid, getNextPage(cid))
     }
 
     /**
@@ -45,7 +64,7 @@ class SystemViewModel : BaseViewModel() {
      * 	cid 分类id
      * 	page 0开始
      */
-    private fun getSystemArticleList(cid: String, page: Int) {
+    private fun getList(cid: String, page: Int) {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
@@ -54,14 +73,21 @@ class SystemViewModel : BaseViewModel() {
                 .putQuery("cid", cid)
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request) { updateProgress(it) }
-            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (!listDataMap.containsKey(cid)) {
-                transitionAnimationEnd(request, response)
-            }
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
-            //通过LiveData通知界面更新
-            response.data?.datas?.let { systemArticleResult.postValue(mapOf(cid to it)) }
+            _uiState.update {
+                response.data?.datas?.let { datas ->
+                    if (isHomePage(cid)) {
+                        it.result[cid] = arrayListOf()
+                    }
+                    it.result[cid]?.addAll(datas)
+                }
+                //设置下拉刷新状态
+                it.refreshing[cid] = false
+                //设置加载更多状态
+                it.loading[cid] = hasNextPage()
+                it.copy(time = System.currentTimeMillis())
+            }
         }
     }
 

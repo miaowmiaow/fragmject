@@ -10,7 +10,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,7 +23,6 @@ import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.model.QAModel
 import com.google.accompanist.pager.*
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class QAFragment : RouterFragment() {
@@ -64,15 +62,12 @@ class QAFragment : RouterFragment() {
         viewModel: QAModel = viewModel()
     ) {
         val pagerState = rememberPagerState(viewModel.getTabIndex())
-
         val coroutineScope = rememberCoroutineScope()
         DisposableEffect(Unit) {
             onDispose {
                 viewModel.updateTabIndex(pagerState.currentPage)
-                coroutineScope.cancel()
             }
         }
-
         Column {
             QATab(
                 pagerState = pagerState,
@@ -135,19 +130,15 @@ class QAFragment : RouterFragment() {
             count = count,
             state = pagerState,
         ) { page ->
-
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
             LaunchedEffect(Unit) {
                 viewModel.init(tabs[page])
             }
-
             val listState = rememberLazyListState(
                 viewModel.getListIndex(),
                 viewModel.getListScrollOffset()
             )
-
-            DisposableEffect(LocalLifecycleOwner.current) {
+            DisposableEffect(Unit) {
                 onDispose {
                     viewModel.updateListIndex(listState.firstVisibleItemIndex)
                     viewModel.updateListScrollOffset(listState.firstVisibleItemScrollOffset)

@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.platform.inspectable
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -115,7 +116,7 @@ fun <T> SwipeRefresh(
                         Text(
                             text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
                             fontSize = 12.sp,
-                            color = Color.Gray,
+                            color = colorResource(id = R.color.gray),
                             modifier = Modifier.align(alignment = Alignment.Center)
                         )
                     }

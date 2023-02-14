@@ -28,7 +28,6 @@ import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.model.ProjectTreeViewModel
 import com.example.fragment.module.wan.model.ProjectViewModel
 import com.google.accompanist.pager.*
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class ProjectFragment : RouterFragment() {
@@ -66,18 +65,13 @@ class ProjectFragment : RouterFragment() {
         treeViewModel: ProjectTreeViewModel = viewModel(),
     ) {
         val uiState by treeViewModel.uiState.collectAsStateWithLifecycle()
-
         val pagerState = rememberPagerState(treeViewModel.getTabIndex())
-
         val coroutineScope = rememberCoroutineScope()
-
         DisposableEffect(Unit) {
             onDispose {
                 treeViewModel.updateTabIndex(pagerState.currentPage)
-                coroutineScope.cancel()
             }
         }
-
         if (uiState.loading) {
             FullScreenLoading()
         } else {
@@ -145,22 +139,17 @@ class ProjectFragment : RouterFragment() {
                 state = pagerState,
             ) { page ->
                 val cid = tabData[page].id
-
                 val viewModel: ProjectViewModel = viewModel(
                     factory = ProjectViewModel.provideFactory(1)
                 )
-
                 LaunchedEffect(Unit) {
                     viewModel.init(cid)
                 }
-
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
                 val listState = rememberLazyListState(
                     viewModel.getListIndex(cid),
                     viewModel.getListScrollOffset(cid)
                 )
-
                 DisposableEffect(Unit) {
                     onDispose {
                         viewModel.updateListIndex(listState.firstVisibleItemIndex, cid)
@@ -180,15 +169,9 @@ class ProjectFragment : RouterFragment() {
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         refreshing = uiState.getRefreshing(cid),
                         loading = uiState.getLoading(cid),
-                        onRefresh = {
-                            viewModel.getHome(cid)
-                        },
-                        onLoad = {
-                            viewModel.getNext(cid)
-                        },
-                        onRetry = {
-                            viewModel.getHome(cid)
-                        },
+                        onRefresh = { viewModel.getHome(cid) },
+                        onLoad = { viewModel.getNext(cid) },
+                        onRetry = { viewModel.getHome(cid) },
                         data = uiState.getResult(cid),
                     ) { _, item ->
                         ArticleCard(item = item)

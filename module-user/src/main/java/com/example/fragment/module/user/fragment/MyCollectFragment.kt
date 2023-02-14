@@ -12,7 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,20 +55,15 @@ class MyCollectFragment : RouterFragment() {
 
     @Composable
     fun MyCollectScreen(viewModel: MyCollectViewModel = viewModel()) {
-
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
         val statusBarColor = colorResource(R.color.theme)
-
         val systemUiController = rememberSystemUiController()
-
-        LaunchedEffect(Unit) {
+        SideEffect {
             systemUiController.setStatusBarColor(
                 statusBarColor,
                 darkIcons = false
             )
         }
-
         Column(
             modifier = Modifier.systemBarsPadding()
         ) {
@@ -101,15 +96,9 @@ class MyCollectFragment : RouterFragment() {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 refreshing = uiState.refreshing,
                 loading = uiState.loading,
-                onRefresh = {
-                    viewModel.getHome()
-                },
-                onLoad = {
-                    viewModel.getNext()
-                },
-                onRetry = {
-                    viewModel.getHome()
-                },
+                onRefresh = { viewModel.getHome() },
+                onLoad = { viewModel.getNext() },
+                onRetry = { viewModel.getHome() },
                 data = uiState.result,
             ) { _, item ->
                 ArticleCard(item = item)

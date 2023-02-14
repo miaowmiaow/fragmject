@@ -1,44 +1,92 @@
 package com.example.fragment.module.wan.model
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
-import com.example.fragment.library.common.bean.NavigationBean
-import com.example.fragment.library.common.bean.NavigationListBean
+import com.example.fragment.library.common.bean.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class NavigationState(
+    var loading: Boolean = false,
+    var navigationResult: MutableList<NavigationBean> = ArrayList(),
+    var articlesResult: MutableList<ArticleBean> = ArrayList(),
+    var systemTreeResult: MutableList<SystemTreeBean> = ArrayList(),
+    var currentPosition: Int = 0
+)
 
 class NavigationViewModel : BaseViewModel() {
 
-    private val navigationResult: MutableLiveData<List<NavigationBean>> by lazy {
-        MutableLiveData<List<NavigationBean>>().also {
+    private val _uiState = MutableStateFlow(NavigationState())
+
+    val uiState: StateFlow<NavigationState> = _uiState.asStateFlow()
+
+    init {
+        if (uiState.value.navigationResult.isEmpty()) {
             getNavigation()
+        }
+        if (uiState.value.systemTreeResult.isEmpty()) {
+            getSystemTree()
         }
     }
 
-    fun navigationResult(): LiveData<List<NavigationBean>> {
-        return navigationResult
+    fun updateSelectNavigation(position: Int) {
+        _uiState.update {
+            it.navigationResult[it.currentPosition].isSelected = false
+            val item = it.navigationResult[position]
+            item.isSelected = true
+            item.articles?.let { articles ->
+                it.articlesResult.clear()
+                it.articlesResult.addAll(articles)
+            }
+            it.copy(currentPosition = position)
+        }
     }
 
     /**
      * 获取导航数据
      */
     private fun getNavigation() {
+        _uiState.update {
+            it.copy(loading = true)
+        }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
             val request = HttpRequest("navi/json")
             //以get方式发起网络请求
             val response = get<NavigationListBean>(request) { updateProgress(it) }
-            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (navigationResult.value == null) {
-                transitionAnimationEnd(request, response)
+            _uiState.update {
+                response.data?.let { data ->
+                    it.navigationResult.clear()
+                    it.navigationResult.addAll(data)
+                    updateSelectNavigation(0)
+                }
+                it.copy(loading = false)
             }
-            //通过LiveData通知界面更新
-            response.data?.let {
-                navigationResult.postValue(it)
+        }
+    }
+
+    /**
+     * 获取项目分类
+     */
+    private fun getSystemTree() {
+        _uiState.update {
+            it.copy(loading = true)
+        }
+        viewModelScope.launch {
+            val request = HttpRequest("tree/json")
+            val response = get<SystemTreeListBean>(request) { updateProgress(it) }
+            _uiState.update {
+                response.data?.let { data ->
+                    it.systemTreeResult.clear()
+                    it.systemTreeResult.addAll(data)
+                }
+                it.copy(loading = false)
             }
         }
     }

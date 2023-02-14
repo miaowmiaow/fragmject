@@ -19,7 +19,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -59,20 +58,15 @@ class WebFragment : RouterFragment() {
         originalUrl: String
     ) {
         var webView by remember { mutableStateOf<WebView?>(null) }
-
         val state = rememberWebViewState(originalUrl)
-
         val navigator = rememberWebViewNavigator()
-
         val systemUiController = rememberSystemUiController()
-
-        DisposableEffect(LocalLifecycleOwner.current) {
+        DisposableEffect(systemUiController) {
             systemUiController.statusBarDarkContentEnabled = true
             onDispose {
                 systemUiController.statusBarDarkContentEnabled = false
             }
         }
-
         Column(
             modifier = Modifier
                 .background(colorResource(R.color.white))
@@ -83,7 +77,6 @@ class WebFragment : RouterFragment() {
             //注入VConsole以便于H5调试
             val injectVConsole by remember { mutableStateOf(false) }
             var progress by remember { mutableStateOf(0f) }
-
             val client = object : AccompanistWebViewClient() {
 
                 override fun shouldInterceptRequest(
@@ -170,9 +163,7 @@ class WebFragment : RouterFragment() {
                     backgroundColor = colorResource(R.color.white)
                 )
             }
-            Divider(
-                color = colorResource(R.color.line)
-            )
+            Divider(color = colorResource(R.color.line))
             Row(
                 modifier = Modifier
                     .background(colorResource(R.color.white))

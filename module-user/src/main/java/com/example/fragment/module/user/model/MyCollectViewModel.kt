@@ -8,6 +8,7 @@ import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,7 +22,7 @@ class MyCollectViewModel : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(MyCollectState())
 
-    val uiState: StateFlow<MyCollectState> = _uiState
+    val uiState: StateFlow<MyCollectState> = _uiState.asStateFlow()
 
     init {
         getHome()

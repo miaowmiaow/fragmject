@@ -33,7 +33,6 @@ import com.example.fragment.module.wan.model.SystemTreeViewModel
 import com.example.fragment.module.wan.model.SystemViewModel
 import com.google.accompanist.pager.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class SystemFragment : RouterFragment() {
@@ -77,35 +76,31 @@ class SystemFragment : RouterFragment() {
         val statusBarColor = colorResource(R.color.theme)
         val systemUiController = rememberSystemUiController()
 
-        LaunchedEffect(Unit) {
+        val uiState by treeViewModel.uiState.collectAsStateWithLifecycle()
+        val pagerState = rememberPagerState(treeViewModel.getTabIndex(cid))
+        val coroutineScope = rememberCoroutineScope()
+        SideEffect {
             treeViewModel.init(cid)
             systemUiController.setStatusBarColor(
                 statusBarColor,
                 darkIcons = false
             )
         }
-
-        val uiState by treeViewModel.uiState.collectAsStateWithLifecycle()
-
-        val pagerState = rememberPagerState(treeViewModel.getTabIndex(cid))
-
-        val coroutineScope = rememberCoroutineScope()
-
         DisposableEffect(Unit) {
             onDispose {
-                coroutineScope.cancel()
+                treeViewModel.updateTabIndex(pagerState.currentPage, cid)
             }
         }
-
         Column(
-            modifier = Modifier.systemBarsPadding()
+            modifier = Modifier
+                .background(colorResource(R.color.background))
+                .systemBarsPadding()
         ) {
             TitleBar(uiState.title)
             SystemTab(
                 pagerState = pagerState,
                 onTabClick = {
                     coroutineScope.launch {
-                        treeViewModel.updateTabIndex(it, cid)
                         pagerState.animateScrollToPage(it)
                     }
                 },
@@ -191,20 +186,15 @@ class SystemFragment : RouterFragment() {
                 state = pagerState,
             ) { page ->
                 val cid = tabData[page].id
-
                 val viewModel: SystemViewModel = viewModel()
-
                 LaunchedEffect(Unit) {
                     viewModel.init(cid)
                 }
-
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
                 val listState = rememberLazyListState(
                     viewModel.getListIndex(cid),
                     viewModel.getListScrollOffset(cid)
                 )
-
                 DisposableEffect(Unit) {
                     onDispose {
                         viewModel.updateListIndex(listState.firstVisibleItemIndex, cid)

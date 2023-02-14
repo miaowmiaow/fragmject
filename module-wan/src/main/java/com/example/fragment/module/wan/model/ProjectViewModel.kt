@@ -10,6 +10,7 @@ import com.example.fragment.library.common.bean.ArticleBean
 import com.example.fragment.library.common.bean.ArticleListBean
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -37,7 +38,7 @@ class ProjectViewModel(private val initialPage: Int) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(ProjectState(time = 0))
 
-    val uiState: StateFlow<ProjectState> = _uiState
+    val uiState: StateFlow<ProjectState> = _uiState.asStateFlow()
 
     fun init(cid: String) {
         if (!uiState.value.result.containsKey(cid)) {

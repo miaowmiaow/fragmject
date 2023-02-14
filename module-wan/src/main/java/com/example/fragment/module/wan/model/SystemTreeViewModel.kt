@@ -8,6 +8,7 @@ import com.example.fragment.library.common.bean.SystemTreeBean
 import com.example.fragment.library.common.bean.SystemTreeListBean
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -22,7 +23,7 @@ class SystemTreeViewModel : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(SystemTreeState())
 
-    val uiState: StateFlow<SystemTreeState> = _uiState
+    val uiState: StateFlow<SystemTreeState> = _uiState.asStateFlow()
 
     fun init(cid: String) {
         _uiState.update {
@@ -33,7 +34,6 @@ class SystemTreeViewModel : BaseViewModel() {
         } else {
             setSystemTree(cid)
         }
-
     }
 
     /**
@@ -56,7 +56,7 @@ class SystemTreeViewModel : BaseViewModel() {
             it.response.forEach { data ->
                 data.children?.forEachIndexed { index, children ->
                     if (children.id == cid) {
-                        updateTabIndex(index)
+                        updateTabIndex(index, cid)
                         it.title = data.name
                         it.result.clear()
                         it.result.addAll(data.children!!)

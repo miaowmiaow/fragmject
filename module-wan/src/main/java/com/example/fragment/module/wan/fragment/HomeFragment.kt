@@ -59,9 +59,7 @@ class HomeFragment : RouterFragment() {
 
     @Composable
     fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
-
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
         if (uiState.refreshing && !uiState.loading) {
             FullScreenLoading()
         } else {
@@ -71,15 +69,9 @@ class HomeFragment : RouterFragment() {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 refreshing = uiState.refreshing,
                 loading = uiState.loading,
-                onRefresh = {
-                    viewModel.getHome()
-                },
-                onLoad = {
-                    viewModel.getNext()
-                },
-                onRetry = {
-                    viewModel.getHome()
-                },
+                onRefresh = { viewModel.getHome() },
+                onLoad = { viewModel.getNext() },
+                onRetry = { viewModel.getHome() },
                 data = uiState.result,
             ) { _, item ->
                 if (item.viewType == 0) {

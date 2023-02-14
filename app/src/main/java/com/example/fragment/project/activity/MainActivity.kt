@@ -14,12 +14,14 @@ import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.user.model.SettingViewModel
 import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.wan.model.SystemTreeViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainActivityBinding
 
 class MainActivity : RouterActivity() {
 
     private val settingViewModel: SettingViewModel by viewModels()
+    private val systemTreeViewModel: SystemTreeViewModel by viewModels()
     private val userViewModel: UserViewModel by viewModels()
     private val loginRouter = arrayOf(
         Router.MY_COIN,
@@ -106,6 +108,7 @@ class MainActivity : RouterActivity() {
                 else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             }
         }
+        systemTreeViewModel.init("0")
         userViewModel.userResult()
         //WebView预加载
         WebViewManager.prepare(applicationContext)

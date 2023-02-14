@@ -47,7 +47,6 @@ fun <T> Banner(
             }, 3000, 3000)
             onDispose {
                 timer.cancel()
-                coroutineScope.cancel()
             }
         }
         Box(

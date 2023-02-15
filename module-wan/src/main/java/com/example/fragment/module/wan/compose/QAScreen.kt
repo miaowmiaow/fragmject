@@ -43,7 +43,7 @@ fun QAScreen(
             },
             data = tabs
         )
-        QAPager(tabs = tabs, count = tabs.size, pagerState = pagerState, viewModel = viewModel)
+        QAPager(tabs = tabs, count = tabs.size, pagerState = pagerState)
     }
 }
 
@@ -90,7 +90,7 @@ fun QAPager(
     tabs: Array<String>,
     count: Int,
     pagerState: PagerState,
-    viewModel: QAViewModel
+    viewModel: QAViewModel = viewModel()
 ) {
     HorizontalPager(
         count = count,

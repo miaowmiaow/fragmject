@@ -51,8 +51,6 @@ fun MainScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var navRoute by remember { mutableStateOf("home") }
-
     val navItems = listOf(
         NavigationItem("首页", R.drawable.ic_bottom_bar_home, "home"),
         NavigationItem("导航", R.drawable.ic_bottom_bar_navigation, "navigation"),
@@ -60,6 +58,7 @@ fun MainScreen(
         NavigationItem("项目", R.drawable.ic_bottom_bar_project, "project"),
         NavigationItem("我的", R.drawable.ic_bottom_bar_user, "user"),
     )
+    var navRoute by remember { mutableStateOf(navItems[viewModel.getTabIndex()].route) }
 
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
@@ -69,8 +68,10 @@ fun MainScreen(
         bottomBar = {
             NavigationBar(
                 items = navItems,
-                onClick = {
-                    navRoute = it
+                selectedIndex = viewModel.getTabIndex(),
+                onClick = { index, route ->
+                    navRoute = route
+                    viewModel.updateTabIndex(index)
                 }
             )
         }
@@ -164,9 +165,10 @@ fun SearchBar(
 @Composable
 fun NavigationBar(
     items: List<NavigationItem> = listOf(),
-    onClick: (destination: String) -> Unit
+    selectedIndex: Int,
+    onClick: (index: Int, route: String) -> Unit
 ) {
-    var selectedItem by remember { mutableStateOf(0) }
+    var currItem by remember { mutableStateOf(selectedIndex) }
 
     BottomNavigation(
         modifier = Modifier,
@@ -174,10 +176,10 @@ fun NavigationBar(
     ) {
         items.forEachIndexed { index, item ->
             BottomNavigationItem(
-                selected = selectedItem == index,
+                selected = currItem == index,
                 onClick = {
-                    selectedItem = index
-                    onClick(item.route)
+                    currItem = index
+                    onClick(index, item.route)
                 },
                 icon = {
                     Icon(
@@ -187,7 +189,7 @@ fun NavigationBar(
                             .size(25.dp)
                             .padding(bottom = 3.dp),
                         tint = colorResource(
-                            if (selectedItem == index)
+                            if (currItem == index)
                                 item.selectedColor
                             else
                                 item.unselectedColor
@@ -232,5 +234,5 @@ fun WanBottomNavigationPreview() {
         NavigationItem("项目", R.drawable.ic_bottom_bar_project, "project"),
         NavigationItem("我的", R.drawable.ic_bottom_bar_user, "user"),
     )
-    WanTheme { NavigationBar(items = navItems, onClick = {}) }
+    WanTheme { NavigationBar(items = navItems, selectedIndex = 0, onClick = { _, _ -> }) }
 }

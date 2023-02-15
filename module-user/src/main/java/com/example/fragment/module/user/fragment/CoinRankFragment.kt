@@ -9,7 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
@@ -20,7 +20,7 @@ import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.adapter.CoinRankAdapter
 import com.example.fragment.module.user.databinding.CoinRankFragmentBinding
-import com.example.fragment.module.user.model.CoinRankViewModel
+import com.example.fragment.module.user.vm.CoinRankViewModel
 
 class CoinRankFragment : RouterFragment() {
 

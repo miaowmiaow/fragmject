@@ -12,9 +12,9 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.utils.TestAnnotation
 import com.example.fragment.library.common.utils.WanHelper
-import com.example.fragment.module.user.model.SettingViewModel
-import com.example.fragment.module.user.model.UserViewModel
-import com.example.fragment.module.wan.model.SystemTreeViewModel
+import com.example.fragment.module.user.vm.SettingViewModel
+import com.example.fragment.module.user.vm.UserViewModel
+import com.example.fragment.module.wan.vm.SystemTreeViewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.databinding.MainActivityBinding
 

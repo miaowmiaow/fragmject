@@ -17,7 +17,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.fragment.library.base.http.HttpResponse
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
@@ -28,10 +28,10 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.dialog.StandardDialog
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.databinding.SettingFragmentBinding
-import com.example.fragment.module.user.model.SettingViewModel
-import com.example.fragment.module.user.model.UpdateViewModel
-import com.example.fragment.module.user.model.UserLoginViewModel
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.vm.SettingViewModel
+import com.example.fragment.module.user.vm.UpdateViewModel
+import com.example.fragment.module.user.vm.UserLoginViewModel
+import com.example.fragment.module.user.vm.UserViewModel
 import kotlinx.coroutines.launch
 import java.io.File
 

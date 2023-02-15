@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.utils.PinyinUtils
 import com.example.fragment.library.base.utils.ReadAssetsFileUtil
 import com.example.fragment.library.base.utils.toppingToPosition
@@ -16,7 +16,7 @@ import com.example.fragment.module.user.adapter.CityAdapter
 import com.example.fragment.module.user.bean.CityBean
 import com.example.fragment.module.user.bean.CityPickerBean
 import com.example.fragment.module.user.databinding.UserCityFragmentBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.vm.UserViewModel
 import com.google.gson.Gson
 
 class UserCityFragment : RouterFragment() {

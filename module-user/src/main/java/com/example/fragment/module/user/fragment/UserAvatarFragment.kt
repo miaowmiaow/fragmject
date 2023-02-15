@@ -9,14 +9,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.utils.PermissionsCallback
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.base.utils.requestStorage
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.UserAvatarFragmentBinding
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.vm.UserViewModel
 import com.example.miaow.picture.selector.bean.MediaBean
 import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
 import com.example.miaow.picture.selector.dialog.PictureSelectorDialog

@@ -47,8 +47,9 @@
 |       |   |   ├── activity             Activity目录
 |       |   |   |   └── MainActivity     项目唯一Activity
 |       |   |   ├── adapter              Adapter目录
+|       |   |   ├── compose              Compose目录
 |       |   |   ├── fragment             Fragment目录
-|       |   |   ├── model                ViewModel目录
+|       |   |   ├── vm                   ViewModel目录
 |       |   |   └── App                  Application
 |       |   |
 |       |   └── res                      资源目录

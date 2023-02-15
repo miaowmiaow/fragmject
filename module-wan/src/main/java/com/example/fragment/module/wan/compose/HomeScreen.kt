@@ -20,7 +20,7 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
-import com.example.fragment.module.wan.model.HomeViewModel
+import com.example.fragment.module.wan.vm.HomeViewModel
 
 @Composable
 fun HomeScreen(

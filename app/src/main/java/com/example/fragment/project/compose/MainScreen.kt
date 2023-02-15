@@ -31,7 +31,7 @@ import com.example.fragment.module.wan.compose.HomeScreen
 import com.example.fragment.module.wan.compose.NavigationScreen
 import com.example.fragment.module.wan.compose.ProjectScreen
 import com.example.fragment.module.wan.compose.QAScreen
-import com.example.fragment.module.wan.model.*
+import com.example.fragment.module.wan.vm.*
 import com.example.fragment.project.R
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController

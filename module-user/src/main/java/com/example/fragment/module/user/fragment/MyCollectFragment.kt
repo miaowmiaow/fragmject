@@ -24,11 +24,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.base.compose.theme.WanTheme
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.model.MyCollectViewModel
+import com.example.fragment.module.user.vm.MyCollectViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 class MyCollectFragment : RouterFragment() {

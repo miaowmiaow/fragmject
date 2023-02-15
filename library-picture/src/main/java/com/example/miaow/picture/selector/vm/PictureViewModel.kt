@@ -1,11 +1,11 @@
-package com.example.miaow.picture.selector.model
+package com.example.miaow.picture.selector.vm
 
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.miaow.picture.selector.bean.AlbumBean
 import com.example.miaow.picture.selector.bean.MediaBean
 import kotlinx.coroutines.launch

@@ -16,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
@@ -27,8 +27,8 @@ import com.example.fragment.library.common.utils.WanHelper
 import com.example.fragment.module.wan.R
 import com.example.fragment.module.wan.adapter.SearchHistoryAdapter
 import com.example.fragment.module.wan.databinding.SearchFragmentBinding
-import com.example.fragment.module.wan.model.HotKeyViewModel
-import com.example.fragment.module.wan.model.SearchViewModel
+import com.example.fragment.module.wan.vm.HotKeyViewModel
+import com.example.fragment.module.wan.vm.SearchViewModel
 import kotlinx.coroutines.launch
 
 class SearchFragment : RouterFragment() {

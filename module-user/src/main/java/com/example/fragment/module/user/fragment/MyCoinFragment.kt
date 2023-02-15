@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.view.pull.OnLoadMoreListener
 import com.example.fragment.library.base.view.pull.OnRefreshListener
 import com.example.fragment.library.base.view.pull.PullRefreshLayout
@@ -16,7 +16,7 @@ import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.adapter.MyCoinAdapter
 import com.example.fragment.module.user.databinding.MyCoinFragmentBinding
-import com.example.fragment.module.user.model.MyCoinViewModel
+import com.example.fragment.module.user.vm.MyCoinViewModel
 
 class MyCoinFragment : RouterFragment() {
 

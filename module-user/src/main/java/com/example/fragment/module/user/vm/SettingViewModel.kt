@@ -1,8 +1,8 @@
-package com.example.fragment.module.user.model
+package com.example.fragment.module.user.vm
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.utils.WanHelper
 
 class SettingViewModel : BaseViewModel() {

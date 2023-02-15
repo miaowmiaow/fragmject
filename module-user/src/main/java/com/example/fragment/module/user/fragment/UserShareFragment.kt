@@ -7,12 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.databinding.UserShareFragmentBinding
-import com.example.fragment.module.user.model.UserShareModel
+import com.example.fragment.module.user.vm.UserShareModel
 
 class UserShareFragment : RouterFragment() {
 

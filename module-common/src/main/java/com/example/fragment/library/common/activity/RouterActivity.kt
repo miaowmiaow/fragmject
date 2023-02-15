@@ -73,12 +73,12 @@ abstract class RouterActivity : BaseActivity() {
      */
     fun navigate(deepLink: String, args: Bundle? = null) {
         var newDeepLink = "http://fragment.example.com/$deepLink"
-        args?.apply {
+        args?.let {
             val matcher = Pattern.compile("(\\{)(.+?)(\\})").matcher(newDeepLink)
             while (matcher.find()) {
                 val key = matcher.group(2)
-                if (containsKey(key)) {
-                    newDeepLink = newDeepLink.replace("{$key}", get(key).toString())
+                if (it.containsKey(key)) {
+                    newDeepLink = newDeepLink.replace("{$key}", it.getString(key, ""))
                 }
             }
         }

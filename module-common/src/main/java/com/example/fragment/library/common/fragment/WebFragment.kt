@@ -27,7 +27,6 @@ import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.*
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.constant.Keys
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.accompanist.web.*
 
 class WebFragment : RouterFragment() {
@@ -60,13 +59,6 @@ class WebFragment : RouterFragment() {
         var webView by remember { mutableStateOf<WebView?>(null) }
         val state = rememberWebViewState(originalUrl)
         val navigator = rememberWebViewNavigator()
-        val systemUiController = rememberSystemUiController()
-        DisposableEffect(systemUiController) {
-            systemUiController.statusBarDarkContentEnabled = true
-            onDispose {
-                systemUiController.statusBarDarkContentEnabled = false
-            }
-        }
         Column(
             modifier = Modifier
                 .background(colorResource(R.color.white))

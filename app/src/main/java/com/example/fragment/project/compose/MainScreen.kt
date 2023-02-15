@@ -51,7 +51,7 @@ fun MainScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val navRoute = remember { mutableStateOf("home") }
+    var navRoute by remember { mutableStateOf("home") }
 
     val navItems = listOf(
         NavigationItem("首页", R.drawable.ic_bottom_bar_home, "home"),
@@ -70,13 +70,13 @@ fun MainScreen(
             NavigationBar(
                 items = navItems,
                 onClick = {
-                    navRoute.value = it
+                    navRoute = it
                 }
             )
         }
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
-            when (navRoute.value) {
+            when (navRoute) {
                 "home" -> HomeScreen()
                 "navigation" -> NavigationScreen()
                 "qa" -> QAScreen()

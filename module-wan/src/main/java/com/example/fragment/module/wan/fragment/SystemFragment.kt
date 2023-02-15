@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.FullScreenLoading
@@ -50,12 +49,10 @@ class SystemFragment : RouterFragment() {
             cid = it.getString(Keys.CID, "0")
         }
 
-        val treeViewModel: SystemTreeViewModel by activityViewModels()
-
         return ComposeView(requireContext()).apply {
             setContent {
                 WanTheme {
-                    SystemScreen(treeViewModel)
+                    SystemScreen()
                 }
             }
         }
@@ -70,7 +67,7 @@ class SystemFragment : RouterFragment() {
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     fun SystemScreen(
-        treeViewModel: SystemTreeViewModel
+        treeViewModel: SystemTreeViewModel = viewModel()
     ) {
 
         val statusBarColor = colorResource(R.color.theme)

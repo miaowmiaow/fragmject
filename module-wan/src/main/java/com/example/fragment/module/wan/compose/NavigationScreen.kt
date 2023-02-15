@@ -53,7 +53,7 @@ fun NavigationScreen(
             },
             data = tabs
         )
-        NavigationPager(tabs = tabs, count = tabs.size, pagerState = pagerState, viewModel)
+        NavigationPager(tabs = tabs, count = tabs.size, pagerState = pagerState)
     }
 }
 
@@ -100,7 +100,7 @@ fun NavigationPager(
     tabs: Array<String>,
     count: Int,
     pagerState: PagerState,
-    viewModel: NavigationViewModel
+    viewModel: NavigationViewModel = viewModel()
 ) {
     HorizontalPager(
         count = count,
@@ -111,9 +111,9 @@ fun NavigationPager(
             FullScreenLoading()
         } else {
             if (tabs[page] == "导航") {
-                NavigationLinkContent(viewModel)
+                NavigationLinkContent()
             } else if (tabs[page] == "体系") {
-                NavigationSystemContent(viewModel)
+                NavigationSystemContent()
             }
         }
     }
@@ -122,7 +122,7 @@ fun NavigationPager(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NavigationLinkContent(
-    viewModel: NavigationViewModel
+    viewModel: NavigationViewModel = viewModel()
 ) {
     val context = LocalContext.current
 
@@ -202,7 +202,7 @@ fun NavigationLinkContent(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun NavigationSystemContent(
-    viewModel: NavigationViewModel
+    viewModel: NavigationViewModel = viewModel()
 ) {
     val context = LocalContext.current
 

@@ -30,12 +30,12 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.fragment.library.base.compose.theme.WanTheme
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.model.UserLoginViewModel
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.vm.UserLoginViewModel
+import com.example.fragment.module.user.vm.UserViewModel
 import com.example.fragment.module.user.view.WhiteTextField
 
 class UserRegisterFragment : RouterFragment() {

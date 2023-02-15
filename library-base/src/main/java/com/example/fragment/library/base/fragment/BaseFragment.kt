@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import coil.dispose
 import coil.load
 import com.example.fragment.library.base.R
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 
 /**
  * 注意：Fragment 的存在时间比其视图长。请务必在 Fragment 的 onDestroyView() 方法中清除对视图的所有引用。

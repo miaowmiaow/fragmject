@@ -26,7 +26,7 @@ import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.model.NavigationViewModel
+import com.example.fragment.module.wan.vm.NavigationViewModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 

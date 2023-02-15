@@ -1,6 +1,6 @@
-package com.example.fragment.module.user.model
+package com.example.fragment.module.user.vm
 
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.bean.UserBean
 import com.example.fragment.library.common.utils.WanHelper
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -23,7 +23,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.library.base.compose.theme.WanTheme
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.utils.*
 import com.example.fragment.library.common.R
 import com.example.fragment.library.common.constant.Keys

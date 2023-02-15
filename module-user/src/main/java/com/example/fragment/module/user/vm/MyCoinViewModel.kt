@@ -1,11 +1,11 @@
-package com.example.fragment.module.user.model
+package com.example.fragment.module.user.vm
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.bean.MyCoinListBean
 import com.example.fragment.library.common.bean.UserCoinBean
 import kotlinx.coroutines.async

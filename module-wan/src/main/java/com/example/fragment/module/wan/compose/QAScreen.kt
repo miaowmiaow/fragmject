@@ -16,7 +16,7 @@ import com.example.fragment.library.base.compose.FullScreenLoading
 import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.model.QAViewModel
+import com.example.fragment.module.wan.vm.QAViewModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 

@@ -17,7 +17,7 @@ import com.example.miaow.picture.editor.dialog.PictureEditorCallback
 import com.example.miaow.picture.editor.dialog.PictureEditorDialog
 import com.example.miaow.picture.selector.adapter.PicturePreviewAdapter
 import com.example.miaow.picture.selector.bean.MediaBean
-import com.example.miaow.picture.selector.model.PictureViewModel
+import com.example.miaow.picture.selector.vm.PictureViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 

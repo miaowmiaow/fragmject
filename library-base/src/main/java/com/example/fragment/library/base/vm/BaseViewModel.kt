@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.model
+package com.example.fragment.library.base.vm
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData

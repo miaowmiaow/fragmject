@@ -27,7 +27,7 @@ import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
 import com.example.miaow.picture.selector.bean.MediaBean
-import com.example.miaow.picture.selector.model.PictureViewModel
+import com.example.miaow.picture.selector.vm.PictureViewModel
 import com.example.miaow.picture.selector.pop.PictureAlbumPopupWindow
 import java.io.File
 

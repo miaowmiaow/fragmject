@@ -9,7 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.library.common.fragment.RouterFragment
@@ -17,7 +17,7 @@ import com.example.fragment.module.user.R
 import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
 import com.example.fragment.module.user.dialog.SexDialog
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.vm.UserViewModel
 import kotlinx.coroutines.launch
 
 /**

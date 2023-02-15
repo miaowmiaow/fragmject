@@ -17,8 +17,8 @@ import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.common.bean.ProjectTreeBean
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.model.ProjectTreeViewModel
-import com.example.fragment.module.wan.model.ProjectViewModel
+import com.example.fragment.module.wan.vm.ProjectTreeViewModel
+import com.example.fragment.module.wan.vm.ProjectViewModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 

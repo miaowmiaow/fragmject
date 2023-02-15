@@ -23,7 +23,7 @@ import coil.compose.AsyncImage
 import com.example.fragment.library.common.activity.RouterActivity
 import com.example.fragment.library.common.constant.Router
 import com.example.fragment.module.user.R
-import com.example.fragment.module.user.model.UserViewModel
+import com.example.fragment.module.user.vm.UserViewModel
 
 @Composable
 fun UserScreen(

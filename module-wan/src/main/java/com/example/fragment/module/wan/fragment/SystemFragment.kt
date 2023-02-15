@@ -22,14 +22,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.FullScreenLoading
 import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.library.base.compose.theme.WanTheme
-import com.example.fragment.library.base.model.BaseViewModel
+import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.library.common.bean.SystemTreeBean
 import com.example.fragment.library.common.compose.ArticleCard
 import com.example.fragment.library.common.constant.Keys
 import com.example.fragment.library.common.fragment.RouterFragment
 import com.example.fragment.module.wan.R
-import com.example.fragment.module.wan.model.SystemTreeViewModel
-import com.example.fragment.module.wan.model.SystemViewModel
+import com.example.fragment.module.wan.vm.SystemTreeViewModel
+import com.example.fragment.module.wan.vm.SystemViewModel
 import com.google.accompanist.pager.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch

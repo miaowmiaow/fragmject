@@ -11,6 +11,9 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fragment.library.base.adapter.BaseAdapter
 import com.example.fragment.library.base.model.BaseViewModel
@@ -26,6 +29,7 @@ import com.example.fragment.module.wan.adapter.SearchHistoryAdapter
 import com.example.fragment.module.wan.databinding.SearchFragmentBinding
 import com.example.fragment.module.wan.model.HotKeyViewModel
 import com.example.fragment.module.wan.model.SearchViewModel
+import kotlinx.coroutines.launch
 
 class SearchFragment : RouterFragment() {
 
@@ -118,18 +122,22 @@ class SearchFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        hotKeyViewModel.hotKeyResult().observe(viewLifecycleOwner) {
-            binding.history.visibility = VISIBLE
-            binding.hotKey.visibility = VISIBLE
-            binding.fbl.removeAllViews()
-            it.forEach { hotKey ->
-                val inflater = LayoutInflater.from(binding.fbl.context)
-                val tv = inflater.inflate(R.layout.hot_key_fbl, binding.fbl, false)
-                (tv as TextView).text = hotKey.name
-                tv.setOnClickListener { search(hotKey.name) }
-                binding.fbl.addView(tv)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                hotKeyViewModel.uiState.collect {
+                    binding.history.visibility = VISIBLE
+                    binding.hotKey.visibility = VISIBLE
+                    binding.fbl.removeAllViews()
+                    it.result.forEach { hotKey ->
+                        val inflater = LayoutInflater.from(binding.fbl.context)
+                        val tv = inflater.inflate(R.layout.hot_key_fbl, binding.fbl, false)
+                        (tv as TextView).text = hotKey.name
+                        tv.setOnClickListener { search(hotKey.name) }
+                        binding.fbl.addView(tv)
+                    }
+                    binding.pullRefresh.visibility = GONE
+                }
             }
-            binding.pullRefresh.visibility = GONE
         }
         searchViewModel.searchHistoryResult().observe(viewLifecycleOwner) {
             binding.history.visibility = VISIBLE

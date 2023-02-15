@@ -1,44 +1,48 @@
 package com.example.fragment.module.wan.model
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.common.bean.HotKeyBean
 import com.example.fragment.library.common.bean.HotKeyListBean
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class HotKeyState(
+    var isLoading: Boolean = false,
+    var result: MutableList<HotKeyBean> = ArrayList(),
+)
 
 class HotKeyViewModel : BaseViewModel() {
 
-    private val hotKeyResult: MutableLiveData<List<HotKeyBean>> by lazy {
-        MutableLiveData<List<HotKeyBean>>().also {
-            getHotKey()
-        }
-    }
+    private val _uiState = MutableStateFlow(HotKeyState())
 
-    fun hotKeyResult(): LiveData<List<HotKeyBean>> {
-        return hotKeyResult
+    val uiState: StateFlow<HotKeyState> = _uiState.asStateFlow()
+
+    init {
+        getHotKey()
     }
 
     /**
      * 获取搜索热词
      */
     private fun getHotKey() {
-        //通过viewModelScope创建一个协程
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
-            //构建请求体，传入请求参数
             val request = HttpRequest("hotkey/json")
-            //以get方式发起网络请求
             val response = get<HotKeyListBean>(request)
-            //如果LiveData.value == null，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-            if (hotKeyResult.value == null) {
-                transitionAnimationEnd(request, response)
-            }
-            //通过LiveData通知界面更新
-            response.data?.let {
-                hotKeyResult.postValue(it)
+            _uiState.update {
+                response.data?.let { data ->
+                    it.result.clear()
+                    it.result.addAll(data)
+                }
+                it.copy(isLoading = false)
             }
         }
     }

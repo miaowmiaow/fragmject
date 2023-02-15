@@ -5,6 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.fragment.library.base.dialog.PermissionDialog
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.PermissionsCallback
@@ -17,6 +20,7 @@ import com.example.fragment.module.user.model.UserViewModel
 import com.example.miaow.picture.selector.bean.MediaBean
 import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
 import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
+import kotlinx.coroutines.launch
 
 class UserAvatarFragment : RouterFragment() {
 
@@ -74,9 +78,13 @@ class UserAvatarFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult().observe(viewLifecycleOwner) {
-            if (it.avatar.isNotBlank()) {
-                binding.image.loadCircleCrop(it.avatar)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    if (it.getUserBean().avatar.isNotBlank()) {
+                        binding.image.loadCircleCrop(it.getUserBean().avatar)
+                    }
+                }
             }
         }
         return viewModel

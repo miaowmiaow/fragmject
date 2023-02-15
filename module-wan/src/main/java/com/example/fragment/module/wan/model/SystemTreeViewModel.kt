@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SystemTreeState(
-    var loading: Boolean = false,
+    var isLoading: Boolean = false,
     var title: String = "体系",
     var result: MutableList<SystemTreeBean> = ArrayList(),
     var response: MutableList<SystemTreeBean> = ArrayList()
@@ -27,7 +27,7 @@ class SystemTreeViewModel : BaseViewModel() {
 
     fun init(cid: String) {
         _uiState.update {
-            it.copy(loading = true)
+            it.copy(isLoading = true)
         }
         if (uiState.value.response.isEmpty()) {
             getSystemTree(cid)
@@ -63,7 +63,7 @@ class SystemTreeViewModel : BaseViewModel() {
                     }
                 }
             }
-            it.copy(loading = false)
+            it.copy(isLoading = false)
         }
     }
 

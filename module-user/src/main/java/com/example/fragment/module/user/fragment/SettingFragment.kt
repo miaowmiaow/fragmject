@@ -13,6 +13,9 @@ import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.CacheUtils
@@ -29,12 +32,18 @@ import com.example.fragment.module.user.model.SettingViewModel
 import com.example.fragment.module.user.model.UpdateViewModel
 import com.example.fragment.module.user.model.UserLoginViewModel
 import com.example.fragment.module.user.model.UserViewModel
+import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingFragment : RouterFragment() {
 
     private val settingViewModel: SettingViewModel by activityViewModels()
-    private val updateViewModel: UpdateViewModel by viewModels()
+
+    private val updateViewModel: UpdateViewModel by viewModels(
+        factoryProducer = {
+            UpdateViewModel.provideFactory("http://122.51.186.2:8080/update.json")
+        }
+    )
     private val userViewModel: UserViewModel by activityViewModels()
     private val userLoginViewModel: UserLoginViewModel by activityViewModels()
     private var _binding: SettingFragmentBinding? = null
@@ -219,8 +228,13 @@ class SettingFragment : RouterFragment() {
                 updateViewModel.downloadApkResult.postValue(null)
             }
         }
-        userViewModel.userResult().observe(viewLifecycleOwner) {
-            binding.logout.visibility = if (it.id.isNotBlank()) View.VISIBLE else View.GONE
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                userViewModel.uiState.collect {
+                    binding.logout.visibility =
+                        if (it.getUserId().isNotBlank()) View.VISIBLE else View.GONE
+                }
+            }
         }
         userLoginViewModel.logoutResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) {

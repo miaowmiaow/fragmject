@@ -6,6 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.fragment.library.base.model.BaseViewModel
 import com.example.fragment.library.base.utils.loadCircleCrop
 import com.example.fragment.library.common.constant.Router
@@ -15,6 +18,7 @@ import com.example.fragment.module.user.databinding.UserInfoFragmentBinding
 import com.example.fragment.module.user.dialog.BirthdayDialog
 import com.example.fragment.module.user.dialog.SexDialog
 import com.example.fragment.module.user.model.UserViewModel
+import kotlinx.coroutines.launch
 
 /**
  * 纯粹为以下知识点服务：
@@ -77,14 +81,18 @@ class UserInfoFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult().observe(viewLifecycleOwner) {
-            if (it.avatar.isNotBlank()) {
-                binding.avatarImg.loadCircleCrop(it.avatar)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    if (it.getUserBean().avatar.isNotBlank()) {
+                        binding.avatarImg.loadCircleCrop(it.getUserBean().avatar)
+                    }
+                    setUserInfo(binding.username, it.getUserBean().username)
+                    setUserInfo(binding.sexInfo, it.getUserBean().sex)
+                    setUserInfo(binding.birthdayInfo, it.getUserBean().birthday)
+                    setUserInfo(binding.cityInfo, it.getUserBean().city)
+                }
             }
-            setUserInfo(binding.username, it.username)
-            setUserInfo(binding.sexInfo, it.sex)
-            setUserInfo(binding.birthdayInfo, it.birthday)
-            setUserInfo(binding.cityInfo, it.city)
         }
         return viewModel
     }

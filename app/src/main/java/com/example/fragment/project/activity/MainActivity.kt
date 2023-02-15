@@ -109,7 +109,6 @@ class MainActivity : RouterActivity() {
             }
         }
         systemTreeViewModel.init("0")
-        userViewModel.userResult()
         //WebView预加载
         WebViewManager.prepare(applicationContext)
     }

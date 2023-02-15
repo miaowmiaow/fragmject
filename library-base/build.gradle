@@ -88,6 +88,7 @@ dependencies {
     // navigation
     api "androidx.navigation:navigation-fragment-ktx:$navigation_version"
     api "androidx.navigation:navigation-ui-ktx:$navigation_version"
+    api "androidx.navigation:navigation-compose:$navigation_version"
     // room
     //noinspection GradleDependency
     api "androidx.room:room-ktx:$room_version"

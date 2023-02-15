@@ -91,7 +91,6 @@ class UserCityFragment : RouterFragment() {
     }
 
     override fun initViewModel(): BaseViewModel {
-        viewModel.userResult()
         return viewModel
     }
 

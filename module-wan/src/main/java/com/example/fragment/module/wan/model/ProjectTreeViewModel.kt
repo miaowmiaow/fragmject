@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ProjectTreeState(
-    var loading: Boolean = false,
+    var isLoading: Boolean = false,
     var result: MutableList<ProjectTreeBean> = ArrayList(),
 )
 
@@ -31,7 +31,7 @@ class ProjectTreeViewModel : BaseViewModel() {
      */
     private fun getProjectTree() {
         _uiState.update {
-            it.copy(loading = true)
+            it.copy(isLoading = true)
         }
         viewModelScope.launch {
             val request = HttpRequest("project/tree/json")
@@ -41,7 +41,7 @@ class ProjectTreeViewModel : BaseViewModel() {
                     it.result.clear()
                     it.result.addAll(data)
                 }
-                it.copy(loading = false)
+                it.copy(isLoading = false)
             }
         }
     }

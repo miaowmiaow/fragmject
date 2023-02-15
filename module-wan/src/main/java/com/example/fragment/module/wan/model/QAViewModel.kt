@@ -32,7 +32,7 @@ data class QAState(
 
 }
 
-class QAModel : BaseViewModel() {
+class QAViewModel : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(QAState(time = 0))
 

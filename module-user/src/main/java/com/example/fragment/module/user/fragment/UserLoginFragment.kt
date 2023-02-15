@@ -68,8 +68,10 @@ class UserLoginFragment : RouterFragment() {
         viewModel.loginResult().observe(viewLifecycleOwner) { result ->
             httpParseSuccess(result) { bean ->
                 bean.data?.let { data ->
-                    val userViewModel: UserViewModel by activityViewModels()
-                    userViewModel.updateUserBean(data)
+                    val userViewModel1: UserViewModel by activityViewModels()
+                    val userViewModel2: UserViewModel by viewModels()
+                    userViewModel1.updateUserBean(data)
+                    userViewModel2.updateUserBean(data)
                 }
                 onBackPressed()
             }

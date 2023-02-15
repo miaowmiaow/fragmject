@@ -18,8 +18,7 @@
     <fragment
         android:id="@+id/main"
         android:name="com.example.fragment.project.fragment.MainFragment"
-        android:label="MainFragment"
-        tools:layout="@layout/main_fragment">
+        android:label="MainFragment">
         <!--
             android:id 通过 id 跳转目的导航图
             app:destination 设置目的导航图

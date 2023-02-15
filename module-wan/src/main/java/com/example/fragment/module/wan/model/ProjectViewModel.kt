@@ -1,7 +1,5 @@
 package com.example.fragment.module.wan.model
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
@@ -34,7 +32,7 @@ data class ProjectState(
 
 }
 
-class ProjectViewModel(private val initialPage: Int) : BaseViewModel() {
+class ProjectViewModel() : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(ProjectState(time = 0))
 
@@ -51,7 +49,7 @@ class ProjectViewModel(private val initialPage: Int) : BaseViewModel() {
             it.refreshing[cid] = true
             it.copy(time = System.currentTimeMillis())
         }
-        getList(cid, getHomePage(initialPage, cid))
+        getList(cid, getHomePage(1, cid))
     }
 
     fun getNext(cid: String) {
@@ -91,14 +89,4 @@ class ProjectViewModel(private val initialPage: Int) : BaseViewModel() {
         }
     }
 
-    companion object {
-        fun provideFactory(
-            initialPage: Int,
-        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ProjectViewModel(initialPage) as T
-            }
-        }
-    }
 }

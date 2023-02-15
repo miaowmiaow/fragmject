@@ -55,7 +55,6 @@ class MyCollectFragment : RouterFragment() {
 
     @Composable
     fun MyCollectScreen(viewModel: MyCollectViewModel = viewModel()) {
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         val statusBarColor = colorResource(R.color.theme)
         val systemUiController = rememberSystemUiController()
         SideEffect {
@@ -64,6 +63,7 @@ class MyCollectFragment : RouterFragment() {
                 darkIcons = false
             )
         }
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         Column(
             modifier = Modifier.systemBarsPadding()
         ) {

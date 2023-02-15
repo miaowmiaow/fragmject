@@ -28,15 +28,13 @@
     <fragment
         android:id="@+id/login"
         android:name="com.example.fragment.module.user.fragment.UserLoginFragment"
-        android:label="UserLoginFragment"
-        tools:layout="@layout/user_login_fragment">
+        android:label="UserLoginFragment">
         <deepLink app:uri="fragment.example.com/user/login" />
     </fragment>
     <fragment
         android:id="@+id/register"
         android:name="com.example.fragment.module.user.fragment.UserRegisterFragment"
-        android:label="UserRegisterFragment"
-        tools:layout="@layout/user_register_fragment">
+        android:label="UserRegisterFragment">
         <deepLink app:uri="fragment.example.com/user/register" />
     </fragment>
     <fragment

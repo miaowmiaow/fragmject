@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class NavigationState(
-    var loading: Boolean = false,
+    var isLoading: Boolean = false,
     var navigationResult: MutableList<NavigationBean> = ArrayList(),
     var articlesResult: MutableList<ArticleBean> = ArrayList(),
     var systemTreeResult: MutableList<SystemTreeBean> = ArrayList(),
@@ -52,7 +52,7 @@ class NavigationViewModel : BaseViewModel() {
      */
     private fun getNavigation() {
         _uiState.update {
-            it.copy(loading = true)
+            it.copy(isLoading = true)
         }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
@@ -66,7 +66,7 @@ class NavigationViewModel : BaseViewModel() {
                     it.navigationResult.addAll(data)
                     updateSelectNavigation(0)
                 }
-                it.copy(loading = false)
+                it.copy(isLoading = false)
             }
         }
     }
@@ -76,7 +76,7 @@ class NavigationViewModel : BaseViewModel() {
      */
     private fun getSystemTree() {
         _uiState.update {
-            it.copy(loading = true)
+            it.copy(isLoading = true)
         }
         viewModelScope.launch {
             val request = HttpRequest("tree/json")
@@ -86,7 +86,7 @@ class NavigationViewModel : BaseViewModel() {
                     it.systemTreeResult.clear()
                     it.systemTreeResult.addAll(data)
                 }
-                it.copy(loading = false)
+                it.copy(isLoading = false)
             }
         }
     }

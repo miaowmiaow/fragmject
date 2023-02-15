@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/web_graph"
     app:startDestination="@id/web">
     <fragment
         android:id="@+id/web"
         android:name="com.example.fragment.library.common.fragment.WebFragment"
-        android:label="WebFragment"
-        tools:layout="@layout/web_fragment">
+        android:label="WebFragment">
         <!--
             通过将占位符名称与已定义的参数（为深层链接目的地所定义）相匹配，尝试将占位符值解析为相应的类型
         -->

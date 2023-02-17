@@ -56,15 +56,14 @@ android {
 dependencies {
     def accompanist_version = '0.28.0'
     def coil_version = '2.2.2'
-    def compose_version = '1.4.0-alpha05'
-    def lifecycle_version = "2.6.0-alpha05"
-    def navigation_version  = "2.5.3"
+    def compose_version = '1.4.0-beta01'
+    def lifecycle_version = "2.6.0-beta01"
     def okhttp_version = '5.0.0-alpha.8'
     def room_version = "2.5.0"
 
     api fileTree(dir: "libs", include: ["*.jar"])
 
-    api 'androidx.appcompat:appcompat:1.6.0'
+    api 'androidx.appcompat:appcompat:1.6.1'
     api 'androidx.core:core-ktx:1.9.0'
     api 'androidx.activity:activity-compose:1.6.1'
     api "androidx.compose.ui:ui:$compose_version"
@@ -76,8 +75,6 @@ dependencies {
     api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-    api 'androidx.fragment:fragment-ktx:1.5.5'
-    api 'androidx.viewpager2:viewpager2:1.0.0'
     api 'androidx.webkit:webkit:1.6.0'
     // viewModel 和 livedata
     api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
@@ -85,10 +82,6 @@ dependencies {
     api "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
-    // navigation
-    api "androidx.navigation:navigation-fragment-ktx:$navigation_version"
-    api "androidx.navigation:navigation-ui-ktx:$navigation_version"
-    api "androidx.navigation:navigation-compose:$navigation_version"
     // room
     //noinspection GradleDependency
     api "androidx.room:room-ktx:$room_version"
@@ -103,9 +96,10 @@ dependencies {
     api "io.coil-kt:coil-video:$coil_version"
     api "io.coil-kt:coil-compose:$coil_version"
     // google
-    api 'com.google.android.flexbox:flexbox:3.0.0'
     api 'com.google.code.gson:gson:2.10.1'
     api 'com.google.android.material:material:1.8.0'
+    api "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+    api "com.google.accompanist:accompanist-navigation-material:$accompanist_version"
     api "com.google.accompanist:accompanist-pager:$accompanist_version"
     api "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
     api "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
@@ -117,8 +111,6 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
     api "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
     api "com.squareup.retrofit2:retrofit:2.9.0"
-    // android-gif-drawable
-    api 'pl.droidsonroids.gif:android-gif-drawable:1.2.25'
     // leakcanary
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
     // 单元测试

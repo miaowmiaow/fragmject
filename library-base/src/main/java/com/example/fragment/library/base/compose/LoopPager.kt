@@ -19,11 +19,11 @@ import kotlin.math.absoluteValue
 fun <T> LoopHorizontalPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    data: List<T>,
+    data: List<T>?,
     indicator: Boolean = false,
     content: @Composable PagerScope.(page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
-    if (data.isEmpty()) {
+    if (data.isNullOrEmpty()) {
         return
     }
     val pageCount = data.size
@@ -76,11 +76,11 @@ fun <T> LoopHorizontalPager(
 fun <T> LoopVerticalPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    data: List<T>,
+    data: List<T>?,
     indicator: Boolean = false,
     content: @Composable PagerScope.(page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
-    if (data.isEmpty()) {
+    if (data.isNullOrEmpty()) {
         return
     }
     val pageCount = data.size

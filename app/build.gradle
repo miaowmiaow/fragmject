@@ -141,8 +141,7 @@ kapt {
 }
 
 dependencies {
-    implementation project(path: ':module-user')
-    implementation project(path: ':module-wan')
+    implementation project(path: ':library-base')
     // 单元测试
     testImplementation "junit:junit:$junit_version"
     testImplementation "io.mockk:mockk:$mockk_version"

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:name=".App"
+        android:name=".WanApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="${app_name_value}"
@@ -16,7 +16,7 @@
             android:value="${app_channel_value}" />
 
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".WanActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation"
             android:exported="true"
             android:windowSoftInputMode="stateHidden|adjustResize">
@@ -25,10 +25,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <nav-graph android:value="@navigation/user_graph" />
-            <nav-graph android:value="@navigation/wan_graph" />
-            <nav-graph android:value="@navigation/web_graph" />
         </activity>
 
     </application>

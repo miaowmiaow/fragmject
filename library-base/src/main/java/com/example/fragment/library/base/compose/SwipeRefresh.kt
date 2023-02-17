@@ -3,6 +3,7 @@ package com.example.fragment.library.base.compose
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -51,6 +52,7 @@ fun <T> SwipeRefresh(
     onLoad: () -> Unit,
     onRetry: () -> Unit = {},
     data: List<T>?,
+    contentTypeMapping: (index: Int, item: T) -> Any? = { _, _ -> null },
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
     val loadingResId = listOf(
@@ -62,12 +64,10 @@ fun <T> SwipeRefresh(
         R.drawable.loading_big_16,
         R.drawable.loading_big_19,
     )
-
     val loadingHeightPx: Float
     with(LocalDensity.current) {
         loadingHeightPx = 16.dp.toPx()
     }
-
     val loadingAnimate by rememberInfiniteTransition().animateFloat(
         initialValue = 0f,
         targetValue = loadingResId.size.toFloat(),
@@ -76,9 +76,7 @@ fun <T> SwipeRefresh(
             repeatMode = RepeatMode.Reverse
         )
     )
-
-    val state = rememberPullRefreshLayoutState(refreshing, onRefresh)
-
+    val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (data.isNullOrEmpty()) {
         if (!refreshing) {
             Empty {
@@ -95,7 +93,7 @@ fun <T> SwipeRefresh(
                 contentPadding = contentPadding,
                 verticalArrangement = verticalArrangement,
             ) {
-                itemsIndexed(data) { index, item ->
+                itemsIndexed(data, contentType = contentTypeMapping) { index, item ->
                     itemContent(index, item)
                     if (loading && data.size - index < 5) {
                         LaunchedEffect(data.size) {
@@ -145,7 +143,7 @@ fun <T> SwipeRefresh(
 
 @Composable
 @ExperimentalMaterialApi
-fun rememberPullRefreshLayoutState(
+fun rememberSwipeRefreshState(
     refreshing: Boolean,
     onRefresh: () -> Unit,
     refreshThreshold: Dp = PullRefreshDefaults.RefreshThreshold,
@@ -183,30 +181,33 @@ fun Modifier.swipeRefresh(
     properties["state"] = state
     properties["enabled"] = enabled
 }) {
-    Modifier.pullRefresh(state::onPull, { state.onRelease() }, enabled)
+    Modifier.pullRefresh(state::onPull, state::onRelease, enabled)
 }
 
 @ExperimentalMaterialApi
 class SwipeRefreshState internal constructor(
     private val animationScope: CoroutineScope,
     private val onRefreshState: State<() -> Unit>,
-    private val refreshingOffset: Float,
-    private val threshold: Float
+    refreshingOffset: Float,
+    threshold: Float
 ) {
 
     val progress get() = adjustedDistancePulled / threshold
 
     internal val refreshing get() = _refreshing
     val position get() = _position
+    internal val threshold get() = _threshold
 
     private val adjustedDistancePulled by derivedStateOf { distancePulled * 0.5f }
 
     private var _refreshing by mutableStateOf(false)
     private var _position by mutableStateOf(0f)
     private var distancePulled by mutableStateOf(0f)
+    private var _threshold by mutableStateOf(threshold)
+    private var _refreshingOffset by mutableStateOf(refreshingOffset)
 
     internal fun onPull(pullDelta: Float): Float {
-        if (this._refreshing) return 0f // Already refreshing, do nothing.
+        if (_refreshing) return 0f // Already refreshing, do nothing.
 
         val newOffset = (distancePulled + pullDelta).coerceAtLeast(0f)
         val dragConsumed = newOffset - distancePulled
@@ -215,37 +216,70 @@ class SwipeRefreshState internal constructor(
         return dragConsumed
     }
 
-    internal fun onRelease() {
-        if (!this._refreshing) {
-            if (adjustedDistancePulled > threshold) {
-                onRefreshState.value()
-            } else {
-                animateIndicatorTo(0f)
-            }
+    internal fun onRelease(velocity: Float): Float {
+        if (refreshing) return 0f // Already refreshing, do nothing
+
+        if (adjustedDistancePulled > threshold) {
+            onRefreshState.value()
+        }
+        animateIndicatorTo(0f)
+        val consumed = when {
+            // We are flinging without having dragged the pull refresh (for example a fling inside
+            // a list) - don't consume
+            distancePulled == 0f -> 0f
+            // If the velocity is negative, the fling is upwards, and we don't want to prevent the
+            // the list from scrolling
+            velocity < 0f -> 0f
+            // We are showing the indicator, and the fling is downwards - consume everything
+            else -> velocity
         }
         distancePulled = 0f
+        return consumed
     }
 
     internal fun setRefreshing(refreshing: Boolean) {
-        if (this._refreshing != refreshing) {
-            this._refreshing = refreshing
-            this.distancePulled = 0f
-            animateIndicatorTo(if (refreshing) refreshingOffset else 0f)
+        if (_refreshing != refreshing) {
+            _refreshing = refreshing
+            distancePulled = 0f
+            animateIndicatorTo(if (refreshing) _refreshingOffset else 0f)
         }
     }
 
+    internal fun setThreshold(threshold: Float) {
+        _threshold = threshold
+    }
+
+    internal fun setRefreshingOffset(refreshingOffset: Float) {
+        if (_refreshingOffset != refreshingOffset) {
+            _refreshingOffset = refreshingOffset
+            if (refreshing) animateIndicatorTo(refreshingOffset)
+        }
+    }
+
+    // Make sure to cancel any existing animations when we launch a new one. We use this instead of
+    // Animatable as calling snapTo() on every drag delta has a one frame delay, and some extra
+    // overhead of running through the animation pipeline instead of directly mutating the state.
+    private val mutatorMutex = MutatorMutex()
+
     private fun animateIndicatorTo(offset: Float) = animationScope.launch {
-        animate(initialValue = _position, targetValue = offset) { value, _ ->
-            _position = value
+        mutatorMutex.mutate {
+            animate(initialValue = _position, targetValue = offset) { value, _ ->
+                _position = value
+            }
         }
     }
 
     private fun calculateIndicatorPosition(): Float = when {
+        // If drag hasn't gone past the threshold, the position is the adjustedDistancePulled.
         adjustedDistancePulled <= threshold -> adjustedDistancePulled
         else -> {
+            // How far beyond the threshold pull has gone, as a percentage of the threshold.
             val overshootPercent = abs(progress) - 1.0f
+            // Limit the overshoot to 200%. Linear between 0 and 200.
             val linearTension = overshootPercent.coerceIn(0f, 2f)
+            // Non-linear tension. Increases with linearTension, but at a decreasing rate.
             val tensionPercent = linearTension - linearTension.pow(2) / 4
+            // The additional offset beyond the threshold.
             val extraOffset = threshold * tensionPercent
             threshold + extraOffset
         }

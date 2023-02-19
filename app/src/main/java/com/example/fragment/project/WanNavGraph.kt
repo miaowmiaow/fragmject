@@ -4,18 +4,19 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
+import com.example.fragment.project.ui.main.user.UserViewModel
 import com.example.fragment.project.ui.register.RegisterScreen
 import com.example.fragment.project.ui.system.SystemScreen
-import com.example.fragment.project.ui.system.SystemTreeViewModel
-import com.example.fragment.project.ui.system.SystemViewModel
 import com.example.fragment.project.ui.web.WebScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -28,8 +29,6 @@ fun WanNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberAnimatedNavController(),
     startDestination: String = WanDestinations.MAIN_ROUTE,
-    systemTreeViewModel: SystemTreeViewModel = viewModel(),
-    systemViewModel: SystemViewModel = viewModel(),
 ) {
     val statusBarColor = colorResource(R.color.theme)
     val systemUiController = rememberSystemUiController()
@@ -39,9 +38,13 @@ fun WanNavGraph(
             darkIcons = false
         )
     }
-    val navigationActions = remember(navController) {
-        WanNavActions(navController)
+    val userViewModel: UserViewModel = viewModel()
+    val userUiState by userViewModel.uiState.collectAsStateWithLifecycle()
+    val wanNavActions = remember(navController, userUiState) {
+        WanNavActions(navController, userUiState.getUserId())
     }
+    val wanViewModel: WanViewModel = viewModel()
+    val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination,
@@ -49,124 +52,123 @@ fun WanNavGraph(
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentScope.SlideDirection.Left,
-                animationSpec = tween(500)
+                animationSpec = tween(350)
             )
         },
         exitTransition = {
             slideOutOfContainer(
                 AnimatedContentScope.SlideDirection.Left,
-                animationSpec = tween(500)
+                animationSpec = tween(350)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
                 AnimatedContentScope.SlideDirection.Right,
-                animationSpec = tween(500)
+                animationSpec = tween(350)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
                 AnimatedContentScope.SlideDirection.Right,
-                animationSpec = tween(500)
+                animationSpec = tween(350)
             )
         },
     ) {
-        composable(
-            WanDestinations.LOGIN_ROUTE,
-        ) {
+        composable(WanDestinations.LOGIN_ROUTE) {
             LoginScreen(
                 onNavigateToRegister = {
-                    navigationActions.navigateToRegister()
+                    wanNavActions.navigateToRegister()
                 }
             )
         }
         composable(WanDestinations.MAIN_ROUTE) {
             MainScreen(
+                hotKey = wanUiState.hotKeyResult,
+                tree = wanUiState.treeResult,
                 onNavigateToLogin = {
-                    navigationActions.navigateToLogin()
+                    wanNavActions.navigateToLogin()
                 },
                 onNavigateToSystem = {
-                    navigationActions.navigateToSystem(it)
+                    wanNavActions.navigateToSystem(it)
                 },
                 onNavigateToWeb = {
-                    navigationActions.navigateToWeb(it)
+                    wanNavActions.navigateToWeb(it)
                 }
             )
         }
-        composable(WanDestinations.MY_COIN_ROUTE) {}
-        composable(WanDestinations.MY_COLLECT_ROUTE) {}
-        composable(WanDestinations.MY_INFO_ROUTE) {}
-        composable(WanDestinations.MY_SHARE_ROUTE) {}
+        composable(WanDestinations.MY_COLLECT) {
+        }
         composable(WanDestinations.REGISTER_ROUTE) {
             RegisterScreen()
         }
-        composable(WanDestinations.SHARE_ARTICLE_ROUTE) {}
-        composable(WanDestinations.SETTING_ROUTE) {}
         composable("${WanDestinations.SYSTEM_ROUTE}/{cid}") { backStackEntry ->
-            SystemScreen(
-                backStackEntry.arguments?.getString("cid").toString(),
-                systemTreeViewModel,
-                systemViewModel
-            )
+            val cid = backStackEntry.arguments?.getString("cid").toString()
+            wanUiState.treeResult.forEach { data ->
+                data.children?.forEachIndexed { index, children ->
+                    if (children.id == cid) {
+                        SystemScreen(
+                            title = data.name,
+                            index = index,
+                            tree = data.children,
+                            onNavigateToLogin = {
+                                wanNavActions.navigateToLogin()
+                            },
+                            onNavigateToSystem = {
+                                wanNavActions.navigateToSystem(it)
+                            },
+                            onNavigateToWeb = {
+                                wanNavActions.navigateToWeb(it)
+                            }
+                        )
+                        return@composable
+                    }
+                }
+            }
         }
-        composable(WanDestinations.USER_INFO_ROUTE) {}
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(backStackEntry.arguments?.getString("url") ?: "")
         }
     }
 }
 
-class WanNavActions(private val navController: NavHostController) {
+private val authentication = arrayOf(
+    WanDestinations.SYSTEM_ROUTE
+)
+
+class WanNavActions(
+    private val navController: NavHostController,
+    private val userId: String
+) {
     val navigateToLogin: () -> Unit = {
-        navController.navigate(WanDestinations.LOGIN_ROUTE)
-    }
-    val navigateToMain: () -> Unit = {
-        navController.navigate(WanDestinations.MAIN_ROUTE)
-    }
-    val navigateToMyCoin: () -> Unit = {
-        navController.navigate(WanDestinations.MY_COIN_ROUTE)
+        navigate(WanDestinations.LOGIN_ROUTE)
     }
     val navigateToMyCollect: () -> Unit = {
-        navController.navigate(WanDestinations.MY_COLLECT_ROUTE)
-    }
-    val navigateToMyInfo: () -> Unit = {
-        navController.navigate(WanDestinations.MY_INFO_ROUTE)
-    }
-    val navigateToMyShare: () -> Unit = {
-        navController.navigate(WanDestinations.MY_SHARE_ROUTE)
+        navigate(WanDestinations.MY_COLLECT)
     }
     val navigateToRegister: () -> Unit = {
-        navController.navigate(WanDestinations.REGISTER_ROUTE)
-    }
-    val navigateToSearch: () -> Unit = {
-        navController.navigate(WanDestinations.SEARCH_ROUTE)
-    }
-    val navigateToSetting: () -> Unit = {
-        navController.navigate(WanDestinations.SETTING_ROUTE)
-    }
-    val navigateToShareArticle: () -> Unit = {
-        navController.navigate(WanDestinations.SHARE_ARTICLE_ROUTE)
+        navigate(WanDestinations.REGISTER_ROUTE)
     }
     val navigateToSystem: (cid: String) -> Unit = {
-        navController.navigate("${WanDestinations.SYSTEM_ROUTE}/$it")
+        navigate(WanDestinations.SYSTEM_ROUTE, "/$it")
     }
     val navigateToWeb: (url: String) -> Unit = {
-        navController.navigate("${WanDestinations.WEB_ROUTE}/$it")
+        navigate(WanDestinations.WEB_ROUTE, "/$it")
+    }
+
+    private fun navigate(directions: String, arguments: String = "") {
+        if (authentication.contains(directions) && userId.isBlank()) {
+            navController.navigate(WanDestinations.LOGIN_ROUTE)
+        } else {
+            navController.navigate(directions + arguments)
+        }
     }
 }
 
 object WanDestinations {
     const val LOGIN_ROUTE = "login"
+    const val MY_COLLECT = "my_collect"
     const val MAIN_ROUTE = "main"
-    const val MY_COIN_ROUTE = "my_coin"
-    const val MY_COLLECT_ROUTE = "my_collect"
-    const val MY_INFO_ROUTE = "my_info"
-    const val MY_SHARE_ROUTE = "my_share"
     const val REGISTER_ROUTE = "register"
-    const val SEARCH_ROUTE = "search"
-    const val SETTING_ROUTE = "setting"
-    const val SHARE_ARTICLE_ROUTE = "share_article"
     const val SYSTEM_ROUTE = "system"
-    const val USER_INFO_ROUTE = "user_info"
     const val WEB_ROUTE = "web"
 }

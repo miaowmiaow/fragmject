@@ -19,7 +19,7 @@ data class ProjectState(
     var time: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
-        return refreshing[cid] ?: false
+        return refreshing[cid] ?: true
     }
 
     fun getLoading(cid: String): Boolean {

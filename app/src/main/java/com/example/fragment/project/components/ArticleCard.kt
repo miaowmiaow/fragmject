@@ -86,15 +86,18 @@ fun ArticleCard(
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
-                            .clickable(onClick = {
+                            .clickable {
                                 onNavigateToUserInfo(item.userId)
-                            })
+                            }
                     )
                     ConstraintLayout(
                         modifier = Modifier
                             .weight(1f)
                             .height(35.dp)
                             .padding(start = 10.dp, end = 10.dp)
+                            .clickable {
+                                onNavigateToUserInfo(item.userId)
+                            }
                     ) {
                         val (share_user, nice_date) = createRefs()
                         Text(
@@ -221,9 +224,9 @@ fun ArticleCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .padding(end = 35.dp)
-                            .clickable(onClick = {
+                            .clickable {
                                 onNavigateToSystem(item.chapterId)
-                            }),
+                            },
                     )
                     Spacer(
                         Modifier
@@ -237,28 +240,25 @@ fun ArticleCard(
                             .size(20.dp)
                             .clickable {
                                 scope.launch {
-                                    if (item.collect) {
-                                        val url = "lg/uncollect_originId/{id}/json"
-                                        val request = HttpRequest(url).putPath("id", item.id)
-                                        val response = post<HttpResponse>(request)
-                                        when (response.errorCode) {
-                                            "0" -> {
+                                    val request = HttpRequest().putPath("id", item.id)
+                                    request.setUrl(
+                                        if (item.collect)
+                                            "lg/uncollect_originId/{id}/json"
+                                        else
+                                            "lg/uncollect_originId/{id}/json"
+                                    )
+                                    val response = post<HttpResponse>(request)
+                                    when (response.errorCode) {
+                                        "0" -> {
+                                            if (item.collect) {
                                                 item.collect = false
                                                 collectResId = R.drawable.ic_collect_unchecked
-                                            }
-                                            "-1001" -> onNavigateToLogin()
-                                        }
-                                    } else {
-                                        val request = HttpRequest("lg/collect/{id}/json")
-                                            .putPath("id", item.id)
-                                        val response = post<HttpResponse>(request)
-                                        when (response.errorCode) {
-                                            "0" -> {
+                                            } else {
                                                 item.collect = true
                                                 collectResId = R.drawable.ic_collect_checked
                                             }
-                                            "-1001" -> onNavigateToLogin()
                                         }
+                                        "-1001" -> onNavigateToLogin()
                                     }
                                 }
                             })

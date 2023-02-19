@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
@@ -16,20 +18,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.LoopVerticalPager
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.HotKeyBean
+import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.ui.main.home.HomeScreen
-import com.example.fragment.project.ui.main.navigation.NavigationScreen
+import com.example.fragment.project.ui.main.navigation.NavScreen
 import com.example.fragment.project.ui.main.project.ProjectScreen
 import com.example.fragment.project.ui.main.user.UserScreen
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @Composable
 fun MainScreen(
+    hotKey: List<HotKeyBean>,
+    tree: List<TreeBean>,
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
@@ -41,21 +44,19 @@ fun MainScreen(
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUserInfo: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
-    hotKeyViewModel: HotKeyViewModel = viewModel()
 ) {
-    val hotKeyUiState by hotKeyViewModel.uiState.collectAsStateWithLifecycle()
+    var navIndex by rememberSaveable { mutableStateOf(0) }
     val navItems = listOf(
         NavigationItem("首页", R.drawable.ic_bottom_bar_home),
         NavigationItem("导航", R.drawable.ic_bottom_bar_navigation),
         NavigationItem("项目", R.drawable.ic_bottom_bar_project),
         NavigationItem("我的", R.drawable.ic_bottom_bar_user),
     )
-    var selectedItem by remember { mutableStateOf(hotKeyViewModel.getTabIndex()) }
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
         topBar = {
             SearchBar(
-                data = hotKeyUiState.result,
+                data = hotKey,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToShareArticle = onNavigateToShareArticle
             )
@@ -63,40 +64,48 @@ fun MainScreen(
         bottomBar = {
             NavigationBar(
                 items = navItems,
-                selectedIndex = hotKeyViewModel.getTabIndex(),
                 onClick = { index ->
-                    selectedItem = index
-                    hotKeyViewModel.updateTabIndex(index)
+                    navIndex = index
                 }
             )
         }
     ) { innerPadding ->
+        val saveableStateHolder = rememberSaveableStateHolder()
         Box(Modifier.padding(innerPadding)) {
-            when (selectedItem) {
-                0 -> HomeScreen(
-                    onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToUserInfo = onNavigateToUserInfo,
-                    onNavigateToWeb = onNavigateToWeb,
-                )
-                1 -> NavigationScreen(
-                    onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToWeb = onNavigateToWeb,
-                )
-                2 -> ProjectScreen(
-                    onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToUserInfo = onNavigateToUserInfo,
-                    onNavigateToWeb = onNavigateToWeb
-                )
-                3 -> UserScreen(
-                    onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToMyCoin = onNavigateToMyCoin,
-                    onNavigateToMyCollect = onNavigateToMyCollect,
-                    onNavigateToMyInfo = onNavigateToMyInfo,
-                    onNavigateToMyShare = onNavigateToMyShare,
-                    onNavigateToSetting = onNavigateToSetting,
-                )
+            when (navIndex) {
+                0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
+                    HomeScreen(
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToSystem = onNavigateToSystem,
+                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToWeb = onNavigateToWeb,
+                    )
+                }
+                1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
+                    NavScreen(
+                        tree = tree,
+                        onNavigateToSystem = onNavigateToSystem,
+                        onNavigateToWeb = onNavigateToWeb,
+                    )
+                }
+                2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
+                    ProjectScreen(
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToSystem = onNavigateToSystem,
+                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToWeb = onNavigateToWeb
+                    )
+                }
+                3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
+                    UserScreen(
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToMyCoin = onNavigateToMyCoin,
+                        onNavigateToMyCollect = onNavigateToMyCollect,
+                        onNavigateToMyInfo = onNavigateToMyInfo,
+                        onNavigateToMyShare = onNavigateToMyShare,
+                        onNavigateToSetting = onNavigateToSetting,
+                    )
+                }
             }
         }
     }
@@ -168,10 +177,9 @@ fun SearchBar(
 @Composable
 fun NavigationBar(
     items: List<NavigationItem> = listOf(),
-    selectedIndex: Int,
     onClick: (index: Int) -> Unit
 ) {
-    var currItem by remember { mutableStateOf(selectedIndex) }
+    var currItem by rememberSaveable { mutableStateOf(0) }
 
     BottomNavigation(
         modifier = Modifier,
@@ -234,5 +242,5 @@ fun WanBottomNavigationPreview() {
         NavigationItem("项目", R.drawable.ic_bottom_bar_project),
         NavigationItem("我的", R.drawable.ic_bottom_bar_user),
     )
-    WanTheme { NavigationBar(items = navItems, selectedIndex = 0, onClick = { _ -> }) }
+    WanTheme { NavigationBar(items = navItems, onClick = { _ -> }) }
 }

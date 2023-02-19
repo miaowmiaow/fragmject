@@ -11,19 +11,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class NavigationState(
+data class NavState(
     var isLoading: Boolean = false,
     var navigationResult: MutableList<NavigationBean> = ArrayList(),
     var articlesResult: MutableList<ArticleBean> = ArrayList(),
-    var systemTreeResult: MutableList<SystemTreeBean> = ArrayList(),
+    var systemTreeResult: MutableList<TreeBean> = ArrayList(),
     var currentPosition: Int = 0
 )
 
-class NavigationViewModel : BaseViewModel() {
+class NavViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(NavigationState())
+    private val _uiState = MutableStateFlow(NavState())
 
-    val uiState: StateFlow<NavigationState> = _uiState.asStateFlow()
+    val uiState: StateFlow<NavState> = _uiState.asStateFlow()
 
     init {
         if (uiState.value.navigationResult.isEmpty()) {
@@ -80,7 +80,7 @@ class NavigationViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             val request = HttpRequest("tree/json")
-            val response = get<SystemTreeListBean>(request) { updateProgress(it) }
+            val response = get<TreeListBean>(request) { updateProgress(it) }
             _uiState.update {
                 response.data?.let { data ->
                     it.systemTreeResult.clear()

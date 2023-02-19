@@ -39,7 +39,6 @@ fun MainScreen(
     onNavigateToMyInfo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSearch: (key: String) -> Unit = {},
-    onNavigateToSetting: () -> Unit = {},
     onNavigateToShareArticle: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUserInfo: (userId: String) -> Unit = {},
@@ -103,7 +102,6 @@ fun MainScreen(
                         onNavigateToMyCollect = onNavigateToMyCollect,
                         onNavigateToMyInfo = onNavigateToMyInfo,
                         onNavigateToMyShare = onNavigateToMyShare,
-                        onNavigateToSetting = onNavigateToSetting,
                     )
                 }
             }
@@ -126,21 +124,19 @@ fun SearchBar(
             .padding(15.dp, 8.dp, 15.dp, 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
                 .weight(1f)
                 .fillMaxHeight(),
-            verticalAlignment = Alignment.CenterVertically
+            contentAlignment = Alignment.CenterStart
         ) {
-            Spacer(Modifier.width(15.dp))
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
-                modifier = Modifier.padding(0.dp, 5.dp, 0.dp, 5.dp),
+                modifier = Modifier.padding(10.dp, 5.dp, 0.dp, 5.dp),
                 tint = colorResource(R.color.white)
             )
-            Spacer(Modifier.width(15.dp))
             LoopVerticalPager(
                 data = data
             ) { _, _, item ->
@@ -154,6 +150,7 @@ fun SearchBar(
                 ) {
                     Text(
                         text = item.name,
+                        modifier = Modifier.padding(start = 40.dp),
                         fontSize = 13.sp,
                         color = colorResource(R.color.text_fff)
                     )

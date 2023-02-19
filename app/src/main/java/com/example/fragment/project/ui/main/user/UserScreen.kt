@@ -6,8 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,15 +22,17 @@ import com.example.fragment.project.R
 
 @Composable
 fun UserScreen(
+    viewModel: UserViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyInfo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
-    onNavigateToSetting: () -> Unit = {},
-    viewModel: UserViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val userUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    SideEffect {
+        viewModel.getUser()
+    }
     Column(
         modifier = Modifier
             .background(colorResource(R.color.background))
@@ -39,7 +40,7 @@ fun UserScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
-            model = uiState.getUserBean().avatar.ifBlank { R.drawable.avatar_1_raster },
+            model = userUiState.userBean.avatar.ifBlank { R.drawable.avatar_1_raster },
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -47,18 +48,18 @@ fun UserScreen(
                 .size(75.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (uiState.getUserBean().username.isNotBlank())
+                    if (userUiState.userBean.username.isNotBlank())
                         onNavigateToMyInfo()
                     else
                         onNavigateToLogin()
                 }
         )
         Text(
-            text = uiState.getUserBean().username.ifBlank { "去登录" },
+            text = userUiState.userBean.username.ifBlank { "去登录" },
             modifier = Modifier
                 .padding(top = 5.dp, bottom = 25.dp)
                 .clickable {
-                    if (uiState.getUserBean().username.isNotBlank())
+                    if (userUiState.userBean.username.isNotBlank())
                         onNavigateToMyInfo()
                     else
                         onNavigateToLogin()
@@ -168,12 +169,12 @@ fun UserScreen(
                 .fillMaxWidth()
                 .height(45.dp)
                 .clickable {
-                    onNavigateToSetting()
+                    viewModel.logout()
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "系统设置",
+                text = "退出登录",
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 25.dp, end = 25.dp),

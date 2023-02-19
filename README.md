@@ -18,7 +18,7 @@
 - Compose
 
 ## 开发环境
-为了您能正常运行本项目，请使用 `Android Studio Chipmunk (2021.2.1) 🐿️` 和 `Android Gradle 7.2.2` 或者以上版本。   
+为了您在运行本项目时获得最佳体验，请使用 `Android Studio Chipmunk (2021.2.1) 🐿️` 和 `Android Gradle 7.2.2` 或者以上版本。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## 前置知识
@@ -40,78 +40,79 @@
 
 ## 项目目录结构
 ```
-├── app                                  app
+├── app                                         app
 |   └── src 
 |       └── main 
-|       |   └── java                     源码目录
-|       |   |   ├── activity             Activity目录
-|       |   |   |   └── MainActivity     项目唯一Activity
-|       |   |   ├── adapter              Adapter目录
-|       |   |   ├── compose              Compose目录
-|       |   |   ├── fragment             Fragment目录
-|       |   |   ├── vm                   ViewModel目录
-|       |   |   └── App                  Application
+|       |   └── java                            源码目录
+|       |   |   ├── activity                    Activity目录
+|       |   |   |   └── MainActivity            项目唯一Activity
+|       |   |   ├── adapter                     Adapter目录
+|       |   |   ├── compose                     Compose目录
+|       |   |   ├── ui                          ui目录
+|       |   |   |   └── main                    mian目录
+|       |   |   |       └── home                home目录
+|       |   |   |       |   ├── HomeScreen      
+|       |   |   |       |   └── HomeViewModel   
+|       |   |   |       └── MainScreen          
+|       |   |   ├── utils                       工具类目录
+|       |   |   ├── WanActivity                 唯一Activity
+|       |   |   ├── WanApplication              Application
+|       |   |   └── WanNavGraph                 导航图
 |       |   |
-|       |   └── res                      资源目录
-|       |   |   └── navigation           导航图目录
+|       |   └── res                             资源目录
 |       |   |
-|       |   └── AndroidManifest.xml      配置文件
+|       |   └── AndroidManifest.xml             配置文件
 |       |
-|       └── build.gradle                 模块构建配置
-|       └── channel                      渠道配置文件
-|       └── dictionary                   自定义混淆字典
-|       └── proguard-rules.pro           代码混淆配置文件
+|       └── build.gradle                        模块构建配置
+|       └── channel                             渠道配置文件
+|       └── dictionary                          自定义混淆字典
+|       └── proguard-rules.pro                  代码混淆配置文件
 | 
-├── library-base                         基础library（library开头为公共库，任何项目都可使用）
+├── library-base                                基础library（library开头为公共库，任何项目都可使用）
 |   └── src 
 |       └── main 
-|       |   ├── assets                   原生文件目录
-|       |   └── java                     源码目录
-|       |       ├── activity             Activity目录
-|       |       ├── adapter              Adapter目录
-|       |       ├── bus                  消息总线目录
-|       |       ├── db                   Database目录
-|       |       ├── dialog               Dialog目录
-|       |       ├── http                 网络请求目录
-|       |       ├── provider             ContentProvider目录
-|       |       ├── utils                工具类目录
-|       |       └── view                 自定义view目录
+|       |   ├── assets                          原生文件目录
+|       |   └── java                            源码目录
+|       |       ├── activity                    Activity目录
+|       |       ├── adapter                     Adapter目录
+|       |       ├── bus                         消息总线目录
+|       |       ├── db                          Database目录
+|       |       ├── dialog                      Dialog目录
+|       |       ├── http                        网络请求目录
+|       |       ├── provider                    ContentProvider目录
+|       |       ├── utils                       工具类目录
+|       |       └── view                        自定义view目录
 |       | 
-|       └── build.gradle                 模块构建配置
+|       └── build.gradle                        模块构建配置
 | 
-├── library-picture                      图片模块（目录同app，不再展开）
+├── library-picture                             图片模块（目录同app，不再展开）
 | 
-├── library-plugin                       插件模块
+        ├── library-plugin                      插件模块
 |   └── src 
 |       └── main 
-|           └── groovy                   源码目录
+|           └── groovy                          源码目录
 |           | 
-|           └── resources                配置目录
-|               └── statistic.properties 插件配置
+|           └── resources                       配置目录
+|               └── statistic.properties        插件配置
 | 
-├── module-common                        公共module（各module公共源码及资源下沉到此处）
-|   └── src 
-|       └── main 
-|       |   └── java                     源码目录
-|       |       ├── activity             Activity目录
-|       |       ├── adapter              Adapter目录
-|       |       ├── bean                 实体类目录
-|       |       └── constant             常量配置目录
-|       | 
-|       └── build.gradle                 模块构建配置
-| 
-├── module-user                          用户模块（目录同app，不再展开）
-| 
-├── module-wan                           玩Android功能模块（目录同app，不再展开）
-| 
-├── repos                                插件生成目录
+├── repos                                       插件生成目录
 |
-├── build.gradle                         项目构建配置
-├── config.gradle                        gradle编译文件 gradle依赖配置
-├── config.properties                    项目配置
-├── gradle.properties                    gradle配置
-└── settings.gradle                      项目依赖配置
+├── build.gradle                                项目构建配置
+├── config.gradle                               gradle编译文件 gradle依赖配置
+├── config.properties                           项目配置
+├── gradle.properties                           gradle配置
+└── settings.gradle                             项目依赖配置
 ```
+
+## Jetpack Compose(持续更新)
+目前 `master` 处在增量迁移中（Compose 和 View 在代码库中共存），直到应用完全迁移至 Compose 为止。    
+如果你暂时不需要 Compose ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
+
+[Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
+
+[Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
+
+[Jetpack Compose : WebView的使用与优化](https://juejin.cn/post/7194360493866221628)
 
 ## KVDatabase
 通过对 `RoomDatabase` 进行封装，从而更方便的实现数据持久化。   
@@ -286,20 +287,6 @@ clip.saveBitmap()
 
 ## WebView 优化及 H5 秒开实践
 [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
-
-## Jetpack Compose(持续更新)
-未来计划分三步将 fragmject 迁移到 Compose 。
-1. 使用 ComposeView 容器替换简单的 XML 布局 。
-2. 使用 Compose 来编写部分功能。
-3. 使用 Compose 来重新设计界面。
-
-[Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
-
-[Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
-
-[Jetpack Compose : WebView的使用与优化](https://juejin.cn/post/7194360493866221628)
-
-如果你暂时不需要 Compose ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
 
 ## 主要开源框架
 - [coil-kt/coil](https://github.com/coil-kt/coil)

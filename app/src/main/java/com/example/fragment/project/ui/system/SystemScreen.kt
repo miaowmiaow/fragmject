@@ -11,14 +11,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.compose.FullScreenLoading
 import com.example.fragment.library.base.compose.SwipeRefresh
+import com.example.fragment.library.base.compose.TabBar
 import com.example.fragment.project.R
+import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.ArticleCard
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
@@ -26,71 +28,45 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SystemScreen(
-    cid: String,
-    systemTreeViewModel: SystemTreeViewModel,
-    systemViewModel: SystemViewModel,
+    title: String = "体系",
+    index: Int = 0,
+    tree: List<TreeBean>,
+    systemViewModel: SystemViewModel = viewModel(),
+    onNavigateToLogin: () -> Unit = {},
+    onNavigateToSystem: (cid: String) -> Unit = {},
+    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToWeb: (url: String) -> Unit = {},
 ) {
-    val systemTreeUiState by systemTreeViewModel.uiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(systemTreeViewModel.getTabIndex(cid))
-    DisposableEffect(LocalLifecycleOwner.current) {
-        systemTreeViewModel.init(cid)
-        onDispose {
-            systemTreeViewModel.updateTabIndex(pagerState.currentPage, cid)
-        }
-    }
+    val pagerState = rememberPagerState(index)
     Column(
         modifier = Modifier
             .background(colorResource(R.color.background))
             .systemBarsPadding()
     ) {
-        TitleBar(systemTreeUiState.title)
-        ScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp),
-            backgroundColor = colorResource(R.color.white),
-            edgePadding = 0.dp,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                    color = colorResource(R.color.theme)
-                )
+        TitleBar(title)
+        TabBar(
+            pagerState = pagerState,
+            data = tree,
+            textMapping = { it.name },
+            onClick = {
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(it)
+                }
             },
-            divider = {
-                TabRowDefaults.Divider(color = colorResource(R.color.transparent))
-            }
-        ) {
-            systemTreeUiState.result.forEachIndexed { index, item ->
-                Tab(
-                    text = { Text(item.name) },
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
-                        }
-                    },
-                    selected = pagerState.currentPage == index,
-                    selectedContentColor = colorResource(R.color.theme),
-                    unselectedContentColor = colorResource(R.color.text_999)
-                )
-            }
-        }
-        TabRowDefaults.Divider(color = colorResource(R.color.line))
+        )
         HorizontalPager(
-            count = systemTreeUiState.result.size,
+            count = tree.size,
             state = pagerState,
         ) { page ->
-            val pageCid = systemTreeUiState.result[page].id
-            DisposableEffect(LocalLifecycleOwner.current) {
+            val pageCid = tree[page].id
+            DisposableEffect(Unit) {
                 systemViewModel.init(pageCid)
                 onDispose {}
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            if (systemTreeUiState.isLoading
-                || (systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid))
-            ) {
+            if (systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
                 FullScreenLoading()
             } else {
                 SwipeRefresh(
@@ -105,7 +81,13 @@ fun SystemScreen(
                     onRetry = { systemViewModel.getHome(pageCid) },
                     data = systemUiState.getResult(pageCid),
                 ) { _, item ->
-                    ArticleCard(item = item)
+                    ArticleCard(
+                        item = item,
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToSystem = onNavigateToSystem,
+                        onNavigateToWeb = onNavigateToWeb
+                    )
                 }
             }
         }

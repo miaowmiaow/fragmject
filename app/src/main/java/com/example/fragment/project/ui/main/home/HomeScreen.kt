@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,23 +19,14 @@ import com.example.fragment.project.components.ArticleCard
 
 @Composable
 fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUserInfo: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
-    viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState(
-        viewModel.getListIndex(),
-        viewModel.getListScrollOffset()
-    )
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.updateListIndex(listState.firstVisibleItemIndex)
-            viewModel.updateListScrollOffset(listState.firstVisibleItemScrollOffset)
-        }
-    }
+    val listState = rememberLazyListState()
     if (uiState.refreshing && !uiState.loading) {
         FullScreenLoading()
     } else {

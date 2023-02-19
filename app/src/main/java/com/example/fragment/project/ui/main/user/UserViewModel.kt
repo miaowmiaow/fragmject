@@ -33,14 +33,6 @@ class UserViewModel : BaseViewModel() {
         }
     }
 
-    fun getUserBean(): UserBean {
-        return uiState.value.getUserBean()
-    }
-
-    fun getUserId(): String {
-        return uiState.value.getUserId()
-    }
-
     fun updateUserBean(userBean: UserBean?) {
         userBean?.let {
             WanHelper.setUser(userBean)

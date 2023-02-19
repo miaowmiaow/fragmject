@@ -19,7 +19,7 @@ data class SystemState(
     var time: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
-        return refreshing[cid] ?: false
+        return refreshing[cid] ?: true
     }
 
     fun getLoading(cid: String): Boolean {
@@ -77,6 +77,10 @@ class SystemViewModel : BaseViewModel() {
             //根据接口返回更新总页码
             response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
             _uiState.update {
+                //如果result.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+                if (uiState.value.result[cid].isNullOrEmpty()) {
+                    transitionAnimationEnd(request, response)
+                }
                 response.data?.datas?.let { datas ->
                     if (isHomePage(cid)) {
                         it.result[cid] = arrayListOf()

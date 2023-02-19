@@ -12,8 +12,8 @@ import kotlinx.coroutines.withContext
 abstract class BaseViewModel : ViewModel() {
 
     companion object {
-        //动画时间见slide_in_xxx.xml
-        const val TRANSITION_ANIMATION_TIME = 300L
+        //动画时间见WanNavGraph
+        const val TRANSITION_ANIMATION_TIME = 350L
         const val DEFAULT_KEY = "null"
         const val DEFAULT_VALUE = 0
         const val PAGE_CONT = 1
@@ -25,11 +25,6 @@ abstract class BaseViewModel : ViewModel() {
     private val homePage: MutableMap<String, Int> = HashMap()
     private val currPage: MutableMap<String, Int> = HashMap()
     private val pageCont: MutableMap<String, Int> = HashMap()
-
-    private val tabIndex: MutableMap<String, Int> = HashMap()
-
-    private val listIndex: MutableMap<String, Int> = HashMap()
-    private val listScrollOffset: MutableMap<String, Int> = HashMap()
 
     private val progress = MutableLiveData<Double>()
 
@@ -70,48 +65,6 @@ abstract class BaseViewModel : ViewModel() {
      */
     fun updatePageCont(pageCont: Int = PAGE_CONT, key: String = DEFAULT_KEY) {
         this.pageCont[key] = pageCont
-    }
-
-    /**
-     * 获取列表item位置
-     */
-    fun getTabIndex(key: String = DEFAULT_KEY): Int {
-        return tabIndex[key] ?: DEFAULT_VALUE
-    }
-
-    /**
-     * 更新列表item位置
-     */
-    fun updateTabIndex(index: Int, key: String = DEFAULT_KEY) {
-        tabIndex[key] = index
-    }
-
-    /**
-     * 获取列表item位置
-     */
-    fun getListIndex(key: String = DEFAULT_KEY): Int {
-        return listIndex[key] ?: DEFAULT_VALUE
-    }
-
-    /**
-     * 更新列表item位置
-     */
-    fun updateListIndex(index: Int, key: String = DEFAULT_KEY) {
-        listIndex[key] = index
-    }
-
-    /**
-     * 获取列表item偏移
-     */
-    fun getListScrollOffset(key: String = DEFAULT_KEY): Int {
-        return listScrollOffset[key] ?: DEFAULT_VALUE
-    }
-
-    /**
-     * 更新列表item偏移
-     */
-    fun updateListScrollOffset(offset: Int, key: String = DEFAULT_KEY) {
-        listScrollOffset[key] = offset
     }
 
     /**

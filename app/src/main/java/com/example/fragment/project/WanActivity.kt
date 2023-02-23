@@ -2,6 +2,7 @@ package com.example.fragment.project
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.library.base.dialog.StandardDialog
@@ -41,7 +42,7 @@ class WanActivity : AppCompatActivity() {
         WebViewManager.destroy()
     }
 
-    private fun initContentView(){
+    private fun initContentView() {
         setContentView(ComposeView(this).apply {
             setContent {
                 WanTheme {
@@ -49,6 +50,17 @@ class WanActivity : AppCompatActivity() {
                 }
             }
         })
+        WanHelper.getUiMode { mode ->
+            when (mode) {
+                "1" -> {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                }
+                "2" -> {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                }
+                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+            }
+        }
     }
 
     private fun initWebView() {

@@ -1,5 +1,6 @@
 package com.example.fragment.project
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.*
@@ -20,6 +21,7 @@ import com.example.fragment.project.ui.main.MainScreen
 import com.example.fragment.project.ui.my_collect.MyCollectScreen
 import com.example.fragment.project.ui.my_share.MyShareScreen
 import com.example.fragment.project.ui.register.RegisterScreen
+import com.example.fragment.project.ui.setting.SettingScreen
 import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.web.WebScreen
 import com.example.fragment.project.utils.WanHelper
@@ -111,6 +113,9 @@ fun WanNavGraph(
                         Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
                     }
                 },
+                onNavigateToSetting = {
+                    wanNavActions.navigateToSetting()
+                },
                 onNavigateToShareArticle = {
                     if (context is AppCompatActivity) {
                         Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
@@ -152,6 +157,19 @@ fun WanNavGraph(
         }
         composable(WanDestinations.REGISTER_ROUTE) {
             RegisterScreen()
+        }
+        composable(WanDestinations.SETTING_ROUTE) {
+            SettingScreen(
+                onNavigateToPrivacyPolicy = {
+                    wanNavActions.navigateToWeb(Uri.encode("file:///android_asset/privacy_policy.html"))
+                },
+                onNavigateToFeedback = {
+                    wanNavActions.navigateToWeb(Uri.encode("https://github.com/miaowmiaow/fragmject/issues"))
+                },
+                onNavigateToAbout = {
+                    wanNavActions.navigateToWeb(Uri.encode("https://wanandroid.com"))
+                }
+            )
         }
         composable("${WanDestinations.SYSTEM_ROUTE}/{cid}") { backStackEntry ->
             val cid = backStackEntry.arguments?.getString("cid").toString()
@@ -206,6 +224,9 @@ class WanNavActions(
     val navigateToRegister: () -> Unit = {
         navigate(WanDestinations.REGISTER_ROUTE)
     }
+    val navigateToSetting: () -> Unit = {
+        navigate(WanDestinations.SETTING_ROUTE)
+    }
     val navigateToSystem: (cid: String) -> Unit = {
         navigate(WanDestinations.SYSTEM_ROUTE, "/$it")
     }
@@ -230,6 +251,7 @@ object WanDestinations {
     const val MY_COLLECT = "my_collect"
     const val MY_SHARE = "my_share"
     const val REGISTER_ROUTE = "register"
+    const val SETTING_ROUTE = "setting"
     const val SYSTEM_ROUTE = "system"
     const val WEB_ROUTE = "web"
 }

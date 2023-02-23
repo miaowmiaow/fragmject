@@ -28,6 +28,7 @@ fun UserScreen(
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyInfo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
+    onNavigateToSetting: () -> Unit = {},
 ) {
     val userUiState by viewModel.uiState.collectAsStateWithLifecycle()
     SideEffect {
@@ -48,7 +49,7 @@ fun UserScreen(
                 .size(75.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (userUiState.userBean.username.isNotBlank())
+                    if (userUiState.userBean.id.isNotBlank())
                         onNavigateToMyInfo()
                     else
                         onNavigateToLogin()
@@ -59,7 +60,7 @@ fun UserScreen(
             modifier = Modifier
                 .padding(top = 5.dp, bottom = 25.dp)
                 .clickable {
-                    if (userUiState.userBean.username.isNotBlank())
+                    if (userUiState.userBean.id.isNotBlank())
                         onNavigateToMyInfo()
                     else
                         onNavigateToLogin()
@@ -169,12 +170,12 @@ fun UserScreen(
                 .fillMaxWidth()
                 .height(45.dp)
                 .clickable {
-                    viewModel.logout()
+                    onNavigateToSetting()
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "退出登录",
+                text = "系统设置",
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 25.dp, end = 25.dp),

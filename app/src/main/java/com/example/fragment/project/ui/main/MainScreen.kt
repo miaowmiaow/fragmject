@@ -40,6 +40,7 @@ fun MainScreen(
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSearch: (key: String) -> Unit = {},
     onNavigateToShareArticle: () -> Unit = {},
+    onNavigateToSetting: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUserInfo: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
@@ -102,6 +103,7 @@ fun MainScreen(
                         onNavigateToMyCollect = onNavigateToMyCollect,
                         onNavigateToMyInfo = onNavigateToMyInfo,
                         onNavigateToMyShare = onNavigateToMyShare,
+                        onNavigateToSetting = onNavigateToSetting,
                     )
                 }
             }

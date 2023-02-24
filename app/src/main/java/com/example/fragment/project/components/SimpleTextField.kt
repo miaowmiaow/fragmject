@@ -1,42 +1,112 @@
 package com.example.fragment.project.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Icon
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
 
 @Composable
 fun WhiteTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    modifier: Modifier,
     placeholder: @Composable (() -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    modifier: Modifier
 ) {
     TextField(
         value = value,
         onValueChange = onValueChange,
+        modifier = modifier,
         placeholder = placeholder,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.Transparent,
-            disabledIndicatorColor = colorResource(id = R.color.white),
+            textColor = colorResource(id = R.color.text_fff),
+            backgroundColor = colorResource(id = R.color.transparent),
+            cursorColor = colorResource(id = R.color.white),
             unfocusedIndicatorColor = colorResource(id = R.color.white),
             focusedIndicatorColor = colorResource(id = R.color.white),
+            leadingIconColor = colorResource(id = R.color.white),
             focusedLabelColor = colorResource(id = R.color.white),
-            errorIndicatorColor = colorResource(id = R.color.white),
+            unfocusedLabelColor = colorResource(id = R.color.white),
             placeholderColor = colorResource(id = R.color.text_ccc),
-            textColor = colorResource(id = R.color.text_fff),
-            cursorColor = colorResource(id = R.color.white)
         ),
         singleLine = true,
-        modifier = modifier
+    )
+}
+
+@Composable
+fun ClearTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+    textStyle: TextStyle = TextStyle.Default,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions(),
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        textStyle = textStyle,
+        cursorBrush = SolidColor(textStyle.color),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        singleLine = true,
+        decorationBox = @Composable { innerTextField ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (leadingIcon != null) {
+                    leadingIcon()
+                }
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (value.isBlank()) {
+                        if (placeholder != null) {
+                            placeholder()
+                        }
+                    }
+                    innerTextField()
+                }
+                if (trailingIcon != null) {
+                    trailingIcon()
+                }
+                if (value.isNotBlank()) {
+                    Icon(
+                        imageVector = Icons.Outlined.Clear,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(10.dp, 6.dp, 10.dp, 6.dp)
+                            .clickable {
+                                onClear()
+                            },
+                        tint = textStyle.color
+                    )
+                }
+            }
+        }
     )
 }

@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.compose
+package com.example.fragment.project.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

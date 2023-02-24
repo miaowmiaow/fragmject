@@ -102,6 +102,7 @@ dependencies {
     api "com.google.accompanist:accompanist-navigation-material:$accompanist_version"
     api "com.google.accompanist:accompanist-pager:$accompanist_version"
     api "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
+    api "com.google.accompanist:accompanist-permissions:$accompanist_version"
     api "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     api "com.google.accompanist:accompanist-webview:$accompanist_version"
     // kotlin 和 协程

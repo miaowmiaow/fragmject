@@ -118,8 +118,7 @@ fun LoginScreen(
             Text(
                 text = "登录",
                 fontSize = 20.sp,
-                color = colorResource(R.color.white),
-                modifier = Modifier
+                color = colorResource(R.color.white)
             )
             Spacer(Modifier.weight(1f))
             Button(

@@ -18,11 +18,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.library.base.compose.LoopVerticalPager
 import com.example.fragment.library.base.compose.theme.WanTheme
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.HotKeyBean
 import com.example.fragment.project.bean.TreeBean
+import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.navigation.NavScreen
 import com.example.fragment.project.ui.main.project.ProjectScreen

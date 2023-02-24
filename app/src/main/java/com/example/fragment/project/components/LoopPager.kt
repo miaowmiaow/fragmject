@@ -1,4 +1,4 @@
-package com.example.fragment.library.base.compose
+package com.example.fragment.project.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable

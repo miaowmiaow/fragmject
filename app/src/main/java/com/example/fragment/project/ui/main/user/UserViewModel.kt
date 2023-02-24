@@ -28,7 +28,7 @@ class UserViewModel : BaseViewModel() {
         getUser()
     }
 
-    fun getUser() {
+    private fun getUser() {
         WanHelper.getUser { userBean ->
             _uiState.update {
                 it.userBean = userBean

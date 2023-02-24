@@ -18,10 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.compose.FullScreenLoading
-import com.example.fragment.library.base.compose.SwipeRefresh
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
+import com.example.fragment.project.components.FullScreenLoading
+import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
 fun MyShareScreen(

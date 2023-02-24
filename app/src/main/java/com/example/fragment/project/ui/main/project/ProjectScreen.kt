@@ -8,10 +8,10 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.compose.FullScreenLoading
-import com.example.fragment.library.base.compose.SwipeRefresh
-import com.example.fragment.library.base.compose.TabBar
 import com.example.fragment.project.components.ArticleCard
+import com.example.fragment.project.components.FullScreenLoading
+import com.example.fragment.project.components.SwipeRefresh
+import com.example.fragment.project.components.TabBar
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 

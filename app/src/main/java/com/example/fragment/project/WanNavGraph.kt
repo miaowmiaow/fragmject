@@ -21,6 +21,7 @@ import com.example.fragment.project.ui.main.MainScreen
 import com.example.fragment.project.ui.my_collect.MyCollectScreen
 import com.example.fragment.project.ui.my_share.MyShareScreen
 import com.example.fragment.project.ui.register.RegisterScreen
+import com.example.fragment.project.ui.search.SearchScreen
 import com.example.fragment.project.ui.setting.SettingScreen
 import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.web.WebScreen
@@ -109,9 +110,7 @@ fun WanNavGraph(
                     wanNavActions.navigateToMyShare()
                 },
                 onNavigateToSearch = {
-                    if (context is AppCompatActivity) {
-                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                    }
+                    wanNavActions.navigateToSearch(it)
                 },
                 onNavigateToSetting = {
                     wanNavActions.navigateToSetting()
@@ -123,6 +122,11 @@ fun WanNavGraph(
                 },
                 onNavigateToSystem = {
                     wanNavActions.navigateToSystem(it)
+                },
+                onNavigateToUserInfo = {
+                    if (context is AppCompatActivity) {
+                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 onNavigateToWeb = {
                     wanNavActions.navigateToWeb(it)
@@ -137,6 +141,11 @@ fun WanNavGraph(
                 onNavigateToSystem = {
                     wanNavActions.navigateToSystem(it)
                 },
+                onNavigateToUserInfo = {
+                    if (context is AppCompatActivity) {
+                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 onNavigateToWeb = {
                     wanNavActions.navigateToWeb(it)
                 }
@@ -150,6 +159,11 @@ fun WanNavGraph(
                 onNavigateToSystem = {
                     wanNavActions.navigateToSystem(it)
                 },
+                onNavigateToUserInfo = {
+                    if (context is AppCompatActivity) {
+                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 onNavigateToWeb = {
                     wanNavActions.navigateToWeb(it)
                 }
@@ -157,6 +171,10 @@ fun WanNavGraph(
         }
         composable(WanDestinations.REGISTER_ROUTE) {
             RegisterScreen()
+        }
+        composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
+            val key = backStackEntry.arguments?.getString("key").toString()
+            SearchScreen(hotKey = wanUiState.hotKeyResult, key = key)
         }
         composable(WanDestinations.SETTING_ROUTE) {
             SettingScreen(
@@ -185,6 +203,11 @@ fun WanNavGraph(
                             },
                             onNavigateToSystem = {
                                 wanNavActions.navigateToSystem(it)
+                            },
+                            onNavigateToUserInfo = {
+                                if (context is AppCompatActivity) {
+                                    Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             onNavigateToWeb = {
                                 wanNavActions.navigateToWeb(it)
@@ -224,6 +247,9 @@ class WanNavActions(
     val navigateToRegister: () -> Unit = {
         navigate(WanDestinations.REGISTER_ROUTE)
     }
+    val navigateToSearch: (key: String) -> Unit = {
+        navigate(WanDestinations.SEARCH_ROUTE, "/$it")
+    }
     val navigateToSetting: () -> Unit = {
         navigate(WanDestinations.SETTING_ROUTE)
     }
@@ -251,6 +277,7 @@ object WanDestinations {
     const val MY_COLLECT = "my_collect"
     const val MY_SHARE = "my_share"
     const val REGISTER_ROUTE = "register"
+    const val SEARCH_ROUTE = "search"
     const val SETTING_ROUTE = "setting"
     const val SYSTEM_ROUTE = "system"
     const val WEB_ROUTE = "web"

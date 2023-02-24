@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -50,7 +49,6 @@ fun SearchScreen(
     val context = LocalContext.current
     var searchText by rememberSaveable { mutableStateOf(key) }
     val scrollState = rememberScrollState()
-    val listState = rememberLazyListState()
     Column {
         Row(
             modifier = Modifier
@@ -201,7 +199,6 @@ fun SearchScreen(
             } else {
                 SwipeRefresh(
                     modifier = Modifier.fillMaxSize(),
-                    listState = listState,
                     contentPadding = PaddingValues(top = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     refreshing = uiState.refreshing,

@@ -5,7 +5,6 @@ import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.ArticleListBean
 import com.example.fragment.project.bean.ShareArticleListBean
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

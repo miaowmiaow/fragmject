@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.main.user
+package com.example.fragment.project.ui.main.my
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,16 +23,20 @@ import coil.compose.AsyncImage
 import com.example.fragment.project.R
 
 @Composable
-fun UserScreen(
-    viewModel: UserViewModel = viewModel(),
+fun MyScreen(
+    viewModel: MyViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
-    onNavigateToMyInfo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSetting: () -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
 ) {
-    val userUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    DisposableEffect(Unit) {
+        viewModel.getUser()
+        onDispose {}
+    }
     Column(
         modifier = Modifier
             .background(colorResource(R.color.background))
@@ -39,7 +44,7 @@ fun UserScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
-            model = userUiState.userBean.avatar.ifBlank { R.drawable.avatar_1_raster },
+            model = uiState.userBean.avatar.ifBlank { R.drawable.avatar_1_raster },
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -47,19 +52,19 @@ fun UserScreen(
                 .size(75.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (userUiState.userBean.id.isNotBlank())
-                        onNavigateToMyInfo()
+                    if (uiState.userBean.id.isNotBlank())
+                        onNavigateToUser(uiState.userBean.id)
                     else
                         onNavigateToLogin()
                 }
         )
         Text(
-            text = userUiState.userBean.username.ifBlank { "去登录" },
+            text = uiState.userBean.username.ifBlank { "去登录" },
             modifier = Modifier
                 .padding(top = 5.dp, bottom = 25.dp)
                 .clickable {
-                    if (userUiState.userBean.id.isNotBlank())
-                        onNavigateToMyInfo()
+                    if (uiState.userBean.id.isNotBlank())
+                        onNavigateToUser(uiState.userBean.id)
                     else
                         onNavigateToLogin()
                 },

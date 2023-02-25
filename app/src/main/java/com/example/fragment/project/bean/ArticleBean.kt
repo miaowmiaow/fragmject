@@ -1,7 +1,9 @@
 package com.example.fragment.project.bean
 
 import android.os.Parcelable
+import com.example.fragment.library.base.R
 import com.example.fragment.library.base.http.HttpResponse
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -11,6 +13,7 @@ data class ShareArticleListBean(
 
 @Parcelize
 data class ShareArticleBean(
+    val coinInfo: CoinBean? = null,
     val shareArticles: ArticleDataBean? = null,
 ) : Parcelable
 
@@ -74,6 +77,29 @@ data class ArticleBean(
     val banners: List<BannerBean>? = null,
     var viewType: Int = 1
 ) : Parcelable {
+
+    @IgnoredOnParcel
+    val avatarList: List<Int> = listOf(
+        R.drawable.avatar_1_raster,
+        R.drawable.avatar_2_raster,
+        R.drawable.avatar_3_raster,
+        R.drawable.avatar_4_raster,
+        R.drawable.avatar_5_raster,
+        R.drawable.avatar_6_raster,
+    )
+
+    fun getAvatarId(): Int {
+        var index = 0
+        try {
+            val id = userId.toInt()
+            if (id >= 0) {
+                index = id % 6
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return avatarList[index]
+    }
 
     fun getHttpsEnvelopePic(): String {
         return envelopePic.replace("http://", "https://")

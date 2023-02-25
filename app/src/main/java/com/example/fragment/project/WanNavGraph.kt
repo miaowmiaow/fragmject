@@ -1,16 +1,10 @@
 package com.example.fragment.project
 
 import android.net.Uri
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,12 +12,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
+import com.example.fragment.project.ui.my_coin.MyCoinScreen
 import com.example.fragment.project.ui.my_collect.MyCollectScreen
 import com.example.fragment.project.ui.my_share.MyShareScreen
+import com.example.fragment.project.ui.rank.RankScreen
 import com.example.fragment.project.ui.register.RegisterScreen
 import com.example.fragment.project.ui.search.SearchScreen
 import com.example.fragment.project.ui.setting.SettingScreen
+import com.example.fragment.project.ui.share.ShareArticleScreen
 import com.example.fragment.project.ui.system.SystemScreen
+import com.example.fragment.project.ui.user.UserScreen
 import com.example.fragment.project.ui.web.WebScreen
 import com.example.fragment.project.utils.WanHelper
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -38,14 +36,14 @@ fun WanNavGraph(
     navController: NavHostController = rememberAnimatedNavController(),
     startDestination: String = WanDestinations.MAIN_ROUTE,
 ) {
-    val context = LocalContext.current
     val statusBarColor = colorResource(R.color.theme)
     val systemUiController = rememberSystemUiController()
-    LaunchedEffect(LocalLifecycleOwner.current) {
+    DisposableEffect(LocalLifecycleOwner.current) {
         systemUiController.setStatusBarColor(
             statusBarColor,
             darkIcons = false
         )
+        onDispose { }
     }
     val wanNavActions = remember(navController) {
         WanNavActions(navController)
@@ -99,9 +97,7 @@ fun WanNavGraph(
                     wanNavActions.navigateToLogin()
                 },
                 onNavigateToMyCoin = {
-                    if (context is AppCompatActivity) {
-                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                    }
+                    wanNavActions.navigateToMyCoin()
                 },
                 onNavigateToMyCollect = {
                     wanNavActions.navigateToMyCollect()
@@ -116,24 +112,27 @@ fun WanNavGraph(
                     wanNavActions.navigateToSetting()
                 },
                 onNavigateToShareArticle = {
-                    if (context is AppCompatActivity) {
-                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                    }
+                    wanNavActions.navigateToShareArticle()
                 },
                 onNavigateToSystem = {
                     wanNavActions.navigateToSystem(it)
                 },
-                onNavigateToUserInfo = {
-                    if (context is AppCompatActivity) {
-                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                    }
+                onNavigateToUser = {
+                    wanNavActions.navigateToUser(it)
                 },
                 onNavigateToWeb = {
                     wanNavActions.navigateToWeb(it)
                 }
             )
         }
-        composable(WanDestinations.MY_COLLECT) {
+        composable(WanDestinations.MY_COIN_ROUTE) {
+            MyCoinScreen(
+                onNavigateToCoinRank = {
+                    wanNavActions.navigateToRank()
+                }
+            )
+        }
+        composable(WanDestinations.MY_COLLECT_ROUTE) {
             MyCollectScreen(
                 onNavigateToLogin = {
                     wanNavActions.navigateToLogin()
@@ -141,17 +140,15 @@ fun WanNavGraph(
                 onNavigateToSystem = {
                     wanNavActions.navigateToSystem(it)
                 },
-                onNavigateToUserInfo = {
-                    if (context is AppCompatActivity) {
-                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                    }
+                onNavigateToUser = {
+                    wanNavActions.navigateToUser(it)
                 },
                 onNavigateToWeb = {
                     wanNavActions.navigateToWeb(it)
                 }
             )
         }
-        composable(WanDestinations.MY_SHARE) {
+        composable(WanDestinations.MY_SHARE_ROUTE) {
             MyShareScreen(
                 onNavigateToLogin = {
                     wanNavActions.navigateToLogin()
@@ -159,11 +156,16 @@ fun WanNavGraph(
                 onNavigateToSystem = {
                     wanNavActions.navigateToSystem(it)
                 },
-                onNavigateToUserInfo = {
-                    if (context is AppCompatActivity) {
-                        Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                    }
+                onNavigateToUser = {
+                    wanNavActions.navigateToUser(it)
                 },
+                onNavigateToWeb = {
+                    wanNavActions.navigateToWeb(it)
+                }
+            )
+        }
+        composable(WanDestinations.RANK_ROUTE) {
+            RankScreen(
                 onNavigateToWeb = {
                     wanNavActions.navigateToWeb(it)
                 }
@@ -179,13 +181,20 @@ fun WanNavGraph(
         composable(WanDestinations.SETTING_ROUTE) {
             SettingScreen(
                 onNavigateToPrivacyPolicy = {
-                    wanNavActions.navigateToWeb(Uri.encode("file:///android_asset/privacy_policy.html"))
+                    wanNavActions.navigateToWeb("file:///android_asset/privacy_policy.html")
                 },
                 onNavigateToFeedback = {
-                    wanNavActions.navigateToWeb(Uri.encode("https://github.com/miaowmiaow/fragmject/issues"))
+                    wanNavActions.navigateToWeb("https://github.com/miaowmiaow/fragmject/issues")
                 },
                 onNavigateToAbout = {
-                    wanNavActions.navigateToWeb(Uri.encode("https://wanandroid.com"))
+                    wanNavActions.navigateToWeb("https://wanandroid.com")
+                }
+            )
+        }
+        composable(WanDestinations.SHARE_ARTICLE_ROUTE) {
+            ShareArticleScreen(
+                onNavigateToWeb = {
+                    wanNavActions.navigateToWeb(it)
                 }
             )
         }
@@ -204,10 +213,8 @@ fun WanNavGraph(
                             onNavigateToSystem = {
                                 wanNavActions.navigateToSystem(it)
                             },
-                            onNavigateToUserInfo = {
-                                if (context is AppCompatActivity) {
-                                    Toast.makeText(context, "正在重构中...", Toast.LENGTH_SHORT).show()
-                                }
+                            onNavigateToUser = {
+                                wanNavActions.navigateToUser(it)
                             },
                             onNavigateToWeb = {
                                 wanNavActions.navigateToWeb(it)
@@ -218,6 +225,20 @@ fun WanNavGraph(
                 }
             }
         }
+        composable("${WanDestinations.USER_ROUTE}/{userId}") { backStackEntry ->
+            UserScreen(
+                userId = backStackEntry.arguments?.getString("userId") ?: "",
+                onNavigateToLogin = {
+                    wanNavActions.navigateToLogin()
+                },
+                onNavigateToSystem = {
+                    wanNavActions.navigateToSystem(it)
+                },
+                onNavigateToWeb = {
+                    wanNavActions.navigateToWeb(it)
+                }
+            )
+        }
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(backStackEntry.arguments?.getString("url") ?: "")
         }
@@ -225,8 +246,10 @@ fun WanNavGraph(
 }
 
 private val authentication = arrayOf(
-    WanDestinations.MY_COLLECT,
-    WanDestinations.MY_SHARE,
+    WanDestinations.MY_COIN_ROUTE,
+    WanDestinations.MY_COLLECT_ROUTE,
+    WanDestinations.MY_SHARE_ROUTE,
+    WanDestinations.SHARE_ARTICLE_ROUTE,
 )
 
 class WanNavActions(
@@ -238,11 +261,17 @@ class WanNavActions(
     val popBackStackToMain: () -> Unit = {
         navController.popBackStack(WanDestinations.MAIN_ROUTE, false)
     }
+    val navigateToMyCoin: () -> Unit = {
+        navigate(WanDestinations.MY_COIN_ROUTE)
+    }
     val navigateToMyCollect: () -> Unit = {
-        navigate(WanDestinations.MY_COLLECT)
+        navigate(WanDestinations.MY_COLLECT_ROUTE)
     }
     val navigateToMyShare: () -> Unit = {
-        navigate(WanDestinations.MY_SHARE)
+        navigate(WanDestinations.MY_SHARE_ROUTE)
+    }
+    val navigateToRank: () -> Unit = {
+        navigate(WanDestinations.RANK_ROUTE)
     }
     val navigateToRegister: () -> Unit = {
         navigate(WanDestinations.REGISTER_ROUTE)
@@ -253,11 +282,17 @@ class WanNavActions(
     val navigateToSetting: () -> Unit = {
         navigate(WanDestinations.SETTING_ROUTE)
     }
+    val navigateToShareArticle: () -> Unit = {
+        navigate(WanDestinations.SHARE_ARTICLE_ROUTE)
+    }
     val navigateToSystem: (cid: String) -> Unit = {
         navigate(WanDestinations.SYSTEM_ROUTE, "/$it")
     }
+    val navigateToUser: (userId: String) -> Unit = {
+        navigate(WanDestinations.USER_ROUTE, "/$it")
+    }
     val navigateToWeb: (url: String) -> Unit = {
-        navigate(WanDestinations.WEB_ROUTE, "/$it")
+        navigate(WanDestinations.WEB_ROUTE, "/${Uri.encode(it)}")
     }
 
     private fun navigate(directions: String, arguments: String = "") {
@@ -274,11 +309,15 @@ class WanNavActions(
 object WanDestinations {
     const val LOGIN_ROUTE = "login"
     const val MAIN_ROUTE = "main"
-    const val MY_COLLECT = "my_collect"
-    const val MY_SHARE = "my_share"
+    const val MY_COIN_ROUTE = "my_coin"
+    const val MY_COLLECT_ROUTE = "my_collect"
+    const val MY_SHARE_ROUTE = "my_share"
+    const val RANK_ROUTE = "rank"
     const val REGISTER_ROUTE = "register"
     const val SEARCH_ROUTE = "search"
     const val SETTING_ROUTE = "setting"
+    const val SHARE_ARTICLE_ROUTE = "share_article"
     const val SYSTEM_ROUTE = "system"
+    const val USER_ROUTE = "user"
     const val WEB_ROUTE = "web"
 }

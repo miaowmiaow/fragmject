@@ -1,6 +1,5 @@
-package com.example.fragment.project.ui.main.navigation
+package com.example.fragment.project.ui.main.nav
 
-import android.net.Uri
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,7 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
-import com.example.fragment.project.components.FullScreenLoading
+import com.example.fragment.project.components.Loading
 import com.example.fragment.project.components.TabBar
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
@@ -70,9 +69,7 @@ fun NavLinkContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    if (uiState.isLoading) {
-        FullScreenLoading()
-    } else {
+    Loading(uiState.isLoading) {
         Row {
             LazyColumn(
                 modifier = Modifier.width(150.dp),
@@ -109,7 +106,7 @@ fun NavLinkContent(
                     Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
                         Button(
                             onClick = {
-                                onNavigateToWeb(Uri.encode(it.link))
+                                onNavigateToWeb(it.link)
                             },
                             elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),

@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.main.navigation
+package com.example.fragment.project.ui.main.nav
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest

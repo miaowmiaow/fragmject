@@ -20,7 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.FullScreenLoading
+import com.example.fragment.project.components.Loading
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -28,7 +28,7 @@ fun MyShareScreen(
     viewModel: MyShareViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -63,9 +63,7 @@ fun MyShareScreen(
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-        if (uiState.refreshing && !uiState.loading) {
-            FullScreenLoading()
-        } else {
+        Loading(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
@@ -80,7 +78,7 @@ fun MyShareScreen(
                 ArticleCard(
                     item = item,
                     onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToUserInfo = onNavigateToUserInfo,
+                    onNavigateToUser = onNavigateToUser,
                     onNavigateToSystem = onNavigateToSystem,
                     onNavigateToWeb = onNavigateToWeb
                 )

@@ -24,9 +24,9 @@ import com.example.fragment.project.bean.HotKeyBean
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.ui.main.home.HomeScreen
-import com.example.fragment.project.ui.main.navigation.NavScreen
+import com.example.fragment.project.ui.main.my.MyScreen
+import com.example.fragment.project.ui.main.nav.NavScreen
 import com.example.fragment.project.ui.main.project.ProjectScreen
-import com.example.fragment.project.ui.main.user.UserScreen
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @Composable
@@ -36,13 +36,12 @@ fun MainScreen(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
-    onNavigateToMyInfo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSearch: (key: String) -> Unit = {},
     onNavigateToShareArticle: () -> Unit = {},
     onNavigateToSetting: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     var navIndex by rememberSaveable { mutableStateOf(0) }
@@ -77,7 +76,7 @@ fun MainScreen(
                     HomeScreen(
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToUser = onNavigateToUser,
                         onNavigateToWeb = onNavigateToWeb,
                     )
                 }
@@ -92,18 +91,18 @@ fun MainScreen(
                     ProjectScreen(
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToUser = onNavigateToUser,
                         onNavigateToWeb = onNavigateToWeb
                     )
                 }
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
-                    UserScreen(
+                    MyScreen(
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToMyCoin = onNavigateToMyCoin,
                         onNavigateToMyCollect = onNavigateToMyCollect,
-                        onNavigateToMyInfo = onNavigateToMyInfo,
                         onNavigateToMyShare = onNavigateToMyShare,
                         onNavigateToSetting = onNavigateToSetting,
+                        onNavigateToUser = onNavigateToUser,
                     )
                 }
             }

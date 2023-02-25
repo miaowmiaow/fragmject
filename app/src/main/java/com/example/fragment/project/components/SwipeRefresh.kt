@@ -79,9 +79,7 @@ fun <T> SwipeRefresh(
     val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (data.isNullOrEmpty()) {
         if (!refreshing) {
-            Empty {
-                onRetry()
-            }
+            Empty { onRetry() }
         }
     } else {
         Box(Modifier.swipeRefresh(state)) {

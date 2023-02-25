@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.main.home
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.Banner
-import com.example.fragment.project.components.FullScreenLoading
+import com.example.fragment.project.components.Loading
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -22,14 +21,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    if (uiState.refreshing && !uiState.loading) {
-        FullScreenLoading()
-    } else {
+    Loading(uiState.refreshing && !uiState.loading) {
         SwipeRefresh(
             modifier = Modifier.fillMaxSize(),
             listState = listState,
@@ -47,7 +44,7 @@ fun HomeScreen(
                     data = item.banners,
                     pathMapping = { it.imagePath },
                     onClick = { _, banner ->
-                        onNavigateToWeb(Uri.encode(banner.url))
+                        onNavigateToWeb(banner.url)
                     }
                 )
             } else {
@@ -55,7 +52,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                     item = item,
                     onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToUserInfo = onNavigateToUserInfo,
+                    onNavigateToUser = onNavigateToUser,
                     onNavigateToSystem = onNavigateToSystem,
                     onNavigateToWeb = onNavigateToWeb
                 )

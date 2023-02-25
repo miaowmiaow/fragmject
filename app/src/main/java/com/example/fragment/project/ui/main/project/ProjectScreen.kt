@@ -8,10 +8,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.FullScreenLoading
-import com.example.fragment.project.components.SwipeRefresh
-import com.example.fragment.project.components.TabBar
+import com.example.fragment.project.components.*
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
@@ -22,7 +19,7 @@ fun ProjectScreen(
     projectViewModel: ProjectViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
@@ -50,11 +47,10 @@ fun ProjectScreen(
                 projectViewModel.init(pageCid)
                 onDispose {}
             }
-            if (projectTreeUiState.isLoading
-                || (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
+            Loading(
+                projectTreeUiState.isLoading ||
+                        (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
             ) {
-                FullScreenLoading()
-            } else {
                 SwipeRefresh(
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,
@@ -71,7 +67,7 @@ fun ProjectScreen(
                         item = item,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToUser = onNavigateToUser,
                         onNavigateToWeb = onNavigateToWeb
                     )
                 }

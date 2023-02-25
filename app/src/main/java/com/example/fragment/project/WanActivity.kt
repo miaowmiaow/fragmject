@@ -14,25 +14,27 @@ class WanActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
-        WanHelper.privacyAgreement({ initContentView() }, {
-            window.setBackgroundDrawableResource(R.drawable.bg)
-            val listener = object : StandardDialog.OnDialogClickListener {
-                override fun onConfirm(dialog: StandardDialog) {
-                    WanHelper.allowPrivacyAgreement()
-                    initContentView()
-                }
+        WanHelper.privacyAgreement(
+            {
+                initContentView()
+            },
+            {
+                StandardDialog.newInstance()
+                    .setTitle(getString(R.string.privacy_agreement_title))
+                    .setContent(getString(R.string.privacy_agreement_content))
+                    .setOnDialogClickListener(object : StandardDialog.OnDialogClickListener {
+                        override fun onConfirm(dialog: StandardDialog) {
+                            WanHelper.allowPrivacyAgreement()
+                            initContentView()
+                        }
 
-                override fun onCancel(dialog: StandardDialog) {
-                    WanHelper.denyPrivacyAgreement()
-                    finish()
-                }
-            }
-            StandardDialog.newInstance()
-                .setTitle(getString(R.string.privacy_agreement_title))
-                .setContent(getString(R.string.privacy_agreement_content))
-                .setOnDialogClickListener(listener)
-                .show(supportFragmentManager)
-        })
+                        override fun onCancel(dialog: StandardDialog) {
+                            WanHelper.denyPrivacyAgreement()
+                            finish()
+                        }
+                    })
+                    .show(supportFragmentManager)
+            })
         initWebView()
     }
 

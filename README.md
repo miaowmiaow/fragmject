@@ -18,7 +18,7 @@
 - Compose
 
 ## 开发环境
-为了您在运行本项目时获得最佳体验，请使用 `Android Studio Chipmunk (2021.2.1) 🐿️` 和 `Android Gradle 7.2.2` 或者以上版本。   
+为了您在运行本项目时获得最佳体验，请使用最新版本 `Android Studio` 。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## 前置知识

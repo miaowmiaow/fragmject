@@ -18,10 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
-import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.FullScreenLoading
-import com.example.fragment.project.components.SwipeRefresh
-import com.example.fragment.project.components.TabBar
+import com.example.fragment.project.components.*
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
@@ -34,7 +31,7 @@ fun SystemScreen(
     systemViewModel: SystemViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -66,9 +63,7 @@ fun SystemScreen(
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            if (systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
-                FullScreenLoading()
-            } else {
+            Loading(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
                 SwipeRefresh(
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,
@@ -84,7 +79,7 @@ fun SystemScreen(
                     ArticleCard(
                         item = item,
                         onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToUserInfo = onNavigateToUserInfo,
+                        onNavigateToUser = onNavigateToUser,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToWeb = onNavigateToWeb
                     )

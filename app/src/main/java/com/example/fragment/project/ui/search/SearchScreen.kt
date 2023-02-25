@@ -42,7 +42,7 @@ fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -111,110 +111,111 @@ fun SearchScreen(
                 color = colorResource(R.color.white),
             )
         }
-        if (uiState.articlesResult.isEmpty()) {
-            Text(
-                text = "大家都在搜",
-                modifier = Modifier.padding(15.dp),
-                fontSize = 16.sp,
-                color = colorResource(R.color.text_333),
-            )
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
-            ) {
-                hotKey?.forEach {
-                    Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
-                        Button(
-                            onClick = {
-                                searchText = it.name
-                                viewModel.updateSearchHistory(searchText)
-                                viewModel.getHome(searchText)
-                            },
-                            modifier = Modifier
-                                .height(40.dp)
-                                .padding(top = 5.dp, bottom = 5.dp),
-                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
-                            shape = RoundedCornerShape(50),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.gray_e5),
-                                contentColor = colorResource(R.color.text_666)
-                            ),
-                            contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
-                        ) {
-                            Text(
-                                text = it.name,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
-            }
-            if (uiState.historyResult.isNotEmpty()) {
-                Text(
-                    text = "历史搜索",
-                    modifier = Modifier.padding(15.dp),
-                    fontSize = 16.sp,
-                    color = colorResource(R.color.text_333),
-                )
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(1.dp),
-                ) {
-                    itemsIndexed(uiState.historyResult.toList()) { _, item ->
-                        Row(
-                            modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .padding(start = 15.dp, end = 15.dp)
-                                .height(45.dp)
-                                .clickable {
-                                    searchText = item
-                                    viewModel.getHome(searchText)
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = item,
-                                modifier = Modifier.weight(1f),
-                                color = colorResource(id = R.color.text_333),
-                                fontSize = 14.sp,
-                            )
-                            Icon(
-                                painter = painterResource(R.drawable.ic_delete),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .padding(10.dp, 5.dp, 0.dp, 5.dp)
-                                    .clickable {
-                                        viewModel.removeSearchHistory(item)
-                                    },
-                            )
-                        }
-                    }
-                }
-            }
-        } else {
-            if (uiState.refreshing && !uiState.loading) {
-                FullScreenLoading()
-            } else {
-                SwipeRefresh(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    refreshing = uiState.refreshing,
-                    loading = uiState.loading,
-                    onRefresh = { viewModel.getHome(searchText) },
-                    onLoad = { viewModel.getNext(searchText) },
-                    onRetry = { viewModel.getHome(searchText) },
-                    data = uiState.articlesResult,
-                ) { _, item ->
-                    ArticleCard(
-                        item = item,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUserInfo = onNavigateToUserInfo,
-                        onNavigateToWeb = onNavigateToWeb
+        Loading(uiState.refreshing && !uiState.loading) {
+            Column {
+                if (searchText.isBlank() || uiState.articlesResult.isEmpty()) {
+                    Text(
+                        text = "大家都在搜",
+                        modifier = Modifier.padding(15.dp),
+                        fontSize = 16.sp,
+                        color = colorResource(R.color.text_333),
                     )
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(scrollState)
+                    ) {
+                        hotKey?.forEach {
+                            Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
+                                Button(
+                                    onClick = {
+                                        searchText = it.name
+                                        viewModel.updateSearchHistory(searchText)
+                                        viewModel.getHome(searchText)
+                                    },
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .padding(top = 5.dp, bottom = 5.dp),
+                                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                                    shape = RoundedCornerShape(50),
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = colorResource(R.color.gray_e5),
+                                        contentColor = colorResource(R.color.text_666)
+                                    ),
+                                    contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
+                                ) {
+                                    Text(
+                                        text = it.name,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (uiState.historyResult.isNotEmpty()) {
+                        Text(
+                            text = "历史搜索",
+                            modifier = Modifier.padding(15.dp),
+                            fontSize = 16.sp,
+                            color = colorResource(R.color.text_333),
+                        )
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(1.dp),
+                        ) {
+                            itemsIndexed(uiState.historyResult.toList()) { _, item ->
+                                Row(
+                                    modifier = Modifier
+                                        .background(colorResource(R.color.white))
+                                        .padding(start = 15.dp, end = 15.dp)
+                                        .height(45.dp)
+                                        .clickable {
+                                            searchText = item
+                                            viewModel.getHome(searchText)
+                                        },
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = item,
+                                        modifier = Modifier.weight(1f),
+                                        color = colorResource(id = R.color.text_333),
+                                        fontSize = 14.sp,
+                                    )
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_delete),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .padding(10.dp, 5.dp, 0.dp, 5.dp)
+                                            .clickable {
+                                                viewModel.removeSearchHistory(item)
+                                            },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    SwipeRefresh(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        refreshing = uiState.refreshing,
+                        loading = uiState.loading,
+                        onRefresh = { viewModel.getHome(searchText) },
+                        onLoad = { viewModel.getNext(searchText) },
+                        onRetry = { viewModel.getHome(searchText) },
+                        data = uiState.articlesResult,
+                    ) { _, item ->
+                        ArticleCard(
+                            modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                            item = item,
+                            onNavigateToLogin = onNavigateToLogin,
+                            onNavigateToSystem = onNavigateToSystem,
+                            onNavigateToUser = onNavigateToUser,
+                            onNavigateToWeb = onNavigateToWeb
+                        )
+                    }
                 }
             }
         }

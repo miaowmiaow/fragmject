@@ -47,7 +47,7 @@ fun ArticleCard(
     item: ArticleBean,
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -60,34 +60,27 @@ fun ArticleCard(
             }
         )
     }
-    val avatarList: List<Int> = listOf(
-        R.drawable.avatar_1_raster,
-        R.drawable.avatar_2_raster,
-        R.drawable.avatar_3_raster,
-        R.drawable.avatar_4_raster,
-        R.drawable.avatar_5_raster,
-        R.drawable.avatar_6_raster,
-    )
+
     Box(modifier) {
         Card(elevation = 2.dp) {
             Column(
                 Modifier
                     .clickable(onClick = {
-                        onNavigateToWeb(Uri.encode(item.link))
+                        onNavigateToWeb(item.link)
                     })
                     .padding(16.dp)
                     .fillMaxWidth()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = avatarList[item.id.toInt() % 6]),
+                        painter = painterResource(id = item.getAvatarId()),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
                             .clickable {
-                                onNavigateToUserInfo(item.userId)
+                                onNavigateToUser(item.userId)
                             }
                     )
                     ConstraintLayout(
@@ -96,7 +89,7 @@ fun ArticleCard(
                             .height(35.dp)
                             .padding(start = 10.dp, end = 10.dp)
                             .clickable {
-                                onNavigateToUserInfo(item.userId)
+                                onNavigateToUser(item.userId)
                             }
                     ) {
                         val (share_user, nice_date) = createRefs()

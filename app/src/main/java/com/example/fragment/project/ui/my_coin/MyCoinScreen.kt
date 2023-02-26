@@ -64,9 +64,7 @@ fun MyCoinScreen(
                     .height(45.dp)
                     .padding(13.dp)
                     .align(Alignment.CenterEnd),
-                onClick = {
-                    onNavigateToCoinRank()
-                }
+                onClick = { onNavigateToCoinRank() }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_rank),

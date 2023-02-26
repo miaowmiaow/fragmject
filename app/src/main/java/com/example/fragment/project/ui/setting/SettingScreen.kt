@@ -71,7 +71,6 @@ fun SettingScreen(
             Loading(uiState.isLoading) {
                 Column(
                     modifier = Modifier
-                        .background(colorResource(R.color.background))
                         .fillMaxSize()
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -229,9 +228,7 @@ fun SettingScreen(
                             .background(colorResource(R.color.white))
                             .fillMaxWidth()
                             .height(45.dp)
-                            .clickable {
-                                onNavigateToPrivacyPolicy()
-                            },
+                            .clickable { onNavigateToPrivacyPolicy() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -259,9 +256,7 @@ fun SettingScreen(
                             .background(colorResource(R.color.white))
                             .fillMaxWidth()
                             .height(45.dp)
-                            .clickable {
-                                onNavigateToFeedback()
-                            },
+                            .clickable { onNavigateToFeedback() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -289,9 +284,7 @@ fun SettingScreen(
                             .background(colorResource(R.color.white))
                             .fillMaxWidth()
                             .height(45.dp)
-                            .clickable {
-                                onNavigateToAbout()
-                            },
+                            .clickable { onNavigateToAbout() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(

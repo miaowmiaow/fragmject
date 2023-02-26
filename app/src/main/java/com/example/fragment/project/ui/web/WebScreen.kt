@@ -126,9 +126,7 @@ fun WebScreen(
                     WebViewHelper.setDownloadListener(webView)
                     WebViewHelper.setOnLongClickListener(webView)
                 },
-                onDispose = { webView ->
-                    WebViewManager.recycle(webView)
-                },
+                onDispose = { WebViewManager.recycle(it) },
                 client = client,
                 chromeClient = chromeClient,
                 factory = { context -> WebViewManager.obtain(context).also { webView = it } }

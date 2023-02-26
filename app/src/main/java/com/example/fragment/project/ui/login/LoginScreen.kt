@@ -57,7 +57,6 @@ fun LoginScreen(
     }
     var usernameText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
-
     fun login() {
         if (usernameText.isBlank()) {
             Toast.makeText(context, "用户名不能为空", Toast.LENGTH_SHORT).show()
@@ -86,9 +85,7 @@ fun LoginScreen(
                 contentDescription = null,
                 modifier = Modifier
                     .size(15.dp)
-                    .clickable {
-                        onPopBackStackToMain()
-                    }
+                    .clickable { onPopBackStackToMain() }
             )
             Spacer(Modifier.height(30.dp))
             Text(
@@ -105,15 +102,9 @@ fun LoginScreen(
             Spacer(Modifier.weight(1f))
             WhiteTextField(
                 value = usernameText,
-                onValueChange = {
-                    usernameText = it
-                },
-                placeholder = {
-                    Text("请输入用户名")
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Next
-                ),
+                onValueChange = { usernameText = it },
+                placeholder = { Text("请输入用户名") },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -121,23 +112,17 @@ fun LoginScreen(
             Spacer(Modifier.height(15.dp))
             WhiteTextField(
                 value = passwordText,
-                onValueChange = {
-                    passwordText = it
-                },
+                onValueChange = { passwordText = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = {
-                    Text("请输入用户密码")
-                },
+                placeholder = { Text("请输入用户密码") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Go
                 ),
-                keyboardActions = KeyboardActions(
-                    onGo = { login() }
-                ),
+                keyboardActions = KeyboardActions(onGo = { login() }),
             )
             Spacer(Modifier.height(30.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -156,8 +141,7 @@ fun LoginScreen(
                         contentColor = colorResource(R.color.white)
                     ),
                     contentPadding = PaddingValues(15.dp),
-                    modifier = Modifier
-                        .size(55.dp)
+                    modifier = Modifier.size(55.dp)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_right_arrow),
@@ -171,10 +155,7 @@ fun LoginScreen(
                 textDecoration = TextDecoration.Underline,
                 fontSize = 12.sp,
                 color = colorResource(R.color.white),
-                modifier = Modifier
-                    .clickable {
-                        onNavigateToRegister()
-                    }
+                modifier = Modifier.clickable { onNavigateToRegister() }
             )
             Spacer(Modifier.height(30.dp))
         }

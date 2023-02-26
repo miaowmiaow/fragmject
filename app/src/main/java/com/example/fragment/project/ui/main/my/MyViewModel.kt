@@ -11,7 +11,11 @@ import kotlinx.coroutines.flow.update
 data class MyState(
     var isLoading: Boolean = false,
     var userBean: UserBean = UserBean(),
-)
+){
+    fun isLogin():Boolean{
+        return userBean.id.isNotBlank()
+    }
+}
 
 class MyViewModel : BaseViewModel() {
 

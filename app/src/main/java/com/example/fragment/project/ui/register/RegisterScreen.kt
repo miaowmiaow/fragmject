@@ -57,7 +57,6 @@ fun RegisterScreen(
     var usernameText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     var againPasswordText by rememberSaveable { mutableStateOf("") }
-
     fun register() {
         if (usernameText.isBlank()) {
             Toast.makeText(context, "用户名不能为空", Toast.LENGTH_SHORT).show()
@@ -115,31 +114,21 @@ fun RegisterScreen(
             Spacer(Modifier.weight(1f))
             WhiteTextField(
                 value = usernameText,
-                onValueChange = {
-                    usernameText = it
-                },
+                onValueChange = { usernameText = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = {
-                    Text("请输入用户名")
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Next
-                ),
+                placeholder = { Text("请输入用户名") },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
             )
             Spacer(Modifier.height(15.dp))
             WhiteTextField(
                 value = passwordText,
-                onValueChange = {
-                    passwordText = it
-                },
+                onValueChange = { passwordText = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = {
-                    Text("请输入用户密码")
-                },
+                placeholder = { Text("请输入用户密码") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Password,
@@ -149,23 +138,17 @@ fun RegisterScreen(
             Spacer(Modifier.height(15.dp))
             WhiteTextField(
                 value = againPasswordText,
-                onValueChange = {
-                    againPasswordText = it
-                },
+                onValueChange = { againPasswordText = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = {
-                    Text("请再次输入密码")
-                },
+                placeholder = { Text("请再次输入密码") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Go
                 ),
-                keyboardActions = KeyboardActions(
-                    onGo = { register() }
-                ),
+                keyboardActions = KeyboardActions(onGo = { register() }),
             )
             Spacer(Modifier.height(30.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -184,8 +167,7 @@ fun RegisterScreen(
                         contentColor = colorResource(R.color.white)
                     ),
                     contentPadding = PaddingValues(15.dp),
-                    modifier = Modifier
-                        .size(55.dp)
+                    modifier = Modifier.size(55.dp)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_right_arrow),

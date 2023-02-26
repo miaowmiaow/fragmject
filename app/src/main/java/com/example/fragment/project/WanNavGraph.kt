@@ -3,6 +3,7 @@ package com.example.fragment.project
 import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -29,6 +30,9 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
+/**
+ * 导航图
+ */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun WanNavGraph(
@@ -53,7 +57,7 @@ fun WanNavGraph(
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier,
+        modifier = modifier.background(colorResource(R.color.background)),
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentScope.SlideDirection.Left,
@@ -81,95 +85,47 @@ fun WanNavGraph(
     ) {
         composable(WanDestinations.LOGIN_ROUTE) {
             LoginScreen(
-                onNavigateToRegister = {
-                    wanNavActions.navigateToRegister()
-                },
-                onPopBackStackToMain = {
-                    wanNavActions.popBackStackToMain()
-                }
+                onNavigateToRegister = { wanNavActions.navigateToRegister() },
+                onPopBackStackToMain = { wanNavActions.popBackStackToMain() }
             )
         }
         composable(WanDestinations.MAIN_ROUTE) {
             MainScreen(
                 hotKey = wanUiState.hotKeyResult,
                 tree = wanUiState.treeResult,
-                onNavigateToLogin = {
-                    wanNavActions.navigateToLogin()
-                },
-                onNavigateToMyCoin = {
-                    wanNavActions.navigateToMyCoin()
-                },
-                onNavigateToMyCollect = {
-                    wanNavActions.navigateToMyCollect()
-                },
-                onNavigateToMyShare = {
-                    wanNavActions.navigateToMyShare()
-                },
-                onNavigateToSearch = {
-                    wanNavActions.navigateToSearch(it)
-                },
-                onNavigateToSetting = {
-                    wanNavActions.navigateToSetting()
-                },
-                onNavigateToShareArticle = {
-                    wanNavActions.navigateToShareArticle()
-                },
-                onNavigateToSystem = {
-                    wanNavActions.navigateToSystem(it)
-                },
-                onNavigateToUser = {
-                    wanNavActions.navigateToUser(it)
-                },
-                onNavigateToWeb = {
-                    wanNavActions.navigateToWeb(it)
-                }
+                onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
+                onNavigateToMyCollect = { wanNavActions.navigateToMyCollect() },
+                onNavigateToMyShare = { wanNavActions.navigateToMyShare() },
+                onNavigateToSearch = { wanNavActions.navigateToSearch(it) },
+                onNavigateToSetting = { wanNavActions.navigateToSetting() },
+                onNavigateToShareArticle = { wanNavActions.navigateToShareArticle() },
+                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                onNavigateToUser = { wanNavActions.navigateToUser(it) },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
             )
         }
         composable(WanDestinations.MY_COIN_ROUTE) {
-            MyCoinScreen(
-                onNavigateToCoinRank = {
-                    wanNavActions.navigateToRank()
-                }
-            )
+            MyCoinScreen(onNavigateToCoinRank = { wanNavActions.navigateToRank() })
         }
         composable(WanDestinations.MY_COLLECT_ROUTE) {
             MyCollectScreen(
-                onNavigateToLogin = {
-                    wanNavActions.navigateToLogin()
-                },
-                onNavigateToSystem = {
-                    wanNavActions.navigateToSystem(it)
-                },
-                onNavigateToUser = {
-                    wanNavActions.navigateToUser(it)
-                },
-                onNavigateToWeb = {
-                    wanNavActions.navigateToWeb(it)
-                }
+                onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                onNavigateToUser = { wanNavActions.navigateToUser(it) },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
             )
         }
         composable(WanDestinations.MY_SHARE_ROUTE) {
             MyShareScreen(
-                onNavigateToLogin = {
-                    wanNavActions.navigateToLogin()
-                },
-                onNavigateToSystem = {
-                    wanNavActions.navigateToSystem(it)
-                },
-                onNavigateToUser = {
-                    wanNavActions.navigateToUser(it)
-                },
-                onNavigateToWeb = {
-                    wanNavActions.navigateToWeb(it)
-                }
+                onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                onNavigateToUser = { wanNavActions.navigateToUser(it) },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
             )
         }
         composable(WanDestinations.RANK_ROUTE) {
-            RankScreen(
-                onNavigateToWeb = {
-                    wanNavActions.navigateToWeb(it)
-                }
-            )
+            RankScreen(onNavigateToWeb = { wanNavActions.navigateToWeb(it) })
         }
         composable(WanDestinations.REGISTER_ROUTE) {
             RegisterScreen()
@@ -180,23 +136,13 @@ fun WanNavGraph(
         }
         composable(WanDestinations.SETTING_ROUTE) {
             SettingScreen(
-                onNavigateToPrivacyPolicy = {
-                    wanNavActions.navigateToWeb("file:///android_asset/privacy_policy.html")
-                },
-                onNavigateToFeedback = {
-                    wanNavActions.navigateToWeb("https://github.com/miaowmiaow/fragmject/issues")
-                },
-                onNavigateToAbout = {
-                    wanNavActions.navigateToWeb("https://wanandroid.com")
-                }
+                onNavigateToPrivacyPolicy = { wanNavActions.navigateToWeb("file:///android_asset/privacy_policy.html") },
+                onNavigateToFeedback = { wanNavActions.navigateToWeb("https://github.com/miaowmiaow/fragmject/issues") },
+                onNavigateToAbout = { wanNavActions.navigateToWeb("https://wanandroid.com") }
             )
         }
         composable(WanDestinations.SHARE_ARTICLE_ROUTE) {
-            ShareArticleScreen(
-                onNavigateToWeb = {
-                    wanNavActions.navigateToWeb(it)
-                }
-            )
+            ShareArticleScreen(onNavigateToWeb = { wanNavActions.navigateToWeb(it) })
         }
         composable("${WanDestinations.SYSTEM_ROUTE}/{cid}") { backStackEntry ->
             val cid = backStackEntry.arguments?.getString("cid").toString()
@@ -207,18 +153,10 @@ fun WanNavGraph(
                             title = data.name,
                             index = index,
                             tree = data.children,
-                            onNavigateToLogin = {
-                                wanNavActions.navigateToLogin()
-                            },
-                            onNavigateToSystem = {
-                                wanNavActions.navigateToSystem(it)
-                            },
-                            onNavigateToUser = {
-                                wanNavActions.navigateToUser(it)
-                            },
-                            onNavigateToWeb = {
-                                wanNavActions.navigateToWeb(it)
-                            }
+                            onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                            onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                            onNavigateToUser = { wanNavActions.navigateToUser(it) },
+                            onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
                         )
                         return@composable
                     }
@@ -228,15 +166,9 @@ fun WanNavGraph(
         composable("${WanDestinations.USER_ROUTE}/{userId}") { backStackEntry ->
             UserScreen(
                 userId = backStackEntry.arguments?.getString("userId") ?: "",
-                onNavigateToLogin = {
-                    wanNavActions.navigateToLogin()
-                },
-                onNavigateToSystem = {
-                    wanNavActions.navigateToSystem(it)
-                },
-                onNavigateToWeb = {
-                    wanNavActions.navigateToWeb(it)
-                }
+                onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
             )
         }
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->

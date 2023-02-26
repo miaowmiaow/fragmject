@@ -78,14 +78,10 @@ fun NavLinkContent(
                 itemsIndexed(uiState.navigationResult.toList()) { index, item ->
                     Box(
                         modifier = Modifier
-                            .background(
-                                colorResource(if (item.isSelected) R.color.white else R.color.gray)
-                            )
+                            .background(colorResource(if (item.isSelected) R.color.white else R.color.gray))
                             .fillMaxWidth()
                             .height(45.dp)
-                            .clickable {
-                                viewModel.updateSelectNavigation(index)
-                            },
+                            .clickable { viewModel.updateSelectNavigation(index) },
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -105,9 +101,7 @@ fun NavLinkContent(
                 uiState.articlesResult.forEach {
                     Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
                         Button(
-                            onClick = {
-                                onNavigateToWeb(it.link)
-                            },
+                            onClick = { onNavigateToWeb(it.link) },
                             elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
@@ -144,7 +138,6 @@ fun NavSystemContent(
                 Text(
                     text = it.name,
                     modifier = Modifier
-                        .background(colorResource(R.color.gray))
                         .fillMaxWidth()
                         .padding(15.dp, 5.dp, 15.dp, 5.dp),
                     color = colorResource(R.color.text_666),
@@ -155,11 +148,11 @@ fun NavSystemContent(
                 item {
                     FlowRow(
                         modifier = Modifier
-                            .background(colorResource(R.color.gray))
+                            .background(colorResource(R.color.background))
                             .fillMaxWidth()
                     ) {
                         children.forEach { children ->
-                            Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
+                            Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
                                     onClick = {
                                         onNavigateToSystem(children.id)

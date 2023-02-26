@@ -12,11 +12,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,10 +39,14 @@ fun ShareArticleScreen(
     val scrollState = rememberScrollState()
     var titleText by rememberSaveable { mutableStateOf("") }
     var linkText by rememberSaveable { mutableStateOf("") }
+    DisposableEffect(uiState.result.errorCode) {
+        if (context is AppCompatActivity && uiState.result.errorMsg.isNotBlank()) {
+            Toast.makeText(context, uiState.result.errorMsg, Toast.LENGTH_SHORT).show()
+        }
+        onDispose { }
+    }
     Column(
-        modifier = Modifier
-            .background(colorResource(R.color.background))
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -175,14 +176,14 @@ fun ShareArticleScreen(
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = {
-//                        if (titleText.isBlank()) {
-//                            Toast.makeText(context, "文章标题不能为空", Toast.LENGTH_SHORT).show()
-//                            return@Button
-//                        }
-//                        if (linkText.isBlank()) {
-//                            Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
-//                            return@Button
-//                        }
+                        if (titleText.isBlank()) {
+                            Toast.makeText(context, "文章标题不能为空", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (linkText.isBlank()) {
+                            Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         viewModel.share(titleText, linkText)
                     },
                     modifier = Modifier

@@ -11,7 +11,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,17 +31,15 @@ import com.example.fragment.project.components.SwipeRefresh
 @Composable
 fun UserScreen(
     userId: String,
-    viewModel: UserViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val viewModel: UserViewModel = viewModel(
+        factory = UserViewModel.provideFactory(userId)
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    DisposableEffect(Unit) {
-        viewModel.getHome(userId)
-        onDispose {}
-    }
     Column(
         modifier = Modifier.systemBarsPadding()
     ) {
@@ -105,9 +102,9 @@ fun UserScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 refreshing = uiState.refreshing,
                 loading = uiState.loading,
-                onRefresh = { viewModel.getHome(userId) },
-                onLoad = { viewModel.getNext(userId) },
-                onRetry = { viewModel.getHome(userId) },
+                onRefresh = { viewModel.getShareArticlesHome() },
+                onLoad = { viewModel.getShareArticlesNext() },
+                onRetry = { viewModel.getShareArticlesHome() },
                 data = uiState.articleResult,
             ) { _, item ->
                 ArticleCard(

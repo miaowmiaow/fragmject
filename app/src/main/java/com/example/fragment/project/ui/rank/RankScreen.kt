@@ -70,9 +70,7 @@ fun RankScreen(
                     .height(45.dp)
                     .padding(13.dp)
                     .align(Alignment.CenterEnd),
-                onClick = {
-                    onNavigateToWeb("https://www.wanandroid.com/blog/show/2653")
-                }
+                onClick = { onNavigateToWeb("https://www.wanandroid.com/blog/show/2653") }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_rule),
@@ -109,9 +107,7 @@ fun RankScreen(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(CircleShape)
-                                .clickable {
-                                    onNavigateToUserInfo(item.userId)
-                                }
+                                .clickable { onNavigateToUserInfo(item.userId) }
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(

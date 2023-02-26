@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.library.base.compose.theme.WanTheme
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.HotKeyBean
 import com.example.fragment.project.bean.TreeBean
@@ -63,14 +63,16 @@ fun MainScreen(
         bottomBar = {
             NavigationBar(
                 items = navItems,
-                onClick = { index ->
-                    navIndex = index
-                }
+                onClick = { navIndex = it }
             )
         }
     ) { innerPadding ->
         val saveableStateHolder = rememberSaveableStateHolder()
-        Box(Modifier.padding(innerPadding)) {
+        Box(
+            Modifier
+                .background(colorResource(R.color.background))
+                .padding(innerPadding)
+        ) {
             when (navIndex) {
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
                     HomeScreen(
@@ -144,9 +146,7 @@ fun SearchBar(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clickable {
-                            onNavigateToSearch(item.name)
-                        },
+                        .clickable { onNavigateToSearch(item.name) },
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
@@ -164,9 +164,7 @@ fun SearchBar(
             contentDescription = null,
             modifier = Modifier
                 .padding(0.dp, 5.dp, 0.dp, 5.dp)
-                .clickable {
-                    onNavigateToShareArticle()
-                },
+                .clickable { onNavigateToShareArticle() },
             tint = colorResource(R.color.white)
         )
     }

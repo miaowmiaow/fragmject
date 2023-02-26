@@ -43,9 +43,7 @@ fun HomeScreen(
                 Banner(
                     data = item.banners,
                     pathMapping = { it.imagePath },
-                    onClick = { _, banner ->
-                        onNavigateToWeb(banner.url)
-                    }
+                    onClick = { _, banner -> onNavigateToWeb(banner.url) }
                 )
             } else {
                 ArticleCard(

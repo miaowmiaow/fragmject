@@ -36,11 +36,7 @@ fun SystemScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(index)
-    Column(
-        modifier = Modifier
-            .background(colorResource(R.color.background))
-            .systemBarsPadding()
-    ) {
+    Column(modifier = Modifier.systemBarsPadding()) {
         TitleBar(title)
         TabBar(
             pagerState = pagerState,

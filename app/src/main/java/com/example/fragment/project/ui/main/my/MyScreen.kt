@@ -38,9 +38,7 @@ fun MyScreen(
         onDispose {}
     }
     Column(
-        modifier = Modifier
-            .background(colorResource(R.color.background))
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
@@ -52,7 +50,7 @@ fun MyScreen(
                 .size(75.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (uiState.userBean.id.isNotBlank())
+                    if (uiState.isLogin())
                         onNavigateToUser(uiState.userBean.id)
                     else
                         onNavigateToLogin()
@@ -63,7 +61,7 @@ fun MyScreen(
             modifier = Modifier
                 .padding(top = 5.dp, bottom = 25.dp)
                 .clickable {
-                    if (uiState.userBean.id.isNotBlank())
+                    if (uiState.isLogin())
                         onNavigateToUser(uiState.userBean.id)
                     else
                         onNavigateToLogin()
@@ -82,9 +80,7 @@ fun MyScreen(
                 .background(colorResource(R.color.white))
                 .fillMaxWidth()
                 .height(45.dp)
-                .clickable {
-                    onNavigateToMyCoin()
-                },
+                .clickable { onNavigateToMyCoin() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -112,9 +108,7 @@ fun MyScreen(
                 .background(colorResource(R.color.white))
                 .fillMaxWidth()
                 .height(45.dp)
-                .clickable {
-                    onNavigateToMyCollect()
-                },
+                .clickable { onNavigateToMyCollect() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -142,9 +136,7 @@ fun MyScreen(
                 .background(colorResource(R.color.white))
                 .fillMaxWidth()
                 .height(45.dp)
-                .clickable {
-                    onNavigateToMyShare()
-                },
+                .clickable { onNavigateToMyShare() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -172,9 +164,7 @@ fun MyScreen(
                 .background(colorResource(R.color.white))
                 .fillMaxWidth()
                 .height(45.dp)
-                .clickable {
-                    onNavigateToSetting()
-                },
+                .clickable { onNavigateToSetting() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(

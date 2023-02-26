@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.fragment.library.base.compose.theme
+package com.example.fragment.project
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme

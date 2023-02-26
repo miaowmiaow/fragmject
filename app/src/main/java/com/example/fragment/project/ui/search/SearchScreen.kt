@@ -89,9 +89,7 @@ fun SearchScreen(
                         tint = colorResource(R.color.white)
                     )
                 },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Search
-                ),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = {
                         viewModel.updateSearchHistory(searchText)
@@ -187,9 +185,7 @@ fun SearchScreen(
                                         modifier = Modifier
                                             .size(30.dp)
                                             .padding(10.dp, 5.dp, 0.dp, 5.dp)
-                                            .clickable {
-                                                viewModel.removeSearchHistory(item)
-                                            },
+                                            .clickable { viewModel.removeSearchHistory(item) },
                                     )
                                 }
                             }

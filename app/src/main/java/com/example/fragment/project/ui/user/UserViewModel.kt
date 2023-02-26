@@ -1,5 +1,7 @@
 package com.example.fragment.project.ui.user
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
@@ -20,31 +22,35 @@ data class UserState(
     var articleResult: MutableList<ArticleBean> = ArrayList(),
 )
 
-class UserViewModel : BaseViewModel() {
+class UserViewModel(private val id: String) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(UserState())
 
     val uiState: StateFlow<UserState> = _uiState.asStateFlow()
 
-    fun getHome(id: String) {
+    init {
+        getShareArticlesHome()
+    }
+
+    fun getShareArticlesHome() {
         _uiState.update {
             it.copy(refreshing = true)
         }
-        getList(id, getHomePage(1))
+        getShareArticlesList(getHomePage(1))
     }
 
-    fun getNext(id: String) {
+    fun getShareArticlesNext() {
         _uiState.update {
             it.copy(loading = false)
         }
-        getList(id, getNextPage())
+        getShareArticlesList(getNextPage())
     }
 
     /**
      * 获取用户分享文章
      * page 1开始
      */
-    private fun getList(id: String, page: Int) {
+    private fun getShareArticlesList(page: Int) {
         viewModelScope.launch {
             //构建请求体，传入请求参数
             val request = HttpRequest("user/{id}/share_articles/{page}/json")
@@ -62,10 +68,21 @@ class UserViewModel : BaseViewModel() {
                     }
                     it.articleResult.addAll(datas)
                 }
-                if(response.data == null){
+                if (response.data == null) {
                     it.coinResult.username = response.errorMsg
                 }
                 it.copy(refreshing = false, loading = hasNextPage())
+            }
+        }
+    }
+
+    companion object {
+        fun provideFactory(
+            userId: String,
+        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return UserViewModel(userId) as T
             }
         }
     }

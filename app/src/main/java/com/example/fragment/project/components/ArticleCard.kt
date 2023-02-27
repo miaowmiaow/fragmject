@@ -33,10 +33,10 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import com.example.fragment.library.base.R
-import com.example.fragment.project.WanTheme
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.bean.ArticleBean
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
@@ -65,11 +65,9 @@ fun ArticleCard(
         Card(elevation = 2.dp) {
             Column(
                 Modifier
-                    .clickable(onClick = {
-                        onNavigateToWeb(item.link)
-                    })
-                    .padding(16.dp)
                     .fillMaxWidth()
+                    .padding(16.dp)
+                    .clickable(onClick = { onNavigateToWeb(item.link) })
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
@@ -79,17 +77,13 @@ fun ArticleCard(
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
-                            .clickable {
-                                onNavigateToUser(item.userId)
-                            }
+                            .clickable { onNavigateToUser(item.userId) }
                     )
                     ConstraintLayout(
                         modifier = Modifier
                             .height(35.dp)
                             .padding(start = 10.dp, end = 10.dp)
-                            .clickable {
-                                onNavigateToUser(item.userId)
-                            }
+                            .clickable { onNavigateToUser(item.userId) }
                     ) {
                         val (share_user, nice_date) = createRefs()
                         Text(
@@ -188,7 +182,10 @@ fun ArticleCard(
                     }
                 }
                 Spacer(Modifier.size(5.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = buildAnnotatedString {
                             if (item.fresh) {
@@ -216,15 +213,10 @@ fun ArticleCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .padding(end = 35.dp)
-                            .clickable {
-                                onNavigateToSystem(item.chapterId)
-                            },
-                    )
-                    Spacer(
-                        Modifier
+                            .padding(end = 15.dp)
                             .height(20.dp)
                             .weight(1f)
+                            .clickable { onNavigateToSystem(item.chapterId) },
                     )
                     Image(
                         painter = painterResource(id = collectResId),
@@ -272,7 +264,7 @@ fun ArticleCardPreview() {
                 desc = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
                 fresh = true,
                 top = true,
-                superChapterName = "问答",
+                superChapterName = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
                 chapterName = "官方"
             )
         )

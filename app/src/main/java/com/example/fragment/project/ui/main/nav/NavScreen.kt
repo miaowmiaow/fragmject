@@ -105,7 +105,7 @@ fun NavLinkContent(
                             elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.gray_e5),
+                                backgroundColor = colorResource(R.color.white),
                                 contentColor = colorResource(R.color.text_666)
                             ),
                             contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
@@ -160,7 +160,7 @@ fun NavSystemContent(
                                     elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = colorResource(R.color.gray_e5),
+                                        backgroundColor = colorResource(R.color.white),
                                         contentColor = colorResource(R.color.text_666)
                                     ),
                                     contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)

@@ -108,6 +108,18 @@
 目前 `master` 处在增量迁移中（Compose 和 View 在代码库中共存），直到应用完全迁移至 Compose 为止。    
 如果你暂时不需要 Compose ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
 
+#### 更少的代码
+与使用 Android View 系统相比，Compose 可让我们用更少的代码实现更多的功能，这样需要测试和调试的代码会更少，出现 bug 的可能性也更小。对于审核人员或维护人员，需要阅读、理解、审核和维护的代码就更少。   
+Compose 的布局系统在概念上更简单，所有代码都使用同一种语言编写并且位于同一文件中，而不必在 Kotlin 和 XML 二者之间来回切换。
+
+#### 直观
+Compose 使用声明性 API，这意味着您只需描述界面，Compose 会负责完成其余工作。   
+利用 Compose，您可以构建不与特定 activity 或 fragment 相关联的小型无状态组件。   
+在 Compose 中，状态是显式的，并且会传递给相应的可组合项。这样一来，状态便具有单一可信来源，因而是封装和分离的。然后，应用状态变化时，界面会自动更新。
+
+#### 相互兼容
+Compose 与您所有的现有代码兼容：您可以从 View 调用 Compose 代码，也可以从 Compose 调用 View。大多数常用库（如 Navigation、ViewModel 和 Kotlin 协程）都适用于 Compose，因此您可以随时随地开始采用。
+
 [Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
 
 [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)

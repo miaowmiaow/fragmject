@@ -85,7 +85,6 @@ fun ArticleCard(
                     )
                     ConstraintLayout(
                         modifier = Modifier
-                            .weight(1f)
                             .height(35.dp)
                             .padding(start = 10.dp, end = 10.dp)
                             .clickable {
@@ -113,6 +112,7 @@ fun ArticleCard(
                                 bottom.linkTo(parent.bottom)
                             })
                     }
+                    Spacer(Modifier.weight(1f))
                     if (!item.tags.isNullOrEmpty()) {
                         Button(
                             onClick = {

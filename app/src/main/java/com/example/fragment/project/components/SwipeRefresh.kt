@@ -111,7 +111,7 @@ fun <T> SwipeRefresh(
                         Text(
                             text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
                             fontSize = 12.sp,
-                            color = colorResource(id = R.color.gray),
+                            color = colorResource(id = R.color.theme),
                             modifier = Modifier.align(alignment = Alignment.Center)
                         )
                     }

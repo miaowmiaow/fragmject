@@ -258,7 +258,7 @@ fun WebScreen(
             val textToShow = if (storagePermissionsState.shouldShowRationale) {
                 "我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用"
             } else {
-                "玩Android需要使用存储空间"
+                "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用"
             }
             Text(text = textToShow)
             Spacer(modifier = Modifier.height(8.dp))

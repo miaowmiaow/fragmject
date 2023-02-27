@@ -78,7 +78,7 @@ fun NavLinkContent(
                 itemsIndexed(uiState.navigationResult.toList()) { index, item ->
                     Box(
                         modifier = Modifier
-                            .background(colorResource(if (item.isSelected) R.color.white else R.color.gray))
+                            .background(colorResource(if (item.isSelected) R.color.background else R.color.white))
                             .fillMaxWidth()
                             .height(45.dp)
                             .clickable { viewModel.updateSelectNavigation(index) },
@@ -94,7 +94,6 @@ fun NavLinkContent(
             }
             FlowRow(
                 modifier = Modifier
-                    .background(colorResource(R.color.white))
                     .fillMaxSize()
                     .verticalScroll(scrollState)
             ) {
@@ -105,7 +104,7 @@ fun NavLinkContent(
                             elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.white),
+                                backgroundColor = colorResource(R.color.gray_e5),
                                 contentColor = colorResource(R.color.text_666)
                             ),
                             contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
@@ -138,6 +137,7 @@ fun NavSystemContent(
                 Text(
                     text = it.name,
                     modifier = Modifier
+                        .background(colorResource(R.color.background))
                         .fillMaxWidth()
                         .padding(15.dp, 5.dp, 15.dp, 5.dp),
                     color = colorResource(R.color.text_666),
@@ -160,7 +160,7 @@ fun NavSystemContent(
                                     elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = colorResource(R.color.white),
+                                        backgroundColor = colorResource(R.color.gray_e5),
                                         contentColor = colorResource(R.color.text_666)
                                     ),
                                     contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)

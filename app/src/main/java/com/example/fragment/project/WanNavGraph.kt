@@ -132,7 +132,14 @@ fun WanNavGraph(
         }
         composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
             val key = backStackEntry.arguments?.getString("key").toString()
-            SearchScreen(hotKey = wanUiState.hotKeyResult, key = key)
+            SearchScreen(
+                hotKey = wanUiState.hotKeyResult,
+                key = key,
+                onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                onNavigateToUser = { wanNavActions.navigateToUser(it) },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
+            )
         }
         composable(WanDestinations.SETTING_ROUTE) {
             SettingScreen(

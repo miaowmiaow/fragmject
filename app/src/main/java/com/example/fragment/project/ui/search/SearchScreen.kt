@@ -11,10 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
@@ -70,14 +67,14 @@ fun SearchScreen(
                     .weight(1f)
                     .fillMaxHeight(),
                 textStyle = TextStyle.Default.copy(
-                    color = colorResource(R.color.white),
+                    color = colorResource(R.color.text_fff),
                     fontSize = 13.sp,
                     background = colorResource(R.color.transparent),
                 ),
                 placeholder = {
                     Text(
                         text = "多个关键词请用空格隔开",
-                        color = colorResource(R.color.text_ccc),
+                        color = colorResource(R.color.text_fff),
                         fontSize = 13.sp,
                     )
                 },
@@ -95,6 +92,10 @@ fun SearchScreen(
                         viewModel.updateSearchHistory(searchText)
                         viewModel.getHome(searchText)
                     }
+                ),
+                colors = TextFieldDefaults.textFieldColors(
+                    focusedIndicatorColor = colorResource(id = R.color.transparent),
+                    unfocusedIndicatorColor = colorResource(id = R.color.transparent),
                 )
             )
             Spacer(Modifier.width(15.dp))
@@ -137,7 +138,7 @@ fun SearchScreen(
                                     elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = colorResource(R.color.gray_e5),
+                                        backgroundColor = colorResource(R.color.white),
                                         contentColor = colorResource(R.color.text_666)
                                     ),
                                     contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)

@@ -153,7 +153,7 @@ fun SearchBar(
                         text = item.name,
                         modifier = Modifier.padding(start = 40.dp),
                         fontSize = 13.sp,
-                        color = colorResource(R.color.text_fff)
+                        color = colorResource(R.color.text_fff),
                     )
                 }
             }

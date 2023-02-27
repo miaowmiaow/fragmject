@@ -46,8 +46,8 @@ fun WhiteTextField(
             textColor = colorResource(id = R.color.text_fff),
             backgroundColor = colorResource(id = R.color.transparent),
             cursorColor = colorResource(id = R.color.white),
-            unfocusedIndicatorColor = colorResource(id = R.color.white),
             focusedIndicatorColor = colorResource(id = R.color.white),
+            unfocusedIndicatorColor = colorResource(id = R.color.white),
             leadingIconColor = colorResource(id = R.color.white),
             focusedLabelColor = colorResource(id = R.color.white),
             unfocusedLabelColor = colorResource(id = R.color.white),
@@ -118,9 +118,7 @@ fun ClearTextField(
                         contentDescription = null,
                         modifier = Modifier
                             .padding(10.dp, 6.dp, 10.dp, 6.dp)
-                            .clickable {
-                                onClear()
-                            },
+                            .clickable { onClear() },
                         tint = textStyle.color
                     )
                 }

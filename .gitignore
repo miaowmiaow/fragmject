@@ -8,4 +8,5 @@
 .externalNativeBuild
 .cxx
 /.idea/
-/miaow-plugin/build/
+/app/mapping.txt
+/library-plugin/build/

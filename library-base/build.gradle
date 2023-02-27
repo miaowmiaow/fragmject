@@ -56,8 +56,8 @@ android {
 dependencies {
     def accompanist_version = '0.28.0'
     def coil_version = '2.2.2'
-    def compose_version = '1.4.0-beta01'
-    def lifecycle_version = "2.6.0-beta01"
+    def compose_version = '1.4.0-beta02'
+    def lifecycle_version = "2.6.0-rc01"
     def okhttp_version = '5.0.0-alpha.8'
     def room_version = "2.5.0"
 
@@ -75,6 +75,7 @@ dependencies {
     api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    api 'androidx.fragment:fragment-ktx:1.5.5'
     api 'androidx.webkit:webkit:1.6.0'
     // viewModel 和 livedata
     api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"

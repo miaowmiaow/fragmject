@@ -3,8 +3,8 @@
 # min_api: 21
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.1"}
-# pg_map_id: f5df980
-# pg_map_hash: SHA-256 f5df9809e21afd50411e245abb55b77fce4a9c15e0466d8ac921cf94779045ff
+# pg_map_id: 54e9e41
+# pg_map_hash: SHA-256 54e9e41c1d4d34f7e047bc97a106b247a8f601a93a0bf6c4a585e822c44fd588
 android.support.v4.app.INotificationSideChannel -> android.support.v4.app.赵:
     java.lang.String DESCRIPTOR -> 赵
 android.support.v4.app.INotificationSideChannel$Default -> android.support.v4.app.赵$赵:
@@ -217869,8 +217869,8 @@ com.example.fragment.project.ComposableSingletons$WanActivityKt -> com.example.f
     kotlin.jvm.functions.Function2 lambda-2 -> 孙
     com.example.fragment.project.ComposableSingletons$WanActivityKt INSTANCE -> 赵
     8:31:void <clinit>():19:19 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ComposableSingletons$WanActivityKt$lambda-1$1 -> com.example.fragment.project.钱$赵:
 # {"id":"sourceFile","fileName":"WanActivity.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):19:19 -> invoke
@@ -217886,8 +217886,8 @@ com.example.fragment.project.ComposableSingletons$WanNavGraphKt -> com.example.f
     com.example.fragment.project.ComposableSingletons$WanNavGraphKt INSTANCE -> 赵
     8:22:void <clinit>():130:130 -> <clinit>
     23:31:void <clinit>():181:181 -> <clinit>
-    kotlin.jvm.functions.Function4 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function4 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function4 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function4 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ComposableSingletons$WanNavGraphKt$lambda-1$1 -> com.example.fragment.project.孙$赵:
 # {"id":"sourceFile","fileName":"WanNavGraph.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object):130:130 -> invoke
@@ -218806,67 +218806,65 @@ com.example.fragment.project.components.ArticleCardKt -> com.example.fragment.pr
     1:7:java.lang.String fromHtml(java.lang.String):275:275 -> 褚
     8:16:java.lang.String fromHtml(java.lang.String):276:276 -> 褚
     17:25:java.lang.String fromHtml(java.lang.String):278:278 -> 褚
-    15:206:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):52:52 -> 赵
-    207:219:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):254:254 -> 赵
-    220:228:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):46:46 -> 赵
-    229:237:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):48:48 -> 赵
-    238:246:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):49:49 -> 赵
-    247:255:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):50:50 -> 赵
-    256:274:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):51:51 -> 赵
-    275:280:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):52:52 -> 赵
-    281:286:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):53:53 -> 赵
-    287:289:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):305:305 -> 赵
-    290:293:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):307:307 -> 赵
-    294:301:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):308:308 -> 赵
-    302:303:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):312:312 -> 赵
-    304:307:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):311:311 -> 赵
-    308:312:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):310:310 -> 赵
-    313:316:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):313:313 -> 赵
-    317:319:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):306:306 -> 赵
-    320:321:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):305:305 -> 赵
-    322:333:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):316:316 -> 赵
-    334:357:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):54:54 -> 赵
-    358:360:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):64:64 -> 赵
-    361:373:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):317:317 -> 赵
-    374:384:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):321:321 -> 赵
-    385:387:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):322:322 -> 赵
-    388:391:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):323:323 -> 赵
-    392:395:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):324:324 -> 赵
-    396:397:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):323:323 -> 赵
-    398:401:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):325:325 -> 赵
-    402:405:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):324:324 -> 赵
-    406:407:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):325:325 -> 赵
-    408:411:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):326:326 -> 赵
-    412:415:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):324:324 -> 赵
-    416:417:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):326:326 -> 赵
-    418:423:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):328:328 -> 赵
-    424:433:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):335:335 -> 赵
-    434:444:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):336:336 -> 赵
-    445:447:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):337:337 -> 赵
-    448:453:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):338:338 -> 赵
-    454:457:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):339:339 -> 赵
-    458:460:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):341:341 -> 赵
-    461:463:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):343:343 -> 赵
-    464:467:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):344:344 -> 赵
-    468:474:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):330:330 -> 赵
-    475:481:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):331:331 -> 赵
-    482:488:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):332:332 -> 赵
-    489:495:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):333:333 -> 赵
-    496:498:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):345:345 -> 赵
-    499:520:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):346:346 -> 赵
-    521:523:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):347:347 -> 赵
-    524:543:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):349:349 -> 赵
-    544:550:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):65:65 -> 赵
-    551:565:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):252:252 -> 赵
-    566:569:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):350:350 -> 赵
-    570:617:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):65:65 -> 赵
-    618:620:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):252:252 -> 赵
-    621:623:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):351:351 -> 赵
-    624:626:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):352:352 -> 赵
-    627:629:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):353:353 -> 赵
-    630:632:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):354:354 -> 赵
-    633:651:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):355:355 -> 赵
-    652:674:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):254:254 -> 赵
+    15:22:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):52:52 -> 赵
+    23:33:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):46:46 -> 赵
+    34:44:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):48:48 -> 赵
+    45:55:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):49:49 -> 赵
+    56:66:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):50:50 -> 赵
+    67:82:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):51:51 -> 赵
+    83:88:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):52:52 -> 赵
+    89:94:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):53:53 -> 赵
+    95:97:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):305:305 -> 赵
+    98:101:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):307:307 -> 赵
+    102:109:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):308:308 -> 赵
+    110:111:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):312:312 -> 赵
+    112:115:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):311:311 -> 赵
+    116:120:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):310:310 -> 赵
+    121:124:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):313:313 -> 赵
+    125:127:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):306:306 -> 赵
+    128:129:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):305:305 -> 赵
+    130:141:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):316:316 -> 赵
+    142:162:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):54:54 -> 赵
+    163:165:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):64:64 -> 赵
+    166:178:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):317:317 -> 赵
+    179:189:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):321:321 -> 赵
+    190:192:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):322:322 -> 赵
+    193:196:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):323:323 -> 赵
+    197:200:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):324:324 -> 赵
+    201:202:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):323:323 -> 赵
+    203:206:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):325:325 -> 赵
+    207:210:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):324:324 -> 赵
+    211:212:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):325:325 -> 赵
+    213:216:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):326:326 -> 赵
+    217:220:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):324:324 -> 赵
+    221:222:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):326:326 -> 赵
+    223:228:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):328:328 -> 赵
+    229:238:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):335:335 -> 赵
+    239:249:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):336:336 -> 赵
+    250:252:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):337:337 -> 赵
+    253:258:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):338:338 -> 赵
+    259:262:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):339:339 -> 赵
+    263:265:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):341:341 -> 赵
+    266:268:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):343:343 -> 赵
+    269:272:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):344:344 -> 赵
+    273:279:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):330:330 -> 赵
+    280:286:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):331:331 -> 赵
+    287:293:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):332:332 -> 赵
+    294:300:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):333:333 -> 赵
+    301:303:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):345:345 -> 赵
+    304:325:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):346:346 -> 赵
+    326:328:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):347:347 -> 赵
+    329:348:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):349:349 -> 赵
+    349:355:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):65:65 -> 赵
+    356:370:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):252:252 -> 赵
+    371:374:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):350:350 -> 赵
+    375:422:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):65:65 -> 赵
+    423:425:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):252:252 -> 赵
+    426:428:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):351:351 -> 赵
+    429:431:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):352:352 -> 赵
+    432:434:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):353:353 -> 赵
+    435:437:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):354:354 -> 赵
+    438:479:void ArticleCard(androidx.compose.ui.Modifier,com.example.fragment.project.bean.ArticleBean,kotlin.jvm.functions.Function0,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int,int):355:355 -> 赵
     0:65535:java.lang.String access$formatChapterName(java.lang.String[]):1:1 -> 郑
     0:65535:int ArticleCard$lambda$0(androidx.compose.runtime.MutableState):356:356 -> 钱
     1:5:java.lang.String formatChapterName(java.lang.String[]):283:283 -> 陈
@@ -219210,7 +219208,7 @@ com.example.fragment.project.components.ComposableSingletons$ArticleCardKt -> co
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     com.example.fragment.project.components.ComposableSingletons$ArticleCardKt INSTANCE -> 赵
     9:20:void <clinit>():259:259 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.components.ComposableSingletons$ArticleCardKt$lambda-1$1 -> com.example.fragment.project.components.孙$赵:
 # {"id":"sourceFile","fileName":"ArticleCard.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):259:259 -> invoke
@@ -219222,7 +219220,7 @@ com.example.fragment.project.components.ComposableSingletons$EmptyKt -> com.exam
     com.example.fragment.project.components.ComposableSingletons$EmptyKt INSTANCE -> 赵
     kotlin.jvm.functions.Function3 lambda-1 -> 钱
     9:20:void <clinit>():38:38 -> <clinit>
-    kotlin.jvm.functions.Function3 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function3 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.components.ComposableSingletons$EmptyKt$lambda-1$1 -> com.example.fragment.project.components.李$赵:
 # {"id":"sourceFile","fileName":"Empty.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):38:38 -> invoke
@@ -219236,7 +219234,7 @@ com.example.fragment.project.components.ComposableSingletons$TabBarKt -> com.exa
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     com.example.fragment.project.components.ComposableSingletons$TabBarKt INSTANCE -> 赵
     9:20:void <clinit>():39:39 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.components.ComposableSingletons$TabBarKt$lambda-1$1 -> com.example.fragment.project.components.周$赵:
 # {"id":"sourceFile","fileName":"TabBar.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):39:39 -> invoke
@@ -219925,12 +219923,12 @@ com.example.fragment.project.components.SwipeRefreshState -> com.example.fragmen
     56:65:void <init>(kotlinx.coroutines.CoroutineScope,androidx.compose.runtime.State,float,float):204:204 -> <init>
     66:75:void <init>(kotlinx.coroutines.CoroutineScope,androidx.compose.runtime.State,float,float):205:205 -> <init>
     76:83:void <init>(kotlinx.coroutines.CoroutineScope,androidx.compose.runtime.State,float,float):260:260 -> <init>
-    1:13:void setRefreshingOffset$app_huaweiRelease(float):251:251 -> 何
-    14:16:void setRefreshingOffset$app_huaweiRelease(float):252:252 -> 何
-    17:26:void setRefreshingOffset$app_huaweiRelease(float):253:253 -> 何
+    1:13:void setRefreshingOffset$app_xiaomiRelease(float):251:251 -> 何
+    14:16:void setRefreshingOffset$app_xiaomiRelease(float):252:252 -> 何
+    17:26:void setRefreshingOffset$app_xiaomiRelease(float):253:253 -> 何
     0:65535:float getPosition():196:196 -> 冯
-    0:65535:float getThreshold$app_huaweiRelease():197:197 -> 卫
-    0:65535:void setThreshold$app_huaweiRelease(float):247:247 -> 吕
+    0:65535:float getThreshold$app_xiaomiRelease():197:197 -> 卫
+    0:65535:void setThreshold$app_xiaomiRelease(float):247:247 -> 吕
     1:17:float calculateIndicatorPosition():272:272 -> 吴
     18:31:float calculateIndicatorPosition():275:275 -> 吴
     32:38:float calculateIndicatorPosition():277:277 -> 吴
@@ -219949,11 +219947,11 @@ com.example.fragment.project.components.SwipeRefreshState -> com.example.fragmen
     7:10:void set_position(float):292:292 -> 施
     1:6:void set_threshold(float):204:204 -> 曹
     7:10:void set_threshold(float):298:298 -> 曹
-    1:8:float onPull$app_huaweiRelease(float):208:208 -> 朱
-    9:17:float onPull$app_huaweiRelease(float):210:210 -> 朱
-    18:23:float onPull$app_huaweiRelease(float):211:211 -> 朱
-    24:26:float onPull$app_huaweiRelease(float):212:212 -> 朱
-    27:34:float onPull$app_huaweiRelease(float):213:213 -> 朱
+    1:8:float onPull$app_xiaomiRelease(float):208:208 -> 朱
+    9:17:float onPull$app_xiaomiRelease(float):210:210 -> 朱
+    18:23:float onPull$app_xiaomiRelease(float):211:211 -> 朱
+    24:26:float onPull$app_xiaomiRelease(float):212:212 -> 朱
+    27:34:float onPull$app_xiaomiRelease(float):213:213 -> 朱
     0:65535:void access$set_position(com.example.fragment.project.components.SwipeRefreshState,float):185:185 -> 李
     1:2:float get_threshold():204:204 -> 杨
     3:13:float get_threshold():297:297 -> 杨
@@ -219961,19 +219959,19 @@ com.example.fragment.project.components.SwipeRefreshState -> com.example.fragmen
     3:13:boolean get_refreshing():288:288 -> 沈
     1:2:float getDistancePulled():203:203 -> 王
     3:13:float getDistancePulled():294:294 -> 王
-    1:8:float onRelease$app_huaweiRelease(float):218:218 -> 秦
-    9:20:float onRelease$app_huaweiRelease(float):220:220 -> 秦
-    21:31:float onRelease$app_huaweiRelease(float):221:221 -> 秦
-    32:34:float onRelease$app_huaweiRelease(float):223:223 -> 秦
-    35:54:float onRelease$app_huaweiRelease(float):227:227 -> 秦
-    55:58:float onRelease$app_huaweiRelease(float):234:234 -> 秦
+    1:8:float onRelease$app_xiaomiRelease(float):218:218 -> 秦
+    9:20:float onRelease$app_xiaomiRelease(float):220:220 -> 秦
+    21:31:float onRelease$app_xiaomiRelease(float):221:221 -> 秦
+    32:34:float onRelease$app_xiaomiRelease(float):223:223 -> 秦
+    35:54:float onRelease$app_xiaomiRelease(float):227:227 -> 秦
+    55:58:float onRelease$app_xiaomiRelease(float):234:234 -> 秦
     1:2:float get_position():202:202 -> 蒋
     3:13:float get_position():291:291 -> 蒋
-    0:65535:boolean getRefreshing$app_huaweiRelease():195:195 -> 褚
-    1:6:void setRefreshing$app_huaweiRelease(boolean):239:239 -> 许
-    7:10:void setRefreshing$app_huaweiRelease(boolean):240:240 -> 许
-    11:15:void setRefreshing$app_huaweiRelease(boolean):241:241 -> 许
-    16:23:void setRefreshing$app_huaweiRelease(boolean):242:242 -> 许
+    0:65535:boolean getRefreshing$app_xiaomiRelease():195:195 -> 褚
+    1:6:void setRefreshing$app_xiaomiRelease(boolean):239:239 -> 许
+    7:10:void setRefreshing$app_xiaomiRelease(boolean):240:240 -> 许
+    11:15:void setRefreshing$app_xiaomiRelease(boolean):241:241 -> 许
+    16:23:void setRefreshing$app_xiaomiRelease(boolean):242:242 -> 许
     0:65535:float access$getDistancePulled(com.example.fragment.project.components.SwipeRefreshState):185:185 -> 赵
     1:2:float getAdjustedDistancePulled():199:199 -> 郑
     3:13:float getAdjustedDistancePulled():287:287 -> 郑
@@ -220053,9 +220051,9 @@ com.example.fragment.project.ui.login.ComposableSingletons$LoginScreenKt -> com.
     8:22:void <clinit>():106:106 -> <clinit>
     23:33:void <clinit>():119:119 -> <clinit>
     34:42:void <clinit>():145:145 -> <clinit>
-    kotlin.jvm.functions.Function3 getLambda-3$app_huaweiRelease() -> 孙
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function3 getLambda-3$app_xiaomiRelease() -> 孙
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.login.ComposableSingletons$LoginScreenKt$lambda-1$1 -> com.example.fragment.project.ui.login.赵$赵:
 # {"id":"sourceFile","fileName":"LoginScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):106:106 -> invoke
@@ -220331,7 +220329,7 @@ com.example.fragment.project.ui.main.ComposableSingletons$MainScreenKt -> com.ex
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     com.example.fragment.project.ui.main.ComposableSingletons$MainScreenKt INSTANCE -> 赵
     9:20:void <clinit>():229:229 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.ui.main.ComposableSingletons$MainScreenKt$lambda-1$1 -> com.example.fragment.project.ui.main.赵$赵:
 # {"id":"sourceFile","fileName":"MainScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):229:229 -> invoke
@@ -221953,9 +221951,9 @@ com.example.fragment.project.ui.my_coin.ComposableSingletons$MyCoinScreenKt -> c
     8:22:void <clinit>():49:49 -> <clinit>
     23:33:void <clinit>():68:68 -> <clinit>
     34:42:void <clinit>():101:101 -> <clinit>
-    kotlin.jvm.functions.Function5 getLambda-3$app_huaweiRelease() -> 孙
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function5 getLambda-3$app_xiaomiRelease() -> 孙
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.my_coin.ComposableSingletons$MyCoinScreenKt$lambda-1$1 -> com.example.fragment.project.ui.my_coin.赵$赵:
 # {"id":"sourceFile","fileName":"MyCoinScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):49:49 -> invoke
@@ -222256,7 +222254,7 @@ com.example.fragment.project.ui.my_collect.ComposableSingletons$MyCollectScreenK
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     com.example.fragment.project.ui.my_collect.ComposableSingletons$MyCollectScreenKt INSTANCE -> 赵
     9:20:void <clinit>():52:52 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.ui.my_collect.ComposableSingletons$MyCollectScreenKt$lambda-1$1 -> com.example.fragment.project.ui.my_collect.赵$赵:
 # {"id":"sourceFile","fileName":"MyCollectScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):52:52 -> invoke
@@ -222503,7 +222501,7 @@ com.example.fragment.project.ui.my_share.ComposableSingletons$MyShareScreenKt ->
     com.example.fragment.project.ui.my_share.ComposableSingletons$MyShareScreenKt INSTANCE -> 赵
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     9:20:void <clinit>():52:52 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.ui.my_share.ComposableSingletons$MyShareScreenKt$lambda-1$1 -> com.example.fragment.project.ui.my_share.赵$赵:
 # {"id":"sourceFile","fileName":"MyShareScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):52:52 -> invoke
@@ -222752,8 +222750,8 @@ com.example.fragment.project.ui.rank.ComposableSingletons$RankScreenKt -> com.ex
     com.example.fragment.project.ui.rank.ComposableSingletons$RankScreenKt INSTANCE -> 赵
     8:22:void <clinit>():55:55 -> <clinit>
     23:31:void <clinit>():74:74 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.rank.ComposableSingletons$RankScreenKt$lambda-1$1 -> com.example.fragment.project.ui.rank.赵$赵:
 # {"id":"sourceFile","fileName":"RankScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):55:55 -> invoke
@@ -223008,10 +223006,10 @@ com.example.fragment.project.ui.register.ComposableSingletons$RegisterScreenKt -
     23:33:void <clinit>():131:131 -> <clinit>
     34:44:void <clinit>():145:145 -> <clinit>
     45:53:void <clinit>():171:171 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-3$app_huaweiRelease() -> 孙
-    kotlin.jvm.functions.Function3 getLambda-4$app_huaweiRelease() -> 李
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function2 getLambda-3$app_xiaomiRelease() -> 孙
+    kotlin.jvm.functions.Function3 getLambda-4$app_xiaomiRelease() -> 李
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.register.ComposableSingletons$RegisterScreenKt$lambda-1$1 -> com.example.fragment.project.ui.register.赵$赵:
 # {"id":"sourceFile","fileName":"RegisterScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):121:121 -> invoke
@@ -223309,8 +223307,8 @@ com.example.fragment.project.ui.search.ComposableSingletons$SearchScreenKt -> co
     kotlin.jvm.functions.Function2 lambda-2 -> 孙
     8:22:void <clinit>():74:74 -> <clinit>
     23:31:void <clinit>():81:81 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.search.ComposableSingletons$SearchScreenKt$lambda-1$1 -> com.example.fragment.project.ui.search.赵$赵:
 # {"id":"sourceFile","fileName":"SearchScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):74:74 -> invoke
@@ -223734,10 +223732,10 @@ com.example.fragment.project.ui.setting.ComposableSingletons$SettingScreenKt -> 
     23:33:void <clinit>():63:63 -> <clinit>
     34:44:void <clinit>():91:91 -> <clinit>
     45:53:void <clinit>():392:392 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-3$app_huaweiRelease() -> 孙
-    kotlin.jvm.functions.Function3 getLambda-4$app_huaweiRelease() -> 李
-    kotlin.jvm.functions.Function3 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function3 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function2 getLambda-3$app_xiaomiRelease() -> 孙
+    kotlin.jvm.functions.Function3 getLambda-4$app_xiaomiRelease() -> 李
+    kotlin.jvm.functions.Function3 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function3 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.setting.ComposableSingletons$SettingScreenKt$lambda-1$1 -> com.example.fragment.project.ui.setting.赵$赵:
 # {"id":"sourceFile","fileName":"SettingScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):64:64 -> invoke
@@ -224334,11 +224332,11 @@ com.example.fragment.project.ui.share.ComposableSingletons$ShareArticleScreenKt 
     34:44:void <clinit>():122:122 -> <clinit>
     45:55:void <clinit>():155:155 -> <clinit>
     56:64:void <clinit>():199:199 -> <clinit>
-    kotlin.jvm.functions.Function3 getLambda-5$app_huaweiRelease() -> 周
-    kotlin.jvm.functions.Function2 getLambda-3$app_huaweiRelease() -> 孙
-    kotlin.jvm.functions.Function2 getLambda-4$app_huaweiRelease() -> 李
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function2 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function3 getLambda-5$app_xiaomiRelease() -> 周
+    kotlin.jvm.functions.Function2 getLambda-3$app_xiaomiRelease() -> 孙
+    kotlin.jvm.functions.Function2 getLambda-4$app_xiaomiRelease() -> 李
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.share.ComposableSingletons$ShareArticleScreenKt$lambda-1$1 -> com.example.fragment.project.ui.share.赵$赵:
 # {"id":"sourceFile","fileName":"ShareArticleScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):65:65 -> invoke
@@ -224654,7 +224652,7 @@ com.example.fragment.project.ui.system.ComposableSingletons$SystemScreenKt -> co
     com.example.fragment.project.ui.system.ComposableSingletons$SystemScreenKt INSTANCE -> 赵
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     9:20:void <clinit>():104:104 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.ui.system.ComposableSingletons$SystemScreenKt$lambda-1$1 -> com.example.fragment.project.ui.system.赵$赵:
 # {"id":"sourceFile","fileName":"SystemScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):104:104 -> invoke
@@ -224929,7 +224927,7 @@ com.example.fragment.project.ui.user.ComposableSingletons$UserScreenKt -> com.ex
     com.example.fragment.project.ui.user.ComposableSingletons$UserScreenKt INSTANCE -> 赵
     kotlin.jvm.functions.Function2 lambda-1 -> 钱
     9:20:void <clinit>():59:59 -> <clinit>
-    kotlin.jvm.functions.Function2 getLambda-1$app_huaweiRelease() -> 赵
+    kotlin.jvm.functions.Function2 getLambda-1$app_xiaomiRelease() -> 赵
 com.example.fragment.project.ui.user.ComposableSingletons$UserScreenKt$lambda-1$1 -> com.example.fragment.project.ui.user.赵$赵:
 # {"id":"sourceFile","fileName":"UserScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object):59:59 -> invoke
@@ -225253,11 +225251,11 @@ com.example.fragment.project.ui.web.ComposableSingletons$WebScreenKt -> com.exam
     34:44:void <clinit>():210:210 -> <clinit>
     45:55:void <clinit>():241:241 -> <clinit>
     56:64:void <clinit>():265:265 -> <clinit>
-    kotlin.jvm.functions.Function3 getLambda-5$app_huaweiRelease() -> 周
-    kotlin.jvm.functions.Function3 getLambda-3$app_huaweiRelease() -> 孙
-    kotlin.jvm.functions.Function3 getLambda-4$app_huaweiRelease() -> 李
-    kotlin.jvm.functions.Function3 getLambda-1$app_huaweiRelease() -> 赵
-    kotlin.jvm.functions.Function3 getLambda-2$app_huaweiRelease() -> 钱
+    kotlin.jvm.functions.Function3 getLambda-5$app_xiaomiRelease() -> 周
+    kotlin.jvm.functions.Function3 getLambda-3$app_xiaomiRelease() -> 孙
+    kotlin.jvm.functions.Function3 getLambda-4$app_xiaomiRelease() -> 李
+    kotlin.jvm.functions.Function3 getLambda-1$app_xiaomiRelease() -> 赵
+    kotlin.jvm.functions.Function3 getLambda-2$app_xiaomiRelease() -> 钱
 com.example.fragment.project.ui.web.ComposableSingletons$WebScreenKt$lambda-1$1 -> com.example.fragment.project.ui.web.赵$赵:
 # {"id":"sourceFile","fileName":"WebScreen.kt"}
     1:1:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):168:168 -> invoke

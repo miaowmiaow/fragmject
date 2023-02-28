@@ -66,10 +66,12 @@ fun ArticleCard(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
                     .clickable(onClick = { onNavigateToWeb(item.link) })
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Image(
                         painter = painterResource(id = item.getAvatarId()),
                         contentDescription = null,
@@ -82,8 +84,8 @@ fun ArticleCard(
                     ConstraintLayout(
                         modifier = Modifier
                             .height(35.dp)
+                            .weight(1f)
                             .padding(start = 10.dp, end = 10.dp)
-                            .clickable { onNavigateToUser(item.userId) }
                     ) {
                         val (share_user, nice_date) = createRefs()
                         Text(
@@ -106,7 +108,6 @@ fun ArticleCard(
                                 bottom.linkTo(parent.bottom)
                             })
                     }
-                    Spacer(Modifier.weight(1f))
                     if (!item.tags.isNullOrEmpty()) {
                         Button(
                             onClick = {
@@ -139,7 +140,7 @@ fun ArticleCard(
                     }
                 }
                 Spacer(Modifier.size(10.dp))
-                Row {
+                Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
                         if (item.desc.isNotBlank()) {
                             Text(
@@ -183,41 +184,44 @@ fun ArticleCard(
                 }
                 Spacer(Modifier.size(5.dp))
                 Row(
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = buildAnnotatedString {
-                            if (item.fresh) {
-                                withStyle(style = SpanStyle(color = colorResource(R.color.blue))) {
-                                    append("新  ")
+                    Box(modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 15.dp)) {
+                        Text(
+                            text = buildAnnotatedString {
+                                if (item.fresh) {
+                                    withStyle(style = SpanStyle(color = colorResource(R.color.blue))) {
+                                        append("新  ")
+                                    }
                                 }
-                            }
-                            if (item.top) {
-                                withStyle(
-                                    style = SpanStyle(color = colorResource(R.color.orange))
-                                ) {
-                                    append("置顶  ")
+                                if (item.top) {
+                                    withStyle(
+                                        style = SpanStyle(color = colorResource(R.color.orange))
+                                    ) {
+                                        append("置顶  ")
+                                    }
                                 }
-                            }
-                            append(
-                                fromHtml(
-                                    formatChapterName(
-                                        item.superChapterName, item.chapterName
+                                append(
+                                    fromHtml(
+                                        formatChapterName(
+                                            item.superChapterName, item.chapterName
+                                        )
                                     )
                                 )
-                            )
-                        },
-                        fontSize = 12.sp,
-                        color = colorResource(R.color.text_999),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .padding(end = 15.dp)
-                            .height(20.dp)
-                            .weight(1f)
-                            .clickable { onNavigateToSystem(item.chapterId) },
-                    )
+                            },
+                            fontSize = 12.sp,
+                            color = colorResource(R.color.text_999),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .height(20.dp)
+                                .clickable { onNavigateToSystem(item.chapterId) },
+                        )
+                    }
                     Image(
                         painter = painterResource(id = collectResId),
                         contentDescription = "",

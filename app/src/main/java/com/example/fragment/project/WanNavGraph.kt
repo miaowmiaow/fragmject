@@ -11,6 +11,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.navOptions
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
 import com.example.fragment.project.ui.my_coin.MyCoinScreen
@@ -235,11 +236,12 @@ class WanNavActions(
     }
 
     private fun navigate(directions: String, arguments: String = "") {
+        val options = navOptions { launchSingleTop = true }
         WanHelper.getUser { userBean ->
             if (authentication.contains(directions) && userBean.id.isBlank()) {
-                navController.navigate(WanDestinations.LOGIN_ROUTE)
+                navController.navigate(WanDestinations.LOGIN_ROUTE, options)
             } else {
-                navController.navigate(directions + arguments)
+                navController.navigate(directions + arguments, options)
             }
         }
     }

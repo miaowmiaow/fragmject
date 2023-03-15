@@ -59,7 +59,7 @@ fun SystemScreen(
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            Loading(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
+            BoxLayout(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
                 SwipeRefresh(
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,

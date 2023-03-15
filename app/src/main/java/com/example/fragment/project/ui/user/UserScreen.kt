@@ -25,7 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.Loading
+import com.example.fragment.project.components.BoxLayout
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -93,7 +93,7 @@ fun UserScreen(
                 color = colorResource(R.color.text_fff),
             )
         }
-        Loading(uiState.refreshing && !uiState.loading) {
+        BoxLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
                 modifier = Modifier
                     .background(colorResource(R.color.white))

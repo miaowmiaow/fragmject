@@ -13,7 +13,7 @@ dependencies {
     implementation 'org.ow2.asm:asm-analysis:9.3'
     implementation 'org.ow2.asm:asm-util:9.3'
     implementation 'org.ow2.asm:asm-tree:9.3'
-    implementation 'com.android.tools.build:gradle:7.4.1', {
+    implementation "com.android.tools.build:gradle:$gradle_version", {
         exclude group: 'org.ow2.asm'
     }
 }

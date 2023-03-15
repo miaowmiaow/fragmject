@@ -29,7 +29,7 @@ import com.example.fragment.library.base.utils.CacheUtils
 import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
 import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
 import com.example.fragment.project.R
-import com.example.fragment.project.components.Loading
+import com.example.fragment.project.components.BoxLayout
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.launch
 
@@ -60,15 +60,9 @@ fun SettingScreen(
     }
     Scaffold(
         scaffoldState = scaffoldState,
-        snackbarHost = {
-            SnackbarHost(it) { data ->
-                Snackbar(
-                    snackbarData = data
-                )
-            }
-        },
+        snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
-            Loading(uiState.isLoading) {
+            BoxLayout(uiState.isLoading) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -200,7 +194,7 @@ fun SettingScreen(
                                                 }
                                                 coroutineScope.launch {
                                                     scaffoldState.snackbarHostState.showSnackbar(
-                                                        message
+                                                        message, "确定"
                                                     )
                                                 }
                                             }
@@ -210,7 +204,10 @@ fun SettingScreen(
                                     if (context is AppCompatActivity) {
                                         context.stopScreenRecord()
                                         coroutineScope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar("屏幕录制结束")
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                "屏幕录制结束",
+                                                "确定"
+                                            )
                                         }
                                     }
                                 }

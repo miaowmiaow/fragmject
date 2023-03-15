@@ -33,9 +33,7 @@ class HomeViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update {
-            it.copy(refreshing = true)
-        }
+        _uiState.update { it.copy(refreshing = true) }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //通过async获取首页需要展示的数据
@@ -53,9 +51,7 @@ class HomeViewModel : BaseViewModel() {
     }
 
     fun getNext() {
-        _uiState.update {
-            it.copy(loading = false)
-        }
+        _uiState.update { it.copy(loading = false) }
         viewModelScope.launch {
             _uiState.update {
                 getArticleList(getNextPage()).data?.datas?.let { datas ->

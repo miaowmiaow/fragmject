@@ -18,8 +18,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.project.WanTheme
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.bean.HotKeyBean
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.LoopVerticalPager
@@ -69,7 +69,7 @@ fun MainScreen(
     ) { innerPadding ->
         val saveableStateHolder = rememberSaveableStateHolder()
         Box(
-            Modifier
+            modifier = Modifier
                 .background(colorResource(R.color.background))
                 .padding(innerPadding)
         ) {
@@ -140,9 +140,7 @@ fun SearchBar(
                 modifier = Modifier.padding(10.dp, 5.dp, 0.dp, 5.dp),
                 tint = colorResource(R.color.white)
             )
-            LoopVerticalPager(
-                data = data
-            ) { _, _, item ->
+            LoopVerticalPager(data = data) { _, _, item ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -176,12 +174,12 @@ fun NavigationBar(
     onClick: (index: Int) -> Unit
 ) {
     var currItem by rememberSaveable { mutableStateOf(0) }
-
     BottomNavigation(
         modifier = Modifier,
         backgroundColor = colorResource(R.color.white)
     ) {
         items.forEachIndexed { index, item ->
+            val colorId = if (currItem == index) item.selectedColor else item.unselectedColor
             BottomNavigationItem(
                 selected = currItem == index,
                 onClick = {
@@ -195,20 +193,10 @@ fun NavigationBar(
                         modifier = Modifier
                             .size(25.dp)
                             .padding(bottom = 3.dp),
-                        tint = colorResource(
-                            if (currItem == index)
-                                item.selectedColor
-                            else
-                                item.unselectedColor
-                        )
+                        tint = colorResource(colorId)
                     )
                 },
-                label = {
-                    Text(
-                        text = item.label,
-                        fontSize = 13.sp,
-                    )
-                },
+                label = { Text(text = item.label, fontSize = 13.sp) },
                 selectedContentColor = colorResource(item.selectedColor),
                 unselectedContentColor = colorResource(item.unselectedColor)
             )

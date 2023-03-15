@@ -69,16 +69,12 @@ class SearchViewModel : BaseViewModel() {
     }
 
     fun getHome(key: String) {
-        _uiState.update {
-            it.copy(refreshing = true)
-        }
+        _uiState.update { it.copy(refreshing = true) }
         getArticleQuery(key, getHomePage())
     }
 
     fun getNext(key: String) {
-        _uiState.update {
-            it.copy(loading = false)
-        }
+        _uiState.update { it.copy(loading = false) }
         getArticleQuery(key, getNextPage())
     }
 

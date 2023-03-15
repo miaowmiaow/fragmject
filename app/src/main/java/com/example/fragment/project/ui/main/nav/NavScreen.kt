@@ -19,7 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
-import com.example.fragment.project.components.Loading
+import com.example.fragment.project.components.BoxLayout
 import com.example.fragment.project.components.TabBar
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
@@ -39,11 +39,7 @@ fun NavScreen(
             pagerState = pagerState,
             data = tabs,
             textMapping = { it },
-            onClick = {
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(it)
-                }
-            },
+            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(
             count = tabs.size,
@@ -69,7 +65,7 @@ fun NavLinkContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    Loading(uiState.isLoading) {
+    BoxLayout(uiState.isLoading) {
         Row {
             LazyColumn(
                 modifier = Modifier.width(150.dp),
@@ -144,32 +140,28 @@ fun NavSystemContent(
                     fontSize = 13.sp
                 )
             }
-            it.children?.let { children ->
-                item {
-                    FlowRow(
-                        modifier = Modifier
-                            .background(colorResource(R.color.background))
-                            .fillMaxWidth()
-                    ) {
-                        children.forEach { children ->
-                            Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
-                                Button(
-                                    onClick = {
-                                        onNavigateToSystem(children.id)
-                                    },
-                                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
-                                    shape = RoundedCornerShape(50),
-                                    colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = colorResource(R.color.gray_e5),
-                                        contentColor = colorResource(R.color.text_666)
-                                    ),
-                                    contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
-                                ) {
-                                    Text(
-                                        text = children.name,
-                                        fontSize = 13.sp
-                                    )
-                                }
+            item {
+                FlowRow(
+                    modifier = Modifier
+                        .background(colorResource(R.color.background))
+                        .fillMaxWidth()
+                ) {
+                    it.children?.forEach { children ->
+                        Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
+                            Button(
+                                onClick = { onNavigateToSystem(children.id) },
+                                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                                shape = RoundedCornerShape(50),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = colorResource(R.color.gray_e5),
+                                    contentColor = colorResource(R.color.text_666)
+                                ),
+                                contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
+                            ) {
+                                Text(
+                                    text = children.name,
+                                    fontSize = 13.sp
+                                )
                             }
                         }
                     }

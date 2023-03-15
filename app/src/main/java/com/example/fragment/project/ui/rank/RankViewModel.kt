@@ -29,16 +29,12 @@ class RankViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update {
-            it.copy(refreshing = true)
-        }
+        _uiState.update { it.copy(refreshing = true) }
         getCoinRank(getHomePage(1))
     }
 
     fun getNext() {
-        _uiState.update {
-            it.copy(loading = false)
-        }
+        _uiState.update { it.copy(loading = false) }
         getCoinRank(getNextPage())
     }
 

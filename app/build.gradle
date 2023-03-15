@@ -56,15 +56,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-
     flavorDimensions.add('default')
 
     //获取渠道信息：Context.getMetaData("app_channel")
@@ -112,22 +103,27 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
     buildFeatures {
         compose true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion  = '1.4.0'
+        kotlinCompilerExtensionVersion  = '1.4.3'
     }
 
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
-    }
-
-    viewBinding {
-        enabled = true
     }
     namespace 'com.example.fragment.project'
 }
@@ -142,6 +138,7 @@ kapt {
 
 dependencies {
     implementation project(path: ':library-base')
+    implementation project(path: ':library-picture')
     // 单元测试
     testImplementation "junit:junit:$junit_version"
     testImplementation "io.mockk:mockk:$mockk_version"

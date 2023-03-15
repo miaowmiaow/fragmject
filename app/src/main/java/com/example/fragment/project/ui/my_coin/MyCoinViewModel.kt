@@ -34,9 +34,7 @@ class MyCoinViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update {
-            it.copy(refreshing = true)
-        }
+        _uiState.update { it.copy(refreshing = true) }
         viewModelScope.launch {
             //通过async获取需要展示的数据
             val getUserCoin = async { getUserCoin() }
@@ -44,9 +42,7 @@ class MyCoinViewModel : BaseViewModel() {
             val userCoin = getUserCoin.await()
             val myCoinList = getMyCoinList.await()
             _uiState.update {
-                userCoin.data?.let { data ->
-                    it.userCoinResult = data
-                }
+                userCoin.data?.let { data -> it.userCoinResult = data }
                 myCoinList.data?.datas?.let { data ->
                     it.myCoinResult.clear()
                     it.myCoinResult.addAll(data)
@@ -57,9 +53,7 @@ class MyCoinViewModel : BaseViewModel() {
     }
 
     fun getNext() {
-        _uiState.update {
-            it.copy(loading = false)
-        }
+        _uiState.update { it.copy(loading = false) }
         viewModelScope.launch {
             _uiState.update {
                 getMyCoinList(getNextPage()).data?.datas?.let { data ->

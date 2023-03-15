@@ -27,7 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ClearTextField
-import com.example.fragment.project.components.Loading
+import com.example.fragment.project.components.BoxLayout
 
 @Composable
 fun ShareArticleScreen(
@@ -95,7 +95,7 @@ fun ShareArticleScreen(
                 )
             }
         }
-        Loading(uiState.isLoading) {
+        BoxLayout(uiState.isLoading) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()

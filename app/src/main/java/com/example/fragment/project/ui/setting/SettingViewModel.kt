@@ -29,9 +29,7 @@ class SettingViewModel : BaseViewModel() {
     }
 
     private fun getUser() {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
         WanHelper.getUser { userBean ->
             _uiState.update {
                 it.userBean = userBean
@@ -44,9 +42,7 @@ class SettingViewModel : BaseViewModel() {
      * 退出登录
      */
     fun logout() {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val request = HttpRequest("user/logout/json")
             val response = get<HttpResponse>(request) { updateProgress(it) }

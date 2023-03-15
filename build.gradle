@@ -1,5 +1,7 @@
 buildscript {
     ext {
+        kotlin_version = '1.8.10'
+        gradle_version = '7.4.1'
         junit_version = '4.13.2'
         mockk_version = '1.13.4'
         coroutines_test_version = '1.6.4'
@@ -13,9 +15,9 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '7.4.1' apply false
-    id 'com.android.library' version '7.4.1' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
+    id 'com.android.application' version "$gradle_version" apply false
+    id 'com.android.library' version "$gradle_version" apply false
+    id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
 }
 
 task clean(type: Delete) {

@@ -30,11 +30,7 @@ fun ProjectScreen(
             pagerState = pagerState,
             data = projectTreeUiState.result,
             textMapping = { it.name },
-            onClick = {
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(it)
-                }
-            },
+            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(
             count = projectTreeUiState.result.size,
@@ -47,7 +43,7 @@ fun ProjectScreen(
                 projectViewModel.init(pageCid)
                 onDispose {}
             }
-            Loading(
+            BoxLayout(
                 projectTreeUiState.isLoading ||
                         (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
             ) {

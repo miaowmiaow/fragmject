@@ -29,16 +29,12 @@ class MyCollectViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update {
-            it.copy(refreshing = true)
-        }
+        _uiState.update { it.copy(refreshing = true) }
         getList(getHomePage())
     }
 
     fun getNext() {
-        _uiState.update {
-            it.copy(loading = false)
-        }
+        _uiState.update { it.copy(loading = false) }
         getList(getNextPage())
     }
 

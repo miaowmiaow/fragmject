@@ -51,9 +51,7 @@ class NavViewModel : BaseViewModel() {
      * 获取导航数据
      */
     private fun getNavigation() {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
@@ -75,9 +73,7 @@ class NavViewModel : BaseViewModel() {
      * 获取项目分类
      */
     private fun getSystemTree() {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             val request = HttpRequest("tree/json")
             val response = get<TreeListBean>(request) { updateProgress(it) }

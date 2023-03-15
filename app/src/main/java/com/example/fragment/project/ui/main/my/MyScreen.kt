@@ -50,10 +50,11 @@ fun MyScreen(
                 .size(75.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (uiState.isLogin())
+                    if (uiState.isLogin()) {
                         onNavigateToUser(uiState.userBean.id)
-                    else
+                    } else {
                         onNavigateToLogin()
+                    }
                 }
         )
         Text(
@@ -61,10 +62,11 @@ fun MyScreen(
             modifier = Modifier
                 .padding(top = 5.dp, bottom = 25.dp)
                 .clickable {
-                    if (uiState.isLogin())
+                    if (uiState.isLogin()) {
                         onNavigateToUser(uiState.userBean.id)
-                    else
+                    } else {
                         onNavigateToLogin()
+                    }
                 },
             fontSize = 16.sp,
             color = colorResource(R.color.text_333),

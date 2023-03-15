@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.update
 data class MyState(
     var isLoading: Boolean = false,
     var userBean: UserBean = UserBean(),
-){
-    fun isLogin():Boolean{
+) {
+    fun isLogin(): Boolean {
         return userBean.id.isNotBlank()
     }
 }
@@ -28,9 +28,7 @@ class MyViewModel : BaseViewModel() {
     }
 
     fun getUser() {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
         WanHelper.getUser { userBean ->
             _uiState.update {
                 it.userBean = userBean

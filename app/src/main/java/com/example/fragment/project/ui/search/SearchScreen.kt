@@ -6,11 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -45,7 +43,6 @@ fun SearchScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var searchText by rememberSaveable { mutableStateOf(key) }
-    val scrollState = rememberScrollState()
     Column {
         Row(
             modifier = Modifier
@@ -110,7 +107,7 @@ fun SearchScreen(
                 color = colorResource(R.color.white),
             )
         }
-        Loading(uiState.refreshing && !uiState.loading) {
+        BoxLayout(uiState.refreshing && !uiState.loading) {
             Column {
                 if (searchText.isBlank() || uiState.articlesResult.isEmpty()) {
                     Text(
@@ -119,11 +116,7 @@ fun SearchScreen(
                         fontSize = 16.sp,
                         color = colorResource(R.color.text_333),
                     )
-                    FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(scrollState)
-                    ) {
+                    FlowRow(modifier = Modifier.fillMaxWidth()) {
                         hotKey?.forEach {
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(

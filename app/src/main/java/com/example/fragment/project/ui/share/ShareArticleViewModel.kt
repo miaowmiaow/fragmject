@@ -23,9 +23,7 @@ class ShareArticleViewModel : BaseViewModel() {
     val uiState: StateFlow<ShareArticleState> = _uiState.asStateFlow()
 
     fun share(title: String, link: String) {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数

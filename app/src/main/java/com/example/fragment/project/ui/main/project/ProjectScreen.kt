@@ -1,7 +1,10 @@
 package com.example.fragment.project.ui.main.project
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -9,10 +12,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.components.*
-import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProjectScreen(
     projectTreeViewModel: ProjectTreeViewModel = viewModel(),
@@ -33,7 +35,7 @@ fun ProjectScreen(
             onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(
-            count = projectTreeUiState.result.size,
+            pageCount = projectTreeUiState.result.size,
             state = pagerState,
         ) { page ->
             val pageCid = projectTreeUiState.result[page].id

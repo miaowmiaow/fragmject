@@ -1,9 +1,12 @@
 package com.example.fragment.project.ui.system
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -19,10 +22,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.*
-import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SystemScreen(
     title: String = "体系",
@@ -49,7 +51,7 @@ fun SystemScreen(
             },
         )
         HorizontalPager(
-            count = tree.size,
+            pageCount = tree.size,
             state = pagerState,
         ) { page ->
             val pageCid = tree[page].id

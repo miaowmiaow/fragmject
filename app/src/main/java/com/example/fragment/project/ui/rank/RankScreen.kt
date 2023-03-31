@@ -82,9 +82,8 @@ fun RankScreen(
         BoxLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
                 modifier = Modifier
-                    .background(colorResource(R.color.white))
+                    .background(colorResource(R.color.background))
                     .fillMaxSize(),
-                contentPadding = PaddingValues(10.dp),
                 refreshing = uiState.refreshing,
                 loading = uiState.loading,
                 onRefresh = { viewModel.getHome() },
@@ -94,8 +93,9 @@ fun RankScreen(
             ) { _, item ->
                 Row(
                     modifier = Modifier
+                        .background(colorResource(R.color.white))
                         .fillMaxWidth()
-                        .padding(top = 10.dp, bottom = 10.dp),
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

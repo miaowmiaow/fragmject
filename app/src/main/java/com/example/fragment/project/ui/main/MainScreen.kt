@@ -27,7 +27,6 @@ import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.my.MyScreen
 import com.example.fragment.project.ui.main.nav.NavScreen
 import com.example.fragment.project.ui.main.project.ProjectScreen
-import com.google.accompanist.pager.ExperimentalPagerApi
 
 @Composable
 fun MainScreen(
@@ -112,7 +111,6 @@ fun MainScreen(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SearchBar(
     data: List<HotKeyBean>?,

@@ -46,7 +46,9 @@ fun ShareArticleScreen(
         onDispose { }
     }
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .background(colorResource(R.color.white))
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(

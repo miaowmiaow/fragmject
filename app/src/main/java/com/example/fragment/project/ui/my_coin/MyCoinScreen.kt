@@ -88,10 +88,7 @@ fun MyCoinScreen(
         }
         BoxLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
-                modifier = Modifier
-                    .background(colorResource(R.color.white))
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(10.dp),
+                modifier = Modifier.fillMaxSize(),
                 refreshing = uiState.refreshing,
                 loading = uiState.loading,
                 onRefresh = { viewModel.getHome() },
@@ -101,8 +98,9 @@ fun MyCoinScreen(
             ) { _, item ->
                 Row(
                     modifier = Modifier
+                        .background(colorResource(R.color.white))
                         .fillMaxWidth()
-                        .padding(top = 10.dp, bottom = 10.dp),
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column {

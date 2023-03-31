@@ -1,27 +1,33 @@
 package com.example.fragment.project.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.library.base.R
-import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LoopHorizontalPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     data: List<T>?,
     indicator: Boolean = false,
-    content: @Composable PagerScope.(page: Int, pageOffset: Float, item: T) -> Unit,
+    content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
     if (data.isNullOrEmpty()) {
         return
@@ -48,37 +54,50 @@ fun <T> LoopHorizontalPager(
         contentAlignment = Alignment.BottomCenter
     ) {
         HorizontalPager(
-            count = Int.MAX_VALUE,
+            pageCount = Int.MAX_VALUE,
             state = pagerState,
             contentPadding = contentPadding,
         ) { page ->
             val currPage = (page - startIndex).floorMod(pageCount)
-            val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+            val pageOffset = ((pagerState.currentPage - page)
+                    + pagerState.currentPageOffsetFraction).absoluteValue
             content(currPage, pageOffset, data[currPage])
         }
         if (indicator) {
-            HorizontalPagerIndicator(
-                pagerState = pagerState,
-                modifier = Modifier.paddingFromBaseline(bottom = 15.dp),
-                pageCount = pageCount,
-                pageIndexMapping = { page ->
-                    (page - startIndex).floorMod(pageCount)
-                },
-                activeColor = colorResource(R.color.orange),
-                inactiveColor = colorResource(R.color.theme)
-            )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 5.dp)
+                    .align(Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(pageCount) { iteration ->
+                    val currentPage = (pagerState.currentPage - startIndex).floorMod(pageCount)
+                    val color = if (currentPage == iteration)
+                        colorResource(R.color.orange)
+                    else
+                        colorResource(R.color.theme)
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                    )
+                }
+            }
         }
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LoopVerticalPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     data: List<T>?,
     indicator: Boolean = false,
-    content: @Composable PagerScope.(page: Int, pageOffset: Float, item: T) -> Unit,
+    content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
     if (data.isNullOrEmpty()) {
         return
@@ -105,25 +124,37 @@ fun <T> LoopVerticalPager(
         contentAlignment = Alignment.BottomCenter
     ) {
         VerticalPager(
-            count = Int.MAX_VALUE,
+            pageCount = Int.MAX_VALUE,
             state = pagerState,
             contentPadding = contentPadding,
         ) { page ->
             val currPage = (page - startIndex).floorMod(pageCount)
-            val pageOffset = calculateCurrentOffsetForPage(page).absoluteValue
+            val pageOffset = page.absoluteValue.toFloat()
             content(currPage, pageOffset, data[currPage])
         }
         if (indicator) {
-            VerticalPagerIndicator(
-                pagerState = pagerState,
-                modifier = Modifier.paddingFromBaseline(bottom = 15.dp),
-                pageCount = pageCount,
-                pageIndexMapping = { page ->
-                    (page - startIndex).floorMod(pageCount)
-                },
-                activeColor = colorResource(R.color.orange),
-                inactiveColor = colorResource(R.color.theme)
-            )
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(end = 5.dp)
+                    .align(Alignment.CenterEnd),
+                verticalArrangement = Arrangement.Center
+            ) {
+                repeat(pageCount) { iteration ->
+                    val currentPage = (pagerState.currentPage - startIndex).floorMod(pageCount)
+                    val color = if (currentPage == iteration)
+                        colorResource(R.color.orange)
+                    else
+                        colorResource(R.color.theme)
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                    )
+                }
+            }
         }
     }
 }

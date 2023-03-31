@@ -65,6 +65,7 @@ fun SettingScreen(
             BoxLayout(uiState.isLoading) {
                 Column(
                     modifier = Modifier
+                        .background(colorResource(R.color.background))
                         .fillMaxSize()
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally

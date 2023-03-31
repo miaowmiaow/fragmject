@@ -15,9 +15,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
-import com.google.accompanist.pager.ExperimentalPagerApi
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun <T> Banner(
     modifier: Modifier = Modifier,
@@ -30,7 +28,7 @@ fun <T> Banner(
     }
     LoopHorizontalPager(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 32.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp),
         data = data,
         indicator = true
     ) { page, pageOffset, item ->
@@ -38,7 +36,7 @@ fun <T> Banner(
             Modifier
                 .graphicsLayer {
                     lerp(
-                        start = 0.9f,
+                        start = 0.95f,
                         stop = 1f,
                         fraction = 1f - pageOffset.coerceIn(0f, 1f)
                     ).also { scale ->

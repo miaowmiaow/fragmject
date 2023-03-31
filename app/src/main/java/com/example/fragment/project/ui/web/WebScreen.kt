@@ -216,7 +216,7 @@ fun WebScreen(
                         if (context is AppCompatActivity) {
                             val intent = Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse(state.content.getCurrentUrl())
+                                Uri.parse(state.lastLoadedUrl)
                             )
                             intent.addCategory(Intent.CATEGORY_BROWSABLE)
                             context.startActivity(intent)

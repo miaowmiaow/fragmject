@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -21,10 +23,9 @@ import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.BoxLayout
 import com.example.fragment.project.components.TabBar
-import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NavScreen(
     tree: List<TreeBean>,
@@ -42,7 +43,7 @@ fun NavScreen(
             onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(
-            count = tabs.size,
+            pageCount = tabs.size,
             state = pagerState,
         ) { page ->
             if (page == 0) {

@@ -18,7 +18,7 @@ class MiaowPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
         androidComponents.onVariants { variant ->
-            variant.transformClassesWith(
+            variant.instrumentation.transformClassesWith(
                 ScanClassVisitorFactory::class.java,
                 InstrumentationScope.ALL
             ) {
@@ -60,7 +60,7 @@ class MiaowPlugin : Plugin<Project> {
                     )
                 )
             }
-            variant.transformClassesWith(
+            variant.instrumentation.transformClassesWith(
                 TimeClassVisitorFactory::class.java,
                 InstrumentationScope.ALL
             ) {
@@ -78,7 +78,7 @@ class MiaowPlugin : Plugin<Project> {
                     )
                 )
             }
-            variant.transformClassesWith(
+            variant.instrumentation.transformClassesWith(
                 TraceClassVisitorFactory::class.java,
                 InstrumentationScope.ALL
             ) {
@@ -109,7 +109,7 @@ class MiaowPlugin : Plugin<Project> {
                     )
                 )
             }
-            variant.setAsmFramesComputationMode(FramesComputationMode.COPY_FRAMES)
+            variant.instrumentation.setAsmFramesComputationMode(FramesComputationMode.COPY_FRAMES)
         }
     }
 

@@ -21,6 +21,7 @@ object OkHelper {
         .cookieJar(CookieJar())
         .cache(Cache(File(context.cacheDir, "okhttp"), 250L * 1024 * 1024))
         .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-        .build()
-
+        .build().also {
+            httpClient = it
+        }
 }

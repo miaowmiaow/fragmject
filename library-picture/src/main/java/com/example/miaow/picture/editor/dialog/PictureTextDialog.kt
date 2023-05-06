@@ -41,12 +41,6 @@ class PictureTextDialog : FullDialog() {
         return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _callback = null
-        _binding = null
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dialog?.window?.apply {
@@ -94,6 +88,12 @@ class PictureTextDialog : FullDialog() {
             binding.editText.requestFocus()
             showSoftInput(binding.editText)
         }, 250)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _callback = null
+        _binding = null
     }
 
     private fun selectedColor(view: View) {

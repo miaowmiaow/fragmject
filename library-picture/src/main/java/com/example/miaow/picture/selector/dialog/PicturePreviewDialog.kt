@@ -1,5 +1,6 @@
 package com.example.miaow.picture.selector.dialog
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
@@ -30,6 +31,10 @@ class PicturePreviewDialog : FullDialog() {
         }
     }
 
+    enum class Mode {
+        NORM, SELECT
+    }
+
     private val viewModel: PictureViewModel by activityViewModels()
     private var _binding: PicturePreviewDialogBinding? = null
     private val binding get() = _binding!!
@@ -38,7 +43,7 @@ class PicturePreviewDialog : FullDialog() {
     private val origSelectPosition: MutableList<Int> = ArrayList()
     private val currSelectPosition: MutableList<Int> = ArrayList()
     private var currPreviewPosition = -1
-    private var isSinglePicture = false
+    private var mode = Mode.NORM
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,13 +52,6 @@ class PicturePreviewDialog : FullDialog() {
     ): View {
         _binding = PicturePreviewDialogBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding.viewpager2.adapter = null
-        _callback = null
-        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -67,6 +65,14 @@ class PicturePreviewDialog : FullDialog() {
         initViewModel()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding.viewpager2.adapter = null
+        _callback = null
+        _binding = null
+    }
+
+    @SuppressLint("SetTextI18n")
     private fun initView() {
         binding.back.setOnClickListener { dismiss() }
         binding.config.setOnClickListener {
@@ -74,7 +80,7 @@ class PicturePreviewDialog : FullDialog() {
             dismiss()
         }
         binding.selectBox.setOnClickListener {
-            val origPosition = if (!isSinglePicture) {
+            val origPosition = if (mode != Mode.NORM) {
                 origSelectPosition[binding.viewpager2.currentItem]
             } else binding.viewpager2.currentItem
             if (currSelectPosition.contains(origPosition)) {
@@ -96,11 +102,9 @@ class PicturePreviewDialog : FullDialog() {
             PictureEditorDialog.newInstance()
                 .setBitmapPathOrUri(null, currentUri)
                 .setPictureEditorCallback(object : PictureEditorCallback {
-                    override fun onFinish(path: String?, uri: Uri?) {
-                        uri?.let {
-                            previewAdapter.getItem(binding.viewpager2.currentItem).uri = it
-                            previewAdapter.notifyItemChanged(binding.viewpager2.currentItem)
-                        }
+                    override fun onFinish(path: String, uri: Uri) {
+                        previewAdapter.getItem(binding.viewpager2.currentItem).uri = uri
+                        previewAdapter.notifyItemChanged(binding.viewpager2.currentItem)
                     }
                 })
                 .show(childFragmentManager)
@@ -110,10 +114,11 @@ class PicturePreviewDialog : FullDialog() {
         binding.viewpager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                val origPosition = if (!isSinglePicture) {
+                val origPosition = if (mode != Mode.NORM) {
                     origSelectPosition[position]
                 } else position
                 binding.selectBox.isSelected = currSelectPosition.contains(origPosition)
+                binding.title.text = "${position + 1}/${previewAdapter.itemCount}"
             }
         })
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -133,9 +138,10 @@ class PicturePreviewDialog : FullDialog() {
         })
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initViewModel() {
         viewModel.currAlbumResult.observe(viewLifecycleOwner) {
-            if (!isSinglePicture) {
+            if (mode != Mode.NORM) {
                 val data: MutableList<MediaBean> = ArrayList()
                 origSelectPosition.forEach { position ->
                     data.add(it[position])
@@ -154,24 +160,33 @@ class PicturePreviewDialog : FullDialog() {
                         }
                 }.attach()
                 binding.tabLayout.visibility = View.VISIBLE
+                binding.title.text = "1/${data.size}"
             } else {
                 previewAdapter.setNewData(it)
                 binding.viewpager2.setCurrentItem(currPreviewPosition, false)
                 binding.tabLayout.visibility = View.GONE
+                binding.title.text = "${currPreviewPosition + 1}/${it.size}"
             }
         }
     }
 
     fun setSelectedPosition(
         selectPosition: List<Int>,
-        previewPosition: Int = -1
     ): PicturePreviewDialog {
         origSelectPosition.clear()
         currSelectPosition.clear()
         origSelectPosition.addAll(selectPosition)
         currSelectPosition.addAll(selectPosition)
+        return this
+    }
+
+    fun setPreviewPosition(previewPosition: Int = -1): PicturePreviewDialog {
         currPreviewPosition = previewPosition
-        isSinglePicture = previewPosition != -1
+        return this
+    }
+
+    fun setMode(mode: Mode): PicturePreviewDialog {
+        this.mode = mode
         return this
     }
 

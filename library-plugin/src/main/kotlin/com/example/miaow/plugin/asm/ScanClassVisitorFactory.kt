@@ -6,7 +6,6 @@ import com.android.build.api.instrumentation.ClassData
 import com.android.build.api.instrumentation.InstrumentationParameters
 import com.example.miaow.plugin.bean.ScanBean
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
@@ -14,7 +13,7 @@ import org.objectweb.asm.tree.*
 
 interface ScanParams : InstrumentationParameters {
     @get:Input
-    val ignoreOwner: Property<String>
+    val ignoreOwners: ListProperty<String>
 
     @get:Input
     val listOfScans: ListProperty<ScanBean>
@@ -33,7 +32,12 @@ abstract class ScanClassVisitorFactory : AsmClassVisitorFactory<ScanParams> {
     }
 
     override fun isInstrumentable(classData: ClassData): Boolean {
-        return !classData.className.startsWith(parameters.get().ignoreOwner.get().replace("/", "."))
+        parameters.get().ignoreOwners.get().forEach {
+            if (classData.className.startsWith(it.replace("/", "."))) {
+                return false
+            }
+        }
+        return true
     }
 
 }

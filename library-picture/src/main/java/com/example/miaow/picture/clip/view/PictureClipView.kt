@@ -28,6 +28,8 @@ class PictureClipView @JvmOverloads constructor(
         private const val MAXIMUM_SCALE = 2.0f
     }
 
+    private var paddingTop = 0f
+    private var paddingBottom = 0f
     private var viewWidth = 0
     private var viewHeight = 0
     private var bitmapWidth = 0
@@ -76,6 +78,11 @@ class PictureClipView @JvmOverloads constructor(
 
     }
     private val scaleGestureDetector = ScaleGestureDetector(context, sgListener)
+
+    fun setPadding(top: Float, bottom: Float) {
+        paddingTop = top
+        paddingBottom = bottom
+    }
 
     fun setBitmapResource(bitmap: Bitmap) {
         this.orgBitmap = bitmap
@@ -258,9 +265,9 @@ class PictureClipView @JvmOverloads constructor(
 
     private fun computeBitmapRectF() {
         val maxClipLift = DRAG_WIDTH
-        val maxClipTop = DRAG_WIDTH
+        val maxClipTop = DRAG_WIDTH + paddingTop
         val maxClipRight = viewWidth - DRAG_WIDTH
-        val maxClipBottom = viewHeight - DRAG_WIDTH
+        val maxClipBottom = viewHeight - DRAG_WIDTH - paddingBottom
         maxClipRectF.set(maxClipLift, maxClipTop, maxClipRight, maxClipBottom)
         val scaleFactor = if (bitmapWidth > bitmapHeight) {
             maxClipRectF.width() / bitmapWidth

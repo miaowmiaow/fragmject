@@ -26,8 +26,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.dialog.StandardDialog
 import com.example.fragment.library.base.utils.CacheUtils
-import com.example.fragment.library.base.utils.ScreenRecordHelper.startScreenRecord
-import com.example.fragment.library.base.utils.ScreenRecordHelper.stopScreenRecord
+import com.example.fragment.library.base.utils.ScreenRecordCallback
+import com.example.fragment.library.base.utils.startScreenRecord
+import com.example.fragment.library.base.utils.stopScreenRecord
 import com.example.fragment.project.R
 import com.example.fragment.project.components.BoxLayout
 import com.example.fragment.project.utils.WanHelper
@@ -189,27 +190,39 @@ fun SettingScreen(
                                 if (screenRecordState) {
                                     coroutineScope.launch {
                                         if (context is AppCompatActivity) {
-                                            context.startScreenRecord { code, message ->
-                                                if (code != Activity.RESULT_OK) {
-                                                    screenRecordState = false
+                                            context.supportFragmentManager.startScreenRecord(object :
+                                                ScreenRecordCallback {
+                                                override fun onActivityResult(
+                                                    resultCode: Int,
+                                                    message: String
+                                                ) {
+                                                    if (resultCode != Activity.RESULT_OK) {
+                                                        screenRecordState = false
+                                                    }
+                                                    coroutineScope.launch {
+                                                        scaffoldState.snackbarHostState.showSnackbar(
+                                                            message, "确定"
+                                                        )
+                                                    }
                                                 }
+                                            })
+                                        }
+                                    }
+                                } else {
+                                    if (context is AppCompatActivity) {
+                                        context.supportFragmentManager.stopScreenRecord(object :
+                                            ScreenRecordCallback {
+                                            override fun onActivityResult(
+                                                resultCode: Int,
+                                                message: String
+                                            ) {
                                                 coroutineScope.launch {
                                                     scaffoldState.snackbarHostState.showSnackbar(
                                                         message, "确定"
                                                     )
                                                 }
                                             }
-                                        }
-                                    }
-                                } else {
-                                    if (context is AppCompatActivity) {
-                                        context.stopScreenRecord()
-                                        coroutineScope.launch {
-                                            scaffoldState.snackbarHostState.showSnackbar(
-                                                "屏幕录制结束",
-                                                "确定"
-                                            )
-                                        }
+                                        })
                                     }
                                 }
                             }

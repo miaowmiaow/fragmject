@@ -8,6 +8,7 @@ plugins {
 }
 
 android {
+    namespace 'com.example.fragment.project'
     compileSdk Integer.valueOf(gradle.compileSdkVersion)
 
     defaultConfig {
@@ -117,7 +118,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion  = '1.4.3'
+        kotlinCompilerExtensionVersion = "${compose_version}"
     }
 
     packagingOptions {
@@ -125,7 +126,6 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-    namespace 'com.example.fragment.project'
 }
 
 kapt {

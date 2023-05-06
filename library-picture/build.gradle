@@ -7,6 +7,7 @@ plugins {
 }
 
 android {
+    namespace 'com.example.miaow.picture'
     compileSdk Integer.valueOf(gradle.compileSdkVersion)
 
     defaultConfig {
@@ -17,7 +18,6 @@ android {
     viewBinding {
         enabled = true
     }
-    namespace 'com.example.miaow.picture'
 }
 
 dependencies {

@@ -3,6 +3,7 @@ package com.example.fragment.library.base.utils
 import android.os.Environment
 import java.io.File
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 object FileUtils {
 
@@ -50,20 +51,20 @@ object FileUtils {
         val megaByte = kiloByte / 1024
         if (megaByte < 1) {
             val result = BigDecimal(kiloByte.toString())
-            return result.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "KB"
+            return result.setScale(2,  RoundingMode.HALF_UP).toPlainString() + "KB"
         }
         val gigaByte = megaByte / 1024
         if (gigaByte < 1) {
             val result = BigDecimal(megaByte.toString())
-            return result.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "MB"
+            return result.setScale(2, RoundingMode.HALF_UP).toPlainString() + "MB"
         }
         val teraBytes = gigaByte / 1024
         if (teraBytes < 1) {
             val result = BigDecimal(gigaByte.toString())
-            return result.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "GB"
+            return result.setScale(2, RoundingMode.HALF_UP).toPlainString() + "GB"
         }
         val result = BigDecimal(teraBytes)
-        return result.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "TB"
+        return result.setScale(2, RoundingMode.HALF_UP).toPlainString() + "TB"
     }
 
 }

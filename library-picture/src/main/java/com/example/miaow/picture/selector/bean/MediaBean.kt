@@ -11,7 +11,7 @@ class MediaBean(
     var width: Int = 0,
     var height: Int = 0,
     var mimeType: String = "*/*",
-) : Parcelable {
+) : Cloneable, Parcelable {
 
     /**
      * 长图
@@ -28,6 +28,15 @@ class MediaBean(
         return when (mimeType) {
             "image/gif", "image/GIF" -> true
             else -> false
+        }
+    }
+
+    public override fun clone(): MediaBean {
+        return try {
+            super.clone() as MediaBean
+        } catch (e: CloneNotSupportedException) {
+            e.printStackTrace()
+            MediaBean("EMPTY", Uri.EMPTY)
         }
     }
 

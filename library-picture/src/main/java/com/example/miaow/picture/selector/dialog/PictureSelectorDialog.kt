@@ -1,9 +1,6 @@
 package com.example.miaow.picture.selector.dialog
 
 import android.content.ContentValues
-import android.content.Context
-import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -15,20 +12,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.*
+import com.example.fragment.library.base.utils.CacheUtils
+import com.example.fragment.library.base.utils.PermissionsCallback
+import com.example.fragment.library.base.utils.requestCamera
+import com.example.fragment.library.base.utils.requestMediaImages
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
 import com.example.miaow.picture.selector.bean.MediaBean
-import com.example.miaow.picture.selector.vm.PictureViewModel
 import com.example.miaow.picture.selector.pop.PictureAlbumPopupWindow
+import com.example.miaow.picture.selector.vm.PictureViewModel
 import java.io.File
 
 class PictureSelectorDialog : FullDialog() {
@@ -48,6 +48,17 @@ class PictureSelectorDialog : FullDialog() {
     private var _pictureAlbumPopupWindow: PictureAlbumPopupWindow? = null
     private val pictureAlbumPopupWindow get() = _pictureAlbumPopupWindow!!
 
+    private var takePictureUri: Uri? = null
+
+    private val takePicture =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { result ->
+            if (result) {
+                val bean = MediaBean("拍照", takePictureUri())
+                selectorAdapter.addData(1, listOf(bean))
+                viewModel.updateMediaMap(bean)
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,16 +66,6 @@ class PictureSelectorDialog : FullDialog() {
     ): View {
         _binding = PictureSelectorDialogBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        setStatusBar(binding.root, Color.parseColor("#00000000"), false)
-        binding.list.adapter = null
-        pictureAlbumPopupWindow.onDestroy()
-        _pictureAlbumPopupWindow = null
-        _callback = null
-        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -78,7 +79,17 @@ class PictureSelectorDialog : FullDialog() {
         _pictureAlbumPopupWindow = PictureAlbumPopupWindow(view.context)
         initView()
         initViewModel()
-        initData(view.context)
+        initData()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        setStatusBar(binding.root, Color.parseColor("#00000000"), false)
+        binding.list.adapter = null
+        pictureAlbumPopupWindow.onDestroy()
+        _pictureAlbumPopupWindow = null
+        _callback = null
+        _binding = null
     }
 
     private fun initView() {
@@ -100,9 +111,11 @@ class PictureSelectorDialog : FullDialog() {
             val data = selectorAdapter.getSelectPosition()
             if (data.isNotEmpty()) {
                 PicturePreviewDialog.newInstance()
+                    .setMode(PicturePreviewDialog.Mode.SELECT)
                     .setSelectedPosition(data)
                     .setPicturePreviewCallback(object : PicturePreviewCallback {
                         override fun onFinish(selectPosition: List<Int>) {
+                            selectorAdapter.setAlbumData(viewModel.currAlbumResult.value)
                             selectorAdapter.setSelectPosition(selectPosition)
                         }
                     })
@@ -115,14 +128,17 @@ class PictureSelectorDialog : FullDialog() {
         binding.list.adapter = selectorAdapter
         selectorAdapter.setOnPictureClickListener(object : OnPictureClickListener {
             override fun onCamera() {
-                requireActivity().takePicture()
+                takePicture()
             }
 
             override fun onSelectClick(position: Int) {
                 PicturePreviewDialog.newInstance()
-                    .setSelectedPosition(selectorAdapter.getSelectPosition(), position)
+                    .setMode(PicturePreviewDialog.Mode.NORM)
+                    .setSelectedPosition(selectorAdapter.getSelectPosition())
+                    .setPreviewPosition(position)
                     .setPicturePreviewCallback(object : PicturePreviewCallback {
                         override fun onFinish(selectPosition: List<Int>) {
+                            selectorAdapter.setAlbumData(viewModel.currAlbumResult.value)
                             selectorAdapter.setSelectPosition(selectPosition)
                         }
                     })
@@ -153,65 +169,18 @@ class PictureSelectorDialog : FullDialog() {
         }
     }
 
-    private fun initData(context: Context) {
+    private fun initData() {
         if (viewModel.albumResult.value == null) {
-            viewModel.queryAlbum(context)
-        }
-    }
-
-    /**
-     * 拍照的方法
-     */
-    private fun FragmentActivity.takePicture() {
-        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-            return
-        }
-        requestCamera(object : PermissionsCallback {
-            override fun allow() {
-                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    // 适配android 10
-                    val url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                    contentResolver.insert(url, ContentValues())?.let {
-                        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, it)
-                        startForResult(intent, object : ActivityCallback {
-                            override fun onActivityResult(resultCode: Int, data: Intent?) {
-                                val bean = MediaBean("拍照", it)
-                                selectorAdapter.addData(1, listOf(bean))
-                                viewModel.updateMediaMap(bean)
-                            }
-                        })
-                    }
-                } else {
-                    File(externalCacheDir, "wan").let { parentFile ->
-                        parentFile.mkdirs()
-                        val imageFile = File(parentFile, "${System.currentTimeMillis()}.png")
-                        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
-                            val authority = "${packageName}.FileProvider"
-                            FileProvider.getUriForFile(this@takePicture, authority, imageFile)
-                        } else {
-                            Uri.fromFile(imageFile)
-                        }
-                        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-                        startForResult(intent, object : ActivityCallback {
-                            override fun onActivityResult(resultCode: Int, data: Intent?) {
-                                saveSystemAlbum(BitmapFactory.decodeFile(imageFile.absolutePath)) { _, _ ->
-                                    val bean = MediaBean("拍照", uri)
-                                    selectorAdapter.addData(1, listOf(bean))
-                                    viewModel.updateMediaMap(bean)
-                                }
-                            }
-                        })
-                    }
+            childFragmentManager.requestMediaImages(object : PermissionsCallback {
+                override fun allow() {
+                    viewModel.queryAlbum(requireActivity())
                 }
-            }
 
-            override fun deny() {
-                PermissionDialog.alert(this@takePicture, "相机")
-            }
-        })
+                override fun deny() {
+                    PermissionDialog.alert(requireActivity(), "照片")
+                }
+            })
+        }
     }
 
     fun setPictureSelectorCallback(callback: PictureSelectorCallback): PictureSelectorDialog {
@@ -219,6 +188,45 @@ class PictureSelectorDialog : FullDialog() {
         return this
     }
 
+    /**
+     * 拍照的方法
+     */
+    private fun takePicture() {
+        childFragmentManager.requestCamera(object : PermissionsCallback {
+            override fun allow() {
+                takePicture.launch(takePictureUri())
+            }
+
+            override fun deny() {
+                PermissionDialog.alert(requireActivity(), "相机")
+            }
+        })
+    }
+
+    private fun takePictureUri(): Uri {
+        val pictureName = "${System.currentTimeMillis()}.png"
+        return takePictureUri ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val values = ContentValues()
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, pictureName)
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            requireContext().contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                values
+            ) ?: Uri.EMPTY
+        } else {
+            val cachePath = CacheUtils.getDirPath(requireContext(), Environment.DIRECTORY_PICTURES)
+            val imageFile = File(cachePath, pictureName)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
+                val authority = "${requireContext().packageName}.FileProvider"
+                FileProvider.getUriForFile(requireContext(), authority, imageFile)
+            } else {
+                Uri.fromFile(imageFile)
+            }
+        }.also {
+            takePictureUri = it
+        }
+    }
 }
 
 interface PictureSelectorCallback {

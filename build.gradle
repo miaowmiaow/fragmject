@@ -1,9 +1,11 @@
 buildscript {
     ext {
+        gradle_version = '7.4.2'
         kotlin_version = '1.8.10'
-        gradle_version = '7.4.1'
+        compose_version = '1.4.3'
+
         junit_version = '4.13.2'
-        mockk_version = '1.13.4'
+        mockk_version = '1.13.5'
         coroutines_test_version = '1.6.4'
         androidx_testing_version = '2.2.0'
         androidx_junit_version = '1.1.5'

@@ -138,7 +138,8 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
         else super.getItemViewType(position)
     }
 
-    fun setAlbumData(data: List<MediaBean>) {
+    fun setAlbumData(data: List<MediaBean>? = null) {
+        if (data.isNullOrEmpty()) return
         currSelectPosition.clear()
         val newData: MutableList<MediaBean> = ArrayList()
         newData.add(MediaBean("相机", Uri.EMPTY))

@@ -1,12 +1,17 @@
 package com.example.fragment.project.ui.web
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -19,15 +24,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.base.utils.injectVConsoleJs
 import com.example.fragment.project.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.web.*
 
-@OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun WebScreen(
@@ -37,13 +41,30 @@ fun WebScreen(
     var webView by remember { mutableStateOf<WebView?>(null) }
     val state = rememberWebViewState(originalUrl)
     val navigator = rememberWebViewNavigator()
-    val storagePermissionsState = rememberMultiplePermissionsState(
-        listOf(
-            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    val storagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
         )
-    )
-    val openDialog = remember { mutableStateOf(!storagePermissionsState.allPermissionsGranted) }
+    else
+        arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    val openDialog = remember {
+        mutableStateOf(!storagePermissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        })
+    }
+    val requestPermissions =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
+            var isGranted = true
+            ps.entries.forEach {
+                if (it.key in storagePermissions && !it.value)
+                    isGranted = false
+            }
+            openDialog.value = !isGranted
+        }
     Column(
         modifier = Modifier
             .background(colorResource(R.color.white))
@@ -244,11 +265,6 @@ fun WebScreen(
         }
     }
     if (openDialog.value) {
-        val textToShow = if (storagePermissionsState.shouldShowRationale) {
-            "我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用"
-        } else {
-            "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用"
-        }
         AlertDialog(
             onDismissRequest = {
                 // Dismiss the dialog when the user clicks outside the dialog or on the back
@@ -257,12 +273,11 @@ fun WebScreen(
                 openDialog.value = false
             },
             title = { Text(text = "申请存储空间权限") },
-            text = { Text(textToShow) },
+            text = { Text(text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        storagePermissionsState.launchMultiplePermissionRequest()
-                        openDialog.value = false
+                        requestPermissions.launch(storagePermissions)
                     }
                 ) { Text("确定") }
             },

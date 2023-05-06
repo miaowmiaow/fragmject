@@ -22,6 +22,18 @@
             android:padding="15dp"
             android:src="@drawable/p_close" />
 
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="0/0"
+            android:textColor="#ffffff"
+            android:textSize="14sp"/>
+
         <ImageView
             android:id="@+id/select_box"
             android:layout_width="45dp"

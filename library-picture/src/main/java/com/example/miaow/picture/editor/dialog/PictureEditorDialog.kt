@@ -1,11 +1,9 @@
 package com.example.miaow.picture.editor.dialog
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +14,10 @@ import coil.dispose
 import coil.load
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
-import com.example.fragment.library.base.utils.ActivityCallback
-import com.example.fragment.library.base.utils.startForResult
+import com.example.fragment.library.base.utils.getBitmapFromPath
+import com.example.fragment.library.base.utils.getBitmapFromUri
+import com.example.fragment.library.base.utils.getBitmapPathFromUri
+import com.example.fragment.library.base.utils.saveImagesToAlbum
 import com.example.miaow.picture.clip.dialog.PictureClipCallback
 import com.example.miaow.picture.clip.dialog.PictureClipDialog
 import com.example.miaow.picture.databinding.PictureEditorDialogBinding
@@ -25,10 +25,9 @@ import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.utils.ColorUtils
 import com.example.miaow.picture.editor.view.PictureEditorView
 import com.example.miaow.picture.editor.view.layer.OnStickerClickListener
-import com.example.fragment.library.base.utils.getBitmapFromPath
-import com.example.fragment.library.base.utils.getBitmapFromUri
-import com.example.fragment.library.base.utils.getBitmapPathFromUri
-import com.example.fragment.library.base.utils.saveSystemAlbum
+import com.example.miaow.picture.selector.bean.MediaBean
+import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
+import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
 
 class PictureEditorDialog : FullDialog() {
 
@@ -56,12 +55,6 @@ class PictureEditorDialog : FullDialog() {
         return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _callback = null
-        _binding = null
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dialog?.window?.apply {
@@ -86,7 +79,7 @@ class PictureEditorDialog : FullDialog() {
                 binding.progress.visibility = View.VISIBLE
                 binding.progress.load(R.drawable.icons8_monkey)
                 Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_SHORT).show()
-                it.context.saveSystemAlbum(binding.picEditor.saveBitmap()) { path, uri ->
+                it.context.saveImagesToAlbum(binding.picEditor.saveBitmap()) { path, uri ->
                     binding.complete.isEnabled = true
                     binding.progress.visibility = View.GONE
                     binding.progress.dispose()
@@ -145,6 +138,12 @@ class PictureEditorDialog : FullDialog() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _callback = null
+        _binding = null
+    }
+
     fun setBitmapPathOrUri(path: String?, uri: Uri?): PictureEditorDialog {
         this.bitmapPath = path
         this.bitmapUri = uri
@@ -157,27 +156,22 @@ class PictureEditorDialog : FullDialog() {
     }
 
     private fun openAlbum() {
-        activity?.apply {
-            val data = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            val type = "image/*"
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.setDataAndType(data, type)
-            startForResult(intent, object : ActivityCallback {
-                override fun onActivityResult(resultCode: Int, data: Intent?) {
-                    data?.data?.let { uri ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                            getBitmapFromUri(uri, 200)?.let { bitmap ->
-                                binding.picEditor.setSticker(StickerAttrs(bitmap))
-                            }
-                        } else {
-                            getBitmapFromPath(getBitmapPathFromUri(uri), 200)?.let { bitmap ->
-                                binding.picEditor.setSticker(StickerAttrs(bitmap))
-                            }
+        PictureSelectorDialog.newInstance()
+            .setPictureSelectorCallback(object : PictureSelectorCallback {
+                override fun onSelectedData(data: List<MediaBean>) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        requireActivity().getBitmapFromUri(data.first().uri, 200)?.let { bitmap ->
+                            binding.picEditor.setSticker(StickerAttrs(bitmap))
+                        }
+                    } else {
+                        requireActivity().getBitmapFromPath(
+                            requireActivity().getBitmapPathFromUri(data.first().uri), 200
+                        )?.let { bitmap ->
+                            binding.picEditor.setSticker(StickerAttrs(bitmap))
                         }
                     }
                 }
-            })
-        }
+            }).show(childFragmentManager)
     }
 
     private fun openTextDialog(attrs: StickerAttrs? = null) {
@@ -199,7 +193,7 @@ class PictureEditorDialog : FullDialog() {
         PictureClipDialog.newInstance()
             .setBitmapResource(bitmap)
             .setPictureClipCallback(object : PictureClipCallback {
-                override fun onFinish(path: String?, uri: Uri?) {
+                override fun onFinish(path: String, uri: Uri) {
                     _callback?.onFinish(path, uri)
                     dismiss()
                 }
@@ -224,5 +218,5 @@ class PictureEditorDialog : FullDialog() {
 }
 
 interface PictureEditorCallback {
-    fun onFinish(path: String?, uri: Uri?)
+    fun onFinish(path: String, uri: Uri)
 }

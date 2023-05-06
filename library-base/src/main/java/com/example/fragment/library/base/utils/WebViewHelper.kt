@@ -43,7 +43,7 @@ object WebViewHelper {
                         if (URLUtil.isValidUrl(data)) {
                             webView.context.imageDownload(data, {
                                 val bitmap = (it as BitmapDrawable).bitmap
-                                webView.context.saveSystemAlbum(bitmap) { _, _ -> }
+                                webView.context.saveImagesToAlbum(bitmap) { _, _ -> }
                             })
                         } else {
                             var str = data
@@ -53,7 +53,7 @@ object WebViewHelper {
                             val array = Base64.decode(str, Base64.NO_WRAP)
                             val bitmap =
                                 BitmapFactory.decodeByteArray(array, 0, array.size)
-                            webView.context.saveSystemAlbum(bitmap) { _, _ -> }
+                            webView.context.saveImagesToAlbum(bitmap) { _, _ -> }
                         }
                     }
                     true

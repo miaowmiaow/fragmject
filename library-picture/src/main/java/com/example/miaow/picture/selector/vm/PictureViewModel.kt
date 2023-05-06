@@ -53,26 +53,33 @@ class PictureViewModel : BaseViewModel() {
     fun queryAlbum(context: Context) {
         viewModelScope.launch {
             try {
-                context.contentResolver.query(uri, projection, null, null, sortOrder)?.apply {
-                    while (moveToNext()) {
-                        val mediaTypeIndex = getColumnIndex(MEDIA_TYPE)
-                        val mediaType = getInt(mediaTypeIndex)
+                val cursor = context.contentResolver.query(
+                    uri,
+                    projection,
+                    null,
+                    null,
+                    sortOrder
+                ) ?: throw Exception("Query could not be executed")
+                cursor.use {
+                    while (cursor.moveToNext()) {
+                        val mediaTypeIndex = cursor.getColumnIndex(MEDIA_TYPE)
+                        val mediaType = cursor.getInt(mediaTypeIndex)
                         if (mediaType == MEDIA_TYPE_IMAGE) {
-                            val idIndex = getColumnIndex(ID)
-                            val id = getLong(idIndex)
+                            val idIndex = cursor.getColumnIndex(ID)
+                            val id = cursor.getLong(idIndex)
                             val contentUri = ContentUris.withAppendedId(uri, id)
-                            val bucketNameIndex = getColumnIndex(BUCKET_DISPLAY_NAME)
-                            val bucketName = getString(bucketNameIndex)
-                            val nameIndex = getColumnIndex(DISPLAY_NAME)
-                            val name = getString(nameIndex)
-                            val mimeTypeIndex = getColumnIndex(MIME_TYPE)
-                            val mimeType = getString(mimeTypeIndex)
-                            val widthIndex = getColumnIndex(WIDTH)
-                            val width = getInt(widthIndex)
-                            val heightIndex = getColumnIndex(HEIGHT)
-                            val height = getInt(heightIndex)
+                            val bucketNameIndex = cursor.getColumnIndex(BUCKET_DISPLAY_NAME)
+                            val bucketName = cursor.getString(bucketNameIndex)
+                            val nameIndex = cursor.getColumnIndex(DISPLAY_NAME)
+                            val name = cursor.getString(nameIndex)
+                            val mimeTypeIndex = cursor.getColumnIndex(MIME_TYPE)
+                            val mimeType = cursor.getString(mimeTypeIndex)
+                            val widthIndex = cursor.getColumnIndex(WIDTH)
+                            val width = cursor.getInt(widthIndex)
+                            val heightIndex = cursor.getColumnIndex(HEIGHT)
+                            val height = cursor.getInt(heightIndex)
                             val media = MediaBean(name, contentUri, width, height, mimeType)
-                            if(bucketName != null){
+                            if (bucketName != null) {
                                 if (!mediaMap.containsKey(bucketName)) {
                                     mediaMap[bucketName] = ArrayList()
                                 }
@@ -81,7 +88,6 @@ class PictureViewModel : BaseViewModel() {
                             mediaMap[DEFAULT_BUCKET_NAME]?.add(media)
                         }
                     }
-                    close()
                 }
                 val albumData: MutableList<AlbumBean> = ArrayList()
                 mediaMap.onEach { (key, value) ->

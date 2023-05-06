@@ -7,6 +7,7 @@ plugins {
 }
 
 android {
+    namespace 'com.example.fragment.library.base'
     compileSdk Integer.valueOf(gradle.compileSdkVersion)
 
     defaultConfig {
@@ -27,14 +28,11 @@ android {
     viewBinding {
         enabled = true
     }
-
-    namespace 'com.example.fragment.library.base'
 }
 
 dependencies {
     def accompanist_version = '0.30.0'
-    def coil_version = '2.2.2'
-    def compose_version = '1.4.0-rc01'
+    def coil_version = '2.3.0'
     def lifecycle_version = "2.6.1"
     def okhttp_version = '5.0.0-alpha.8'
     def room_version = "2.5.0"
@@ -42,8 +40,8 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.jar"])
 
     api 'androidx.appcompat:appcompat:1.6.1'
-    api 'androidx.core:core-ktx:1.9.0'
-    api 'androidx.activity:activity-compose:1.7.0'
+    api 'androidx.core:core-ktx:1.10.0'
+    api 'androidx.activity:activity-compose:1.7.1'
     api "androidx.compose.ui:ui:$compose_version"
     api "androidx.compose.ui:ui-util:$compose_version"
     api "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -53,7 +51,7 @@ dependencies {
     api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-    api 'androidx.fragment:fragment-ktx:1.5.6'
+    api 'androidx.fragment:fragment-ktx:1.5.7'
     api 'androidx.webkit:webkit:1.6.1'
     // viewModel 和 livedata
     api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"

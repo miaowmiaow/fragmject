@@ -6,13 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import coil.dispose
 import coil.load
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
+import com.example.fragment.library.base.utils.dp2px
+import com.example.fragment.library.base.utils.saveImagesToAlbum
 import com.example.miaow.picture.databinding.PictureClipDialogBinding
-import com.example.fragment.library.base.utils.saveSystemAlbum
 
 class PictureClipDialog : FullDialog() {
 
@@ -38,18 +38,13 @@ class PictureClipDialog : FullDialog() {
         return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _callback = null
-        _binding = null
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         dialog?.window?.apply {
             setDimAmount(1f)
         }
         binding.clip.setBitmapResource(bitmap)
+        binding.clip.setPadding(dp2px(45f), dp2px(90f))
         binding.rotate.setOnClickListener { binding.clip.rotate() }
         binding.reset.setOnClickListener { binding.clip.reset() }
         binding.cancel.setOnClickListener { dismiss() }
@@ -59,8 +54,7 @@ class PictureClipDialog : FullDialog() {
                 binding.confirm.isEnabled = false
                 binding.progress.visibility = View.VISIBLE
                 binding.progress.load(R.drawable.icons8_monkey)
-                Toast.makeText(it.context, "正在保存中...", Toast.LENGTH_LONG).show()
-                it.context.saveSystemAlbum(binding.clip.saveBitmap()) { path, uri ->
+                it.context.saveImagesToAlbum(binding.clip.saveBitmap()) { path, uri ->
                     binding.confirm.isEnabled = true
                     binding.progress.visibility = View.GONE
                     binding.progress.dispose()
@@ -70,6 +64,12 @@ class PictureClipDialog : FullDialog() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _callback = null
+        _binding = null
     }
 
     fun setBitmapResource(bitmap: Bitmap): PictureClipDialog {
@@ -85,5 +85,5 @@ class PictureClipDialog : FullDialog() {
 }
 
 interface PictureClipCallback {
-    fun onFinish(path: String?, uri: Uri?)
+    fun onFinish(path: String, uri: Uri)
 }

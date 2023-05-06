@@ -22,41 +22,29 @@ class MiaowPlugin : Plugin<Project> {
                 ScanClassVisitorFactory::class.java,
                 InstrumentationScope.ALL
             ) {
-                it.ignoreOwner.set("com/example/fragment/library/common/utils/BuildUtils")
+                it.ignoreOwners.set(
+                    listOf("com/example/fragment/project/utils/SSIDUtils")
+                )
                 it.listOfScans.set(
                     listOf(
                         ScanBean(
-                            "android/os/Build",
-                            "BRAND",
-                            "Ljava/lang/String;",
+                            "android/net/wifi/WifiInfo",
+                            "getSSID",
+                            "()Ljava/lang/String;",
                             Opcodes.INVOKESTATIC,
-                            "com/example/fragment/library/common/utils/BuildUtils",
-                            "getBrand",
+                            "com/example/fragment/project/utils/SSIDUtils",
+                            "getSSID",
                             "()Ljava/lang/String;"
                         ),
                         ScanBean(
-                            "android/os/Build",
-                            "MODEL",
-                            "Ljava/lang/String;",
+                            "android/net/NetworkInfo",
+                            "getExtraInfo",
+                            "()Ljava/lang/String;",
                             Opcodes.INVOKESTATIC,
-                            "com/example/fragment/library/common/utils/BuildUtils",
-                            "getModel",
+                            "com/example/fragment/project/utils/SSIDUtils",
+                            "getSSID",
                             "()Ljava/lang/String;"
-                        ),
-                        ScanBean(
-                            "android/os/Build",
-                            "SERIAL",
-                            "Ljava/lang/String;",
-                            Opcodes.INVOKESTATIC,
-                            "com/example/fragment/library/common/utils/BuildUtils",
-                            "getSerial",
-                            "()Ljava/lang/String;"
-                        ),
-                        ScanBean(  //传感器检测
-                            "android/hardware/SensorManager",
-                            "getSensorList",
-                            "(I)Ljava/util/List;"
-                        ),
+                        )
                     )
                 )
             }
@@ -66,13 +54,13 @@ class MiaowPlugin : Plugin<Project> {
             ) {
                 it.listOfTimes.set(
                     listOf(
-                        TimeBean( //具体到方法名称
+                        TimeBean(
                             "com/example/fragment/project/activity/MainActivity",
                             "onCreate",
                             "(Landroid/os/Bundle;)V"
                         ),
-                        TimeBean( //以包名和执行时间为条件
-                            "com/example/fragment/library/base",
+                        TimeBean(
+                            owner = "com/example/fragment/library/base",
                             time = 50L
                         )
                     )
@@ -86,25 +74,25 @@ class MiaowPlugin : Plugin<Project> {
                 it.listOfTraces.set(
                     listOf(
                         TraceBean(
-                            owner = "Landroid/view/View\$OnClickListener;",
-                            name = "onClick",
-                            desc = "(Landroid/view/View;)V",
                             traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
                             traceName = "viewOnClick",
-                            traceDesc = "(Landroid/view/View;)V" //参数应在desc范围之内
+                            traceDesc = "(Landroid/view/View;)V", //参数应在desc范围之内
+                            owner = "Landroid/view/View\$OnClickListener;",
+                            name = "onClick",
+                            desc = "(Landroid/view/View;)V"
                         ),
                         TraceBean(
+                            traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
+                            traceName = "testAnnotation",
+                            traceDesc = "(Ljava/lang/Object;ILjava/lang/String;)V", //对照annotationParams，注意参数顺序
                             annotationDesc = "Lcom/example/fragment/library/common/utils/TestAnnotation;",
                             annotationParams = mapOf(
                                 //参数名 : 参数类型（对应的ASM指令，加载不同类型的参数需要不同的指令）
                                 //this  : 所在方法的当前对象的引用（默认关键字，按需可选配置）
                                 "this" to "Ljava/lang/Object;",
                                 "code" to "I",
-                                "message" to "Ljava/lang/String;"
-                            ),
-                            traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
-                            traceName = "testAnnotation",
-                            traceDesc = "(Ljava/lang/Object;ILjava/lang/String;)V" //对照annotationParams，注意参数顺序
+                                "message" to "Ljava/lang/String;",
+                            )
                         ),
                     )
                 )

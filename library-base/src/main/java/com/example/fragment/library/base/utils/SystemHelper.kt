@@ -9,6 +9,7 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.view.View
 
 fun Context.getMetaData(key: String): String {
@@ -80,7 +81,7 @@ fun Context.getVersionCode(): Long {
 fun Context.gotoAppDetailsSettings() {
     val intent = Intent()
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    intent.action = "android.settings.APPLICATION_DETAILS_SETTINGS"
+    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
     intent.data = Uri.fromParts("package", packageName, null)
     startActivity(intent)
 }

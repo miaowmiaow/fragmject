@@ -296,6 +296,14 @@ clip.saveBitmap()
 4. 通过 `clip.saveBitmap()` 保存裁剪框内图片
 
 `PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`
+#### 图片选择
+```
+if (context is AppCompatActivity) {
+    PictureSelectorDialog.newInstance()
+        ...省略部分代码
+        .show(context.supportFragmentManager)
+}
+```
 
 ## WebView 优化及 H5 秒开实践
 [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)

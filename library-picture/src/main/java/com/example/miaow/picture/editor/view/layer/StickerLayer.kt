@@ -217,6 +217,10 @@ class StickerLayer(
         val borderRight = stickerRectF.right + RECT_ROUND
         val borderBottom = stickerRectF.bottom + RECT_ROUND
         borderRectF.set(borderLeft, borderTop, borderRight, borderBottom)
+        val tempMatrix = Matrix()
+        tempMatrix.mapRect(stickerRectF)
+        tempMatrix.mapRect(borderRectF)
+        tempMatrix.postRotate(currRotation, borderRectF.centerX(), borderRectF.centerY())
     }
 
     private fun computeSpanVector(event: MotionEvent) {

@@ -13,43 +13,43 @@
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib-jdk8</artifactId>
-      <version>1.6.21</version>
+      <version>1.8.10</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>9.3</version>
+      <version>9.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-commons</artifactId>
-      <version>9.3</version>
+      <version>9.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-analysis</artifactId>
-      <version>9.3</version>
+      <version>9.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-util</artifactId>
-      <version>9.3</version>
+      <version>9.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-tree</artifactId>
-      <version>9.3</version>
+      <version>9.5</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.android.tools.build</groupId>
       <artifactId>gradle</artifactId>
-      <version>7.1.2</version>
+      <version>8.0.0-rc01</version>
       <scope>runtime</scope>
       <exclusions>
         <exclusion>

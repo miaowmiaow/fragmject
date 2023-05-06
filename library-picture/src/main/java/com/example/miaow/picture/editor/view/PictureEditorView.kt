@@ -215,6 +215,7 @@ class PictureEditorView @JvmOverloads constructor(
         val bitmapHeight = bitmapRectF.height().toInt()
         stickerLayer.onSizeChanged(viewWidth, viewHeight, bitmapWidth, bitmapHeight)
         stickerLayers.push(stickerLayer)
+        postInvalidate()
     }
 
     fun saveBitmap(): Bitmap {

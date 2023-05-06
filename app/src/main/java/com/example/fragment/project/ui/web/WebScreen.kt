@@ -29,7 +29,6 @@ import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.base.utils.injectVConsoleJs
 import com.example.fragment.project.R
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.web.*
 
 @SuppressLint("SetJavaScriptEnabled")

@@ -19,10 +19,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.CacheUtils
-import com.example.fragment.library.base.utils.PermissionsCallback
-import com.example.fragment.library.base.utils.requestCamera
-import com.example.fragment.library.base.utils.requestMediaImages
+import com.example.fragment.library.base.utils.*
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
@@ -49,7 +46,6 @@ class PictureSelectorDialog : FullDialog() {
     private val pictureAlbumPopupWindow get() = _pictureAlbumPopupWindow!!
 
     private var takePictureUri: Uri? = null
-
     private val takePicture =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { result ->
             if (result) {
@@ -171,7 +167,7 @@ class PictureSelectorDialog : FullDialog() {
 
     private fun initData() {
         if (viewModel.albumResult.value == null) {
-            childFragmentManager.requestMediaImages(object : PermissionsCallback {
+            childFragmentManager.requestStorage(object : PermissionsCallback {
                 override fun allow() {
                     viewModel.queryAlbum(requireActivity())
                 }
@@ -192,15 +188,21 @@ class PictureSelectorDialog : FullDialog() {
      * 拍照的方法
      */
     private fun takePicture() {
-        childFragmentManager.requestCamera(object : PermissionsCallback {
-            override fun allow() {
+        //无需权限调起系统相机拍照
+        //若某些sdk在manifest里申请了camera权限，那调起拍照时就必须像其他需要动态申请权限
+        //另一种方法就是在自己的manifest里加上
+        //<uses-permission
+        //android:name="android.permission.CAMERA"
+        //tools:node="remove" />
+//        childFragmentManager.requestCamera(object : PermissionsCallback {
+//            override fun allow() {
                 takePicture.launch(takePictureUri())
-            }
-
-            override fun deny() {
-                PermissionDialog.alert(requireActivity(), "相机")
-            }
-        })
+//            }
+//
+//            override fun deny() {
+//                PermissionDialog.alert(requireActivity(), "相机")
+//            }
+//        })
     }
 
     private fun takePictureUri(): Uri {

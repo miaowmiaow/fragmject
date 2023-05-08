@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
@@ -141,6 +140,21 @@ fun FragmentManager.requestSMS(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
+fun FragmentManager.requestStorage(callback: PermissionsCallback) {
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_AUDIO,
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
+        )
+    else
+        arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    requestPermissions(permissions, callback)
+}
+
 fun FragmentManager.requestMediaImages(callback: PermissionsCallback) {
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
@@ -186,15 +200,16 @@ fun FragmentManager.requestPermissions(
 ) {
     val tag = PermissionsFragment::class.java.simpleName
     var fragment = findFragmentByTag(tag)
-    val fragmentTransaction = beginTransaction()
-    if (fragment != null) {
-        fragmentTransaction.remove(fragment)
+    if (fragment == null) {
+        fragment = PermissionsFragment.newInstance()
+        val fragmentTransaction = beginTransaction()
+        fragmentTransaction.add(fragment, tag)
+        fragmentTransaction.commitAllowingStateLoss()
+        executePendingTransactions()
     }
-    fragment = PermissionsFragment.newInstance()
-    fragment.requestPermissions(permissions, callback)
-    fragmentTransaction.add(fragment, tag)
-    fragmentTransaction.commitAllowingStateLoss()
-    executePendingTransactions()
+    if (fragment is PermissionsFragment) {
+        fragment.requestPermissions(permissions, callback)
+    }
 }
 
 interface PermissionsCallback {
@@ -220,17 +235,8 @@ class PermissionsFragment : Fragment() {
             }
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (!hasPermissions(requireContext())) {
-            launcher.launch(permissions.toTypedArray())
-        } else {
-            callback?.allow()
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onDestroy() {
+        super.onDestroy()
         callback = null
     }
 
@@ -241,6 +247,11 @@ class PermissionsFragment : Fragment() {
         this.permissions.clear()
         this.permissions.addAll(permissions)
         this.callback = callback
+        if (!hasPermissions(requireContext())) {
+            launcher.launch(permissions)
+        } else {
+            this.callback?.allow()
+        }
     }
 
     private fun hasPermissions(context: Context) = permissions.all {

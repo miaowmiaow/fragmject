@@ -21,15 +21,16 @@ import java.io.File
 fun FragmentManager.startScreenRecord(callback: ScreenRecordCallback?) {
     val tag = ScreenRecordFragment::class.java.simpleName
     var fragment = findFragmentByTag(tag)
-    val fragmentTransaction = beginTransaction()
-    if (fragment != null) {
-        fragmentTransaction.remove(fragment)
+    if (fragment == null) {
+        fragment = ScreenRecordFragment.newInstance()
+        val fragmentTransaction = beginTransaction()
+        fragmentTransaction.add(fragment, tag)
+        fragmentTransaction.commitAllowingStateLoss()
+        executePendingTransactions()
     }
-    fragment = ScreenRecordFragment.newInstance()
-    fragmentTransaction.add(fragment, tag)
-    fragmentTransaction.commitAllowingStateLoss()
-    executePendingTransactions()
-    fragment.startScreenRecord(callback)
+    if (fragment is ScreenRecordFragment) {
+        fragment.startScreenRecord(callback)
+    }
 }
 
 fun FragmentManager.stopScreenRecord(callback: ScreenRecordCallback?) {
@@ -97,8 +98,8 @@ class ScreenRecordFragment : Fragment() {
         recordPath = moviesPath + File.separator + System.currentTimeMillis() + ".mp4"
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onDestroy() {
+        super.onDestroy()
         callback = null
     }
 
@@ -157,7 +158,9 @@ class ScreenRecordFragment : Fragment() {
             )
         childFragmentManager.requestPermissions(permissions, object : PermissionsCallback {
             override fun allow() {
-                startForResult.launch(mediaProjectionManager!!.createScreenCaptureIntent())
+                mediaProjectionManager?.let {
+                    startForResult.launch(it.createScreenCaptureIntent())
+                }
             }
 
             override fun deny() {

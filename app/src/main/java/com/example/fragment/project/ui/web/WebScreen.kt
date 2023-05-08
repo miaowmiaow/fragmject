@@ -1,17 +1,12 @@
 package com.example.fragment.project.ui.web
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -24,7 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.base.utils.injectVConsoleJs
@@ -40,30 +34,48 @@ fun WebScreen(
     var webView by remember { mutableStateOf<WebView?>(null) }
     val state = rememberWebViewState(originalUrl)
     val navigator = rememberWebViewNavigator()
-    val storagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        arrayOf(
-            Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.READ_MEDIA_VIDEO,
-        )
-    else
-        arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        )
-    val openDialog = remember {
-        mutableStateOf(!storagePermissions.all {
-            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-        })
-    }
-    val requestPermissions =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
-            var isGranted = true
-            ps.entries.forEach {
-                if (it.key in storagePermissions && !it.value)
-                    isGranted = false
-            }
-            openDialog.value = !isGranted
-        }
+    //仅展示compose的权限申请，为写而写并没有实际意义
+//    val storagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+//        arrayOf(
+//            Manifest.permission.READ_MEDIA_IMAGES,
+//            Manifest.permission.READ_MEDIA_VIDEO,
+//        )
+//    else
+//        arrayOf(
+//            Manifest.permission.READ_EXTERNAL_STORAGE,
+//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//        )
+//    val openDialog = remember {
+//        mutableStateOf(!storagePermissions.all {
+//            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+//        })
+//    }
+//    val requestPermissions =
+//        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
+//            var isGranted = true
+//            ps.entries.forEach {
+//                if (it.key in storagePermissions && !it.value)
+//                    isGranted = false
+//            }
+//            openDialog.value = !isGranted
+//        }
+//    if (openDialog.value) {
+//        AlertDialog(
+//            onDismissRequest = { openDialog.value = false },
+//            title = { Text(text = "申请存储空间权限") },
+//            text = { Text(text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用") },
+//            confirmButton = {
+//                TextButton(
+//                    onClick = {
+//                        requestPermissions.launch(storagePermissions)
+//                    }
+//                ) { Text("确定") }
+//            },
+//            dismissButton = {
+//                TextButton(onClick = { openDialog.value = false }) { Text("取消") }
+//            }
+//        )
+//    }
     Column(
         modifier = Modifier
             .background(colorResource(R.color.white))
@@ -262,27 +274,5 @@ fun WebScreen(
                 )
             }
         }
-    }
-    if (openDialog.value) {
-        AlertDialog(
-            onDismissRequest = {
-                // Dismiss the dialog when the user clicks outside the dialog or on the back
-                // button. If you want to disable that functionality, simply use an empty
-                // onCloseRequest.
-                openDialog.value = false
-            },
-            title = { Text(text = "申请存储空间权限") },
-            text = { Text(text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        requestPermissions.launch(storagePermissions)
-                    }
-                ) { Text("确定") }
-            },
-            dismissButton = {
-                TextButton(onClick = { openDialog.value = false }) { Text("取消") }
-            }
-        )
     }
 }

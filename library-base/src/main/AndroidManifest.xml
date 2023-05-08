@@ -3,23 +3,24 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--电池优化-->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+<!--    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />-->
 
     <!--日历-->
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
-    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+<!--    <uses-permission android:name="android.permission.READ_CALENDAR" />-->
+<!--    <uses-permission android:name="android.permission.WRITE_CALENDAR" />-->
 
     <!--相机-->
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA"
+        tools:node="remove" />
 
     <!--通讯录-->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+<!--    <uses-permission android:name="android.permission.GET_ACCOUNTS" />-->
+<!--    <uses-permission android:name="android.permission.READ_CONTACTS" />-->
+<!--    <uses-permission android:name="android.permission.WRITE_CONTACTS" />-->
 
     <!--位置-->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
+<!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
 
     <!--网络-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -29,19 +30,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--电话-->
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+<!--    <uses-permission android:name="android.permission.CALL_PHONE" />-->
+<!--    <uses-permission android:name="android.permission.READ_CALL_LOG" />-->
+<!--    <uses-permission android:name="android.permission.READ_PHONE_STATE" />-->
 
     <!--录音-->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!--短信-->
-    <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.WRITE_OBB"
-        tools:ignore="ProtectedPermissions" />
+<!--    <uses-permission android:name="android.permission.READ_SMS" />-->
+<!--    <uses-permission android:name="android.permission.RECEIVE_SMS" />-->
+<!--    <uses-permission android:name="android.permission.SEND_SMS" />-->
+<!--    <uses-permission android:name="android.permission.WRITE_OBB"-->
+<!--        tools:ignore="ProtectedPermissions" />-->
 
     <!--存储-->
     <uses-permission
@@ -56,17 +57,18 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <!--振动-->
-    <uses-permission android:name="android.permission.VIBRATE" />
+<!--    <uses-permission android:name="android.permission.VIBRATE" />-->
 
     <!--解锁屏幕-->
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+<!--    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />-->
+<!--    <uses-permission android:name="android.permission.WAKE_LOCK" />-->
 
     <!--排序系统任务权限,重新排序系统Z轴运行中的任务-->
-    <uses-permission android:name="android.permission.REORDER_TASKS" />
+<!--    <uses-permission android:name="android.permission.REORDER_TASKS" />-->
 
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+<!--    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />-->
 
+    <!--前台服务-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application android:requestLegacyExternalStorage="true">

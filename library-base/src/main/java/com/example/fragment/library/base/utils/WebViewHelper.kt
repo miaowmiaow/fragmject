@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.MutableContextWrapper
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Looper
@@ -41,10 +40,7 @@ object WebViewHelper {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     result.extra?.let { data ->
                         if (URLUtil.isValidUrl(data)) {
-                            webView.context.imageDownload(data, {
-                                val bitmap = (it as BitmapDrawable).bitmap
-                                webView.context.saveImagesToAlbum(bitmap) { _, _ -> }
-                            })
+                            webView.context.saveImagesToAlbum(data) { _, _ -> }
                         } else {
                             var str = data
                             if (str.contains(",")) {

@@ -1,7 +1,6 @@
-package com.example.fragment.library.base.utils
+package com.example.fragment.library.base.http
 
 import android.content.Context
-import com.example.fragment.library.base.http.CookieJar
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

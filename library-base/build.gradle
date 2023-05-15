@@ -40,7 +40,7 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.jar"])
 
     api 'androidx.appcompat:appcompat:1.6.1'
-    api 'androidx.core:core-ktx:1.10.0'
+    api 'androidx.core:core-ktx:1.10.1'
     api 'androidx.activity:activity-compose:1.7.1'
     api "androidx.compose.ui:ui:$compose_version"
     api "androidx.compose.ui:ui-util:$compose_version"
@@ -74,7 +74,7 @@ dependencies {
     api "io.coil-kt:coil-compose:$coil_version"
     // google
     api 'com.google.code.gson:gson:2.10.1'
-    api 'com.google.android.material:material:1.8.0'
+    api 'com.google.android.material:material:1.9.0'
     api "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
     api "com.google.accompanist:accompanist-navigation-material:$accompanist_version"
     api "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"

@@ -11,7 +11,7 @@ import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
 import com.example.fragment.library.base.http.setBaseUrl
 import com.example.fragment.library.base.http.setHttpClient
-import com.example.fragment.library.base.utils.OkHelper
+import com.example.fragment.library.base.http.OkHelper
 
 class WanApplication : Application(), ImageLoaderFactory {
 

@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import android.view.View
 import android.widget.Scroller
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.values
@@ -66,6 +67,11 @@ class PhotoView @JvmOverloads constructor(
             val maxY = (currImageHeight() - height).roundToInt()
             scroller.fling(startX, startY, velX, velY, 0, maxX, 0, maxY)
             return true
+        }
+
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+            listener?.onClick(this@PhotoView)
+            return super.onSingleTapUp(e)
         }
 
         override fun onDoubleTap(e: MotionEvent): Boolean {
@@ -192,6 +198,16 @@ class PhotoView @JvmOverloads constructor(
         } else {
             currTranslateY() != 0f
         }
+    }
+
+    private var listener: OnPhotoClickListener? = null
+
+    fun setOnPhotoClickListener(listener: OnPhotoClickListener) {
+        this.listener = listener
+    }
+
+    interface OnPhotoClickListener {
+        fun onClick(view: View)
     }
 
 }

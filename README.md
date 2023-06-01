@@ -124,6 +124,8 @@ Compose 与您所有的现有代码兼容：您可以从 View 调用 Compose 代
 
 [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
 
+[Jetpack Compose : 一文学会嵌套滚动NestedScrollConnection](https://juejin.cn/spost/7239610698116055098)
+
 [Jetpack Compose : WebView的使用与优化](https://juejin.cn/post/7194360493866221628)
 
 ## KVDatabase

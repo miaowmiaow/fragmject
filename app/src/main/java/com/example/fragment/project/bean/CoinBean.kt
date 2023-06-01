@@ -66,9 +66,9 @@ data class CoinRankDataBean(
 
 @Parcelize
 open class CoinBean @JvmOverloads constructor(
-    val coinCount: String = "",
+    val coinCount: String = "0",
     val level: String = "",
-    val nickname: String = "",
+    val nickname: String = "---",
     val rank: String = "",
     val userId: String = "",
     var username: String = ""

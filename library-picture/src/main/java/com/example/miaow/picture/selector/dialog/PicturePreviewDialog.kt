@@ -42,7 +42,7 @@ class PicturePreviewDialog : FullDialog() {
     private var _callback: PicturePreviewCallback? = null
     private val origSelectPosition: MutableList<Int> = ArrayList()
     private val currSelectPosition: MutableList<Int> = ArrayList()
-    private var currPreviewPosition = -1
+    private var currPreviewPosition = 0
     private var mode = Mode.NORM
 
     override fun onCreateView(
@@ -180,7 +180,7 @@ class PicturePreviewDialog : FullDialog() {
         return this
     }
 
-    fun setPreviewPosition(previewPosition: Int = -1): PicturePreviewDialog {
+    fun setPreviewPosition(previewPosition: Int = 0): PicturePreviewDialog {
         currPreviewPosition = previewPosition
         return this
     }

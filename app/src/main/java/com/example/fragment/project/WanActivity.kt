@@ -5,18 +5,27 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.ui.platform.ComposeView
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.project.utils.WanHelper
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 class WanActivity : AppCompatActivity() {
 
     private var exitTime = 0L
 
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(ComposeView(this).apply {
-            setContent { WanTheme { WanNavGraph() } }
+            setContent {
+                WanTheme {
+                    val navController = rememberAnimatedNavController()
+                    val startDestination = WanDestinations.MAIN_ROUTE
+                    WanNavGraph(navController, startDestination)
+                }
+            }
         })
         //设置显示模式
         WanHelper.getUiMode { mode ->

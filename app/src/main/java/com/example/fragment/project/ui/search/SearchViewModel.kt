@@ -18,7 +18,7 @@ data class SearchState(
     var loading: Boolean = false,
     var historyResult: MutableList<String> = ArrayList(),
     var articlesResult: MutableList<ArticleBean> = ArrayList(),
-    var time: Long = 0
+    var updateTime: Long = 0
 )
 
 class SearchViewModel : BaseViewModel() {
@@ -35,7 +35,7 @@ class SearchViewModel : BaseViewModel() {
         WanHelper.getSearchHistory { history ->
             _uiState.update {
                 it.historyResult.addAll(history)
-                it.copy(time = System.currentTimeMillis())
+                it.copy(updateTime = System.nanoTime())
             }
         }
     }
@@ -47,7 +47,7 @@ class SearchViewModel : BaseViewModel() {
             }
             it.historyResult.add(0, key)
             WanHelper.setSearchHistory(it.historyResult)
-            it.copy(time = System.currentTimeMillis())
+            it.copy(updateTime = System.nanoTime())
         }
     }
 
@@ -57,24 +57,28 @@ class SearchViewModel : BaseViewModel() {
                 it.historyResult.remove(key)
             }
             WanHelper.setSearchHistory(it.historyResult)
-            it.copy(time = System.currentTimeMillis())
+            it.copy(updateTime = System.nanoTime())
         }
     }
 
     fun clearArticles() {
         _uiState.update {
             it.articlesResult.clear()
-            it.copy(time = System.currentTimeMillis())
+            it.copy(updateTime = System.nanoTime())
         }
     }
 
     fun getHome(key: String) {
-        _uiState.update { it.copy(refreshing = true) }
+        _uiState.update {
+            it.copy(refreshing = true)
+        }
         getArticleQuery(key, getHomePage())
     }
 
     fun getNext(key: String) {
-        _uiState.update { it.copy(loading = false) }
+        _uiState.update {
+            it.copy(loading = false)
+        }
         getArticleQuery(key, getNextPage())
     }
 
@@ -87,21 +91,19 @@ class SearchViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("article/query/{page}/json")
-                .putParam("k", key)
-                .putPath("page", page.toString())
+            val request = HttpRequest("article/query/{page}/json").putParam("k", key).putPath("page", page.toString())
             //以get方式发起网络请求
             val response = post<ArticleListBean>(request)
             //根据接口返回更新总页码
-            response.data?.pageCount?.let { updatePageCont(it.toInt()) }
-            _uiState.update {
+            updatePageCont(response.data?.pageCount?.toInt())
+            _uiState.update { state ->
                 response.data?.datas?.let { datas ->
                     if (isHomePage()) {
-                        it.articlesResult.clear()
+                        state.articlesResult.clear()
                     }
-                    it.articlesResult.addAll(datas)
+                    state.articlesResult.addAll(datas)
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }

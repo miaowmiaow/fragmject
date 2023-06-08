@@ -42,7 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.library.base.utils.getScreenWidth
 import com.example.fragment.library.base.utils.px2dp
 import com.example.fragment.project.R
-import com.example.fragment.project.components.BoxLayout
+import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -137,20 +137,22 @@ fun MyCoinScreen(
                 text = uiState.userCoinResult.coinCount,
                 modifier = Modifier
                         .align(Alignment.Center)
-                        .offset(x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value)),
+                        .offset(
+                            x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
+                            y = 10.dp * targetPercent.value
+                        ),
                 fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
                 color = colorResource(R.color.text_fff),
             )
         }
-        BoxLayout(uiState.refreshing && !uiState.loading) {
+        LoadingLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
-                modifier = Modifier.fillMaxSize(),
+                items = uiState.myCoinResult,
                 refreshing = uiState.refreshing,
-                loading = uiState.loading,
                 onRefresh = { viewModel.getHome() },
+                loading = uiState.loading,
                 onLoad = { viewModel.getNext() },
-                onRetry = { viewModel.getHome() },
-                data = uiState.myCoinResult,
+                modifier = Modifier.fillMaxSize(),
             ) { _, item ->
                 Row(
                     modifier = Modifier

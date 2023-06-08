@@ -30,16 +30,18 @@ class ProjectTreeViewModel : BaseViewModel() {
      * 获取项目分类
      */
     private fun getProjectTree() {
-        _uiState.update { it.copy(isLoading = true) }
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
             val request = HttpRequest("project/tree/json")
-            val response = get<ProjectTreeListBean>(request) { updateProgress(it) }
-            _uiState.update {
+            val response = get<ProjectTreeListBean>(request)
+            _uiState.update { state ->
                 response.data?.let { data ->
-                    it.result.clear()
-                    it.result.addAll(data)
+                    state.result.clear()
+                    state.result.addAll(data)
                 }
-                it.copy(isLoading = false)
+                state.copy(isLoading = false)
             }
         }
     }

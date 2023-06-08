@@ -23,15 +23,15 @@ class ShareArticleViewModel : BaseViewModel() {
     val uiState: StateFlow<ShareArticleState> = _uiState.asStateFlow()
 
     fun share(title: String, link: String) {
-        _uiState.update { it.copy(isLoading = true) }
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("lg/user_article/add/json")
-                .putParam("title", title)
-                .putParam("link", link)
+            val request = HttpRequest("lg/user_article/add/json").putParam("title", title).putParam("link", link)
             //以get方式发起网络请求
-            val response = post<HttpResponse>(request) { updateProgress(it) }
+            val response = post<HttpResponse>(request)
             _uiState.update {
                 it.copy(isLoading = false, result = response)
             }

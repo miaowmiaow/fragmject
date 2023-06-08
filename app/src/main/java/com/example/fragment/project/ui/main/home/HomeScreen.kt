@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.Banner
-import com.example.fragment.project.components.BoxLayout
+import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -26,18 +26,17 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    BoxLayout(uiState.refreshing && !uiState.loading) {
+    LoadingLayout(uiState.refreshing && !uiState.loading) {
         SwipeRefresh(
-            modifier = Modifier.fillMaxSize(),
-            listState = listState,
-            contentPadding = PaddingValues(top = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            items = uiState.result,
             refreshing = uiState.refreshing,
             loading = uiState.loading,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },
-            onRetry = { viewModel.getHome() },
-            data = uiState.result,
+            modifier = Modifier.fillMaxSize(),
+            listState = listState,
+            contentPadding = PaddingValues(top = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) { _, item ->
             if (item.viewType == 0) {
                 Banner(
@@ -47,8 +46,8 @@ fun HomeScreen(
                 )
             } else {
                 ArticleCard(
+                    data = item,
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                    item = item,
                     onNavigateToLogin = onNavigateToLogin,
                     onNavigateToUser = onNavigateToUser,
                     onNavigateToSystem = onNavigateToSystem,

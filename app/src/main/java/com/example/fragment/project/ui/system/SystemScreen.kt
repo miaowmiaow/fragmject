@@ -61,21 +61,20 @@ fun SystemScreen(
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            BoxLayout(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
+            LoadingLayout(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
                 SwipeRefresh(
+                    items = systemUiState.getResult(pageCid),
+                    refreshing = systemUiState.getRefreshing(pageCid),
+                    onRefresh = { systemViewModel.getHome(pageCid) },
+                    loading = systemUiState.getLoading(pageCid),
+                    onLoad = { systemViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,
                     contentPadding = PaddingValues(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    refreshing = systemUiState.getRefreshing(pageCid),
-                    loading = systemUiState.getLoading(pageCid),
-                    onRefresh = { systemViewModel.getHome(pageCid) },
-                    onLoad = { systemViewModel.getNext(pageCid) },
-                    onRetry = { systemViewModel.getHome(pageCid) },
-                    data = systemUiState.getResult(pageCid),
                 ) { _, item ->
                     ArticleCard(
-                        item = item,
+                        data = item,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToUser = onNavigateToUser,
                         onNavigateToSystem = onNavigateToSystem,
@@ -92,9 +91,9 @@ fun TitleBar(title: String) {
     val context = LocalContext.current
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(45.dp)
-            .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(45.dp)
+                .background(colorResource(R.color.theme))
     ) {
         IconButton(
             modifier = Modifier.height(45.dp),

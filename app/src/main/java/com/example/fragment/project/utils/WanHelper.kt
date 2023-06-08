@@ -81,8 +81,10 @@ object WanHelper {
     /**
      * 设置用户信息
      */
-    fun setUser(userBean: UserBean) {
-        KVDatabase.set(USER, userBean.toJson())
+    fun setUser(userBean: UserBean?) {
+        userBean?.let {
+            KVDatabase.set(USER, it.toJson())
+        }
     }
 
     /**

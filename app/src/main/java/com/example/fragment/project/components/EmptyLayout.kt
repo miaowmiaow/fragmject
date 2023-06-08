@@ -17,11 +17,12 @@ import androidx.compose.ui.unit.sp
 import com.example.fragment.library.base.R
 
 @Composable
-fun Empty(
+fun EmptyLayout(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

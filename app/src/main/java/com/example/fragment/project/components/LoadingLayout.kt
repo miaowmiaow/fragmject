@@ -12,15 +12,16 @@ import androidx.compose.ui.res.colorResource
 import com.example.fragment.project.R
 
 @Composable
-fun BoxLayout(
+fun LoadingLayout(
     isLoading: Boolean,
+    modifier: Modifier = Modifier,
     innerPadding: PaddingValues = PaddingValues(),
     content: @Composable () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
+        modifier = modifier
+                .fillMaxSize()
+                .padding(innerPadding)
     ) {
         content()
         if (isLoading) {

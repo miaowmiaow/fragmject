@@ -16,7 +16,7 @@ data class ProjectState(
     val refreshing: MutableMap<String, Boolean> = HashMap(),
     val loading: MutableMap<String, Boolean> = HashMap(),
     val result: MutableMap<String, ArrayList<ArticleBean>> = HashMap(),
-    var time: Long = 0
+    val updateTime: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
         return refreshing[cid] ?: true
@@ -34,7 +34,7 @@ data class ProjectState(
 
 class ProjectViewModel() : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(ProjectState(time = 0))
+    private val _uiState = MutableStateFlow(ProjectState())
 
     val uiState: StateFlow<ProjectState> = _uiState.asStateFlow()
 
@@ -45,17 +45,17 @@ class ProjectViewModel() : BaseViewModel() {
     }
 
     fun getHome(cid: String) {
-        _uiState.update {
-            it.refreshing[cid] = true
-            it.copy(time = System.currentTimeMillis())
+        _uiState.update { state ->
+            state.refreshing[cid] = true
+            state.copy(updateTime = System.nanoTime())
         }
         getList(cid, getHomePage(1, cid))
     }
 
     fun getNext(cid: String) {
-        _uiState.update {
-            it.loading[cid] = false
-            it.copy(time = System.currentTimeMillis())
+        _uiState.update { state ->
+            state.loading[cid] = false
+            state.copy(updateTime = System.nanoTime())
         }
         getList(cid, getNextPage(cid))
     }
@@ -67,24 +67,22 @@ class ProjectViewModel() : BaseViewModel() {
      */
     private fun getList(cid: String, page: Int) {
         viewModelScope.launch {
-            val request = HttpRequest("project/list/{page}/json")
-                .putPath("page", page.toString())
-                .putQuery("cid", cid)
-            val response = get<ArticleListBean>(request) { updateProgress(it) }
+            val request = HttpRequest("project/list/{page}/json").putPath("page", page.toString()).putQuery("cid", cid)
+            val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码
-            response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
-            _uiState.update {
+            updatePageCont(response.data?.pageCount?.toInt(), cid)
+            _uiState.update { state ->
                 response.data?.datas?.let { datas ->
                     if (isHomePage(cid)) {
-                        it.result[cid] = arrayListOf()
+                        state.result[cid] = arrayListOf()
                     }
-                    it.result[cid]?.addAll(datas)
+                    state.result[cid]?.addAll(datas)
                 }
                 //设置下拉刷新状态
-                it.refreshing[cid] = false
+                state.refreshing[cid] = false
                 //设置加载更多状态
-                it.loading[cid] = hasNextPage()
-                it.copy(time = System.currentTimeMillis())
+                state.loading[cid] = hasNextPage(cid)
+                state.copy(updateTime = System.nanoTime())
             }
         }
     }

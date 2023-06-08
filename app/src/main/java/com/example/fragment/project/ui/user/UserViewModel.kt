@@ -33,12 +33,16 @@ class UserViewModel(private val id: String) : BaseViewModel() {
     }
 
     fun getShareArticlesHome() {
-        _uiState.update { it.copy(refreshing = true) }
+        _uiState.update {
+            it.copy(refreshing = true)
+        }
         getShareArticlesList(getHomePage(1))
     }
 
     fun getShareArticlesNext() {
-        _uiState.update { it.copy(loading = false) }
+        _uiState.update {
+            it.copy(loading = false)
+        }
         getShareArticlesList(getNextPage())
     }
 
@@ -50,22 +54,24 @@ class UserViewModel(private val id: String) : BaseViewModel() {
         viewModelScope.launch {
             //构建请求体，传入请求参数
             val request = HttpRequest("user/{id}/share_articles/{page}/json")
-                .putPath("id", id)
-                .putPath("page", page.toString())
-            val response = get<ShareArticleListBean>(request) { updateProgress(it) }
-            response.data?.shareArticles?.pageCount?.let { updatePageCont(it.toInt()) }
-            _uiState.update {
-                response.data?.coinInfo?.let { coin -> it.coinResult = coin }
+                    .putPath("id", id)
+                    .putPath("page", page.toString())
+            val response = get<ShareArticleListBean>(request)
+            updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
+            _uiState.update { state ->
+                response.data?.coinInfo?.let { coin ->
+                    state.coinResult = coin
+                }
                 response.data?.shareArticles?.datas?.let { datas ->
                     if (isHomePage()) {
-                        it.articleResult.clear()
+                        state.articleResult.clear()
                     }
-                    it.articleResult.addAll(datas)
+                    state.articleResult.addAll(datas)
                 }
                 if (response.data == null) {
-                    it.coinResult.username = response.errorMsg
+                    state.coinResult.username = response.errorMsg
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }

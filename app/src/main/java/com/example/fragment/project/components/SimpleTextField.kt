@@ -117,8 +117,8 @@ fun ClearTextField(
                         imageVector = Icons.Outlined.Clear,
                         contentDescription = null,
                         modifier = Modifier
-                            .padding(10.dp, 6.dp, 10.dp, 6.dp)
-                            .clickable { onClear() },
+                                .padding(10.dp, 6.dp, 10.dp, 6.dp)
+                                .clickable { onClear() },
                         tint = textStyle.color
                     )
                 }

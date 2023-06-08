@@ -63,8 +63,10 @@ abstract class BaseViewModel : ViewModel() {
     /**
      * 更新总页码
      */
-    fun updatePageCont(pageCont: Int = PAGE_CONT, key: String = DEFAULT_KEY) {
-        this.pageCont[key] = pageCont
+    fun updatePageCont(pageCont: Int? = PAGE_CONT, key: String = DEFAULT_KEY) {
+        pageCont?.let {
+            this.pageCont[key] = it
+        }
     }
 
     /**

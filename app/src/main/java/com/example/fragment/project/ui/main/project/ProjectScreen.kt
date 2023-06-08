@@ -45,24 +45,23 @@ fun ProjectScreen(
                 projectViewModel.init(pageCid)
                 onDispose {}
             }
-            BoxLayout(
+            LoadingLayout(
                 projectTreeUiState.isLoading ||
                         (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
             ) {
                 SwipeRefresh(
+                    items = projectUiState.getResult(pageCid),
+                    refreshing = projectUiState.getRefreshing(pageCid),
+                    onRefresh = { projectViewModel.getHome(pageCid) },
+                    loading = projectUiState.getLoading(pageCid),
+                    onLoad = { projectViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,
                     contentPadding = PaddingValues(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    refreshing = projectUiState.getRefreshing(pageCid),
-                    loading = projectUiState.getLoading(pageCid),
-                    onRefresh = { projectViewModel.getHome(pageCid) },
-                    onLoad = { projectViewModel.getNext(pageCid) },
-                    onRetry = { projectViewModel.getHome(pageCid) },
-                    data = projectUiState.getResult(pageCid),
                 ) { _, item ->
                     ArticleCard(
-                        item = item,
+                        data = item,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToUser = onNavigateToUser,

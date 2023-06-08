@@ -4,7 +4,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.vm.BaseViewModel
-import com.example.fragment.project.bean.*
+import com.example.fragment.project.bean.ArticleBean
+import com.example.fragment.project.bean.NavigationBean
+import com.example.fragment.project.bean.NavigationListBean
+import com.example.fragment.project.bean.TreeBean
+import com.example.fragment.project.bean.TreeListBean
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,10 +17,10 @@ import kotlinx.coroutines.launch
 
 data class NavState(
     var isLoading: Boolean = false,
+    var currentPosition: Int = 0,
     var navigationResult: MutableList<NavigationBean> = ArrayList(),
     var articlesResult: MutableList<ArticleBean> = ArrayList(),
     var systemTreeResult: MutableList<TreeBean> = ArrayList(),
-    var currentPosition: Int = 0
 )
 
 class NavViewModel : BaseViewModel() {
@@ -35,15 +39,15 @@ class NavViewModel : BaseViewModel() {
     }
 
     fun updateSelectNavigation(position: Int) {
-        _uiState.update {
-            it.navigationResult[it.currentPosition].isSelected = false
-            val item = it.navigationResult[position]
-            item.isSelected = true
-            item.articles?.let { articles ->
-                it.articlesResult.clear()
-                it.articlesResult.addAll(articles)
+        _uiState.update { state ->
+            state.navigationResult[state.currentPosition].isSelected = false
+            val navigationResult = state.navigationResult[position]
+            navigationResult.isSelected = true
+            navigationResult.articles?.let { articles ->
+                state.articlesResult.clear()
+                state.articlesResult.addAll(articles)
             }
-            it.copy(currentPosition = position)
+            state.copy(currentPosition = position)
         }
     }
 
@@ -51,20 +55,19 @@ class NavViewModel : BaseViewModel() {
      * 获取导航数据
      */
     private fun getNavigation() {
-        _uiState.update { it.copy(isLoading = true) }
-        //通过viewModelScope创建一个协程
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
-            //构建请求体，传入请求参数
             val request = HttpRequest("navi/json")
-            //以get方式发起网络请求
-            val response = get<NavigationListBean>(request) { updateProgress(it) }
-            _uiState.update {
+            val response = get<NavigationListBean>(request)
+            _uiState.update { state ->
                 response.data?.let { data ->
-                    it.navigationResult.clear()
-                    it.navigationResult.addAll(data)
+                    state.navigationResult.clear()
+                    state.navigationResult.addAll(data)
                     updateSelectNavigation(0)
                 }
-                it.copy(isLoading = false)
+                state.copy(isLoading = false)
             }
         }
     }
@@ -73,16 +76,18 @@ class NavViewModel : BaseViewModel() {
      * 获取项目分类
      */
     private fun getSystemTree() {
-        _uiState.update { it.copy(isLoading = true) }
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
             val request = HttpRequest("tree/json")
-            val response = get<TreeListBean>(request) { updateProgress(it) }
-            _uiState.update {
+            val response = get<TreeListBean>(request)
+            _uiState.update { state ->
                 response.data?.let { data ->
-                    it.systemTreeResult.clear()
-                    it.systemTreeResult.addAll(data)
+                    state.systemTreeResult.clear()
+                    state.systemTreeResult.addAll(data)
                 }
-                it.copy(isLoading = false)
+                state.copy(isLoading = false)
             }
         }
     }

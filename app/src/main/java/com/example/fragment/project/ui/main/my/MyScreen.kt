@@ -3,7 +3,14 @@ package com.example.fragment.project.ui.main.my
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -46,50 +53,50 @@ fun MyScreen(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .padding(top = 50.dp)
-                .size(75.dp)
-                .clip(RoundedCornerShape(50))
-                .clickable {
-                    if (uiState.isLogin()) {
-                        onNavigateToUser(uiState.userBean.id)
-                    } else {
-                        onNavigateToLogin()
+                    .padding(top = 50.dp)
+                    .size(75.dp)
+                    .clip(RoundedCornerShape(50))
+                    .clickable {
+                        if (uiState.isLogin()) {
+                            onNavigateToUser(uiState.userBean.id)
+                        } else {
+                            onNavigateToLogin()
+                        }
                     }
-                }
         )
         Text(
             text = uiState.userBean.username.ifBlank { "去登录" },
             modifier = Modifier
-                .padding(top = 5.dp, bottom = 25.dp)
-                .clickable {
-                    if (uiState.isLogin()) {
-                        onNavigateToUser(uiState.userBean.id)
-                    } else {
-                        onNavigateToLogin()
-                    }
-                },
+                    .padding(top = 5.dp, bottom = 25.dp)
+                    .clickable {
+                        if (uiState.isLogin()) {
+                            onNavigateToUser(uiState.userBean.id)
+                        } else {
+                            onNavigateToLogin()
+                        }
+                    },
             fontSize = 16.sp,
             color = colorResource(R.color.text_333),
         )
         Spacer(
             Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
         )
         Row(
             modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyCoin() },
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .clickable { onNavigateToMyCoin() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "我的积分",
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
+                        .weight(1f)
+                        .padding(start = 25.dp, end = 25.dp),
                 fontSize = 13.sp,
                 color = colorResource(R.color.text_333),
             )
@@ -101,23 +108,23 @@ fun MyScreen(
         }
         Spacer(
             Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
         )
         Row(
             modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyCollect() },
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .clickable { onNavigateToMyCollect() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "我的收藏",
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
+                        .weight(1f)
+                        .padding(start = 25.dp, end = 25.dp),
                 fontSize = 13.sp,
                 color = colorResource(R.color.text_333),
             )
@@ -129,23 +136,23 @@ fun MyScreen(
         }
         Spacer(
             Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
         )
         Row(
             modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyShare() },
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .clickable { onNavigateToMyShare() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "我的分享",
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
+                        .weight(1f)
+                        .padding(start = 25.dp, end = 25.dp),
                 fontSize = 13.sp,
                 color = colorResource(R.color.text_333),
             )
@@ -157,23 +164,23 @@ fun MyScreen(
         }
         Spacer(
             Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
         )
         Row(
             modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToSetting() },
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .clickable { onNavigateToSetting() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "系统设置",
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
+                        .weight(1f)
+                        .padding(start = 25.dp, end = 25.dp),
                 fontSize = 13.sp,
                 color = colorResource(R.color.text_333),
             )
@@ -185,9 +192,9 @@ fun MyScreen(
         }
         Spacer(
             Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
         )
     }
 }

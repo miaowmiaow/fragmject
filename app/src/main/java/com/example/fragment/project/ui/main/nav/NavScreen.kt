@@ -21,7 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
-import com.example.fragment.project.components.BoxLayout
+import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.TabBar
 import kotlinx.coroutines.launch
 
@@ -66,7 +66,7 @@ fun NavLinkContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    BoxLayout(uiState.isLoading) {
+    LoadingLayout(uiState.isLoading) {
         Row {
             LazyColumn(
                 modifier = Modifier.width(150.dp),
@@ -75,10 +75,10 @@ fun NavLinkContent(
                 itemsIndexed(uiState.navigationResult.toList()) { index, item ->
                     Box(
                         modifier = Modifier
-                            .background(colorResource(if (item.isSelected) R.color.background else R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .clickable { viewModel.updateSelectNavigation(index) },
+                                .background(colorResource(if (item.isSelected) R.color.background else R.color.white))
+                                .fillMaxWidth()
+                                .height(45.dp)
+                                .clickable { viewModel.updateSelectNavigation(index) },
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -91,8 +91,8 @@ fun NavLinkContent(
             }
             FlowRow(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
             ) {
                 uiState.articlesResult.forEach {
                     Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
@@ -134,9 +134,9 @@ fun NavSystemContent(
                 Text(
                     text = it.name,
                     modifier = Modifier
-                        .background(colorResource(R.color.background))
-                        .fillMaxWidth()
-                        .padding(15.dp, 5.dp, 15.dp, 5.dp),
+                            .background(colorResource(R.color.background))
+                            .fillMaxWidth()
+                            .padding(15.dp, 5.dp, 15.dp, 5.dp),
                     color = colorResource(R.color.text_666),
                     fontSize = 13.sp
                 )
@@ -144,8 +144,8 @@ fun NavSystemContent(
             item {
                 FlowRow(
                     modifier = Modifier
-                        .background(colorResource(R.color.background))
-                        .fillMaxWidth()
+                            .background(colorResource(R.color.background))
+                            .fillMaxWidth()
                 ) {
                     it.children?.forEach { children ->
                         Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {

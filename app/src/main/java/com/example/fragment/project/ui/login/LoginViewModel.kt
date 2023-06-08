@@ -14,9 +14,8 @@ import kotlinx.coroutines.launch
 
 data class LoginState(
     var isLoading: Boolean = false,
-    var errorCode: String = "-1",
+    var errorCode: String = "",
     var errorMsg: String = "",
-    var time: Long = 0
 )
 
 class LoginViewModel : BaseViewModel() {
@@ -28,30 +27,25 @@ class LoginViewModel : BaseViewModel() {
     fun login(username: String, password: String) {
         if (username.isBlank()) {
             _uiState.update {
-                it.copy(errorMsg = "用户名不能为空", time = System.currentTimeMillis())
+                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "用户名不能为空")
             }
             return
         }
         if (password.isBlank()) {
             _uiState.update {
-                it.copy(errorMsg = "密码不能为空", time = System.currentTimeMillis())
+                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "密码不能为空")
             }
             return
         }
-        _uiState.update { it.copy(isLoading = true, errorCode = "-1", errorMsg = "") }
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
-            val request = HttpRequest("user/login")
-                .putParam("username", username)
-                .putParam("password", password)
-            val response = post<LoginBean>(request) { updateProgress(it) }
-            response.data?.let { WanHelper.setUser(it) }
+            val request = HttpRequest("user/login").putParam("username", username).putParam("password", password)
+            val response = post<LoginBean>(request)
+            WanHelper.setUser(response.data)
             _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    errorCode = response.errorCode,
-                    errorMsg = response.errorMsg,
-                    time = System.currentTimeMillis()
-                )
+                it.copy(isLoading = false, errorCode = response.errorCode, errorMsg = response.errorMsg)
             }
         }
     }

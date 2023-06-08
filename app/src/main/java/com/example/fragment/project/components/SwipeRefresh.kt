@@ -1,17 +1,47 @@
 package com.example.fragment.project.components
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshDefaults
 import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -32,27 +62,26 @@ import kotlin.math.pow
 
 /**
  * 自定义下拉刷新&加载更多
+ * @param items      列表数据
  * @param refreshing 设置下拉刷新状态
- * @param loading    设置加载更多状态
  * @param onRefresh  下拉刷新回调
+ * @param loading    设置加载更多状态
  * @param onLoad     加载更多回调
- * @param onRetry    重试回调
- * @param data       列表数据
  */
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun <T> SwipeRefresh(
+    items: List<T>?,
+    refreshing: Boolean,
+    onRefresh: () -> Unit,
+    loading: Boolean,
+    onLoad: () -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    refreshing: Boolean,
-    loading: Boolean,
-    onRefresh: () -> Unit,
-    onLoad: () -> Unit,
-    onRetry: () -> Unit = {},
-    data: List<T>?,
-    contentTypeMapping: (index: Int, item: T) -> Any? = { _, _ -> null },
+    key: ((index: Int, item: T) -> Any)? = null,
+    contentType: (index: Int, item: T) -> Any? = { _, _ -> null },
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
     val loadingResId = listOf(
@@ -77,9 +106,11 @@ fun <T> SwipeRefresh(
         )
     )
     val state = rememberSwipeRefreshState(refreshing, onRefresh)
-    if (data.isNullOrEmpty()) {
+    if (items.isNullOrEmpty()) {
         if (!refreshing) {
-            Empty { onRetry() }
+            EmptyLayout {
+                onRefresh()
+            }
         }
     } else {
         Box(Modifier.swipeRefresh(state)) {
@@ -91,10 +122,10 @@ fun <T> SwipeRefresh(
                 contentPadding = contentPadding,
                 verticalArrangement = verticalArrangement,
             ) {
-                itemsIndexed(data, contentType = contentTypeMapping) { index, item ->
+                itemsIndexed(items, key = key, contentType = contentType) { index, item ->
                     itemContent(index, item)
-                    if (loading && data.size - index < 5) {
-                        LaunchedEffect(data.size) {
+                    if (loading && items.size - index < 5) {
+                        LaunchedEffect(items.size) {
                             onLoad()
                         }
                     }
@@ -102,11 +133,11 @@ fun <T> SwipeRefresh(
                 item {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable {
-                                onLoad()
-                            }
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .clickable {
+                                    onLoad()
+                                }
                     ) {
                         Text(
                             text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
@@ -120,11 +151,11 @@ fun <T> SwipeRefresh(
             AnimatedVisibility(
                 visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
                 modifier = Modifier
-                    .size(40.dp, 16.dp)
-                    .align(Alignment.TopCenter)
-                    .graphicsLayer {
-                        translationY = state.position * 0.5f
-                    },
+                        .size(40.dp, 16.dp)
+                        .align(Alignment.TopCenter)
+                        .graphicsLayer {
+                            translationY = state.position * 0.5f
+                        },
                 enter = fadeIn() + scaleIn(),
                 exit = fadeOut() + scaleOut()
             ) {
@@ -190,11 +221,11 @@ class SwipeRefreshState internal constructor(
     threshold: Float
 ) {
 
-    val progress get() = adjustedDistancePulled / threshold
+    private val progress get() = adjustedDistancePulled / threshold
 
     internal val refreshing get() = _refreshing
     val position get() = _position
-    internal val threshold get() = _threshold
+    private val threshold get() = _threshold
 
     private val adjustedDistancePulled by derivedStateOf { distancePulled * 0.5f }
 

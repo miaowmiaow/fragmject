@@ -16,7 +16,7 @@ data class SystemState(
     val refreshing: MutableMap<String, Boolean> = HashMap(),
     val loading: MutableMap<String, Boolean> = HashMap(),
     val result: MutableMap<String, ArrayList<ArticleBean>> = HashMap(),
-    var time: Long = 0
+    var updateTime: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
         return refreshing[cid] ?: true
@@ -34,7 +34,7 @@ data class SystemState(
 
 class SystemViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(SystemState(time = 0))
+    private val _uiState = MutableStateFlow(SystemState())
 
     val uiState: StateFlow<SystemState> = _uiState.asStateFlow()
 
@@ -47,7 +47,7 @@ class SystemViewModel : BaseViewModel() {
     fun getHome(cid: String) {
         _uiState.update {
             it.refreshing[cid] = true
-            it.copy(time = System.currentTimeMillis())
+            it.copy(updateTime = System.nanoTime())
         }
         getList(cid, getHomePage(key = cid))
     }
@@ -55,7 +55,7 @@ class SystemViewModel : BaseViewModel() {
     fun getNext(cid: String) {
         _uiState.update {
             it.loading[cid] = false
-            it.copy(time = System.currentTimeMillis())
+            it.copy(updateTime = System.nanoTime())
         }
         getList(cid, getNextPage(cid))
     }
@@ -69,29 +69,27 @@ class SystemViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("article/list/{page}/json")
-                .putPath("page", page.toString())
-                .putQuery("cid", cid)
+            val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString()).putQuery("cid", cid)
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request) { updateProgress(it) }
+            val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码
-            response.data?.pageCount?.let { updatePageCont(it.toInt(), cid) }
-            _uiState.update {
+            updatePageCont(response.data?.pageCount?.toInt(), cid)
+            _uiState.update { state ->
                 //如果result.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-                if (uiState.value.result[cid].isNullOrEmpty()) {
+                if (state.result[cid].isNullOrEmpty()) {
                     transitionAnimationEnd(request, response)
                 }
                 response.data?.datas?.let { datas ->
                     if (isHomePage(cid)) {
-                        it.result[cid] = arrayListOf()
+                        state.result[cid] = arrayListOf()
                     }
-                    it.result[cid]?.addAll(datas)
+                    state.result[cid]?.addAll(datas)
                 }
                 //设置下拉刷新状态
-                it.refreshing[cid] = false
+                state.refreshing[cid] = false
                 //设置加载更多状态
-                it.loading[cid] = hasNextPage()
-                it.copy(time = System.currentTimeMillis())
+                state.loading[cid] = hasNextPage(cid)
+                state.copy(updateTime = System.nanoTime())
             }
         }
     }

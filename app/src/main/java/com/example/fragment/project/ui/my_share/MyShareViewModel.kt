@@ -29,12 +29,16 @@ class MyShareViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update { it.copy(refreshing = true) }
+        _uiState.update {
+            it.copy(refreshing = true)
+        }
         getList(getHomePage())
     }
 
     fun getNext() {
-        _uiState.update { it.copy(loading = false) }
+        _uiState.update {
+            it.copy(loading = false)
+        }
         getList(getNextPage())
     }
 
@@ -44,23 +48,21 @@ class MyShareViewModel : BaseViewModel() {
      * page 1开始
      */
     private fun getList(page: Int) {
-        //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("user/lg/private_articles/{page}/json")
-                .putPath("page", page.toString())
+            val request = HttpRequest("user/lg/private_articles/{page}/json").putPath("page", page.toString())
             //以get方式发起网络请求
-            val response = get<ShareArticleListBean>(request) { updateProgress(it) }
+            val response = get<ShareArticleListBean>(request)
             //根据接口返回更新总页码
-            response.data?.shareArticles?.pageCount?.let { updatePageCont(it.toInt()) }
-            _uiState.update {
+            updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
+            _uiState.update { state ->
                 response.data?.shareArticles?.datas?.let { datas ->
                     if (isHomePage()) {
-                        it.result.clear()
+                        state.result.clear()
                     }
-                    it.result.addAll(datas)
+                    state.result.addAll(datas)
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }

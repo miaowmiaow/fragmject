@@ -18,9 +18,9 @@ import coil.compose.AsyncImage
 
 @Composable
 fun <T> Banner(
-    modifier: Modifier = Modifier,
     data: List<T>?,
     pathMapping: (T) -> String,
+    modifier: Modifier = Modifier,
     onClick: (index: Int, item: T) -> Unit
 ) {
     if (data.isNullOrEmpty()) {

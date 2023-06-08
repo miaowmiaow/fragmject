@@ -4,7 +4,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -25,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.components.BoxLayout
+import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -41,9 +52,9 @@ fun RankScreen(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp)
-                .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
@@ -67,9 +78,9 @@ fun RankScreen(
             )
             IconButton(
                 modifier = Modifier
-                    .height(45.dp)
-                    .padding(13.dp)
-                    .align(Alignment.CenterEnd),
+                        .height(45.dp)
+                        .padding(13.dp)
+                        .align(Alignment.CenterEnd),
                 onClick = { onNavigateToWeb("https://www.wanandroid.com/blog/show/2653") }
             ) {
                 Icon(
@@ -79,23 +90,22 @@ fun RankScreen(
                 )
             }
         }
-        BoxLayout(uiState.refreshing && !uiState.loading) {
+        LoadingLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
-                modifier = Modifier
-                    .background(colorResource(R.color.background))
-                    .fillMaxSize(),
+                items = uiState.result,
                 refreshing = uiState.refreshing,
-                loading = uiState.loading,
                 onRefresh = { viewModel.getHome() },
+                loading = uiState.loading,
                 onLoad = { viewModel.getNext() },
-                onRetry = { viewModel.getHome() },
-                data = uiState.result,
+                modifier = Modifier
+                        .background(colorResource(R.color.background))
+                        .fillMaxSize(),
             ) { _, item ->
                 Row(
                     modifier = Modifier
-                        .background(colorResource(R.color.white))
-                        .fillMaxWidth()
-                        .padding(10.dp),
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -105,9 +115,9 @@ fun RankScreen(
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .clickable { onNavigateToUserInfo(item.userId) }
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .clickable { onNavigateToUserInfo(item.userId) }
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
@@ -124,9 +134,9 @@ fun RankScreen(
                 }
                 Spacer(
                     Modifier
-                        .background(colorResource(R.color.line))
-                        .fillMaxWidth()
-                        .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                 )
             }
         }

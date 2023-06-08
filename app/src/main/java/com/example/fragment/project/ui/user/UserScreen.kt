@@ -47,7 +47,7 @@ import com.example.fragment.library.base.utils.getScreenWidth
 import com.example.fragment.library.base.utils.px2dp
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.BoxLayout
+import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -153,25 +153,25 @@ fun UserScreen(
                 color = colorResource(R.color.text_fff),
             )
         }
-        BoxLayout(uiState.refreshing && !uiState.loading) {
+        LoadingLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
+                items = uiState.articleResult,
+                refreshing = uiState.refreshing,
+                onRefresh = { viewModel.getShareArticlesHome() },
+                loading = uiState.loading,
+                onLoad = { viewModel.getShareArticlesNext() },
                 modifier = Modifier
                         .fillMaxSize()
                         .background(colorResource(R.color.white)),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                refreshing = uiState.refreshing,
-                loading = uiState.loading,
-                onRefresh = { viewModel.getShareArticlesHome() },
-                onLoad = { viewModel.getShareArticlesNext() },
-                onRetry = { viewModel.getShareArticlesHome() },
-                data = uiState.articleResult,
             ) { _, item ->
                 ArticleCard(
-                    item = item,
+                    data = item,
                     onNavigateToLogin = onNavigateToLogin,
                     onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToWeb = onNavigateToWeb
+                    onNavigateToUser = {},
+                    onNavigateToWeb = onNavigateToWeb,
                 )
             }
         }

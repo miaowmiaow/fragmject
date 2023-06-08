@@ -7,15 +7,30 @@ import android.text.TextUtils
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,17 +58,17 @@ import java.util.regex.Pattern
 
 @Composable
 fun ArticleCard(
+    data: ArticleBean,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToSystem: (cid: String) -> Unit,
+    onNavigateToUser: (userId: String) -> Unit,
+    onNavigateToWeb: (url: String) -> Unit,
     modifier: Modifier = Modifier,
-    item: ArticleBean,
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by rememberSaveable {
         mutableStateOf(
-            if (item.collect) {
+            if (data.collect) {
                 R.drawable.ic_collect_checked
             } else {
                 R.drawable.ic_collect_unchecked
@@ -65,31 +80,31 @@ fun ArticleCard(
         Card(elevation = 2.dp) {
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = { onNavigateToWeb(item.link) })
+                        .fillMaxWidth()
+                        .clickable(onClick = { onNavigateToWeb(data.link) })
             ) {
                 Row(
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = item.getAvatarId()),
+                        painter = painterResource(id = data.getAvatarId()),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape)
-                            .clickable { onNavigateToUser(item.userId) }
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .clickable { onNavigateToUser(data.userId) }
                     )
                     ConstraintLayout(
                         modifier = Modifier
-                            .height(35.dp)
-                            .weight(1f)
-                            .padding(start = 10.dp, end = 10.dp)
+                                .height(35.dp)
+                                .weight(1f)
+                                .padding(start = 10.dp, end = 10.dp)
                     ) {
                         val (share_user, nice_date) = createRefs()
                         Text(
-                            text = "${item.author}${item.shareUser}".ifBlank { "匿名" },
+                            text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = colorResource(R.color.text_666),
@@ -99,7 +114,7 @@ fun ArticleCard(
                                 top.linkTo(parent.top)
                             })
                         Text(
-                            text = item.niceDate,
+                            text = data.niceDate,
                             fontSize = 12.sp,
                             color = colorResource(R.color.text_999),
                             maxLines = 1,
@@ -108,10 +123,10 @@ fun ArticleCard(
                                 bottom.linkTo(parent.bottom)
                             })
                     }
-                    if (!item.tags.isNullOrEmpty()) {
+                    if (!data.tags.isNullOrEmpty()) {
                         Button(
                             onClick = {
-                                val uriString = "https://www.wanandroid.com${item.tags[0].url}"
+                                val uriString = "https://www.wanandroid.com${data.tags[0].url}"
                                 val uri = Uri.parse(uriString)
                                 var cid = uri.getQueryParameter("cid")
                                 if (cid.isNullOrBlank()) {
@@ -133,7 +148,7 @@ fun ArticleCard(
                             contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
                         ) {
                             Text(
-                                text = item.tags[0].name,
+                                text = data.tags[0].name,
                                 fontSize = 12.sp
                             )
                         }
@@ -142,9 +157,9 @@ fun ArticleCard(
                 Spacer(Modifier.size(10.dp))
                 Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        if (item.desc.isNotBlank()) {
+                        if (data.desc.isNotBlank()) {
                             Text(
-                                text = fromHtml(item.title),
+                                text = fromHtml(data.title),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -152,7 +167,7 @@ fun ArticleCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = removeAllBank(fromHtml(item.desc), 2),
+                                text = removeAllBank(fromHtml(data.desc), 2),
                                 fontSize = 13.sp,
                                 color = colorResource(R.color.text_666),
                                 maxLines = 3,
@@ -160,7 +175,7 @@ fun ArticleCard(
                             )
                         } else {
                             Text(
-                                text = fromHtml(item.title),
+                                text = fromHtml(data.title),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -169,16 +184,16 @@ fun ArticleCard(
                             )
                         }
                     }
-                    if (item.envelopePic.isNotBlank()) {
+                    if (data.envelopePic.isNotBlank()) {
                         AsyncImage(
-                            model = item.getHttpsEnvelopePic(),
+                            model = data.getHttpsEnvelopePic(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .padding(start = 10.dp)
-                                .width(45.dp)
-                                .aspectRatio(2f / 3f)
-                                .clip(RoundedCornerShape(16f))
+                                    .padding(start = 10.dp)
+                                    .width(45.dp)
+                                    .aspectRatio(2f / 3f)
+                                    .clip(RoundedCornerShape(16f))
                         )
                     }
                 }
@@ -188,17 +203,19 @@ fun ArticleCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 15.dp)) {
+                    Box(
+                        modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 15.dp)
+                    ) {
                         Text(
                             text = buildAnnotatedString {
-                                if (item.fresh) {
+                                if (data.fresh) {
                                     withStyle(style = SpanStyle(color = colorResource(R.color.blue))) {
                                         append("新  ")
                                     }
                                 }
-                                if (item.top) {
+                                if (data.top) {
                                     withStyle(
                                         style = SpanStyle(color = colorResource(R.color.orange))
                                     ) {
@@ -208,7 +225,7 @@ fun ArticleCard(
                                 append(
                                     fromHtml(
                                         formatChapterName(
-                                            item.superChapterName, item.chapterName
+                                            data.superChapterName, data.chapterName
                                         )
                                     )
                                 )
@@ -218,39 +235,39 @@ fun ArticleCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .height(20.dp)
-                                .clickable { onNavigateToSystem(item.chapterId) },
+                                    .height(20.dp)
+                                    .clickable { onNavigateToSystem(data.chapterId) },
                         )
                     }
                     Image(
                         painter = painterResource(id = collectResId),
                         contentDescription = "",
                         modifier = Modifier
-                            .size(20.dp)
-                            .clickable {
-                                scope.launch {
-                                    val request = HttpRequest().putPath("id", item.id)
-                                    request.setUrl(
-                                        if (item.collect)
-                                            "lg/uncollect_originId/{id}/json"
-                                        else
-                                            "lg/uncollect_originId/{id}/json"
-                                    )
-                                    val response = post<HttpResponse>(request)
-                                    when (response.errorCode) {
-                                        "0" -> {
-                                            if (item.collect) {
-                                                item.collect = false
-                                                collectResId = R.drawable.ic_collect_unchecked
-                                            } else {
-                                                item.collect = true
-                                                collectResId = R.drawable.ic_collect_checked
+                                .size(20.dp)
+                                .clickable {
+                                    scope.launch {
+                                        val request = HttpRequest().putPath("id", data.id)
+                                        request.setUrl(
+                                            if (data.collect)
+                                                "lg/uncollect_originId/{id}/json"
+                                            else
+                                                "lg/uncollect_originId/{id}/json"
+                                        )
+                                        val response = post<HttpResponse>(request)
+                                        when (response.errorCode) {
+                                            "0" -> {
+                                                if (data.collect) {
+                                                    data.collect = false
+                                                    collectResId = R.drawable.ic_collect_unchecked
+                                                } else {
+                                                    data.collect = true
+                                                    collectResId = R.drawable.ic_collect_checked
+                                                }
                                             }
+                                            "-1001" -> onNavigateToLogin()
                                         }
-                                        "-1001" -> onNavigateToLogin()
                                     }
-                                }
-                            })
+                                })
                 }
             }
         }
@@ -262,7 +279,7 @@ fun ArticleCard(
 fun ArticleCardPreview() {
     WanTheme {
         ArticleCard(
-            item = ArticleBean(
+            data = ArticleBean(
                 niceDate = "2022-10-13 11:11",
                 title = "我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户",
                 desc = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
@@ -270,7 +287,11 @@ fun ArticleCardPreview() {
                 top = true,
                 superChapterName = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
                 chapterName = "官方"
-            )
+            ),
+            onNavigateToLogin = {},
+            onNavigateToSystem = {},
+            onNavigateToUser = {},
+            onNavigateToWeb = {},
         )
     }
 }

@@ -17,17 +17,18 @@ import com.example.fragment.library.base.R
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> TabBar(
-    pagerState: PagerState,
     data: List<T>?,
     textMapping: (T) -> String,
+    modifier: Modifier = Modifier,
+    pagerState: PagerState,
     onClick: (index: Int) -> Unit
 ) {
-    if(data != null && data.isNotEmpty()){
+    if (data != null && data.isNotEmpty()) {
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp),
+            modifier = modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
             backgroundColor = colorResource(R.color.white),
             edgePadding = 0.dp,
             divider = {

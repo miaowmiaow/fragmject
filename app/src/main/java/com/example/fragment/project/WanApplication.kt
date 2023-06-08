@@ -9,9 +9,9 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
+import com.example.fragment.library.base.http.OkHelper
 import com.example.fragment.library.base.http.setBaseUrl
 import com.example.fragment.library.base.http.setHttpClient
-import com.example.fragment.library.base.http.OkHelper
 
 class WanApplication : Application(), ImageLoaderFactory {
 
@@ -22,18 +22,18 @@ class WanApplication : Application(), ImageLoaderFactory {
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(applicationContext)
-            .crossfade(true)
-            .okHttpClient { OkHelper.httpClient(applicationContext) }
-            .components(fun ComponentRegistry.Builder.() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    add(ImageDecoderDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
-                add(SvgDecoder.Factory())
-                add(VideoFrameDecoder.Factory())
-            })
-            .build()
+                .crossfade(true)
+                .okHttpClient { OkHelper.httpClient(applicationContext) }
+                .components(fun ComponentRegistry.Builder.() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        add(ImageDecoderDecoder.Factory())
+                    } else {
+                        add(GifDecoder.Factory())
+                    }
+                    add(SvgDecoder.Factory())
+                    add(VideoFrameDecoder.Factory())
+                })
+                .build()
     }
 
     private fun initHttp() {

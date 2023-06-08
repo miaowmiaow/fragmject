@@ -34,32 +34,39 @@ class MyCoinViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update { it.copy(refreshing = true) }
+        _uiState.update {
+            it.copy(refreshing = true)
+        }
         viewModelScope.launch {
             //通过async获取需要展示的数据
             val getUserCoin = async { getUserCoin() }
             val getMyCoinList = async { getMyCoinList(getHomePage(1)) }
             val userCoin = getUserCoin.await()
             val myCoinList = getMyCoinList.await()
-            _uiState.update {
-                userCoin.data?.let { data -> it.userCoinResult = data }
-                myCoinList.data?.datas?.let { data ->
-                    it.myCoinResult.clear()
-                    it.myCoinResult.addAll(data)
+            _uiState.update { state ->
+                userCoin.data?.let { data ->
+                    state.userCoinResult = data
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                myCoinList.data?.datas?.let { data ->
+                    state.myCoinResult.clear()
+                    state.myCoinResult.addAll(data)
+                }
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }
 
     fun getNext() {
-        _uiState.update { it.copy(loading = false) }
+        _uiState.update {
+            it.copy(loading = false)
+        }
         viewModelScope.launch {
-            _uiState.update {
-                getMyCoinList(getNextPage()).data?.datas?.let { data ->
-                    it.myCoinResult.addAll(data)
+            val response = getMyCoinList(getNextPage())
+            _uiState.update { state ->
+                response.data?.datas?.let { data ->
+                    state.myCoinResult.addAll(data)
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }
@@ -74,7 +81,7 @@ class MyCoinViewModel : BaseViewModel() {
         //以get方式发起网络请求
         val response = coroutineScope { get<MyCoinListBean>(request) }
         //根据接口返回更新总页码
-        response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+        updatePageCont(response.data?.pageCount?.toInt())
         return response
     }
 
@@ -82,8 +89,7 @@ class MyCoinViewModel : BaseViewModel() {
      * 获取个人积分
      */
     private suspend fun getUserCoin(): UserCoinBean {
-        val request = HttpRequest("lg/coin/userinfo/json")
-        return coroutineScope { get(request) }
+        return coroutineScope { get(HttpRequest("lg/coin/userinfo/json")) }
     }
 
 }

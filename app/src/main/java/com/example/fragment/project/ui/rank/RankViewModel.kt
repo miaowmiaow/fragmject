@@ -29,12 +29,16 @@ class RankViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update { it.copy(refreshing = true) }
+        _uiState.update {
+            it.copy(refreshing = true)
+        }
         getCoinRank(getHomePage(1))
     }
 
     fun getNext() {
-        _uiState.update { it.copy(loading = false) }
+        _uiState.update {
+            it.copy(loading = false)
+        }
         getCoinRank(getNextPage())
     }
 
@@ -46,15 +50,15 @@ class RankViewModel : BaseViewModel() {
         viewModelScope.launch {
             val request = HttpRequest("coin/rank/{page}/json").putPath("page", page.toString())
             val response = get<CoinRankBean>(request)
-            response.data?.pageCount?.let { updatePageCont(it.toInt()) }
-            _uiState.update {
+            updatePageCont(response.data?.pageCount?.toInt())
+            _uiState.update { state ->
                 response.data?.datas?.let { data ->
                     if (isHomePage()) {
-                        it.result.clear()
+                        state.result.clear()
                     }
-                    it.result.addAll(data)
+                    state.result.addAll(data)
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }

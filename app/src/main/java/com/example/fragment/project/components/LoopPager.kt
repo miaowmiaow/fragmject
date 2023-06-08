@@ -23,9 +23,9 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LoopHorizontalPager(
+    data: List<T>?,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    data: List<T>?,
     indicator: Boolean = false,
     content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
@@ -59,16 +59,15 @@ fun <T> LoopHorizontalPager(
             contentPadding = contentPadding,
         ) { page ->
             val currPage = (page - startIndex).floorMod(pageCount)
-            val pageOffset = ((pagerState.currentPage - page)
-                    + pagerState.currentPageOffsetFraction).absoluteValue
+            val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
             content(currPage, pageOffset, data[currPage])
         }
         if (indicator) {
             Row(
                 Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 5.dp)
-                    .align(Alignment.BottomCenter),
+                        .fillMaxWidth()
+                        .padding(bottom = 5.dp)
+                        .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.Center
             ) {
                 repeat(pageCount) { iteration ->
@@ -79,10 +78,10 @@ fun <T> LoopHorizontalPager(
                         colorResource(R.color.theme)
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
-                            .padding(2.dp)
-                            .clip(CircleShape)
-                            .background(color)
+                                .size(10.dp)
+                                .padding(2.dp)
+                                .clip(CircleShape)
+                                .background(color)
                     )
                 }
             }
@@ -135,9 +134,9 @@ fun <T> LoopVerticalPager(
         if (indicator) {
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .padding(end = 5.dp)
-                    .align(Alignment.CenterEnd),
+                        .fillMaxWidth()
+                        .padding(end = 5.dp)
+                        .align(Alignment.CenterEnd),
                 verticalArrangement = Arrangement.Center
             ) {
                 repeat(pageCount) { iteration ->
@@ -148,10 +147,10 @@ fun <T> LoopVerticalPager(
                         colorResource(R.color.theme)
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
-                            .padding(2.dp)
-                            .clip(CircleShape)
-                            .background(color)
+                                .size(10.dp)
+                                .padding(2.dp)
+                                .clip(CircleShape)
+                                .background(color)
                     )
                 }
             }

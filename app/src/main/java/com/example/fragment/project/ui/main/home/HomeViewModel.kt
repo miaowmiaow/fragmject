@@ -33,8 +33,9 @@ class HomeViewModel : BaseViewModel() {
     }
 
     fun getHome() {
-        _uiState.update { it.copy(refreshing = true) }
-        //通过viewModelScope创建一个协程
+        _uiState.update {
+            it.copy(refreshing = true)
+        }
         viewModelScope.launch {
             //通过async获取首页需要展示的数据
             val banner = async { getBanner() }
@@ -51,13 +52,16 @@ class HomeViewModel : BaseViewModel() {
     }
 
     fun getNext() {
-        _uiState.update { it.copy(loading = false) }
+        _uiState.update {
+            it.copy(loading = false)
+        }
         viewModelScope.launch {
-            _uiState.update {
-                getArticleList(getNextPage()).data?.datas?.let { datas ->
-                    it.result.addAll(datas)
+            val response = getArticleList(getNextPage())
+            _uiState.update { state ->
+                response.data?.datas?.let { datas ->
+                    state.result.addAll(datas)
                 }
-                it.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage())
             }
         }
     }
@@ -81,12 +85,9 @@ class HomeViewModel : BaseViewModel() {
      * page 0开始
      */
     private suspend fun getArticleList(page: Int): ArticleListBean {
-        //构建请求体，传入请求参数
         val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString())
-        //以get方式发起网络请求
-        val response = coroutineScope { get<ArticleListBean>(request) { updateProgress(it) } }
-        //根据接口返回更新总页码
-        response.data?.pageCount?.let { updatePageCont(it.toInt()) }
+        val response = coroutineScope { get<ArticleListBean>(request) }
+        updatePageCont(response.data?.pageCount?.toInt())
         return response
     }
 

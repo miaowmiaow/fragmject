@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class MyState(
-    var isLoading: Boolean = false,
     var userBean: UserBean = UserBean(),
 ) {
     fun isLogin(): Boolean {
@@ -28,11 +27,9 @@ class MyViewModel : BaseViewModel() {
     }
 
     fun getUser() {
-        _uiState.update { it.copy(isLoading = true) }
         WanHelper.getUser { userBean ->
             _uiState.update {
-                it.userBean = userBean
-                it.copy(isLoading = false)
+                it.copy(userBean = userBean)
             }
         }
     }

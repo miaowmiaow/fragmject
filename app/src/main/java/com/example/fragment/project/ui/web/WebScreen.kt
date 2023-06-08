@@ -78,9 +78,9 @@ fun WebScreen(
 //    }
     Column(
         modifier = Modifier
-            .background(colorResource(R.color.white))
-            .fillMaxSize()
-            .systemBarsPadding()
+                .background(colorResource(R.color.white))
+                .fillMaxSize()
+                .systemBarsPadding()
     ) {
         var injectState by remember { mutableStateOf(false) }
         //注入VConsole以便于H5调试
@@ -148,8 +148,8 @@ fun WebScreen(
         WebView(
             state = state,
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+                    .fillMaxWidth()
+                    .weight(1f),
             captureBackPresses = false,
             navigator = navigator,
             onCreated = { webView ->
@@ -173,8 +173,8 @@ fun WebScreen(
         Divider(color = colorResource(R.color.line))
         Row(
             modifier = Modifier
-                .background(colorResource(R.color.white))
-                .height(50.dp)
+                    .background(colorResource(R.color.white))
+                    .height(50.dp)
         ) {
             Button(
                 onClick = {
@@ -194,8 +194,8 @@ fun WebScreen(
                 ),
                 contentPadding = PaddingValues(17.dp),
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                        .weight(1f)
+                        .fillMaxHeight()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_web_back),
@@ -216,8 +216,8 @@ fun WebScreen(
                 ),
                 contentPadding = PaddingValues(17.dp),
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                        .weight(1f)
+                        .fillMaxHeight()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_web_forward),
@@ -234,8 +234,8 @@ fun WebScreen(
                 ),
                 contentPadding = PaddingValues(17.dp),
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                        .weight(1f)
+                        .fillMaxHeight()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_web_refresh),
@@ -265,8 +265,8 @@ fun WebScreen(
                 ),
                 contentPadding = PaddingValues(17.dp),
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                        .weight(1f)
+                        .fillMaxHeight()
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_web_browse),

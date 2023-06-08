@@ -2,15 +2,32 @@ package com.example.fragment.project.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
@@ -69,8 +86,8 @@ fun MainScreen(
         val saveableStateHolder = rememberSaveableStateHolder()
         Box(
             modifier = Modifier
-                .background(colorResource(R.color.background))
-                .padding(innerPadding)
+                    .background(colorResource(R.color.background))
+                    .padding(innerPadding)
         ) {
             when (navIndex) {
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
@@ -119,17 +136,17 @@ fun SearchBar(
 ) {
     Row(
         modifier = Modifier
-            .background(colorResource(R.color.theme))
-            .fillMaxWidth()
-            .height(45.dp)
-            .padding(15.dp, 8.dp, 15.dp, 8.dp),
+                .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(45.dp)
+                .padding(15.dp, 8.dp, 15.dp, 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
-                .weight(1f)
-                .fillMaxHeight(),
+                    .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
+                    .weight(1f)
+                    .fillMaxHeight(),
             contentAlignment = Alignment.CenterStart
         ) {
             Icon(
@@ -141,8 +158,8 @@ fun SearchBar(
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { onNavigateToSearch(item.name) },
+                            .fillMaxSize()
+                            .clickable { onNavigateToSearch(item.name) },
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
@@ -159,8 +176,8 @@ fun SearchBar(
             imageVector = Icons.Default.Add,
             contentDescription = null,
             modifier = Modifier
-                .padding(0.dp, 5.dp, 0.dp, 5.dp)
-                .clickable { onNavigateToShareArticle() },
+                    .padding(0.dp, 5.dp, 0.dp, 5.dp)
+                    .clickable { onNavigateToShareArticle() },
             tint = colorResource(R.color.white)
         )
     }
@@ -189,8 +206,8 @@ fun NavigationBar(
                         painter = painterResource(id = item.resId),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(25.dp)
-                            .padding(bottom = 3.dp),
+                                .size(25.dp)
+                                .padding(bottom = 3.dp),
                         tint = colorResource(colorId)
                     )
                 },

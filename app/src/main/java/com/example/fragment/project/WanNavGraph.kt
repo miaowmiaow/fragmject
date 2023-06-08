@@ -28,7 +28,6 @@ import com.example.fragment.project.ui.web.WebScreen
 import com.example.fragment.project.utils.WanHelper
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
@@ -37,9 +36,9 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun WanNavGraph(
+    navController: NavHostController,
+    startDestination: String,
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberAnimatedNavController(),
-    startDestination: String = WanDestinations.MAIN_ROUTE,
 ) {
     val statusBarColor = colorResource(R.color.theme)
     val systemUiController = rememberSystemUiController()

@@ -4,7 +4,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.get
 import com.example.fragment.library.base.vm.BaseViewModel
-import com.example.fragment.project.bean.*
+import com.example.fragment.project.bean.HotKeyBean
+import com.example.fragment.project.bean.HotKeyListBean
+import com.example.fragment.project.bean.TreeBean
+import com.example.fragment.project.bean.TreeListBean
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,16 +36,16 @@ class WanViewModel : BaseViewModel() {
         viewModelScope.launch {
             val hotKeyList = async { getHotKeyList() }
             val treeList = async { getTreeList() }
-            _uiState.update {
+            _uiState.update { state ->
                 hotKeyList.await().data?.let { data ->
-                    it.hotKeyResult.clear()
-                    it.hotKeyResult.addAll(data)
+                    state.hotKeyResult.clear()
+                    state.hotKeyResult.addAll(data)
                 }
                 treeList.await().data?.let { data ->
-                    it.treeResult.clear()
-                    it.treeResult.addAll(data)
+                    state.treeResult.clear()
+                    state.treeResult.addAll(data)
                 }
-                it.copy(isLoading = false)
+                state.copy(isLoading = false)
             }
         }
     }

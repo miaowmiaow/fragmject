@@ -2,7 +2,14 @@ package com.example.fragment.project.ui.my_collect
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -20,7 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.BoxLayout
+import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -38,9 +45,9 @@ fun MyCollectScreen(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp)
-                .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
@@ -63,20 +70,19 @@ fun MyCollectScreen(
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-        BoxLayout(uiState.refreshing && !uiState.loading) {
+        LoadingLayout(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
+                items = uiState.result,
+                refreshing = uiState.refreshing,
+                onRefresh = { viewModel.getHome() },
+                loading = uiState.loading,
+                onLoad = { viewModel.getNext() },
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                refreshing = uiState.refreshing,
-                loading = uiState.loading,
-                onRefresh = { viewModel.getHome() },
-                onLoad = { viewModel.getNext() },
-                onRetry = { viewModel.getHome() },
-                data = uiState.result,
             ) { _, item ->
                 ArticleCard(
-                    item = item,
+                    data = item,
                     onNavigateToLogin = onNavigateToLogin,
                     onNavigateToUser = onNavigateToUser,
                     onNavigateToSystem = onNavigateToSystem,

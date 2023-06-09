@@ -41,9 +41,9 @@ fun SystemScreen(
     Column(modifier = Modifier.systemBarsPadding()) {
         TitleBar(title)
         TabBar(
-            pagerState = pagerState,
             data = tree,
             textMapping = { it.name },
+            pagerState = pagerState,
             onClick = {
                 coroutineScope.launch {
                     pagerState.animateScrollToPage(it)

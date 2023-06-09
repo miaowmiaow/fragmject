@@ -47,9 +47,10 @@ class SettingViewModel : BaseViewModel() {
             val request = HttpRequest("user/logout/json")
             val response = get<HttpResponse>(request)
             if (response.errorCode == "0") {
-                WanHelper.setUser(UserBean())
+                val userBean = UserBean()
+                WanHelper.setUser(userBean)
                 _uiState.update {
-                    it.copy(isLoading = false, userBean = UserBean())
+                    it.copy(isLoading = false, userBean = userBean)
                 }
             }
         }

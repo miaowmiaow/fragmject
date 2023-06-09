@@ -19,8 +19,8 @@ import com.example.fragment.library.base.R
 fun <T> TabBar(
     data: List<T>?,
     textMapping: (T) -> String,
-    modifier: Modifier = Modifier,
     pagerState: PagerState,
+    modifier: Modifier = Modifier,
     onClick: (index: Int) -> Unit
 ) {
     if (data != null && data.isNotEmpty()) {

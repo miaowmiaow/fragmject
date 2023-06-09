@@ -29,9 +29,9 @@ fun ProjectScreen(
     val pagerState = rememberPagerState()
     Column {
         TabBar(
-            pagerState = pagerState,
             data = projectTreeUiState.result,
             textMapping = { it.name },
+            pagerState = pagerState,
             onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(
@@ -46,8 +46,8 @@ fun ProjectScreen(
                 onDispose {}
             }
             LoadingLayout(
-                projectTreeUiState.isLoading ||
-                        (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
+                projectTreeUiState.isLoading
+                        || (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
             ) {
                 SwipeRefresh(
                     items = projectUiState.getResult(pageCid),

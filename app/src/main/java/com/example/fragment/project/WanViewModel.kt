@@ -20,7 +20,6 @@ data class WanState(
     var isLoading: Boolean = false,
     var hotKeyResult: MutableList<HotKeyBean> = ArrayList(),
     var treeResult: MutableList<TreeBean> = ArrayList(),
-    var time: Long = 0
 )
 
 class WanViewModel : BaseViewModel() {

@@ -107,7 +107,7 @@ fun NavLinkContent(
                             contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
                         ) {
                             Text(
-                                text = it.title,
+                                text = it.titleHtml,
                                 fontSize = 13.sp
                             )
                         }

@@ -101,7 +101,9 @@ class SearchViewModel : BaseViewModel() {
                     if (isHomePage()) {
                         state.articlesResult.clear()
                     }
-                    state.articlesResult.addAll(datas)
+                    datas.forEach {
+                        state.articlesResult.add(it.build())
+                    }
                 }
                 state.copy(refreshing = false, loading = hasNextPage())
             }

@@ -66,7 +66,9 @@ class UserViewModel(private val id: String) : BaseViewModel() {
                     if (isHomePage()) {
                         state.articleResult.clear()
                     }
-                    state.articleResult.addAll(datas)
+                    datas.forEach {
+                        state.articleResult.add(it.build())
+                    }
                 }
                 if (response.data == null) {
                     state.coinResult.username = response.errorMsg

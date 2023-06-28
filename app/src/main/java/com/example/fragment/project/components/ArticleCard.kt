@@ -1,9 +1,6 @@
 package com.example.fragment.project.components
 
 import android.net.Uri
-import android.os.Build
-import android.text.Html
-import android.text.TextUtils
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -54,7 +51,6 @@ import com.example.fragment.library.base.http.post
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.bean.ArticleBean
 import kotlinx.coroutines.launch
-import java.util.regex.Pattern
 
 @Composable
 fun ArticleCard(
@@ -88,7 +84,7 @@ fun ArticleCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = data.getAvatarId()),
+                        painter = painterResource(id = data.avatarId),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -157,9 +153,9 @@ fun ArticleCard(
                 Spacer(Modifier.size(10.dp))
                 Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        if (data.desc.isNotBlank()) {
+                        if (data.descHtml.isNotBlank()) {
                             Text(
-                                text = fromHtml(data.title),
+                                text = data.titleHtml,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -167,7 +163,7 @@ fun ArticleCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = removeAllBank(fromHtml(data.desc), 2),
+                                text = data.descHtml,
                                 fontSize = 13.sp,
                                 color = colorResource(R.color.text_666),
                                 maxLines = 3,
@@ -175,7 +171,7 @@ fun ArticleCard(
                             )
                         } else {
                             Text(
-                                text = fromHtml(data.title),
+                                text = data.titleHtml,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -184,9 +180,9 @@ fun ArticleCard(
                             )
                         }
                     }
-                    if (data.envelopePic.isNotBlank()) {
+                    if (data.httpsEnvelopePic.isNotBlank()) {
                         AsyncImage(
-                            model = data.getHttpsEnvelopePic(),
+                            model = data.httpsEnvelopePic,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -203,33 +199,13 @@ fun ArticleCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
+                    Row(
                         modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 15.dp)
                     ) {
                         Text(
-                            text = buildAnnotatedString {
-                                if (data.fresh) {
-                                    withStyle(style = SpanStyle(color = colorResource(R.color.blue))) {
-                                        append("新  ")
-                                    }
-                                }
-                                if (data.top) {
-                                    withStyle(
-                                        style = SpanStyle(color = colorResource(R.color.orange))
-                                    ) {
-                                        append("置顶  ")
-                                    }
-                                }
-                                append(
-                                    fromHtml(
-                                        formatChapterName(
-                                            data.superChapterName, data.chapterName
-                                        )
-                                    )
-                                )
-                            },
+                            text = data.chapterNameHtml,
                             fontSize = 12.sp,
                             color = colorResource(R.color.text_999),
                             maxLines = 1,
@@ -294,33 +270,4 @@ fun ArticleCardPreview() {
             onNavigateToWeb = {},
         )
     }
-}
-
-private fun fromHtml(str: String): String {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
-    } else {
-        Html.fromHtml(str).toString()
-    }
-}
-
-private fun formatChapterName(vararg names: String): String {
-    val format = StringBuilder()
-    for (name in names) {
-        if (!TextUtils.isEmpty(name)) {
-            if (format.isNotEmpty()) format.append(" · ")
-            format.append(name)
-        }
-    }
-    return format.toString()
-}
-
-private fun removeAllBank(str: String?, count: Int): String {
-    var s = ""
-    if (str != null) {
-        val p = Pattern.compile("\\s{$count,}|\t|\r|\n")
-        val m = p.matcher(str)
-        s = m.replaceAll(" ")
-    }
-    return s
 }

@@ -69,31 +69,7 @@ android {
             dimension = "default"
             manifestPlaceholders = [
                     app_channel_value: name,
-                    app_name_value   : "玩Android-华为尊享版",
-            ]
-        }
-        create("xiaomi") {
-            applicationIdSuffix ".xiaomi"
-            dimension = "default"
-            manifestPlaceholders = [
-                    app_channel_value: name,
-                    app_name_value   : "玩Android-小米尊享版",
-            ]
-        }
-        create("oppo") {
-            applicationIdSuffix ".oppo"
-            dimension = "default"
-            manifestPlaceholders = [
-                    app_channel_value: name,
-                    app_name_value   : "玩Android-OPPO尊享版",
-            ]
-        }
-        create("vivo") {
-            applicationIdSuffix ".vivo"
-            dimension = "default"
-            manifestPlaceholders = [
-                    app_channel_value: name,
-                    app_name_value   : "玩Android-VIVO尊享版",
+                    app_name_value   : "玩Android",
             ]
         }
     }

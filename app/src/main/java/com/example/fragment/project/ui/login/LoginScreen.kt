@@ -28,10 +28,9 @@ import androidx.compose.material.SnackbarHost
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,7 +50,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.WhiteTextField
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -60,17 +58,14 @@ fun LoginScreen(
     onPopBackStackToMain: () -> Unit = {},
 ) {
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
-    val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     val scrollState = rememberScrollState()
     if (uiState.errorCode == "0") {
         onPopBackStackToMain()
     }
     if (uiState.errorMsg.isNotBlank()) {
-        SideEffect {
-            coroutineScope.launch {
-                scaffoldState.snackbarHostState.showSnackbar(uiState.errorMsg)
-            }
+        LaunchedEffect(uiState.errorCode, scaffoldState.snackbarHostState) {
+            scaffoldState.snackbarHostState.showSnackbar(uiState.errorMsg)
         }
     }
     var usernameText by rememberSaveable { mutableStateOf("") }

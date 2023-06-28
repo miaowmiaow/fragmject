@@ -14,9 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
@@ -27,6 +31,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SystemScreen(
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     title: String = "体系",
     index: Int = 0,
     tree: List<TreeBean>,
@@ -55,9 +60,16 @@ fun SystemScreen(
             state = pagerState,
         ) { page ->
             val pageCid = tree[page].id
-            DisposableEffect(Unit) {
-                systemViewModel.init(pageCid)
-                onDispose {}
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_START) {
+                        systemViewModel.init(pageCid)
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()

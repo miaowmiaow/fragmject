@@ -76,7 +76,9 @@ class ProjectViewModel() : BaseViewModel() {
                     if (isHomePage(cid)) {
                         state.result[cid] = arrayListOf()
                     }
-                    state.result[cid]?.addAll(datas)
+                    datas.forEach {
+                        state.result[cid]?.add(it.build())
+                    }
                 }
                 //设置下拉刷新状态
                 state.refreshing[cid] = false

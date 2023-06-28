@@ -9,6 +9,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.components.*
@@ -17,6 +20,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProjectScreen(
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     projectTreeViewModel: ProjectTreeViewModel = viewModel(),
     projectViewModel: ProjectViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
@@ -41,9 +45,16 @@ fun ProjectScreen(
             val pageCid = projectTreeUiState.result[page].id
             val projectUiState by projectViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            DisposableEffect(LocalLifecycleOwner.current) {
-                projectViewModel.init(pageCid)
-                onDispose {}
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_START) {
+                        projectViewModel.init(pageCid)
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
             }
             LoadingLayout(
                 projectTreeUiState.isLoading

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 data class SettingState(
     var isLoading: Boolean = false,
+    var darkTheme: Boolean = false,
     var userBean: UserBean = UserBean(),
 )
 
@@ -25,7 +26,33 @@ class SettingViewModel : BaseViewModel() {
     val uiState: StateFlow<SettingState> = _uiState.asStateFlow()
 
     init {
+        getUiMode()
         getUser()
+    }
+
+    private fun getUiMode() {
+        WanHelper.getUiMode {
+            if (it == "1") {
+                _uiState.update { state ->
+                    state.copy(darkTheme = false)
+                }
+            } else if (it == "2") {
+                _uiState.update { state ->
+                    state.copy(darkTheme = true)
+                }
+            }
+        }
+    }
+
+    fun updateUiMode(darkTheme: Boolean) {
+        if (darkTheme) {
+            WanHelper.setUiMode("2")
+        } else {
+            WanHelper.setUiMode("1")
+        }
+        _uiState.update { state ->
+            state.copy(darkTheme = darkTheme)
+        }
     }
 
     private fun getUser() {

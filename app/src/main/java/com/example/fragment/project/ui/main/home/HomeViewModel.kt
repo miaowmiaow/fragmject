@@ -43,8 +43,12 @@ class HomeViewModel : BaseViewModel() {
             val articleList = async { getArticleList(getHomePage()) }
             val articleData: MutableList<ArticleBean> = arrayListOf()
             banner.await().data?.let { articleData.add(ArticleBean(banners = it, viewType = 0)) }
-            articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
-            articleList.await().data?.datas?.let { articleData.addAll(it) }
+            articleTop.await().data?.onEach { it.top = true }?.forEach {
+                articleData.add(it.build())
+            }
+            articleList.await().data?.datas?.forEach {
+                articleData.add(it.build())
+            }
             _uiState.update {
                 it.copy(refreshing = false, loading = hasNextPage(), result = articleData)
             }
@@ -58,8 +62,8 @@ class HomeViewModel : BaseViewModel() {
         viewModelScope.launch {
             val response = getArticleList(getNextPage())
             _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    state.result.addAll(datas)
+                response.data?.datas?.forEach {
+                    state.result.add(it.build())
                 }
                 state.copy(refreshing = false, loading = hasNextPage())
             }

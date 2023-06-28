@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -30,7 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -53,7 +53,7 @@ import com.example.fragment.library.base.utils.startScreenRecord
 import com.example.fragment.library.base.utils.stopScreenRecord
 import com.example.fragment.project.R
 import com.example.fragment.project.components.LoadingLayout
-import com.example.fragment.project.utils.WanHelper
+import com.example.fragment.project.components.NightSwitchButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -65,22 +65,10 @@ fun SettingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var systemThemeState by rememberSaveable { mutableStateOf(false) }
-    var darkThemeState by rememberSaveable { mutableStateOf(false) }
     var screenRecordState by rememberSaveable { mutableStateOf(false) }
     var cacheSize by rememberSaveable { mutableStateOf(CacheUtils.getTotalSize(context)) }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
-    DisposableEffect(LocalLifecycleOwner.current) {
-        WanHelper.getUiMode {
-            if (it == "-1") {
-                systemThemeState = true
-            } else if (it == "2") {
-                darkThemeState = true
-            }
-        }
-        onDispose {}
-    }
     Scaffold(
         scaffoldState = scaffoldState,
         snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
@@ -128,41 +116,6 @@ fun SettingScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "跟随系统深色模式",
-                            modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
-                        )
-                        Switch(
-                            checked = systemThemeState,
-                            onCheckedChange = {
-                                systemThemeState = it
-                                if (systemThemeState) {
-                                    WanHelper.setUiMode("-1")
-                                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-                                } else {
-                                    WanHelper.setUiMode("1")
-                                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                                }
-                            }
-                        )
-                    }
-                    Spacer(
-                        Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
-                    )
-                    Row(
-                        modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
                             text = "深色模式",
                             modifier = Modifier
                                     .weight(1f)
@@ -170,19 +123,19 @@ fun SettingScreen(
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
-                        Switch(
-                            checked = darkThemeState,
+                        NightSwitchButton(
+                            checked = uiState.darkTheme,
                             onCheckedChange = {
-                                darkThemeState = it
-                                if (darkThemeState) {
-                                    WanHelper.setUiMode("2")
+                                viewModel.updateUiMode(it)
+                                if (it) {
                                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                                 } else {
-                                    WanHelper.setUiMode("1")
                                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                                 }
-                            }
+                            },
+                            Modifier.size(40.dp, 20.dp)
                         )
+                        Spacer(Modifier.width(5.dp))
                     }
                     Spacer(
                         Modifier

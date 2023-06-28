@@ -1,10 +1,20 @@
 package com.example.fragment.project.bean
 
+import android.os.Build
 import android.os.Parcelable
+import android.text.Html
+import android.text.TextUtils
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import java.util.regex.Pattern
+import kotlin.math.abs
 
 @Parcelize
 data class ShareArticleListBean(
@@ -45,12 +55,12 @@ data class ArticleBean(
     val author: String = "",
     val canEdit: Boolean = false,
     val chapterId: String = "",
-    val chapterName: String = "",
+    private val chapterName: String = "",
     var collect: Boolean = false,
     val courseId: String = "",
-    val desc: String = "",
+    private val desc: String = "",
     val descMd: String = "",
-    val envelopePic: String = "",
+    private val envelopePic: String = "",
     var top: Boolean = false,
     val fresh: Boolean = false,
     val host: String = "",
@@ -67,9 +77,9 @@ data class ArticleBean(
     val shareDate: String = "",
     val shareUser: String = "",
     val superChapterId: String = "",
-    val superChapterName: String = "",
+    private val superChapterName: String = "",
     val tags: List<ArticleTagBean>? = null,
-    val title: String = "",
+    private val title: String = "",
     val type: String = "",
     val userId: String = "",
     val visible: String = "",
@@ -79,7 +89,7 @@ data class ArticleBean(
 ) : Parcelable {
 
     @IgnoredOnParcel
-    val avatarList: List<Int> = listOf(
+    private val avatarList: List<Int> = listOf(
         R.drawable.avatar_1_raster,
         R.drawable.avatar_2_raster,
         R.drawable.avatar_3_raster,
@@ -88,23 +98,81 @@ data class ArticleBean(
         R.drawable.avatar_6_raster,
     )
 
-    fun getAvatarId(): Int {
-        var index = 0
-        try {
-            val id = userId.toInt()
-            if (id >= 0) {
-                index = id % 6
+    @IgnoredOnParcel
+    var avatarId: Int = R.drawable.avatar_1_raster
+
+    @IgnoredOnParcel
+    var titleHtml: String = ""
+
+    @IgnoredOnParcel
+    var descHtml: String = ""
+
+    @IgnoredOnParcel
+    var chapterNameHtml: AnnotatedString = buildAnnotatedString {}
+
+    @IgnoredOnParcel
+    var httpsEnvelopePic: String = ""
+
+    fun build(): ArticleBean {
+        avatarId = avatarList[
+                try {
+                    abs(userId.toInt()) % 6
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    0
+                }
+        ]
+        titleHtml = fromHtml(title)
+        descHtml = removeAllBank(fromHtml(desc), 2)
+        chapterNameHtml = buildAnnotatedString {
+            if (fresh) {
+                withStyle(style = SpanStyle(color = Color(0xFF508CEE))) {
+                    append("新  ")
+                }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+            if (top) {
+                withStyle(
+                    style = SpanStyle(color = Color(0xFFFF7800))
+                ) {
+                    append("置顶  ")
+                }
+            }
+            append(
+                fromHtml(formatChapterName(superChapterName, chapterName))
+            )
         }
-        return avatarList[index]
+        httpsEnvelopePic = envelopePic.replace("http://", "https://")
+        return this
     }
 
-    fun getHttpsEnvelopePic(): String {
-        return envelopePic.replace("http://", "https://")
+    private fun fromHtml(str: String): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
+        } else {
+            Html.fromHtml(str).toString()
+        }
     }
 
+    private fun removeAllBank(str: String?, count: Int): String {
+        var s = ""
+        if (str != null) {
+            val p = Pattern.compile("\\s{$count,}|\t|\r|\n")
+            val m = p.matcher(str)
+            s = m.replaceAll(" ")
+        }
+        return s
+    }
+
+    private fun formatChapterName(vararg names: String): String {
+        val format = StringBuilder()
+        for (name in names) {
+            if (!TextUtils.isEmpty(name)) {
+                if (format.isNotEmpty()) format.append(" · ")
+                format.append(name)
+            }
+        }
+        return format.toString()
+    }
 }
 
 @Parcelize

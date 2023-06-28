@@ -41,7 +41,7 @@ dependencies {
 
     api 'androidx.appcompat:appcompat:1.6.1'
     api 'androidx.core:core-ktx:1.10.1'
-    api 'androidx.activity:activity-compose:1.7.1'
+    api 'androidx.activity:activity-compose:1.7.2'
     api "androidx.compose.ui:ui:$compose_version"
     api "androidx.compose.ui:ui-util:$compose_version"
     api "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -51,8 +51,8 @@ dependencies {
     api "androidx.compose.material:material:$compose_version"
     api 'androidx.constraintlayout:constraintlayout:2.1.4'
     api "androidx.constraintlayout:constraintlayout-compose:1.0.1"
-    api 'androidx.fragment:fragment-ktx:1.5.7'
-    api 'androidx.webkit:webkit:1.6.1'
+    api 'androidx.fragment:fragment-ktx:1.6.0'
+    api 'androidx.webkit:webkit:1.7.0'
     // viewModel 和 livedata
     api "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     api "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"

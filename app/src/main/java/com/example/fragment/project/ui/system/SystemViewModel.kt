@@ -83,9 +83,7 @@ class SystemViewModel : BaseViewModel() {
                     if (isHomePage(cid)) {
                         state.result[cid] = arrayListOf()
                     }
-                    datas.forEach {
-                        state.result[cid]?.add(it.build())
-                    }
+                    state.result[cid]?.addAll(datas)
                 }
                 //设置下拉刷新状态
                 state.refreshing[cid] = false

@@ -1,19 +1,12 @@
 package com.example.fragment.project.bean
 
-import android.os.Build
 import android.os.Parcelable
 import android.text.Html
 import android.text.TextUtils
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import com.example.fragment.library.base.R
 import com.example.fragment.library.base.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import java.util.regex.Pattern
 import kotlin.math.abs
 
 @Parcelize
@@ -55,12 +48,12 @@ data class ArticleBean(
     val author: String = "",
     val canEdit: Boolean = false,
     val chapterId: String = "",
-    private val chapterName: String = "",
+    val chapterName: String = "",
     var collect: Boolean = false,
     val courseId: String = "",
-    private val desc: String = "",
+    val desc: String = "",
     val descMd: String = "",
-    private val envelopePic: String = "",
+    val envelopePic: String = "",
     var top: Boolean = false,
     val fresh: Boolean = false,
     val host: String = "",
@@ -77,9 +70,9 @@ data class ArticleBean(
     val shareDate: String = "",
     val shareUser: String = "",
     val superChapterId: String = "",
-    private val superChapterName: String = "",
+    val superChapterName: String = "",
     val tags: List<ArticleTagBean>? = null,
-    private val title: String = "",
+    val title: String = "",
     val type: String = "",
     val userId: String = "",
     val visible: String = "",
@@ -98,69 +91,28 @@ data class ArticleBean(
         R.drawable.avatar_6_raster,
     )
 
-    @IgnoredOnParcel
-    var avatarId: Int = R.drawable.avatar_1_raster
+    fun getAvatarId(): Int {
+        return avatarList[abs(userId.toInt()) % 6]
+    }
 
-    @IgnoredOnParcel
-    var titleHtml: String = ""
+    fun getTitleHtml(): String {
+        return fromHtml(title)
+    }
 
-    @IgnoredOnParcel
-    var descHtml: String = ""
+    fun getDescHtml(): String {
+        return fromHtml(desc)
+    }
 
-    @IgnoredOnParcel
-    var chapterNameHtml: AnnotatedString = buildAnnotatedString {}
+    fun getChapterNameHtml(): String {
+        return fromHtml(formatChapterName(superChapterName, chapterName))
+    }
 
-    @IgnoredOnParcel
-    var httpsEnvelopePic: String = ""
-
-    fun build(): ArticleBean {
-        avatarId = avatarList[
-                try {
-                    abs(userId.toInt()) % 6
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    0
-                }
-        ]
-        titleHtml = fromHtml(title)
-        descHtml = removeAllBank(fromHtml(desc), 2)
-        chapterNameHtml = buildAnnotatedString {
-            if (fresh) {
-                withStyle(style = SpanStyle(color = Color(0xFF508CEE))) {
-                    append("新  ")
-                }
-            }
-            if (top) {
-                withStyle(
-                    style = SpanStyle(color = Color(0xFFFF7800))
-                ) {
-                    append("置顶  ")
-                }
-            }
-            append(
-                fromHtml(formatChapterName(superChapterName, chapterName))
-            )
-        }
-        httpsEnvelopePic = envelopePic.replace("http://", "https://")
-        return this
+    fun getHttpsEnvelopePic(): String {
+        return envelopePic.replace("http://", "https://")
     }
 
     private fun fromHtml(str: String): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
-        } else {
-            Html.fromHtml(str).toString()
-        }
-    }
-
-    private fun removeAllBank(str: String?, count: Int): String {
-        var s = ""
-        if (str != null) {
-            val p = Pattern.compile("\\s{$count,}|\t|\r|\n")
-            val m = p.matcher(str)
-            s = m.replaceAll(" ")
-        }
-        return s
+        return Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
     }
 
     private fun formatChapterName(vararg names: String): String {

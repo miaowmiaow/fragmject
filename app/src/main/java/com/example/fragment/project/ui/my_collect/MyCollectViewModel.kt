@@ -61,9 +61,7 @@ class MyCollectViewModel : BaseViewModel() {
                     if (isHomePage()) {
                         state.result.clear()
                     }
-                    datas.forEach {
-                        state.result.add(it.build())
-                    }
+                    state.result.addAll(datas)
                 }
                 state.copy(refreshing = false, loading = hasNextPage())
             }

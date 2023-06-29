@@ -25,8 +25,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,11 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,7 +59,28 @@ fun ArticleCard(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    var collectResId by rememberSaveable {
+
+    val avatarId by remember(data.userId) {
+        mutableStateOf(data.getAvatarId())
+    }
+
+    val titleHtml by remember(data.title) {
+        mutableStateOf(data.getTitleHtml())
+    }
+
+    val descHtml by remember(data.desc) {
+        mutableStateOf(data.getDescHtml())
+    }
+
+    val chapterNameHtml by remember(data.superChapterName, data.chapterName) {
+        mutableStateOf(data.getChapterNameHtml())
+    }
+
+    val httpsEnvelopePic by remember(data.envelopePic) {
+        mutableStateOf(data.getHttpsEnvelopePic())
+    }
+
+    var collectResId by remember(data.collect) {
         mutableStateOf(
             if (data.collect) {
                 R.drawable.ic_collect_checked
@@ -84,7 +102,7 @@ fun ArticleCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = data.avatarId),
+                        painter = painterResource(id = avatarId),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -119,60 +137,62 @@ fun ArticleCard(
                                 bottom.linkTo(parent.bottom)
                             })
                     }
-                    if (!data.tags.isNullOrEmpty()) {
-                        Button(
-                            onClick = {
-                                val uriString = "https://www.wanandroid.com${data.tags[0].url}"
-                                val uri = Uri.parse(uriString)
-                                var cid = uri.getQueryParameter("cid")
-                                if (cid.isNullOrBlank()) {
-                                    val paths = uri.pathSegments
-                                    if (paths != null && paths.size >= 3) {
-                                        cid = paths[2]
+                    data.tags?.let { tags ->
+                        if (tags.isNotEmpty()) {
+                            Button(
+                                onClick = {
+                                    val uriString = "https://www.wanandroid.com${tags[0].url}"
+                                    val uri = Uri.parse(uriString)
+                                    var cid = uri.getQueryParameter("cid")
+                                    if (cid.isNullOrBlank()) {
+                                        val paths = uri.pathSegments
+                                        if (paths != null && paths.size >= 3) {
+                                            cid = paths[2]
+                                        }
                                     }
-                                }
-                                onNavigateToSystem(cid ?: "0")
-                            },
-                            modifier = Modifier.height(25.dp),
-                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
-                            shape = RoundedCornerShape(3.dp),
-                            border = BorderStroke(1.dp, colorResource(R.color.blue)),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.white),
-                                contentColor = colorResource(R.color.blue)
-                            ),
-                            contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
-                        ) {
-                            Text(
-                                text = data.tags[0].name,
-                                fontSize = 12.sp
-                            )
+                                    onNavigateToSystem(cid ?: "0")
+                                },
+                                modifier = Modifier.height(25.dp),
+                                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                                shape = RoundedCornerShape(3.dp),
+                                border = BorderStroke(1.dp, colorResource(R.color.blue)),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = colorResource(R.color.white),
+                                    contentColor = colorResource(R.color.blue)
+                                ),
+                                contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
+                            ) {
+                                Text(
+                                    text = tags[0].name,
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
                     }
                 }
                 Spacer(Modifier.size(10.dp))
                 Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        if (data.descHtml.isNotBlank()) {
+                        if (descHtml.isNotBlank()) {
                             Text(
-                                text = data.titleHtml,
-                                fontSize = 13.sp,
+                                text = titleHtml,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = data.descHtml,
-                                fontSize = 13.sp,
+                                text = descHtml,
+                                fontSize = 14.sp,
                                 color = colorResource(R.color.text_666),
                                 maxLines = 3,
                                 overflow = TextOverflow.Ellipsis,
                             )
                         } else {
                             Text(
-                                text = data.titleHtml,
-                                fontSize = 13.sp,
+                                text = titleHtml,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
                                 maxLines = 3,
@@ -180,16 +200,15 @@ fun ArticleCard(
                             )
                         }
                     }
-                    if (data.httpsEnvelopePic.isNotBlank()) {
+                    if (httpsEnvelopePic.isNotBlank()) {
                         AsyncImage(
-                            model = data.httpsEnvelopePic,
+                            model = httpsEnvelopePic,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                     .padding(start = 10.dp)
                                     .width(45.dp)
                                     .aspectRatio(2f / 3f)
-                                    .clip(RoundedCornerShape(16f))
                         )
                     }
                 }
@@ -204,8 +223,30 @@ fun ArticleCard(
                                 .weight(1f)
                                 .padding(end = 15.dp)
                     ) {
+                        if (data.fresh) {
+                            Text(
+                                text = "新  ",
+                                fontSize = 12.sp,
+                                color = colorResource(R.color.blue),
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                        .height(20.dp)
+                                        .clickable { onNavigateToSystem(data.chapterId) },
+                            )
+                        }
+                        if (data.top) {
+                            Text(
+                                text = "置顶  ",
+                                fontSize = 12.sp,
+                                color = colorResource(R.color.orange),
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                        .height(20.dp)
+                                        .clickable { onNavigateToSystem(data.chapterId) },
+                            )
+                        }
                         Text(
-                            text = data.chapterNameHtml,
+                            text = chapterNameHtml,
                             fontSize = 12.sp,
                             color = colorResource(R.color.text_999),
                             maxLines = 1,

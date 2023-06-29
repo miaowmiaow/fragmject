@@ -45,9 +45,7 @@ class NavViewModel : BaseViewModel() {
             navigationResult.isSelected = true
             navigationResult.articles?.let { articles ->
                 state.articlesResult.clear()
-                articles.forEach {
-                    state.articlesResult.add(it.build())
-                }
+                state.articlesResult.addAll(articles)
             }
             state.copy(currentPosition = position)
         }

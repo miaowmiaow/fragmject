@@ -91,24 +91,54 @@ data class ArticleBean(
         R.drawable.avatar_6_raster,
     )
 
+    @IgnoredOnParcel
+    private var avatarId: Int? = null
+
     fun getAvatarId(): Int {
-        return avatarList[abs(userId.toInt()) % 6]
+        if (avatarId == null) {
+            avatarId = avatarList[abs(userId.toInt()) % 6]
+        }
+        return avatarId ?: -1
     }
+
+    @IgnoredOnParcel
+    private var titleHtml: String? = null
 
     fun getTitleHtml(): String {
-        return fromHtml(title)
+        if (titleHtml == null) {
+            titleHtml = fromHtml(title)
+        }
+        return titleHtml ?: ""
     }
+
+    @IgnoredOnParcel
+    private var descHtml: String? = null
 
     fun getDescHtml(): String {
-        return fromHtml(desc)
+        if (descHtml == null) {
+            descHtml = fromHtml(desc)
+        }
+        return descHtml ?: ""
     }
+
+    @IgnoredOnParcel
+    private var chapterNameHtml: String? = null
 
     fun getChapterNameHtml(): String {
-        return fromHtml(formatChapterName(superChapterName, chapterName))
+        if (chapterNameHtml == null) {
+            chapterNameHtml = fromHtml(formatChapterName(superChapterName, chapterName))
+        }
+        return chapterNameHtml ?: ""
     }
 
+    @IgnoredOnParcel
+    private var httpsEnvelopePic: String? = null
+
     fun getHttpsEnvelopePic(): String {
-        return envelopePic.replace("http://", "https://")
+        if (httpsEnvelopePic == null) {
+            httpsEnvelopePic = envelopePic.replace("http://", "https://")
+        }
+        return httpsEnvelopePic ?: envelopePic
     }
 
     private fun fromHtml(str: String): String {

@@ -60,35 +60,7 @@ fun ArticleCard(
 ) {
     val scope = rememberCoroutineScope()
 
-    val avatarId by remember(data.userId) {
-        mutableStateOf(data.getAvatarId())
-    }
-
-    val titleHtml by remember(data.title) {
-        mutableStateOf(data.getTitleHtml())
-    }
-
-    val descHtml by remember(data.desc) {
-        mutableStateOf(data.getDescHtml())
-    }
-
-    val chapterNameHtml by remember(data.superChapterName, data.chapterName) {
-        mutableStateOf(data.getChapterNameHtml())
-    }
-
-    val httpsEnvelopePic by remember(data.envelopePic) {
-        mutableStateOf(data.getHttpsEnvelopePic())
-    }
-
-    var collectResId by remember(data.collect) {
-        mutableStateOf(
-            if (data.collect) {
-                R.drawable.ic_collect_checked
-            } else {
-                R.drawable.ic_collect_unchecked
-            }
-        )
-    }
+    var collectResId by remember(data.collect) { mutableStateOf(getCollectResId(data.collect)) }
 
     Box(modifier) {
         Card(elevation = 2.dp) {
@@ -102,7 +74,7 @@ fun ArticleCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = avatarId),
+                        painter = painterResource(id = data.getAvatarId()),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -173,9 +145,9 @@ fun ArticleCard(
                 Spacer(Modifier.size(10.dp))
                 Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        if (descHtml.isNotBlank()) {
+                        if (data.desc.isNotBlank()) {
                             Text(
-                                text = titleHtml,
+                                text = data.getTitleHtml(),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -183,7 +155,7 @@ fun ArticleCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = descHtml,
+                                text = data.getDescHtml(),
                                 fontSize = 14.sp,
                                 color = colorResource(R.color.text_666),
                                 maxLines = 3,
@@ -191,7 +163,7 @@ fun ArticleCard(
                             )
                         } else {
                             Text(
-                                text = titleHtml,
+                                text = data.getTitleHtml(),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -200,9 +172,9 @@ fun ArticleCard(
                             )
                         }
                     }
-                    if (httpsEnvelopePic.isNotBlank()) {
+                    if (data.envelopePic.isNotBlank()) {
                         AsyncImage(
-                            model = httpsEnvelopePic,
+                            model = data.getHttpsEnvelopePic(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -246,7 +218,7 @@ fun ArticleCard(
                             )
                         }
                         Text(
-                            text = chapterNameHtml,
+                            text = data.getChapterNameHtml(),
                             fontSize = 12.sp,
                             color = colorResource(R.color.text_999),
                             maxLines = 1,
@@ -273,13 +245,8 @@ fun ArticleCard(
                                         val response = post<HttpResponse>(request)
                                         when (response.errorCode) {
                                             "0" -> {
-                                                if (data.collect) {
-                                                    data.collect = false
-                                                    collectResId = R.drawable.ic_collect_unchecked
-                                                } else {
-                                                    data.collect = true
-                                                    collectResId = R.drawable.ic_collect_checked
-                                                }
+                                                data.collect = !data.collect
+                                                collectResId = getCollectResId(data.collect)
                                             }
                                             "-1001" -> onNavigateToLogin()
                                         }
@@ -288,6 +255,13 @@ fun ArticleCard(
                 }
             }
         }
+    }
+}
+
+private fun getCollectResId(collect: Boolean): Int {
+    return when (collect) {
+        true -> R.drawable.ic_collect_checked
+        false -> R.drawable.ic_collect_unchecked
     }
 }
 

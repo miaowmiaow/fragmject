@@ -153,6 +153,7 @@ fun MyCoinScreen(
                 loading = uiState.loading,
                 onLoad = { viewModel.getNext() },
                 modifier = Modifier.fillMaxSize(),
+                key = { _, item -> item.id },
             ) { _, item ->
                 Row(
                     modifier = Modifier

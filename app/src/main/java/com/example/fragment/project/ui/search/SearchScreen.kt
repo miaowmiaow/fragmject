@@ -195,6 +195,7 @@ fun SearchScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
+                        key = { _, item -> item.id },
                     ) { _, item ->
                         ArticleCard(
                             data = item,

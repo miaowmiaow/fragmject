@@ -165,6 +165,7 @@ fun UserScreen(
                         .background(colorResource(R.color.white)),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
+                key = { _, item -> item.id },
             ) { _, item ->
                 ArticleCard(
                     data = item,

@@ -44,10 +44,8 @@
 |   └── src 
 |       └── main 
 |       |   └── java                            源码目录
-|       |   |   ├── activity                    Activity目录
-|       |   |   |   └── MainActivity            项目唯一Activity
-|       |   |   ├── adapter                     Adapter目录
-|       |   |   ├── compose                     Compose目录
+|       |   |   ├── bean                        bean目录
+|       |   |   ├── components                  自定义组件目录
 |       |   |   ├── ui                          ui目录
 |       |   |   |   └── main                    mian目录
 |       |   |   |       └── home                home目录
@@ -57,21 +55,21 @@
 |       |   |   ├── utils                       工具类目录
 |       |   |   ├── WanActivity                 唯一Activity
 |       |   |   ├── WanApplication              Application
-|       |   |   └── WanNavGraph                 导航图
+|       |   |   ├── WanTheme                    Theme
+|       |   |   ├── WanNavGraph                 导航图
+|       |   |   └── WanViewModel                ViewModel
 |       |   |
 |       |   └── res                             资源目录
-|       |   |
 |       |   └── AndroidManifest.xml             配置文件
 |       |
-|       └── build.gradle                        模块构建配置
-|       └── channel                             渠道配置文件
-|       └── dictionary                          自定义混淆字典
+|       ├── build.gradle                        模块构建配置
+|       ├── dictionary                          自定义混淆字典
 |       └── proguard-rules.pro                  代码混淆配置文件
 | 
 ├── library-base                                基础library（library开头为公共库，任何项目都可使用）
 |   └── src 
 |       └── main 
-|       |   ├── assets                          原生文件目录
+|       |   ├── assets                          assets目录
 |       |   └── java                            源码目录
 |       |       ├── activity                    Activity目录
 |       |       ├── adapter                     Adapter目录
@@ -80,6 +78,7 @@
 |       |       ├── dialog                      Dialog目录
 |       |       ├── http                        网络请求目录
 |       |       ├── provider                    ContentProvider目录
+|       |       ├── service                     Service目录
 |       |       ├── utils                       工具类目录
 |       |       └── view                        自定义view目录
 |       | 
@@ -87,25 +86,22 @@
 | 
 ├── library-picture                             图片模块（目录同app，不再展开）
 | 
-        ├── library-plugin                      插件模块
+├── library-plugin                      插件模块
 |   └── src 
 |       └── main 
-|           └── groovy                          源码目录
-|           | 
+|           ├── kotlin                          源码目录
 |           └── resources                       配置目录
 |               └── statistic.properties        插件配置
 | 
 ├── repos                                       插件生成目录
 |
 ├── build.gradle                                项目构建配置
-├── config.gradle                               gradle编译文件 gradle依赖配置
 ├── config.properties                           项目配置
 ├── gradle.properties                           gradle配置
 └── settings.gradle                             项目依赖配置
 ```
 
-## Jetpack Compose(持续更新)
-目前 `master` 处在增量迁移中（Compose 和 View 在代码库中共存），直到应用完全迁移至 Compose 为止。    
+## Jetpack Compose
 如果你暂时不需要 Compose ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
 
 #### 更少的代码
@@ -122,11 +118,11 @@ Compose 与您所有的现有代码兼容：您可以从 View 调用 Compose 代
 
 [Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
 
+[Jetpack Compose : WebView的使用与优化](https://juejin.cn/post/7194360493866221628)
+
 [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
 
 [Jetpack Compose : 一文学会嵌套滚动NestedScrollConnection](https://juejin.cn/spost/7239610698116055098)
-
-[Jetpack Compose : WebView的使用与优化](https://juejin.cn/post/7194360493866221628)
 
 ## KVDatabase
 通过对 `RoomDatabase` 进行封装，从而更方便的实现数据持久化。   
@@ -171,6 +167,7 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 [一文学会字节码替换，再也不用担心隐私合规审核](https://juejin.cn/post/7121985493445083149)
 
 #### 快速使用
+源代码在 `library-plugin` 目录下
 在 `MiaowPlugin` 添加 `ScanBean` 并配置目标字段或方法以及对应的替换字段或方法
 ```
 ScanBean(
@@ -236,6 +233,7 @@ plugins {
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 #### 快速使用
+源代码在 `library-picture` 目录下
 ```
 PictureEditorDialog.newInstance()
     .setBitmapPath(path)

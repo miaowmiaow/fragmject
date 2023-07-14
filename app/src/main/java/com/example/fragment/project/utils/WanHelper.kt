@@ -10,28 +10,9 @@ import com.google.gson.reflect.TypeToken
  */
 object WanHelper {
 
-    private const val PRIVACY_AGREEMENT = "privacy_agreement"
-    private const val SCREEN_RECORD = "screen_record"
     private const val SEARCH_HISTORY = "search_history"
     private const val UI_MODE = "ui_mode"
     private const val USER = "user"
-
-    /**
-     * 隐私协议状态
-     */
-    fun privacyAgreement(allow: () -> Unit, deny: () -> Unit) {
-        KVDatabase.get(PRIVACY_AGREEMENT) {
-            if (it == "1") allow.invoke() else deny.invoke()
-        }
-    }
-
-    fun allowPrivacyAgreement() {
-        KVDatabase.set(PRIVACY_AGREEMENT, "1")
-    }
-
-    fun denyPrivacyAgreement() {
-        KVDatabase.set(PRIVACY_AGREEMENT, "0")
-    }
 
     /**
      * 设置搜索历史

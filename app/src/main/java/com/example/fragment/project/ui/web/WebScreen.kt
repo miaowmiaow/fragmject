@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import com.example.fragment.library.base.utils.WebViewHelper
 import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.library.base.utils.injectVConsoleJs
@@ -154,6 +158,17 @@ fun WebScreen(
             navigator = navigator,
             onCreated = { webView ->
                 webView.settings.javaScriptEnabled = true
+                val forceDarkMode = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    webView.settings.isAlgorithmicDarkeningAllowed = forceDarkMode
+                } else {
+                    if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+                        WebSettingsCompat.setForceDark(
+                            webView.settings,
+                            if (forceDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
+                        )
+                    }
+                }
                 WebViewHelper.setDownloadListener(webView)
                 WebViewHelper.setOnLongClickListener(webView)
             },

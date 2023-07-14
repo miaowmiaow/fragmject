@@ -4,17 +4,26 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.MutableContextWrapper
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import android.net.Uri
-import android.os.Build
 import android.os.Looper
 import android.util.Base64
 import android.view.ViewGroup
-import android.webkit.*
-import androidx.webkit.WebSettingsCompat
+import android.webkit.CookieManager
+import android.webkit.MimeTypeMap
+import android.webkit.URLUtil
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
+import android.webkit.WebView
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.download
-import com.example.fragment.library.base.utils.UIModeUtils.isNightMode
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
@@ -221,7 +230,7 @@ object WebViewHelper {
 
 }
 
-@SuppressLint("SetJavaScriptEnabled", "RequiresFeature")
+@SuppressLint("SetJavaScriptEnabled")
 class WebViewManager private constructor() {
 
     companion object {
@@ -267,13 +276,6 @@ class WebViewManager private constructor() {
         webSetting.useWideViewPort = true
         webSetting.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            val isAppDarkMode = webView.context.isNightMode()
-            WebSettingsCompat.setForceDark(
-                webView.settings,
-                if (isAppDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
-            )
-        }
         return webView
     }
 

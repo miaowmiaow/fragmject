@@ -1,15 +1,9 @@
 buildscript {
     ext {
-        gradle_version = '7.4.2'
+        gradle_version = '8.0.2'
         kotlin_version = '1.8.10'
         compose_version = '1.4.3'
-
-        junit_version = '4.13.2'
-        mockk_version = '1.13.5'
-        coroutines_test_version = '1.6.4'
-        androidx_testing_version = '2.2.0'
-        androidx_junit_version = '1.1.5'
-        androidx_espresso_version = '3.5.1'
+        compose_compiler_version = '1.4.3'
     }
     dependencies {
 //        classpath 'com.example.miaow:plugin:1.0.0'

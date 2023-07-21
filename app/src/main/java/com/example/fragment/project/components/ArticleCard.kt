@@ -41,10 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
-import com.example.fragment.library.base.R
 import com.example.fragment.library.base.http.HttpRequest
 import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.library.base.http.post
+import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.bean.ArticleBean
 import kotlinx.coroutines.launch
@@ -66,27 +66,27 @@ fun ArticleCard(
         Card(elevation = 2.dp) {
             Column(
                 Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = { onNavigateToWeb(data.link) })
+                    .fillMaxWidth()
+                    .clickable(onClick = { onNavigateToWeb(data.link) })
             ) {
                 Row(
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(id = data.getAvatarId()),
+                        painter = painterResource(id = data.avatarId),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .clickable { onNavigateToUser(data.userId) }
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .clickable { onNavigateToUser(data.userId) }
                     )
                     ConstraintLayout(
                         modifier = Modifier
-                                .height(35.dp)
-                                .weight(1f)
-                                .padding(start = 10.dp, end = 10.dp)
+                            .height(35.dp)
+                            .weight(1f)
+                            .padding(start = 10.dp, end = 10.dp)
                     ) {
                         val (share_user, nice_date) = createRefs()
                         Text(
@@ -147,7 +147,7 @@ fun ArticleCard(
                     Column(modifier = Modifier.weight(1f)) {
                         if (data.desc.isNotBlank()) {
                             Text(
-                                text = data.getTitleHtml(),
+                                text = data.titleHtml,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -155,7 +155,7 @@ fun ArticleCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = data.getDescHtml(),
+                                text = data.descHtml,
                                 fontSize = 14.sp,
                                 color = colorResource(R.color.text_666),
                                 maxLines = 3,
@@ -163,7 +163,7 @@ fun ArticleCard(
                             )
                         } else {
                             Text(
-                                text = data.getTitleHtml(),
+                                text = data.titleHtml,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = colorResource(R.color.text_333),
@@ -174,13 +174,13 @@ fun ArticleCard(
                     }
                     if (data.envelopePic.isNotBlank()) {
                         AsyncImage(
-                            model = data.getHttpsEnvelopePic(),
+                            model = data.httpsEnvelopePic,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                    .padding(start = 10.dp)
-                                    .width(45.dp)
-                                    .aspectRatio(2f / 3f)
+                                .padding(start = 10.dp)
+                                .width(45.dp)
+                                .aspectRatio(2f / 3f)
                         )
                     }
                 }
@@ -192,8 +192,8 @@ fun ArticleCard(
                 ) {
                     Row(
                         modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 15.dp)
+                            .weight(1f)
+                            .padding(end = 15.dp)
                     ) {
                         if (data.fresh) {
                             Text(
@@ -202,8 +202,8 @@ fun ArticleCard(
                                 color = colorResource(R.color.blue),
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                        .height(20.dp)
-                                        .clickable { onNavigateToSystem(data.chapterId) },
+                                    .height(20.dp)
+                                    .clickable { onNavigateToSystem(data.chapterId) },
                             )
                         }
                         if (data.top) {
@@ -213,45 +213,46 @@ fun ArticleCard(
                                 color = colorResource(R.color.orange),
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                        .height(20.dp)
-                                        .clickable { onNavigateToSystem(data.chapterId) },
+                                    .height(20.dp)
+                                    .clickable { onNavigateToSystem(data.chapterId) },
                             )
                         }
                         Text(
-                            text = data.getChapterNameHtml(),
+                            text = data.chapterNameHtml,
                             fontSize = 12.sp,
                             color = colorResource(R.color.text_999),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                    .height(20.dp)
-                                    .clickable { onNavigateToSystem(data.chapterId) },
+                                .height(20.dp)
+                                .clickable { onNavigateToSystem(data.chapterId) },
                         )
                     }
                     Image(
                         painter = painterResource(id = collectResId),
                         contentDescription = "",
                         modifier = Modifier
-                                .size(20.dp)
-                                .clickable {
-                                    scope.launch {
-                                        val request = HttpRequest().putPath("id", data.id)
-                                        request.setUrl(
-                                            if (data.collect)
-                                                "lg/uncollect_originId/{id}/json"
-                                            else
-                                                "lg/uncollect_originId/{id}/json"
-                                        )
-                                        val response = post<HttpResponse>(request)
-                                        when (response.errorCode) {
-                                            "0" -> {
-                                                data.collect = !data.collect
-                                                collectResId = getCollectResId(data.collect)
-                                            }
-                                            "-1001" -> onNavigateToLogin()
+                            .size(20.dp)
+                            .clickable {
+                                scope.launch {
+                                    val request = HttpRequest().putPath("id", data.id)
+                                    request.setUrl(
+                                        if (data.collect)
+                                            "lg/uncollect_originId/{id}/json"
+                                        else
+                                            "lg/uncollect_originId/{id}/json"
+                                    )
+                                    val response = post<HttpResponse>(request)
+                                    when (response.errorCode) {
+                                        "0" -> {
+                                            data.collect = !data.collect
+                                            collectResId = getCollectResId(data.collect)
                                         }
+
+                                        "-1001" -> onNavigateToLogin()
                                     }
-                                })
+                                }
+                            })
                 }
             }
         }

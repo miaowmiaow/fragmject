@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import com.example.fragment.library.base.R
+import com.example.fragment.project.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -23,12 +23,12 @@ fun <T> TabBar(
     modifier: Modifier = Modifier,
     onClick: (index: Int) -> Unit
 ) {
-    if (data != null && data.isNotEmpty()) {
+    if (!data.isNullOrEmpty()) {
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             modifier = modifier
-                    .fillMaxWidth()
-                    .height(45.dp),
+                .fillMaxWidth()
+                .height(45.dp),
             backgroundColor = colorResource(R.color.white),
             edgePadding = 0.dp,
             divider = {

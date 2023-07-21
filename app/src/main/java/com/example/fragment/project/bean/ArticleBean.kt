@@ -3,8 +3,8 @@ package com.example.fragment.project.bean
 import android.os.Parcelable
 import android.text.Html
 import android.text.TextUtils
-import com.example.fragment.library.base.R
 import com.example.fragment.library.base.http.HttpResponse
+import com.example.fragment.project.R
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlin.math.abs
@@ -92,53 +92,33 @@ data class ArticleBean(
     )
 
     @IgnoredOnParcel
-    private var avatarId: Int? = null
-
-    fun getAvatarId(): Int {
-        if (avatarId == null) {
-            avatarId = avatarList[abs(userId.toInt()) % 6]
+    val avatarId by lazy {
+        try {
+            avatarList[abs(userId.toInt()) % 6]
+        } catch (e: Exception) {
+            e.printStackTrace()
+            1
         }
-        return avatarId ?: -1
     }
 
     @IgnoredOnParcel
-    private var titleHtml: String? = null
-
-    fun getTitleHtml(): String {
-        if (titleHtml == null) {
-            titleHtml = fromHtml(title)
-        }
-        return titleHtml ?: ""
+    val titleHtml by lazy {
+        fromHtml(title)
     }
 
     @IgnoredOnParcel
-    private var descHtml: String? = null
-
-    fun getDescHtml(): String {
-        if (descHtml == null) {
-            descHtml = fromHtml(desc)
-        }
-        return descHtml ?: ""
+    val descHtml by lazy {
+        fromHtml(desc)
     }
 
     @IgnoredOnParcel
-    private var chapterNameHtml: String? = null
-
-    fun getChapterNameHtml(): String {
-        if (chapterNameHtml == null) {
-            chapterNameHtml = fromHtml(formatChapterName(superChapterName, chapterName))
-        }
-        return chapterNameHtml ?: ""
+    val chapterNameHtml by lazy {
+        fromHtml(formatChapterName(superChapterName, chapterName))
     }
 
     @IgnoredOnParcel
-    private var httpsEnvelopePic: String? = null
-
-    fun getHttpsEnvelopePic(): String {
-        if (httpsEnvelopePic == null) {
-            httpsEnvelopePic = envelopePic.replace("http://", "https://")
-        }
-        return httpsEnvelopePic ?: envelopePic
+    val httpsEnvelopePic by lazy {
+        envelopePic.replace("http://", "https://")
     }
 
     private fun fromHtml(str: String): String {

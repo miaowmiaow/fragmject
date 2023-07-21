@@ -7,7 +7,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,10 +15,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.fragment.library.base.R
 import com.example.fragment.library.base.dialog.FullDialog
 import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.*
+import com.example.fragment.library.base.utils.CacheUtils
+import com.example.fragment.library.base.utils.PermissionsCallback
+import com.example.fragment.library.base.utils.requestStorage
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
@@ -66,11 +66,6 @@ class PictureSelectorDialog : FullDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dialog?.window?.apply {
-            setDimAmount(0f)
-            attributes.gravity = Gravity.END
-            setWindowAnimations(R.style.AnimRight)
-        }
         setStatusBar(binding.root, Color.parseColor("#555555"), false)
         _pictureAlbumPopupWindow = PictureAlbumPopupWindow(view.context)
         initView()
@@ -196,7 +191,7 @@ class PictureSelectorDialog : FullDialog() {
         //tools:node="remove" />
 //        childFragmentManager.requestCamera(object : PermissionsCallback {
 //            override fun allow() {
-                takePicture.launch(takePictureUri())
+        takePicture.launch(takePictureUri())
 //            }
 //
 //            override fun deny() {

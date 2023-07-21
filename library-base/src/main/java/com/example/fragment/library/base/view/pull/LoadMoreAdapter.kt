@@ -57,7 +57,7 @@ class LoadMoreAdapter(
                 width = parent.width
                 gravity = Gravity.CENTER
                 setPadding(20, 20, 20, 20)
-                setTextColor(ContextCompat.getColor(context, R.color.text_666))
+                setTextColor(ContextCompat.getColor(context, R.color.load_more_text))
             }) {}
         } else adapter.onCreateViewHolder(parent, viewType)
     }

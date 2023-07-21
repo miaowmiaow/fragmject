@@ -54,7 +54,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.library.base.R
+import com.example.fragment.project.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -133,11 +133,11 @@ fun <T> SwipeRefresh(
                 item {
                     Box(
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable {
-                                    onLoad()
-                                }
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable {
+                                onLoad()
+                            }
                     ) {
                         Text(
                             text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
@@ -151,11 +151,11 @@ fun <T> SwipeRefresh(
             AnimatedVisibility(
                 visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
                 modifier = Modifier
-                        .size(40.dp, 16.dp)
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            translationY = state.position * 0.5f
-                        },
+                    .size(40.dp, 16.dp)
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        translationY = state.position * 0.5f
+                    },
                 enter = fadeIn() + scaleIn(),
                 exit = fadeOut() + scaleOut()
             ) {

@@ -1,11 +1,11 @@
 package com.example.miaow.picture.selector.adapter
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.viewbinding.ViewBinding
@@ -64,10 +64,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
         }
         if (getItemViewType(position) == TYPE_CAMERA) {
             binding.root.setBackgroundColor(
-                ContextCompat.getColor(
-                    binding.image.context,
-                    R.color.black
-                )
+                Color.parseColor("#00000000")
             )
             binding.image.layoutParams.apply {
                 width = dp2px(36f).toInt()
@@ -76,12 +73,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             binding.image.setBackgroundResource(R.drawable.ps_camera)
             binding.originalBox.visibility = View.GONE
         } else {
-            binding.root.setBackgroundColor(
-                ContextCompat.getColor(
-                    binding.image.context,
-                    R.color.transparent
-                )
-            )
+            binding.root.setBackgroundColor(Color.parseColor("#0000000000"))
             binding.image.layoutParams.apply {
                 width = ViewGroup.LayoutParams.MATCH_PARENT
                 height = ViewGroup.LayoutParams.MATCH_PARENT
@@ -121,10 +113,12 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
                 binding.tag.visibility = View.VISIBLE
                 binding.tag.text = "长图"
             }
+
             item.gifImage() -> {
                 binding.tag.visibility = View.VISIBLE
                 binding.tag.text = "动图"
             }
+
             else -> {
                 binding.tag.visibility = View.GONE
                 binding.tag.text = ""

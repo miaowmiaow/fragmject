@@ -3,7 +3,6 @@ package com.example.miaow.picture.selector.dialog
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,11 +55,6 @@ class PicturePreviewDialog : FullDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dialog?.window?.apply {
-            setDimAmount(0f)
-            attributes.gravity = Gravity.END
-            setWindowAnimations(R.style.AnimRight)
-        }
         initView()
         initViewModel()
     }

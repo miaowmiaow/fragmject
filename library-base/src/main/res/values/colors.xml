@@ -1,41 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="theme">#272a36</color>
-    <color name="theme_orange">#ff8b80</color>
-    <color name="background">#f5f5f5</color>
-    <color name="line">#f0f0f0</color>
-    <color name="line_alpha">#69f0f0f0</color>
-
+    <!--StandardDialog-->
+    <color name="standard_dialog_bg">#ffffff</color>
+    <color name="standard_dialog_title">#333</color>
+    <color name="standard_dialog_content">#666</color>
+    <color name="standard_dialog_cancel">#333</color>
+    <color name="standard_dialog_confirm">#508cee</color>
+    <color name="standard_dialog_line">#f0f0f0</color>
+    <!--PullRefreshLayout-->
+    <color name="pull_refresh_layout_bg">#f5f5f5</color>
+    <!--LoadMoreAdapter-->
+    <color name="load_more_text">#666</color>
     <!--SimpleSwitchButton-->
     <color name="switch_bt">#ffffff</color>
     <color name="switch_bt_bg">#f5f5f5</color>
     <color name="switch_bt_check">#51d367</color>
     <color name="switch_bt_uncheck">#dddddd</color>
     <color name="switch_bt_shadow">#33000000</color>
-
-    <!--通用颜色-->
-    <color name="black">#000000</color>
-    <color name="one_b_black">#1b000000</color>
-    <color name="white">#ffffff</color>
-    <color name="bb_white">#BBFFFFFF</color>
-    <color name="red">#FF0000</color>
-    <color name="blue">#508cee</color>
-    <color name="b_zero_blue">#b0567ba3</color>
-    <color name="yellow">#ffb636</color>
-    <color name="orange">#ff7800</color>
-    <color name="green">#33cc99</color>
-    <color name="gray">#F5F5F5</color>
-    <color name="two_b_gray">#2bF5F5F5</color>
-    <color name="gray_e5">#E5E5E5</color>
-    <color name="pink">#FF6C6C</color>
-    <color name="three_nine_gray">#39F5F5F5</color>
-    <color name="transparent">#00000000</color>
-
-    <!--文字颜色-->
-    <color name="text_theme">@color/theme</color>
-    <color name="text_333">#333</color>
-    <color name="text_666">#666</color>
-    <color name="text_999">#999</color>
-    <color name="text_ccc">#ccc</color>
-    <color name="text_fff">@color/white</color>
 </resources>

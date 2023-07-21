@@ -98,7 +98,7 @@ interface KVDao {
     @Update
     suspend fun update(kv: KV): Int
 
-    @Query("SELECT * FROM kv_table WHERE `key` = :key ORDER BY id DESC LIMIT 1")
+    @Query("SELECT * FROM kv_table WHERE first = :key ORDER BY id DESC LIMIT 1")
     suspend fun findByKey(key: String): KV?
 
 }
@@ -109,10 +109,10 @@ data class KV(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
 
-    @ColumnInfo(name = "key")
-    var key: String,
+    @ColumnInfo(name = "first")
+    val key: String,
 
-    @ColumnInfo(name = "value")
-    var value: String
+    @ColumnInfo(name = "second")
+    var value: String?
 
 )

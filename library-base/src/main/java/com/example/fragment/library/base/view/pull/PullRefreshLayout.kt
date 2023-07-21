@@ -10,7 +10,11 @@ import android.widget.ImageView
 import android.widget.ListView
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
-import androidx.core.view.*
+import androidx.core.view.NestedScrollingChild3
+import androidx.core.view.NestedScrollingChildHelper
+import androidx.core.view.NestedScrollingParent3
+import androidx.core.view.NestedScrollingParentHelper
+import androidx.core.view.ViewCompat
 import androidx.core.widget.ListViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fragment.library.base.R
@@ -144,9 +148,11 @@ class PullRefreshLayout @JvmOverloads constructor(
             targetViewOffset + offset > getMaxDragDistance() -> {
                 getMaxDragDistance() - targetViewOffset
             }
+
             targetViewOffset + offset < 0 -> {
                 -targetViewOffset
             }
+
             else -> {
                 offset
             }
@@ -221,7 +227,12 @@ class PullRefreshLayout @JvmOverloads constructor(
         if (childCount > 0) {
             targetView = getChildAt(0)
         }
-        refreshView.setBackgroundColor(ContextCompat.getColor(context, R.color.background))
+        refreshView.setBackgroundColor(
+            ContextCompat.getColor(
+                context,
+                R.color.pull_refresh_layout_bg
+            )
+        )
         refreshView.setImageDrawable(refreshDrawable)
         addView(refreshView)
     }

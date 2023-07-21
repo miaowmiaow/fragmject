@@ -51,9 +51,9 @@ def initGradleEnvironment(){
     File propertyFile = new File(rootDir.getAbsolutePath()+ "/config.properties")
     properties.load(propertyFile.newDataInputStream())
     /*
-      根据Project、Gradle生命周期的介绍，settings对象的创建位于具体Project创建之前，而Gradle底对象已经创建好了。
+      根据Project、Gradle生命周期的介绍，settings对象的创建位于具体Project创建之前，而Gradle对象已经创建好了。
       所以，config.properties的信息读出来后，通过extra属性的方式设置到gradle对象中
-      而具体Project在执行的时候，就可以直接从gradle对象中得到这些属性了！
+      而具体Project在执行的时候，就可以直接从gradle对象中得到这些属性了
     */
     gradle.ext.compileSdkVersion =properties.getProperty('app.compileSdkVersion')
     gradle.ext.buildToolsVersion =properties.getProperty('app.buildToolsVersion')

@@ -1,11 +1,11 @@
 package com.example.fragment.project.ui.rank
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.get
-import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.CoinBean
 import com.example.fragment.project.bean.CoinRankBean
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.get
+import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

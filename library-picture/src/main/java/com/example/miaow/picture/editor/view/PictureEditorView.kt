@@ -12,8 +12,8 @@ import android.view.View
 import android.widget.Scroller
 import androidx.annotation.ColorInt
 import androidx.core.graphics.values
-import com.example.fragment.library.base.utils.getBitmapFromPath
-import com.example.fragment.library.base.utils.getBitmapFromUri
+import com.example.miaow.base.utils.getBitmapFromPath
+import com.example.miaow.base.utils.getBitmapFromUri
 import com.example.miaow.picture.R
 import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.view.layer.GraffitiLayer
@@ -177,9 +177,11 @@ class PictureEditorView @JvmOverloads constructor(
                 graffitiLayer.isEnabled = true
                 graffitiLayer.setPaintMode(mode)
             }
+
             Mode.MOSAIC -> {
                 mosaicLayer.isEnabled = true
             }
+
             Mode.STICKER -> {
                 stickerLayers.forEach { layer ->
                     layer.isEnabled = true
@@ -352,9 +354,11 @@ class PictureEditorView @JvmOverloads constructor(
                 currTranslateX() > 0 -> {
                     -currTranslateX()
                 }
+
                 currTranslateX() + currBitmapWidth < viewWidth -> {
                     viewWidth - currBitmapWidth - currTranslateX()
                 }
+
                 else -> 0f
             }
         }
@@ -366,9 +370,11 @@ class PictureEditorView @JvmOverloads constructor(
                 currTranslateY() > 0 -> {
                     -currTranslateY()
                 }
+
                 currTranslateY() + currBitmapHeight < viewHeight -> {
                     viewHeight - currBitmapHeight - currTranslateY()
                 }
+
                 else -> 0f
             }
         }

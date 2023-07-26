@@ -45,9 +45,9 @@ fun MyCollectScreen(
     ) {
         Box(
             modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-                    .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(45.dp)
+                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),

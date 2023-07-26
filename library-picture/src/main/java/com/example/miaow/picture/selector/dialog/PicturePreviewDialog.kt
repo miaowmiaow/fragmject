@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.widget.ViewPager2
 import coil.load
-import com.example.fragment.library.base.dialog.FullDialog
+import com.example.miaow.base.dialog.FullDialog
 import com.example.miaow.picture.R
 import com.example.miaow.picture.databinding.PicturePreviewDialogBinding
 import com.example.miaow.picture.databinding.PicturePreviewTabBinding

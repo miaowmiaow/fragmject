@@ -9,9 +9,9 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
-import com.example.fragment.library.base.http.OkHelper
-import com.example.fragment.library.base.http.setBaseUrl
-import com.example.fragment.library.base.http.setHttpClient
+import com.example.miaow.base.http.OkHelper
+import com.example.miaow.base.http.setBaseUrl
+import com.example.miaow.base.http.setHttpClient
 
 class WanApplication : Application(), ImageLoaderFactory {
 

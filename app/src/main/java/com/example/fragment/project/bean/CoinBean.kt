@@ -1,8 +1,8 @@
 package com.example.fragment.project.bean
 
 import android.os.Parcelable
-import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.project.R
+import com.example.miaow.base.http.HttpResponse
 import com.google.gson.Gson
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize

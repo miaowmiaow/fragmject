@@ -39,11 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.utils.getScreenWidth
-import com.example.fragment.library.base.utils.px2dp
 import com.example.fragment.project.R
 import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
+import com.example.miaow.base.utils.getScreenWidth
+import com.example.miaow.base.utils.px2dp
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -86,14 +86,14 @@ fun MyCoinScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
-                .systemBarsPadding()
-                .nestedScroll(nestedScrollConnection)
+            .systemBarsPadding()
+            .nestedScroll(nestedScrollConnection)
     ) {
         Box(
             modifier = Modifier
-                    .fillMaxWidth()
-                    .height(titleBarSize + targetHeight * targetPercent.value)
-                    .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(titleBarSize + targetHeight * targetPercent.value)
+                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
@@ -111,9 +111,9 @@ fun MyCoinScreen(
             }
             IconButton(
                 modifier = Modifier
-                        .height(45.dp)
-                        .padding(13.dp)
-                        .align(Alignment.TopEnd),
+                    .height(45.dp)
+                    .padding(13.dp)
+                    .align(Alignment.TopEnd),
                 onClick = { onNavigateToCoinRank() }
             ) {
                 Icon(
@@ -125,22 +125,22 @@ fun MyCoinScreen(
             Text(
                 text = "我的积分",
                 modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(
-                            x = -(coinOffsetX - titleBarSize - 10.dp) * (1 - targetPercent.value),
-                            y = -titleBarSize * targetPercent.value
-                        ),
+                    .align(Alignment.Center)
+                    .offset(
+                        x = -(coinOffsetX - titleBarSize - 10.dp) * (1 - targetPercent.value),
+                        y = -titleBarSize * targetPercent.value
+                    ),
                 fontSize = 16.sp,
                 color = colorResource(R.color.text_fff),
             )
             Text(
                 text = uiState.userCoinResult.coinCount,
                 modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(
-                            x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
-                            y = 10.dp * targetPercent.value
-                        ),
+                    .align(Alignment.Center)
+                    .offset(
+                        x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
+                        y = 10.dp * targetPercent.value
+                    ),
                 fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
                 color = colorResource(R.color.text_fff),
             )
@@ -157,9 +157,9 @@ fun MyCoinScreen(
             ) { _, item ->
                 Row(
                     modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .padding(10.dp),
+                        .background(colorResource(R.color.white))
+                        .fillMaxWidth()
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column {
@@ -182,9 +182,9 @@ fun MyCoinScreen(
                 }
                 Spacer(
                     Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
+                        .background(colorResource(R.color.line))
+                        .fillMaxWidth()
+                        .height(1.dp)
                 )
             }
         }

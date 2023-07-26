@@ -43,12 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.utils.getScreenWidth
-import com.example.fragment.library.base.utils.px2dp
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.SwipeRefresh
+import com.example.miaow.base.utils.getScreenWidth
+import com.example.miaow.base.utils.px2dp
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -97,14 +97,14 @@ fun UserScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
-                .systemBarsPadding()
-                .nestedScroll(nestedScrollConnection)
+            .systemBarsPadding()
+            .nestedScroll(nestedScrollConnection)
     ) {
         Box(
             modifier = Modifier
-                    .background(colorResource(R.color.theme))
-                    .fillMaxWidth()
-                    .height(titleBarSize + targetHeight * targetPercent.value)
+                .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(titleBarSize + targetHeight * targetPercent.value)
         ) {
             IconButton(
                 modifier = Modifier.height(titleBarSize),
@@ -125,30 +125,30 @@ fun UserScreen(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                        .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
-                        .align(Alignment.Center)
-                        .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
-                        .clip(CircleShape),
+                    .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
+                    .align(Alignment.Center)
+                    .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
+                    .clip(CircleShape),
             )
             Text(
                 text = uiState.coinResult.nickname,
                 modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(
-                            x = -(avatarOffsetX - (titleBarSize * 2)) * (1 - targetPercent.value),
-                            y = 35.dp * targetPercent.value
-                        ),
+                    .align(Alignment.Center)
+                    .offset(
+                        x = -(avatarOffsetX - (titleBarSize * 2)) * (1 - targetPercent.value),
+                        y = 35.dp * targetPercent.value
+                    ),
                 fontSize = 16.sp,
                 color = colorResource(R.color.text_fff),
             )
             Text(
                 text = "积分:${uiState.coinResult.coinCount}",
                 modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(x = 0.dp, y = 55.dp * targetPercent.value)
-                        .graphicsLayer {
-                            alpha = targetPercent.value
-                        },
+                    .align(Alignment.Center)
+                    .offset(x = 0.dp, y = 55.dp * targetPercent.value)
+                    .graphicsLayer {
+                        alpha = targetPercent.value
+                    },
                 fontSize = 12.sp,
                 color = colorResource(R.color.text_fff),
             )
@@ -161,8 +161,8 @@ fun UserScreen(
                 loading = uiState.loading,
                 onLoad = { viewModel.getShareArticlesNext() },
                 modifier = Modifier
-                        .fillMaxSize()
-                        .background(colorResource(R.color.white)),
+                    .fillMaxSize()
+                    .background(colorResource(R.color.white)),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 key = { _, item -> item.id },

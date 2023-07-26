@@ -1,11 +1,11 @@
 package com.example.fragment.project.ui.login
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.post
-import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.LoginBean
 import com.example.fragment.project.utils.WanHelper
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.post
+import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,11 +41,16 @@ class LoginViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("user/login").putParam("username", username).putParam("password", password)
+            val request = HttpRequest("user/login").putParam("username", username)
+                .putParam("password", password)
             val response = post<LoginBean>(request)
             WanHelper.setUser(response.data)
             _uiState.update {
-                it.copy(isLoading = false, errorCode = response.errorCode, errorMsg = response.errorMsg)
+                it.copy(
+                    isLoading = false,
+                    errorCode = response.errorCode,
+                    errorMsg = response.errorMsg
+                )
             }
         }
     }

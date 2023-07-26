@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.viewbinding.ViewBinding
 import coil.load
-import com.example.fragment.library.base.adapter.BaseAdapter
-import com.example.fragment.library.base.utils.dp2px
-import com.example.fragment.library.base.utils.screenWidth
+import com.example.miaow.base.adapter.BaseAdapter
+import com.example.miaow.base.utils.dp2px
+import com.example.miaow.base.utils.screenWidth
 import com.example.miaow.picture.R
 import com.example.miaow.picture.databinding.PictureSelectorItemBinding
 import com.example.miaow.picture.selector.bean.MediaBean
@@ -73,7 +73,7 @@ class PictureSelectorAdapter : BaseAdapter<MediaBean>() {
             binding.image.setBackgroundResource(R.drawable.ps_camera)
             binding.originalBox.visibility = View.GONE
         } else {
-            binding.root.setBackgroundColor(Color.parseColor("#0000000000"))
+            binding.root.setBackgroundColor(Color.parseColor("#00000000"))
             binding.image.layoutParams.apply {
                 width = ViewGroup.LayoutParams.MATCH_PARENT
                 height = ViewGroup.LayoutParams.MATCH_PARENT

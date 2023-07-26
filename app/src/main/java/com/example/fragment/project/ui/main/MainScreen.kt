@@ -86,8 +86,8 @@ fun MainScreen(
         val saveableStateHolder = rememberSaveableStateHolder()
         Box(
             modifier = Modifier
-                    .background(colorResource(R.color.background))
-                    .padding(innerPadding)
+                .background(colorResource(R.color.background))
+                .padding(innerPadding)
         ) {
             when (navIndex) {
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
@@ -98,6 +98,7 @@ fun MainScreen(
                         onNavigateToWeb = onNavigateToWeb,
                     )
                 }
+
                 1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
                     NavScreen(
                         tree = tree,
@@ -105,6 +106,7 @@ fun MainScreen(
                         onNavigateToWeb = onNavigateToWeb,
                     )
                 }
+
                 2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
                     ProjectScreen(
                         onNavigateToLogin = onNavigateToLogin,
@@ -113,6 +115,7 @@ fun MainScreen(
                         onNavigateToWeb = onNavigateToWeb
                     )
                 }
+
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
                     MyScreen(
                         onNavigateToLogin = onNavigateToLogin,
@@ -136,17 +139,17 @@ fun SearchBar(
 ) {
     Row(
         modifier = Modifier
-                .background(colorResource(R.color.theme))
-                .fillMaxWidth()
-                .height(45.dp)
-                .padding(15.dp, 8.dp, 15.dp, 8.dp),
+            .background(colorResource(R.color.theme))
+            .fillMaxWidth()
+            .height(45.dp)
+            .padding(15.dp, 8.dp, 15.dp, 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                    .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
-                    .weight(1f)
-                    .fillMaxHeight(),
+                .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
+                .weight(1f)
+                .fillMaxHeight(),
             contentAlignment = Alignment.CenterStart
         ) {
             Icon(
@@ -158,8 +161,8 @@ fun SearchBar(
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
                     modifier = Modifier
-                            .fillMaxSize()
-                            .clickable { onNavigateToSearch(item.name) },
+                        .fillMaxSize()
+                        .clickable { onNavigateToSearch(item.name) },
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
@@ -176,8 +179,8 @@ fun SearchBar(
             imageVector = Icons.Default.Add,
             contentDescription = null,
             modifier = Modifier
-                    .padding(0.dp, 5.dp, 0.dp, 5.dp)
-                    .clickable { onNavigateToShareArticle() },
+                .padding(0.dp, 5.dp, 0.dp, 5.dp)
+                .clickable { onNavigateToShareArticle() },
             tint = colorResource(R.color.white)
         )
     }
@@ -206,8 +209,8 @@ fun NavigationBar(
                         painter = painterResource(id = item.resId),
                         contentDescription = null,
                         modifier = Modifier
-                                .size(25.dp)
-                                .padding(bottom = 3.dp),
+                            .size(25.dp)
+                            .padding(bottom = 3.dp),
                         tint = colorResource(colorId)
                     )
                 },

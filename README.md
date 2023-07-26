@@ -21,6 +21,9 @@
 为了您在运行本项目时获得最佳体验，请使用最新版本 `Android Studio` 。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
+## 将 Android 应用迁移到版本目录
+[将 build 迁移到版本目录 | Android Developer](https://developer.android.google.cn/studio/build/migrate-to-catalogs?hl=zh-cn)
+
 ## 前置知识
 在学习前希望您能了解以下知识，这将帮助您更快的上手本项目。
 - [Kotlin 语言学习 | Android Developer](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
@@ -34,13 +37,13 @@
 - [Compose 使用入门 | Android Developer](https://developer.android.google.cn/jetpack/compose)
 - [一文看懂MVVM | 掘金](https://juejin.cn/post/7058542176375930887)
 
-## 为什么不依赖其他库(Hilt、Paging...)
+## 为什么很少依赖其他库
 在日常开发中我推荐使用 Hilt、Paging等库，不仅提高开发效率也能减少bug。   
-因为过早依赖其他库会有以下危害：   
+初学者过早依赖其他库，可能会有以下危害：   
 - 增加学习负担，其他库用起来简单但是底层实现往往复杂，阅读源码容易打击学习积极性。
 - 造成基础薄弱，初学者容易把其他库能力当成自己的能力，脱离其他库开发能力大大下降。   
 
-综上所述，本项目尽量多的自己实现，可能不是很优雅但一定能让你学习到更多。
+综上所述，本项目尽量多去自己实现，可能不是很优雅但一定能让你学习到更多。
 
 ## 截图展示
 | ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095501.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095527.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-100242.png) |

@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import coil.load
-import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.miaow.base.adapter.BaseAdapter
 import com.example.miaow.picture.databinding.PictureAlbumItemBinding
 import com.example.miaow.picture.selector.bean.AlbumBean
 

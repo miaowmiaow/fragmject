@@ -1,8 +1,8 @@
 package com.example.fragment.project.ui.main.my
 
-import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.UserBean
 import com.example.fragment.project.utils.WanHelper
+import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

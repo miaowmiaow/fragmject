@@ -12,12 +12,12 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import coil.dispose
 import coil.load
-import com.example.fragment.library.base.R
-import com.example.fragment.library.base.dialog.FullDialog
-import com.example.fragment.library.base.utils.getBitmapFromPath
-import com.example.fragment.library.base.utils.getBitmapFromUri
-import com.example.fragment.library.base.utils.getBitmapPathFromUri
-import com.example.fragment.library.base.utils.saveImagesToAlbum
+import com.example.miaow.base.R
+import com.example.miaow.base.dialog.FullDialog
+import com.example.miaow.base.utils.getBitmapFromPath
+import com.example.miaow.base.utils.getBitmapFromUri
+import com.example.miaow.base.utils.getBitmapPathFromUri
+import com.example.miaow.base.utils.saveImagesToAlbum
 import com.example.miaow.picture.clip.dialog.PictureClipCallback
 import com.example.miaow.picture.clip.dialog.PictureClipDialog
 import com.example.miaow.picture.databinding.PictureEditorDialogBinding
@@ -114,18 +114,22 @@ class PictureEditorDialog : FullDialog() {
                             binding.colorBar.visibility = View.VISIBLE
                             binding.picEditor.setMode(PictureEditorView.Mode.GRAFFITI)
                         }
+
                         1 -> {
                             openAlbum()
                             tool.isSelected = false
                         }
+
                         2 -> {
                             openTextDialog()
                             tool.isSelected = false
                         }
+
                         3 -> {
                             openClipDialog(binding.picEditor.saveBitmap())
                             tool.isSelected = false
                         }
+
                         4 -> {
                             binding.mosaicUndo.visibility = View.VISIBLE
                             binding.picEditor.setMode(PictureEditorView.Mode.MOSAIC)

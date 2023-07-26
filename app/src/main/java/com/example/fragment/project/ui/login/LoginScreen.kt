@@ -77,22 +77,22 @@ fun LoginScreen(
             LoadingLayout(uiState.isLoading, innerPadding = innerPadding) {
                 Column(
                     modifier = Modifier
-                            .fillMaxSize()
-                            .paint(
-                                painter = painterResource(id = R.drawable.bg),
-                                contentScale = ContentScale.FillBounds
-                            )
-                            .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
-                            .verticalScroll(scrollState)
-                            .systemBarsPadding()
-                            .navigationBarsPadding()
+                        .fillMaxSize()
+                        .paint(
+                            painter = painterResource(id = R.drawable.bg),
+                            contentScale = ContentScale.FillBounds
+                        )
+                        .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
+                        .verticalScroll(scrollState)
+                        .systemBarsPadding()
+                        .navigationBarsPadding()
                 ) {
                     Image(
                         painter = painterResource(R.drawable.ic_back),
                         contentDescription = null,
                         modifier = Modifier
-                                .size(15.dp)
-                                .clickable { onPopBackStackToMain() }
+                            .size(15.dp)
+                            .clickable { onPopBackStackToMain() }
                     )
                     Spacer(Modifier.height(30.dp))
                     Text(
@@ -113,16 +113,16 @@ fun LoginScreen(
                         placeholder = { Text("请输入用户名") },
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
+                            .fillMaxWidth()
+                            .height(50.dp)
                     )
                     Spacer(Modifier.height(15.dp))
                     WhiteTextField(
                         value = passwordText,
                         onValueChange = { passwordText = it },
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            .fillMaxWidth()
+                            .height(50.dp),
                         placeholder = { Text("请输入用户密码") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(

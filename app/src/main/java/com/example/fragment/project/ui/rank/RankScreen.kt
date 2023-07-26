@@ -52,9 +52,9 @@ fun RankScreen(
     ) {
         Box(
             modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-                    .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(45.dp)
+                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
@@ -78,9 +78,9 @@ fun RankScreen(
             )
             IconButton(
                 modifier = Modifier
-                        .height(45.dp)
-                        .padding(13.dp)
-                        .align(Alignment.CenterEnd),
+                    .height(45.dp)
+                    .padding(13.dp)
+                    .align(Alignment.CenterEnd),
                 onClick = { onNavigateToWeb("https://www.wanandroid.com/blog/show/2653") }
             ) {
                 Icon(
@@ -98,14 +98,14 @@ fun RankScreen(
                 loading = uiState.loading,
                 onLoad = { viewModel.getNext() },
                 modifier = Modifier
-                        .background(colorResource(R.color.background))
-                        .fillMaxSize(),
+                    .background(colorResource(R.color.background))
+                    .fillMaxSize(),
             ) { _, item ->
                 Row(
                     modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .padding(10.dp),
+                        .background(colorResource(R.color.white))
+                        .fillMaxWidth()
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -115,9 +115,9 @@ fun RankScreen(
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                                    .clickable { onNavigateToUserInfo(item.userId) }
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .clickable { onNavigateToUserInfo(item.userId) }
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
@@ -134,9 +134,9 @@ fun RankScreen(
                 }
                 Spacer(
                     Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
+                        .background(colorResource(R.color.line))
+                        .fillMaxWidth()
+                        .height(1.dp)
                 )
             }
         }

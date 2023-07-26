@@ -1,13 +1,13 @@
 package com.example.fragment.project
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.get
-import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.HotKeyBean
 import com.example.fragment.project.bean.HotKeyListBean
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.bean.TreeListBean
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.get
+import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow

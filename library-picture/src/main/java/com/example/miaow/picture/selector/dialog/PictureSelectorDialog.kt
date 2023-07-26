@@ -15,11 +15,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.fragment.library.base.dialog.FullDialog
-import com.example.fragment.library.base.dialog.PermissionDialog
-import com.example.fragment.library.base.utils.CacheUtils
-import com.example.fragment.library.base.utils.PermissionsCallback
-import com.example.fragment.library.base.utils.requestStorage
+import com.example.miaow.base.dialog.FullDialog
+import com.example.miaow.base.dialog.PermissionDialog
+import com.example.miaow.base.utils.CacheUtils
+import com.example.miaow.base.utils.PermissionsCallback
+import com.example.miaow.base.utils.requestStorage
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter

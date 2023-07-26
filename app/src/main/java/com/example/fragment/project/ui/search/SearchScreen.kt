@@ -46,10 +46,10 @@ fun SearchScreen(
     Column {
         Row(
             modifier = Modifier
-                    .background(colorResource(R.color.theme))
-                    .fillMaxWidth()
-                    .height(45.dp)
-                    .padding(15.dp, 8.dp, 15.dp, 8.dp),
+                .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(45.dp)
+                .padding(15.dp, 8.dp, 15.dp, 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ClearTextField(
@@ -60,9 +60,9 @@ fun SearchScreen(
                     viewModel.clearArticles()
                 },
                 modifier = Modifier
-                        .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
-                        .weight(1f)
-                        .fillMaxHeight(),
+                    .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
+                    .weight(1f)
+                    .fillMaxHeight(),
                 textStyle = TextStyle.Default.copy(
                     color = colorResource(R.color.text_fff),
                     fontSize = 13.sp,
@@ -126,8 +126,8 @@ fun SearchScreen(
                                         viewModel.getHome(searchText)
                                     },
                                     modifier = Modifier
-                                            .height(40.dp)
-                                            .padding(top = 5.dp, bottom = 5.dp),
+                                        .height(40.dp)
+                                        .padding(top = 5.dp, bottom = 5.dp),
                                     elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
@@ -158,13 +158,13 @@ fun SearchScreen(
                             itemsIndexed(uiState.historyResult.toList()) { _, item ->
                                 Row(
                                     modifier = Modifier
-                                            .background(colorResource(R.color.white))
-                                            .padding(start = 15.dp, end = 15.dp)
-                                            .height(45.dp)
-                                            .clickable {
-                                                searchText = item
-                                                viewModel.getHome(searchText)
-                                            },
+                                        .background(colorResource(R.color.white))
+                                        .padding(start = 15.dp, end = 15.dp)
+                                        .height(45.dp)
+                                        .clickable {
+                                            searchText = item
+                                            viewModel.getHome(searchText)
+                                        },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -177,9 +177,9 @@ fun SearchScreen(
                                         painter = painterResource(R.drawable.ic_delete),
                                         contentDescription = null,
                                         modifier = Modifier
-                                                .size(30.dp)
-                                                .padding(10.dp, 5.dp, 0.dp, 5.dp)
-                                                .clickable { viewModel.removeSearchHistory(item) },
+                                            .size(30.dp)
+                                            .padding(10.dp, 5.dp, 0.dp, 5.dp)
+                                            .clickable { viewModel.removeSearchHistory(item) },
                                     )
                                 }
                             }

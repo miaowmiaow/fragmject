@@ -3,12 +3,12 @@ package com.example.fragment.project.ui.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.get
-import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.CoinBean
 import com.example.fragment.project.bean.ShareArticleListBean
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.get
+import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,8 +54,8 @@ class UserViewModel(private val id: String) : BaseViewModel() {
         viewModelScope.launch {
             //构建请求体，传入请求参数
             val request = HttpRequest("user/{id}/share_articles/{page}/json")
-                    .putPath("id", id)
-                    .putPath("page", page.toString())
+                .putPath("id", id)
+                .putPath("page", page.toString())
             val response = get<ShareArticleListBean>(request)
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
             _uiState.update { state ->

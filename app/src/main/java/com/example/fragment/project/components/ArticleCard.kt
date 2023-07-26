@@ -41,12 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.HttpResponse
-import com.example.fragment.library.base.http.post
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.bean.ArticleBean
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.HttpResponse
+import com.example.miaow.base.http.post
 import kotlinx.coroutines.launch
 
 @Composable

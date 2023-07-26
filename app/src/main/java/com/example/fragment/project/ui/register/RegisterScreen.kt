@@ -80,26 +80,26 @@ fun RegisterScreen(
             LoadingLayout(uiState.isLoading, innerPadding = innerPadding) {
                 Column(
                     modifier = Modifier
-                            .fillMaxSize()
-                            .paint(
-                                painter = painterResource(id = R.drawable.bg),
-                                contentScale = ContentScale.FillBounds
-                            )
-                            .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
-                            .verticalScroll(scrollState)
-                            .systemBarsPadding()
-                            .navigationBarsPadding()
+                        .fillMaxSize()
+                        .paint(
+                            painter = painterResource(id = R.drawable.bg),
+                            contentScale = ContentScale.FillBounds
+                        )
+                        .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
+                        .verticalScroll(scrollState)
+                        .systemBarsPadding()
+                        .navigationBarsPadding()
                 ) {
                     Image(
                         painter = painterResource(R.drawable.ic_back),
                         contentDescription = null,
                         modifier = Modifier
-                                .size(15.dp)
-                                .clickable {
-                                    if (context is AppCompatActivity) {
-                                        context.onBackPressedDispatcher.onBackPressed()
-                                    }
+                            .size(15.dp)
+                            .clickable {
+                                if (context is AppCompatActivity) {
+                                    context.onBackPressedDispatcher.onBackPressed()
                                 }
+                            }
                     )
                     Spacer(Modifier.height(30.dp))
                     Text(
@@ -118,8 +118,8 @@ fun RegisterScreen(
                         value = usernameText,
                         onValueChange = { usernameText = it },
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            .fillMaxWidth()
+                            .height(50.dp),
                         placeholder = { Text("请输入用户名") },
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                     )
@@ -128,8 +128,8 @@ fun RegisterScreen(
                         value = passwordText,
                         onValueChange = { passwordText = it },
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            .fillMaxWidth()
+                            .height(50.dp),
                         placeholder = { Text("请输入用户密码") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -142,8 +142,8 @@ fun RegisterScreen(
                         value = againPasswordText,
                         onValueChange = { againPasswordText = it },
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            .fillMaxWidth()
+                            .height(50.dp),
                         placeholder = { Text("请再次输入密码") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -196,11 +196,11 @@ fun RegisterScreen(
                         fontSize = 12.sp,
                         color = colorResource(R.color.white),
                         modifier = Modifier
-                                .clickable {
-                                    if (context is AppCompatActivity) {
-                                        context.onBackPressedDispatcher.onBackPressed()
-                                    }
+                            .clickable {
+                                if (context is AppCompatActivity) {
+                                    context.onBackPressedDispatcher.onBackPressed()
                                 }
+                            }
                     )
                     Spacer(Modifier.height(30.dp))
                 }

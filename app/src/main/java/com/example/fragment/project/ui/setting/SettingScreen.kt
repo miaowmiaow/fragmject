@@ -46,14 +46,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.library.base.dialog.StandardDialog
-import com.example.fragment.library.base.utils.CacheUtils
-import com.example.fragment.library.base.utils.ScreenRecordCallback
-import com.example.fragment.library.base.utils.startScreenRecord
-import com.example.fragment.library.base.utils.stopScreenRecord
 import com.example.fragment.project.R
 import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.NightSwitchButton
+import com.example.miaow.base.dialog.StandardDialog
+import com.example.miaow.base.utils.CacheUtils
+import com.example.miaow.base.utils.ScreenRecordCallback
+import com.example.miaow.base.utils.startScreenRecord
+import com.example.miaow.base.utils.stopScreenRecord
 import kotlinx.coroutines.launch
 
 @Composable
@@ -76,16 +76,16 @@ fun SettingScreen(
             LoadingLayout(uiState.isLoading) {
                 Column(
                     modifier = Modifier
-                            .background(colorResource(R.color.background))
-                            .fillMaxSize()
-                            .padding(innerPadding),
+                        .background(colorResource(R.color.background))
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         modifier = Modifier
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .background(colorResource(R.color.theme))
+                            .fillMaxWidth()
+                            .height(45.dp)
+                            .background(colorResource(R.color.theme))
                     ) {
                         IconButton(
                             modifier = Modifier.height(45.dp),
@@ -110,16 +110,16 @@ fun SettingScreen(
                     }
                     Row(
                         modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp),
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "深色模式",
                             modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
@@ -139,22 +139,22 @@ fun SettingScreen(
                     }
                     Spacer(
                         Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                     )
                     Row(
                         modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp),
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "屏幕录制",
                             modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
@@ -205,23 +205,23 @@ fun SettingScreen(
                     }
                     Spacer(
                         Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                     )
                     Row(
                         modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .clickable { onNavigateToPrivacyPolicy() },
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp)
+                            .clickable { onNavigateToPrivacyPolicy() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "隐私政策",
                             modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
@@ -233,23 +233,23 @@ fun SettingScreen(
                     }
                     Spacer(
                         Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                     )
                     Row(
                         modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .clickable { onNavigateToFeedback() },
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp)
+                            .clickable { onNavigateToFeedback() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "问题反馈",
                             modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
@@ -261,23 +261,23 @@ fun SettingScreen(
                     }
                     Spacer(
                         Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                     )
                     Row(
                         modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .clickable { onNavigateToAbout() },
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp)
+                            .clickable { onNavigateToAbout() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "关于玩Android",
                             modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
@@ -289,40 +289,40 @@ fun SettingScreen(
                     }
                     Spacer(
                         Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                     )
                     Row(
                         modifier = Modifier
-                                .background(colorResource(R.color.white))
-                                .fillMaxWidth()
-                                .height(45.dp)
-                                .clickable {
-                                    if (context is AppCompatActivity) {
-                                        StandardDialog
-                                                .newInstance()
-                                                .setContent("确定要清除缓存吗？")
-                                                .setOnDialogClickListener(object :
-                                                    StandardDialog.OnDialogClickListener {
-                                                    override fun onConfirm(dialog: StandardDialog) {
-                                                        CacheUtils.clearAllCache(context)
-                                                        cacheSize = CacheUtils.getTotalSize(context)
-                                                    }
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp)
+                            .clickable {
+                                if (context is AppCompatActivity) {
+                                    StandardDialog
+                                        .newInstance()
+                                        .setContent("确定要清除缓存吗？")
+                                        .setOnDialogClickListener(object :
+                                            StandardDialog.OnDialogClickListener {
+                                            override fun onConfirm(dialog: StandardDialog) {
+                                                CacheUtils.clearAllCache(context)
+                                                cacheSize = CacheUtils.getTotalSize(context)
+                                            }
 
-                                                    override fun onCancel(dialog: StandardDialog) {
-                                                    }
-                                                })
-                                                .show(context.supportFragmentManager)
-                                    }
-                                },
+                                            override fun onCancel(dialog: StandardDialog) {
+                                            }
+                                        })
+                                        .show(context.supportFragmentManager)
+                                }
+                            },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "清除缓存",
                             modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
                             color = colorResource(R.color.text_333),
                         )
@@ -339,32 +339,32 @@ fun SettingScreen(
                     }
                     Spacer(
                         Modifier
-                                .background(colorResource(R.color.line))
-                                .fillMaxWidth()
-                                .height(1.dp)
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
                     )
                     Spacer(
                         Modifier
-                                .fillMaxWidth()
-                                .height(20.dp)
+                            .fillMaxWidth()
+                            .height(20.dp)
                     )
                     if (uiState.userBean.id.isNotBlank()) {
                         Button(
                             onClick = {
                                 if (context is AppCompatActivity) {
                                     StandardDialog.newInstance()
-                                            .setContent("确定退出登录吗？")
-                                            .setOnDialogClickListener(object :
-                                                StandardDialog.OnDialogClickListener {
-                                                override fun onConfirm(dialog: StandardDialog) {
-                                                    viewModel.logout()
-                                                }
+                                        .setContent("确定退出登录吗？")
+                                        .setOnDialogClickListener(object :
+                                            StandardDialog.OnDialogClickListener {
+                                            override fun onConfirm(dialog: StandardDialog) {
+                                                viewModel.logout()
+                                            }
 
-                                                override fun onCancel(dialog: StandardDialog) {
-                                                }
+                                            override fun onCancel(dialog: StandardDialog) {
+                                            }
 
-                                            })
-                                            .show(context.supportFragmentManager)
+                                        })
+                                        .show(context.supportFragmentManager)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(0.8f),

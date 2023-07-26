@@ -1,9 +1,9 @@
 package com.example.fragment.project.ui.register
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.post
-import com.example.fragment.library.base.vm.BaseViewModel
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.post
+import com.example.miaow.base.vm.BaseViewModel
 import com.example.fragment.project.bean.RegisterBean
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.flow.MutableStateFlow

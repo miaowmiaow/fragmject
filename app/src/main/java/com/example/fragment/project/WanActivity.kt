@@ -7,8 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.ui.platform.ComposeView
-import com.example.fragment.library.base.utils.WebViewManager
 import com.example.fragment.project.utils.WanHelper
+import com.example.miaow.base.utils.WebViewManager
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 class WanActivity : AppCompatActivity() {

@@ -81,8 +81,7 @@ fun ClearTextField(
         colors.textColor(enabled).value
     }
     val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
-    BasicTextField(
-        value = value,
+    BasicTextField(value = value,
         onValueChange = onValueChange,
         enabled = enabled,
         readOnly = readOnly,
@@ -99,8 +98,7 @@ fun ClearTextField(
                     leadingIcon()
                 }
                 Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterStart
+                    modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart
                 ) {
                     if (value.isBlank()) {
                         if (placeholder != null) {
@@ -117,12 +115,11 @@ fun ClearTextField(
                         imageVector = Icons.Outlined.Clear,
                         contentDescription = null,
                         modifier = Modifier
-                                .padding(10.dp, 6.dp, 10.dp, 6.dp)
-                                .clickable { onClear() },
+                            .padding(10.dp, 6.dp, 10.dp, 6.dp)
+                            .clickable { onClear() },
                         tint = textStyle.color
                     )
                 }
             }
-        }
-    )
+        })
 }

@@ -1,7 +1,7 @@
 package com.example.fragment.project.bean
 
-import com.example.fragment.library.base.http.HttpResponse
 import com.example.fragment.project.R
+import com.example.miaow.base.http.HttpResponse
 import com.google.gson.Gson
 import kotlinx.parcelize.IgnoredOnParcel
 

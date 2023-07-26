@@ -5,7 +5,7 @@ import android.content.Context
 import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.vm.BaseViewModel
+import com.example.miaow.base.vm.BaseViewModel
 import com.example.miaow.picture.selector.bean.AlbumBean
 import com.example.miaow.picture.selector.bean.MediaBean
 import kotlinx.coroutines.launch

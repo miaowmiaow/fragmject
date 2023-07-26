@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import coil.dispose
 import coil.load
-import com.example.fragment.library.base.R
-import com.example.fragment.library.base.dialog.FullDialog
-import com.example.fragment.library.base.utils.dp2px
-import com.example.fragment.library.base.utils.saveImagesToAlbum
+import com.example.miaow.base.R
+import com.example.miaow.base.dialog.FullDialog
+import com.example.miaow.base.utils.dp2px
+import com.example.miaow.base.utils.saveImagesToAlbum
 import com.example.miaow.picture.databinding.PictureClipDialogBinding
 
 class PictureClipDialog : FullDialog() {

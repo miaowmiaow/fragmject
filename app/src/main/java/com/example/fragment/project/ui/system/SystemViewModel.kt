@@ -1,11 +1,11 @@
 package com.example.fragment.project.ui.system
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.library.base.http.HttpRequest
-import com.example.fragment.library.base.http.get
-import com.example.fragment.library.base.vm.BaseViewModel
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
+import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.http.get
+import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -69,7 +69,8 @@ class SystemViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString()).putQuery("cid", cid)
+            val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString())
+                .putQuery("cid", cid)
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码

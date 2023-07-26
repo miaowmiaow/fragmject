@@ -10,8 +10,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="DataExtractionRules"
-        tools:targetApi="n">
+        tools:ignore="DataExtractionRules">
 
         <meta-data
             android:name="app_channel"

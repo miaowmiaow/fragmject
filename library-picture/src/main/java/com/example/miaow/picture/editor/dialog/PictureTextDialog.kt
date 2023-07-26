@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
-import com.example.fragment.library.base.dialog.FullDialog
+import com.example.miaow.base.dialog.FullDialog
 import com.example.miaow.picture.databinding.PictureTextDialogBinding
 import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.utils.ColorUtils

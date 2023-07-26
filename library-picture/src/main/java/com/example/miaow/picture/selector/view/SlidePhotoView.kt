@@ -6,7 +6,7 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
 import android.widget.Scroller
-import com.example.fragment.library.base.view.SlideLayout
+import com.example.miaow.base.view.SlideLayout
 import com.example.miaow.picture.R
 import kotlin.math.abs
 

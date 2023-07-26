@@ -63,15 +63,15 @@ fun ShareArticleScreen(
     }
     Column(
         modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxSize(),
+            .background(colorResource(R.color.white))
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-                    .background(colorResource(R.color.theme))
+                .fillMaxWidth()
+                .height(45.dp)
+                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
@@ -95,9 +95,9 @@ fun ShareArticleScreen(
             )
             IconButton(
                 modifier = Modifier
-                        .height(45.dp)
-                        .padding(11.dp)
-                        .align(Alignment.CenterEnd),
+                    .height(45.dp)
+                    .padding(11.dp)
+                    .align(Alignment.CenterEnd),
                 onClick = {
                     if (linkText.isBlank()) {
                         Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
@@ -116,9 +116,9 @@ fun ShareArticleScreen(
         LoadingLayout(uiState.isLoading) {
             Column(
                 modifier = Modifier
-                        .fillMaxSize()
-                        .padding(15.dp)
-                        .verticalScroll(scrollState),
+                    .fillMaxSize()
+                    .padding(15.dp)
+                    .verticalScroll(scrollState),
             ) {
                 Text(
                     text = "文章标题",
@@ -205,8 +205,8 @@ fun ShareArticleScreen(
                         viewModel.share(titleText, linkText)
                     },
                     modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .fillMaxWidth(0.8f),
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f),
                     shape = RoundedCornerShape(5.dp),
                     border = BorderStroke(1.dp, colorResource(R.color.theme)),
                     colors = ButtonDefaults.buttonColors(

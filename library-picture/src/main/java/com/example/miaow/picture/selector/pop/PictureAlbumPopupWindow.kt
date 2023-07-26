@@ -7,7 +7,7 @@ import android.view.View
 import android.widget.PopupWindow
 import android.widget.RelativeLayout.LayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.fragment.library.base.adapter.BaseAdapter
+import com.example.miaow.base.adapter.BaseAdapter
 import com.example.miaow.picture.databinding.PictureAlbumPopupWindowBinding
 import com.example.miaow.picture.selector.adapter.PictureAlbumAdapter
 import com.example.miaow.picture.selector.bean.AlbumBean

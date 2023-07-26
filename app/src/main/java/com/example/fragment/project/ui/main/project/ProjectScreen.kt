@@ -58,7 +58,9 @@ fun ProjectScreen(
             }
             LoadingLayout(
                 projectTreeUiState.isLoading
-                        || (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(pageCid))
+                        || (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(
+                    pageCid
+                ))
             ) {
                 SwipeRefresh(
                     items = projectUiState.getResult(pageCid),

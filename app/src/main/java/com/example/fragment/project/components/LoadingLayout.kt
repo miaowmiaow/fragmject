@@ -20,8 +20,8 @@ fun LoadingLayout(
 ) {
     Box(
         modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            .fillMaxSize()
+            .padding(innerPadding)
     ) {
         content()
         if (isLoading) {

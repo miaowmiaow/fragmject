@@ -29,6 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -60,11 +61,13 @@ fun LoginScreen(
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     val scaffoldState = rememberScaffoldState()
     val scrollState = rememberScrollState()
-    if (uiState.errorCode == "0") {
-        onPopBackStackToMain()
+    SideEffect {
+        if (uiState.errorCode == "0") {
+            onPopBackStackToMain()
+        }
     }
-    if (uiState.errorMsg.isNotBlank()) {
-        LaunchedEffect(uiState.errorCode, scaffoldState.snackbarHostState) {
+    LaunchedEffect(uiState.errorCode, scaffoldState.snackbarHostState) {
+        if (uiState.errorMsg.isNotBlank()) {
             scaffoldState.snackbarHostState.showSnackbar(uiState.errorMsg)
         }
     }

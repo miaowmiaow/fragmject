@@ -88,7 +88,7 @@ fun ArticleCard(
                             .weight(1f)
                             .padding(start = 10.dp, end = 10.dp)
                     ) {
-                        val (share_user, nice_date) = createRefs()
+                        val (shareUser, niceDate) = createRefs()
                         Text(
                             text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
                             fontSize = 12.sp,
@@ -96,7 +96,7 @@ fun ArticleCard(
                             color = colorResource(R.color.text_666),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.constrainAs(share_user) {
+                            modifier = Modifier.constrainAs(shareUser) {
                                 top.linkTo(parent.top)
                             })
                         Text(
@@ -105,7 +105,7 @@ fun ArticleCard(
                             color = colorResource(R.color.text_999),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.constrainAs(nice_date) {
+                            modifier = Modifier.constrainAs(niceDate) {
                                 bottom.linkTo(parent.bottom)
                             })
                     }

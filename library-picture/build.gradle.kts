@@ -1,7 +1,7 @@
 import java.io.FileInputStream
 import java.util.Properties
 
-@Suppress("DSL_SCOPE_VIOLATION")
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -9,8 +9,7 @@ plugins {
 }
 
 val configProperties = Properties()
-val configPropertiesFile = rootProject.file("config.properties")
-configProperties.load(FileInputStream(configPropertiesFile))
+configProperties.load(FileInputStream(rootProject.file("config.properties")))
 
 android {
     namespace = "com.example.miaow.picture"

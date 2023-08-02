@@ -15,7 +15,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatorMutex
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -97,13 +96,14 @@ fun <T> SwipeRefresh(
     with(LocalDensity.current) {
         loadingHeightPx = 16.dp.toPx()
     }
-    val loadingAnimate by rememberInfiniteTransition().animateFloat(
+    val infiniteTransition = rememberInfiniteTransition(label = "SwipeRefresh")
+    val loadingAnimate by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = loadingResId.size.toFloat(),
         animationSpec = infiniteRepeatable(
             animation = tween(250, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        )
+        ), label = "loadingAnimate"
     )
     val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (items.isNullOrEmpty()) {
@@ -135,9 +135,6 @@ fun <T> SwipeRefresh(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
-                            .clickable {
-                                onLoad()
-                            }
                     ) {
                         Text(
                             text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",

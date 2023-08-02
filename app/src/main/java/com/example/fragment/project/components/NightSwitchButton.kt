@@ -150,7 +150,7 @@ fun Sky(
     canvasHeight: Dp,
     canvasRadius: Dp,
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "Sky")
     val offset1 by infiniteTransition.animateFloat(
         initialValue = 0.95f,
         targetValue = 1.05f,
@@ -161,6 +161,7 @@ fun Sky(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "offset1",
     )
     val offset2 by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -172,6 +173,7 @@ fun Sky(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "offset2",
     )
     val offset3 by infiniteTransition.animateFloat(
         initialValue = 0.85f,
@@ -183,6 +185,7 @@ fun Sky(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "offset3",
     )
     val starRadius = canvasRadius * 0.9f
     val starMove = canvasWidth - (canvasHeight - starRadius * 2f) - starRadius * 2f
@@ -268,7 +271,7 @@ fun Cloud(
     val offsetX = listOf(0, 2, 4, 6, 7, 8, 8)
     val shadowOffsetY = listOf(1f, 2f, 2f, 2f, 1f, 1f, 1f)
     val shadowOffsetX = listOf(0f, 0f, 0f, 0f, 0f, 0f, -0.8f)
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "Cloud")
     val animationOffsetX by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
@@ -279,6 +282,7 @@ fun Cloud(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "animationOffsetX",
     )
     val animationOffsetY by infiniteTransition.animateFloat(
         initialValue = -1f,
@@ -290,6 +294,7 @@ fun Cloud(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "animationOffsetY",
     )
     val animationOffsetRadius by infiniteTransition.animateFloat(
         initialValue = -1f,
@@ -301,6 +306,7 @@ fun Cloud(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "animationOffsetRadius",
     )
     // for sun/moon change, this is Cloud move animation
     val progressY = if (progress < perDistance) {
@@ -484,7 +490,7 @@ fun Sun(
     starRadius: Dp,
     starMove: Dp
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "Sun")
     val offset by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
@@ -495,6 +501,7 @@ fun Sun(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "infiniteTransition",
     )
     val animationOffsetSun by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -506,6 +513,7 @@ fun Sun(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "animationOffsetSun",
     )
     // for sun/moon change, this is Moon move animation
     val progressX = if (reversal) {
@@ -604,7 +612,7 @@ fun Moon(
     starRadius: Dp,
     starMove: Dp
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "Moon")
     val offset by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
@@ -615,6 +623,7 @@ fun Moon(
             ),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "offset",
     )
 
     val offsetMoonDown by infiniteTransition.animateFloat(
@@ -627,6 +636,7 @@ fun Moon(
             ),
             repeatMode = RepeatMode.Restart,
         ),
+        label = "offsetMoonDown",
     )
 
     // for sun/moon change, this is Moon move animation

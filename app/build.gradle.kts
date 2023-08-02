@@ -2,7 +2,7 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
 
-@Suppress("DSL_SCOPE_VIOLATION")
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,12 +11,10 @@ plugins {
 }
 
 val configProperties = Properties()
-val configPropertiesFile = rootProject.file("config.properties")
-configProperties.load(FileInputStream(configPropertiesFile))
+configProperties.load(FileInputStream(rootProject.file("config.properties")))
 
 val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("keystore.properties")
-keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+keystoreProperties.load(FileInputStream(rootProject.file("keystore.properties")))
 
 android {
     namespace = "com.example.fragment.project"
@@ -47,7 +45,7 @@ android {
 
     buildTypes {
         getByName("release") {
-            isDebuggable = true
+            isDebuggable = false
             // 启用代码压缩、优化及混淆
             isMinifyEnabled = true
             // 启用资源压缩，需配合 minifyEnabled=true 使用
@@ -60,7 +58,7 @@ android {
             signingConfig = signingConfigs.getByName("config")
         }
         getByName("debug") {
-            isDebuggable = false
+            isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
@@ -89,7 +87,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.0"
     }
 
     packaging {
@@ -144,6 +142,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.coil.compose)
+//    debugImplementation(libs.leakcanary.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 data class MyCoinState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
+    var finishing: Boolean = false,
     var userCoinResult: CoinBean = CoinBean(),
     var myCoinResult: MutableList<MyCoinBean> = ArrayList(),
 )
@@ -35,7 +36,7 @@ class MyCoinViewModel : BaseViewModel() {
 
     fun getHome() {
         _uiState.update {
-            it.copy(refreshing = true)
+            it.copy(refreshing = true, loading = false, finishing = false)
         }
         viewModelScope.launch {
             //通过async获取需要展示的数据
@@ -58,7 +59,7 @@ class MyCoinViewModel : BaseViewModel() {
 
     fun getNext() {
         _uiState.update {
-            it.copy(loading = false)
+            it.copy(refreshing = false, loading = false, finishing = false)
         }
         viewModelScope.launch {
             val response = getMyCoinList(getNextPage())
@@ -66,7 +67,7 @@ class MyCoinViewModel : BaseViewModel() {
                 response.data?.datas?.let { data ->
                     state.myCoinResult.addAll(data)
                 }
-                state.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 data class SearchState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
+    var finishing: Boolean = false,
     var historyResult: MutableList<String> = ArrayList(),
     var articlesResult: MutableList<ArticleBean> = ArrayList(),
     var updateTime: Long = 0
@@ -70,14 +71,14 @@ class SearchViewModel : BaseViewModel() {
 
     fun getHome(key: String) {
         _uiState.update {
-            it.copy(refreshing = true)
+            it.copy(refreshing = true, loading = false, finishing = false)
         }
         getArticleQuery(key, getHomePage())
     }
 
     fun getNext(key: String) {
         _uiState.update {
-            it.copy(loading = false)
+            it.copy(refreshing = false, loading = false, finishing = false)
         }
         getArticleQuery(key, getNextPage())
     }
@@ -104,7 +105,7 @@ class SearchViewModel : BaseViewModel() {
                     }
                     state.articlesResult.addAll(datas)
                 }
-                state.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

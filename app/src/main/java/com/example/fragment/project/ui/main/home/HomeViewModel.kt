@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 data class HomeState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
+    var finishing: Boolean = false,
     var result: MutableList<ArticleBean> = ArrayList(),
 )
 
@@ -34,7 +35,7 @@ class HomeViewModel : BaseViewModel() {
 
     fun getHome() {
         _uiState.update {
-            it.copy(refreshing = true)
+            it.copy(refreshing = true, loading = false, finishing = false)
         }
         viewModelScope.launch {
             //通过async获取首页需要展示的数据
@@ -46,14 +47,19 @@ class HomeViewModel : BaseViewModel() {
             articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
             articleList.await().data?.datas?.let { articleData.addAll(it) }
             _uiState.update {
-                it.copy(refreshing = false, loading = hasNextPage(), result = articleData)
+                it.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage(),
+                    result = articleData
+                )
             }
         }
     }
 
     fun getNext() {
         _uiState.update {
-            it.copy(loading = false)
+            it.copy(refreshing = false, loading = false, finishing = false)
         }
         viewModelScope.launch {
             val response = getArticleList(getNextPage())
@@ -61,7 +67,7 @@ class HomeViewModel : BaseViewModel() {
                 response.data?.datas?.let { datas ->
                     state.result.addAll(datas)
                 }
-                state.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class SystemState(
     val refreshing: MutableMap<String, Boolean> = HashMap(),
     val loading: MutableMap<String, Boolean> = HashMap(),
+    val finishing: MutableMap<String, Boolean> = HashMap(),
     val result: MutableMap<String, ArrayList<ArticleBean>> = HashMap(),
     var updateTime: Long = 0
 ) {
@@ -24,6 +25,10 @@ data class SystemState(
 
     fun getLoading(cid: String): Boolean {
         return loading[cid] ?: false
+    }
+
+    fun getFinishing(cid: String): Boolean {
+        return finishing[cid] ?: false
     }
 
     fun getResult(cid: String): ArrayList<ArticleBean>? {
@@ -47,6 +52,8 @@ class SystemViewModel : BaseViewModel() {
     fun getHome(cid: String) {
         _uiState.update {
             it.refreshing[cid] = true
+            it.loading[cid] = false
+            it.finishing[cid] = false
             it.copy(updateTime = System.nanoTime())
         }
         getList(cid, getHomePage(key = cid))
@@ -54,7 +61,9 @@ class SystemViewModel : BaseViewModel() {
 
     fun getNext(cid: String) {
         _uiState.update {
+            it.refreshing[cid] = false
             it.loading[cid] = false
+            it.finishing[cid] = false
             it.copy(updateTime = System.nanoTime())
         }
         getList(cid, getNextPage(cid))
@@ -90,6 +99,7 @@ class SystemViewModel : BaseViewModel() {
                 state.refreshing[cid] = false
                 //设置加载更多状态
                 state.loading[cid] = hasNextPage(cid)
+                state.finishing[cid] = !hasNextPage(cid)
                 state.copy(updateTime = System.nanoTime())
             }
         }

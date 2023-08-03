@@ -65,8 +65,9 @@ fun ProjectScreen(
                 SwipeRefresh(
                     items = projectUiState.getResult(pageCid),
                     refreshing = projectUiState.getRefreshing(pageCid),
-                    onRefresh = { projectViewModel.getHome(pageCid) },
                     loading = projectUiState.getLoading(pageCid),
+                    finishing = projectUiState.getFinishing(pageCid),
+                    onRefresh = { projectViewModel.getHome(pageCid) },
                     onLoad = { projectViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,

@@ -77,8 +77,9 @@ fun SystemScreen(
                 SwipeRefresh(
                     items = systemUiState.getResult(pageCid),
                     refreshing = systemUiState.getRefreshing(pageCid),
-                    onRefresh = { systemViewModel.getHome(pageCid) },
                     loading = systemUiState.getLoading(pageCid),
+                    finishing = systemUiState.getFinishing(pageCid),
+                    onRefresh = { systemViewModel.getHome(pageCid) },
                     onLoad = { systemViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,

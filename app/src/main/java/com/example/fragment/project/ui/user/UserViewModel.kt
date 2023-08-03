@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 data class UserState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
+    var finishing: Boolean = false,
     var coinResult: CoinBean = CoinBean(),
     var articleResult: MutableList<ArticleBean> = ArrayList(),
 )
@@ -29,19 +30,19 @@ class UserViewModel(private val id: String) : BaseViewModel() {
     val uiState: StateFlow<UserState> = _uiState.asStateFlow()
 
     init {
-        getShareArticlesHome()
+        getHome()
     }
 
-    fun getShareArticlesHome() {
+    fun getHome() {
         _uiState.update {
-            it.copy(refreshing = true)
+            it.copy(refreshing = true, loading = false, finishing = false)
         }
         getShareArticlesList(getHomePage(1))
     }
 
-    fun getShareArticlesNext() {
+    fun getNext() {
         _uiState.update {
-            it.copy(loading = false)
+            it.copy(refreshing = false, loading = false, finishing = false)
         }
         getShareArticlesList(getNextPage())
     }
@@ -71,7 +72,7 @@ class UserViewModel(private val id: String) : BaseViewModel() {
                 if (response.data == null) {
                     state.coinResult.username = response.errorMsg
                 }
-                state.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

@@ -62,9 +62,10 @@ import kotlin.math.pow
 /**
  * 自定义下拉刷新&加载更多
  * @param items      列表数据
- * @param refreshing 设置下拉刷新状态
+ * @param refreshing 设置下拉刷新
+ * @param loading    设置加载更多
+ * @param finishing  结束加载更多
  * @param onRefresh  下拉刷新回调
- * @param loading    设置加载更多状态
  * @param onLoad     加载更多回调
  */
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
@@ -72,8 +73,9 @@ import kotlin.math.pow
 fun <T> SwipeRefresh(
     items: List<T>?,
     refreshing: Boolean,
-    onRefresh: () -> Unit,
     loading: Boolean,
+    finishing: Boolean,
+    onRefresh: () -> Unit,
     onLoad: () -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
@@ -137,7 +139,7 @@ fun <T> SwipeRefresh(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = "👆👆👇👇👈👉👈👉🅱🅰🅱🅰",
+                            text = if (finishing) "没有更多了！" else "正在加载中...",
                             fontSize = 12.sp,
                             color = colorResource(id = R.color.theme),
                             modifier = Modifier.align(alignment = Alignment.Center)

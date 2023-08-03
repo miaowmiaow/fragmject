@@ -189,8 +189,9 @@ fun SearchScreen(
                     SwipeRefresh(
                         items = uiState.articlesResult,
                         refreshing = uiState.refreshing,
-                        onRefresh = { viewModel.getHome(searchText) },
                         loading = uiState.loading,
+                        finishing = uiState.finishing,
+                        onRefresh = { viewModel.getHome(searchText) },
                         onLoad = { viewModel.getNext(searchText) },
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 10.dp),

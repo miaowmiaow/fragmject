@@ -31,6 +31,7 @@ fun HomeScreen(
             items = uiState.result,
             refreshing = uiState.refreshing,
             loading = uiState.loading,
+            finishing = uiState.finishing,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },
             modifier = Modifier.fillMaxSize(),

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class RankState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
+    var finishing: Boolean = false,
     var result: MutableList<CoinBean> = ArrayList(),
 )
 
@@ -30,14 +31,14 @@ class RankViewModel : BaseViewModel() {
 
     fun getHome() {
         _uiState.update {
-            it.copy(refreshing = true)
+            it.copy(refreshing = true, loading = false, finishing = false)
         }
         getCoinRank(getHomePage(1))
     }
 
     fun getNext() {
         _uiState.update {
-            it.copy(loading = false)
+            it.copy(refreshing = false, loading = false, finishing = false)
         }
         getCoinRank(getNextPage())
     }
@@ -58,7 +59,7 @@ class RankViewModel : BaseViewModel() {
                     }
                     state.result.addAll(data)
                 }
-                state.copy(refreshing = false, loading = hasNextPage())
+                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

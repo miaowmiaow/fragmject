@@ -149,8 +149,9 @@ fun MyCoinScreen(
             SwipeRefresh(
                 items = uiState.myCoinResult,
                 refreshing = uiState.refreshing,
-                onRefresh = { viewModel.getHome() },
                 loading = uiState.loading,
+                finishing = uiState.finishing,
+                onRefresh = { viewModel.getHome() },
                 onLoad = { viewModel.getNext() },
                 modifier = Modifier.fillMaxSize(),
                 key = { _, item -> item.id },

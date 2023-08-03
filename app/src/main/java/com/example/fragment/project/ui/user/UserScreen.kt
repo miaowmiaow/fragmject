@@ -157,9 +157,10 @@ fun UserScreen(
             SwipeRefresh(
                 items = uiState.articleResult,
                 refreshing = uiState.refreshing,
-                onRefresh = { viewModel.getShareArticlesHome() },
                 loading = uiState.loading,
-                onLoad = { viewModel.getShareArticlesNext() },
+                finishing = uiState.finishing,
+                onRefresh = { viewModel.getHome() },
+                onLoad = { viewModel.getNext() },
                 modifier = Modifier
                     .fillMaxSize()
                     .background(colorResource(R.color.white)),

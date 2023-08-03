@@ -94,8 +94,9 @@ fun RankScreen(
             SwipeRefresh(
                 items = uiState.result,
                 refreshing = uiState.refreshing,
-                onRefresh = { viewModel.getHome() },
                 loading = uiState.loading,
+                finishing = uiState.finishing,
+                onRefresh = { viewModel.getHome() },
                 onLoad = { viewModel.getNext() },
                 modifier = Modifier
                     .background(colorResource(R.color.background))

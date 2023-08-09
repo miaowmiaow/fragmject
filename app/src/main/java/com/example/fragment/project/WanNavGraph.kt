@@ -1,10 +1,14 @@
 package com.example.fragment.project
 
 import android.net.Uri
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
@@ -131,10 +135,9 @@ fun WanNavGraph(
             RegisterScreen()
         }
         composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
-            val key = backStackEntry.arguments?.getString("key").toString()
             SearchScreen(
                 hotKey = wanUiState.hotKeyResult,
-                key = key,
+                key = backStackEntry.arguments?.getString("key") ?: "",
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },

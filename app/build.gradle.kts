@@ -18,14 +18,14 @@ keystoreProperties.load(FileInputStream(rootProject.file("keystore.properties"))
 
 android {
     namespace = "com.example.fragment.project"
-    compileSdk = (configProperties["compileSdkVersion"] as String).toInt()
+    compileSdk = configProperties.getProperty("compileSdkVersion").toInt()
 
     defaultConfig {
-        applicationId = configProperties["applicationId"] as String
-        minSdk = (configProperties["minSdkVersion"] as String).toInt()
-        targetSdk = (configProperties["targetSdkVersion"] as String).toInt()
-        versionCode = (configProperties["versionCode"] as String).toInt()
-        versionName = configProperties["versionName"] as String
+        applicationId = configProperties.getProperty("applicationId")
+        minSdk = configProperties.getProperty("minSdkVersion").toInt()
+        targetSdk = configProperties.getProperty("targetSdkVersion").toInt()
+        versionCode = configProperties.getProperty("versionCode").toInt()
+        versionName = configProperties.getProperty("versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -36,10 +36,10 @@ android {
 
     signingConfigs {
         create("config") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storeFile = file(keystoreProperties.getProperty("storeFile"))
+            storePassword = keystoreProperties.getProperty("storePassword")
         }
     }
 
@@ -87,7 +87,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.0"
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     packaging {
@@ -142,7 +142,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.coil.compose)
-//    debugImplementation(libs.leakcanary.android)
+    debugImplementation(libs.leakcanary.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)

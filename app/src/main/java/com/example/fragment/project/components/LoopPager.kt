@@ -2,7 +2,14 @@ package com.example.fragment.project.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -17,7 +24,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -34,7 +42,7 @@ fun <T> LoopHorizontalPager(
     }
     val pageCount = data.size
     val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(initialPage = startIndex)
+    val pagerState = rememberPagerState(initialPage = startIndex - startIndex % pageCount)
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()
@@ -93,9 +101,9 @@ fun <T> LoopHorizontalPager(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LoopVerticalPager(
+    data: List<T>?,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    data: List<T>?,
     indicator: Boolean = false,
     content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
@@ -104,7 +112,7 @@ fun <T> LoopVerticalPager(
     }
     val pageCount = data.size
     val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(initialPage = startIndex)
+    val pagerState = rememberPagerState(initialPage = startIndex - startIndex % pageCount)
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()

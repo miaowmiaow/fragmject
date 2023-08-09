@@ -67,48 +67,46 @@ fun NightSwitchButton(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    Box(modifier = modifier) {
-        BoxWithConstraints {
-            val canvasWidth = maxWidth
-            val canvasHeight = maxHeight
-            val canvasRadius = canvasHeight / 2f
-            val starSize = canvasRadius * 0.9f
-            val swipeableState = rememberSwipeableStateFor(checked, onCheckedChange ?: {})
-            val minBound = 0f
-            val maxBound = with(LocalDensity.current) { (canvasWidth - starSize).toPx() }
-            Box(
-                modifier = Modifier
-                        .toggleable(
-                            value = checked,
-                            onValueChange = {
-                                coroutineScope.launch {
-                                    swipeableState.animateTo(it)
-                                    onCheckedChange?.invoke(it)
-                                }
-                            },
-                            role = Role.Switch,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        )
-                        .swipeable(
-                            state = swipeableState,
-                            anchors = mapOf(minBound to false, maxBound to true),
-                            thresholds = { _, _ -> FractionalThreshold(0.5f) },
-                            orientation = Orientation.Horizontal
-                        )
-            ) {
-                val progress = if (!swipeableState.progress.from && !swipeableState.progress.to) {
-                    0f
-                } else if (swipeableState.progress.from && !swipeableState.progress.to) {
-                    1f - swipeableState.progress.fraction
-                } else {
-                    swipeableState.progress.fraction
-                }
-                Sky(progress, canvasWidth, canvasHeight, canvasRadius)
-                Cloud(progress, canvasWidth, canvasHeight, canvasRadius)
-                Stars(progress, canvasWidth, canvasHeight, canvasRadius)
-                SunAndMoon(progress, canvasWidth, canvasHeight, canvasRadius)
+    BoxWithConstraints(modifier = modifier) {
+        val canvasWidth = maxWidth
+        val canvasHeight = maxHeight
+        val canvasRadius = canvasHeight / 2f
+        val starSize = canvasRadius * 0.9f
+        val swipeableState = rememberSwipeableStateFor(checked, onCheckedChange ?: {})
+        val minBound = 0f
+        val maxBound = with(LocalDensity.current) { (canvasWidth - starSize).toPx() }
+        Box(
+            modifier = Modifier
+                .toggleable(
+                    value = checked,
+                    onValueChange = {
+                        coroutineScope.launch {
+                            swipeableState.animateTo(it)
+                            onCheckedChange?.invoke(it)
+                        }
+                    },
+                    role = Role.Switch,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                )
+                .swipeable(
+                    state = swipeableState,
+                    anchors = mapOf(minBound to false, maxBound to true),
+                    thresholds = { _, _ -> FractionalThreshold(0.5f) },
+                    orientation = Orientation.Horizontal
+                )
+        ) {
+            val progress = if (!swipeableState.progress.from && !swipeableState.progress.to) {
+                0f
+            } else if (swipeableState.progress.from && !swipeableState.progress.to) {
+                1f - swipeableState.progress.fraction
+            } else {
+                swipeableState.progress.fraction
             }
+            Sky(progress, canvasWidth, canvasHeight, canvasRadius)
+            Cloud(progress, canvasWidth, canvasHeight, canvasRadius)
+            Stars(progress, canvasWidth, canvasHeight, canvasRadius)
+            SunAndMoon(progress, canvasWidth, canvasHeight, canvasRadius)
         }
     }
 }
@@ -192,10 +190,10 @@ fun Sky(
     val offsetX = canvasHeight / 2f + starMove * progress
     Canvas(
         modifier = Modifier
-                .width(canvasWidth)
-                .height(canvasHeight)
-                .clip(RoundedCornerShape(canvasRadius))
-                .clipToBounds(),
+            .width(canvasWidth)
+            .height(canvasHeight)
+            .clip(RoundedCornerShape(canvasRadius))
+            .clipToBounds(),
         onDraw = {
             val maxRadius = canvasWidth.toPx() - canvasRadius.toPx() * 1.5f
             val minRadius = maxRadius * 0.3f
@@ -319,10 +317,10 @@ fun Cloud(
     Box(modifier = Modifier.clip(RoundedCornerShape(canvasRadius))) {
         Canvas(
             modifier = Modifier
-                    .width(canvasWidth)
-                    .height(canvasHeight)
-                    .offset(y = canvasHeight * progressY)
-                    .alpha(0.5f),
+                .width(canvasWidth)
+                .height(canvasHeight)
+                .offset(y = canvasHeight * progressY)
+                .alpha(0.5f),
         ) {
             // 白云2
             for (i in 0..6) {
@@ -338,9 +336,9 @@ fun Cloud(
         }
         Canvas(
             modifier = Modifier
-                    .width(canvasWidth)
-                    .height(canvasHeight)
-                    .offset(y = canvasHeight * progressY),
+                .width(canvasWidth)
+                .height(canvasHeight)
+                .offset(y = canvasHeight * progressY),
         ) {
             // 白云1
             for (i in 0..6) {
@@ -407,10 +405,10 @@ fun Stars(
         Box(modifier = Modifier.clip(RoundedCornerShape(canvasRadius))) {
             Canvas(
                 modifier = Modifier
-                        .width(canvasWidth)
-                        .height(canvasHeight)
-                        .offset(y = -canvasHeight + canvasHeight * progressY)
-                        .alpha(nightStar.alpha.value),
+                    .width(canvasWidth)
+                    .height(canvasHeight)
+                    .offset(y = -canvasHeight + canvasHeight * progressY)
+                    .alpha(nightStar.alpha.value),
             ) {
                 val starRadius = canvasRadius * 0.9f
                 val buttonHeight = canvasHeight - canvasHeight / 10f * 2
@@ -461,8 +459,8 @@ fun SunAndMoon(
     val starMove = canvasWidth - (canvasHeight - starRadius * 2f) - starRadius * 2f
     Box(
         modifier = Modifier
-                .height(starRadius * 2)
-                .width(starRadius * 2),
+            .height(starRadius * 2)
+            .width(starRadius * 2),
     ) {
         if (progress >= initProgress) {
             Sun(progress, false, canvasHeight, canvasRadius, starRadius, starMove)
@@ -529,15 +527,15 @@ fun Sun(
     }
     Canvas(
         modifier = Modifier
-                .width(starRadius * 2f)
-                .height(starRadius * 2f)
-                .offset(
-                    x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
-                    y = (canvasHeight - starRadius * 2f) / 2f,
-                )
-                .graphicsLayer(alpha = 0.99f)
-                .clip(RoundedCornerShape(canvasRadius))
-                .clipToBounds(),
+            .width(starRadius * 2f)
+            .height(starRadius * 2f)
+            .offset(
+                x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
+                y = (canvasHeight - starRadius * 2f) / 2f,
+            )
+            .graphicsLayer(alpha = 0.99f)
+            .clip(RoundedCornerShape(canvasRadius))
+            .clipToBounds(),
     ) {
         // 1: top shadow
         with(drawContext.canvas.nativeCanvas) {
@@ -654,15 +652,15 @@ fun Moon(
 
     Canvas(
         modifier = Modifier
-                .width(starRadius * 2f)
-                .height(starRadius * 2f)
-                .offset(
-                    x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
-                    y = (canvasHeight - starRadius * 2f) / 2f,
-                )
-                .graphicsLayer(alpha = 0.99f)
-                .clip(RoundedCornerShape(canvasRadius))
-                .clipToBounds(),
+            .width(starRadius * 2f)
+            .height(starRadius * 2f)
+            .offset(
+                x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
+                y = (canvasHeight - starRadius * 2f) / 2f,
+            )
+            .graphicsLayer(alpha = 0.99f)
+            .clip(RoundedCornerShape(canvasRadius))
+            .clipToBounds(),
     ) {
         // 1: top shadow
         with(drawContext.canvas.nativeCanvas) {
@@ -844,7 +842,12 @@ private val moonDownColor = Color(0xFF73777E)
 /**
  * A tool for get 2 colors offset color
  */
-private fun offsetColor(colorStart: Color, colorEnd: Color, progress: Float, perDistance: Float = 0.2f): Color {
+private fun offsetColor(
+    colorStart: Color,
+    colorEnd: Color,
+    progress: Float,
+    perDistance: Float = 0.2f
+): Color {
     val offsetColor = if (progress < perDistance) {
         0f
     } else if (progress > (1 - perDistance)) {
@@ -853,9 +856,12 @@ private fun offsetColor(colorStart: Color, colorEnd: Color, progress: Float, per
         (progress - perDistance) * (1 / (1 - perDistance * 2))
     }
     val red = (((colorStart.red + (colorEnd.red - colorStart.red) * offsetColor) * 0xFF).toInt())
-    val green = (((colorStart.green + (colorEnd.green - colorStart.green) * offsetColor) * 0xFF).toInt())
-    val blue = (((colorStart.blue + (colorEnd.blue - colorStart.blue) * offsetColor) * 0xFF).toInt())
-    val color = ((0xFF and 0xFF) shl 24) or ((red and 0xFF) shl 16) or ((green and 0xFF) shl 8) or (blue and 0xFF)
+    val green =
+        (((colorStart.green + (colorEnd.green - colorStart.green) * offsetColor) * 0xFF).toInt())
+    val blue =
+        (((colorStart.blue + (colorEnd.blue - colorStart.blue) * offsetColor) * 0xFF).toInt())
+    val color =
+        ((0xFF and 0xFF) shl 24) or ((red and 0xFF) shl 16) or ((green and 0xFF) shl 8) or (blue and 0xFF)
     return Color(color)
 }
 

@@ -68,7 +68,7 @@ import kotlin.math.pow
  * @param onRefresh  下拉刷新回调
  * @param onLoad     加载更多回调
  */
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun <T> SwipeRefresh(
     items: List<T>?,
@@ -85,28 +85,6 @@ fun <T> SwipeRefresh(
     contentType: (index: Int, item: T) -> Any? = { _, _ -> null },
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
-    val loadingResId = listOf(
-        R.drawable.loading_big_1,
-        R.drawable.loading_big_4,
-        R.drawable.loading_big_7,
-        R.drawable.loading_big_10,
-        R.drawable.loading_big_13,
-        R.drawable.loading_big_16,
-        R.drawable.loading_big_19,
-    )
-    val loadingHeightPx: Float
-    with(LocalDensity.current) {
-        loadingHeightPx = 16.dp.toPx()
-    }
-    val infiniteTransition = rememberInfiniteTransition(label = "SwipeRefresh")
-    val loadingAnimate by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = loadingResId.size.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(250, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "loadingAnimate"
-    )
     val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (items.isNullOrEmpty()) {
         if (!refreshing) {
@@ -115,7 +93,7 @@ fun <T> SwipeRefresh(
             }
         }
     } else {
-        Box(Modifier.swipeRefresh(state)) {
+        Box(Modifier.swipeRefresh(state), contentAlignment = Alignment.TopCenter) {
             LazyColumn(
                 modifier = modifier.graphicsLayer {
                     translationY = state.position
@@ -147,25 +125,55 @@ fun <T> SwipeRefresh(
                     }
                 }
             }
-            AnimatedVisibility(
-                visible = (refreshing || (state.position >= loadingHeightPx * 0.5f)),
-                modifier = Modifier
-                    .size(40.dp, 16.dp)
-                    .align(Alignment.TopCenter)
-                    .graphicsLayer {
-                        translationY = state.position * 0.5f
-                    },
-                enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut()
-            ) {
-                val id = if (refreshing) loadingAnimate else state.position % loadingResId.size
-                Image(
-                    painter = painterResource(loadingResId[id.toInt()]),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                )
-            }
+            LoadingIndicator(refreshing) { state.position }
         }
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun LoadingIndicator(
+    refreshing: Boolean,
+    position: () -> Float
+) {
+    val loadingResId = listOf(
+        R.drawable.loading_big_1,
+        R.drawable.loading_big_4,
+        R.drawable.loading_big_7,
+        R.drawable.loading_big_10,
+        R.drawable.loading_big_13,
+        R.drawable.loading_big_16,
+        R.drawable.loading_big_19,
+    )
+    val loadingHeightPx: Float
+    with(LocalDensity.current) {
+        loadingHeightPx = 16.dp.toPx()
+    }
+    val infiniteTransition = rememberInfiniteTransition(label = "SwipeRefresh")
+    val loadingAnimate by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = loadingResId.size.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(250, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "loadingAnimate"
+    )
+    AnimatedVisibility(
+        visible = (refreshing || (position() >= loadingHeightPx * 0.5f)),
+        modifier = Modifier
+            .size(40.dp, 16.dp)
+            .graphicsLayer {
+                translationY = position() * 0.5f
+            },
+        enter = fadeIn() + scaleIn(),
+        exit = fadeOut() + scaleOut()
+    ) {
+        val id = if (refreshing) loadingAnimate else position() % loadingResId.size
+        Image(
+            painter = painterResource(loadingResId[id.toInt()]),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+        )
     }
 }
 

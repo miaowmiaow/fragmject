@@ -59,9 +59,7 @@ fun ArticleCard(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-
     var collectResId by remember(data.collect) { mutableStateOf(getCollectResId(data.collect)) }
-
     Box(modifier) {
         Card(elevation = 2.dp) {
             Column(

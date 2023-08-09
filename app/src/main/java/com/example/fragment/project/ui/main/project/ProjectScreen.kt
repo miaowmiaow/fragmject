@@ -1,11 +1,17 @@
 package com.example.fragment.project.ui.main.project
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -14,7 +20,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.components.*
+import com.example.fragment.project.components.ArticleCard
+import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.SwipeRefresh
+import com.example.fragment.project.components.TabBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -58,9 +67,8 @@ fun ProjectScreen(
             }
             LoadingLayout(
                 projectTreeUiState.isLoading
-                        || (projectUiState.getRefreshing(pageCid) && !projectUiState.getLoading(
-                    pageCid
-                ))
+                        || (projectUiState.getRefreshing(pageCid)
+                        && !projectUiState.getLoading(pageCid))
             ) {
                 SwipeRefresh(
                     items = projectUiState.getResult(pageCid),

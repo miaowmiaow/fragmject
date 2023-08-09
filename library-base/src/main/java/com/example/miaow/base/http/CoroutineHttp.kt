@@ -107,7 +107,7 @@ class CoroutineHttp private constructor() {
     }
 
     private fun getConverter(): Converter {
-        return converter ?: GSonConverter.create()
+        return converter ?: GSonConverter.create().also { converter = it }
     }
 
     suspend fun <T : HttpResponse> get(

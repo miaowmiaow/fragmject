@@ -13,10 +13,10 @@ configProperties.load(FileInputStream(rootProject.file("config.properties")))
 
 android {
     namespace = "com.example.miaow.picture"
-    compileSdk = (configProperties["compileSdkVersion"] as String).toInt()
+    compileSdk = configProperties.getProperty("compileSdkVersion").toInt()
 
     defaultConfig {
-        minSdk = (configProperties["minSdkVersion"] as String).toInt()
+        minSdk = configProperties.getProperty("minSdkVersion").toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

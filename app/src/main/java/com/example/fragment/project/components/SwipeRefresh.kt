@@ -105,45 +105,52 @@ fun <T> SwipeRefresh(
                 itemsIndexed(items, key = key, contentType = contentType) { index, item ->
                     itemContent(index, item)
                     if (loading && items.size - index < 5) {
-                        LaunchedEffect(items.size) {
+                        LaunchedEffect(items.size){
                             onLoad()
                         }
                     }
                 }
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = if (finishing) "没有更多了！" else "正在加载中...",
-                            fontSize = 12.sp,
-                            color = colorResource(id = R.color.theme),
-                            modifier = Modifier.align(alignment = Alignment.Center)
-                        )
-                    }
+                    MoreIndicator(finishing)
                 }
             }
-            LoadingIndicator(refreshing) { state.position }
+            RefreshIndicator(refreshing) { state.position }
         }
+    }
+}
+
+@Composable
+fun MoreIndicator(
+    finishing: Boolean,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Text(
+            text = if (finishing) "没有更多了！" else "正在加载中...",
+            fontSize = 12.sp,
+            color = colorResource(id = R.color.theme),
+            modifier = Modifier.align(alignment = Alignment.Center)
+        )
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun LoadingIndicator(
+fun RefreshIndicator(
     refreshing: Boolean,
     position: () -> Float
 ) {
     val loadingResId = listOf(
-        R.drawable.loading_big_1,
-        R.drawable.loading_big_4,
-        R.drawable.loading_big_7,
-        R.drawable.loading_big_10,
-        R.drawable.loading_big_13,
-        R.drawable.loading_big_16,
-        R.drawable.loading_big_19,
+        R.drawable.refreshing_big_1,
+        R.drawable.refreshing_big_4,
+        R.drawable.refreshing_big_7,
+        R.drawable.refreshing_big_10,
+        R.drawable.refreshing_big_13,
+        R.drawable.refreshing_big_16,
+        R.drawable.refreshing_big_19,
     )
     val loadingHeightPx: Float
     with(LocalDensity.current) {

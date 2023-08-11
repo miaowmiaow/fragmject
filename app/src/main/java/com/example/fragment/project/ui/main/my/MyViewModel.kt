@@ -22,10 +22,6 @@ class MyViewModel : BaseViewModel() {
 
     val uiState: StateFlow<MyState> = _uiState.asStateFlow()
 
-    init {
-        getUser()
-    }
-
     fun getUser() {
         WanHelper.getUser { userBean ->
             _uiState.update {

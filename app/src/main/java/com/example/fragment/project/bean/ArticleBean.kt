@@ -2,7 +2,7 @@ package com.example.fragment.project.bean
 
 import android.os.Parcelable
 import android.text.Html
-import android.text.TextUtils
+import androidx.core.text.HtmlCompat
 import com.example.fragment.project.R
 import com.example.miaow.base.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel
@@ -126,14 +126,12 @@ data class ArticleBean(
     }
 
     private fun formatChapterName(vararg names: String): String {
-        val format = StringBuilder()
-        for (name in names) {
-            if (!TextUtils.isEmpty(name)) {
-                if (format.isNotEmpty()) format.append(" · ")
-                format.append(name)
-            }
+        val stringBuilder = StringBuilder()
+        for ((index, name) in names.withIndex()) {
+            if (index > 0) stringBuilder.append("·")
+            stringBuilder.append(name)
         }
-        return format.toString()
+        return stringBuilder.toString()
     }
 }
 

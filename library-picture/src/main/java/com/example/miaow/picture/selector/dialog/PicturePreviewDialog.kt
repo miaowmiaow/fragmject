@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.widget.ViewPager2
 import coil.load
@@ -113,6 +114,15 @@ class PicturePreviewDialog : FullDialog() {
                 } else position
                 binding.selectBox.isSelected = currSelectPosition.contains(origPosition)
                 binding.title.text = "${position + 1}/${previewAdapter.itemCount}"
+            }
+        })
+        previewAdapter.setOnPicturePreviewClickListener(object :
+            PicturePreviewAdapter.OnPicturePreviewClickListener {
+            override fun onClick(view: View) {
+                binding.titleBar.visibility =
+                    if (binding.titleBar.isVisible) View.GONE else View.VISIBLE
+                binding.navBar.visibility =
+                    if (binding.navBar.isVisible) View.GONE else View.VISIBLE
             }
         })
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

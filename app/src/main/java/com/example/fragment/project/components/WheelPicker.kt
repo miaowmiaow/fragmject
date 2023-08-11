@@ -22,21 +22,24 @@ import kotlin.math.roundToInt
 @Composable
 fun <T> WheelPicker(
     data: List<T>,
+    selectIndex: Int,
     visibleCount: Int,
     modifier: Modifier = Modifier,
-    content: @Composable (index: Int, item: T) -> Unit,
+    onSelect: (index: Int, item: T) -> Unit,
+    content: @Composable (item: T) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier, propagateMinConstraints = true) {
         val density = LocalDensity.current
-        val count = data.size
+        val size = data.size
+        val count = size * 10000
         val pickerHeight = maxHeight
         val pickerHeightPx = density.run { pickerHeight.toPx() }
         val pickerCenterLinePx = pickerHeightPx / 2
         val itemHeight = pickerHeight / visibleCount
         val itemHeightPx = pickerHeightPx / visibleCount
-        val startIndex = Int.MAX_VALUE / 2
+        val startIndex = count / 2
         val listState = rememberLazyListState(
-            initialFirstVisibleItemIndex = startIndex - startIndex % count,
+            initialFirstVisibleItemIndex = startIndex - startIndex.floorMod(size) + selectIndex,
             initialFirstVisibleItemScrollOffset = ((itemHeightPx - pickerHeightPx) / 2).roundToInt(),
         )
         val layoutInfo by remember { derivedStateOf { listState.layoutInfo } }
@@ -45,7 +48,8 @@ fun <T> WheelPicker(
             state = listState,
             flingBehavior = rememberSnapFlingBehavior(listState),
         ) {
-            items(Int.MAX_VALUE) { index ->
+            items(count) { index ->
+                val currIndex = (index - startIndex).floorMod(size)
                 val item = layoutInfo.visibleItemsInfo.find { it.index == index }
                 var currentsAdjust = 1f
                 if (item != null) {
@@ -54,6 +58,12 @@ fun <T> WheelPicker(
                         itemCenterY / pickerCenterLinePx
                     } else {
                         1 - (itemCenterY - pickerCenterLinePx) / pickerCenterLinePx
+                    }
+                    if (!listState.isScrollInProgress
+                        && item.offset < pickerCenterLinePx
+                        && item.offset + item.size > pickerCenterLinePx
+                    ) {
+                        onSelect(currIndex, data[currIndex])
                     }
                 }
                 Box(
@@ -68,8 +78,7 @@ fun <T> WheelPicker(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    val currIndex = (index - startIndex).floorMod(count)
-                    content(currIndex, data[currIndex])
+                    content(data[currIndex])
                 }
             }
         }

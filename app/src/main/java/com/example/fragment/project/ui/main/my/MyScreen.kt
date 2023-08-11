@@ -35,6 +35,7 @@ fun MyScreen(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
+    onNavigateToMyDemo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSetting: () -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
@@ -78,6 +79,34 @@ fun MyScreen(
             fontSize = 16.sp,
             color = colorResource(R.color.text_333),
         )
+        Spacer(
+            Modifier
+                .background(colorResource(R.color.line))
+                .fillMaxWidth()
+                .height(1.dp)
+        )
+        Row(
+            modifier = Modifier
+                .background(colorResource(R.color.white))
+                .fillMaxWidth()
+                .height(45.dp)
+                .clickable { onNavigateToMyDemo() },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "我的Demo",
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 25.dp, end = 25.dp),
+                fontSize = 13.sp,
+                color = colorResource(R.color.text_333),
+            )
+            Image(
+                painter = painterResource(id = R.drawable.ic_right),
+                contentDescription = "",
+                modifier = Modifier.padding(start = 25.dp, end = 25.dp)
+            )
+        }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))

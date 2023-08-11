@@ -20,6 +20,7 @@ import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
 import com.example.fragment.project.ui.my_coin.MyCoinScreen
 import com.example.fragment.project.ui.my_collect.MyCollectScreen
+import com.example.fragment.project.ui.my_demo.MyDemoScreen
 import com.example.fragment.project.ui.my_share.MyShareScreen
 import com.example.fragment.project.ui.rank.RankScreen
 import com.example.fragment.project.ui.register.RegisterScreen
@@ -100,6 +101,7 @@ fun WanNavGraph(
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
                 onNavigateToMyCollect = { wanNavActions.navigateToMyCollect() },
+                onNavigateToMyDemo = { wanNavActions.navigateToMyDemo() },
                 onNavigateToMyShare = { wanNavActions.navigateToMyShare() },
                 onNavigateToSearch = { wanNavActions.navigateToSearch(it) },
                 onNavigateToSetting = { wanNavActions.navigateToSetting() },
@@ -119,6 +121,9 @@ fun WanNavGraph(
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
             )
+        }
+        composable(WanDestinations.MY_DEMO_ROUTE) {
+            MyDemoScreen()
         }
         composable(WanDestinations.MY_SHARE_ROUTE) {
             MyShareScreen(
@@ -209,6 +214,9 @@ class WanNavActions(
     val navigateToMyCollect: () -> Unit = {
         navigate(WanDestinations.MY_COLLECT_ROUTE)
     }
+    val navigateToMyDemo: () -> Unit = {
+        navigate(WanDestinations.MY_DEMO_ROUTE)
+    }
     val navigateToMyShare: () -> Unit = {
         navigate(WanDestinations.MY_SHARE_ROUTE)
     }
@@ -254,6 +262,7 @@ object WanDestinations {
     const val MAIN_ROUTE = "main"
     const val MY_COIN_ROUTE = "my_coin"
     const val MY_COLLECT_ROUTE = "my_collect"
+    const val MY_DEMO_ROUTE = "my_demo"
     const val MY_SHARE_ROUTE = "my_share"
     const val RANK_ROUTE = "rank"
     const val REGISTER_ROUTE = "register"

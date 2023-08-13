@@ -1,10 +1,8 @@
 package com.example.fragment.project.ui.main.my
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,13 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.fragment.project.R
+import com.example.fragment.project.components.ArrowRightItem
 
 @Composable
 fun MyScreen(
@@ -85,140 +83,35 @@ fun MyScreen(
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        Row(
-            modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyDemo() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "我的Demo",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
-                fontSize = 13.sp,
-                color = colorResource(R.color.text_333),
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_right),
-                contentDescription = "",
-                modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-            )
-        }
+        ArrowRightItem("我的Demo") { onNavigateToMyDemo() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        Row(
-            modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyCoin() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "我的积分",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
-                fontSize = 13.sp,
-                color = colorResource(R.color.text_333),
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_right),
-                contentDescription = "",
-                modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-            )
-        }
+        ArrowRightItem("我的积分") { onNavigateToMyCoin() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        Row(
-            modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyCollect() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "我的收藏",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
-                fontSize = 13.sp,
-                color = colorResource(R.color.text_333),
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_right),
-                contentDescription = "",
-                modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-            )
-        }
+        ArrowRightItem("我的收藏") { onNavigateToMyCollect() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        Row(
-            modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToMyShare() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "我的分享",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
-                fontSize = 13.sp,
-                color = colorResource(R.color.text_333),
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_right),
-                contentDescription = "",
-                modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-            )
-        }
+        ArrowRightItem("我的分享") { onNavigateToMyShare() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        Row(
-            modifier = Modifier
-                .background(colorResource(R.color.white))
-                .fillMaxWidth()
-                .height(45.dp)
-                .clickable { onNavigateToSetting() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "系统设置",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 25.dp, end = 25.dp),
-                fontSize = 13.sp,
-                color = colorResource(R.color.text_333),
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_right),
-                contentDescription = "",
-                modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-            )
-        }
+        ArrowRightItem("系统设置") { onNavigateToSetting() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))

@@ -7,7 +7,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,15 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Snackbar
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,8 +42,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.LoadingLayout
 import com.example.fragment.project.components.NightSwitchButton
+import com.example.fragment.project.components.TitleBar
 import com.example.miaow.base.dialog.StandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.ScreenRecordCallback
@@ -81,32 +78,10 @@ fun SettingScreen(
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .background(colorResource(R.color.theme))
-                    ) {
-                        IconButton(
-                            modifier = Modifier.height(45.dp),
-                            onClick = {
-                                if (context is AppCompatActivity) {
-                                    context.onBackPressedDispatcher.onBackPressed()
-                                }
-                            }
-                        ) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
-                                contentDescription = null,
-                                tint = colorResource(R.color.white)
-                            )
+                    TitleBar("设置") {
+                        if (context is AppCompatActivity) {
+                            context.onBackPressedDispatcher.onBackPressed()
                         }
-                        Text(
-                            text = "设置",
-                            fontSize = 16.sp,
-                            color = colorResource(R.color.text_fff),
-                            modifier = Modifier.align(Alignment.Center)
-                        )
                     }
                     Row(
                         modifier = Modifier
@@ -162,31 +137,25 @@ fun SettingScreen(
                             checked = screenRecordState,
                             onCheckedChange = {
                                 screenRecordState = it
-                                if (screenRecordState) {
-                                    coroutineScope.launch {
-                                        if (context is AppCompatActivity) {
-                                            context.supportFragmentManager.startScreenRecord(object :
-                                                ScreenRecordCallback {
-                                                override fun onActivityResult(
-                                                    resultCode: Int,
-                                                    message: String
-                                                ) {
-                                                    if (resultCode != Activity.RESULT_OK) {
-                                                        screenRecordState = false
-                                                    }
-                                                    coroutineScope.launch {
-                                                        scaffoldState.snackbarHostState.showSnackbar(
-                                                            message, "确定"
-                                                        )
-                                                    }
+                                if (context is AppCompatActivity) {
+                                    if (screenRecordState) {
+                                        context.startScreenRecord(object : ScreenRecordCallback {
+                                            override fun onActivityResult(
+                                                resultCode: Int,
+                                                message: String
+                                            ) {
+                                                if (resultCode != Activity.RESULT_OK) {
+                                                    screenRecordState = false
                                                 }
-                                            })
-                                        }
-                                    }
-                                } else {
-                                    if (context is AppCompatActivity) {
-                                        context.supportFragmentManager.stopScreenRecord(object :
-                                            ScreenRecordCallback {
+                                                coroutineScope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar(
+                                                        message, "确定"
+                                                    )
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        context.stopScreenRecord(object : ScreenRecordCallback {
                                             override fun onActivityResult(
                                                 resultCode: Int,
                                                 message: String
@@ -209,84 +178,21 @@ fun SettingScreen(
                             .fillMaxWidth()
                             .height(1.dp)
                     )
-                    Row(
-                        modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .clickable { onNavigateToPrivacyPolicy() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "隐私政策",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_right),
-                            contentDescription = "",
-                            modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-                        )
-                    }
+                    ArrowRightItem("隐私政策") { onNavigateToPrivacyPolicy() }
                     Spacer(
                         Modifier
                             .background(colorResource(R.color.line))
                             .fillMaxWidth()
                             .height(1.dp)
                     )
-                    Row(
-                        modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .clickable { onNavigateToFeedback() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "问题反馈",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_right),
-                            contentDescription = "",
-                            modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-                        )
-                    }
+                    ArrowRightItem("问题反馈") { onNavigateToFeedback() }
                     Spacer(
                         Modifier
                             .background(colorResource(R.color.line))
                             .fillMaxWidth()
                             .height(1.dp)
                     )
-                    Row(
-                        modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp)
-                            .clickable { onNavigateToAbout() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "关于玩Android",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_right),
-                            contentDescription = "",
-                            modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-                        )
-                    }
+                    ArrowRightItem("关于玩Android") { onNavigateToAbout() }
                     Spacer(
                         Modifier
                             .background(colorResource(R.color.line))

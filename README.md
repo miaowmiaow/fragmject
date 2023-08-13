@@ -1,7 +1,7 @@
 ## 前言
-刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解。   
-开源项目为了满足业务需求，代码层层封装，用来上手实在不合适，于是便有了 `fragmject` 项目。   
-在此感谢 [玩Android](https://www.wanandroid.com/) 及其 [开放API](https://wanandroid.com/blog/show/2) 。
+刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解，没有完整的项目实操。   
+开源项目业务复杂，代码层层封装，用来上手实在不合适，于是便有了 `fragmject` 项目。   
+在此感谢 [玩Android](https://www.wanandroid.com/) 及其提供 [开放API](https://wanandroid.com/blog/show/2) 。
 
 ## 简介
 `fragmject` 是一个为初学者准备的上手项目。   
@@ -35,15 +35,14 @@
 - [Navigation 使用入门 | Android Developer](https://developer.android.google.cn/guide/navigation/navigation-getting-started?hl=zh_cn)
 - [Room 使用入门 | Android Developer](https://developer.android.google.cn/training/data-storage/room?hl=zh_cn)
 - [Compose 使用入门 | Android Developer](https://developer.android.google.cn/jetpack/compose)
-- [一文看懂MVVM | 掘金](https://juejin.cn/post/7058542176375930887)
 
 ## 为什么很少依赖其他库
-在日常开发中我推荐使用 Hilt、Paging等库，不仅提高开发效率也能减少bug。   
-初学者过早依赖其他库，可能会有以下危害：   
+在日常开发中我推荐使用 Hilt、Paging等库，不仅提高效率也能减少bug。   
+但是初学者过早依赖其他库，可能会有以下危害：   
 - 增加学习负担，其他库用起来简单但是底层实现往往复杂，阅读源码容易打击学习积极性。
 - 造成基础薄弱，初学者容易把其他库能力当成自己的能力，脱离其他库开发能力大大下降。   
 
-综上所述，本项目尽量多去自己实现，可能不是很优雅但一定能让你学习到更多。
+因此，本项目尽量多去自己实现，可能不是很优雅但一定能让你学习到更多。
 
 ## 截图展示
 | ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095501.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095527.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-100242.png) |
@@ -135,18 +134,6 @@ Compose 与您所有的现有代码兼容：您可以从 View 调用 Compose 代
 
 [Jetpack Compose : 一文学会嵌套滚动NestedScrollConnection](https://juejin.cn/spost/7239610698116055098)
 
-## KVDatabase
-通过对 `RoomDatabase` 进行封装，从而更方便的实现数据持久化。   
-
-#### 快速使用
-```
-// 存储数据
-KVDatabase.set(key: String, value: String)
-
-// 获取数据
-KVDatabase.get(key: String)
-```
-
 ## SharedFlowBus
 [SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
 
@@ -178,8 +165,8 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 [一文学会字节码替换，再也不用担心隐私合规审核](https://juejin.cn/post/7121985493445083149)
 
 #### 快速使用
-源代码在 `library-plugin` 目录下
-在 `MiaowPlugin` 添加 `ScanBean` 并配置目标字段或方法以及对应的替换字段或方法
+源代码在 `library-plugin` 目录下。   
+在 `MiaowPlugin` 添加 `ScanBean` 并配置目标字段或方法以及对应的替换字段或方法。
 ```
 ScanBean(
     owner = "android/os/Build",
@@ -192,7 +179,7 @@ ScanBean(
 )
 ```
 #### 耗时扫描 ———— 打印方法执行时间
-在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围
+在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围。
 ```
 TimeBean( //以包名和执行时间为条件
     "com/example/fragment/library/base",
@@ -200,7 +187,7 @@ TimeBean( //以包名和执行时间为条件
 )
 ```
 #### 埋点统计 ———— 自动埋点
-在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法
+在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法。
 ```
 TraceBean(
     owner = "Landroid/view/View\$OnClickListener;",
@@ -212,8 +199,8 @@ TraceBean(
 )
 ```
 
-配置完成后 `gradle` 执行 `publish` 任务生成插件
-在根目录 `setting.gradle` 添加本地插件源
+配置完成后 `gradle` 执行 `publish` 任务生成插件。   
+在根目录 `setting.gradle` 添加本地插件源。   
 ```
 pluginManagement {
     repositories {
@@ -223,7 +210,7 @@ pluginManagement {
     }
 }
 ```
-在根目录 `build.gradle` 添加插件依赖
+在根目录 `build.gradle` 添加插件依赖。   
 ```
 buildscript {
     dependencies {
@@ -231,7 +218,7 @@ buildscript {
     }
 }
 ```
-在app目录 `build.gradle` apply插件
+在app目录 `build.gradle` apply插件。   
 ```
 plugins {
     id 'miaow'
@@ -244,7 +231,7 @@ plugins {
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 #### 快速使用
-源代码在 `library-picture` 目录下
+源代码在 `library-picture` 目录下。   
 ```
 PictureEditorDialog.newInstance()
     .setBitmapPath(path)
@@ -256,11 +243,11 @@ PictureEditorDialog.newInstance()
     .show(childFragmentManager)
 ```
 如上所示：
-1. 通过 `PictureEditorDialog` 调用图片编辑器
-2. 通过 `setBitmapPath(path)` 传入图片路径
-3. 通过 `setEditorFinishCallback(callback)` 获取编辑后的图片地址
+1. 通过 `PictureEditorDialog` 调用图片编辑器。
+2. 通过 `setBitmapPath(path)` 传入图片路径。
+3. 通过 `setEditorFinishCallback(callback)` 获取编辑后的图片地址。
 
-如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式
+如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式。
 #### 自定义使用
 ```
 <com.example.miaow.picture.editor.PictureEditorView
@@ -278,15 +265,15 @@ picEditor.mosaicUndo()
 picEditor.saveBitmap()
 ```
 如上所示：
-1. 通过 `setBitmapPath(path)` 传入图片路径
-2. 通过 `setMode(mode)` 设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸
-3. 通过 `setGraffitiColor(color)` 设置涂鸦画笔颜色
-4. 通过 `setSticker(StickerAttrs(bitmap))` 设置贴纸
-5. 通过 `graffitiUndo()` 涂鸦撤销
-6. 通过 `mosaicUndo()` 马赛克撤销
-7. 通过 `saveBitmap()` 保存编辑图片
+1. 通过 `setBitmapPath(path)` 传入图片路径。
+2. 通过 `setMode(mode)` 设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸。
+3. 通过 `setGraffitiColor(color)` 设置涂鸦画笔颜色。
+4. 通过 `setSticker(StickerAttrs(bitmap))` 设置贴纸。
+5. 通过 `graffitiUndo()` 涂鸦撤销。
+6. 通过 `mosaicUndo()` 马赛克撤销。
+7. 通过 `saveBitmap()` 保存编辑图片。
 
-`PictureEditorView` 就介绍到这里，具体使用请查看 `PictureEditorDialog`
+`PictureEditorView` 就介绍到这里，具体使用请查看 `PictureEditorDialog`。
 #### 图片裁剪
 ```
 <com.example.miaow.picture.editor.PictureClipView
@@ -301,12 +288,12 @@ clip.reset()
 clip.saveBitmap()
 ```
 如上所示：
-1. 通过 `setBitmapResource(bitmap)` 传入裁剪图片
-2. 通过 `clip.rotate()` 图片旋转
-3. 通过 `clip.reset()` 图片重置
-4. 通过 `clip.saveBitmap()` 保存裁剪框内图片
+1. 通过 `setBitmapResource(bitmap)` 传入裁剪图片。
+2. 通过 `clip.rotate()` 图片旋转。
+3. 通过 `clip.reset()` 图片重置。
+4. 通过 `clip.saveBitmap()` 保存裁剪框内图片。
 
-`PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`
+`PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`。
 #### 图片选择
 ```
 if (context is AppCompatActivity) {

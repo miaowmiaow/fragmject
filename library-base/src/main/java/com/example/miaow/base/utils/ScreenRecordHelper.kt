@@ -12,37 +12,37 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import com.example.miaow.base.service.MediaService.Companion.startMediaService
 import com.example.miaow.base.service.MediaService.Companion.stopMediaService
 import java.io.File
 
-fun FragmentManager.startScreenRecord(callback: ScreenRecordCallback?) {
+fun AppCompatActivity.startScreenRecord(callback: ScreenRecordCallback?) {
     val tag = ScreenRecordFragment::class.java.simpleName
-    var fragment = findFragmentByTag(tag)
+    var fragment = supportFragmentManager.findFragmentByTag(tag)
     if (fragment == null) {
         fragment = ScreenRecordFragment.newInstance()
-        val fragmentTransaction = beginTransaction()
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.add(fragment, tag)
         fragmentTransaction.commitAllowingStateLoss()
-        executePendingTransactions()
+        supportFragmentManager.executePendingTransactions()
     }
     if (fragment is ScreenRecordFragment) {
         fragment.startScreenRecord(callback)
     }
 }
 
-fun FragmentManager.stopScreenRecord(callback: ScreenRecordCallback?) {
+fun AppCompatActivity.stopScreenRecord(callback: ScreenRecordCallback?) {
     val tag = ScreenRecordFragment::class.java.simpleName
-    val fragment = findFragmentByTag(tag)
-    val fragmentTransaction = beginTransaction()
+    val fragment = supportFragmentManager.findFragmentByTag(tag)
+    val fragmentTransaction = supportFragmentManager.beginTransaction()
     if (fragment != null && fragment is ScreenRecordFragment) {
         fragment.stopScreenRecord(callback)
         fragmentTransaction.remove(fragment)
     }
     fragmentTransaction.commitAllowingStateLoss()
-    executePendingTransactions()
+    supportFragmentManager.executePendingTransactions()
 }
 
 interface ScreenRecordCallback {

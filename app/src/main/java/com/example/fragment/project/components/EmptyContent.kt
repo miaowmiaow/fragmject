@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 
 @Composable
-fun EmptyLayout(
+fun EmptyContent(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {

@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.WhiteTextField
 
 @Composable
@@ -77,7 +77,7 @@ fun LoginScreen(
         scaffoldState = scaffoldState,
         snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
-            LoadingLayout(uiState.isLoading, innerPadding = innerPadding) {
+            LoadingContent(uiState.isLoading, innerPadding = innerPadding) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

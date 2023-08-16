@@ -25,7 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
@@ -81,7 +81,7 @@ fun SystemScreen(
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            LoadingLayout(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
+            LoadingContent(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
                 SwipeRefresh(
                     items = systemUiState.getResult(pageCid),
                     refreshing = systemUiState.getRefreshing(pageCid),

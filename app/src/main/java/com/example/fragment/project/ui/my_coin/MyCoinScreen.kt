@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.miaow.base.utils.getScreenWidth
 import com.example.miaow.base.utils.px2dp
@@ -145,7 +145,7 @@ fun MyCoinScreen(
                 color = colorResource(R.color.text_fff),
             )
         }
-        LoadingLayout(uiState.refreshing && !uiState.loading) {
+        LoadingContent(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
                 items = uiState.myCoinResult,
                 refreshing = uiState.refreshing,

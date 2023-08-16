@@ -3,6 +3,7 @@ package com.example.fragment.project.ui.main
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -85,7 +86,7 @@ fun MainScreen(
         }
     ) { innerPadding ->
         val saveableStateHolder = rememberSaveableStateHolder()
-        Box(
+        Column(
             modifier = Modifier
                 .background(colorResource(R.color.background))
                 .padding(innerPadding)

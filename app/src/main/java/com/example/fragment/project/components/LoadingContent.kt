@@ -12,7 +12,7 @@ import androidx.compose.ui.res.colorResource
 import com.example.fragment.project.R
 
 @Composable
-fun LoadingLayout(
+fun LoadingContent(
     isLoading: Boolean,
     modifier: Modifier = Modifier,
     innerPadding: PaddingValues = PaddingValues(),

@@ -88,7 +88,7 @@ fun <T> SwipeRefresh(
     val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (items.isNullOrEmpty()) {
         if (!refreshing) {
-            EmptyLayout {
+            EmptyContent {
                 onRefresh()
             }
         }
@@ -105,7 +105,7 @@ fun <T> SwipeRefresh(
                 itemsIndexed(items, key = key, contentType = contentType) { index, item ->
                     itemContent(index, item)
                     if (loading && items.size - index < 5) {
-                        LaunchedEffect(items.size){
+                        LaunchedEffect(items.size) {
                             onLoad()
                         }
                     }
@@ -143,7 +143,7 @@ fun RefreshIndicator(
     refreshing: Boolean,
     position: () -> Float
 ) {
-    val loadingResId = listOf(
+    val refreshingResId = listOf(
         R.drawable.refreshing_big_1,
         R.drawable.refreshing_big_4,
         R.drawable.refreshing_big_7,
@@ -159,7 +159,7 @@ fun RefreshIndicator(
     val infiniteTransition = rememberInfiniteTransition(label = "SwipeRefresh")
     val loadingAnimate by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = loadingResId.size.toFloat(),
+        targetValue = refreshingResId.size.toFloat(),
         animationSpec = infiniteRepeatable(
             animation = tween(250, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -175,9 +175,9 @@ fun RefreshIndicator(
         enter = fadeIn() + scaleIn(),
         exit = fadeOut() + scaleOut()
     ) {
-        val id = if (refreshing) loadingAnimate else position() % loadingResId.size
+        val id = if (refreshing) loadingAnimate else position() % refreshingResId.size
         Image(
-            painter = painterResource(loadingResId[id.toInt()]),
+            painter = painterResource(refreshingResId[id.toInt()]),
             contentDescription = null,
             contentScale = ContentScale.Crop,
         )

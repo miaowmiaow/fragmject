@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.Banner
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -26,7 +26,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    LoadingLayout(uiState.refreshing && !uiState.loading) {
+    LoadingContent(uiState.refreshing && !uiState.loading) {
         SwipeRefresh(
             items = uiState.result,
             refreshing = uiState.refreshing,

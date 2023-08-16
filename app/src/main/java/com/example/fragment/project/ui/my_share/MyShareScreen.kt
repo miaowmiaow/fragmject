@@ -27,7 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -70,7 +70,7 @@ fun MyShareScreen(
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-        LoadingLayout(uiState.refreshing && !uiState.loading) {
+        LoadingContent(uiState.refreshing && !uiState.loading) {
             SwipeRefresh(
                 items = uiState.result,
                 refreshing = uiState.refreshing,

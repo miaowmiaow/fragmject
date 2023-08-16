@@ -50,7 +50,7 @@ import com.example.fragment.project.R
 import com.example.fragment.project.bean.HotKeyBean
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.ClearTextField
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -131,7 +131,7 @@ fun SearchScreen(
                 color = colorResource(R.color.white),
             )
         }
-        LoadingLayout(uiState.refreshing && !uiState.loading) {
+        LoadingContent(uiState.refreshing && !uiState.loading) {
             Column {
                 if (searchText.isBlank() || !uiState.refreshing && uiState.articlesResult.isEmpty()) {
                     Text(

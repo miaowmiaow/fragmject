@@ -43,7 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArrowRightItem
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
 import com.example.fragment.project.components.TitleBar
 import com.example.miaow.base.dialog.StandardDialog
@@ -70,7 +70,7 @@ fun SettingScreen(
         scaffoldState = scaffoldState,
         snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
-            LoadingLayout(uiState.isLoading) {
+            LoadingContent(uiState.isLoading) {
                 Column(
                     modifier = Modifier
                         .background(colorResource(R.color.background))

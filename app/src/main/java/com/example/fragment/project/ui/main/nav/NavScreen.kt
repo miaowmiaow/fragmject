@@ -38,7 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
-import com.example.fragment.project.components.LoadingLayout
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
 import kotlinx.coroutines.launch
 
@@ -83,7 +83,7 @@ fun NavLinkContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    LoadingLayout(uiState.isLoading) {
+    LoadingContent(uiState.isLoading) {
         Row {
             LazyColumn(
                 modifier = Modifier.width(150.dp),

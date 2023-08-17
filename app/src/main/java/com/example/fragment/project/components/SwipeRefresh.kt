@@ -166,11 +166,11 @@ fun RefreshIndicator(
         ), label = "loadingAnimate"
     )
     AnimatedVisibility(
-        visible = (refreshing || (position() >= loadingHeightPx * 0.5f)),
+        visible = (refreshing || (position() >= loadingHeightPx)),
         modifier = Modifier
             .size(40.dp, 16.dp)
             .graphicsLayer {
-                translationY = position() * 0.5f
+                translationY = (position() - loadingHeightPx) * 0.5f
             },
         enter = fadeIn() + scaleIn(),
         exit = fadeOut() + scaleOut()

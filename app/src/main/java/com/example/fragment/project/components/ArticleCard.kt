@@ -74,11 +74,11 @@ fun ArticleCard(
                     Image(
                         painter = painterResource(id = data.avatarId),
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(30.dp)
                             .clip(CircleShape)
-                            .clickable { onNavigateToUser(data.userId) }
+                            .clickable { onNavigateToUser(data.userId) },
+                        contentScale = ContentScale.Crop
                     )
                     ConstraintLayout(
                         modifier = Modifier
@@ -174,11 +174,11 @@ fun ArticleCard(
                         AsyncImage(
                             model = data.httpsEnvelopePic,
                             contentDescription = null,
-                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .padding(start = 10.dp)
                                 .width(45.dp)
-                                .aspectRatio(2f / 3f)
+                                .aspectRatio(2f / 3f),
+                            contentScale = ContentScale.Crop
                         )
                     }
                 }

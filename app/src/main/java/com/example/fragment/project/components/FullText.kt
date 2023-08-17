@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -46,10 +47,15 @@ fun FullText(
     val newText by remember { mutableStateOf(text) }
     val ellipsisMeasure = rememberTextMeasurer()
     val ellipsisLayoutResult = ellipsisMeasure.measure(
+        text = "...",
+        style = style.copy(color = ellipsisColor, background = background)
+    )
+    val fullMeasure = rememberTextMeasurer()
+    val fullLayoutResult = fullMeasure.measure(
         text = ellipsisText,
         style = style.copy(color = ellipsisColor, background = background)
     )
-    Box {
+    Box(modifier = Modifier.clipToBounds()) {
         Text(
             text = newText,
             modifier = Modifier
@@ -72,7 +78,7 @@ fun FullText(
                 val endRight = it.getHorizontalPosition(endOffset, true)
                 val offset = it.getOffsetForPosition(
                     Offset(
-                        endRight - ellipsisLayoutResult.size.width,
+                        endRight + ellipsisLayoutResult.size.width - fullLayoutResult.size.width,
                         it.getLineTop(it.lineCount - 1)
                     )
                 )

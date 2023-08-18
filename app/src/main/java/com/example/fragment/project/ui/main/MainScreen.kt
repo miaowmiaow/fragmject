@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -45,6 +47,7 @@ import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.my.MyScreen
 import com.example.fragment.project.ui.main.nav.NavScreen
 import com.example.fragment.project.ui.main.project.ProjectScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
@@ -62,6 +65,8 @@ fun MainScreen(
     onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val homeListState = rememberLazyListState()
     var navIndex by rememberSaveable { mutableStateOf(0) }
     val navItems = listOf(
         NavigationItem("首页", R.drawable.ic_bottom_bar_home),
@@ -80,9 +85,16 @@ fun MainScreen(
         },
         bottomBar = {
             NavigationBar(
-                items = navItems,
-                onClick = { navIndex = it }
-            )
+                items = navItems
+            ) {
+                //首页双击返回顶部
+                if ((it == 0) && (navIndex == 0) && homeListState.canScrollBackward) {
+                    coroutineScope.launch {
+                        homeListState.scrollToItem(0)
+                    }
+                }
+                navIndex = it
+            }
         }
     ) { innerPadding ->
         val saveableStateHolder = rememberSaveableStateHolder()
@@ -94,6 +106,7 @@ fun MainScreen(
             when (navIndex) {
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
                     HomeScreen(
+                        listState = homeListState,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToUser = onNavigateToUser,

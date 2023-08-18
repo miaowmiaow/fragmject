@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -18,6 +18,7 @@ import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
 fun HomeScreen(
+    listState: LazyListState,
     viewModel: HomeViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
@@ -25,7 +26,6 @@ fun HomeScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
     LoadingContent(uiState.refreshing && !uiState.loading) {
         SwipeRefresh(
             items = uiState.result,

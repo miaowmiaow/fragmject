@@ -195,7 +195,7 @@ fun MyDemoScreen() {
                         FullText(
                             text = buildAnnotatedString {
                                 append(
-                                    "明月几时有？把酒问青天⑸。不知天上宫阙⑹，今夕是何年。今夕是何年。今夕是"
+                                    "asdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnm"
                                 )
                             },
                             background = colorResource(R.color.white),
@@ -208,7 +208,7 @@ fun MyDemoScreen() {
                         FullText(
                             text = buildAnnotatedString {
                                 append(
-                                    "明月几时有？把酒问青天⑸。不知天上宫阙⑹，今夕是何年。"
+                                    "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                                 )
                             },
                             background = colorResource(R.color.white),

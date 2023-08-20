@@ -46,10 +46,6 @@ fun FullText(
     var ellipsis by remember { mutableStateOf(false) }
     val newText by remember { mutableStateOf(text) }
     val ellipsisMeasure = rememberTextMeasurer()
-    val ellipsisLayoutResult = ellipsisMeasure.measure(
-        text = "...",
-        style = style.copy(color = ellipsisColor, background = background)
-    )
     val fullMeasure = rememberTextMeasurer()
     val fullLayoutResult = fullMeasure.measure(
         text = ellipsisText,
@@ -75,10 +71,9 @@ fun FullText(
                 maxWidth = it.size.width
                 ellipsis = it.isLineEllipsized(it.lineCount - 1)
                 val endOffset = it.getLineEnd(it.lineCount - 1, true)
-                val endRight = it.getHorizontalPosition(endOffset, true)
                 val offset = it.getOffsetForPosition(
                     Offset(
-                        endRight + ellipsisLayoutResult.size.width - fullLayoutResult.size.width,
+                        it.getLineRight(it.lineCount - 1) - fullLayoutResult.size.width,
                         it.getLineTop(it.lineCount - 1)
                     )
                 )

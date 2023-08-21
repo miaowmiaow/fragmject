@@ -1,7 +1,3 @@
-# README.md
-- en [English](README.en.md)
-- zh_CN [简体中文](README.md)
-
 # Locales & Contributors
 - de_en English  *by Copilot*
 

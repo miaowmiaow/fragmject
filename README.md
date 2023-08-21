@@ -7,7 +7,7 @@
 
 ## 简介
 `fragmject` 是一个为初学者准备的上手项目。   
-通过对 `Kotlin` 和 `Jetpack-Compose` 的系统运用，实现的一个功能完备符合主流市场标准应用。   
+通过对 `Kotlin` 和 `Compose` 的系统运用，实现的一个功能完备符合主流市场标准应用。   
 `fragmject` 没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 官方的写法。   
 代码简单，内容全面，快速上手，对理解其他项目设计思想和封装技巧也很有帮助。
 
@@ -38,7 +38,7 @@
 - [Compose 使用入门 | Android Developer](https://developer.android.google.cn/jetpack/compose)
 
 ## 为什么很少依赖其他库
-在日常开发中我推荐使用 Hilt、Paging等库，不仅提高效率也能减少bug。   
+在日常开发中我推荐使用 `Hilt` 、 `Paging` 等库，不仅提高效率也能减少bug。   
 但是初学者过早依赖其他库，可能会有以下危害：
 - 增加学习负担，其他库用起来简单但是底层实现往往复杂，阅读源码容易打击学习积极性。
 - 造成基础薄弱，初学者容易把其他库能力当成自己的能力，脱离其他库开发能力大大下降。
@@ -113,19 +113,19 @@
 ```
 
 ## Jetpack Compose
-如果你暂时不需要 Compose ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
+如果你暂时不需要 `Compose` ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
 
 #### 更少的代码
-与使用 Android View 系统相比，Compose 可让我们用更少的代码实现更多的功能，这样需要测试和调试的代码会更少，出现 bug 的可能性也更小。对于审核人员或维护人员，需要阅读、理解、审核和维护的代码就更少。   
-Compose 的布局系统在概念上更简单，所有代码都使用同一种语言编写并且位于同一文件中，而不必在 Kotlin 和 XML 二者之间来回切换。
+与使用 `Android View` 系统相比，`Compose` 可让我们用更少的代码实现更多的功能，这样需要测试和调试的代码会更少，出现 bug 的可能性也更小。对于审核人员或维护人员，需要阅读、理解、审核和维护的代码就更少。   
+`Compose` 的布局系统在概念上更简单，所有代码都使用同一种语言编写并且位于同一文件中，而不必在 `Kotlin` 和 `XML` 二者之间来回切换。
 
 #### 直观
-Compose 使用声明性 API，这意味着您只需描述界面，Compose 会负责完成其余工作。   
-利用 Compose，您可以构建不与特定 activity 或 fragment 相关联的小型无状态组件。   
-在 Compose 中，状态是显式的，并且会传递给相应的可组合项。这样一来，状态便具有单一可信来源，因而是封装和分离的。然后，应用状态变化时，界面会自动更新。
+`Compose` 使用声明性API，这意味着您只需描述界面，`Compose` 会负责完成其余工作。   
+利用 `Compose` ，您可以构建不与特定 `activity` 或 `fragment` 相关联的小型无状态组件。   
+在 `Compose` 中，状态是显式的，并且会传递给相应的可组合项。这样一来，状态便具有单一可信来源，因而是封装和分离的。然后，应用状态变化时，界面会自动更新。
 
 #### 相互兼容
-Compose 与您所有的现有代码兼容：您可以从 View 调用 Compose 代码，也可以从 Compose 调用 View。大多数常用库（如 Navigation、ViewModel 和 Kotlin 协程）都适用于 Compose，因此您可以随时随地开始采用。
+`Compose` 与您所有的现有代码兼容：您可以从 `View` 调用 `Compose` 代码，也可以从 `Compose` 调用 `View` 。大多数常用库（如 `Navigation` 、 `ViewModel` 和 `Kotlin` 协程）都适用于 `Compose` ，因此您可以随时随地开始采用。
 
 - [Jetpack Compose : 从改造你的登录页面开始](https://juejin.cn/post/7156425159249756191)
 - [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
@@ -160,9 +160,11 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 
 ## 图片编辑器（library-picture）
 [自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
+
 ### 截图展示
 | ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+
 #### 快速使用
 源代码在 `library-picture` 目录下。
 ```
@@ -181,6 +183,7 @@ PictureEditorDialog.newInstance()
 3. 通过 `setEditorFinishCallback(callback)` 获取编辑后的图片地址。
 
 如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式。
+
 #### 自定义使用
 ```
 <com.example.miaow.picture.editor.PictureEditorView
@@ -207,6 +210,7 @@ picEditor.saveBitmap()
 7. 通过 `saveBitmap()` 保存编辑图片。
 
 `PictureEditorView` 就介绍到这里，具体使用请查看 `PictureEditorDialog`。
+
 #### 图片裁剪
 ```
 <com.example.miaow.picture.editor.PictureClipView
@@ -227,6 +231,7 @@ clip.saveBitmap()
 4. 通过 `clip.saveBitmap()` 保存裁剪框内图片。
 
 `PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`。
+
 #### 图片选择
 ```
 if (context is AppCompatActivity) {
@@ -258,6 +263,7 @@ ScanBean(
     "()Ljava/lang/String;"
 )
 ```
+
 #### 耗时扫描 ———— 打印方法执行时间
 在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围。
 ```
@@ -266,6 +272,7 @@ TimeBean( //以包名和执行时间为条件
     time = 50L
 )
 ```
+
 #### 埋点统计 ———— 自动埋点
 在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法。
 ```

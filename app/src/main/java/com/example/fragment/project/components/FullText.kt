@@ -45,7 +45,6 @@ fun FullText(
     var bottom by remember { mutableStateOf(0f) }
     var ellipsis by remember { mutableStateOf(false) }
     val newText by remember { mutableStateOf(text) }
-    val ellipsisMeasure = rememberTextMeasurer()
     val fullMeasure = rememberTextMeasurer()
     val fullLayoutResult = fullMeasure.measure(
         text = ellipsisText,

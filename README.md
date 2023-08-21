@@ -1,3 +1,7 @@
+# README.md
+- en [English](../README.en.md)
+- zh_CN [简体中文](README.md)
+
 ## 前言
 刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解，没有完整的项目实操。   
 开源项目业务复杂，代码层层封装，用来上手实在不合适，于是便有了 `fragmject` 项目。   
@@ -5,11 +9,11 @@
 
 ## 简介
 `fragmject` 是一个为初学者准备的上手项目。   
-通过对 `Kotlin` 和 `Jetpack` 的系统运用，实现的一个功能完备符合主流市场标准应用。   
+通过对 `Kotlin` 和 `Jetpack-Compose` 的系统运用，实现的一个功能完备符合主流市场标准应用。   
 `fragmject` 没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 官方的写法。   
-代码简单，内容全面，快速上手，对理解其他项目设计思想和封装技巧也很有帮助。   
+代码简单，内容全面，快速上手，对理解其他项目设计思想和封装技巧也很有帮助。
 
-学习本项目你将有如下收获： 
+学习本项目你将有如下收获：
 - Kotlin
 - Compose
 - MVVM、MVI
@@ -37,9 +41,9 @@
 
 ## 为什么很少依赖其他库
 在日常开发中我推荐使用 Hilt、Paging等库，不仅提高效率也能减少bug。   
-但是初学者过早依赖其他库，可能会有以下危害：   
+但是初学者过早依赖其他库，可能会有以下危害：
 - 增加学习负担，其他库用起来简单但是底层实现往往复杂，阅读源码容易打击学习积极性。
-- 造成基础薄弱，初学者容易把其他库能力当成自己的能力，脱离其他库开发能力大大下降。   
+- 造成基础薄弱，初学者容易把其他库能力当成自己的能力，脱离其他库开发能力大大下降。
 
 因此，本项目尽量多去自己实现，可能不是很优雅但一定能让你学习到更多。
 
@@ -95,7 +99,7 @@
 | 
 ├── library-picture                             图片模块（目录同app，不再展开）
 | 
-├── library-plugin                      插件模块
+├── library-plugin                              插件模块
 |   └── src 
 |       └── main 
 |           ├── kotlin                          源码目录
@@ -278,7 +282,7 @@ TraceBean(
 ```
 
 配置完成后 `gradle` 执行 `publish` 任务生成插件。   
-在根目录 `setting.gradle` 添加本地插件源。   
+在根目录 `setting.gradle` 添加本地插件源。
 ```
 pluginManagement {
     repositories {
@@ -288,7 +292,7 @@ pluginManagement {
     }
 }
 ```
-在根目录 `build.gradle` 添加插件依赖。   
+在根目录 `build.gradle` 添加插件依赖。
 ```
 buildscript {
     dependencies {
@@ -296,7 +300,7 @@ buildscript {
     }
 }
 ```
-在app目录 `build.gradle` apply插件。   
+在app目录 `build.gradle` apply插件。
 ```
 plugins {
     id 'miaow'

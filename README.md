@@ -1,6 +1,4 @@
-# README.md
-- en [English](README.en.md)
-- zh_CN [简体中文](README.md)
+*Read this in [English](README.EN.md)*
 
 ## 前言
 刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解，没有完整的项目实操。   

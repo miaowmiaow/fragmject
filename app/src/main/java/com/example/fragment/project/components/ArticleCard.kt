@@ -24,7 +24,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -59,7 +59,7 @@ fun ArticleCard(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    var collectResId by remember(data.collect) { mutableStateOf(getCollectResId(data.collect)) }
+    var collectResId by remember(data.collect) { mutableIntStateOf(getCollectResId(data.collect)) }
     Box(modifier) {
         Card(elevation = 2.dp) {
             Column(

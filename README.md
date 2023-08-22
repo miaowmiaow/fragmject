@@ -19,7 +19,7 @@
 - 字节码插桩(ASM...)
 
 ## 开发环境
-为了您在运行本项目时获得最佳体验，请使用最新版本 `Android Studio` 。   
+为了您能正常运行本项目，请使用最新版本 `Android Studio` 。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## 将 Android 应用迁移到版本目录

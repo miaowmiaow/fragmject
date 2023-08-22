@@ -81,75 +81,75 @@ class PictureEditorView @JvmOverloads constructor(
     fun currTranslateY() = bitmapMatrix.values()[5]
 
     private val scroller = Scroller(context)
-    private val gListener = object : GestureDetector.SimpleOnGestureListener() {
+    private val gestureDetector =
+        GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
 
-        override fun onDown(e: MotionEvent): Boolean {
-            if (!scroller.isFinished) {
-                scroller.forceFinished(true)
+            override fun onDown(e: MotionEvent): Boolean {
+                if (!scroller.isFinished) {
+                    scroller.forceFinished(true)
+                }
+                return false
             }
-            return false
-        }
 
-        override fun onShowPress(e: MotionEvent) {}
+            override fun onShowPress(e: MotionEvent) {}
 
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
-            return false
-        }
-
-        override fun onScroll(
-            e1: MotionEvent,
-            e2: MotionEvent,
-            distanceX: Float,
-            distanceY: Float
-        ): Boolean {
-            onScroll(-distanceX, -distanceY)
-            return true
-        }
-
-        override fun onLongPress(e: MotionEvent) {}
-
-        override fun onFling(
-            e1: MotionEvent,
-            e2: MotionEvent,
-            velocityX: Float,
-            velocityY: Float
-        ): Boolean {
-            val startX = (-currTranslateX()).toInt()
-            val startY = (-currTranslateY()).toInt()
-            val velX = (-velocityX).toInt()
-            val velY = (-velocityY).toInt()
-            val maxX = (bitmapRectF.width() * currScaleX() - viewWidth).toInt()
-            val maxY = (bitmapRectF.height() * currScaleY() - viewHeight).toInt()
-            scroller.fling(startX, startY, velX, velY, 0, maxX, 0, maxY)
-            return true
-        }
-
-        override fun onDoubleTap(e: MotionEvent): Boolean {
-            if (isDoubleTap) {
-                onScale(1 / initScaleY / currScaleX(), e.x, e.y)
-            } else {
-                val currBitmapWidth = bitmapRectF.width() * currScaleX()
-                onScale(viewWidth / currBitmapWidth, e.x, e.y)
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                return false
             }
-            isDoubleTap = !isDoubleTap
-            return true
-        }
-    }
-    private val sgListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
-        override fun onScale(detector: ScaleGestureDetector): Boolean {
-            onScale(detector.scaleFactor, detector.focusX, detector.focusY)
-            return true
-        }
+            override fun onScroll(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                distanceX: Float,
+                distanceY: Float
+            ): Boolean {
+                onScroll(-distanceX, -distanceY)
+                return true
+            }
 
-        override fun onScaleEnd(detector: ScaleGestureDetector) {
-            super.onScaleEnd(detector)
-            resetScaleOffset()
-        }
+            override fun onLongPress(e: MotionEvent) {}
 
-    }
-    private val gestureDetector = GestureDetector(context, gListener)
-    private val scaleGestureDetector = ScaleGestureDetector(context, sgListener)
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                val startX = (-currTranslateX()).toInt()
+                val startY = (-currTranslateY()).toInt()
+                val velX = (-velocityX).toInt()
+                val velY = (-velocityY).toInt()
+                val maxX = (bitmapRectF.width() * currScaleX() - viewWidth).toInt()
+                val maxY = (bitmapRectF.height() * currScaleY() - viewHeight).toInt()
+                scroller.fling(startX, startY, velX, velY, 0, maxX, 0, maxY)
+                return true
+            }
+
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                if (isDoubleTap) {
+                    onScale(1 / initScaleY / currScaleX(), e.x, e.y)
+                } else {
+                    val currBitmapWidth = bitmapRectF.width() * currScaleX()
+                    onScale(viewWidth / currBitmapWidth, e.x, e.y)
+                }
+                isDoubleTap = !isDoubleTap
+                return true
+            }
+        })
+    private val scaleGestureDetector =
+        ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                onScale(detector.scaleFactor, detector.focusX, detector.focusY)
+                return true
+            }
+
+            override fun onScaleEnd(detector: ScaleGestureDetector) {
+                super.onScaleEnd(detector)
+                resetScaleOffset()
+            }
+
+        })
 
     init {
         binPaint.style = Paint.Style.FILL

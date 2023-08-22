@@ -17,7 +17,7 @@ By working through this project you'll gain valuable insights into several areas
 In summary, if you're looking for a well structured codebase to learn from then look no further than Fragmject!
 
 ## Development Environment
-To get the best possible experience when running this project, please use the latest version of Android Studio. You can download it at the following address:
+In order for you to run this project normally, please use the latest version of Android Studio. You can download it at the following address:
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
 
 ## Pre knowledge

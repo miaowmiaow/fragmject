@@ -1,7 +1,6 @@
 package com.example.fragment.project.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animate
@@ -36,6 +35,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -137,7 +137,6 @@ fun MoreIndicator(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun RefreshIndicator(
     refreshing: Boolean,
@@ -244,10 +243,10 @@ class SwipeRefreshState internal constructor(
     private val adjustedDistancePulled by derivedStateOf { distancePulled * 0.5f }
 
     private var _refreshing by mutableStateOf(false)
-    private var _position by mutableStateOf(0f)
-    private var distancePulled by mutableStateOf(0f)
-    private var _threshold by mutableStateOf(threshold)
-    private var _refreshingOffset by mutableStateOf(refreshingOffset)
+    private var _position by mutableFloatStateOf(0f)
+    private var distancePulled by mutableFloatStateOf(0f)
+    private var _threshold by mutableFloatStateOf(threshold)
+    private var _refreshingOffset by mutableFloatStateOf(refreshingOffset)
 
     internal fun onPull(pullDelta: Float): Float {
         if (_refreshing) return 0f // Already refreshing, do nothing.

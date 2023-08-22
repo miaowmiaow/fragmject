@@ -37,7 +37,7 @@ data class ProjectState(
 
 }
 
-class ProjectViewModel() : BaseViewModel() {
+class ProjectViewModel : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(ProjectState())
 

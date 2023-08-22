@@ -51,7 +51,7 @@ fun NavScreen(
 ) {
     val tabs = listOf("导航", "体系")
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState { tabs.size }
     Column {
         TabBar(
             pagerState = pagerState,
@@ -59,10 +59,7 @@ fun NavScreen(
             textMapping = { it },
             onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
-        HorizontalPager(
-            pageCount = tabs.size,
-            state = pagerState,
-        ) { page ->
+        HorizontalPager(state = pagerState) { page ->
             if (page == 0) {
                 NavLinkContent(onNavigateToWeb = onNavigateToWeb)
             } else if (page == 1) {

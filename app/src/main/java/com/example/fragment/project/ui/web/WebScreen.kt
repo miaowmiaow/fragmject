@@ -127,12 +127,12 @@ fun WebScreen(
                 return false
             }
 
-            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 injectState = false
             }
 
-            override fun onPageFinished(view: WebView?, url: String?) {
+            override fun onPageFinished(view: WebView, url: String?) {
                 super.onPageFinished(view, url)
                 injectState = false
             }
@@ -140,11 +140,11 @@ fun WebScreen(
 
         val chromeClient = object : AccompanistWebChromeClient() {
 
-            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+            override fun onProgressChanged(view: WebView, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
                 progress = (newProgress / 100f).coerceIn(0f, 1f)
                 if (newProgress > 80 && injectVConsole && !injectState) {
-                    view?.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
+                    view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
                     injectState = true
                 }
             }

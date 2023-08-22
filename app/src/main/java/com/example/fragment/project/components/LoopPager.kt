@@ -42,7 +42,9 @@ fun <T> LoopHorizontalPager(
     }
     val pageCount = data.size
     val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(initialPage = startIndex - startIndex % pageCount)
+    val pagerState = rememberPagerState(
+        initialPage = startIndex - startIndex % pageCount
+    ) { Int.MAX_VALUE }
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()
@@ -62,7 +64,6 @@ fun <T> LoopHorizontalPager(
         contentAlignment = Alignment.BottomCenter
     ) {
         HorizontalPager(
-            pageCount = Int.MAX_VALUE,
             state = pagerState,
             contentPadding = contentPadding,
         ) { page ->
@@ -112,7 +113,9 @@ fun <T> LoopVerticalPager(
     }
     val pageCount = data.size
     val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(initialPage = startIndex - startIndex % pageCount)
+    val pagerState = rememberPagerState(
+        initialPage = startIndex - startIndex % pageCount
+    ) { Int.MAX_VALUE }
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()
@@ -132,7 +135,6 @@ fun <T> LoopVerticalPager(
         contentAlignment = Alignment.BottomCenter
     ) {
         VerticalPager(
-            pageCount = Int.MAX_VALUE,
             state = pagerState,
             contentPadding = contentPadding,
         ) { page ->

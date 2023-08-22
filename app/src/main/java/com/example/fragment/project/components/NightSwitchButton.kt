@@ -29,6 +29,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -448,7 +449,7 @@ fun SunAndMoon(
     canvasHeight: Dp,
     canvasRadius: Dp,
 ) {
-    var initProgress by remember { mutableStateOf(0f) }
+    var initProgress by remember { mutableFloatStateOf(0f) }
     if (progress <= 0f) {
         initProgress = 0f
     } else if (progress >= 1f) {
@@ -874,10 +875,10 @@ private fun getRandom(min: Float, max: Float): Float {
  */
 class NightStar {
     // position and radius
-    var x = mutableStateOf(0f)
-    var y = mutableStateOf(0f)
-    var radius = mutableStateOf(0f)
-    var alpha = mutableStateOf(0f)
+    var x = mutableFloatStateOf(0f)
+    var y = mutableFloatStateOf(0f)
+    var radius = mutableFloatStateOf(0f)
+    var alpha = mutableFloatStateOf(0f)
     var status = mutableStateOf(NightStarStatus.Start)
 }
 

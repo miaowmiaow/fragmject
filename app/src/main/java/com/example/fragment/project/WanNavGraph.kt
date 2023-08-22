@@ -1,8 +1,7 @@
 package com.example.fragment.project
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
@@ -15,6 +14,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
@@ -31,14 +32,11 @@ import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.user.UserScreen
 import com.example.fragment.project.ui.web.WebScreen
 import com.example.fragment.project.utils.WanHelper
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * 导航图
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun WanNavGraph(
     navController: NavHostController,
@@ -59,31 +57,31 @@ fun WanNavGraph(
     }
     val wanViewModel: WanViewModel = viewModel()
     val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
-    AnimatedNavHost(
+    NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier.background(colorResource(R.color.background)),
         enterTransition = {
             slideIntoContainer(
-                AnimatedContentScope.SlideDirection.Left,
+                AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween(350)
             )
         },
         exitTransition = {
             slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Left,
+                AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween(350)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
-                AnimatedContentScope.SlideDirection.Right,
+                AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween(350)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Right,
+                AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween(350)
             )
         },

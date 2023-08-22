@@ -10,6 +10,8 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -20,14 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun FullText(
     text: AnnotatedString,
@@ -35,14 +35,14 @@ fun FullText(
     background: Color,
     maxLines: Int = Int.MAX_VALUE,
     style: TextStyle = LocalTextStyle.current,
-    ellipsisText: String = "...全文",
+    ellipsisText: String = "...全文 ",
     ellipsisColor: Color = colorResource(R.color.blue),
     onClick: () -> Unit = {},
     onEllipsisClick: () -> Unit = {},
 ) {
-    var maxWidth by remember { mutableStateOf(0) }
-    var right by remember { mutableStateOf(0f) }
-    var bottom by remember { mutableStateOf(0f) }
+    var maxWidth by remember { mutableIntStateOf(0) }
+    var right by remember { mutableFloatStateOf(0f) }
+    var bottom by remember { mutableFloatStateOf(0f) }
     var ellipsis by remember { mutableStateOf(false) }
     val newText by remember { mutableStateOf(text) }
     val fullMeasure = rememberTextMeasurer()

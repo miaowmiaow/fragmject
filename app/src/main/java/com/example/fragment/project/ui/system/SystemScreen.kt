@@ -46,7 +46,7 @@ fun SystemScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(index)
+    val pagerState = rememberPagerState(index) { tree.size }
     Column(modifier = Modifier.systemBarsPadding()) {
         TitleBar(title) {
             if (context is AppCompatActivity) {
@@ -63,10 +63,7 @@ fun SystemScreen(
                 }
             },
         )
-        HorizontalPager(
-            pageCount = tree.size,
-            state = pagerState,
-        ) { page ->
+        HorizontalPager(state = pagerState) { page ->
             val pageCid = tree[page].id
             DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->

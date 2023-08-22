@@ -2,7 +2,7 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -125,8 +125,6 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
-    implementation(libs.accompanist.navigation.animation)
-    implementation(libs.accompanist.navigation.material)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.accompanist.webview)
     implementation(libs.androidx.activity.compose)
@@ -141,6 +139,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
     debugImplementation(libs.leakcanary.android)
     testImplementation(libs.junit)

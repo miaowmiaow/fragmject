@@ -26,9 +26,6 @@ fun DatePicker(
     onSelectMonth: (item: String) -> Unit,
     onSelectDay: (item: String) -> Unit,
 ) {
-    val years = List(151) { i -> "${i + 1900}" }
-    val months = List(12) { i -> "${i + 1}" }
-    val days = List(31) { i -> "${i + 1}" }
     Box(
         Modifier
             .fillMaxWidth()
@@ -42,7 +39,7 @@ fun DatePicker(
             horizontalArrangement = Arrangement.Center
         ) {
             WheelPicker(
-                data = years,
+                data = (1900..2051).toList().map { "$it" },
                 selectIndex = 0,
                 visibleCount = 5,
                 modifier = Modifier
@@ -62,7 +59,7 @@ fun DatePicker(
                 fontSize = 15.sp
             )
             WheelPicker(
-                data = months,
+                data = (1..12).map { it.toString().padStart(2, '0') },
                 selectIndex = 0,
                 visibleCount = 5,
                 modifier = Modifier
@@ -82,7 +79,7 @@ fun DatePicker(
                 fontSize = 15.sp
             )
             WheelPicker(
-                data = days,
+                data = (1..31).map { it.toString().padStart(2, '0') },
                 selectIndex = 0,
                 visibleCount = 5,
                 modifier = Modifier

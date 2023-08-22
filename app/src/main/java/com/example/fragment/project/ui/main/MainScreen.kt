@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -67,7 +67,7 @@ fun MainScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val homeListState = rememberLazyListState()
-    var navIndex by rememberSaveable { mutableStateOf(0) }
+    var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = listOf(
         NavigationItem("首页", R.drawable.ic_bottom_bar_home),
         NavigationItem("导航", R.drawable.ic_bottom_bar_navigation),
@@ -207,7 +207,7 @@ fun NavigationBar(
     items: List<NavigationItem> = listOf(),
     onClick: (index: Int) -> Unit
 ) {
-    var currItem by rememberSaveable { mutableStateOf(0) }
+    var currItem by rememberSaveable { mutableIntStateOf(0) }
     BottomNavigation(
         modifier = Modifier,
         backgroundColor = colorResource(R.color.white)

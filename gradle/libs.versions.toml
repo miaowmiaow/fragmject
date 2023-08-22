@@ -1,15 +1,16 @@
 [versions]
-accompanist = "0.30.1"
-agp = "8.0.2"
+accompanist = "0.32.0"
+agp = "8.1.1"
 androidxActivityCompose = "1.7.2"
 androidxAppCompat = "1.6.1"
 androidxConstraintlayout = "2.1.4"
 androidxConstraintlayoutCompose = "1.0.1"
 androidxFragment = "1.6.1"
-androidxWebkit = "1.7.0"
 androidxLifecycle = "2.6.1"
+androidxNavigationCompose = "2.7.0"
+androidxWebkit = "1.7.0"
 asm = "9.5"
-compose = "1.4.3"
+compose = "1.5.0"
 composeCompiler = "1.5.0"
 coil = "2.4.0"
 gson = "2.10.1"
@@ -26,8 +27,6 @@ testEspresso = '3.5.1'
 testExtExtJunit = '1.1.5'
 
 [libraries]
-accompanist-navigation-animation = { group = "com.google.accompanist", name = "accompanist-navigation-animation", version.ref = "accompanist" }
-accompanist-navigation-material = { group = "com.google.accompanist", name = "accompanist-navigation-material", version.ref = "accompanist" }
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-webview = { group = "com.google.accompanist", name = "accompanist-webview", version.ref = "accompanist" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }
@@ -46,6 +45,7 @@ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lif
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigationCompose" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

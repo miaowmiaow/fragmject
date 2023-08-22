@@ -38,17 +38,14 @@ fun ProjectScreen(
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState { projectTreeUiState.result.size }
     TabBar(
         data = projectTreeUiState.result,
         textMapping = { it.name },
         pagerState = pagerState,
         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
     )
-    HorizontalPager(
-        pageCount = projectTreeUiState.result.size,
-        state = pagerState,
-    ) { page ->
+    HorizontalPager(state = pagerState) { page ->
         val pageCid = projectTreeUiState.result[page].id
         val projectUiState by projectViewModel.uiState.collectAsStateWithLifecycle()
         val listState = rememberLazyListState()

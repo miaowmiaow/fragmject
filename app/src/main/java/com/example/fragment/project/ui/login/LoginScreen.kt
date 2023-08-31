@@ -35,9 +35,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -52,12 +54,14 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.WhiteTextField
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(),
     onNavigateToRegister: () -> Unit = {},
     onPopBackStackToMain: () -> Unit = {},
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
     val scaffoldState = rememberScaffoldState()
     val scrollState = rememberScrollState()
@@ -134,6 +138,7 @@ fun LoginScreen(
                         ),
                         keyboardActions = KeyboardActions(onGo = {
                             loginViewModel.login(usernameText, passwordText)
+                            keyboardController?.hide()
                         }),
                     )
                     Spacer(Modifier.height(30.dp))

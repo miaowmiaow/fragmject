@@ -209,6 +209,8 @@ fun rememberSwipeRefreshState(
 
     SideEffect {
         state.setRefreshing(refreshing)
+        state.setThreshold(thresholdPx)
+        state.setRefreshingOffset(refreshingOffsetPx)
     }
 
     return state

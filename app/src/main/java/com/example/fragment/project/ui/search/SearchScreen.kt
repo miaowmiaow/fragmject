@@ -36,8 +36,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -53,7 +56,7 @@ import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
     hotKey: List<HotKeyBean>?,
@@ -64,8 +67,10 @@ fun SearchScreen(
     onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var searchText by rememberSaveable { mutableStateOf(key) }
     Column {
         Row(
@@ -110,6 +115,8 @@ fun SearchScreen(
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
                         viewModel.updateSearchHistory(searchText)
                         viewModel.getHome(searchText)
                     }
@@ -145,6 +152,7 @@ fun SearchScreen(
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
                                     onClick = {
+                                        focusManager.clearFocus()
                                         searchText = it.name
                                         viewModel.updateSearchHistory(searchText)
                                         viewModel.getHome(searchText)
@@ -186,6 +194,7 @@ fun SearchScreen(
                                         .padding(start = 15.dp, end = 15.dp)
                                         .height(45.dp)
                                         .clickable {
+                                            focusManager.clearFocus()
                                             searchText = item
                                             viewModel.getHome(searchText)
                                         },

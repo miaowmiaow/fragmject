@@ -2,11 +2,11 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
 
-@Suppress("DSL_SCOPE_VIOLATION")
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinParcelize)
 //    id("miaow")
 }
 
@@ -44,7 +44,7 @@ android {
     }
 
     buildTypes {
-        getByName("release") {
+        release {
             isDebuggable = false
             // 启用代码压缩、优化及混淆
             isMinifyEnabled = true
@@ -57,7 +57,7 @@ android {
             )
             signingConfig = signingConfigs.getByName("config")
         }
-        getByName("debug") {
+        debug {
             isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false

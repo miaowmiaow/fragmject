@@ -20,7 +20,7 @@ import java.util.*
  * 忽略电池优化,保持后台常驻
  */
 @SuppressLint("BatteryLife")
-fun FragmentActivity.requestIgnoreBatteryOptimizations() {
+fun Context.requestIgnoreBatteryOptimizations() {
     //申请加入白名单
     try {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager

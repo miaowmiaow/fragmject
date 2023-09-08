@@ -1,6 +1,8 @@
 package com.example.fragment.project.ui.setting
 
 import android.app.Activity
+import android.content.Intent
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.BorderStroke
@@ -49,6 +51,7 @@ import com.example.fragment.project.components.TitleBar
 import com.example.miaow.base.dialog.StandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.ScreenRecordCallback
+import com.example.miaow.base.utils.requestIgnoreBatteryOptimizations
 import com.example.miaow.base.utils.startScreenRecord
 import com.example.miaow.base.utils.stopScreenRecord
 import kotlinx.coroutines.launch
@@ -178,6 +181,24 @@ fun SettingScreen(
                             .fillMaxWidth()
                             .height(1.dp)
                     )
+                    ArrowRightItem("跳过广告", "(配合电池优化效果更佳)") {
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    }
+                    Spacer(
+                        Modifier
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
+                    )
+                    ArrowRightItem("电池优化") {
+                        context.requestIgnoreBatteryOptimizations()
+                    }
+                    Spacer(
+                        Modifier
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
+                    )
                     ArrowRightItem("隐私政策") { onNavigateToPrivacyPolicy() }
                     Spacer(
                         Modifier
@@ -186,13 +207,6 @@ fun SettingScreen(
                             .height(1.dp)
                     )
                     ArrowRightItem("问题反馈") { onNavigateToFeedback() }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
-                    ArrowRightItem("关于玩Android") { onNavigateToAbout() }
                     Spacer(
                         Modifier
                             .background(colorResource(R.color.line))
@@ -243,6 +257,13 @@ fun SettingScreen(
                             modifier = Modifier.padding(start = 25.dp, end = 25.dp)
                         )
                     }
+                    Spacer(
+                        Modifier
+                            .background(colorResource(R.color.line))
+                            .fillMaxWidth()
+                            .height(1.dp)
+                    )
+                    ArrowRightItem("关于玩Android") { onNavigateToAbout() }
                     Spacer(
                         Modifier
                             .background(colorResource(R.color.line))

@@ -10,6 +10,7 @@ plugins {
 //    id("miaow")
 }
 
+//以下配置不需要每次构建所以是用properties加载
 val configProperties = Properties()
 configProperties.load(FileInputStream(rootProject.file("config.properties")))
 

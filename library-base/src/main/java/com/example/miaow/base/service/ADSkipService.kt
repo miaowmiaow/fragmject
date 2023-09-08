@@ -20,6 +20,8 @@ class ADSkipService : AccessibilityService() {
         val source = event.source
         if (source?.text?.contains("跳过") == true) {
             source.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        } else if (source?.text?.contains("我知道了") == true) {
+            source.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         }
     }
 

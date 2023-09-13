@@ -181,7 +181,7 @@ fun SettingScreen(
                             .fillMaxWidth()
                             .height(1.dp)
                     )
-                    ArrowRightItem("跳过广告", "(配合电池优化效果更佳)") {
+                    ArrowRightItem("跳过广告",  "(仅支持部分APP的倒计时广告)") {
                         context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                     }
                     Spacer(
@@ -190,7 +190,7 @@ fun SettingScreen(
                             .fillMaxWidth()
                             .height(1.dp)
                     )
-                    ArrowRightItem("电池优化") {
+                    ArrowRightItem("电池优化", "(跳过广告与我配合效果更佳哦~)") {
                         context.requestIgnoreBatteryOptimizations()
                     }
                     Spacer(

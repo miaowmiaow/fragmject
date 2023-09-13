@@ -30,14 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.DatePicker
-import com.example.fragment.project.components.FullText
+import com.example.fragment.project.components.EllipsisText
 import com.example.fragment.project.components.TitleBar
 import com.example.miaow.picture.selector.bean.MediaBean
 import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
@@ -174,7 +173,7 @@ fun MyDemoScreen() {
                 title = { Text(text = "全文demo") },
                 text = {
                     Column {
-                        FullText(
+                        EllipsisText(
                             text = buildAnnotatedString {
                                 append(
                                     "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。白露横江10，水光接天。纵一苇之所如，凌万顷之茫然11。浩浩乎如冯虚御风12，而不知其所止；飘飘乎如遗世独立13，羽化而登仙14。\n" +
@@ -185,74 +184,87 @@ fun MyDemoScreen() {
                                             "客喜而笑，洗盏更酌。肴核既尽53，杯盘狼籍。相与枕藉乎舟中54，不知东方之既白。"
                                 )
                             },
-                            background = colorResource(R.color.white),
+                            fontSize = 14.sp,
                             maxLines = 2,
-                            style = TextStyle(fontSize = 14.sp)
+                            background = colorResource(R.color.white),
                         )
                         Spacer(
                             Modifier.height(10.dp)
                         )
-                        FullText(
+                        EllipsisText(
                             text = buildAnnotatedString {
                                 append(
                                     "asdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnm"
                                 )
                             },
+                            fontSize = 14.sp,
                             background = colorResource(R.color.white),
                             maxLines = 2,
-                            style = TextStyle(fontSize = 14.sp)
                         )
                         Spacer(
                             Modifier.height(10.dp)
                         )
-                        FullText(
+                        EllipsisText(
                             text = buildAnnotatedString {
                                 append(
                                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                                 )
                             },
+                            fontSize = 14.sp,
                             background = colorResource(R.color.white),
                             maxLines = 2,
-                            style = TextStyle(fontSize = 14.sp)
                         )
                         Spacer(
                             Modifier.height(10.dp)
                         )
-                        FullText(
+                        EllipsisText(
                             text = buildAnnotatedString {
                                 append(
                                     "我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD"
                                 )
                             },
+                            fontSize = 12.sp,
                             background = colorResource(R.color.white),
                             maxLines = 2,
-                            style = TextStyle(fontSize = 12.sp)
                         )
                         Spacer(
                             Modifier.height(10.dp)
                         )
-                        FullText(
+                        EllipsisText(
                             text = buildAnnotatedString {
                                 append(
                                     "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                                 )
                             },
+                            fontSize = 12.sp,
                             background = colorResource(R.color.white),
                             maxLines = 2,
-                            style = TextStyle(fontSize = 12.sp)
                         )
                         Spacer(
                             Modifier.height(10.dp)
                         )
-                        FullText(
+                        EllipsisText(
                             text = buildAnnotatedString {
                                 append(
-                                    "asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl"
+                                    "asdfgsajkl asgsadhjkl asdfadhjkl asdfgdhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl"
                                 )
                             },
+                            fontSize = 12.sp,
                             background = colorResource(R.color.white),
                             maxLines = 2,
-                            style = TextStyle(fontSize = 12.sp)
+                        )
+                        Spacer(
+                            Modifier.height(10.dp)
+                        )
+                        EllipsisText(
+                            text = buildAnnotatedString {
+                                append(
+                                    "你的人生格言是什么？"
+                                )
+                            },
+                            fontSize = 12.sp,
+                            background = colorResource(R.color.white),
+                            maxLines = 2,
                         )
                         Spacer(
                             Modifier.height(10.dp)

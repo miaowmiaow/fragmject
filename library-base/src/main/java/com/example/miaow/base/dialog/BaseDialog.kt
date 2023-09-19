@@ -1,10 +1,12 @@
 package com.example.miaow.base.dialog
 
 import android.app.Activity
+import android.content.Context
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.Window
 import androidx.annotation.ColorInt
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -44,6 +46,12 @@ open class BaseDialog : DialogFragment() {
     fun show(manager: FragmentManager) {
         this.manager = manager
         show(manager, this::class.java.canonicalName)
+    }
+
+    fun show(context: Context) {
+        if (context is AppCompatActivity) {
+            show(context.supportFragmentManager)
+        }
     }
 
     /**

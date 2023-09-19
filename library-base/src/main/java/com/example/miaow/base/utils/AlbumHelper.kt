@@ -9,8 +9,9 @@ import android.os.Build
 import android.os.Environment
 import android.os.FileUtils
 import android.provider.MediaStore
-import android.provider.MediaStore.MediaColumns.*
-import com.example.miaow.base.http.HttpRequest
+import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
+import android.provider.MediaStore.MediaColumns.MIME_TYPE
+import android.provider.MediaStore.MediaColumns.RELATIVE_PATH
 import com.example.miaow.base.http.download
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,12 +24,12 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
-    val cachePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
-    val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
+    val savePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
+    val fileName = url.encodeUtf8().md5().hex()
     CoroutineScope(Dispatchers.Main).launch {
-        download(HttpRequest(url), filePathName)
+        download(url, savePath = savePath, fileName = fileName)
         withContext(Dispatchers.IO) {
-            val file = File(filePathName)
+            val file = File(savePath, fileName)
             if (file.exists() && file.isFile) {
                 var out: OutputStream? = null
                 var fis: FileInputStream? = null

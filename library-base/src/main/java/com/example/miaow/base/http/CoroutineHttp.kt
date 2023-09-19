@@ -11,6 +11,20 @@ import java.io.File
 
 /**
  * get请求
+ * @param url      请求地址
+ * @param header   请求Header
+ * @param progress 进度回调方法
+ */
+suspend inline fun CoroutineScope.get(
+    url: String,
+    header: MutableMap<String, String> = HashMap(),
+    noinline progress: ((Double) -> Unit)? = null
+): String {
+    return CoroutineHttp.instance().get(url, header, progress)
+}
+
+/**
+ * get请求
  * @param request  http请求体
  * @param progress 进度回调方法
  */
@@ -47,15 +61,20 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
 
 /**
  * download请求
- * @param request  http请求体
+ * @param url      请求地址
+ * @param header   请求Header
+ * @param savePath 保存路径
+ * @param fileName 文件名称
  * @param progress 进度回调方法
  */
 suspend inline fun CoroutineScope.download(
-    request: HttpRequest,
-    filePathName: String,
+    url: String,
+    header: MutableMap<String, String> = HashMap(),
+    savePath: String,
+    fileName: String,
     noinline progress: ((Double) -> Unit)? = null
 ): HttpResponse {
-    return CoroutineHttp.instance().download(request, filePathName, progress)
+    return CoroutineHttp.instance().download(url, header, savePath, fileName, progress)
 }
 
 fun ContextWrapper.setBaseUrl(baseUrl: String) {
@@ -108,6 +127,22 @@ class CoroutineHttp private constructor() {
 
     private fun getConverter(): Converter {
         return converter ?: GSonConverter.create().also { converter = it }
+    }
+
+    suspend fun get(
+        url: String,
+        header: MutableMap<String, String>,
+        progress: ((Double) -> Unit)? = null
+    ): String {
+        return try {
+            progress?.invoke(0.0)
+            val responseBody = getService().get(url, header)
+            responseBody.string()
+        } catch (e: Exception) {
+            e.message.toString()
+        } finally {
+            progress?.invoke(1.0)
+        }
     }
 
     suspend fun <T : HttpResponse> get(
@@ -167,14 +202,16 @@ class CoroutineHttp private constructor() {
     }
 
     suspend fun download(
-        request: HttpRequest,
-        filePathName: String,
+        url: String,
+        header: MutableMap<String, String>,
+        savePath: String,
+        fileName: String,
         progress: ((Double) -> Unit)? = null
     ): HttpResponse {
         return try {
             progress?.invoke(0.0)
-            getService().download(request.getUrl(), request.getHeader()).use {
-                val file = File(filePathName)
+            getService().get(url, header).use {
+                val file = File(savePath + File.separator + fileName)
                 it.byteStream().use { inputStream ->
                     file.writeBytes(inputStream.readBytes())
                 }
@@ -207,12 +244,6 @@ class CoroutineHttp private constructor() {
 }
 
 interface ApiService {
-
-    @GET
-    suspend fun download(
-        @Url url: String = "",
-        @HeaderMap header: Map<String, String>
-    ): ResponseBody
 
     @POST
     suspend fun form(

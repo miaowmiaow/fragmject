@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class SearchState(
+data class SearchUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -24,9 +24,9 @@ data class SearchState(
 
 class SearchViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(SearchState())
+    private val _uiState = MutableStateFlow(SearchUiState())
 
-    val uiState: StateFlow<SearchState> = _uiState.asStateFlow()
+    val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     init {
         getSearchHistory()
@@ -92,7 +92,8 @@ class SearchViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("article/query/{page}/json").putParam("k", key)
+            val request = HttpRequest("article/query/{page}/json")
+                .putParam("k", key)
                 .putPath("page", page.toString())
             //以get方式发起网络请求
             val response = post<ArticleListBean>(request)

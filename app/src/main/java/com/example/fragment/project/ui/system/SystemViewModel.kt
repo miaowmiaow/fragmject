@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class SystemState(
+data class SystemUiState(
     val refreshing: MutableMap<String, Boolean> = HashMap(),
     val loading: MutableMap<String, Boolean> = HashMap(),
     val finishing: MutableMap<String, Boolean> = HashMap(),
@@ -39,9 +39,9 @@ data class SystemState(
 
 class SystemViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(SystemState())
+    private val _uiState = MutableStateFlow(SystemUiState())
 
-    val uiState: StateFlow<SystemState> = _uiState.asStateFlow()
+    val uiState: StateFlow<SystemUiState> = _uiState.asStateFlow()
 
     fun init(cid: String) {
         if (!uiState.value.result.containsKey(cid)) {
@@ -78,7 +78,8 @@ class SystemViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString())
+            val request = HttpRequest("article/list/{page}/json")
+                .putPath("page", page.toString())
                 .putQuery("cid", cid)
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request)

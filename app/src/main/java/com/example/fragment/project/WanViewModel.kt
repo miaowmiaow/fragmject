@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class WanState(
+data class WanUiState(
     var isLoading: Boolean = false,
     var hotKeyResult: MutableList<HotKeyBean> = ArrayList(),
     var treeResult: MutableList<TreeBean> = ArrayList(),
@@ -24,9 +24,9 @@ data class WanState(
 
 class WanViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(WanState())
+    private val _uiState = MutableStateFlow(WanUiState())
 
-    val uiState: StateFlow<WanState> = _uiState.asStateFlow()
+    val uiState: StateFlow<WanUiState> = _uiState.asStateFlow()
 
     init {
         _uiState.update {

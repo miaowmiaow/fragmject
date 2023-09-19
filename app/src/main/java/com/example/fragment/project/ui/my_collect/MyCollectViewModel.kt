@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class MyCollectState(
+data class MyCollectUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -21,9 +21,9 @@ data class MyCollectState(
 
 class MyCollectViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(MyCollectState())
+    private val _uiState = MutableStateFlow(MyCollectUiState())
 
-    val uiState: StateFlow<MyCollectState> = _uiState.asStateFlow()
+    val uiState: StateFlow<MyCollectUiState> = _uiState.asStateFlow()
 
     init {
         getHome()
@@ -52,8 +52,8 @@ class MyCollectViewModel : BaseViewModel() {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request =
-                HttpRequest("lg/collect/list/{page}/json").putPath("page", page.toString())
+            val request = HttpRequest("lg/collect/list/{page}/json")
+                    .putPath("page", page.toString())
             //以get方式发起网络请求
             val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码

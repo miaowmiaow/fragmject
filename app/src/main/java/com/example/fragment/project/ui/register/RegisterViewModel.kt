@@ -1,18 +1,18 @@
 package com.example.fragment.project.ui.register
 
 import androidx.lifecycle.viewModelScope
+import com.example.fragment.project.bean.RegisterBean
+import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
-import com.example.fragment.project.bean.RegisterBean
-import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class RegisterState(
+data class RegisterUiState(
     var isLoading: Boolean = false,
     var errorCode: String = "",
     var errorMsg: String = "",
@@ -20,9 +20,9 @@ data class RegisterState(
 
 class RegisterViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(RegisterState())
+    private val _uiState = MutableStateFlow(RegisterUiState())
 
-    val uiState: StateFlow<RegisterState> = _uiState.asStateFlow()
+    val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
     fun register(username: String, password: String, repassword: String) {
         if (username.isBlank()) {
@@ -54,13 +54,17 @@ class RegisterViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             val request = HttpRequest("user/register")
-                    .putParam("username", username)
-                    .putParam("password", password)
-                    .putParam("repassword", repassword)
+                .putParam("username", username)
+                .putParam("password", password)
+                .putParam("repassword", repassword)
             val response = post<RegisterBean>(request)
             WanHelper.setUser(response.data)
             _uiState.update {
-                it.copy(isLoading = false, errorCode = response.errorCode, errorMsg = response.errorMsg)
+                it.copy(
+                    isLoading = false,
+                    errorCode = response.errorCode,
+                    errorMsg = response.errorMsg
+                )
             }
         }
     }

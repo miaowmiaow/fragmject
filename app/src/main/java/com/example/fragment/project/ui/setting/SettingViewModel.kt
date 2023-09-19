@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class SettingState(
+data class SettingUiState(
     var isLoading: Boolean = false,
     var darkTheme: Boolean = false,
     var userBean: UserBean = UserBean(),
@@ -21,9 +21,9 @@ data class SettingState(
 
 class SettingViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(SettingState())
+    private val _uiState = MutableStateFlow(SettingUiState())
 
-    val uiState: StateFlow<SettingState> = _uiState.asStateFlow()
+    val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
 
     init {
         getUiMode()

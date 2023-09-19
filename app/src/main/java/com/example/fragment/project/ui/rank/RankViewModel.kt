@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class RankState(
+data class RankUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -21,9 +21,9 @@ data class RankState(
 
 class RankViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(RankState())
+    private val _uiState = MutableStateFlow(RankUiState())
 
-    val uiState: StateFlow<RankState> = _uiState.asStateFlow()
+    val uiState: StateFlow<RankUiState> = _uiState.asStateFlow()
 
     init {
         getHome()
@@ -49,7 +49,8 @@ class RankViewModel : BaseViewModel() {
      */
     private fun getCoinRank(page: Int) {
         viewModelScope.launch {
-            val request = HttpRequest("coin/rank/{page}/json").putPath("page", page.toString())
+            val request = HttpRequest("coin/rank/{page}/json")
+                .putPath("page", page.toString())
             val response = get<CoinRankBean>(request)
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->

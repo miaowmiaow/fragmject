@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class ProjectState(
+data class ProjectUiState(
     val refreshing: MutableMap<String, Boolean> = HashMap(),
     val loading: MutableMap<String, Boolean> = HashMap(),
     val finishing: MutableMap<String, Boolean> = HashMap(),
@@ -39,9 +39,9 @@ data class ProjectState(
 
 class ProjectViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(ProjectState())
+    private val _uiState = MutableStateFlow(ProjectUiState())
 
-    val uiState: StateFlow<ProjectState> = _uiState.asStateFlow()
+    val uiState: StateFlow<ProjectUiState> = _uiState.asStateFlow()
 
     fun init(cid: String) {
         if (!uiState.value.result.containsKey(cid)) {
@@ -76,7 +76,8 @@ class ProjectViewModel : BaseViewModel() {
      */
     private fun getList(cid: String, page: Int) {
         viewModelScope.launch {
-            val request = HttpRequest("project/list/{page}/json").putPath("page", page.toString())
+            val request = HttpRequest("project/list/{page}/json")
+                .putPath("page", page.toString())
                 .putQuery("cid", cid)
             val response = get<ArticleListBean>(request)
             //根据接口返回更新总页码

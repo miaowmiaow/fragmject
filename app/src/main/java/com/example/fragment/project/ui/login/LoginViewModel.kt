@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class LoginState(
+data class LoginUiState(
     var isLoading: Boolean = false,
     var errorCode: String = "",
     var errorMsg: String = "",
@@ -20,9 +20,9 @@ data class LoginState(
 
 class LoginViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(LoginState())
+    private val _uiState = MutableStateFlow(LoginUiState())
 
-    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     fun login(username: String, password: String) {
         if (username.isBlank()) {
@@ -41,7 +41,8 @@ class LoginViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("user/login").putParam("username", username)
+            val request = HttpRequest("user/login")
+                .putParam("username", username)
                 .putParam("password", password)
             val response = post<LoginBean>(request)
             WanHelper.setUser(response.data)

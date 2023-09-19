@@ -190,14 +190,14 @@ fun SearchScreen(
                             itemsIndexed(uiState.historyResult.toList()) { _, item ->
                                 Row(
                                     modifier = Modifier
-                                        .background(colorResource(R.color.white))
-                                        .padding(start = 15.dp, end = 15.dp)
-                                        .height(45.dp)
                                         .clickable {
                                             focusManager.clearFocus()
                                             searchText = item
                                             viewModel.getHome(searchText)
-                                        },
+                                        }
+                                        .background(colorResource(R.color.white))
+                                        .height(45.dp)
+                                        .padding(horizontal = 15.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(

@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class NavState(
+data class NavUiState(
     var isLoading: Boolean = false,
     var currentPosition: Int = 0,
     var navigationResult: MutableList<NavigationBean> = ArrayList(),
@@ -25,9 +25,9 @@ data class NavState(
 
 class NavViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(NavState())
+    private val _uiState = MutableStateFlow(NavUiState())
 
-    val uiState: StateFlow<NavState> = _uiState.asStateFlow()
+    val uiState: StateFlow<NavUiState> = _uiState.asStateFlow()
 
     init {
         if (uiState.value.navigationResult.isEmpty()) {

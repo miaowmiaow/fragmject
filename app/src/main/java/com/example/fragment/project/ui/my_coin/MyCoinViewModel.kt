@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class MyCoinState(
+data class MyCoinUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -26,9 +26,9 @@ data class MyCoinState(
 
 class MyCoinViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(MyCoinState())
+    private val _uiState = MutableStateFlow(MyCoinUiState())
 
-    val uiState: StateFlow<MyCoinState> = _uiState.asStateFlow()
+    val uiState: StateFlow<MyCoinUiState> = _uiState.asStateFlow()
 
     init {
         getHome()
@@ -78,7 +78,8 @@ class MyCoinViewModel : BaseViewModel() {
      */
     private suspend fun getMyCoinList(page: Int): MyCoinListBean {
         //构建请求体，传入请求参数
-        val request = HttpRequest("lg/coin/list/{page}/json").putPath("page", page.toString())
+        val request = HttpRequest("lg/coin/list/{page}/json")
+            .putPath("page", page.toString())
         //以get方式发起网络请求
         val response = coroutineScope { get<MyCoinListBean>(request) }
         //根据接口返回更新总页码

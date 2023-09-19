@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class MyShareState(
+data class MyShareUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -21,9 +21,9 @@ data class MyShareState(
 
 class MyShareViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(MyShareState())
+    private val _uiState = MutableStateFlow(MyShareUiState())
 
-    val uiState: StateFlow<MyShareState> = _uiState.asStateFlow()
+    val uiState: StateFlow<MyShareUiState> = _uiState.asStateFlow()
 
     init {
         getHome()
@@ -51,8 +51,8 @@ class MyShareViewModel : BaseViewModel() {
     private fun getList(page: Int) {
         viewModelScope.launch {
             //构建请求体，传入请求参数
-            val request =
-                HttpRequest("user/lg/private_articles/{page}/json").putPath("page", page.toString())
+            val request = HttpRequest("user/lg/private_articles/{page}/json")
+                    .putPath("page", page.toString())
             //以get方式发起网络请求
             val response = get<ShareArticleListBean>(request)
             //根据接口返回更新总页码

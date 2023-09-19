@@ -11,16 +11,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class ProjectTreeState(
+data class ProjectTreeUiState(
     var isLoading: Boolean = false,
     var result: MutableList<ProjectTreeBean> = ArrayList(),
 )
 
 class ProjectTreeViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(ProjectTreeState())
+    private val _uiState = MutableStateFlow(ProjectTreeUiState())
 
-    val uiState: StateFlow<ProjectTreeState> = _uiState
+    val uiState: StateFlow<ProjectTreeUiState> = _uiState
 
     init {
         getProjectTree()

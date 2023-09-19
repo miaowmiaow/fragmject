@@ -2,7 +2,6 @@ package com.example.fragment.project.bean
 
 import android.os.Parcelable
 import android.text.Html
-import androidx.core.text.HtmlCompat
 import com.example.fragment.project.R
 import com.example.miaow.base.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel

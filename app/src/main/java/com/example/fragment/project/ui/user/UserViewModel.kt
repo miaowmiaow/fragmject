@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class UserState(
+data class UserUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -25,9 +25,9 @@ data class UserState(
 
 class UserViewModel(private val id: String) : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(UserState())
+    private val _uiState = MutableStateFlow(UserUiState())
 
-    val uiState: StateFlow<UserState> = _uiState.asStateFlow()
+    val uiState: StateFlow<UserUiState> = _uiState.asStateFlow()
 
     init {
         getHome()
@@ -78,13 +78,12 @@ class UserViewModel(private val id: String) : BaseViewModel() {
     }
 
     companion object {
-        fun provideFactory(
-            userId: String,
-        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return UserViewModel(userId) as T
+        fun provideFactory(userId: String): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return UserViewModel(userId) as T
+                }
             }
-        }
     }
 }

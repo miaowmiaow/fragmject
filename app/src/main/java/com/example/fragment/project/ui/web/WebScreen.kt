@@ -249,7 +249,7 @@ fun WebScreen(
                     backgroundColor = colorResource(R.color.white),
                     contentColor = colorResource(R.color.theme)
                 ),
-                contentPadding = PaddingValues(17.dp),
+                contentPadding = PaddingValues(15.dp),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
@@ -280,7 +280,7 @@ fun WebScreen(
                     backgroundColor = colorResource(R.color.white),
                     contentColor = colorResource(R.color.theme)
                 ),
-                contentPadding = PaddingValues(17.dp),
+                contentPadding = PaddingValues(15.dp),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()

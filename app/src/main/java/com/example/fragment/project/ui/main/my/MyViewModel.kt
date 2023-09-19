@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-data class MyState(
+data class MyUiState(
     var userBean: UserBean = UserBean(),
 ) {
     fun isLogin(): Boolean {
@@ -18,9 +18,9 @@ data class MyState(
 
 class MyViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(MyState())
+    private val _uiState = MutableStateFlow(MyUiState())
 
-    val uiState: StateFlow<MyState> = _uiState.asStateFlow()
+    val uiState: StateFlow<MyUiState> = _uiState.asStateFlow()
 
     fun getUser() {
         WanHelper.getUser { userBean ->

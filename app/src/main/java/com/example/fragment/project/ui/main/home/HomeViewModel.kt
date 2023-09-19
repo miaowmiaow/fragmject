@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class HomeState(
+data class HomeUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -25,9 +25,9 @@ data class HomeState(
 
 class HomeViewModel : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow(HomeState())
+    private val _uiState = MutableStateFlow(HomeUiState())
 
-    val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
         getHome()
@@ -91,7 +91,8 @@ class HomeViewModel : BaseViewModel() {
      * page 0开始
      */
     private suspend fun getArticleList(page: Int): ArticleListBean {
-        val request = HttpRequest("article/list/{page}/json").putPath("page", page.toString())
+        val request = HttpRequest("article/list/{page}/json")
+            .putPath("page", page.toString())
         val response = coroutineScope { get<ArticleListBean>(request) }
         updatePageCont(response.data?.pageCount?.toInt())
         return response

@@ -211,7 +211,7 @@ class CoroutineHttp private constructor() {
         return try {
             progress?.invoke(0.0)
             getService().get(url, header).use {
-                val file = File(savePath + File.separator + fileName)
+                val file = File(savePath, fileName)
                 it.byteStream().use { inputStream ->
                     file.writeBytes(inputStream.readBytes())
                 }

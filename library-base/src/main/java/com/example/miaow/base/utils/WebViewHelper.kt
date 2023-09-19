@@ -22,7 +22,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.example.miaow.base.http.HttpRequest
+import com.example.miaow.base.dialog.StandardDialog
 import com.example.miaow.base.http.download
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
@@ -47,25 +47,42 @@ object WebViewHelper {
             val result = webView.hitTestResult
             when (result.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                    result.extra?.let { data ->
-                        if (URLUtil.isValidUrl(data)) {
-                            webView.context.saveImagesToAlbum(data) { _, _ -> }
-                        } else {
-                            var str = data
-                            if (str.contains(",")) {
-                                str = str.split(",")[1]
-                            }
-                            val array = Base64.decode(str, Base64.NO_WRAP)
-                            val bitmap =
-                                BitmapFactory.decodeByteArray(array, 0, array.size)
-                            webView.context.saveImagesToAlbum(bitmap) { _, _ -> }
-                        }
+                    result.extra?.let { extra ->
+                        val contextWrapper = webView.context as MutableContextWrapper
+                        contextWrapper.baseContext.saveImagesBase64Dialog(extra)
                     }
                     true
                 }
+
                 else -> false
             }
         }
+    }
+
+    private fun Context.saveImagesBase64Dialog(data: String) {
+        StandardDialog.newInstance()
+            .setContent("你希望保存该图片吗?")
+            .setOnDialogClickListener(object :
+                StandardDialog.OnDialogClickListener {
+                override fun onConfirm(dialog: StandardDialog) {
+                    if (URLUtil.isValidUrl(data)) {
+                        saveImagesToAlbum(data) { _, _ -> }
+                    } else {
+                        var str = data
+                        if (str.contains(",")) {
+                            str = str.split(",")[1]
+                        }
+                        val array = Base64.decode(str, Base64.NO_WRAP)
+                        val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
+                        saveImagesToAlbum(bitmap) { _, _ -> }
+                    }
+                }
+
+                override fun onCancel(dialog: StandardDialog) {
+                }
+
+            })
+            .show(this)
     }
 
     fun goBack(webView: WebView, originalUrl: String): Boolean {
@@ -177,14 +194,12 @@ object WebViewHelper {
     ): WebResourceResponse? {
         try {
             val url = webRequest.url.toString()
-            val cachePath = CacheUtils.getDirPath(context, "web_cache")
-            val filePathName = cachePath + File.separator + url.encodeUtf8().md5().hex()
-            val file = File(filePathName)
+            val savePath = CacheUtils.getDirPath(context, "web_cache")
+            val fileName = url.encodeUtf8().md5().hex()
+            val file = File(savePath, fileName)
             if (!file.exists() || !file.isFile) {
                 runBlocking {
-                    download(HttpRequest(url).apply {
-                        webRequest.requestHeaders.forEach { putHeader(it.key, it.value) }
-                    }, filePathName)
+                    download(url, webRequest.requestHeaders, savePath, fileName)
                 }
             }
             if (file.exists() && file.isFile) {

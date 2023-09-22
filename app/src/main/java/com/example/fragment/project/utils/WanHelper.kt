@@ -10,22 +10,39 @@ import com.google.gson.reflect.TypeToken
  */
 object WanHelper {
 
-    private const val SEARCH_HISTORY = "search_history"
+    private const val HISTORY_SEARCH = "history_search"
+    private const val HISTORY_WEB = "history_web"
     private const val UI_MODE = "ui_mode"
     private const val USER = "user"
 
     /**
      * 设置搜索历史
      */
-    fun setSearchHistory(list: List<String>) {
-        KVDatabase.set(SEARCH_HISTORY, Gson().toJson(list))
+    fun setHistorySearch(list: List<String>) {
+        KVDatabase.set(HISTORY_SEARCH, Gson().toJson(list))
     }
 
     /**
      * 获取搜索历史
      */
-    fun getSearchHistory(result: (List<String>) -> Unit) {
-        KVDatabase.get(SEARCH_HISTORY) {
+    fun getHistorySearch(result: (List<String>) -> Unit) {
+        KVDatabase.get(HISTORY_SEARCH) {
+            val list: List<String> = try {
+                Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ArrayList()
+            }
+            result.invoke(list)
+        }
+    }
+
+    fun setHistoryWeb(list: List<String>) {
+        KVDatabase.set(HISTORY_WEB, Gson().toJson(list))
+    }
+
+    fun getHistoryWeb(result: (List<String>) -> Unit) {
+        KVDatabase.get(HISTORY_WEB) {
             val list: List<String> = try {
                 Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
             } catch (e: Exception) {

@@ -29,11 +29,7 @@ class SearchViewModel : BaseViewModel() {
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     init {
-        getSearchHistory()
-    }
-
-    private fun getSearchHistory() {
-        WanHelper.getSearchHistory { history ->
+        WanHelper.getHistorySearch { history ->
             _uiState.update {
                 it.historyResult.addAll(history)
                 it.copy(updateTime = System.nanoTime())
@@ -41,23 +37,23 @@ class SearchViewModel : BaseViewModel() {
         }
     }
 
-    fun updateSearchHistory(key: String) {
+    fun updateHistorySearch(key: String) {
         _uiState.update {
             if (it.historyResult.contains(key)) {
                 it.historyResult.remove(key)
             }
             it.historyResult.add(0, key)
-            WanHelper.setSearchHistory(it.historyResult)
+            WanHelper.setHistorySearch(it.historyResult)
             it.copy(updateTime = System.nanoTime())
         }
     }
 
-    fun removeSearchHistory(key: String) {
+    fun removeHistorySearch(key: String) {
         _uiState.update {
             if (it.historyResult.contains(key)) {
                 it.historyResult.remove(key)
             }
-            WanHelper.setSearchHistory(it.historyResult)
+            WanHelper.setHistorySearch(it.historyResult)
             it.copy(updateTime = System.nanoTime())
         }
     }

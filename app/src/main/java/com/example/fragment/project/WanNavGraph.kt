@@ -19,6 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
+import com.example.fragment.project.ui.my_browse.MyBrowseScreen
 import com.example.fragment.project.ui.my_coin.MyCoinScreen
 import com.example.fragment.project.ui.my_collect.MyCollectScreen
 import com.example.fragment.project.ui.my_demo.MyDemoScreen
@@ -97,6 +98,7 @@ fun WanNavGraph(
                 hotKey = wanUiState.hotKeyResult,
                 tree = wanUiState.treeResult,
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToBrowse = { wanNavActions.navigateToMyBrowse() },
                 onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
                 onNavigateToMyCollect = { wanNavActions.navigateToMyCollect() },
                 onNavigateToMyDemo = { wanNavActions.navigateToMyDemo() },
@@ -108,6 +110,9 @@ fun WanNavGraph(
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
             )
+        }
+        composable(WanDestinations.MY_BROWSE_ROUTE) {
+            MyBrowseScreen(onNavigateToWeb = { wanNavActions.navigateToWeb(it) })
         }
         composable(WanDestinations.MY_COIN_ROUTE) {
             MyCoinScreen(onNavigateToCoinRank = { wanNavActions.navigateToRank() })
@@ -206,6 +211,9 @@ class WanNavActions(
     val popBackStackToMain: () -> Unit = {
         navController.popBackStack(WanDestinations.MAIN_ROUTE, false)
     }
+    val navigateToMyBrowse: () -> Unit = {
+        navigate(WanDestinations.MY_BROWSE_ROUTE)
+    }
     val navigateToMyCoin: () -> Unit = {
         navigate(WanDestinations.MY_COIN_ROUTE)
     }
@@ -258,6 +266,7 @@ class WanNavActions(
 object WanDestinations {
     const val LOGIN_ROUTE = "login"
     const val MAIN_ROUTE = "main"
+    const val MY_BROWSE_ROUTE = "my_browse"
     const val MY_COIN_ROUTE = "my_coin"
     const val MY_COLLECT_ROUTE = "my_collect"
     const val MY_DEMO_ROUTE = "my_demo"

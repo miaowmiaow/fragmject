@@ -117,7 +117,7 @@ fun SearchScreen(
                     onSearch = {
                         focusManager.clearFocus()
                         keyboardController?.hide()
-                        viewModel.updateSearchHistory(searchText)
+                        viewModel.updateHistorySearch(searchText)
                         viewModel.getHome(searchText)
                     }
                 ),
@@ -154,7 +154,7 @@ fun SearchScreen(
                                     onClick = {
                                         focusManager.clearFocus()
                                         searchText = it.name
-                                        viewModel.updateSearchHistory(searchText)
+                                        viewModel.updateHistorySearch(searchText)
                                         viewModel.getHome(searchText)
                                     },
                                     modifier = Modifier
@@ -212,7 +212,7 @@ fun SearchScreen(
                                         modifier = Modifier
                                             .size(30.dp)
                                             .padding(10.dp, 5.dp, 0.dp, 5.dp)
-                                            .clickable { viewModel.removeSearchHistory(item) },
+                                            .clickable { viewModel.removeHistorySearch(item) },
                                     )
                                 }
                             }

@@ -38,6 +38,7 @@ import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.DatePicker
 import com.example.fragment.project.components.EllipsisText
 import com.example.fragment.project.components.TitleBar
+import com.example.miaow.base.utils.getMetaData
 import com.example.miaow.picture.selector.bean.MediaBean
 import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
 import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
@@ -118,7 +119,7 @@ fun MyDemoScreen() {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TitleBar(title = "我的Demo") {
+            TitleBar(title = context.getMetaData("app_channel")) {
                 if (context is AppCompatActivity) {
                     context.onBackPressedDispatcher.onBackPressed()
                 }

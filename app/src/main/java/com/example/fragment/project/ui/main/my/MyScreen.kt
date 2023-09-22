@@ -31,6 +31,7 @@ import com.example.fragment.project.components.ArrowRightItem
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
+    onNavigateToBrowse: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyDemo: () -> Unit = {},
@@ -105,6 +106,13 @@ fun MyScreen(
                 .height(1.dp)
         )
         ArrowRightItem("我的分享") { onNavigateToMyShare() }
+        Spacer(
+            Modifier
+                .background(colorResource(R.color.line))
+                .fillMaxWidth()
+                .height(1.dp)
+        )
+        ArrowRightItem("我的浏览") { onNavigateToBrowse() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))

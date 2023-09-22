@@ -54,6 +54,7 @@ fun MainScreen(
     hotKey: List<HotKeyBean>,
     tree: List<TreeBean>,
     onNavigateToLogin: () -> Unit = {},
+    onNavigateToBrowse: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyDemo: () -> Unit = {},
@@ -134,6 +135,7 @@ fun MainScreen(
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
                     MyScreen(
                         onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToBrowse = onNavigateToBrowse,
                         onNavigateToMyCoin = onNavigateToMyCoin,
                         onNavigateToMyCollect = onNavigateToMyCollect,
                         onNavigateToMyDemo = onNavigateToMyDemo,

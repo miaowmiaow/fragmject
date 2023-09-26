@@ -30,8 +30,8 @@ import com.example.fragment.project.components.ArrowRightItem
 @Composable
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
+    onNavigateToBrowseCollect: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
-    onNavigateToBrowse: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyDemo: () -> Unit = {},
@@ -49,7 +49,7 @@ fun MyScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
-            model = uiState.userBean.avatar.ifBlank { R.drawable.avatar_1_raster },
+            model = uiState.userBean.avatar.ifBlank { R.mipmap.avatar_1_raster },
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -112,7 +112,7 @@ fun MyScreen(
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        ArrowRightItem("我的浏览") { onNavigateToBrowse() }
+        ArrowRightItem("浏览收藏") { onNavigateToBrowseCollect() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))

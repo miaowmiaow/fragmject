@@ -281,11 +281,13 @@ class WebViewManager private constructor() {
         webView.overScrollMode = WebView.OVER_SCROLL_NEVER
         val webSetting = webView.settings
         webSetting.allowFileAccess = true
-        webSetting.cacheMode = WebSettings.LOAD_DEFAULT
+        webSetting.cacheMode = WebSettings.LOAD_NO_CACHE
         webSetting.domStorageEnabled = true
         webSetting.setGeolocationEnabled(true)
+//        webSetting.javaScriptCanOpenWindowsAutomatically = true
         webSetting.javaScriptEnabled = true
         webSetting.loadWithOverviewMode = true
+//        webSetting.setSupportMultipleWindows(true)
         webSetting.setSupportZoom(true)
         webSetting.displayZoomControls = false
         webSetting.useWideViewPort = true

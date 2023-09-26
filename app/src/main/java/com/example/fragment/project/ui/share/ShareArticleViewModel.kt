@@ -13,7 +13,8 @@ import kotlinx.coroutines.launch
 
 data class ShareArticleUiState(
     var isLoading: Boolean = false,
-    var result: HttpResponse = HttpResponse(),
+    var success: Boolean = false,
+    var message: String = "",
 )
 
 class ShareArticleViewModel : BaseViewModel() {
@@ -21,6 +22,12 @@ class ShareArticleViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow(ShareArticleUiState())
 
     val uiState: StateFlow<ShareArticleUiState> = _uiState.asStateFlow()
+
+    fun resetMessage() {
+        _uiState.update {
+            it.copy(message = "")
+        }
+    }
 
     fun share(title: String, link: String) {
         _uiState.update {
@@ -35,7 +42,11 @@ class ShareArticleViewModel : BaseViewModel() {
             //以get方式发起网络请求
             val response = post<HttpResponse>(request)
             _uiState.update {
-                it.copy(isLoading = false, result = response)
+                it.copy(
+                    isLoading = false,
+                    success = response.errorCode == "0",
+                    message = response.errorMsg
+                )
             }
         }
     }

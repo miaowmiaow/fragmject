@@ -25,7 +25,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,17 +49,20 @@ import com.example.fragment.project.components.LoadingContent
 fun ShareArticleScreen(
     viewModel: ShareArticleViewModel = viewModel(),
     onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     var titleText by rememberSaveable { mutableStateOf("") }
     var linkText by rememberSaveable { mutableStateOf("") }
-    DisposableEffect(uiState.result.errorCode) {
-        if (context is AppCompatActivity && uiState.result.errorMsg.isNotBlank()) {
-            Toast.makeText(context, uiState.result.errorMsg, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(uiState.message) {
+        if (uiState.message.isNotBlank()) {
+            if (context is AppCompatActivity) {
+                Toast.makeText(context, uiState.message, Toast.LENGTH_SHORT).show()
+                viewModel.resetMessage()
+            }
         }
-        onDispose { }
     }
     Column(
         modifier = Modifier
@@ -76,9 +79,7 @@ fun ShareArticleScreen(
             IconButton(
                 modifier = Modifier.height(45.dp),
                 onClick = {
-                    if (context is AppCompatActivity) {
-                        context.onBackPressedDispatcher.onBackPressed()
-                    }
+                    onNavigateUp()
                 }
             ) {
                 Icon(
@@ -107,7 +108,7 @@ fun ShareArticleScreen(
                 }
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_browser),
+                    painter = painterResource(R.mipmap.ic_browser),
                     contentDescription = null,
                     tint = colorResource(R.color.white)
                 )

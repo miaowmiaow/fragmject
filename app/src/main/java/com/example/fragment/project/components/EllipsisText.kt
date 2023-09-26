@@ -10,7 +10,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -42,7 +41,6 @@ fun EllipsisText(
     val style = TextStyle.Default.copy(color = color, fontSize = fontSize)
     var right by remember { mutableFloatStateOf(0f) }
     var bottom by remember { mutableFloatStateOf(0f) }
-    var ellipsis by remember { mutableStateOf(false) }
     val ellipsisMeasure = rememberTextMeasurer()
     val ellipsisLayoutResult = ellipsisMeasure.measure(
         text = ellipsisText,
@@ -65,7 +63,6 @@ fun EllipsisText(
             maxLines = maxLines,
             inlineContent = inlineContent,
             onTextLayout = {
-                ellipsis = it.isLineEllipsized(it.lineCount - 1)
                 val offset = it.getOffsetForPosition(
                     Offset(
                         it.getLineRight(it.lineCount - 1) - ellipsisLayoutResult.size.width,
@@ -77,21 +74,19 @@ fun EllipsisText(
             },
             style = style
         )
-        if (ellipsis) {
-            Text(
-                text = ellipsisText,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .graphicsLayer {
-                        translationX = right
-                        translationY = bottom - size.height
-                    }
-                    .background(background)
-                    .clickable {
-                        onEllipsisClick()
-                    },
-                style = style.copy(color = ellipsisColor)
-            )
-        }
+        Text(
+            text = ellipsisText,
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    translationX = right
+                    translationY = bottom - size.height
+                }
+                .background(background)
+                .clickable {
+                    onEllipsisClick()
+                },
+            style = style.copy(color = ellipsisColor)
+        )
     }
 }

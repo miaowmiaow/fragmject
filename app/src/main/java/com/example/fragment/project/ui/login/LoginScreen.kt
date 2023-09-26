@@ -57,22 +57,24 @@ import com.example.fragment.project.components.WhiteTextField
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
-    loginViewModel: LoginViewModel = viewModel(),
+    viewModel: LoginViewModel = viewModel(),
     onNavigateToRegister: () -> Unit = {},
+    onNavigateUp: () -> Unit = {},
     onPopBackStackToMain: () -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scaffoldState = rememberScaffoldState()
     val scrollState = rememberScrollState()
     SideEffect {
-        if (uiState.errorCode == "0") {
+        if (uiState.success) {
             onPopBackStackToMain()
         }
     }
-    LaunchedEffect(uiState.errorCode, scaffoldState.snackbarHostState) {
-        if (uiState.errorMsg.isNotBlank()) {
-            scaffoldState.snackbarHostState.showSnackbar(uiState.errorMsg)
+    LaunchedEffect(uiState.message, scaffoldState.snackbarHostState) {
+        if (uiState.message.isNotBlank()) {
+            scaffoldState.snackbarHostState.showSnackbar(uiState.message)
+            viewModel.resetMessage()
         }
     }
     var usernameText by rememberSaveable { mutableStateOf("") }
@@ -86,7 +88,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .paint(
-                            painter = painterResource(id = R.drawable.bg),
+                            painter = painterResource(id = R.mipmap.bg),
                             contentScale = ContentScale.FillBounds
                         )
                         .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
@@ -95,11 +97,13 @@ fun LoginScreen(
                         .navigationBarsPadding()
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.ic_back),
+                        painter = painterResource(R.mipmap.ic_back),
                         contentDescription = null,
                         modifier = Modifier
                             .size(15.dp)
-                            .clickable { onPopBackStackToMain() }
+                            .clickable {
+                                onNavigateUp()
+                            }
                     )
                     Spacer(Modifier.height(30.dp))
                     Text(
@@ -137,7 +141,7 @@ fun LoginScreen(
                             imeAction = ImeAction.Go
                         ),
                         keyboardActions = KeyboardActions(onGo = {
-                            loginViewModel.login(usernameText, passwordText)
+                            viewModel.login(usernameText, passwordText)
                             keyboardController?.hide()
                         }),
                     )
@@ -150,7 +154,7 @@ fun LoginScreen(
                         )
                         Spacer(Modifier.weight(1f))
                         Button(
-                            onClick = { loginViewModel.login(usernameText, passwordText) },
+                            onClick = { viewModel.login(usernameText, passwordText) },
                             elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
@@ -161,7 +165,7 @@ fun LoginScreen(
                             modifier = Modifier.size(55.dp)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_right_arrow),
+                                painter = painterResource(R.mipmap.ic_right_arrow),
                                 contentDescription = null
                             )
                         }

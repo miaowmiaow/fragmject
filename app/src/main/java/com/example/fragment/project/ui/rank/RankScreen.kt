@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.rank
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -44,8 +42,8 @@ fun RankScreen(
     viewModel: RankViewModel = viewModel(),
     onNavigateToUserInfo: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier.systemBarsPadding()
@@ -59,9 +57,7 @@ fun RankScreen(
             IconButton(
                 modifier = Modifier.height(45.dp),
                 onClick = {
-                    if (context is AppCompatActivity) {
-                        context.onBackPressedDispatcher.onBackPressed()
-                    }
+                    onNavigateUp()
                 }
             ) {
                 Icon(
@@ -84,7 +80,7 @@ fun RankScreen(
                 onClick = { onNavigateToWeb("https://www.wanandroid.com/blog/show/2653") }
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_rule),
+                    painter = painterResource(R.mipmap.ic_rule),
                     contentDescription = null,
                     tint = colorResource(R.color.white)
                 )

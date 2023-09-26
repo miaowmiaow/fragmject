@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.user
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,6 +57,7 @@ fun UserScreen(
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -109,9 +109,7 @@ fun UserScreen(
             IconButton(
                 modifier = Modifier.height(titleBarSize),
                 onClick = {
-                    if (context is AppCompatActivity) {
-                        context.onBackPressedDispatcher.onBackPressed()
-                    }
+                    onNavigateUp()
                 }
             ) {
                 Icon(

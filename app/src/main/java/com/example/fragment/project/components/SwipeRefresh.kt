@@ -143,13 +143,13 @@ fun RefreshIndicator(
     position: () -> Float
 ) {
     val refreshingResId = listOf(
-        R.drawable.refreshing_big_1,
-        R.drawable.refreshing_big_4,
-        R.drawable.refreshing_big_7,
-        R.drawable.refreshing_big_10,
-        R.drawable.refreshing_big_13,
-        R.drawable.refreshing_big_16,
-        R.drawable.refreshing_big_19,
+        R.mipmap.refreshing_big_1,
+        R.mipmap.refreshing_big_4,
+        R.mipmap.refreshing_big_7,
+        R.mipmap.refreshing_big_10,
+        R.mipmap.refreshing_big_13,
+        R.mipmap.refreshing_big_16,
+        R.mipmap.refreshing_big_19,
     )
     val loadingHeightPx: Float
     with(LocalDensity.current) {

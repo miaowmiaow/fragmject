@@ -259,8 +259,8 @@ fun ArticleCard(
 
 private fun getCollectResId(collect: Boolean): Int {
     return when (collect) {
-        true -> R.drawable.ic_collect_checked
-        false -> R.drawable.ic_collect_unchecked
+        true -> R.mipmap.ic_collect_checked
+        false -> R.mipmap.ic_collect_unchecked
     }
 }
 

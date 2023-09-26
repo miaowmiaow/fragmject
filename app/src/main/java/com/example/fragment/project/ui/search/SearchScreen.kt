@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.search
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,14 +30,17 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
@@ -55,23 +57,32 @@ import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
-    hotKey: List<HotKeyBean>?,
     key: String,
+    hotKeyList: List<HotKeyBean>?,
+    searchHistoryList: List<String>,
     viewModel: SearchViewModel = viewModel(),
+    onSearchHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var searchText by rememberSaveable { mutableStateOf(key) }
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    LaunchedEffect(Unit) {
+        delay(350)
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
     Column {
         Row(
             modifier = Modifier
@@ -91,7 +102,8 @@ fun SearchScreen(
                 modifier = Modifier
                     .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
                     .weight(1f)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .focusRequester(focusRequester),
                 textStyle = TextStyle.Default.copy(
                     color = colorResource(R.color.text_fff),
                     fontSize = 13.sp,
@@ -115,10 +127,10 @@ fun SearchScreen(
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = {
+                        onSearchHistory(true, searchText)
+                        viewModel.getHome(searchText)
                         focusManager.clearFocus()
                         keyboardController?.hide()
-                        viewModel.updateHistorySearch(searchText)
-                        viewModel.getHome(searchText)
                     }
                 ),
                 colors = TextFieldDefaults.textFieldColors(
@@ -130,9 +142,7 @@ fun SearchScreen(
             Text(
                 text = "取消",
                 modifier = Modifier.clickable {
-                    if (context is AppCompatActivity) {
-                        context.onBackPressedDispatcher.onBackPressed()
-                    }
+                    onNavigateUp()
                 },
                 fontSize = 14.sp,
                 color = colorResource(R.color.white),
@@ -148,13 +158,13 @@ fun SearchScreen(
                         color = colorResource(R.color.text_333),
                     )
                     FlowRow(modifier = Modifier.fillMaxWidth()) {
-                        hotKey?.forEach {
+                        hotKeyList?.forEach {
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
                                     onClick = {
                                         focusManager.clearFocus()
                                         searchText = it.name
-                                        viewModel.updateHistorySearch(searchText)
+                                        onSearchHistory(true, searchText)
                                         viewModel.getHome(searchText)
                                     },
                                     modifier = Modifier
@@ -176,7 +186,7 @@ fun SearchScreen(
                             }
                         }
                     }
-                    if (uiState.historyResult.isNotEmpty()) {
+                    if (searchHistoryList.isNotEmpty()) {
                         Text(
                             text = "历史搜索",
                             modifier = Modifier.padding(15.dp),
@@ -187,7 +197,7 @@ fun SearchScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(1.dp),
                         ) {
-                            itemsIndexed(uiState.historyResult.toList()) { _, item ->
+                            itemsIndexed(searchHistoryList) { _, item ->
                                 Row(
                                     modifier = Modifier
                                         .clickable {
@@ -207,12 +217,12 @@ fun SearchScreen(
                                         fontSize = 14.sp,
                                     )
                                     Icon(
-                                        painter = painterResource(R.drawable.ic_delete),
+                                        painter = painterResource(R.mipmap.ic_delete),
                                         contentDescription = null,
                                         modifier = Modifier
                                             .size(30.dp)
                                             .padding(10.dp, 5.dp, 0.dp, 5.dp)
-                                            .clickable { viewModel.removeHistorySearch(item) },
+                                            .clickable { onSearchHistory(false, item) },
                                     )
                                 }
                             }

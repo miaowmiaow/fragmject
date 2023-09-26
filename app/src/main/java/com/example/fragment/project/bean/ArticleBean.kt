@@ -82,12 +82,12 @@ data class ArticleBean(
 
     @IgnoredOnParcel
     private val avatarList: List<Int> = listOf(
-        R.drawable.avatar_1_raster,
-        R.drawable.avatar_2_raster,
-        R.drawable.avatar_3_raster,
-        R.drawable.avatar_4_raster,
-        R.drawable.avatar_5_raster,
-        R.drawable.avatar_6_raster,
+        R.mipmap.avatar_1_raster,
+        R.mipmap.avatar_2_raster,
+        R.mipmap.avatar_3_raster,
+        R.mipmap.avatar_4_raster,
+        R.mipmap.avatar_5_raster,
+        R.mipmap.avatar_6_raster,
     )
 
     @IgnoredOnParcel

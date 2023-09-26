@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.search
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
-import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
@@ -17,7 +16,6 @@ data class SearchUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var historyResult: MutableList<String> = ArrayList(),
     var articlesResult: MutableList<ArticleBean> = ArrayList(),
     var updateTime: Long = 0
 )
@@ -27,36 +25,6 @@ class SearchViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow(SearchUiState())
 
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
-
-    init {
-        WanHelper.getHistorySearch { history ->
-            _uiState.update {
-                it.historyResult.addAll(history)
-                it.copy(updateTime = System.nanoTime())
-            }
-        }
-    }
-
-    fun updateHistorySearch(key: String) {
-        _uiState.update {
-            if (it.historyResult.contains(key)) {
-                it.historyResult.remove(key)
-            }
-            it.historyResult.add(0, key)
-            WanHelper.setHistorySearch(it.historyResult)
-            it.copy(updateTime = System.nanoTime())
-        }
-    }
-
-    fun removeHistorySearch(key: String) {
-        _uiState.update {
-            if (it.historyResult.contains(key)) {
-                it.historyResult.remove(key)
-            }
-            WanHelper.setHistorySearch(it.historyResult)
-            it.copy(updateTime = System.nanoTime())
-        }
-    }
 
     fun clearArticles() {
         _uiState.update {

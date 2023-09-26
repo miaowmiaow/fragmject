@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 
 data class RegisterUiState(
     var isLoading: Boolean = false,
-    var errorCode: String = "",
-    var errorMsg: String = "",
+    var success: Boolean = false,
+    var message: String = "",
 )
 
 class RegisterViewModel : BaseViewModel() {
@@ -24,28 +24,34 @@ class RegisterViewModel : BaseViewModel() {
 
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
+    fun resetMessage() {
+        _uiState.update {
+            it.copy(message = "")
+        }
+    }
+
     fun register(username: String, password: String, repassword: String) {
         if (username.isBlank()) {
             _uiState.update {
-                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "用户名不能为空")
+                it.copy(message = "用户名不能为空")
             }
             return
         }
         if (password.isBlank()) {
             _uiState.update {
-                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "密码不能为空")
+                it.copy(message = "密码不能为空")
             }
             return
         }
         if (repassword.isBlank()) {
             _uiState.update {
-                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "确认密码不能为空")
+                it.copy(message = "确认密码不能为空")
             }
             return
         }
         if (password != repassword) {
             _uiState.update {
-                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "两次密码不一样")
+                it.copy(message = "两次密码不一样")
             }
             return
         }
@@ -62,8 +68,8 @@ class RegisterViewModel : BaseViewModel() {
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    errorCode = response.errorCode,
-                    errorMsg = response.errorMsg
+                    success = response.errorCode == "0",
+                    message = response.errorMsg
                 )
             }
         }

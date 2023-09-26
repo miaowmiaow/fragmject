@@ -1,9 +1,6 @@
 package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -11,7 +8,6 @@ import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -102,7 +98,11 @@ fun WebScreen(
                 ) {
                     Button(
                         onClick = {
-                            context.writeClipboard(state.lastLoadedUrl.toString())
+                            context.startActivity(Intent.createChooser(Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, state.lastLoadedUrl.toString())
+                                type = "text/plain"
+                            }, null))
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                         shape = RoundedCornerShape(0),
@@ -110,13 +110,13 @@ fun WebScreen(
                             backgroundColor = colorResource(R.color.white),
                             contentColor = colorResource(R.color.theme)
                         ),
-                        contentPadding = PaddingValues(17.dp),
+                        contentPadding = PaddingValues(15.dp),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
                     ) {
                         Icon(
-                            painter = painterResource(R.mipmap.ic_web_copy),
+                            painter = painterResource(R.mipmap.ic_web_share),
                             contentDescription = null,
                             tint = colorResource(R.color.theme)
                         )
@@ -432,11 +432,4 @@ fun WebScreen(
             }
         }
     }
-}
-
-fun Context.writeClipboard(text: String) {
-    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("simple text", text)
-    clipboard.setPrimaryClip(clip)
-    Toast.makeText(this, "已复制到剪切板", Toast.LENGTH_SHORT).show()
 }

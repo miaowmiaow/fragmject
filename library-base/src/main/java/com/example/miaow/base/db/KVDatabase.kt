@@ -44,6 +44,11 @@ abstract class KVDatabase : RoomDatabase() {
         }
 
         @JvmStatic
+        suspend fun get(key: String): String {
+            return getDB().getValue(key)
+        }
+
+        @JvmStatic
         fun get(key: String, result: (String) -> Unit) {
             getDB().getValue(key, result)
         }
@@ -70,6 +75,15 @@ abstract class KVDatabase : RoomDatabase() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    suspend fun getValue(key: String): String {
+        return try {
+            getDao().findByKey(key)?.value ?: ""
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ""
         }
     }
 

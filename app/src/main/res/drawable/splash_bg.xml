@@ -8,13 +8,13 @@
     <item android:top="24dp">
         <bitmap
             android:gravity="center"
-            android:src="@drawable/bg" />
+            android:src="@mipmap/bg" />
     </item>
 
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_launcher" />
+            android:src="@mipmap/ic_launcher" />
     </item>
 
 </layer-list>

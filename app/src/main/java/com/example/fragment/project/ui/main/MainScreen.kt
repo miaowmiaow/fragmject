@@ -51,10 +51,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    hotKey: List<HotKeyBean>,
-    tree: List<TreeBean>,
+    hotKeyList: List<HotKeyBean>,
+    treeList: List<TreeBean>,
     onNavigateToLogin: () -> Unit = {},
-    onNavigateToBrowse: () -> Unit = {},
+    onNavigateToBrowseCollect: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyDemo: () -> Unit = {},
@@ -70,16 +70,16 @@ fun MainScreen(
     val homeListState = rememberLazyListState()
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = listOf(
-        NavigationItem("首页", R.drawable.ic_bottom_bar_home),
-        NavigationItem("导航", R.drawable.ic_bottom_bar_navigation),
-        NavigationItem("项目", R.drawable.ic_bottom_bar_project),
-        NavigationItem("我的", R.drawable.ic_bottom_bar_user),
+        NavigationItem("首页", R.mipmap.ic_bottom_bar_home),
+        NavigationItem("导航", R.mipmap.ic_bottom_bar_navigation),
+        NavigationItem("项目", R.mipmap.ic_bottom_bar_project),
+        NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
     )
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
         topBar = {
             SearchBar(
-                data = hotKey,
+                data = hotKeyList,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToShareArticle = onNavigateToShareArticle
             )
@@ -117,7 +117,7 @@ fun MainScreen(
 
                 1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
                     NavScreen(
-                        tree = tree,
+                        treeList = treeList,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToWeb = onNavigateToWeb,
                     )
@@ -134,8 +134,8 @@ fun MainScreen(
 
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
                     MyScreen(
+                        onNavigateToBrowseCollect = onNavigateToBrowseCollect,
                         onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToBrowse = onNavigateToBrowse,
                         onNavigateToMyCoin = onNavigateToMyCoin,
                         onNavigateToMyCollect = onNavigateToMyCollect,
                         onNavigateToMyDemo = onNavigateToMyDemo,
@@ -257,10 +257,10 @@ fun SearchBarPreview() {
 @Composable
 fun WanBottomNavigationPreview() {
     val navItems = listOf(
-        NavigationItem("首页", R.drawable.ic_bottom_bar_home),
-        NavigationItem("导航", R.drawable.ic_bottom_bar_navigation),
-        NavigationItem("项目", R.drawable.ic_bottom_bar_project),
-        NavigationItem("我的", R.drawable.ic_bottom_bar_user),
+        NavigationItem("首页", R.mipmap.ic_bottom_bar_home),
+        NavigationItem("导航", R.mipmap.ic_bottom_bar_navigation),
+        NavigationItem("项目", R.mipmap.ic_bottom_bar_project),
+        NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
     )
     WanTheme { NavigationBar(items = navItems, onClick = { _ -> }) }
 }

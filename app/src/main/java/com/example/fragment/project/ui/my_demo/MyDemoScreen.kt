@@ -1,5 +1,11 @@
 package com.example.fragment.project.ui.my_demo
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,9 +29,11 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +41,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.DatePicker
@@ -115,6 +124,39 @@ fun MyDemoScreen() {
             )
         }
     ) {
+        val storagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            arrayOf(
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_VIDEO,
+            )
+        else
+            arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            )
+        var storageDialog by remember { mutableStateOf(false) }
+        val requestPermissions =
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
+                var isGranted = true
+                ps.entries.forEach {
+                    if (it.key in storagePermissions && !it.value)
+                        isGranted = false
+                }
+                storageDialog = !isGranted
+            }
+        if (storageDialog) {
+            AlertDialog(
+                onDismissRequest = { storageDialog = false },
+                title = { Text(text = "申请存储空间权限") },
+                text = { Text(text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用") },
+                confirmButton = {
+                    TextButton(onClick = { requestPermissions.launch(storagePermissions) }) { Text("确定") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { storageDialog = false }) { Text("取消") }
+                }
+            )
+        }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -122,6 +164,22 @@ fun MyDemoScreen() {
             TitleBar(title = context.getMetaData("app_channel")) {
                 if (context is AppCompatActivity) {
                     context.onBackPressedDispatcher.onBackPressed()
+                }
+            }
+            Spacer(
+                Modifier
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
+            )
+            ArrowRightItem("申请存储权限demo") {
+                storageDialog = !storagePermissions.all {
+                    ContextCompat.checkSelfPermission(
+                        context, it
+                    ) == PackageManager.PERMISSION_GRANTED
+                }
+                if (!storageDialog) {
+                    Toast.makeText(context, "存储权限已经获取", Toast.LENGTH_SHORT).show()
                 }
             }
             Spacer(
@@ -174,86 +232,22 @@ fun MyDemoScreen() {
                 title = { Text(text = "全文demo") },
                 text = {
                     Column {
+                        var isEllipsis by remember { mutableStateOf(true) }
                         EllipsisText(
                             text = buildAnnotatedString {
                                 append(
                                     "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。白露横江10，水光接天。纵一苇之所如，凌万顷之茫然11。浩浩乎如冯虚御风12，而不知其所止；飘飘乎如遗世独立13，羽化而登仙14。\n" +
                                             "于是饮酒乐甚，扣舷而歌之15。歌曰：“桂棹兮兰桨16，击空明兮溯流光17。渺渺兮予怀18，望美人兮天一方19。”客有吹洞箫者，倚歌而和之20。其声呜呜然，如怨如慕21，如泣如诉；余音袅袅22，不绝如缕23。舞幽壑之潜蛟24，泣孤舟之嫠妇25。\n" +
-                                            "苏子愀然26，正襟危坐27，而问客曰：“何为其然也28？”\n" +
-                                            "客曰：“‘月明星稀，乌鹊南飞。’此非曹孟德之诗乎？西望夏口29，东望武昌30，山川相缪31，郁乎苍苍32，此非孟德之困于周郎者乎33？方其破荆州，下江陵，顺流而东也34，舳舻千里35，旌旗蔽空，酾酒临江36，横槊赋诗37，固一世之雄也，而今安在哉？况吾与子渔樵于江渚之上，侣鱼虾而友麋鹿38，驾一叶之扁舟39，举匏尊（樽）以相属40。寄蜉蝣于天地41，渺沧海之一粟42。哀吾生之须臾43，羡长江之无穷。挟飞仙以遨游，抱明月而长终44。知不可乎骤得45，托遗响于悲风46。” [1]\n" +
-                                            "苏子曰：“客亦知夫水与月乎？逝者如斯47，而未尝往也；盈虚者如彼48，而卒莫消长也49。盖将自其变者而观之，则天地曾不能以一瞬50；自其不变者而观之，则物与我皆无尽也，而又何羡乎！且夫天地之间，物各有主，苟非吾之所有，虽一毫而莫取。惟江上之清风，与山间之明月，耳得之而为声，目遇之而成色，取之无禁，用之不竭。是造物者之无尽藏也51，而吾与子之所共适52。”\n" +
-                                            "客喜而笑，洗盏更酌。肴核既尽53，杯盘狼籍。相与枕藉乎舟中54，不知东方之既白。"
+                                            "苏子愀然26，正襟危坐27，而问客曰：“何为其然也28？”..."
                                 )
                             },
                             fontSize = 14.sp,
-                            maxLines = 2,
+                            maxLines = if (isEllipsis) 2 else Int.MAX_VALUE,
                             background = colorResource(R.color.white),
-                        )
-                        Spacer(
-                            Modifier.height(10.dp)
-                        )
-                        EllipsisText(
-                            text = buildAnnotatedString {
-                                append(
-                                    "asdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnmasdfghjklqwertyuiopzxcvbnm"
-                                )
-                            },
-                            fontSize = 14.sp,
-                            background = colorResource(R.color.white),
-                            maxLines = 2,
-                        )
-                        Spacer(
-                            Modifier.height(10.dp)
-                        )
-                        EllipsisText(
-                            text = buildAnnotatedString {
-                                append(
-                                    "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
-                                )
-                            },
-                            fontSize = 14.sp,
-                            background = colorResource(R.color.white),
-                            maxLines = 2,
-                        )
-                        Spacer(
-                            Modifier.height(10.dp)
-                        )
-                        EllipsisText(
-                            text = buildAnnotatedString {
-                                append(
-                                    "我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD我是测试文本123asd,./，。、ASD"
-                                )
-                            },
-                            fontSize = 12.sp,
-                            background = colorResource(R.color.white),
-                            maxLines = 2,
-                        )
-                        Spacer(
-                            Modifier.height(10.dp)
-                        )
-                        EllipsisText(
-                            text = buildAnnotatedString {
-                                append(
-                                    "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                                )
-                            },
-                            fontSize = 12.sp,
-                            background = colorResource(R.color.white),
-                            maxLines = 2,
-                        )
-                        Spacer(
-                            Modifier.height(10.dp)
-                        )
-                        EllipsisText(
-                            text = buildAnnotatedString {
-                                append(
-                                    "asdfgsajkl asgsadhjkl asdfadhjkl asdfgdhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfgsadhjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl asdfghjkl"
-                                )
-                            },
-                            fontSize = 12.sp,
-                            background = colorResource(R.color.white),
-                            maxLines = 2,
-                        )
+                            ellipsisText = if (isEllipsis) "...全文" else "...收起"
+                        ) {
+                            isEllipsis = !isEllipsis
+                        }
                         Spacer(
                             Modifier.height(10.dp)
                         )
@@ -266,9 +260,6 @@ fun MyDemoScreen() {
                             fontSize = 12.sp,
                             background = colorResource(R.color.white),
                             maxLines = 2,
-                        )
-                        Spacer(
-                            Modifier.height(10.dp)
                         )
                     }
                 },

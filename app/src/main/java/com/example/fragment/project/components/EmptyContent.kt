@@ -31,7 +31,7 @@ fun EmptyContent(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
-                painter = painterResource(R.drawable.empty),
+                painter = painterResource(R.mipmap.empty),
                 contentDescription = null,
             )
             Spacer(Modifier.size(10.dp))

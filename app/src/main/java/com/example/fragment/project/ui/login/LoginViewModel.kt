@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 
 data class LoginUiState(
     var isLoading: Boolean = false,
-    var errorCode: String = "",
-    var errorMsg: String = "",
+    var success: Boolean = false,
+    var message: String = "",
 )
 
 class LoginViewModel : BaseViewModel() {
@@ -24,16 +24,22 @@ class LoginViewModel : BaseViewModel() {
 
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
+    fun resetMessage() {
+        _uiState.update {
+            it.copy(message = "")
+        }
+    }
+
     fun login(username: String, password: String) {
         if (username.isBlank()) {
             _uiState.update {
-                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "用户名不能为空")
+                it.copy(message = "用户名不能为空")
             }
             return
         }
         if (password.isBlank()) {
             _uiState.update {
-                it.copy(errorCode = "${System.nanoTime()}", errorMsg = "密码不能为空")
+                it.copy(message = "密码不能为空")
             }
             return
         }
@@ -49,8 +55,8 @@ class LoginViewModel : BaseViewModel() {
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    errorCode = response.errorCode,
-                    errorMsg = response.errorMsg
+                    success = response.errorCode == "0",
+                    message = response.errorMsg
                 )
             }
         }

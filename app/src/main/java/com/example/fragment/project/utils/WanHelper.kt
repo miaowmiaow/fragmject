@@ -10,46 +10,57 @@ import com.google.gson.reflect.TypeToken
  */
 object WanHelper {
 
-    private const val HISTORY_SEARCH = "history_search"
-    private const val HISTORY_WEB = "history_web"
+    private const val SEARCH_HISTORY = "search_history"
+    private const val WEB_COLLECT = "web_collect"
+    private const val WEB_BROWSE = "web_browse"
     private const val UI_MODE = "ui_mode"
     private const val USER = "user"
 
     /**
      * 设置搜索历史
      */
-    fun setHistorySearch(list: List<String>) {
-        KVDatabase.set(HISTORY_SEARCH, Gson().toJson(list))
+    fun setSearchHistory(list: List<String>) {
+        KVDatabase.set(SEARCH_HISTORY, Gson().toJson(list))
     }
 
     /**
      * 获取搜索历史
      */
-    fun getHistorySearch(result: (List<String>) -> Unit) {
-        KVDatabase.get(HISTORY_SEARCH) {
-            val list: List<String> = try {
-                Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ArrayList()
-            }
-            result.invoke(list)
+    suspend fun getSearchHistory(): List<String> {
+        return try {
+            val json = KVDatabase.get(SEARCH_HISTORY)
+            Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ArrayList()
         }
     }
 
-    fun setHistoryWeb(list: List<String>) {
-        KVDatabase.set(HISTORY_WEB, Gson().toJson(list))
+    fun setWebBrowse(list: List<String>) {
+        KVDatabase.set(WEB_BROWSE, Gson().toJson(list))
     }
 
-    fun getHistoryWeb(result: (List<String>) -> Unit) {
-        KVDatabase.get(HISTORY_WEB) {
-            val list: List<String> = try {
-                Gson().fromJson(it, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                ArrayList()
-            }
-            result.invoke(list)
+    suspend fun getWebBrowse(): List<String> {
+        return try {
+            val json = KVDatabase.get(WEB_BROWSE)
+            Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ArrayList()
+        }
+    }
+
+    fun setWebCollect(list: List<String>) {
+        KVDatabase.set(WEB_COLLECT, Gson().toJson(list))
+    }
+
+    suspend fun getWebCollect(): List<String> {
+        return try {
+            val json = KVDatabase.get(WEB_COLLECT)
+            Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ArrayList()
         }
     }
 

@@ -59,9 +59,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
-    onNavigateToPrivacyPolicy: () -> Unit = {},
-    onNavigateToFeedback: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
+    onNavigateToFeedback: () -> Unit = {},
+    onNavigateToPrivacyPolicy: () -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -82,9 +83,7 @@ fun SettingScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TitleBar("设置") {
-                        if (context is AppCompatActivity) {
-                            context.onBackPressedDispatcher.onBackPressed()
-                        }
+                        onNavigateUp()
                     }
                     Row(
                         modifier = Modifier
@@ -181,7 +180,7 @@ fun SettingScreen(
                             .fillMaxWidth()
                             .height(1.dp)
                     )
-                    ArrowRightItem("跳过广告",  "(仅支持部分APP的倒计时广告)") {
+                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
                         context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                     }
                     Spacer(
@@ -252,7 +251,7 @@ fun SettingScreen(
                             color = colorResource(R.color.text_333),
                         )
                         Image(
-                            painter = painterResource(id = R.drawable.ic_right),
+                            painter = painterResource(id = R.mipmap.ic_right),
                             contentDescription = "",
                             modifier = Modifier.padding(start = 25.dp, end = 25.dp)
                         )

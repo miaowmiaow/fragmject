@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.my_coin
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +50,7 @@ import kotlin.math.abs
 fun MyCoinScreen(
     viewModel: MyCoinViewModel = viewModel(),
     onNavigateToCoinRank: () -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -98,9 +98,7 @@ fun MyCoinScreen(
             IconButton(
                 modifier = Modifier.height(45.dp),
                 onClick = {
-                    if (context is AppCompatActivity) {
-                        context.onBackPressedDispatcher.onBackPressed()
-                    }
+                    onNavigateUp()
                 }
             ) {
                 Icon(
@@ -117,7 +115,7 @@ fun MyCoinScreen(
                 onClick = { onNavigateToCoinRank() }
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_rank),
+                    painter = painterResource(R.mipmap.ic_rank),
                     contentDescription = null,
                     tint = colorResource(R.color.white)
                 )

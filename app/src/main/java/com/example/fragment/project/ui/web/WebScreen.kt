@@ -1,6 +1,9 @@
 package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -8,6 +11,8 @@ import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedVisibility
@@ -23,21 +28,24 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.example.fragment.project.R
@@ -49,174 +57,280 @@ import com.google.accompanist.web.AccompanistWebViewClient
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
+import kotlinx.coroutines.launch
 
 @SuppressLint("SetJavaScriptEnabled")
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun WebScreen(
     originalUrl: String,
-    viewModel: WebViewModel = viewModel()
+    webCollectList: List<String>,
+    onWebBrowse: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var webView by remember { mutableStateOf<WebView?>(null) }
     val state = rememberWebViewState(originalUrl)
     val navigator = rememberWebViewNavigator()
-    //仅展示compose的权限申请，为写而写并没有实际意义
-//    val storagePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-//        arrayOf(
-//            Manifest.permission.READ_MEDIA_IMAGES,
-//            Manifest.permission.READ_MEDIA_VIDEO,
-//        )
-//    else
-//        arrayOf(
-//            Manifest.permission.READ_EXTERNAL_STORAGE,
-//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//        )
-//    val openDialog = remember {
-//        mutableStateOf(!storagePermissions.all {
-//            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-//        })
-//    }
-//    val requestPermissions =
-//        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
-//            var isGranted = true
-//            ps.entries.forEach {
-//                if (it.key in storagePermissions && !it.value)
-//                    isGranted = false
-//            }
-//            openDialog.value = !isGranted
-//        }
-//    if (openDialog.value) {
-//        AlertDialog(
-//            onDismissRequest = { openDialog.value = false },
-//            title = { Text(text = "申请存储空间权限") },
-//            text = { Text(text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用") },
-//            confirmButton = {
-//                TextButton(
-//                    onClick = {
-//                        requestPermissions.launch(storagePermissions)
-//                    }
-//                ) { Text("确定") }
-//            },
-//            dismissButton = {
-//                TextButton(onClick = { openDialog.value = false }) { Text("取消") }
-//            }
-//        )
-//    }
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+    )
+    var injectVConsole by remember { mutableStateOf(false) }
+    BackHandler(enabled = true) {
+        webView?.let {
+            if (!WebViewHelper.goBack(it, originalUrl)) {
+                onNavigateUp()
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .background(colorResource(R.color.white))
             .fillMaxSize()
             .systemBarsPadding()
     ) {
-        var injectState by remember { mutableStateOf(false) }
-        //注入VConsole以便于H5调试
-        val injectVConsole by remember { mutableStateOf(false) }
-        var progress by remember { mutableFloatStateOf(0f) }
-        val client = object : AccompanistWebViewClient() {
-
-            override fun doUpdateVisitedHistory(view: WebView, url: String?, isReload: Boolean) {
-                super.doUpdateVisitedHistory(view, url, isReload)
-                if (!url.isNullOrBlank() && url != "about:blank") {
-                    viewModel.updateHistoryWeb(url.toString())
-                }
-            }
-
-            override fun shouldInterceptRequest(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): WebResourceResponse? {
-                if (view != null && request != null) {
-                    when {
-                        WebViewHelper.isAssetsResource(request) -> {
-                            return WebViewHelper.assetsResourceRequest(view.context, request)
-                        }
-
-                        WebViewHelper.isCacheResource(request) -> {
-                            return WebViewHelper.cacheResourceRequest(view.context, request)
-                        }
+        ModalBottomSheetLayout(
+            sheetState = sheetState,
+            modifier = Modifier.weight(1f),
+            sheetContent = {
+                Row(
+                    modifier = Modifier
+                        .background(colorResource(R.color.white))
+                        .height(50.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            context.writeClipboard(state.lastLoadedUrl.toString())
+                        },
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(0),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(R.color.white),
+                            contentColor = colorResource(R.color.theme)
+                        ),
+                        contentPadding = PaddingValues(17.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_copy),
+                            contentDescription = null,
+                            tint = colorResource(R.color.theme)
+                        )
                     }
-                }
-                return super.shouldInterceptRequest(view, request)
-            }
-
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                if (view != null && request != null && request.url != null) {
-                    if ("http" != request.url.scheme && "https" != request.url.scheme) {
-                        try {
-                            view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        return true
+                    Button(
+                        onClick = {
+                            try {
+                                if (context is AppCompatActivity) {
+                                    val intent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(state.lastLoadedUrl)
+                                    )
+                                    intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                                    context.startActivity(intent)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        },
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(0),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(R.color.white),
+                            contentColor = colorResource(R.color.theme)
+                        ),
+                        contentPadding = PaddingValues(16.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_browse),
+                            contentDescription = null,
+                            tint = colorResource(R.color.theme)
+                        )
                     }
-                }
-                return false
-            }
-
-            override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
-                super.onPageStarted(view, url, favicon)
-                injectState = false
-            }
-
-            override fun onPageFinished(view: WebView, url: String?) {
-                super.onPageFinished(view, url)
-                injectState = false
-            }
-        }
-
-        val chromeClient = object : AccompanistWebChromeClient() {
-
-            override fun onProgressChanged(view: WebView, newProgress: Int) {
-                super.onProgressChanged(view, newProgress)
-                progress = (newProgress / 100f).coerceIn(0f, 1f)
-                if (newProgress > 80 && injectVConsole && !injectState) {
-                    view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
-                    injectState = true
-                }
-            }
-        }
-
-        WebView(
-            state = state,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            captureBackPresses = false,
-            navigator = navigator,
-            onCreated = { webView ->
-                webView.settings.javaScriptEnabled = true
-                val forceDarkMode =
-                    AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    webView.settings.isAlgorithmicDarkeningAllowed = forceDarkMode
-                } else {
-                    if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                        WebSettingsCompat.setForceDark(
-                            webView.settings,
-                            if (forceDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
+                    Button(
+                        onClick = {
+                            onWebCollect(
+                                !webCollectList.contains(state.lastLoadedUrl.toString()),
+                                state.lastLoadedUrl.toString()
+                            )
+                        },
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(0),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(R.color.white),
+                            contentColor = colorResource(R.color.theme)
+                        ),
+                        contentPadding = PaddingValues(15.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                if (webCollectList.contains(state.lastLoadedUrl.toString())) {
+                                    R.mipmap.ic_collect_checked
+                                } else {
+                                    R.mipmap.ic_collect_unchecked
+                                }
+                            ),
+                            contentDescription = null,
+                            tint = colorResource(
+                                if (webCollectList.contains(state.lastLoadedUrl.toString())) {
+                                    R.color.pink
+                                } else {
+                                    R.color.theme
+                                }
+                            )
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            injectVConsole = !injectVConsole
+                            navigator.reload()
+                            scope.launch { sheetState.hide() }
+                        },
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(0),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(R.color.white),
+                            contentColor = colorResource(R.color.theme)
+                        ),
+                        contentPadding = PaddingValues(16.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_debug),
+                            contentDescription = null,
+                            tint = colorResource(
+                                if (injectVConsole) {
+                                    R.color.theme_orange
+                                } else {
+                                    R.color.theme
+                                }
+                            )
                         )
                     }
                 }
-                WebViewHelper.setDownloadListener(webView)
-                WebViewHelper.setOnLongClickListener(webView)
-            },
-            onDispose = { WebViewManager.recycle(it) },
-            client = client,
-            chromeClient = chromeClient,
-            factory = { context -> WebViewManager.obtain(context).also { webView = it } }
-        )
-        AnimatedVisibility(visible = (progress > 0f && progress < 1f)) {
-            LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier.fillMaxWidth(),
-                color = colorResource(R.color.theme_orange),
-                backgroundColor = colorResource(R.color.white)
+            }
+        ) {
+            var injectState by remember { mutableStateOf(false) }
+            var progress by remember { mutableFloatStateOf(0f) }
+            val client = object : AccompanistWebViewClient() {
+
+                override fun doUpdateVisitedHistory(
+                    view: WebView,
+                    url: String?,
+                    isReload: Boolean
+                ) {
+                    super.doUpdateVisitedHistory(view, url, isReload)
+                    if (!url.isNullOrBlank() && url != "about:blank") {
+                        onWebBrowse(true, url.toString())
+                    }
+                }
+
+                override fun shouldInterceptRequest(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): WebResourceResponse? {
+                    if (view != null && request != null) {
+                        when {
+                            WebViewHelper.isAssetsResource(request) -> {
+                                return WebViewHelper.assetsResourceRequest(view.context, request)
+                            }
+
+                            WebViewHelper.isCacheResource(request) -> {
+                                return WebViewHelper.cacheResourceRequest(view.context, request)
+                            }
+                        }
+                    }
+                    return super.shouldInterceptRequest(view, request)
+                }
+
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
+                    if (view != null && request != null && request.url != null) {
+                        if ("http" != request.url.scheme && "https" != request.url.scheme) {
+                            try {
+                                view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            return true
+                        }
+                    }
+                    return false
+                }
+
+                override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
+                    super.onPageStarted(view, url, favicon)
+                    injectState = false
+                }
+
+                override fun onPageFinished(view: WebView, url: String?) {
+                    super.onPageFinished(view, url)
+                    injectState = false
+                }
+            }
+
+            val chromeClient = object : AccompanistWebChromeClient() {
+
+                override fun onProgressChanged(view: WebView, newProgress: Int) {
+                    super.onProgressChanged(view, newProgress)
+                    progress = (newProgress / 100f).coerceIn(0f, 1f)
+                    if (newProgress > 80 && injectVConsole && !injectState) {
+                        view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
+                        injectState = true
+                    }
+                }
+            }
+            WebView(
+                state = state,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                captureBackPresses = false,
+                navigator = navigator,
+                onCreated = { webView ->
+                    webView.settings.javaScriptEnabled = true
+                    val forceDarkMode =
+                        AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        webView.settings.isAlgorithmicDarkeningAllowed = forceDarkMode
+                    } else {
+                        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+                            WebSettingsCompat.setForceDark(
+                                webView.settings,
+                                if (forceDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
+                            )
+                        }
+                    }
+                    WebViewHelper.setDownloadListener(webView)
+                    WebViewHelper.setOnLongClickListener(webView)
+                },
+                onDispose = { WebViewManager.recycle(it) },
+                client = client,
+                chromeClient = chromeClient,
+                factory = { context -> WebViewManager.obtain(context).also { webView = it } }
             )
+            AnimatedVisibility(visible = (progress > 0f && progress < 1f)) {
+                LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = colorResource(R.color.theme_orange),
+                    backgroundColor = colorResource(R.color.white)
+                )
+            }
         }
-        Divider(color = colorResource(R.color.line))
         Row(
             modifier = Modifier
                 .background(colorResource(R.color.white))
@@ -226,9 +340,7 @@ fun WebScreen(
                 onClick = {
                     webView?.let {
                         if (!WebViewHelper.goBack(it, originalUrl)) {
-                            if (context is AppCompatActivity) {
-                                context.onBackPressedDispatcher.onBackPressed()
-                            }
+                            onNavigateUp()
                         }
                     }
                 },
@@ -244,8 +356,9 @@ fun WebScreen(
                     .fillMaxHeight()
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_web_back),
-                    contentDescription = null
+                    painter = painterResource(R.mipmap.ic_web_back),
+                    contentDescription = null,
+                    tint = colorResource(R.color.theme)
                 )
             }
             Button(
@@ -266,8 +379,9 @@ fun WebScreen(
                     .fillMaxHeight()
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_web_forward),
-                    contentDescription = null
+                    painter = painterResource(R.mipmap.ic_web_forward),
+                    contentDescription = null,
+                    tint = colorResource(R.color.theme)
                 )
             }
             Button(
@@ -284,23 +398,19 @@ fun WebScreen(
                     .fillMaxHeight()
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_web_refresh),
-                    contentDescription = null
+                    painter = painterResource(R.mipmap.ic_web_refresh),
+                    contentDescription = null,
+                    tint = colorResource(R.color.theme)
                 )
             }
             Button(
                 onClick = {
-                    try {
-                        if (context is AppCompatActivity) {
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(state.lastLoadedUrl)
-                            )
-                            intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                            context.startActivity(intent)
+                    scope.launch {
+                        if (sheetState.isVisible) {
+                            sheetState.hide()
+                        } else {
+                            sheetState.show()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
@@ -309,16 +419,24 @@ fun WebScreen(
                     backgroundColor = colorResource(R.color.white),
                     contentColor = colorResource(R.color.theme)
                 ),
-                contentPadding = PaddingValues(15.dp),
+                contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_web_browse),
-                    contentDescription = null
+                    painter = painterResource(R.mipmap.ic_web_more),
+                    contentDescription = null,
+                    tint = colorResource(R.color.theme)
                 )
             }
         }
     }
+}
+
+fun Context.writeClipboard(text: String) {
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText("simple text", text)
+    clipboard.setPrimaryClip(clip)
+    Toast.makeText(this, "已复制到剪切板", Toast.LENGTH_SHORT).show()
 }

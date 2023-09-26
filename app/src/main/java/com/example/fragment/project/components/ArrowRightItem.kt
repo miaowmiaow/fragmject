@@ -60,7 +60,7 @@ fun ArrowRightItem(
             )
         }
         Image(
-            painter = painterResource(id = R.drawable.ic_right),
+            painter = painterResource(id = R.mipmap.ic_right),
             contentDescription = "",
             modifier = Modifier.padding(start = 25.dp, end = 25.dp)
         )

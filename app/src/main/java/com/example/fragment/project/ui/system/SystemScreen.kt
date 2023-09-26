@@ -1,28 +1,31 @@
 package com.example.fragment.project.ui.system
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.TabRowDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.LoadingContent
@@ -43,26 +46,28 @@ fun SystemScreen(
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigateUp: () -> Unit = {},
 ) {
-    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(index) { tree.size }
     Column(modifier = Modifier.systemBarsPadding()) {
         TitleBar(title) {
-            if (context is AppCompatActivity) {
-                context.onBackPressedDispatcher.onBackPressed()
-            }
+            onNavigateUp()
         }
         TabBar(
             data = tree,
             textMapping = { it.name },
             pagerState = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp),
             onClick = {
                 coroutineScope.launch {
                     pagerState.animateScrollToPage(it)
                 }
             },
         )
+        TabRowDefaults.Divider(color = colorResource(R.color.line))
         HorizontalPager(state = pagerState) { page ->
             val pageCid = tree[page].id
             DisposableEffect(lifecycleOwner) {

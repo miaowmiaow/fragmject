@@ -53,8 +53,9 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     hotKeyList: List<HotKeyBean>,
     treeList: List<TreeBean>,
-    onNavigateToLogin: () -> Unit = {},
+    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToBrowseCollect: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
     onNavigateToMyDemo: () -> Unit = {},
@@ -108,6 +109,7 @@ fun MainScreen(
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
                     HomeScreen(
                         listState = homeListState,
+                        onWebCollect = onWebCollect,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToUser = onNavigateToUser,
@@ -125,6 +127,7 @@ fun MainScreen(
 
                 2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
                     ProjectScreen(
+                        onWebCollect = onWebCollect,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToUser = onNavigateToUser,

@@ -39,9 +39,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BrowseCollectScreen(
-    webBrowseList: List<String>,
+    webBrowseHistoryList: List<String>,
     webCollectList: List<String>,
-    onWebBrowse: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onWebBrowseHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
@@ -87,12 +87,12 @@ fun BrowseCollectScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                itemsIndexed(if (page == 0) webBrowseList else webCollectList) { _, item ->
+                itemsIndexed(if (page == 0) webBrowseHistoryList else webCollectList) { _, item ->
                     Row(
                         modifier = Modifier
                             .clickable {
                                 if (page == 0) {
-                                    onWebBrowse(true, item)
+                                    onWebBrowseHistory(true, item)
                                 }
                                 onNavigateToWeb(item)
                             }
@@ -123,7 +123,7 @@ fun BrowseCollectScreen(
                                 .padding(10.dp, 5.dp, 0.dp, 5.dp)
                                 .clickable {
                                     if (page == 0) {
-                                        onWebBrowse(false, item)
+                                        onWebBrowseHistory(false, item)
                                     } else {
                                         onWebCollect(false, item)
                                     }

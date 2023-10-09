@@ -21,7 +21,7 @@ data class WanUiState(
     var hotKeyResult: MutableList<HotKeyBean> = ArrayList(),
     var treeResult: MutableList<TreeBean> = ArrayList(),
     var searchHistoryResult: MutableList<String> = ArrayList(),
-    var webBrowseResult: MutableList<String> = ArrayList(),
+    var webBrowseHistoryResult: MutableList<String> = ArrayList(),
     var webCollectResult: MutableList<String> = ArrayList(),
     var updateTime: Long = 0
 )
@@ -53,8 +53,8 @@ class WanViewModel : BaseViewModel() {
                     state.searchHistoryResult.addAll(it)
                 }
                 webBrowseList.await().let {
-                    state.webBrowseResult.clear()
-                    state.webBrowseResult.addAll(it)
+                    state.webBrowseHistoryResult.clear()
+                    state.webBrowseHistoryResult.addAll(it)
                 }
                 webCollectList.await().let {
                     state.webCollectResult.clear()
@@ -91,13 +91,13 @@ class WanViewModel : BaseViewModel() {
         }
     }
 
-    fun onWebBrowse(isAdd: Boolean, text: String) {
+    fun onWebBrowseHistory(isAdd: Boolean, text: String) {
         _uiState.update {
-            if (it.webBrowseResult.contains(text)) {
-                it.webBrowseResult.remove(text)
+            if (it.webBrowseHistoryResult.contains(text)) {
+                it.webBrowseHistoryResult.remove(text)
             }
             if (isAdd) {
-                it.webBrowseResult.add(0, text)
+                it.webBrowseHistoryResult.add(0, text)
             }
             it.copy(updateTime = System.nanoTime())
         }
@@ -115,9 +115,32 @@ class WanViewModel : BaseViewModel() {
         }
     }
 
-    fun onSaveWanHelper() {
+    fun onRestore() {
+        viewModelScope.launch {
+            val searchHistoryList = async { WanHelper.getSearchHistory() }
+            val webBrowseList = async { WanHelper.getWebBrowse() }
+            val webCollectList = async { WanHelper.getWebCollect() }
+            _uiState.update { state ->
+                searchHistoryList.await().let {
+                    state.searchHistoryResult.clear()
+                    state.searchHistoryResult.addAll(it)
+                }
+                webBrowseList.await().let {
+                    state.webBrowseHistoryResult.clear()
+                    state.webBrowseHistoryResult.addAll(it)
+                }
+                webCollectList.await().let {
+                    state.webCollectResult.clear()
+                    state.webCollectResult.addAll(it)
+                }
+                state.copy(updateTime = System.nanoTime())
+            }
+        }
+    }
+
+    fun onSave() {
         WanHelper.setSearchHistory(_uiState.value.searchHistoryResult)
-        WanHelper.setWebBrowse(_uiState.value.webBrowseResult)
+        WanHelper.setWebBrowse(_uiState.value.webBrowseHistoryResult)
         WanHelper.setWebCollect(_uiState.value.webCollectResult)
     }
 

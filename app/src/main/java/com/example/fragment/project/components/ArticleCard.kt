@@ -52,11 +52,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun ArticleCard(
     data: ArticleBean,
+    modifier: Modifier = Modifier,
+    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit,
     onNavigateToSystem: (cid: String) -> Unit,
     onNavigateToUser: (userId: String) -> Unit,
     onNavigateToWeb: (url: String) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by remember(data.collect) { mutableIntStateOf(getCollectResId(data.collect)) }
@@ -245,6 +246,7 @@ fun ArticleCard(
                                         "0" -> {
                                             data.collect = !data.collect
                                             collectResId = getCollectResId(data.collect)
+                                            onWebCollect(data.collect, data.link)
                                         }
 
                                         "-1001" -> onNavigateToLogin()

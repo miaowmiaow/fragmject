@@ -7,8 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.compose.rememberNavController
+import com.example.fragment.project.ui.web.content.WebViewManager
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.utils.WebViewManager
 
 class WanActivity : AppCompatActivity() {
 
@@ -33,8 +33,6 @@ class WanActivity : AppCompatActivity() {
                 else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             }
         }
-        //WebView预加载
-        WebViewManager.prepare(applicationContext)
         //双击返回键回退桌面
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -47,11 +45,14 @@ class WanActivity : AppCompatActivity() {
                 }
             }
         })
+        //WebView预加载
+        WebViewManager.prepare(applicationContext)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         WanHelper.close()
+        //WebView销毁
         WebViewManager.destroy()
     }
 

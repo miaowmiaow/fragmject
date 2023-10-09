@@ -279,19 +279,16 @@ class WebViewManager private constructor() {
         val webView = WebView(context)
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.overScrollMode = WebView.OVER_SCROLL_NEVER
-        val webSetting = webView.settings
-        webSetting.allowFileAccess = true
-        webSetting.cacheMode = WebSettings.LOAD_NO_CACHE
-        webSetting.domStorageEnabled = true
-        webSetting.setGeolocationEnabled(true)
-//        webSetting.javaScriptCanOpenWindowsAutomatically = true
-        webSetting.javaScriptEnabled = true
-        webSetting.loadWithOverviewMode = true
-//        webSetting.setSupportMultipleWindows(true)
-        webSetting.setSupportZoom(true)
-        webSetting.displayZoomControls = false
-        webSetting.useWideViewPort = true
-        webSetting.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        val webSettings = webView.settings
+        webSettings.allowFileAccess = true
+        webSettings.cacheMode = WebSettings.LOAD_DEFAULT
+        webSettings.domStorageEnabled = true
+        webSettings.javaScriptEnabled = true
+        webSettings.loadWithOverviewMode = true
+        webSettings.setSupportZoom(true)
+        webSettings.displayZoomControls = false
+        webSettings.useWideViewPort = true
+        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         return webView
     }
@@ -299,7 +296,7 @@ class WebViewManager private constructor() {
     fun prepare(context: Context) {
         if (webViewCache.isEmpty()) {
             Looper.myQueue().addIdleHandler {
-                webViewCache.add(create(MutableContextWrapper(context)))
+                webViewCache.add(create(MutableContextWrapper(context.applicationContext)))
                 false
             }
         }
@@ -314,6 +311,7 @@ class WebViewManager private constructor() {
         contextWrapper.baseContext = context
         webView.clearHistory()
         webView.resumeTimers()
+        prepare(context.applicationContext)
         return webView
     }
 

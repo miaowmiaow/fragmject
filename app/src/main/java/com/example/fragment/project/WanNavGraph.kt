@@ -61,8 +61,11 @@ fun WanNavGraph(
             darkIcons = false
         )
         val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.onRestore()
+            }
             if (event == Lifecycle.Event.ON_PAUSE) {
-                viewModel.onSaveWanHelper()
+                viewModel.onSave()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -101,9 +104,9 @@ fun WanNavGraph(
     ) {
         composable(WanDestinations.BROWSE_COLLECT_ROUTE) {
             BrowseCollectScreen(
-                webBrowseList = wanUiState.webBrowseResult,
+                webBrowseHistoryList = wanUiState.webBrowseHistoryResult,
                 webCollectList = wanUiState.webCollectResult,
-                onWebBrowse = { isAdd, text -> viewModel.onWebBrowse(isAdd, text) },
+                onWebBrowseHistory = { isAdd, text -> viewModel.onWebBrowseHistory(isAdd, text) },
                 onWebCollect = { isAdd, text -> viewModel.onWebCollect(isAdd, text) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
@@ -120,6 +123,7 @@ fun WanNavGraph(
             MainScreen(
                 hotKeyList = wanUiState.hotKeyResult,
                 treeList = wanUiState.treeResult,
+                onWebCollect = { isAdd, text -> viewModel.onWebCollect(isAdd, text) },
                 onNavigateToBrowseCollect = { wanNavActions.navigateToBrowseCollect() },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
@@ -233,7 +237,7 @@ fun WanNavGraph(
             WebScreen(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: "",
                 webCollectList = wanUiState.webCollectResult,
-                onWebBrowse = { isAdd, text -> viewModel.onWebBrowse(isAdd, text) },
+                onWebBrowseHistory = { isAdd, text -> viewModel.onWebBrowseHistory(isAdd, text) },
                 onWebCollect = { isAdd, text -> viewModel.onWebCollect(isAdd, text) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -300,7 +304,7 @@ class WanNavActions(
     }
 
     private fun navigate(directions: String, arguments: String = "") {
-        val options = navOptions { launchSingleTop = true }
+        val options = navOptions { launchSingleTop = false }
         WanHelper.getUser { userBean ->
             if (authentication.contains(directions) && userBean.id.isBlank()) {
                 navController.navigate(WanDestinations.LOGIN_ROUTE, options)
@@ -312,19 +316,19 @@ class WanNavActions(
 }
 
 object WanDestinations {
-    const val LOGIN_ROUTE = "login"
-    const val MAIN_ROUTE = "main"
-    const val BROWSE_COLLECT_ROUTE = "BROWSE_COLLECT"
-    const val MY_COIN_ROUTE = "my_coin"
-    const val MY_COLLECT_ROUTE = "my_collect"
-    const val MY_DEMO_ROUTE = "my_demo"
-    const val MY_SHARE_ROUTE = "my_share"
-    const val RANK_ROUTE = "rank"
-    const val REGISTER_ROUTE = "register"
-    const val SEARCH_ROUTE = "search"
-    const val SETTING_ROUTE = "setting"
-    const val SHARE_ARTICLE_ROUTE = "share_article"
-    const val SYSTEM_ROUTE = "system"
-    const val USER_ROUTE = "user"
-    const val WEB_ROUTE = "web"
+    const val LOGIN_ROUTE = "login_route"
+    const val MAIN_ROUTE = "main_route"
+    const val BROWSE_COLLECT_ROUTE = "browse_collect_route"
+    const val MY_COIN_ROUTE = "my_coin_route"
+    const val MY_COLLECT_ROUTE = "my_collect_route"
+    const val MY_DEMO_ROUTE = "my_demo_route"
+    const val MY_SHARE_ROUTE = "my_share_route"
+    const val RANK_ROUTE = "rank_route"
+    const val REGISTER_ROUTE = "register_route"
+    const val SEARCH_ROUTE = "search_route"
+    const val SETTING_ROUTE = "setting_route"
+    const val SHARE_ARTICLE_ROUTE = "share_article_route"
+    const val SYSTEM_ROUTE = "system_route"
+    const val USER_ROUTE = "user_route"
+    const val WEB_ROUTE = "web_route"
 }

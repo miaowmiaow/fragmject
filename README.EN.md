@@ -18,7 +18,7 @@ In summary, if you're looking for a well structured codebase to learn from then 
 
 ## Development Environment
 In order for you to run this project normally, please use the latest version of Android Studio. You can download it at the following address:
-[Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
+[Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
 
 ## Pre knowledge
 Before diving into this project, here are some basic concepts you might want to familiarize yourself with:

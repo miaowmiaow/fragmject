@@ -2,15 +2,7 @@ package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -31,28 +23,17 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
 import com.example.fragment.project.R
-import com.example.miaow.base.utils.WebViewHelper
-import com.example.miaow.base.utils.WebViewManager
-import com.example.miaow.base.utils.injectVConsoleJs
-import com.google.accompanist.web.AccompanistWebChromeClient
-import com.google.accompanist.web.AccompanistWebViewClient
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.rememberWebViewNavigator
-import com.google.accompanist.web.rememberWebViewState
+import com.example.fragment.project.ui.web.content.WebViewManager
+import com.example.fragment.project.ui.web.content.WebViewNavGraph
+import com.example.fragment.project.ui.web.content.rememberWebViewNavigator
 import kotlinx.coroutines.launch
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -61,24 +42,19 @@ import kotlinx.coroutines.launch
 fun WebScreen(
     originalUrl: String,
     webCollectList: List<String>,
-    onWebBrowse: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onWebBrowseHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    var webView by remember { mutableStateOf<WebView?>(null) }
-    val state = rememberWebViewState(originalUrl)
-    val navigator = rememberWebViewNavigator()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
     )
-    var injectVConsole by remember { mutableStateOf(false) }
-    BackHandler(enabled = true) {
-        webView?.let {
-            if (!WebViewHelper.goBack(it, originalUrl)) {
-                onNavigateUp()
-            }
+    val wvNavigator = rememberWebViewNavigator()
+    DisposableEffect(Unit) {
+        onDispose {
+            WebViewManager.reset()
         }
     }
     Column(
@@ -100,7 +76,7 @@ fun WebScreen(
                         onClick = {
                             context.startActivity(Intent.createChooser(Intent().apply {
                                 action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, state.lastLoadedUrl.toString())
+                                putExtra(Intent.EXTRA_TEXT, wvNavigator.lastLoadedUrl)
                                 type = "text/plain"
                             }, null))
                         },
@@ -124,14 +100,10 @@ fun WebScreen(
                     Button(
                         onClick = {
                             try {
-                                if (context is AppCompatActivity) {
-                                    val intent = Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(state.lastLoadedUrl)
-                                    )
-                                    intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                                    context.startActivity(intent)
-                                }
+                                val intent =
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(wvNavigator.lastLoadedUrl))
+                                intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                                context.startActivity(intent)
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -156,8 +128,8 @@ fun WebScreen(
                     Button(
                         onClick = {
                             onWebCollect(
-                                !webCollectList.contains(state.lastLoadedUrl.toString()),
-                                state.lastLoadedUrl.toString()
+                                !webCollectList.contains(wvNavigator.lastLoadedUrl),
+                                wvNavigator.lastLoadedUrl.toString()
                             )
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
@@ -173,7 +145,7 @@ fun WebScreen(
                     ) {
                         Icon(
                             painter = painterResource(
-                                if (webCollectList.contains(state.lastLoadedUrl.toString())) {
+                                if (webCollectList.contains(wvNavigator.lastLoadedUrl)) {
                                     R.mipmap.ic_collect_checked
                                 } else {
                                     R.mipmap.ic_collect_unchecked
@@ -181,7 +153,7 @@ fun WebScreen(
                             ),
                             contentDescription = null,
                             tint = colorResource(
-                                if (webCollectList.contains(state.lastLoadedUrl.toString())) {
+                                if (webCollectList.contains(wvNavigator.lastLoadedUrl)) {
                                     R.color.pink
                                 } else {
                                     R.color.theme
@@ -191,8 +163,7 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            injectVConsole = !injectVConsole
-                            navigator.reload()
+                            wvNavigator.injectVConsole()
                             scope.launch { sheetState.hide() }
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
@@ -210,7 +181,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_debug),
                             contentDescription = null,
                             tint = colorResource(
-                                if (injectVConsole) {
+                                if (wvNavigator.injectVConsole) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme
@@ -221,115 +192,21 @@ fun WebScreen(
                 }
             }
         ) {
-            var injectState by remember { mutableStateOf(false) }
-            var progress by remember { mutableFloatStateOf(0f) }
-            val client = object : AccompanistWebViewClient() {
-
-                override fun doUpdateVisitedHistory(
-                    view: WebView,
-                    url: String?,
-                    isReload: Boolean
-                ) {
-                    super.doUpdateVisitedHistory(view, url, isReload)
-                    if (!url.isNullOrBlank() && url != "about:blank") {
-                        onWebBrowse(true, url.toString())
-                    }
-                }
-
-                override fun shouldInterceptRequest(
-                    view: WebView?,
-                    request: WebResourceRequest?
-                ): WebResourceResponse? {
-                    if (view != null && request != null) {
-                        when {
-                            WebViewHelper.isAssetsResource(request) -> {
-                                return WebViewHelper.assetsResourceRequest(view.context, request)
-                            }
-
-                            WebViewHelper.isCacheResource(request) -> {
-                                return WebViewHelper.cacheResourceRequest(view.context, request)
-                            }
-                        }
-                    }
-                    return super.shouldInterceptRequest(view, request)
-                }
-
-                override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    request: WebResourceRequest?
-                ): Boolean {
-                    if (view != null && request != null && request.url != null) {
-                        if ("http" != request.url.scheme && "https" != request.url.scheme) {
-                            try {
-                                view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                            return true
-                        }
-                    }
-                    return false
-                }
-
-                override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
-                    super.onPageStarted(view, url, favicon)
-                    injectState = false
-                }
-
-                override fun onPageFinished(view: WebView, url: String?) {
-                    super.onPageFinished(view, url)
-                    injectState = false
-                }
-            }
-
-            val chromeClient = object : AccompanistWebChromeClient() {
-
-                override fun onProgressChanged(view: WebView, newProgress: Int) {
-                    super.onProgressChanged(view, newProgress)
-                    progress = (newProgress / 100f).coerceIn(0f, 1f)
-                    if (newProgress > 80 && injectVConsole && !injectState) {
-                        view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
-                        injectState = true
-                    }
-                }
-            }
-            WebView(
-                state = state,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                captureBackPresses = false,
-                navigator = navigator,
-                onCreated = { webView ->
-                    webView.settings.javaScriptEnabled = true
-                    val forceDarkMode =
-                        AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        webView.settings.isAlgorithmicDarkeningAllowed = forceDarkMode
-                    } else {
-                        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                            WebSettingsCompat.setForceDark(
-                                webView.settings,
-                                if (forceDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
-                            )
-                        }
-                    }
-                    WebViewHelper.setDownloadListener(webView)
-                    WebViewHelper.setOnLongClickListener(webView)
-                },
-                onDispose = { WebViewManager.recycle(it) },
-                client = client,
-                chromeClient = chromeClient,
-                factory = { context -> WebViewManager.obtain(context).also { webView = it } }
+            WebViewNavGraph(
+                originalUrl = originalUrl,
+                modifier = Modifier.fillMaxSize(),
+                webViewNavigator = wvNavigator,
+                onWebBrowseHistory = onWebBrowseHistory,
+                onNavigateUp = onNavigateUp
             )
-            AnimatedVisibility(visible = (progress > 0f && progress < 1f)) {
-                LinearProgressIndicator(
-                    progress = progress,
-                    modifier = Modifier.fillMaxWidth(),
-                    color = colorResource(R.color.theme_orange),
-                    backgroundColor = colorResource(R.color.white)
-                )
-            }
+        }
+        AnimatedVisibility(visible = (wvNavigator.progress > 0f && wvNavigator.progress < 1f)) {
+            LinearProgressIndicator(
+                progress = wvNavigator.progress,
+                modifier = Modifier.fillMaxWidth(),
+                color = colorResource(R.color.theme_orange),
+                backgroundColor = colorResource(R.color.white)
+            )
         }
         Row(
             modifier = Modifier
@@ -338,11 +215,7 @@ fun WebScreen(
         ) {
             Button(
                 onClick = {
-                    webView?.let {
-                        if (!WebViewHelper.goBack(it, originalUrl)) {
-                            onNavigateUp()
-                        }
-                    }
+                    wvNavigator.navigateBack()
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),
@@ -363,9 +236,7 @@ fun WebScreen(
             }
             Button(
                 onClick = {
-                    if (navigator.canGoForward) {
-                        navigator.navigateForward()
-                    }
+                    wvNavigator.navigateForward()
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),
@@ -385,7 +256,9 @@ fun WebScreen(
                 )
             }
             Button(
-                onClick = { navigator.reload() },
+                onClick = {
+                    wvNavigator.reload()
+                },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),
                 colors = ButtonDefaults.buttonColors(

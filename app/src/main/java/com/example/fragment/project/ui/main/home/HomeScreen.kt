@@ -20,6 +20,7 @@ import com.example.fragment.project.components.SwipeRefresh
 fun HomeScreen(
     listState: LazyListState,
     viewModel: HomeViewModel = viewModel(),
+    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
@@ -51,6 +52,7 @@ fun HomeScreen(
                 ArticleCard(
                     data = item,
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                    onWebCollect = onWebCollect,
                     onNavigateToLogin = onNavigateToLogin,
                     onNavigateToUser = onNavigateToUser,
                     onNavigateToSystem = onNavigateToSystem,

@@ -17,7 +17,8 @@ class WanApplication : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        initHttp()
+        setBaseUrl("https://www.wanandroid.com/")
+        setHttpClient(OkHelper.httpClient(applicationContext))
     }
 
     override fun newImageLoader(): ImageLoader {
@@ -36,8 +37,4 @@ class WanApplication : Application(), ImageLoaderFactory {
             .build()
     }
 
-    private fun initHttp() {
-        setBaseUrl("https://www.wanandroid.com/")
-        setHttpClient(OkHelper.httpClient(applicationContext))
-    }
 }

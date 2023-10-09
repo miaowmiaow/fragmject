@@ -20,7 +20,7 @@
 
 ## 开发环境
 为了您能正常运行本项目，请使用最新版本 `Android Studio` 。   
-[Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn#downloads/)
+[Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
 
 ## 将 Android 应用迁移到版本目录
 [将 build 迁移到版本目录 | Android Developer](https://developer.android.google.cn/studio/build/migrate-to-catalogs?hl=zh-cn)

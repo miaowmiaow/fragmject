@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.web.content
+package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -73,6 +73,7 @@ class WebViewManager private constructor() {
         val webView = WebView(context)
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.overScrollMode = WebView.OVER_SCROLL_NEVER
+        webView.isVerticalScrollBarEnabled = false
         val webSettings = webView.settings
         webSettings.allowFileAccess = true
         webSettings.cacheMode = WebSettings.LOAD_DEFAULT
@@ -103,7 +104,6 @@ class WebViewManager private constructor() {
         val webView = webViewCache.removeFirst()
         val contextWrapper = webView.context as MutableContextWrapper
         contextWrapper.baseContext = context
-        webView.isVerticalScrollBarEnabled = false
         return webView
     }
 
@@ -129,12 +129,7 @@ class WebViewManager private constructor() {
 
     fun recycle(webView: WebView) {
         try {
-            val parent = webView.parent
-            if (parent != null) {
-                (parent as ViewGroup).removeView(webView)
-            }
-            val contextWrapper = webView.context as MutableContextWrapper
-            contextWrapper.baseContext = webView.context.applicationContext
+            removeParent(webView)
             if (!backStack.contains(webView) && !forwardStack.contains(webView)
             ) {
                 backStack.addLast(webView)
@@ -151,15 +146,20 @@ class WebViewManager private constructor() {
                 webView.stopLoading()
                 webView.clearHistory()
                 webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
-                val parent = webView.parent
-                if (parent != null) {
-                    (parent as ViewGroup).removeView(webView)
-                }
-                val contextWrapper = webView.context as MutableContextWrapper
-                contextWrapper.baseContext = webView.context.applicationContext
+                removeParent(webView)
                 webViewCache.add(0, webView)
             }
+            backStack.forEach {
+                removeParent(it)
+                it.removeAllViews()
+                it.destroy()
+            }
             backStack.clear()
+            forwardStack.forEach {
+                removeParent(it)
+                it.removeAllViews()
+                it.destroy()
+            }
             forwardStack.clear()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -168,7 +168,10 @@ class WebViewManager private constructor() {
 
     fun destroy() {
         try {
+            backStack.clear()
+            forwardStack.clear()
             webViewCache.forEach {
+                removeParent(it)
                 it.removeAllViews()
                 it.destroy()
             }
@@ -176,6 +179,15 @@ class WebViewManager private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun removeParent(webView: WebView) {
+        val parent = webView.parent
+        if (parent != null) {
+            (parent as ViewGroup).removeView(webView)
+        }
+        val contextWrapper = webView.context as MutableContextWrapper
+        contextWrapper.baseContext = webView.context.applicationContext
     }
 
 }

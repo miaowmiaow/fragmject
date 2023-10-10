@@ -31,9 +31,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
-import com.example.fragment.project.ui.web.content.WebViewManager
-import com.example.fragment.project.ui.web.content.WebViewNavGraph
-import com.example.fragment.project.ui.web.content.rememberWebViewNavigator
 import kotlinx.coroutines.launch
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -192,7 +189,7 @@ fun WebScreen(
                 }
             }
         ) {
-            WebViewNavGraph(
+            WebNavGraph(
                 originalUrl = originalUrl,
                 modifier = Modifier.fillMaxSize(),
                 webViewNavigator = wvNavigator,

@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.web.content
+package com.example.fragment.project.ui.web
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -16,20 +16,20 @@ import androidx.navigation.navOptions
  * 导航图
  */
 @Composable
-fun WebViewNavGraph(
+fun WebNavGraph(
     originalUrl: String,
     webViewNavigator: WebViewNavigator,
     modifier: Modifier = Modifier,
     onWebBrowseHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateUp: () -> Unit = {},
 ) {
-    val webViewNavController = rememberNavController()
-    val webViewNavActions = remember(webViewNavController) {
-        WebViewNavActions(webViewNavController)
+    val navController = rememberNavController()
+    val navActions = remember(navController) {
+        WebNavActions(navController)
     }
     NavHost(
-        navController = webViewNavController,
-        startDestination = WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(originalUrl)}",
+        navController = navController,
+        startDestination = WebDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(originalUrl)}",
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
@@ -56,19 +56,19 @@ fun WebViewNavGraph(
             )
         },
     ) {
-        composable("${WebViewDestinations.WEB_VIEW_ROUTE}/{url}") { backStackEntry ->
+        composable("${WebDestinations.WEB_VIEW_ROUTE}/{url}") { backStackEntry ->
             WebView(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: originalUrl,
                 navigator = webViewNavigator,
                 goBack = {
-                    webViewNavActions.navigateUp()
+                    navActions.navigateUp()
                 },
                 goForward = {
-                    webViewNavActions.navigateToWebView("about:blank")
+                    navActions.navigateToWebView("about:blank")
                 },
                 shouldOverrideUrl = {
                     onWebBrowseHistory(true, it)
-                    webViewNavActions.navigateToWebView(it)
+                    navActions.navigateToWebView(it)
                 },
                 onNavigateUp = onNavigateUp
             )
@@ -76,12 +76,12 @@ fun WebViewNavGraph(
     }
 }
 
-class WebViewNavActions(
+class WebNavActions(
     private val navController: NavHostController
 ) {
     val navigateToWebView: (url: String) -> Unit = {
         navController.navigate(
-            WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(it)}",
+            WebDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(it)}",
             navOptions { launchSingleTop = false }
         )
     }
@@ -90,6 +90,6 @@ class WebViewNavActions(
     }
 }
 
-object WebViewDestinations {
+object WebDestinations {
     const val WEB_VIEW_ROUTE = "web_view_route"
 }

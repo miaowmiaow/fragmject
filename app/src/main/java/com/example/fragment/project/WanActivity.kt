@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.compose.rememberNavController
-import com.example.fragment.project.ui.web.content.WebViewManager
+import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
 
 class WanActivity : AppCompatActivity() {

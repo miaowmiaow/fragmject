@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.web.content
+package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
 import android.content.Intent

@@ -10,7 +10,6 @@ plugins {
 //    id("miaow")
 }
 
-//以下配置不需要每次构建所以是用properties加载
 val configProperties = Properties()
 configProperties.load(FileInputStream(rootProject.file("config.properties")))
 
@@ -127,7 +126,6 @@ dependencies {
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
     implementation(libs.accompanist.systemuicontroller)
-    implementation(libs.accompanist.webview)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.material)

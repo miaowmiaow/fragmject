@@ -30,7 +30,6 @@ import com.example.miaow.base.utils.injectVConsoleJs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
@@ -42,8 +41,8 @@ fun WebView(
     originalUrl: String,
     modifier: Modifier = Modifier,
     navigator: WebViewNavigator,
-    onBack: () -> Unit = {},
-    onForward: () -> Unit = {},
+    goBack: () -> Unit = {},
+    goForward: () -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
@@ -59,14 +58,14 @@ fun WebView(
                 handleNavigationEvents(
                     onBack = {
                         if (WebViewManager.back(it)) {
-                            onBack()
+                            goBack()
                         } else {
                             onNavigateUp()
                         }
                     },
                     onForward = {
                         if (WebViewManager.forward(it)) {
-                            onForward()
+                            goForward()
                         }
                     },
                     reload = {
@@ -195,12 +194,13 @@ class WebViewNavigator(
     var progress: Float by mutableFloatStateOf(0f)
         internal set
 
+    @OptIn(FlowPreview::class)
     internal suspend fun handleNavigationEvents(
         onBack: () -> Unit = {},
         onForward: () -> Unit = {},
         reload: () -> Unit = {},
-    ): Nothing = withContext(Dispatchers.Main) {
-        navigationEvents.collect { event ->
+    ) = withContext(Dispatchers.Main) {
+        navigationEvents.debounce(300).collect { event ->
             when (event) {
                 is NavigationEvent.Back -> onBack()
                 is NavigationEvent.Forward -> onForward()

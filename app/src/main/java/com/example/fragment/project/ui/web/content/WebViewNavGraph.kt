@@ -34,25 +34,25 @@ fun WebViewNavGraph(
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(350)
+                animationSpec = tween(300)
             )
         },
         exitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(350)
+                animationSpec = tween(300)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(350)
+                animationSpec = tween(300)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(350)
+                animationSpec = tween(300)
             )
         },
     ) {
@@ -60,10 +60,10 @@ fun WebViewNavGraph(
             WebView(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: originalUrl,
                 navigator = webViewNavigator,
-                onBack = {
+                goBack = {
                     webViewNavActions.navigateUp()
                 },
-                onForward = {
+                goForward = {
                     webViewNavActions.navigateToWebView("about:blank")
                 },
                 shouldOverrideUrl = {

@@ -4,13 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.MutableContextWrapper
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.RectF
 import android.net.Uri
 import android.os.Looper
 import android.util.Base64
@@ -29,7 +24,6 @@ import com.example.miaow.base.utils.saveImagesToAlbum
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
-import java.util.Stack
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebViewManager private constructor() {
@@ -72,8 +66,8 @@ class WebViewManager private constructor() {
     }
 
     private val webViewCache: MutableList<WebView> = ArrayList(1)
-    private val backStack: Stack<WebView> = Stack()
-    private val forwardStack: Stack<WebView> = Stack()
+    private val backStack: ArrayDeque<WebView> = ArrayDeque()
+    private val forwardStack: ArrayDeque<WebView> = ArrayDeque()
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -110,25 +104,23 @@ class WebViewManager private constructor() {
         val contextWrapper = webView.context as MutableContextWrapper
         contextWrapper.baseContext = context
         webView.isVerticalScrollBarEnabled = false
-        webView.resumeTimers()
         return webView
     }
 
     fun back(webView: WebView): Boolean {
         return try {
-            webViewCache.add(0, backStack.pop())
-            forwardStack.push(webView)
+            webViewCache.add(0, backStack.removeLast())
+            forwardStack.add(webView)
             true
         } catch (e: Exception) {
-            forwardStack.clear()
             false
         }
     }
 
     fun forward(webView: WebView): Boolean {
         return try {
-            webViewCache.add(0, forwardStack.pop())
-            backStack.push(webView)
+            webViewCache.add(0, forwardStack.removeLast())
+            backStack.add(webView)
             true
         } catch (e: Exception) {
             false
@@ -145,7 +137,7 @@ class WebViewManager private constructor() {
             contextWrapper.baseContext = webView.context.applicationContext
             if (!backStack.contains(webView) && !forwardStack.contains(webView)
             ) {
-                backStack.push(webView)
+                backStack.addLast(webView)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -154,8 +146,8 @@ class WebViewManager private constructor() {
 
     fun reset() {
         try {
-            if (!backStack.empty()) {
-                val webView = backStack.pop()
+            if (!backStack.isEmpty()) {
+                val webView = backStack.removeLast()
                 webView.stopLoading()
                 webView.clearHistory()
                 webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
@@ -241,55 +233,6 @@ private fun Context.saveImageBase64Dialog(data: String) {
 
         })
         .show(this)
-}
-
-fun WebView.snapshotVisible(callback: (Bitmap) -> Unit) {
-    Thread {
-        try {
-            isVerticalScrollBarEnabled = false
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        var contentHeight = contentHeight
-        measure(0, 0)
-        val measuredHeight = measuredHeight
-        if (contentHeight in (height + 1)..<measuredHeight) {
-            contentHeight = measuredHeight
-        }
-        val saveBitmap =
-            Bitmap.createBitmap(width, contentHeight, Bitmap.Config.ARGB_8888)
-        val tempBitmap =
-            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas()
-        val paint = Paint()
-        val src = Rect()//代表图片矩形范围
-        val des = RectF()//代表Canvas的矩形范围(显示位置)
-        var scrollY = 0f
-        while (scrollY < contentHeight) {
-            canvas.setBitmap(tempBitmap)
-            scrollTo(0, scrollY.toInt())
-            draw(canvas)
-            Thread.sleep(50)
-            val top = scrollY
-            scrollY += height
-            if (scrollY > contentHeight) {
-                val surplusY = height - (scrollY - contentHeight)
-                src.set(
-                    0,
-                    (tempBitmap.height - surplusY).toInt(),
-                    tempBitmap.width,
-                    tempBitmap.height
-                )
-                des.set(0f, top, tempBitmap.width.toFloat(), top + surplusY)
-            } else {
-                src.set(0, 0, tempBitmap.width, tempBitmap.height)
-                des.set(0f, top, tempBitmap.width.toFloat(), top + tempBitmap.height.toFloat())
-            }
-            canvas.setBitmap(saveBitmap)
-            canvas.drawBitmap(tempBitmap, src, des, paint)
-        }
-        callback.invoke(saveBitmap)
-    }.start()
 }
 
 fun WebResourceRequest.isAssetsResource(): Boolean {

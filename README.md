@@ -133,7 +133,7 @@
 - [Jetpack Compose : 超简单实现滚轮控件(WheelPicker)](https://juejin.cn/post/7266702105829277754)
 - [Jetpack Compose : Jetpack Compose : 让你的WebView丝滑流畅](https://juejin.cn/post/7194360493866221628)
 
-![webview.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/ezgif-3-3ae2bbcc04.gif)
+![webview.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/4.webp)
 
 ## WebView 优化及 H5 秒开实践
 [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
@@ -164,8 +164,8 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 [自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 
 ### 截图展示
-| ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![5.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/5.webp) | ![6.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/6.gif) | ![7.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/7.gif) |
+|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
 #### 快速使用
 源代码在 `library-picture` 目录下。

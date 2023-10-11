@@ -36,7 +36,6 @@ fun ProjectScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     projectTreeViewModel: ProjectTreeViewModel = viewModel(),
     projectViewModel: ProjectViewModel = viewModel(),
-    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
@@ -90,7 +89,6 @@ fun ProjectScreen(
             ) { _, item ->
                 ArticleCard(
                     data = item,
-                    onWebCollect = onWebCollect,
                     onNavigateToLogin = onNavigateToLogin,
                     onNavigateToSystem = onNavigateToSystem,
                     onNavigateToUser = onNavigateToUser,

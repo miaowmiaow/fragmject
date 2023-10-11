@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.browse_collect
+package com.example.fragment.project.ui.bookmark_history
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -38,11 +38,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BrowseCollectScreen(
-    webBrowseHistoryList: List<String>,
-    webCollectList: List<String>,
-    onWebBrowseHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
-    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+fun BookmarkHistoryScreen(
+    webBookmarkList: List<String>,
+    webHistoryList: List<String>,
+    onWebBookmark: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
@@ -68,7 +68,7 @@ fun BrowseCollectScreen(
                 )
             }
             TabBar(
-                data = listOf("浏览", "收藏"),
+                data = listOf("书签", "历史"),
                 textMapping = { it },
                 pagerState = pagerState,
                 modifier = Modifier
@@ -87,12 +87,12 @@ fun BrowseCollectScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                itemsIndexed(if (page == 0) webBrowseHistoryList else webCollectList) { _, item ->
+                itemsIndexed(if (page == 0) webHistoryList else webBookmarkList) { _, item ->
                     Row(
                         modifier = Modifier
                             .clickable {
                                 if (page == 0) {
-                                    onWebBrowseHistory(true, item)
+                                    onWebHistory(true, item)
                                 }
                                 onNavigateToWeb(item)
                             }
@@ -123,9 +123,9 @@ fun BrowseCollectScreen(
                                 .padding(10.dp, 5.dp, 0.dp, 5.dp)
                                 .clickable {
                                     if (page == 0) {
-                                        onWebBrowseHistory(false, item)
+                                        onWebHistory(false, item)
                                     } else {
-                                        onWebCollect(false, item)
+                                        onWebBookmark(false, item)
                                     }
                                 },
                             tint = colorResource(

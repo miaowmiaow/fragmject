@@ -53,8 +53,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     hotKeyList: List<HotKeyBean>,
     treeList: List<TreeBean>,
-    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
-    onNavigateToBrowseCollect: () -> Unit = {},
+    onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
@@ -109,7 +108,6 @@ fun MainScreen(
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
                     HomeScreen(
                         listState = homeListState,
-                        onWebCollect = onWebCollect,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToUser = onNavigateToUser,
@@ -127,7 +125,6 @@ fun MainScreen(
 
                 2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
                     ProjectScreen(
-                        onWebCollect = onWebCollect,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToUser = onNavigateToUser,
@@ -137,7 +134,7 @@ fun MainScreen(
 
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
                     MyScreen(
-                        onNavigateToBrowseCollect = onNavigateToBrowseCollect,
+                        onNavigateToBookmarkHistory = onNavigateToBookmarkHistory,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToMyCoin = onNavigateToMyCoin,
                         onNavigateToMyCollect = onNavigateToMyCollect,

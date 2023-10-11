@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.web
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -23,8 +22,11 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -33,14 +35,14 @@ import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
 import kotlinx.coroutines.launch
 
-@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun WebScreen(
     originalUrl: String,
-    webCollectList: List<String>,
-    onWebBrowseHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
-    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    webBookmarkList: List<String>,
+    onWebBookmark: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -49,11 +51,7 @@ fun WebScreen(
         initialValue = ModalBottomSheetValue.Hidden,
     )
     val wvNavigator = rememberWebViewNavigator()
-    DisposableEffect(Unit) {
-        onDispose {
-            WebViewManager.reset()
-        }
-    }
+    var canRecycle by remember { mutableStateOf(true) }
     Column(
         modifier = Modifier
             .background(colorResource(R.color.white))
@@ -69,31 +67,6 @@ fun WebScreen(
                         .background(colorResource(R.color.white))
                         .height(50.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            context.startActivity(Intent.createChooser(Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, wvNavigator.lastLoadedUrl)
-                                type = "text/plain"
-                            }, null))
-                        },
-                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
-                        shape = RoundedCornerShape(0),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
-                        ),
-                        contentPadding = PaddingValues(15.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                    ) {
-                        Icon(
-                            painter = painterResource(R.mipmap.ic_web_share),
-                            contentDescription = null,
-                            tint = colorResource(R.color.theme)
-                        )
-                    }
                     Button(
                         onClick = {
                             try {
@@ -124,8 +97,30 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            onWebCollect(
-                                !webCollectList.contains(wvNavigator.lastLoadedUrl),
+                            canRecycle = false
+                            onNavigateToBookmarkHistory()
+                        },
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(0),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(R.color.white),
+                            contentColor = colorResource(R.color.theme)
+                        ),
+                        contentPadding = PaddingValues(16.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_history),
+                            contentDescription = null,
+                            tint = colorResource(R.color.theme)
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            onWebBookmark(
+                                !webBookmarkList.contains(wvNavigator.lastLoadedUrl),
                                 wvNavigator.lastLoadedUrl.toString()
                             )
                         },
@@ -135,23 +130,17 @@ fun WebScreen(
                             backgroundColor = colorResource(R.color.white),
                             contentColor = colorResource(R.color.theme)
                         ),
-                        contentPadding = PaddingValues(15.dp),
+                        contentPadding = PaddingValues(16.dp),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
                     ) {
                         Icon(
-                            painter = painterResource(
-                                if (webCollectList.contains(wvNavigator.lastLoadedUrl)) {
-                                    R.mipmap.ic_collect_checked
-                                } else {
-                                    R.mipmap.ic_collect_unchecked
-                                }
-                            ),
+                            painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
                             tint = colorResource(
-                                if (webCollectList.contains(wvNavigator.lastLoadedUrl)) {
-                                    R.color.pink
+                                if (webBookmarkList.contains(wvNavigator.lastLoadedUrl)) {
+                                    R.color.theme_orange
                                 } else {
                                     R.color.theme
                                 }
@@ -191,9 +180,10 @@ fun WebScreen(
         ) {
             WebNavGraph(
                 originalUrl = originalUrl,
-                modifier = Modifier.fillMaxSize(),
                 webViewNavigator = wvNavigator,
-                onWebBrowseHistory = onWebBrowseHistory,
+                modifier = Modifier.fillMaxSize(),
+                canRecycle = canRecycle,
+                onWebHistory = onWebHistory,
                 onNavigateUp = onNavigateUp
             )
         }

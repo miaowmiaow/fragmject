@@ -53,7 +53,6 @@ import kotlinx.coroutines.launch
 fun ArticleCard(
     data: ArticleBean,
     modifier: Modifier = Modifier,
-    onWebCollect: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit,
     onNavigateToSystem: (cid: String) -> Unit,
     onNavigateToUser: (userId: String) -> Unit,
@@ -246,7 +245,6 @@ fun ArticleCard(
                                         "0" -> {
                                             data.collect = !data.collect
                                             collectResId = getCollectResId(data.collect)
-                                            onWebCollect(data.collect, data.link)
                                         }
 
                                         "-1001" -> onNavigateToLogin()

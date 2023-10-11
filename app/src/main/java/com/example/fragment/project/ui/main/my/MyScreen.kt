@@ -30,7 +30,7 @@ import com.example.fragment.project.components.ArrowRightItem
 @Composable
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
-    onNavigateToBrowseCollect: () -> Unit = {},
+    onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
@@ -112,7 +112,7 @@ fun MyScreen(
                 .fillMaxWidth()
                 .height(1.dp)
         )
-        ArrowRightItem("浏览收藏") { onNavigateToBrowseCollect() }
+        ArrowRightItem("书签历史") { onNavigateToBookmarkHistory() }
         Spacer(
             Modifier
                 .background(colorResource(R.color.line))

@@ -20,13 +20,12 @@ fun WebNavGraph(
     originalUrl: String,
     webViewNavigator: WebViewNavigator,
     modifier: Modifier = Modifier,
-    onWebBrowseHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    canRecycle: Boolean = true,
+    onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateUp: () -> Unit = {},
 ) {
     val navController = rememberNavController()
-    val navActions = remember(navController) {
-        WebNavActions(navController)
-    }
+    val navActions = remember(navController) { WebNavActions(navController) }
     NavHost(
         navController = navController,
         startDestination = WebDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(originalUrl)}",
@@ -34,25 +33,25 @@ fun WebNavGraph(
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(300)
+                animationSpec = tween(350)
             )
         },
         exitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(300)
+                animationSpec = tween(350)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(300)
+                animationSpec = tween(350)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(300)
+                animationSpec = tween(350)
             )
         },
     ) {
@@ -60,6 +59,7 @@ fun WebNavGraph(
             WebView(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: originalUrl,
                 navigator = webViewNavigator,
+                canRecycle = canRecycle,
                 goBack = {
                     navActions.navigateUp()
                 },
@@ -67,7 +67,7 @@ fun WebNavGraph(
                     navActions.navigateToWebView("about:blank")
                 },
                 shouldOverrideUrl = {
-                    onWebBrowseHistory(true, it)
+                    onWebHistory(true, it)
                     navActions.navigateToWebView(it)
                 },
                 onNavigateUp = onNavigateUp

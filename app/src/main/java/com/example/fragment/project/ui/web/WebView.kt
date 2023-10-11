@@ -39,8 +39,9 @@ import kotlinx.coroutines.withContext
 @Composable
 fun WebView(
     originalUrl: String,
-    modifier: Modifier = Modifier,
     navigator: WebViewNavigator,
+    modifier: Modifier = Modifier,
+    canRecycle: Boolean = true,
     goBack: () -> Unit = {},
     goForward: () -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
@@ -148,11 +149,7 @@ fun WebView(
                         return false
                     }
 
-                    override fun onPageStarted(
-                        view: WebView,
-                        url: String?,
-                        favicon: Bitmap?
-                    ) {
+                    override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                         super.onPageStarted(view, url, favicon)
                         navigator.lastLoadedUrl = url
                         injectState = false
@@ -170,7 +167,7 @@ fun WebView(
         },
         modifier = modifier,
         onRelease = {
-            WebViewManager.recycle(it)
+            WebViewManager.recycle(it, canRecycle)
         }
     )
 }
@@ -200,7 +197,7 @@ class WebViewNavigator(
         onForward: () -> Unit = {},
         reload: () -> Unit = {},
     ) = withContext(Dispatchers.Main) {
-        navigationEvents.debounce(300).collect { event ->
+        navigationEvents.debounce(350).collect { event ->
             when (event) {
                 is NavigationEvent.Back -> onBack()
                 is NavigationEvent.Forward -> onForward()

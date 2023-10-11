@@ -11,8 +11,8 @@ import com.google.gson.reflect.TypeToken
 object WanHelper {
 
     private const val SEARCH_HISTORY = "search_history"
-    private const val WEB_COLLECT = "web_collect"
-    private const val WEB_BROWSE = "web_browse"
+    private const val WEB_BOOKMARK = "web_bookmark"
+    private const val WEB_HISTORY = "web_history"
     private const val UI_MODE = "ui_mode"
     private const val USER = "user"
 
@@ -36,13 +36,13 @@ object WanHelper {
         }
     }
 
-    fun setWebBrowse(list: List<String>) {
-        KVDatabase.set(WEB_BROWSE, Gson().toJson(list))
+    fun setWebBookmark(list: List<String>) {
+        KVDatabase.set(WEB_BOOKMARK, Gson().toJson(list))
     }
 
-    suspend fun getWebBrowse(): List<String> {
+    suspend fun getWebBookmark(): List<String> {
         return try {
-            val json = KVDatabase.get(WEB_BROWSE)
+            val json = KVDatabase.get(WEB_BOOKMARK)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -50,13 +50,13 @@ object WanHelper {
         }
     }
 
-    fun setWebCollect(list: List<String>) {
-        KVDatabase.set(WEB_COLLECT, Gson().toJson(list))
+    fun setWebHistory(list: List<String>) {
+        KVDatabase.set(WEB_HISTORY, Gson().toJson(list))
     }
 
-    suspend fun getWebCollect(): List<String> {
+    suspend fun getWebHistory(): List<String> {
         return try {
-            val json = KVDatabase.get(WEB_COLLECT)
+            val json = KVDatabase.get(WEB_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             e.printStackTrace()

@@ -24,6 +24,7 @@ import com.example.miaow.base.utils.saveImagesToAlbum
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
+import java.lang.ref.WeakReference
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebViewManager private constructor() {
@@ -32,42 +33,39 @@ class WebViewManager private constructor() {
         @Volatile
         private var INSTANCE: WebViewManager? = null
 
-        private fun instance() = INSTANCE ?: synchronized(this) {
+        private fun getInstance() = INSTANCE ?: synchronized(WebViewManager::class.java) {
             INSTANCE ?: WebViewManager().also { INSTANCE = it }
         }
 
         fun prepare(context: Context) {
-            instance().prepare(context)
+            getInstance().prepare(context)
         }
 
         fun obtain(context: Context): WebView {
-            return instance().obtain(context)
+            return getInstance().obtain(context)
         }
 
         fun back(webView: WebView): Boolean {
-            return instance().back(webView)
+            return getInstance().back(webView)
         }
 
         fun forward(webView: WebView): Boolean {
-            return instance().forward(webView)
+            return getInstance().forward(webView)
         }
 
-        fun recycle(webView: WebView) {
-            instance().recycle(webView)
-        }
-
-        fun reset() {
-            instance().reset()
+        fun recycle(webView: WebView, canRecycle: Boolean) {
+            getInstance().recycle(webView, canRecycle)
         }
 
         fun destroy() {
-            instance().destroy()
+            getInstance().destroy()
         }
     }
 
     private val webViewCache: MutableList<WebView> = ArrayList(1)
     private val backStack: ArrayDeque<WebView> = ArrayDeque()
     private val forwardStack: ArrayDeque<WebView> = ArrayDeque()
+    private var excludeWebView: WeakReference<WebView?> = WeakReference(null)
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -113,6 +111,7 @@ class WebViewManager private constructor() {
             forwardStack.add(webView)
             true
         } catch (e: Exception) {
+            excludeWebView = WeakReference(webView)
             false
         }
     }
@@ -127,40 +126,26 @@ class WebViewManager private constructor() {
         }
     }
 
-    fun recycle(webView: WebView) {
+    fun recycle(webView: WebView, canRecycle: Boolean) {
         try {
-            removeParent(webView)
-            if (!backStack.contains(webView) && !forwardStack.contains(webView)
-            ) {
-                backStack.addLast(webView)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun reset() {
-        try {
-            if (!backStack.isEmpty()) {
-                val webView = backStack.removeLast()
-                webView.stopLoading()
-                webView.clearHistory()
-                webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
-                removeParent(webView)
+            removeParentView(webView)
+            if (canRecycle) {
+                if (excludeWebView.get() != webView) {
+                    if (!backStack.contains(webView) && !forwardStack.contains(webView)) {
+                        backStack.addLast(webView)
+                    }
+                } else {
+                    excludeWebView.clear()
+                    backStack.clear()
+                    forwardStack.clear()
+                    webView.stopLoading()
+                    webView.clearHistory()
+                    webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
+                    webViewCache.add(0, webView)
+                }
+            } else {
                 webViewCache.add(0, webView)
             }
-            backStack.forEach {
-                removeParent(it)
-                it.removeAllViews()
-                it.destroy()
-            }
-            backStack.clear()
-            forwardStack.forEach {
-                removeParent(it)
-                it.removeAllViews()
-                it.destroy()
-            }
-            forwardStack.clear()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -168,26 +153,34 @@ class WebViewManager private constructor() {
 
     fun destroy() {
         try {
+            excludeWebView.get()?.let { removeParentView(it) }
+            excludeWebView.clear()
+            destroyWebView(backStack)
+            destroyWebView(forwardStack)
+            destroyWebView(webViewCache)
             backStack.clear()
             forwardStack.clear()
-            webViewCache.forEach {
-                removeParent(it)
-                it.removeAllViews()
-                it.destroy()
-            }
             webViewCache.clear()
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun removeParent(webView: WebView) {
+    private fun removeParentView(webView: WebView) {
         val parent = webView.parent
         if (parent != null) {
             (parent as ViewGroup).removeView(webView)
         }
         val contextWrapper = webView.context as MutableContextWrapper
         contextWrapper.baseContext = webView.context.applicationContext
+    }
+
+    private fun destroyWebView(list: List<WebView>) {
+        list.forEach {
+            removeParentView(it)
+            it.removeAllViews()
+            it.destroy()
+        }
     }
 
 }
@@ -308,6 +301,19 @@ fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceRespon
     return null
 }
 
+fun String?.isValidURL(): Boolean {
+    if (this.isNullOrBlank()) {
+        return false
+    }
+    val uri: Uri?
+    try {
+        uri = Uri.parse(this)
+    } catch (e: Exception) {
+        return false // Invalid URI syntax
+    }
+    return uri != null && uri.scheme != null && uri.host != null
+}
+
 private fun String.getExtensionFromUrl(): String {
     try {
         if (isNotBlank() && this != "null") {
@@ -332,17 +338,4 @@ private fun String.getMimeTypeFromUrl(): String {
         e.printStackTrace()
     }
     return "*/*"
-}
-
-fun String?.isValidURL(): Boolean {
-    if (this.isNullOrBlank()) {
-        return false
-    }
-    val uri: Uri?
-    try {
-        uri = Uri.parse(this)
-    } catch (e: Exception) {
-        return false // Invalid URI syntax
-    }
-    return uri != null && uri.scheme != null && uri.host != null
 }

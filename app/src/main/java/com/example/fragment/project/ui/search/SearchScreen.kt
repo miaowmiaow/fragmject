@@ -74,7 +74,7 @@ fun SearchScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var searchText by rememberSaveable { mutableStateOf(key) }
+    var searchText by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -101,9 +101,9 @@ fun SearchScreen(
                 },
                 modifier = Modifier
                     .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
+                    .focusRequester(focusRequester)
                     .weight(1f)
-                    .fillMaxHeight()
-                    .focusRequester(focusRequester),
+                    .fillMaxHeight(),
                 textStyle = TextStyle.Default.copy(
                     color = colorResource(R.color.text_fff),
                     fontSize = 13.sp,
@@ -111,8 +111,8 @@ fun SearchScreen(
                 ),
                 placeholder = {
                     Text(
-                        text = "多个关键词请用空格隔开",
-                        color = colorResource(R.color.text_fff),
+                        text = key.ifBlank { "多个关键词请用空格隔开" },
+                        color = colorResource(R.color.text_999),
                         fontSize = 13.sp,
                     )
                 },

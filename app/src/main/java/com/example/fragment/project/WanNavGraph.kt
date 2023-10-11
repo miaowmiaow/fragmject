@@ -20,7 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
-import com.example.fragment.project.ui.browse_collect.BrowseCollectScreen
+import com.example.fragment.project.ui.bookmark_history.BookmarkHistoryScreen
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
 import com.example.fragment.project.ui.my_coin.MyCoinScreen
@@ -48,18 +48,13 @@ fun WanNavGraph(
     modifier: Modifier = Modifier,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
-    val wanNavActions = remember(navController) {
-        WanNavActions(navController)
-    }
+    val wanNavActions = remember(navController) { WanNavActions(navController) }
     val viewModel: WanViewModel = viewModel()
     val wanUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val statusBarColor = colorResource(R.color.theme)
     val systemUiController = rememberSystemUiController()
     DisposableEffect(lifecycleOwner) {
-        systemUiController.setStatusBarColor(
-            statusBarColor,
-            darkIcons = false
-        )
+        systemUiController.setStatusBarColor(statusBarColor, false)
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.onRestore()
@@ -102,12 +97,12 @@ fun WanNavGraph(
             )
         },
     ) {
-        composable(WanDestinations.BROWSE_COLLECT_ROUTE) {
-            BrowseCollectScreen(
-                webBrowseHistoryList = wanUiState.webBrowseHistoryResult,
-                webCollectList = wanUiState.webCollectResult,
-                onWebBrowseHistory = { isAdd, text -> viewModel.onWebBrowseHistory(isAdd, text) },
-                onWebCollect = { isAdd, text -> viewModel.onWebCollect(isAdd, text) },
+        composable(WanDestinations.BOOKMARK_HISTORY_ROUTE) {
+            BookmarkHistoryScreen(
+                webBookmarkList = wanUiState.webBookmarkResult,
+                webHistoryList = wanUiState.webHistoryResult,
+                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
+                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -123,8 +118,7 @@ fun WanNavGraph(
             MainScreen(
                 hotKeyList = wanUiState.hotKeyResult,
                 treeList = wanUiState.treeResult,
-                onWebCollect = { isAdd, text -> viewModel.onWebCollect(isAdd, text) },
-                onNavigateToBrowseCollect = { wanNavActions.navigateToBrowseCollect() },
+                onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
                 onNavigateToMyCollect = { wanNavActions.navigateToMyCollect() },
@@ -236,9 +230,10 @@ fun WanNavGraph(
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: "",
-                webCollectList = wanUiState.webCollectResult,
-                onWebBrowseHistory = { isAdd, text -> viewModel.onWebBrowseHistory(isAdd, text) },
-                onWebCollect = { isAdd, text -> viewModel.onWebCollect(isAdd, text) },
+                webBookmarkList = wanUiState.webBookmarkResult,
+                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
+                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
+                onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
@@ -254,11 +249,11 @@ private val authentication = arrayOf(
 class WanNavActions(
     private val navController: NavHostController
 ) {
+    val navigateToBookmarkHistory: () -> Unit = {
+        navigate(WanDestinations.BOOKMARK_HISTORY_ROUTE)
+    }
     val navigateToLogin: () -> Unit = {
         navigate(WanDestinations.LOGIN_ROUTE)
-    }
-    val navigateToBrowseCollect: () -> Unit = {
-        navigate(WanDestinations.BROWSE_COLLECT_ROUTE)
     }
     val navigateToMyCoin: () -> Unit = {
         navigate(WanDestinations.MY_COIN_ROUTE)
@@ -316,9 +311,9 @@ class WanNavActions(
 }
 
 object WanDestinations {
+    const val BOOKMARK_HISTORY_ROUTE = "bookmark_history_route"
     const val LOGIN_ROUTE = "login_route"
     const val MAIN_ROUTE = "main_route"
-    const val BROWSE_COLLECT_ROUTE = "browse_collect_route"
     const val MY_COIN_ROUTE = "my_coin_route"
     const val MY_COLLECT_ROUTE = "my_collect_route"
     const val MY_DEMO_ROUTE = "my_demo_route"

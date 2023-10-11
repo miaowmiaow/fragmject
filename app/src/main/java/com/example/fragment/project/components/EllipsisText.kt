@@ -74,19 +74,21 @@ fun EllipsisText(
             },
             style = style
         )
-        Text(
-            text = ellipsisText,
-            modifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    translationX = right
-                    translationY = bottom - size.height
-                }
-                .background(background)
-                .clickable {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                translationX = right
+                translationY = bottom - size.height
+            }
+            .background(background)
+        ) {
+            Text(
+                text = ellipsisText,
+                modifier = Modifier.clickable {
                     onEllipsisClick()
                 },
-            style = style.copy(color = ellipsisColor)
-        )
+                style = style.copy(color = ellipsisColor)
+            )
+        }
     }
 }

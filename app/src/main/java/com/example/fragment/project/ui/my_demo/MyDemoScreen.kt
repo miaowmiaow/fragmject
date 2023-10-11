@@ -244,7 +244,7 @@ fun MyDemoScreen() {
                             fontSize = 14.sp,
                             maxLines = if (isEllipsis) 2 else Int.MAX_VALUE,
                             background = colorResource(R.color.white),
-                            ellipsisText = if (isEllipsis) "...全文" else "...收起"
+                            ellipsisText = if (isEllipsis) "...展开" else "...收起"
                         ) {
                             isEllipsis = !isEllipsis
                         }

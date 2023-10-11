@@ -70,10 +70,11 @@ fun WebScreen(
                     Button(
                         onClick = {
                             try {
-                                val intent =
-                                    Intent(Intent.ACTION_VIEW, Uri.parse(wvNavigator.lastLoadedUrl))
+                                val uri = Uri.parse(wvNavigator.lastLoadedUrl)
+                                val intent = Intent(Intent.ACTION_VIEW, uri)
                                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                                 context.startActivity(intent)
+                                scope.launch { sheetState.hide() }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -99,6 +100,7 @@ fun WebScreen(
                         onClick = {
                             canRecycle = false
                             onNavigateToBookmarkHistory()
+                            scope.launch { sheetState.hide() }
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                         shape = RoundedCornerShape(0),

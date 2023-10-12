@@ -42,8 +42,8 @@ Weakened Foundation: New programmers often treat the capabilities offered by thi
 The goal of this project is to encourage students to build a strong foundation in core programming principles by implementing solutions fromscratch wherever possible. Even though the resultingcode maynot alwaysbe elegantor idiomatic,itwillprovide a deeperunderstandingofhowthingsworkandallowsthe studenttobuildmoretransferableskills.
 
 ## Screenshot display
-| ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095501.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095527.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-100242.png) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/1.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/2.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/3.png) |
+| ------------------------------------------------------------ |------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
 ## Project Directory Structure
 ```
@@ -149,8 +149,8 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 ## Picture editor（library-picture）
 
 ### Screenshot display
-| ![5.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4676b80c4f4b4b99821f9d36d1e78e9b~tplv-k3u1fbpfcp-watermark.awebp?) | ![6.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3a12c1c4bc524c9fa3edcea71e95d71f~tplv-k3u1fbpfcp-watermark.awebp?) | ![7.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6c448aaa731f47e8b63ffe54ba25ad5b~tplv-k3u1fbpfcp-watermark.awebp?) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![5.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/5.webp) | ![6.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/6.gif) | ![7.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/7.gif) |
+|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
 #### Quick access
 ```
@@ -219,7 +219,6 @@ if (context is AppCompatActivity) {
 ## About me
 - QQ : 237934622
 - QQ群 : 389499839
-- WeChat : zst_1116
 - Email : <237934622@qq.com>
 - JueJin：[miaowmiaow](https://juejin.cn/user/3342971112791422)
 

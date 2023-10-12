@@ -191,12 +191,13 @@ class WebViewNavigator(
     var progress: Float by mutableFloatStateOf(0f)
         internal set
 
+    @OptIn(FlowPreview::class)
     internal suspend fun handleNavigationEvents(
         onBack: () -> Unit = {},
         onForward: () -> Unit = {},
         reload: () -> Unit = {},
-    ): Nothing = withContext(Dispatchers.Main) {
-        navigationEvents.collect { event ->
+    ) = withContext(Dispatchers.Main) {
+        navigationEvents.debounce(350).collect { event ->
             when (event) {
                 is NavigationEvent.Back -> onBack()
                 is NavigationEvent.Forward -> onForward()

@@ -80,8 +80,10 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     LaunchedEffect(Unit) {
         delay(350)
-        focusRequester.requestFocus()
-        keyboardController?.show()
+        if(searchText.isBlank()){
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
     Column {
         Row(

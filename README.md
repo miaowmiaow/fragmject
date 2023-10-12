@@ -46,8 +46,8 @@
 因此，本项目尽量多去自己实现，可能不是很优雅但一定能让你学习到更多。
 
 ## 截图展示
-| ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095501.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-095527.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/device-2022-03-24-100242.png) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/1.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/2.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/3.png) |
+| ------------------------------------------------------------ |------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
 ## 项目目录结构
 ```
@@ -131,7 +131,7 @@
 - [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
 - [Jetpack Compose : 一文学会嵌套滚动NestedScrollConnection](https://juejin.cn/spost/7239610698116055098)
 - [Jetpack Compose : 超简单实现滚轮控件(WheelPicker)](https://juejin.cn/post/7266702105829277754)
-- [Jetpack Compose : Jetpack Compose : 让你的WebView丝滑流畅](https://juejin.cn/post/7194360493866221628)
+- [Jetpack Compose : 让你的WebView丝滑流畅](https://juejin.cn/post/7194360493866221628)
 
 ![webview.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/4.webp)
 
@@ -326,7 +326,6 @@ plugins {
 ## About me
 - QQ : 237934622
 - QQ群 : 389499839
-- WeChat : zst_1116
 - Email : <237934622@qq.com>
 - JueJin：[miaowmiaow](https://juejin.cn/user/3342971112791422)
 

@@ -65,7 +65,7 @@ class WebViewManager private constructor() {
     private val webViewCache: MutableList<WebView> = ArrayList(1)
     private val backStack: ArrayDeque<WebView> = ArrayDeque()
     private val forwardStack: ArrayDeque<WebView> = ArrayDeque()
-    private var excludeWebView: WeakReference<WebView?> = WeakReference(null)
+    private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -111,7 +111,7 @@ class WebViewManager private constructor() {
             forwardStack.add(webView)
             true
         } catch (e: Exception) {
-            excludeWebView = WeakReference(webView)
+            lastBackWebView = WeakReference(webView)
             false
         }
     }
@@ -130,12 +130,12 @@ class WebViewManager private constructor() {
         try {
             removeParentView(webView)
             if (canRecycle) {
-                if (excludeWebView.get() != webView) {
+                if (lastBackWebView.get() != webView) {
                     if (!backStack.contains(webView) && !forwardStack.contains(webView)) {
                         backStack.addLast(webView)
                     }
                 } else {
-                    excludeWebView.clear()
+                    lastBackWebView.clear()
                     backStack.clear()
                     forwardStack.clear()
                     webView.stopLoading()
@@ -153,8 +153,8 @@ class WebViewManager private constructor() {
 
     fun destroy() {
         try {
-            excludeWebView.get()?.let { removeParentView(it) }
-            excludeWebView.clear()
+            lastBackWebView.get()?.let { removeParentView(it) }
+            lastBackWebView.clear()
             destroyWebView(backStack)
             destroyWebView(forwardStack)
             destroyWebView(webViewCache)

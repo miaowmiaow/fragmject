@@ -2,6 +2,7 @@ package com.example.fragment.project.bean
 
 import android.os.Parcelable
 import android.text.Html
+import android.util.Log
 import com.example.fragment.project.R
 import com.example.miaow.base.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel
@@ -95,7 +96,7 @@ data class ArticleBean(
         try {
             avatarList[abs(userId.toInt()) % 6]
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             1
         }
     }

@@ -1,6 +1,7 @@
 package com.example.miaow.base.http
 
 import android.text.TextUtils
+import android.util.Log
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -9,9 +10,7 @@ import java.io.File
 import java.io.UnsupportedEncodingException
 import java.net.URLConnection
 import java.net.URLEncoder
-import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.HashMap
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -140,7 +139,7 @@ open class HttpRequest @JvmOverloads constructor(
                 }
             }
         } catch (e: UnsupportedEncodingException) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return contentTypeFor.toMediaType()
     }

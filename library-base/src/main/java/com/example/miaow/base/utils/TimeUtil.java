@@ -1,5 +1,7 @@
 package com.example.miaow.base.utils;
 
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,7 +37,7 @@ public class TimeUtil {
         try {
             return Objects.requireNonNull(format.parse(time)).getTime();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TimeUtil.class.getName(), Objects.requireNonNull(e.getMessage()));
         }
         return 0;
     }

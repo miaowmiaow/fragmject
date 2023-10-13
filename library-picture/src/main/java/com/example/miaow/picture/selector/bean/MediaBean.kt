@@ -2,6 +2,7 @@ package com.example.miaow.picture.selector.bean
 
 import android.net.Uri
 import android.os.Parcelable
+import android.util.Log
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -35,7 +36,7 @@ class MediaBean(
         return try {
             super.clone() as MediaBean
         } catch (e: CloneNotSupportedException) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             MediaBean("EMPTY", Uri.EMPTY)
         }
     }

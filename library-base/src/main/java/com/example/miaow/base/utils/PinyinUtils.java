@@ -1,12 +1,14 @@
 package com.example.miaow.base.utils;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -50,7 +52,7 @@ public class PinyinUtils {
                 try {
                     sb.append(PinyinHelper.toHanyuPinyinStringArray(aChar, defaultFormat)[0].charAt(0));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(PinyinUtils.class.getName(), Objects.requireNonNull(e.getMessage()));
                 }
             } else {
                 sb.append(aChar);
@@ -88,7 +90,7 @@ public class PinyinUtils {
                 try {
                     sb.append(PinyinHelper.toHanyuPinyinStringArray(c, defaultFormat)[0]);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(PinyinUtils.class.getName(), Objects.requireNonNull(e.getMessage()));
                 }
             } else {
                 sb.append(c);

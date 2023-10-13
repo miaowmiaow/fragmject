@@ -6,14 +6,25 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Base64
+import android.util.Log
 import android.webkit.MimeTypeMap
-import java.io.*
+import java.io.BufferedOutputStream
+import java.io.BufferedReader
+import java.io.Closeable
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.io.RandomAccessFile
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
 import java.nio.file.Files
-import java.util.*
+import java.util.Locale
 
 object FileUtil {
 
@@ -48,7 +59,7 @@ object FileUtil {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return size
     }
@@ -126,7 +137,7 @@ object FileUtil {
         try {
             outputStream = FileOutputStream(destFile, append)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return if (outputStream == null) {
             false
@@ -143,7 +154,7 @@ object FileUtil {
             val data = content.toByteArray(charset)
             return writeToFile(data, destFile, append)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return false
     }
@@ -156,7 +167,7 @@ object FileUtil {
             bufferedOut.flush()
             true
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             false
         } finally {
             quickClose(bufferedOut)
@@ -172,7 +183,7 @@ object FileUtil {
                 fos = outputStream.channel
                 fis.transferTo(0, fis.size(), fos) > 0
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
                 false
             } finally {
                 quickClose(fis)
@@ -188,7 +199,7 @@ object FileUtil {
                 }
                 true
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
                 false
             } finally {
                 quickClose(inputStream)
@@ -203,7 +214,7 @@ object FileUtil {
             fis = FileInputStream(file)
             return readStreamBytes(fis)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             quickClose(fis)
         }
         return null
@@ -221,7 +232,7 @@ object FileUtil {
             accessFile.read(reads)
             reads
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             null
         } finally {
             quickClose(accessFile)
@@ -258,7 +269,7 @@ object FileUtil {
             }
             return buffer
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             quickClose(inputStream)
         }
         return null

@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
 import android.provider.MediaStore.MediaColumns.MIME_TYPE
 import android.provider.MediaStore.MediaColumns.RELATIVE_PATH
+import android.util.Log
 import com.example.miaow.base.http.download
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +68,7 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
                     }
                     file.delete()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e(this.javaClass.name, e.message.toString())
                 } finally {
                     fis?.close()
                     out?.close()
@@ -115,7 +116,7 @@ fun Context.saveImagesToAlbum(bitmap: Bitmap, onFinish: (String, Uri) -> Unit) {
             }
             file.delete()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         } finally {
             fos?.close()
             fis?.close()
@@ -154,7 +155,7 @@ fun Context.saveVideoToAlbum(file: File, onFinish: (String, Uri) -> Unit) {
             }
             file.delete()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         } finally {
             fis?.close()
             out?.close()

@@ -14,6 +14,7 @@ import android.graphics.RectF
 import android.net.Uri
 import android.os.Looper
 import android.util.Base64
+import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.MimeTypeMap
@@ -37,7 +38,7 @@ object WebViewHelper {
                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                 webView.context.startActivity(intent)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
             }
         }
     }
@@ -106,7 +107,7 @@ object WebViewHelper {
             try {
                 webView.isVerticalScrollBarEnabled = false
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
             }
             var contentHeight = webView.contentHeight
             webView.measure(0, 0)
@@ -183,7 +184,7 @@ object WebViewHelper {
             webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
             return webResourceResponse
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return null
     }
@@ -212,7 +213,7 @@ object WebViewHelper {
                 return webResourceResponse
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return null
     }
@@ -223,7 +224,7 @@ object WebViewHelper {
                 return MimeTypeMap.getFileExtensionFromUrl(url)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return ""
     }
@@ -238,7 +239,7 @@ object WebViewHelper {
                 return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return "*/*"
     }
@@ -328,7 +329,7 @@ class WebViewManager private constructor() {
             val contextWrapper = webView.context as MutableContextWrapper
             contextWrapper.baseContext = webView.context.applicationContext
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         } finally {
             if (!webViewCache.contains(webView)) {
                 webViewCache.add(webView)
@@ -344,7 +345,7 @@ class WebViewManager private constructor() {
                 webViewCache.remove(it)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
     }
 

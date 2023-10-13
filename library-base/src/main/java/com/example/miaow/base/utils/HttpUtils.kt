@@ -1,5 +1,6 @@
 package com.example.miaow.base.utils
 
+import android.util.Log
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -27,7 +28,7 @@ object HttpUtils {
                     onResponse.invoke(contentType)
                 }
             } catch (e: IOException) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
                 MainThreadExecutor.get().execute {
                     onResponse.invoke(null)
                 }

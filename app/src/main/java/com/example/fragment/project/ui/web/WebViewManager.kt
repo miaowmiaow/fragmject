@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Looper
 import android.util.Base64
+import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.MimeTypeMap
@@ -108,7 +109,7 @@ class WebViewManager private constructor() {
     fun back(webView: WebView): Boolean {
         return try {
             webViewCache.add(0, backStack.removeLast())
-            forwardStack.add(webView)
+            forwardStack.addLast(webView)
             true
         } catch (e: Exception) {
             lastBackWebView = WeakReference(webView)
@@ -119,7 +120,7 @@ class WebViewManager private constructor() {
     fun forward(webView: WebView): Boolean {
         return try {
             webViewCache.add(0, forwardStack.removeLast())
-            backStack.add(webView)
+            backStack.addLast(webView)
             true
         } catch (e: Exception) {
             false
@@ -147,7 +148,7 @@ class WebViewManager private constructor() {
                 webViewCache.add(0, webView)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
     }
 
@@ -162,7 +163,7 @@ class WebViewManager private constructor() {
             forwardStack.clear()
             webViewCache.clear()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
     }
 
@@ -192,7 +193,7 @@ fun WebView.setDownloadListener() {
             intent.addCategory(Intent.CATEGORY_BROWSABLE)
             context.startActivity(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
     }
 }
@@ -270,7 +271,7 @@ fun WebResourceRequest.assetsResourceRequest(context: Context): WebResourceRespo
         webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
         return webResourceResponse
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return null
 }
@@ -296,7 +297,7 @@ fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceRespon
             return webResourceResponse
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return null
 }
@@ -309,6 +310,7 @@ fun String?.isValidURL(): Boolean {
     try {
         uri = Uri.parse(this)
     } catch (e: Exception) {
+        Log.e(this.javaClass.name, e.message.toString())
         return false // Invalid URI syntax
     }
     return uri != null && uri.scheme != null && uri.host != null
@@ -320,7 +322,7 @@ private fun String.getExtensionFromUrl(): String {
             return MimeTypeMap.getFileExtensionFromUrl(this)
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return ""
 }
@@ -335,7 +337,7 @@ private fun String.getMimeTypeFromUrl(): String {
             return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return "*/*"
 }

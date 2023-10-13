@@ -1,6 +1,7 @@
 package com.example.fragment.project.bean
 
 import android.os.Parcelable
+import android.util.Log
 import com.example.fragment.project.R
 import com.example.miaow.base.http.HttpResponse
 import com.google.gson.Gson
@@ -92,7 +93,7 @@ open class CoinBean @JvmOverloads constructor(
                 index = id % 6
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
         return avatarList[index]
     }

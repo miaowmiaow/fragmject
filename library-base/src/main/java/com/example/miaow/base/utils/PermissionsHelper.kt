@@ -9,12 +9,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import java.util.*
 
 /**
  * 忽略电池优化,保持后台常驻
@@ -32,7 +31,7 @@ fun Context.requestIgnoreBatteryOptimizations() {
         intent.data = Uri.parse("package:${packageName}")
         startActivity(intent)
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
 }
 

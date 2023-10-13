@@ -2,6 +2,7 @@ package com.example.fragment.project.ui.web
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -76,7 +77,7 @@ fun WebScreen(
                                 context.startActivity(intent)
                                 scope.launch { sheetState.hide() }
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                Log.e(this.javaClass.name, e.message.toString())
                             }
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),

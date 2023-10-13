@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
+import android.util.Log
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -139,7 +140,7 @@ fun WebView(
                                         Intent(Intent.ACTION_VIEW, request.url)
                                     )
                                 } catch (e: Exception) {
-                                    e.printStackTrace()
+                                    Log.e(this.javaClass.name, e.message.toString())
                                 }
                             } else {
                                 shouldOverrideUrl(request.url.toString())

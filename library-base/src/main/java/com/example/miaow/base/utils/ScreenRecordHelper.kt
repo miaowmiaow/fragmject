@@ -11,6 +11,7 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -86,6 +87,7 @@ class ScreenRecordFragment : Fragment() {
                 isRunning = true
                 callback?.onActivityResult(Activity.RESULT_OK, "屏幕录制中")
             } catch (e: Exception) {
+                Log.e(this.javaClass.name, e.message.toString())
                 callback?.onActivityResult(Activity.RESULT_CANCELED, "屏幕录制异常:${e.message}")
             }
         }
@@ -184,7 +186,7 @@ class ScreenRecordFragment : Fragment() {
             mediaProjection?.stop()
             requireActivity().saveVideoToAlbum(File(recordPath)) { _, _ -> }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         } finally {
             mediaRecorder = null
             virtualDisplay = null

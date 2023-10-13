@@ -2,6 +2,7 @@ package com.example.miaow.base.dialog
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.Window
@@ -19,7 +20,7 @@ open class BaseDialog : DialogFragment() {
         try {
             super.dismiss()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
         }
     }
 
@@ -28,7 +29,7 @@ open class BaseDialog : DialogFragment() {
             try {
                 super.show(manager, tag)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
             }
         }
     }
@@ -38,7 +39,7 @@ open class BaseDialog : DialogFragment() {
             try {
                 super.showNow(manager, tag)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
             }
         }
     }

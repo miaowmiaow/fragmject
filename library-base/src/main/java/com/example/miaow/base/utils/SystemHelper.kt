@@ -10,6 +10,7 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 
 fun Context.getMetaData(key: String): String {
@@ -21,7 +22,7 @@ fun Context.getMetaData(key: String): String {
             }
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return metaData
 }
@@ -36,7 +37,7 @@ fun Context.getAppName(): String {
             name = resources.getString(it.applicationInfo.labelRes)
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return name
 }
@@ -50,8 +51,8 @@ fun Context.getVersionName(): String {
         packageManager.getPackageInfo(packageName, 0).let {
             name = it.versionName
         }
-    } catch (e: java.lang.Exception) {
-        e.printStackTrace()
+    } catch (e: Exception) {
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return name
 }
@@ -70,7 +71,7 @@ fun Context.getVersionCode(): Long {
             }
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return code
 }

@@ -14,7 +14,6 @@ fun Context.injectVConsoleJs(): String {
             var vConsole = new VConsole();
         """.trimIndent()
     } catch (e: Exception) {
-        e.printStackTrace()
         ""
     }
 }

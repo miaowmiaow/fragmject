@@ -1,5 +1,6 @@
 package com.example.fragment.project.utils
 
+import android.util.Log
 import com.example.fragment.project.bean.UserBean
 import com.example.miaow.base.db.KVDatabase
 import com.google.gson.Gson
@@ -31,7 +32,7 @@ object WanHelper {
             val json = KVDatabase.get(SEARCH_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             ArrayList()
         }
     }
@@ -45,7 +46,7 @@ object WanHelper {
             val json = KVDatabase.get(WEB_BOOKMARK)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             ArrayList()
         }
     }
@@ -59,7 +60,7 @@ object WanHelper {
             val json = KVDatabase.get(WEB_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(this.javaClass.name, e.message.toString())
             ArrayList()
         }
     }
@@ -104,7 +105,7 @@ object WanHelper {
             val userBean = try {
                 Gson().fromJson(it, UserBean::class.java) ?: UserBean()
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
                 UserBean()
             }
             result.invoke(userBean)

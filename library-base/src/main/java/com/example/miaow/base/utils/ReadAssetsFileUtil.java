@@ -2,11 +2,14 @@ package com.example.miaow.base.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * 读取Assets目录下的文件工具类
@@ -30,10 +33,10 @@ public class ReadAssetsFileUtil {
             is.close();
             // Convert the buffer into a string.
             // Finally stick the string into the text view.
-            return new String(buffer, "utf-8");
+            return new String(buffer, StandardCharsets.UTF_8);
         } catch (IOException e) {
             // Should never happen!
-            e.printStackTrace();
+            Log.e(ReadAssetsFileUtil.class.getName(), Objects.requireNonNull(e.getMessage()));
         }
         return "";
     }
@@ -48,9 +51,8 @@ public class ReadAssetsFileUtil {
             while ((line = bf.readLine()) != null) {
                 stringBuilder.append(line);
             }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e(ReadAssetsFileUtil.class.getName(), Objects.requireNonNull(e.getMessage()));
         }
         return stringBuilder.toString();
     }

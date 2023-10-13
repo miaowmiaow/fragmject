@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.util.Log
 import java.io.IOException
 import kotlin.math.sqrt
 
@@ -36,7 +37,7 @@ fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
         }
         return BitmapFactory.decodeFile(path, bitmapOptions)
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
     }
     return null
 }
@@ -66,7 +67,7 @@ fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap? {
             decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
         }
     } catch (e: IOException) {
-        e.printStackTrace()
+        Log.e(this.javaClass.name, e.message.toString())
         null
     }
 }

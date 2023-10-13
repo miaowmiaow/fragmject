@@ -3,6 +3,7 @@ package com.example.miaow.picture.selector.vm
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.miaow.base.vm.BaseViewModel
@@ -99,7 +100,7 @@ class PictureViewModel : BaseViewModel() {
                 albumResult.postValue(albumData)
                 currAlbumResult.postValue(mediaMap[albumData[0].name])
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
             }
         }
     }

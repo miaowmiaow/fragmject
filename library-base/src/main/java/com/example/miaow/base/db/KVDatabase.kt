@@ -1,5 +1,6 @@
 package com.example.miaow.base.db
 
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
@@ -73,7 +74,7 @@ abstract class KVDatabase : RoomDatabase() {
                     getDao().update(kv)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(this.javaClass.name, e.message.toString())
             }
         }
     }
@@ -82,7 +83,6 @@ abstract class KVDatabase : RoomDatabase() {
         return try {
             getDao().findByKey(key)?.value ?: ""
         } catch (e: Exception) {
-            e.printStackTrace()
             ""
         }
     }
@@ -92,7 +92,6 @@ abstract class KVDatabase : RoomDatabase() {
             val value = try {
                 getDao().findByKey(key)?.value ?: ""
             } catch (e: Exception) {
-                e.printStackTrace()
                 ""
             }
             withContext(Dispatchers.Main) {

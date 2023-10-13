@@ -2,6 +2,7 @@ package com.example.fragment.project.ui.main.project
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,56 +45,60 @@ fun ProjectScreen(
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState { projectTreeUiState.result.size }
-    TabBar(
-        data = projectTreeUiState.result,
-        textMapping = { it.name },
-        pagerState = pagerState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(45.dp),
-        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
-    )
-    TabRowDefaults.Divider(color = colorResource(R.color.line))
-    HorizontalPager(state = pagerState) { page ->
-        val pageCid = projectTreeUiState.result[page].id
-        val projectUiState by projectViewModel.uiState.collectAsStateWithLifecycle()
-        val listState = rememberLazyListState()
-        DisposableEffect(lifecycleOwner) {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_START) {
-                    projectViewModel.init(pageCid)
+    LoadingContent(projectTreeUiState.isLoading) {
+        Column {
+            TabBar(
+                data = projectTreeUiState.result,
+                textMapping = { it.name },
+                pagerState = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
+                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
+            )
+            TabRowDefaults.Divider(color = colorResource(R.color.line))
+            HorizontalPager(state = pagerState) { page ->
+                val pageCid = projectTreeUiState.result[page].id
+                val projectUiState by projectViewModel.uiState.collectAsStateWithLifecycle()
+                val listState = rememberLazyListState()
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_START) {
+                            projectViewModel.init(pageCid)
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
                 }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(observer)
-            }
-        }
-        LoadingContent(
-            projectTreeUiState.isLoading
-                    || (projectUiState.getRefreshing(pageCid)
-                    && !projectUiState.getLoading(pageCid))
-        ) {
-            SwipeRefresh(
-                items = projectUiState.getResult(pageCid),
-                refreshing = projectUiState.getRefreshing(pageCid),
-                loading = projectUiState.getLoading(pageCid),
-                finishing = projectUiState.getFinishing(pageCid),
-                onRefresh = { projectViewModel.getHome(pageCid) },
-                onLoad = { projectViewModel.getNext(pageCid) },
-                modifier = Modifier.fillMaxSize(),
-                listState = listState,
-                contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                key = { _, item -> item.id },
-            ) { _, item ->
-                ArticleCard(
-                    data = item,
-                    onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToUser = onNavigateToUser,
-                    onNavigateToWeb = onNavigateToWeb
-                )
+                LoadingContent(
+                    !projectTreeUiState.isLoading
+                            && projectUiState.getRefreshing(pageCid)
+                            && !projectUiState.getLoading(pageCid)
+                ) {
+                    SwipeRefresh(
+                        items = projectUiState.getResult(pageCid),
+                        refreshing = projectUiState.getRefreshing(pageCid),
+                        loading = projectUiState.getLoading(pageCid),
+                        finishing = projectUiState.getFinishing(pageCid),
+                        onRefresh = { projectViewModel.getHome(pageCid) },
+                        onLoad = { projectViewModel.getNext(pageCid) },
+                        modifier = Modifier.fillMaxSize(),
+                        listState = listState,
+                        contentPadding = PaddingValues(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        key = { _, item -> item.id },
+                    ) { _, item ->
+                        ArticleCard(
+                            data = item,
+                            onNavigateToLogin = onNavigateToLogin,
+                            onNavigateToSystem = onNavigateToSystem,
+                            onNavigateToUser = onNavigateToUser,
+                            onNavigateToWeb = onNavigateToWeb
+                        )
+                    }
+                }
             }
         }
     }

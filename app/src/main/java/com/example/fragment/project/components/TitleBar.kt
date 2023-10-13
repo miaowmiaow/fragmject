@@ -24,15 +24,13 @@ fun TitleBar(
 ) {
     Box(
         modifier = Modifier
+            .background(colorResource(R.color.theme))
             .fillMaxWidth()
             .height(45.dp)
-            .background(colorResource(R.color.theme))
     ) {
         IconButton(
             modifier = Modifier.height(45.dp),
-            onClick = {
-                onClick()
-            }
+            onClick = onClick
         ) {
             Icon(
                 Icons.Filled.ArrowBack,

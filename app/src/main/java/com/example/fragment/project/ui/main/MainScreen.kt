@@ -179,8 +179,8 @@ fun SearchBar(
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { onNavigateToSearch(item.name) },
+                        .clickable { onNavigateToSearch(item.name) }
+                        .fillMaxSize(),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
@@ -197,8 +197,8 @@ fun SearchBar(
             imageVector = Icons.Default.Add,
             contentDescription = null,
             modifier = Modifier
-                .padding(0.dp, 5.dp, 0.dp, 5.dp)
-                .clickable { onNavigateToShareArticle() },
+                .clickable { onNavigateToShareArticle() }
+                .padding(0.dp, 5.dp, 0.dp, 5.dp),
             tint = colorResource(R.color.white)
         )
     }

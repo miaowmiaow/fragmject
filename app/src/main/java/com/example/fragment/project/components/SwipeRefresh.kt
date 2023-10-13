@@ -88,12 +88,13 @@ fun <T> SwipeRefresh(
     val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (items.isNullOrEmpty()) {
         if (!refreshing) {
-            EmptyContent {
-                onRefresh()
-            }
+            EmptyContent { onRefresh() }
         }
     } else {
-        Box(Modifier.swipeRefresh(state), contentAlignment = Alignment.TopCenter) {
+        Box(
+            modifier = Modifier.swipeRefresh(state),
+            contentAlignment = Alignment.TopCenter
+        ) {
             LazyColumn(
                 modifier = modifier.graphicsLayer {
                     translationY = state.position
@@ -102,17 +103,17 @@ fun <T> SwipeRefresh(
                 contentPadding = contentPadding,
                 verticalArrangement = verticalArrangement,
             ) {
-                itemsIndexed(items, key = key, contentType = contentType) { index, item ->
+                itemsIndexed(
+                    items = items,
+                    key = key,
+                    contentType = contentType
+                ) { index, item ->
                     itemContent(index, item)
                     if (loading && items.size - index < 5) {
-                        LaunchedEffect(items.size) {
-                            onLoad()
-                        }
+                        LaunchedEffect(items.size) { onLoad() }
                     }
                 }
-                item {
-                    MoreIndicator(finishing)
-                }
+                item { MoreIndicator(finishing) }
             }
             RefreshIndicator(refreshing) { state.position }
         }
@@ -162,7 +163,8 @@ fun RefreshIndicator(
         animationSpec = infiniteRepeatable(
             animation = tween(250, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
-        ), label = "loadingAnimate"
+        ),
+        label = "loadingAnimate"
     )
     AnimatedVisibility(
         visible = (refreshing || (position() >= loadingHeightPx)),

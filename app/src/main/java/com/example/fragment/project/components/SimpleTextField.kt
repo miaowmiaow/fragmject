@@ -102,12 +102,11 @@ fun ClearTextField(
                     leadingIcon()
                 }
                 Box(
-                    modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    if (value.isBlank()) {
-                        if (placeholder != null) {
-                            placeholder()
-                        }
+                    if (value.isBlank() && placeholder != null) {
+                        placeholder()
                     }
                     innerTextField()
                 }
@@ -119,8 +118,8 @@ fun ClearTextField(
                         imageVector = Icons.Outlined.Clear,
                         contentDescription = null,
                         modifier = Modifier
-                            .padding(10.dp, 6.dp, 10.dp, 6.dp)
-                            .clickable { onClear() },
+                            .clickable { onClear() }
+                            .padding(10.dp, 6.dp, 10.dp, 6.dp),
                         tint = textStyle.color
                     )
                 }

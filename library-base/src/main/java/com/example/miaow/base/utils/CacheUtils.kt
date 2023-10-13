@@ -1,6 +1,8 @@
 package com.example.miaow.base.utils
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 object CacheUtils {
@@ -13,14 +15,16 @@ object CacheUtils {
         }
     }
 
-    fun getTotalSize(context: Context): String {
-        var cacheSize = FileUtil.getSize(context.cacheDir)
-        if (FileUtil.isSDCardAlive()) {
-            context.externalCacheDir?.apply {
-                cacheSize += FileUtil.getSize(this)
+    suspend fun getTotalSize(context: Context): String {
+        return withContext(Dispatchers.Main) {
+            var cacheSize = FileUtil.getSize(context.cacheDir)
+            if (FileUtil.isSDCardAlive()) {
+                context.externalCacheDir?.apply {
+                    cacheSize += FileUtil.getSize(this)
+                }
             }
+            FileUtil.formatSize(cacheSize.toDouble())
         }
-        return FileUtil.formatSize(cacheSize.toDouble())
     }
 
     fun clearAllCache(context: Context) {

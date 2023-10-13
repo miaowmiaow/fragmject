@@ -5,7 +5,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,7 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
@@ -60,198 +58,188 @@ fun ArticleCard(
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by remember(data.collect) { mutableIntStateOf(getCollectResId(data.collect)) }
-    Box(modifier) {
-        Card(elevation = 2.dp) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = { onNavigateToWeb(data.link) })
+    Card(
+        modifier = modifier,
+        elevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .clickable { onNavigateToWeb(data.link) }
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Image(
+                    painter = painterResource(id = data.avatarId),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable { onNavigateToUser(data.userId) }
+                        .size(30.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Column(
+                    modifier = Modifier
+                        .height(35.dp)
+                        .weight(1f)
+                        .padding(start = 10.dp, end = 10.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Image(
-                        painter = painterResource(id = data.avatarId),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape)
-                            .clickable { onNavigateToUser(data.userId) },
-                        contentScale = ContentScale.Crop
+                    Text(
+                        text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(R.color.text_666),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    ConstraintLayout(
-                        modifier = Modifier
-                            .height(35.dp)
-                            .weight(1f)
-                            .padding(start = 10.dp, end = 10.dp)
-                    ) {
-                        val (shareUser, niceDate) = createRefs()
-                        Text(
-                            text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colorResource(R.color.text_666),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.constrainAs(shareUser) {
-                                top.linkTo(parent.top)
-                            })
-                        Text(
-                            text = data.niceDate,
-                            fontSize = 12.sp,
-                            color = colorResource(R.color.text_999),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.constrainAs(niceDate) {
-                                bottom.linkTo(parent.bottom)
-                            })
-                    }
-                    data.tags?.let { tags ->
-                        if (tags.isNotEmpty()) {
-                            Button(
-                                onClick = {
-                                    val uriString = "https://www.wanandroid.com${tags[0].url}"
-                                    val uri = Uri.parse(uriString)
-                                    var cid = uri.getQueryParameter("cid")
-                                    if (cid.isNullOrBlank()) {
-                                        val paths = uri.pathSegments
-                                        if (paths != null && paths.size >= 3) {
-                                            cid = paths[2]
-                                        }
-                                    }
-                                    onNavigateToSystem(cid ?: "0")
-                                },
-                                modifier = Modifier.height(25.dp),
-                                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
-                                shape = RoundedCornerShape(3.dp),
-                                border = BorderStroke(1.dp, colorResource(R.color.blue)),
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = colorResource(R.color.white),
-                                    contentColor = colorResource(R.color.blue)
-                                ),
-                                contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
-                            ) {
-                                Text(
-                                    text = tags[0].name,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    }
+                    Text(
+                        text = data.niceDate,
+                        fontSize = 12.sp,
+                        color = colorResource(R.color.text_999),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
-                Spacer(Modifier.size(10.dp))
-                Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        if (data.desc.isNotBlank()) {
-                            Text(
-                                text = data.titleHtml,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = colorResource(R.color.text_333),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = data.descHtml,
-                                fontSize = 14.sp,
-                                color = colorResource(R.color.text_666),
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        } else {
-                            Text(
-                                text = data.titleHtml,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = colorResource(R.color.text_333),
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                    if (data.envelopePic.isNotBlank()) {
-                        AsyncImage(
-                            model = data.httpsEnvelopePic,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(start = 10.dp)
-                                .width(45.dp)
-                                .aspectRatio(2f / 3f),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-                Spacer(Modifier.size(5.dp))
-                Row(
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 15.dp)
-                    ) {
-                        if (data.fresh) {
-                            Text(
-                                text = "新  ",
-                                fontSize = 12.sp,
-                                color = colorResource(R.color.blue),
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .height(20.dp)
-                                    .clickable { onNavigateToSystem(data.chapterId) },
-                            )
-                        }
-                        if (data.top) {
-                            Text(
-                                text = "置顶  ",
-                                fontSize = 12.sp,
-                                color = colorResource(R.color.orange),
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .height(20.dp)
-                                    .clickable { onNavigateToSystem(data.chapterId) },
-                            )
-                        }
-                        Text(
-                            text = data.chapterNameHtml,
-                            fontSize = 12.sp,
-                            color = colorResource(R.color.text_999),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .height(20.dp)
-                                .clickable { onNavigateToSystem(data.chapterId) },
-                        )
-                    }
-                    Image(
-                        painter = painterResource(id = collectResId),
-                        contentDescription = "",
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable {
-                                scope.launch {
-                                    val request = HttpRequest().putPath("id", data.id)
-                                    request.setUrl(
-                                        if (data.collect)
-                                            "lg/uncollect_originId/{id}/json"
-                                        else
-                                            "lg/uncollect_originId/{id}/json"
-                                    )
-                                    val response = post<HttpResponse>(request)
-                                    when (response.errorCode) {
-                                        "0" -> {
-                                            data.collect = !data.collect
-                                            collectResId = getCollectResId(data.collect)
-                                        }
-
-                                        "-1001" -> onNavigateToLogin()
+                data.tags?.let { tags ->
+                    if (tags.isNotEmpty()) {
+                        Button(
+                            onClick = {
+                                val uriString = "https://www.wanandroid.com${tags[0].url}"
+                                val uri = Uri.parse(uriString)
+                                var cid = uri.getQueryParameter("cid")
+                                if (cid.isNullOrBlank()) {
+                                    val paths = uri.pathSegments
+                                    if (paths != null && paths.size >= 3) {
+                                        cid = paths[2]
                                     }
                                 }
-                            })
+                                onNavigateToSystem(cid ?: "0")
+                            },
+                            modifier = Modifier.height(20.dp),
+                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                            shape = RoundedCornerShape(3.dp),
+                            border = BorderStroke(1.dp, colorResource(R.color.blue)),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = colorResource(R.color.white),
+                                contentColor = colorResource(R.color.blue)
+                            ),
+                            contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
+                        ) {
+                            Text(
+                                text = tags[0].name,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
+            }
+            Spacer(Modifier.size(10.dp))
+            Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (data.desc.isNotBlank()) {
+                        Text(
+                            text = data.titleHtml,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.text_333),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = data.descHtml,
+                            fontSize = 14.sp,
+                            color = colorResource(R.color.text_666),
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    } else {
+                        Text(
+                            text = data.titleHtml,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.text_333),
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                if (data.envelopePic.isNotBlank()) {
+                    AsyncImage(
+                        model = data.httpsEnvelopePic,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                            .width(45.dp)
+                            .aspectRatio(2f / 3f),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+            Spacer(Modifier.size(5.dp))
+            Row(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val footModifier = Modifier.height(20.dp)
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 15.dp)
+                ) {
+                    if (data.fresh) {
+                        Text(
+                            text = "新  ",
+                            fontSize = 12.sp,
+                            color = colorResource(R.color.blue),
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                        )
+                    }
+                    if (data.top) {
+                        Text(
+                            text = "置顶  ",
+                            fontSize = 12.sp,
+                            color = colorResource(R.color.orange),
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                        )
+                    }
+                    Text(
+                        text = data.chapterNameHtml,
+                        fontSize = 12.sp,
+                        color = colorResource(R.color.text_999),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                    )
+                }
+                Image(
+                    painter = painterResource(id = collectResId),
+                    contentDescription = "",
+                    modifier = footModifier.clickable {
+                        scope.launch {
+                            val request = HttpRequest().putPath("id", data.id)
+                            request.setUrl(
+                                if (data.collect)
+                                    "lg/uncollect_originId/{id}/json"
+                                else
+                                    "lg/uncollect_originId/{id}/json"
+                            )
+                            val response = post<HttpResponse>(request)
+                            when (response.errorCode) {
+                                "0" -> {
+                                    data.collect = !data.collect
+                                    collectResId = getCollectResId(data.collect)
+                                }
+
+                                "-1001" -> onNavigateToLogin()
+                            }
+                        }
+                    })
             }
         }
     }

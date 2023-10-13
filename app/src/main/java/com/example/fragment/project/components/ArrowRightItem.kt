@@ -28,24 +28,19 @@ fun ArrowRightItem(
 ) {
     Row(
         modifier = Modifier
+            .clickable { onClick() }
             .background(colorResource(R.color.white))
             .fillMaxWidth()
-            .height(45.dp)
-            .clickable {
-                onClick()
-            },
+            .height(45.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            modifier = Modifier
-                .padding(start = 25.dp),
+            modifier = Modifier.padding(start = 25.dp),
             fontSize = 13.sp,
             color = colorResource(R.color.text_333),
         )
-        Spacer(
-            Modifier.width(5.dp)
-        )
+        Spacer(Modifier.width(5.dp))
         Box(
             modifier = Modifier
                 .weight(1f)

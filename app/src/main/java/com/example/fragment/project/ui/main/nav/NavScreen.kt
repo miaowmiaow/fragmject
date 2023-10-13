@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,6 +60,7 @@ fun NavScreen(
             textMapping = { it },
             onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
+        TabRowDefaults.Divider(color = colorResource(R.color.line))
         HorizontalPager(state = pagerState) { page ->
             if (page == 0) {
                 NavLinkContent(onNavigateToWeb = onNavigateToWeb)
@@ -89,10 +91,10 @@ fun NavLinkContent(
                 itemsIndexed(uiState.navigationResult.toList()) { index, item ->
                     Box(
                         modifier = Modifier
+                            .clickable { viewModel.updateSelectNavigation(index) }
                             .background(colorResource(if (item.isSelected) R.color.background else R.color.white))
                             .fillMaxWidth()
-                            .height(45.dp)
-                            .clickable { viewModel.updateSelectNavigation(index) },
+                            .height(45.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(

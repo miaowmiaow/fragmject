@@ -83,7 +83,10 @@ fun LoginScreen(
         scaffoldState = scaffoldState,
         snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
-            LoadingContent(uiState.isLoading, innerPadding = innerPadding) {
+            LoadingContent(
+                isLoading = uiState.isLoading,
+                innerPadding = innerPadding
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -100,10 +103,8 @@ fun LoginScreen(
                         painter = painterResource(R.mipmap.ic_back),
                         contentDescription = null,
                         modifier = Modifier
+                            .clickable { onNavigateUp() }
                             .size(15.dp)
-                            .clickable {
-                                onNavigateUp()
-                            }
                     )
                     Spacer(Modifier.height(30.dp))
                     Text(
@@ -140,10 +141,12 @@ fun LoginScreen(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Go
                         ),
-                        keyboardActions = KeyboardActions(onGo = {
-                            viewModel.login(usernameText, passwordText)
-                            keyboardController?.hide()
-                        }),
+                        keyboardActions = KeyboardActions(
+                            onGo = {
+                                viewModel.login(usernameText, passwordText)
+                                keyboardController?.hide()
+                            }
+                        ),
                     )
                     Spacer(Modifier.height(30.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {

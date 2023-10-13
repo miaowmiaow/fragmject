@@ -28,7 +28,10 @@ fun <T> WheelPicker(
     onSelect: (index: Int, item: T) -> Unit,
     content: @Composable (item: T) -> Unit,
 ) {
-    BoxWithConstraints(modifier = modifier, propagateMinConstraints = true) {
+    BoxWithConstraints(
+        modifier = modifier,
+        propagateMinConstraints = true
+    ) {
         val density = LocalDensity.current
         val size = data.size
         val count = size * 10000
@@ -51,10 +54,10 @@ fun <T> WheelPicker(
             items(count) { index ->
                 val currIndex = (index - startIndex).floorMod(size)
                 val item = layoutInfo.visibleItemsInfo.find { it.index == index }
-                var currentsAdjust = 1f
+                var percent = 1f
                 if (item != null) {
                     val itemCenterY = item.offset + item.size / 2
-                    currentsAdjust = 0.75f + 0.25f * if (itemCenterY < pickerCenterLinePx) {
+                    percent = if (itemCenterY < pickerCenterLinePx) {
                         itemCenterY / pickerCenterLinePx
                     } else {
                         1 - (itemCenterY - pickerCenterLinePx) / pickerCenterLinePx
@@ -68,14 +71,14 @@ fun <T> WheelPicker(
                 }
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(itemHeight)
                         .graphicsLayer {
-                            alpha = currentsAdjust
-                            scaleX = currentsAdjust
-                            scaleY = currentsAdjust
-                            rotationX = (1 + currentsAdjust) * 180
-                        },
+                            alpha = 0.75f + 0.25f * percent
+                            scaleX = 0.75f + 0.25f * percent
+                            scaleY = 0.75f + 0.25f * percent
+                            rotationX = (1 + (0.75f + 0.25f * percent)) * 180
+                        }
+                        .fillMaxWidth()
+                        .height(itemHeight),
                     contentAlignment = Alignment.Center,
                 ) {
                     content(data[currIndex])

@@ -108,9 +108,7 @@ fun UserScreen(
         ) {
             IconButton(
                 modifier = Modifier.height(titleBarSize),
-                onClick = {
-                    onNavigateUp()
-                }
+                onClick = onNavigateUp
             ) {
                 Icon(
                     Icons.Filled.ArrowBack,
@@ -123,10 +121,10 @@ fun UserScreen(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .clip(CircleShape)
                     .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
                     .align(Alignment.Center)
-                    .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
-                    .clip(CircleShape),
+                    .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value)),
             )
             Text(
                 text = uiState.coinResult.nickname,
@@ -142,11 +140,11 @@ fun UserScreen(
             Text(
                 text = "积分:${uiState.coinResult.coinCount}",
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .offset(x = 0.dp, y = 55.dp * targetPercent.value)
                     .graphicsLayer {
                         alpha = targetPercent.value
-                    },
+                    }
+                    .align(Alignment.Center)
+                    .offset(x = 0.dp, y = 55.dp * targetPercent.value),
                 fontSize = 12.sp,
                 color = colorResource(R.color.text_fff),
             )
@@ -160,8 +158,8 @@ fun UserScreen(
                 onRefresh = { viewModel.getHome() },
                 onLoad = { viewModel.getNext() },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(colorResource(R.color.white)),
+                    .background(colorResource(R.color.white))
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 key = { _, item -> item.id },

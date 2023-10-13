@@ -50,14 +50,12 @@ fun EllipsisText(
         Text(
             text = text,
             modifier = Modifier
-                .background(background)
                 .clickable(
-                    onClick = {
-                        onClick()
-                    },
+                    onClick = onClick,
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
-                ),
+                )
+                .background(background),
             lineHeight = fontSize.times(1.35f),
             overflow = TextOverflow.Ellipsis,
             maxLines = maxLines,
@@ -75,18 +73,16 @@ fun EllipsisText(
             style = style
         )
         Box(modifier = Modifier
-            .fillMaxWidth()
             .graphicsLayer {
                 translationX = right
                 translationY = bottom - size.height
             }
             .background(background)
+            .fillMaxWidth()
         ) {
             Text(
                 text = ellipsisText,
-                modifier = Modifier.clickable {
-                    onEllipsisClick()
-                },
+                modifier = Modifier.clickable { onEllipsisClick() },
                 style = style.copy(color = ellipsisColor)
             )
         }

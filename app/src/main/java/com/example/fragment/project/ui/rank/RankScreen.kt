@@ -50,15 +50,13 @@ fun RankScreen(
     ) {
         Box(
             modifier = Modifier
+                .background(colorResource(R.color.theme))
                 .fillMaxWidth()
                 .height(45.dp)
-                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
-                onClick = {
-                    onNavigateUp()
-                }
+                onClick = onNavigateUp
             ) {
                 Icon(
                     Icons.Filled.ArrowBack,
@@ -129,12 +127,7 @@ fun RankScreen(
                         color = colorResource(R.color.orange),
                     )
                 }
-                Spacer(
-                    Modifier
-                        .background(colorResource(R.color.line))
-                        .fillMaxWidth()
-                        .height(1.dp)
-                )
+                Spacer(Modifier.height(1.dp))
             }
         }
     }

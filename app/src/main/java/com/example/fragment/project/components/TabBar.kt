@@ -31,9 +31,7 @@ fun <T> TabBar(
             modifier = modifier,
             backgroundColor = backgroundColor,
             edgePadding = 0.dp,
-            divider = {
-                TabRowDefaults.Divider(color = colorResource(R.color.transparent))
-            }
+            divider = { TabRowDefaults.Divider(color = colorResource(R.color.transparent)) }
         ) {
             data.forEachIndexed { index, item ->
                 Tab(

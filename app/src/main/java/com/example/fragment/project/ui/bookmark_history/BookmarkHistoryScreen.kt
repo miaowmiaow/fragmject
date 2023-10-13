@@ -51,15 +51,13 @@ fun BookmarkHistoryScreen(
     Column {
         Box(
             modifier = Modifier
+                .background(colorResource(R.color.theme))
                 .fillMaxWidth()
                 .height(45.dp)
-                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
-                onClick = {
-                    onNavigateUp()
-                }
+                onClick = onNavigateUp
             ) {
                 Icon(
                     Icons.Filled.ArrowBack,
@@ -119,15 +117,15 @@ fun BookmarkHistoryScreen(
                             ),
                             contentDescription = null,
                             modifier = Modifier
-                                .size(30.dp)
-                                .padding(10.dp, 5.dp, 0.dp, 5.dp)
                                 .clickable {
                                     if (page == 0) {
                                         onWebHistory(false, item)
                                     } else {
                                         onWebBookmark(false, item)
                                     }
-                                },
+                                }
+                                .size(30.dp)
+                                .padding(10.dp, 5.dp, 0.dp, 5.dp),
                             tint = colorResource(
                                 if (page == 0) {
                                     R.color.theme

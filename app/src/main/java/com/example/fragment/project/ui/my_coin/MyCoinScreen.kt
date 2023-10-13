@@ -91,15 +91,13 @@ fun MyCoinScreen(
     ) {
         Box(
             modifier = Modifier
+                .background(colorResource(R.color.theme))
                 .fillMaxWidth()
                 .height(titleBarSize + targetHeight * targetPercent.value)
-                .background(colorResource(R.color.theme))
         ) {
             IconButton(
                 modifier = Modifier.height(45.dp),
-                onClick = {
-                    onNavigateUp()
-                }
+                onClick = onNavigateUp
             ) {
                 Icon(
                     Icons.Filled.ArrowBack,
@@ -112,7 +110,7 @@ fun MyCoinScreen(
                     .height(45.dp)
                     .padding(13.dp)
                     .align(Alignment.TopEnd),
-                onClick = { onNavigateToCoinRank() }
+                onClick = onNavigateToCoinRank
             ) {
                 Icon(
                     painter = painterResource(R.mipmap.ic_rank),

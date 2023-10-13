@@ -51,9 +51,7 @@ fun SystemScreen(
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(index) { tree.size }
     Column(modifier = Modifier.systemBarsPadding()) {
-        TitleBar(title) {
-            onNavigateUp()
-        }
+        TitleBar(title) { onNavigateUp() }
         TabBar(
             data = tree,
             textMapping = { it.name },

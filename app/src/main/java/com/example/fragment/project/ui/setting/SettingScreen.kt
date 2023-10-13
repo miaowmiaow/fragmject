@@ -1,8 +1,6 @@
 package com.example.fragment.project.ui.setting
 
 import android.app.Activity
-import android.content.Intent
-import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.BorderStroke
@@ -29,6 +27,7 @@ import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,8 +49,8 @@ import com.example.fragment.project.components.NightSwitchButton
 import com.example.fragment.project.components.TitleBar
 import com.example.miaow.base.dialog.StandardDialog
 import com.example.miaow.base.utils.CacheUtils
+import com.example.miaow.base.utils.CacheUtils.getTotalSize
 import com.example.miaow.base.utils.ScreenRecordCallback
-import com.example.miaow.base.utils.requestIgnoreBatteryOptimizations
 import com.example.miaow.base.utils.startScreenRecord
 import com.example.miaow.base.utils.stopScreenRecord
 import kotlinx.coroutines.launch
@@ -67,9 +66,12 @@ fun SettingScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var screenRecordState by rememberSaveable { mutableStateOf(false) }
-    var cacheSize by rememberSaveable { mutableStateOf(CacheUtils.getTotalSize(context)) }
+    var cacheSize by rememberSaveable { mutableStateOf("0KB") }
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
+    LaunchedEffect(Unit) {
+        cacheSize = getTotalSize(context)
+    }
     Scaffold(
         scaffoldState = scaffoldState,
         snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
@@ -82,9 +84,7 @@ fun SettingScreen(
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TitleBar("设置") {
-                        onNavigateUp()
-                    }
+                    TitleBar("设置") { onNavigateUp() }
                     Row(
                         modifier = Modifier
                             .background(colorResource(R.color.white))
@@ -114,12 +114,7 @@ fun SettingScreen(
                         )
                         Spacer(Modifier.width(5.dp))
                     }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
+                    Spacer(Modifier.height(1.dp))
                     Row(
                         modifier = Modifier
                             .background(colorResource(R.color.white))
@@ -174,49 +169,21 @@ fun SettingScreen(
                             }
                         )
                     }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
-                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
-                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
-                    ArrowRightItem("电池优化", "(跳过广告与我配合效果更佳哦~)") {
-                        context.requestIgnoreBatteryOptimizations()
-                    }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
+//                    Spacer(Modifier.height(1.dp))
+//                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
+//                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+//                    }
+//                    Spacer(Modifier.height(1.dp))
+//                    ArrowRightItem("电池优化", "(跳过广告与我配合效果更佳哦~)") {
+//                        context.requestIgnoreBatteryOptimizations()
+//                    }
+                    Spacer(Modifier.height(1.dp))
                     ArrowRightItem("隐私政策") { onNavigateToPrivacyPolicy() }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
+                    Spacer(Modifier.height(1.dp))
                     ArrowRightItem("问题反馈") { onNavigateToFeedback() }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
+                    Spacer(Modifier.height(1.dp))
                     Row(
                         modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp)
                             .clickable {
                                 if (context is AppCompatActivity) {
                                     StandardDialog
@@ -225,8 +192,10 @@ fun SettingScreen(
                                         .setOnDialogClickListener(object :
                                             StandardDialog.OnDialogClickListener {
                                             override fun onConfirm(dialog: StandardDialog) {
-                                                CacheUtils.clearAllCache(context)
-                                                cacheSize = CacheUtils.getTotalSize(context)
+                                                coroutineScope.launch {
+                                                    CacheUtils.clearAllCache(context)
+                                                    cacheSize = getTotalSize(context)
+                                                }
                                             }
 
                                             override fun onCancel(dialog: StandardDialog) {
@@ -234,7 +203,10 @@ fun SettingScreen(
                                         })
                                         .show(context.supportFragmentManager)
                                 }
-                            },
+                            }
+                            .background(colorResource(R.color.white))
+                            .fillMaxWidth()
+                            .height(45.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -256,24 +228,9 @@ fun SettingScreen(
                             modifier = Modifier.padding(start = 25.dp, end = 25.dp)
                         )
                     }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
+                    Spacer(Modifier.height(1.dp))
                     ArrowRightItem("关于玩Android") { onNavigateToAbout() }
-                    Spacer(
-                        Modifier
-                            .background(colorResource(R.color.line))
-                            .fillMaxWidth()
-                            .height(1.dp)
-                    )
-                    Spacer(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(20.dp)
-                    )
+                    Spacer(Modifier.height(20.dp))
                     if (uiState.userBean.id.isNotBlank()) {
                         Button(
                             onClick = {

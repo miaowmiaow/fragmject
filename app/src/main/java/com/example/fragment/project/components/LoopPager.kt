@@ -42,9 +42,7 @@ fun <T> LoopHorizontalPager(
     }
     val pageCount = data.size
     val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(
-        initialPage = startIndex - startIndex % pageCount
-    ) { Int.MAX_VALUE }
+    val pagerState = rememberPagerState(startIndex - startIndex % pageCount) { Int.MAX_VALUE }
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()
@@ -68,9 +66,11 @@ fun <T> LoopHorizontalPager(
             contentPadding = contentPadding,
         ) { page ->
             val currPage = (page - startIndex).floorMod(pageCount)
-            val pageOffset =
-                ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
-            content(currPage, pageOffset, data[currPage])
+            content(
+                currPage,
+                ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue,
+                data[currPage]
+            )
         }
         if (indicator) {
             Row(
@@ -113,9 +113,7 @@ fun <T> LoopVerticalPager(
     }
     val pageCount = data.size
     val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(
-        initialPage = startIndex - startIndex % pageCount
-    ) { Int.MAX_VALUE }
+    val pagerState = rememberPagerState(startIndex - startIndex % pageCount) { Int.MAX_VALUE }
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()
@@ -139,8 +137,7 @@ fun <T> LoopVerticalPager(
             contentPadding = contentPadding,
         ) { page ->
             val currPage = (page - startIndex).floorMod(pageCount)
-            val pageOffset = page.absoluteValue.toFloat()
-            content(currPage, pageOffset, data[currPage])
+            content(currPage, page.absoluteValue.toFloat(), data[currPage])
         }
         if (indicator) {
             Column(
@@ -158,10 +155,10 @@ fun <T> LoopVerticalPager(
                         colorResource(R.color.theme)
                     Box(
                         modifier = Modifier
+                            .background(color)
                             .size(10.dp)
                             .padding(2.dp)
                             .clip(CircleShape)
-                            .background(color)
                     )
                 }
             }

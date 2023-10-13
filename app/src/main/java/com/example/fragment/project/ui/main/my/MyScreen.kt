@@ -1,11 +1,10 @@
 package com.example.fragment.project.ui.main.my
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -14,11 +13,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,13 +49,12 @@ fun MyScreen(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(45.dp))
         AsyncImage(
             model = uiState.userBean.avatar.ifBlank { R.mipmap.avatar_1_raster },
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .padding(top = 50.dp)
-                .size(75.dp)
                 .clip(RoundedCornerShape(50))
                 .clickable {
                     if (uiState.isLogin()) {
@@ -63,68 +63,39 @@ fun MyScreen(
                         onNavigateToLogin()
                     }
                 }
+                .size(90.dp)
         )
         Text(
             text = uiState.userBean.username.ifBlank { "去登录" },
             modifier = Modifier
-                .padding(top = 5.dp, bottom = 25.dp)
-                .clickable {
-                    if (uiState.isLogin()) {
-                        onNavigateToUser(uiState.userBean.id)
-                    } else {
-                        onNavigateToLogin()
-                    }
-                },
-            fontSize = 16.sp,
+                .clickable(
+                    onClick = {
+                        if (uiState.isLogin()) {
+                            onNavigateToUser(uiState.userBean.id)
+                        } else {
+                            onNavigateToLogin()
+                        }
+                    },
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                )
+                .height(45.dp)
+                .padding(10.dp),
             color = colorResource(R.color.text_333),
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
         )
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
+        Spacer(Modifier.height(45.dp))
         ArrowRightItem("我的Demo") { onNavigateToMyDemo() }
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
+        Spacer(Modifier.height(1.dp))
         ArrowRightItem("我的积分") { onNavigateToMyCoin() }
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
+        Spacer(Modifier.height(1.dp))
         ArrowRightItem("我的收藏") { onNavigateToMyCollect() }
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
+        Spacer(Modifier.height(1.dp))
         ArrowRightItem("我的分享") { onNavigateToMyShare() }
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
+        Spacer(Modifier.height(1.dp))
         ArrowRightItem("书签历史") { onNavigateToBookmarkHistory() }
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
+        Spacer(Modifier.height(1.dp))
         ArrowRightItem("系统设置") { onNavigateToSetting() }
-        Spacer(
-            Modifier
-                .background(colorResource(R.color.line))
-                .fillMaxWidth()
-                .height(1.dp)
-        )
     }
 }

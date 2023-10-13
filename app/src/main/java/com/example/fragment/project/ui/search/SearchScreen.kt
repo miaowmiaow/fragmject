@@ -80,7 +80,7 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     LaunchedEffect(Unit) {
         delay(350)
-        if(searchText.isBlank()){
+        if (searchText.isBlank()) {
             focusRequester.requestFocus()
             keyboardController?.show()
         }
@@ -103,9 +103,9 @@ fun SearchScreen(
                 },
                 modifier = Modifier
                     .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
-                    .focusRequester(focusRequester)
                     .weight(1f)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .focusRequester(focusRequester),
                 textStyle = TextStyle.Default.copy(
                     color = colorResource(R.color.text_fff),
                     fontSize = 13.sp,
@@ -143,9 +143,7 @@ fun SearchScreen(
             Spacer(Modifier.width(15.dp))
             Text(
                 text = "取消",
-                modifier = Modifier.clickable {
-                    onNavigateUp()
-                },
+                modifier = Modifier.clickable { onNavigateUp() },
                 fontSize = 14.sp,
                 color = colorResource(R.color.white),
             )
@@ -222,9 +220,9 @@ fun SearchScreen(
                                         painter = painterResource(R.mipmap.ic_delete),
                                         contentDescription = null,
                                         modifier = Modifier
+                                            .clickable { onSearchHistory(false, item) }
                                             .size(30.dp)
-                                            .padding(10.dp, 5.dp, 0.dp, 5.dp)
-                                            .clickable { onSearchHistory(false, item) },
+                                            .padding(10.dp, 5.dp, 0.dp, 5.dp),
                                     )
                                 }
                             }

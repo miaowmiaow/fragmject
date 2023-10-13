@@ -38,13 +38,14 @@ fun DatePicker(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
+            val pickerModifier = Modifier
+                .width(70.dp)
+                .height(175.dp)
             WheelPicker(
                 data = (1900..2051).toList().map { "$it" },
                 selectIndex = 0,
                 visibleCount = 5,
-                modifier = Modifier
-                    .width(70.dp)
-                    .height(175.dp),
+                modifier = pickerModifier,
                 onSelect = { _, item ->
                     onSelectYear(item)
                 }
@@ -62,9 +63,7 @@ fun DatePicker(
                 data = (1..12).map { it.toString().padStart(2, '0') },
                 selectIndex = 0,
                 visibleCount = 5,
-                modifier = Modifier
-                    .width(70.dp)
-                    .height(175.dp),
+                modifier = pickerModifier,
                 onSelect = { _, item ->
                     onSelectMonth(item)
                 }
@@ -82,9 +81,7 @@ fun DatePicker(
                 data = (1..31).map { it.toString().padStart(2, '0') },
                 selectIndex = 0,
                 visibleCount = 5,
-                modifier = Modifier
-                    .width(70.dp)
-                    .height(175.dp),
+                modifier = pickerModifier,
                 onSelect = { _, item ->
                     onSelectDay(item)
                 }
@@ -96,27 +93,18 @@ fun DatePicker(
             }
         }
         Column(Modifier.height(175.dp)) {
+            val whiteMaskModifier = Modifier
+                .background(colorResource(R.color.bb_white))
+                .fillMaxWidth()
+                .weight(1f)
+            Spacer(whiteMaskModifier)
             Spacer(
                 Modifier
-                    .background(colorResource(R.color.bb_white))
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
-            Spacer(
-                Modifier
-                    .background(
-                        colorResource(R.color.one_b_black),
-                        RoundedCornerShape(5.dp)
-                    )
+                    .background(colorResource(R.color.one_b_black), RoundedCornerShape(5.dp))
                     .fillMaxWidth()
                     .height(30.dp)
             )
-            Spacer(
-                Modifier
-                    .background(colorResource(R.color.bb_white))
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
+            Spacer(whiteMaskModifier)
         }
     }
 }

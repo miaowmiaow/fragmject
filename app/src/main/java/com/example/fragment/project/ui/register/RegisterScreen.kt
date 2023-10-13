@@ -103,10 +103,8 @@ fun RegisterScreen(
                         painter = painterResource(R.mipmap.ic_back),
                         contentDescription = null,
                         modifier = Modifier
+                            .clickable { onNavigateUp() }
                             .size(15.dp)
-                            .clickable {
-                                onNavigateUp()
-                            }
                     )
                     Spacer(Modifier.height(30.dp))
                     Text(

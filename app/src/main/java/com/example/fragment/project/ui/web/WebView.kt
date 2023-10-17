@@ -42,7 +42,6 @@ fun WebView(
     originalUrl: String,
     navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
-    canRecycle: Boolean = true,
     goBack: () -> Unit = {},
     goForward: () -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
@@ -79,7 +78,7 @@ fun WebView(
     }
     AndroidView(
         factory = { context ->
-            WebViewManager.obtain(context).apply {
+            WebViewManager.obtain(context, url).apply {
                 setDownloadListener()
                 setOnLongClickListener()
                 this.layoutParams = FrameLayout.LayoutParams(
@@ -168,7 +167,7 @@ fun WebView(
         },
         modifier = modifier,
         onRelease = {
-            WebViewManager.recycle(it, canRecycle)
+            WebViewManager.recycle(it)
         }
     )
 }

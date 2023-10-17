@@ -16,19 +16,18 @@ import androidx.navigation.navOptions
  * 导航图
  */
 @Composable
-fun WebNavGraph(
+fun WebViewNavGraph(
     originalUrl: String,
-    webViewNavigator: WebViewNavigator,
+    navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
-    canRecycle: Boolean = true,
-    onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    shouldOverrideUrl: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val navController = rememberNavController()
-    val navActions = remember(navController) { WebNavActions(navController) }
+    val navActions = remember(navController) { WebViewNavActions(navController) }
     NavHost(
         navController = navController,
-        startDestination = WebDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(originalUrl)}",
+        startDestination = WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(originalUrl)}",
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
@@ -55,19 +54,22 @@ fun WebNavGraph(
             )
         },
     ) {
-        composable("${WebDestinations.WEB_VIEW_ROUTE}/{url}") { backStackEntry ->
+        composable("${WebViewDestinations.WEB_VIEW_ROUTE}/{url}") { backStackEntry ->
             WebView(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: originalUrl,
-                navigator = webViewNavigator,
-                canRecycle = canRecycle,
+                navigator = navigator,
                 goBack = {
-                    navActions.navigateUp()
+                    if (navActions.canBack()) {
+                        navActions.navigateBack()
+                    } else {
+                        onNavigateUp()
+                    }
                 },
                 goForward = {
-                    navActions.navigateToWebView("about:blank")
+                    navActions.navigateForward()
                 },
                 shouldOverrideUrl = {
-                    onWebHistory(true, it)
+                    shouldOverrideUrl(it)
                     navActions.navigateToWebView(it)
                 },
                 onNavigateUp = onNavigateUp
@@ -76,20 +78,29 @@ fun WebNavGraph(
     }
 }
 
-class WebNavActions(
+class WebViewNavActions(
     private val navController: NavHostController
 ) {
-    val navigateToWebView: (url: String) -> Unit = {
+    val canBack: () -> Boolean = {
+        navController.previousBackStackEntry != null
+    }
+    val navigateBack: () -> Unit = {
+        navController.navigateUp()
+    }
+    val navigateForward: () -> Unit = {
         navController.navigate(
-            WebDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(it)}",
+            WebViewDestinations.WEB_VIEW_ROUTE + "/forward",
             navOptions { launchSingleTop = false }
         )
     }
-    val navigateUp: () -> Unit = {
-        navController.navigateUp()
+    val navigateToWebView: (url: String) -> Unit = { url ->
+        navController.navigate(
+            WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(url)}",
+            navOptions { launchSingleTop = false }
+        )
     }
 }
 
-object WebDestinations {
+object WebViewDestinations {
     const val WEB_VIEW_ROUTE = "web_view_route"
 }

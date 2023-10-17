@@ -42,8 +42,8 @@ class WebViewManager private constructor() {
             getInstance().prepare(context)
         }
 
-        fun obtain(context: Context): WebView {
-            return getInstance().obtain(context)
+        fun obtain(context: Context, url: String): WebView {
+            return getInstance().obtain(context, url)
         }
 
         fun back(webView: WebView): Boolean {
@@ -54,8 +54,8 @@ class WebViewManager private constructor() {
             return getInstance().forward(webView)
         }
 
-        fun recycle(webView: WebView, canRecycle: Boolean) {
-            getInstance().recycle(webView, canRecycle)
+        fun recycle(webView: WebView) {
+            getInstance().recycle(webView)
         }
 
         fun destroy() {
@@ -64,8 +64,10 @@ class WebViewManager private constructor() {
     }
 
     private val webViewCache: MutableList<WebView> = ArrayList(1)
-    private val backStack: ArrayDeque<WebView> = ArrayDeque()
-    private val forwardStack: ArrayDeque<WebView> = ArrayDeque()
+    private val backStack: ArrayDeque<String> = ArrayDeque()
+    private val backStackMap = mutableMapOf<String, WebView>()
+    private val forwardStack: ArrayDeque<String> = ArrayDeque()
+    private val forwardStackMap = mutableMapOf<String, WebView>()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
 
     private fun create(context: Context): WebView {
@@ -96,11 +98,16 @@ class WebViewManager private constructor() {
         }
     }
 
-    fun obtain(context: Context): WebView {
+    fun obtain(context: Context, url: String): WebView {
         if (webViewCache.isEmpty()) {
             webViewCache.add(create(MutableContextWrapper(context)))
         }
-        val webView = webViewCache.removeFirst()
+        val webView = if (backStackMap.containsKey(url)) {
+            backStack.remove(url)
+            backStackMap.getOrDefault(url, webViewCache.removeFirst())
+        } else {
+            webViewCache.removeFirst()
+        }
         val contextWrapper = webView.context as MutableContextWrapper
         contextWrapper.baseContext = context
         return webView
@@ -108,8 +115,13 @@ class WebViewManager private constructor() {
 
     fun back(webView: WebView): Boolean {
         return try {
-            webViewCache.add(0, backStack.removeLast())
-            forwardStack.addLast(webView)
+            val backUrl = backStack.removeLast()
+            backStackMap[backUrl]?.let {
+                webViewCache.add(0, it)
+            }
+            val forwardUrl = webView.originalUrl.toString()
+            forwardStack.addLast(forwardUrl)
+            forwardStackMap[forwardUrl] = webView
             true
         } catch (e: Exception) {
             lastBackWebView = WeakReference(webView)
@@ -119,32 +131,37 @@ class WebViewManager private constructor() {
 
     fun forward(webView: WebView): Boolean {
         return try {
-            webViewCache.add(0, forwardStack.removeLast())
-            backStack.addLast(webView)
+            val forwardUrl = forwardStack.removeLast()
+            forwardStackMap[forwardUrl]?.let {
+                webViewCache.add(0, it)
+            }
+            val backUrl = webView.originalUrl.toString()
+            backStack.addLast(backUrl)
+            backStackMap[backUrl] = webView
             true
         } catch (e: Exception) {
             false
         }
     }
 
-    fun recycle(webView: WebView, canRecycle: Boolean) {
+    fun recycle(webView: WebView) {
         try {
-            removeParentView(webView)
-            if (canRecycle) {
-                if (lastBackWebView.get() != webView) {
-                    if (!backStack.contains(webView) && !forwardStack.contains(webView)) {
-                        backStack.addLast(webView)
-                    }
-                } else {
-                    lastBackWebView.clear()
-                    backStack.clear()
-                    forwardStack.clear()
-                    webView.stopLoading()
-                    webView.clearHistory()
-                    webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
-                    webViewCache.add(0, webView)
+            webView.removeParentView()
+            if (lastBackWebView.get() != webView) {
+                val url = webView.originalUrl.toString()
+                if (!backStack.contains(url) && !forwardStack.contains(url)) {
+                    backStack.addLast(url)
+                    backStackMap[url] = webView
                 }
             } else {
+                lastBackWebView.clear()
+                backStack.clear()
+                backStackMap.clear()
+                forwardStack.clear()
+                forwardStackMap.clear()
+                webView.stopLoading()
+                webView.clearHistory()
+                webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
                 webViewCache.add(0, webView)
             }
         } catch (e: Exception) {
@@ -154,34 +171,42 @@ class WebViewManager private constructor() {
 
     fun destroy() {
         try {
-            lastBackWebView.get()?.let { removeParentView(it) }
+            lastBackWebView.get()?.removeParentView()
             lastBackWebView.clear()
-            destroyWebView(backStack)
-            destroyWebView(forwardStack)
-            destroyWebView(webViewCache)
             backStack.clear()
             forwardStack.clear()
-            webViewCache.clear()
+            backStackMap.destroyWebView()
+            forwardStackMap.destroyWebView()
+            webViewCache.destroyWebView()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
         }
     }
 
-    private fun removeParentView(webView: WebView) {
-        val parent = webView.parent
+    private fun WebView.removeParentView() {
         if (parent != null) {
-            (parent as ViewGroup).removeView(webView)
+            (parent as ViewGroup).removeView(this)
         }
-        val contextWrapper = webView.context as MutableContextWrapper
-        contextWrapper.baseContext = webView.context.applicationContext
+        val contextWrapper = context as MutableContextWrapper
+        contextWrapper.baseContext = context.applicationContext
     }
 
-    private fun destroyWebView(list: List<WebView>) {
-        list.forEach {
-            removeParentView(it)
+    private fun MutableList<WebView>.destroyWebView() {
+        forEach {
+            it.removeParentView()
             it.removeAllViews()
             it.destroy()
         }
+        clear()
+    }
+
+    private fun MutableMap<String, WebView>.destroyWebView() {
+        values.toList().forEach {
+            it.removeParentView()
+            it.removeAllViews()
+            it.destroy()
+        }
+        clear()
     }
 
 }

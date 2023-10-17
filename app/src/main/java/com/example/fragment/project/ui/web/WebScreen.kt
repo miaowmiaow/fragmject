@@ -23,11 +23,7 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -51,8 +47,7 @@ fun WebScreen(
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
     )
-    val wvNavigator = rememberWebViewNavigator()
-    var canRecycle by remember { mutableStateOf(true) }
+    val navigator = rememberWebViewNavigator()
     Column(
         modifier = Modifier
             .background(colorResource(R.color.white))
@@ -71,7 +66,7 @@ fun WebScreen(
                     Button(
                         onClick = {
                             try {
-                                val uri = Uri.parse(wvNavigator.lastLoadedUrl)
+                                val uri = Uri.parse(navigator.lastLoadedUrl)
                                 val intent = Intent(Intent.ACTION_VIEW, uri)
                                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                                 context.startActivity(intent)
@@ -99,7 +94,6 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            canRecycle = false
                             onNavigateToBookmarkHistory()
                             scope.launch { sheetState.hide() }
                         },
@@ -123,8 +117,8 @@ fun WebScreen(
                     Button(
                         onClick = {
                             onWebBookmark(
-                                !webBookmarkList.contains(wvNavigator.lastLoadedUrl),
-                                wvNavigator.lastLoadedUrl.toString()
+                                !webBookmarkList.contains(navigator.lastLoadedUrl),
+                                navigator.lastLoadedUrl.toString()
                             )
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
@@ -142,7 +136,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
                             tint = colorResource(
-                                if (webBookmarkList.contains(wvNavigator.lastLoadedUrl)) {
+                                if (webBookmarkList.contains(navigator.lastLoadedUrl)) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme
@@ -152,7 +146,7 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            wvNavigator.injectVConsole()
+                            navigator.injectVConsole()
                             scope.launch { sheetState.hide() }
                         },
                         elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
@@ -170,7 +164,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_debug),
                             contentDescription = null,
                             tint = colorResource(
-                                if (wvNavigator.injectVConsole) {
+                                if (navigator.injectVConsole) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme
@@ -181,18 +175,19 @@ fun WebScreen(
                 }
             }
         ) {
-            WebNavGraph(
+            WebViewNavGraph(
                 originalUrl = originalUrl,
-                webViewNavigator = wvNavigator,
+                navigator = navigator,
                 modifier = Modifier.fillMaxSize(),
-                canRecycle = canRecycle,
-                onWebHistory = onWebHistory,
+                shouldOverrideUrl = {
+                    onWebHistory(true, it)
+                },
                 onNavigateUp = onNavigateUp
             )
         }
-        AnimatedVisibility(visible = (wvNavigator.progress > 0f && wvNavigator.progress < 1f)) {
+        AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
             LinearProgressIndicator(
-                progress = wvNavigator.progress,
+                progress = navigator.progress,
                 modifier = Modifier.fillMaxWidth(),
                 color = colorResource(R.color.theme_orange),
                 backgroundColor = colorResource(R.color.white)
@@ -205,7 +200,7 @@ fun WebScreen(
         ) {
             Button(
                 onClick = {
-                    wvNavigator.navigateBack()
+                    navigator.navigateBack()
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),
@@ -226,7 +221,7 @@ fun WebScreen(
             }
             Button(
                 onClick = {
-                    wvNavigator.navigateForward()
+                    navigator.navigateForward()
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),
@@ -247,7 +242,7 @@ fun WebScreen(
             }
             Button(
                 onClick = {
-                    wvNavigator.reload()
+                    navigator.reload()
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),

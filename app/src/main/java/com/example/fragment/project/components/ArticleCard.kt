@@ -75,9 +75,9 @@ fun ArticleCard(
                     painter = painterResource(id = data.avatarId),
                     contentDescription = null,
                     modifier = Modifier
+                        .size(30.dp)
                         .clip(CircleShape)
-                        .clickable { onNavigateToUser(data.userId) }
-                        .size(30.dp),
+                        .clickable { onNavigateToUser(data.userId) },
                     contentScale = ContentScale.Crop
                 )
                 Column(

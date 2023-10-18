@@ -40,7 +40,7 @@ import com.example.fragment.project.components.SwipeRefresh
 @Composable
 fun RankScreen(
     viewModel: RankViewModel = viewModel(),
-    onNavigateToUserInfo: (userId: String) -> Unit = {},
+    onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
@@ -112,7 +112,7 @@ fun RankScreen(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(CircleShape)
-                                .clickable { onNavigateToUserInfo(item.userId) }
+                                .clickable { onNavigateToUser(item.userId) }
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(

@@ -121,30 +121,30 @@ fun UserScreen(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .clip(CircleShape)
+                    .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
                     .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
                     .align(Alignment.Center)
-                    .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value)),
+                    .clip(CircleShape),
             )
             Text(
                 text = uiState.coinResult.nickname,
                 modifier = Modifier
-                    .align(Alignment.Center)
                     .offset(
                         x = -(avatarOffsetX - (titleBarSize * 2)) * (1 - targetPercent.value),
                         y = 35.dp * targetPercent.value
-                    ),
+                    )
+                    .align(Alignment.Center),
                 fontSize = 16.sp,
                 color = colorResource(R.color.text_fff),
             )
             Text(
                 text = "积分:${uiState.coinResult.coinCount}",
                 modifier = Modifier
+                    .offset(x = 0.dp, y = 55.dp * targetPercent.value)
                     .graphicsLayer {
                         alpha = targetPercent.value
                     }
-                    .align(Alignment.Center)
-                    .offset(x = 0.dp, y = 55.dp * targetPercent.value),
+                    .align(Alignment.Center),
                 fontSize = 12.sp,
                 color = colorResource(R.color.text_fff),
             )

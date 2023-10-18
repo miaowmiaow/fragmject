@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.compose.rememberNavController
-import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
 
 class WanActivity : AppCompatActivity() {
@@ -45,15 +44,11 @@ class WanActivity : AppCompatActivity() {
                 }
             }
         })
-        //WebView预加载
-        WebViewManager.prepare(applicationContext)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         WanHelper.close()
-        //WebView销毁
-        WebViewManager.destroy()
     }
 
 }

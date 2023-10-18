@@ -134,7 +134,7 @@ fun WanNavGraph(
         }
         composable(WanDestinations.MY_COIN_ROUTE) {
             MyCoinScreen(
-                onNavigateToCoinRank = { wanNavActions.navigateToRank() },
+                onNavigateToRank = { wanNavActions.navigateToRank() },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
@@ -161,6 +161,7 @@ fun WanNavGraph(
         }
         composable(WanDestinations.RANK_ROUTE) {
             RankScreen(
+                onNavigateToUser = { wanNavActions.navigateToUser(it) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )

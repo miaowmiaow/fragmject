@@ -49,7 +49,7 @@ import kotlin.math.abs
 @Composable
 fun MyCoinScreen(
     viewModel: MyCoinViewModel = viewModel(),
-    onNavigateToCoinRank: () -> Unit = {},
+    onNavigateToRank: () -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -110,7 +110,7 @@ fun MyCoinScreen(
                     .height(45.dp)
                     .padding(13.dp)
                     .align(Alignment.TopEnd),
-                onClick = onNavigateToCoinRank
+                onClick = onNavigateToRank
             ) {
                 Icon(
                     painter = painterResource(R.mipmap.ic_rank),
@@ -121,22 +121,22 @@ fun MyCoinScreen(
             Text(
                 text = "我的积分",
                 modifier = Modifier
-                    .align(Alignment.Center)
                     .offset(
                         x = -(coinOffsetX - titleBarSize - 10.dp) * (1 - targetPercent.value),
                         y = -titleBarSize * targetPercent.value
-                    ),
+                    )
+                    .align(Alignment.Center),
                 fontSize = 16.sp,
                 color = colorResource(R.color.text_fff),
             )
             Text(
                 text = uiState.userCoinResult.coinCount,
                 modifier = Modifier
-                    .align(Alignment.Center)
                     .offset(
                         x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
                         y = 10.dp * targetPercent.value
-                    ),
+                    )
+                    .align(Alignment.Center),
                 fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
                 color = colorResource(R.color.text_fff),
             )

@@ -7,7 +7,6 @@ import android.content.MutableContextWrapper
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import android.os.Looper
 import android.util.Base64
 import android.util.Log
 import android.view.ViewGroup
@@ -38,10 +37,6 @@ class WebViewManager private constructor() {
             INSTANCE ?: WebViewManager().also { INSTANCE = it }
         }
 
-        fun prepare(context: Context) {
-            getInstance().prepare(context)
-        }
-
         fun obtain(context: Context, url: String): WebView {
             return getInstance().obtain(context, url)
         }
@@ -58,16 +53,12 @@ class WebViewManager private constructor() {
             getInstance().recycle(webView)
         }
 
-        fun destroy() {
-            getInstance().destroy()
-        }
     }
 
-    private val webViewCache: MutableList<WebView> = ArrayList(1)
+    private val webViewMap = mutableMapOf<String, WebView>()
+    private val webViewQueue: ArrayDeque<WebView> = ArrayDeque()
     private val backStack: ArrayDeque<String> = ArrayDeque()
-    private val backStackMap = mutableMapOf<String, WebView>()
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
-    private val forwardStackMap = mutableMapOf<String, WebView>()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
 
     private fun create(context: Context): WebView {
@@ -89,39 +80,30 @@ class WebViewManager private constructor() {
         return webView
     }
 
-    fun prepare(context: Context) {
-        if (webViewCache.isEmpty()) {
-            Looper.myQueue().addIdleHandler {
-                webViewCache.add(create(MutableContextWrapper(context.applicationContext)))
-                false
-            }
+    private fun obtain(context: Context, url: String): WebView {
+        if (webViewQueue.isEmpty()) {
+            webViewQueue.add(create(MutableContextWrapper(context)))
         }
-    }
-
-    fun obtain(context: Context, url: String): WebView {
-        if (webViewCache.isEmpty()) {
-            webViewCache.add(create(MutableContextWrapper(context)))
-        }
-        val webView = if (backStackMap.containsKey(url)) {
+        val webView = if (webViewMap.containsKey(url)) {
             backStack.remove(url)
-            backStackMap.getOrDefault(url, webViewCache.removeFirst())
+            webViewMap.getOrDefault(url, webViewQueue.removeFirst())
         } else {
-            webViewCache.removeFirst()
+            webViewQueue.removeFirst()
         }
         val contextWrapper = webView.context as MutableContextWrapper
         contextWrapper.baseContext = context
         return webView
     }
 
-    fun back(webView: WebView): Boolean {
+    private fun back(webView: WebView): Boolean {
         return try {
             val backUrl = backStack.removeLast()
-            backStackMap[backUrl]?.let {
-                webViewCache.add(0, it)
+            webViewMap[backUrl]?.let {
+                webViewQueue.add(0, it)
             }
             val forwardUrl = webView.originalUrl.toString()
             forwardStack.addLast(forwardUrl)
-            forwardStackMap[forwardUrl] = webView
+            webViewMap[forwardUrl] = webView
             true
         } catch (e: Exception) {
             lastBackWebView = WeakReference(webView)
@@ -129,66 +111,49 @@ class WebViewManager private constructor() {
         }
     }
 
-    fun forward(webView: WebView): Boolean {
+    private fun forward(webView: WebView): Boolean {
         return try {
             val forwardUrl = forwardStack.removeLast()
-            forwardStackMap[forwardUrl]?.let {
-                webViewCache.add(0, it)
+            webViewMap[forwardUrl]?.let {
+                webViewQueue.add(0, it)
             }
             val backUrl = webView.originalUrl.toString()
             backStack.addLast(backUrl)
-            backStackMap[backUrl] = webView
+            webViewMap[backUrl] = webView
             true
         } catch (e: Exception) {
             false
         }
     }
 
-    fun recycle(webView: WebView) {
+    private fun recycle(webView: WebView) {
         try {
             webView.removeParentView()
+            val url = webView.originalUrl.toString()
             if (lastBackWebView.get() != webView) {
-                val url = webView.originalUrl.toString()
                 if (!backStack.contains(url) && !forwardStack.contains(url)) {
                     backStack.addLast(url)
-                    backStackMap[url] = webView
+                    webViewMap[url] = webView
                 }
             } else {
                 lastBackWebView.clear()
                 backStack.clear()
-                backStackMap.clear()
                 forwardStack.clear()
-                forwardStackMap.clear()
-                webView.stopLoading()
-                webView.clearHistory()
-                webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
-                webViewCache.add(0, webView)
+                webViewMap.destroyWebView()
+                webViewQueue.destroyWebView()
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
         }
     }
 
-    fun destroy() {
-        try {
-            lastBackWebView.get()?.removeParentView()
-            lastBackWebView.clear()
-            backStack.clear()
-            forwardStack.clear()
-            backStackMap.destroyWebView()
-            forwardStackMap.destroyWebView()
-            webViewCache.destroyWebView()
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-        }
-    }
-
-    private fun WebView.removeParentView() {
+    private fun WebView.removeParentView(): WebView {
         if (parent != null) {
             (parent as ViewGroup).removeView(this)
         }
         val contextWrapper = context as MutableContextWrapper
         contextWrapper.baseContext = context.applicationContext
+        return this
     }
 
     private fun MutableList<WebView>.destroyWebView() {

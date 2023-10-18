@@ -229,5 +229,4 @@ class WebViewNavigator(
 @Composable
 fun rememberWebViewNavigator(
     coroutineScope: CoroutineScope = rememberCoroutineScope()
-): WebViewNavigator =
-    remember(coroutineScope) { WebViewNavigator(coroutineScope) }
+): WebViewNavigator = remember(coroutineScope) { WebViewNavigator(coroutineScope) }

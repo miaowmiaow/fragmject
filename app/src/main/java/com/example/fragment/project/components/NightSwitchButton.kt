@@ -389,7 +389,7 @@ fun Stars(
             valueAnimator.interpolator = DecelerateInterpolator()
             valueAnimator.addUpdateListener {
                 val value = it.animatedValue as Float
-                nightStar.alpha.value = value
+                nightStar.alpha.floatValue = value
             }
             valueAnimator.addListener {
                 it.doOnEnd {
@@ -409,7 +409,7 @@ fun Stars(
                     .width(canvasWidth)
                     .height(canvasHeight)
                     .offset(y = -canvasHeight + canvasHeight * progressY)
-                    .alpha(nightStar.alpha.value),
+                    .alpha(nightStar.alpha.floatValue),
             ) {
                 val starRadius = canvasRadius * 0.9f
                 val buttonHeight = canvasHeight - canvasHeight / 10f * 2
@@ -808,9 +808,9 @@ fun Moon(
 @Stable
 fun getRandomStart(): NightStar {
     val star = NightStar()
-    star.x.value = getRandom(0f, 1f)
-    star.y.value = getRandom(0f, 1f)
-    star.radius.value = getRandom(0f, 1f)
+    star.x.floatValue = getRandom(0f, 1f)
+    star.y.floatValue = getRandom(0f, 1f)
+    star.radius.floatValue = getRandom(0f, 1f)
     star.status.value = NightStarStatus.Start
     return star
 }

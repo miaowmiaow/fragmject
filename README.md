@@ -131,7 +131,7 @@
 - [Jetpack Compose : 一学就会的自定义下拉刷新&加载更多](https://juejin.cn/post/7185159395519496250)
 - [Jetpack Compose : 一文学会嵌套滚动NestedScrollConnection](https://juejin.cn/spost/7239610698116055098)
 - [Jetpack Compose : 超简单实现滚轮控件(WheelPicker)](https://juejin.cn/post/7266702105829277754)
-- [Jetpack Compose : 让你的WebView丝滑流畅](https://juejin.cn/post/7194360493866221628)
+- [Jetpack Compose : 优雅的使用WebView](https://juejin.cn/post/7194360493866221628)
 
 ![webview.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/4.webp)
 

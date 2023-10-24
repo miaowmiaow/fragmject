@@ -207,7 +207,8 @@ fun MyDemoScreen() {
                 title = { Text(text = "全文demo") },
                 text = {
                     Column {
-                        var isEllipsis by remember { mutableStateOf(true) }
+                        var ellipsis by remember { mutableStateOf(false) }
+                        var expand by remember { mutableStateOf(false) }
                         EllipsisText(
                             text = buildAnnotatedString {
                                 append(
@@ -216,25 +217,27 @@ fun MyDemoScreen() {
                                             "白露横江10，水光接天。纵一苇之所如，凌万顷之茫然11。浩浩乎如冯虚御风12，而不知其所止；飘飘乎如遗世独立13，羽化而登仙14。\n" +
                                             "于是饮酒乐甚，扣舷而歌之15。歌曰：“桂棹兮兰桨16，击空明兮溯流光17。渺渺兮予怀18，望美人兮天一方19。”" +
                                             "客有吹洞箫者，倚歌而和之20。其声呜呜然，如怨如慕21，如泣如诉；余音袅袅22，不绝如缕23。舞幽壑之潜蛟24，泣孤舟之嫠妇25。\n" +
-                                            "苏子愀然26，正襟危坐27，而问客曰：“何为其然也28？”..."
+                                            "苏子愀然26，正襟危坐27，而问客曰：“何为其然也28？”"
                                 )
                             },
+                            color = colorResource(R.color.text_333),
+                            backgroundColor = colorResource(R.color.white),
                             fontSize = 14.sp,
-                            maxLines = if (isEllipsis) 2 else Int.MAX_VALUE,
-                            background = colorResource(R.color.white),
-                            ellipsisText = if (isEllipsis) "...展开" else "...收起"
+                            maxLines = if (expand) Int.MAX_VALUE else 2,
+                            onTextLayout = {
+                                ellipsis = it.isLineEllipsized(it.lineCount - 1)
+                            },
+                            ellipsisText = if (expand) {
+                                "...收起"
+                            } else if (ellipsis) {
+                                "...展开"
+                            } else {
+                                ""
+                            }
                         ) {
-                            isEllipsis = !isEllipsis
+                            expand = !expand
                         }
                         Spacer(Modifier.height(10.dp))
-                        EllipsisText(
-                            text = buildAnnotatedString {
-                                append("你的人生格言是什么？")
-                            },
-                            fontSize = 12.sp,
-                            background = colorResource(R.color.white),
-                            maxLines = 2,
-                        )
                     }
                 },
                 confirmButton = {

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,11 +29,12 @@ import com.example.fragment.project.R
 @Composable
 fun EllipsisText(
     text: AnnotatedString,
-    color: Color = Color.Unspecified,
+    color: Color,
+    backgroundColor: Color,
     fontSize: TextUnit = TextUnit.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
-    background: Color,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
     ellipsisText: String = "...全文",
     ellipsisColor: Color = colorResource(R.color.blue),
     onClick: () -> Unit = {},
@@ -55,7 +57,7 @@ fun EllipsisText(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 )
-                .background(background),
+                .background(backgroundColor),
             lineHeight = fontSize.times(1.35f),
             overflow = TextOverflow.Ellipsis,
             maxLines = maxLines,
@@ -69,6 +71,7 @@ fun EllipsisText(
                 )
                 right = it.getHorizontalPosition(offset, true)
                 bottom = it.getLineBottom(it.lineCount - 1)
+                onTextLayout(it)
             },
             style = style
         )
@@ -77,7 +80,7 @@ fun EllipsisText(
                 translationX = right
                 translationY = bottom - size.height
             }
-            .background(background)
+            .background(backgroundColor)
             .fillMaxWidth()
         ) {
             Text(

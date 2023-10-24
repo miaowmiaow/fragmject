@@ -52,57 +52,57 @@
 ## 项目目录结构
 ```
 ├── app                                         app
-|   └── src 
-|       └── main 
-|       |   └── java                            源码目录
-|       |   |   ├── bean                        bean目录
-|       |   |   ├── components                  自定义组件目录
-|       |   |   ├── ui                          ui目录
-|       |   |   |   └── main                    mian目录
-|       |   |   |       └── home                home目录
-|       |   |   |       |   ├── HomeScreen      
-|       |   |   |       |   └── HomeViewModel   
-|       |   |   |       └── MainScreen          
-|       |   |   ├── utils                       工具类目录
-|       |   |   ├── WanActivity                 唯一Activity
-|       |   |   ├── WanApplication              Application
-|       |   |   ├── WanTheme                    Theme
-|       |   |   ├── WanNavGraph                 导航图
-|       |   |   └── WanViewModel                ViewModel
-|       |   |
-|       |   └── res                             资源目录
-|       |   └── AndroidManifest.xml             配置文件
-|       |
-|       ├── build.gradle                        模块构建配置
-|       ├── dictionary                          自定义混淆字典
-|       └── proguard-rules.pro                  代码混淆配置文件
+|  └── src 
+|     └── main 
+|     |   └── java                              源码目录
+|     |   |  ├── bean                           bean目录
+|     |   |  ├── components                     自定义组件目录
+|     |   |  ├── ui                             ui目录
+|     |   |  |  └── main                        mian目录
+|     |   |  |     └── home                     home目录
+|     |   |  |     |  ├── HomeScreen      
+|     |   |  |     |  └── HomeViewModel   
+|     |   |  |     └── MainScreen          
+|     |   |  ├── utils                          工具类目录
+|     |   |  ├── WanActivity                    唯一Activity
+|     |   |  ├── WanApplication                 Application
+|     |   |  ├── WanTheme                       Theme
+|     |   |  ├── WanNavGraph                    导航图
+|     |   |  └── WanViewModel                   ViewModel
+|     |   |
+|     |   └── res                               资源目录
+|     |   └── AndroidManifest.xml               配置文件
+|     |
+|     ├── build.gradle                          模块构建配置
+|     ├── dictionary                            自定义混淆字典
+|     └── proguard-rules.pro                    代码混淆配置文件
 | 
 ├── library-base                                基础library（library开头为公共库，任何项目都可使用）
-|   └── src 
-|       └── main 
-|       |   ├── assets                          assets目录
-|       |   └── java                            源码目录
-|       |       ├── activity                    Activity目录
-|       |       ├── adapter                     Adapter目录
-|       |       ├── bus                         消息总线目录
-|       |       ├── db                          Database目录
-|       |       ├── dialog                      Dialog目录
-|       |       ├── http                        网络请求目录
-|       |       ├── provider                    ContentProvider目录
-|       |       ├── service                     Service目录
-|       |       ├── utils                       工具类目录
-|       |       └── view                        自定义view目录
-|       | 
-|       └── build.gradle                        模块构建配置
+|  └── src 
+|     └── main 
+|     |   ├── assets                            assets目录
+|     |   └── java                              源码目录
+|     |      ├── activity                       Activity目录
+|     |      ├── adapter                        Adapter目录
+|     |      ├── bus                            消息总线目录
+|     |      ├── db                             Database目录
+|     |      ├── dialog                         Dialog目录
+|     |      ├── http                           网络请求目录
+|     |      ├── provider                       ContentProvider目录
+|     |      ├── service                        Service目录
+|     |      ├── utils                          工具类目录
+|     |      └── view                           自定义view目录
+|     | 
+|     └── build.gradle                          模块构建配置
 | 
 ├── library-picture                             图片模块（目录同app，不再展开）
 | 
 ├── library-plugin                              插件模块
-|   └── src 
-|       └── main 
-|           ├── kotlin                          源码目录
-|           └── resources                       配置目录
-|               └── statistic.properties        插件配置
+|  └── src 
+|     └── main 
+|        ├── kotlin                             源码目录
+|        └── resources                          配置目录
+|           └── statistic.properties            插件配置
 | 
 ├── repos                                       插件生成目录
 |

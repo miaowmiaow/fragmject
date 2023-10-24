@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import android.view.ViewGroup
+import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -132,18 +133,21 @@ fun WebView(
                         view: WebView?,
                         request: WebResourceRequest?
                     ): Boolean {
-                        if (view != null && request != null && request.url != null && !request.isRedirect) {
-                            if ("http" != request.url.scheme && "https" != request.url.scheme) {
-                                try {
-                                    view.context.startActivity(
-                                        Intent(Intent.ACTION_VIEW, request.url)
-                                    )
-                                } catch (e: Exception) {
-                                    Log.e(this.javaClass.name, e.message.toString())
-                                }
-                            } else {
-                                shouldOverrideUrl(request.url.toString())
+                        if (view == null || request == null) {
+                            return false
+                        }
+                        val requestUrl = request.url.toString()
+                        if (!URLUtil.isValidUrl(requestUrl)) {
+                            try {
+                                view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                            } catch (e: Exception) {
+                                Log.e(this.javaClass.name, e.message.toString())
+                                onNavigateUp()
                             }
+                            return true
+                        }
+                        if (!request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
+                            shouldOverrideUrl(requestUrl)
                             return true
                         }
                         return false
@@ -160,7 +164,7 @@ fun WebView(
                         injectState = false
                     }
                 }
-                if (url.isValidURL() && !this.url.isValidURL()) {
+                if (URLUtil.isValidUrl(url) && !URLUtil.isValidUrl(this.url)) {
                     this.loadUrl(url)
                 }
             }.also { webView = it }

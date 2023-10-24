@@ -81,12 +81,11 @@ class WebViewManager private constructor() {
     }
 
     private fun obtain(context: Context, url: String): WebView {
-        if (webViewQueue.isEmpty()) {
-            webViewQueue.add(create(MutableContextWrapper(context)))
-        }
-        val webView = if (webViewMap.containsKey(url)) {
+        val webView = if (webViewQueue.isEmpty()) {
             backStack.remove(url)
-            webViewMap.getOrDefault(url, webViewQueue.removeFirst())
+            webViewMap.getOrPut(url) {
+                create(MutableContextWrapper(context))
+            }
         } else {
             webViewQueue.removeFirst()
         }
@@ -97,13 +96,12 @@ class WebViewManager private constructor() {
 
     private fun back(webView: WebView): Boolean {
         return try {
-            val backUrl = backStack.removeLast()
-            webViewMap[backUrl]?.let {
+            val backLastUrl = backStack.removeLast()
+            webViewMap[backLastUrl]?.let {
                 webViewQueue.add(0, it)
             }
-            val forwardUrl = webView.originalUrl.toString()
-            forwardStack.addLast(forwardUrl)
-            webViewMap[forwardUrl] = webView
+            val originalUrl = webView.originalUrl.toString()
+            forwardStack.add(originalUrl)
             true
         } catch (e: Exception) {
             lastBackWebView = WeakReference(webView)
@@ -113,15 +111,15 @@ class WebViewManager private constructor() {
 
     private fun forward(webView: WebView): Boolean {
         return try {
-            val forwardUrl = forwardStack.removeLast()
-            webViewMap[forwardUrl]?.let {
+            val forwardLastUrl = forwardStack.removeLast()
+            webViewMap[forwardLastUrl]?.let {
                 webViewQueue.add(0, it)
             }
-            val backUrl = webView.originalUrl.toString()
-            backStack.addLast(backUrl)
-            webViewMap[backUrl] = webView
+            val originalUrl = webView.originalUrl.toString()
+            backStack.add(originalUrl)
             true
         } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
             false
         }
     }
@@ -129,16 +127,15 @@ class WebViewManager private constructor() {
     private fun recycle(webView: WebView) {
         try {
             webView.removeParentView()
-            val url = webView.originalUrl.toString()
+            val originalUrl = webView.originalUrl.toString()
             if (lastBackWebView.get() != webView) {
-                if (!backStack.contains(url) && !forwardStack.contains(url)) {
-                    backStack.addLast(url)
-                    webViewMap[url] = webView
+                if (!backStack.contains(originalUrl) && !forwardStack.contains(originalUrl)) {
+                    backStack.add(originalUrl)
                 }
             } else {
-                lastBackWebView.clear()
                 backStack.clear()
                 forwardStack.clear()
+                lastBackWebView.clear()
                 webViewMap.destroyWebView()
                 webViewQueue.destroyWebView()
             }
@@ -290,20 +287,6 @@ fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceRespon
         Log.e(this.javaClass.name, e.message.toString())
     }
     return null
-}
-
-fun String?.isValidURL(): Boolean {
-    if (this.isNullOrBlank()) {
-        return false
-    }
-    val uri: Uri?
-    try {
-        uri = Uri.parse(this)
-    } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
-        return false // Invalid URI syntax
-    }
-    return uri != null && uri.scheme != null && uri.host != null
 }
 
 private fun String.getExtensionFromUrl(): String {

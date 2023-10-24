@@ -48,64 +48,64 @@ The goal of this project is to encourage students to build a strong foundation i
 ## Project Directory Structure
 ```
 ├── app                                         
-|   └── src 
-|       └── main 
-|       |   └── java                            
-|       |   |   ├── bean                        
-|       |   |   ├── components                  
-|       |   |   ├── ui                          
-|       |   |   |   └── main                    
-|       |   |   |       └── home                
-|       |   |   |       |   ├── HomeScreen      
-|       |   |   |       |   └── HomeViewModel   
-|       |   |   |       └── MainScreen          
-|       |   |   ├── utils                       
-|       |   |   ├── WanActivity                 
-|       |   |   ├── WanApplication              
-|       |   |   ├── WanTheme                    
-|       |   |   ├── WanNavGraph                 
-|       |   |   └── WanViewModel                
-|       |   |
-|       |   └── res                             
-|       |   └── AndroidManifest.xml             
-|       |
-|       ├── build.gradle                        
-|       ├── dictionary                          
-|       └── proguard-rules.pro                  
+|  └── src 
+|     └── main 
+|     |   └── java                            
+|     |   |  ├── bean                        
+|     |   |  ├── components                  
+|     |   |  ├── ui                          
+|     |   |  |  └── main                    
+|     |   |  |     └── home                
+|     |   |  |     |  ├── HomeScreen      
+|     |   |  |     |  └── HomeViewModel   
+|     |   |  |     └── MainScreen          
+|     |   |  ├── utils                       
+|     |   |  ├── WanActivity                 
+|     |   |  ├── WanApplication              
+|     |   |  ├── WanTheme                    
+|     |   |  ├── WanNavGraph                 
+|     |   |  └── WanViewModel                
+|     |   |
+|     |   └── res                             
+|     |   └── AndroidManifest.xml             
+|     |
+|     ├── build.gradle                        
+|     ├── dictionary                          
+|     └── proguard-rules.pro                  
 | 
-├── library-base                                
-|   └── src 
-|       └── main 
-|       |   ├── assets                          
-|       |   └── java                            
-|       |       ├── activity                    
-|       |       ├── adapter                     
-|       |       ├── bus                         
-|       |       ├── db                          
-|       |       ├── dialog                      
-|       |       ├── http                        
-|       |       ├── provider                    
-|       |       ├── service                     
-|       |       ├── utils                       
-|       |       └── view                        
-|       | 
-|       └── build.gradle                        
+├── library-base                              
+|  └── src 
+|     └── main 
+|     |   ├── assets                          
+|     |   └── java                            
+|     |      ├── activity                    
+|     |      ├── adapter                     
+|     |      ├── bus                         
+|     |      ├── db                          
+|     |      ├── dialog                      
+|     |      ├── http                        
+|     |      ├── provider                    
+|     |      ├── service                     
+|     |      ├── utils                       
+|     |      └── view                        
+|     | 
+|     └── build.gradle                        
 | 
 ├── library-picture                             
 | 
-├── library-plugin                      
-|   └── src 
-|       └── main 
-|           ├── kotlin                          
-|           └── resources                       
-|               └── statistic.properties        
+├── library-plugin                              
+|  └── src 
+|     └── main 
+|        ├── kotlin                          
+|        └── resources                       
+|           └── statistic.properties        
 | 
 ├── repos                                       
 |
 ├── build.gradle                                
 ├── config.properties                           
 ├── gradle.properties                           
-└── settings.gradle                             
+└── settings.gradle                                                         
 ```
 
 ## Jetpack Compose

@@ -19,7 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navOptions
+import androidx.navigation.compose.rememberNavController
 import com.example.fragment.project.ui.bookmark_history.BookmarkHistoryScreen
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
@@ -43,11 +43,11 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
  */
 @Composable
 fun WanNavGraph(
-    navController: NavHostController,
-    startDestination: String,
+    route: String?,
     modifier: Modifier = Modifier,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
+    val navController = rememberNavController()
     val wanNavActions = remember(navController) { WanNavActions(navController) }
     val viewModel: WanViewModel = viewModel()
     val wanUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,7 +70,7 @@ fun WanNavGraph(
     }
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = WanDestinations.MAIN_ROUTE,
         modifier = modifier.background(colorResource(R.color.background)),
         enterTransition = {
             slideIntoContainer(
@@ -239,13 +239,17 @@ fun WanNavGraph(
             )
         }
     }
+    if (!route.isNullOrBlank()) {
+        val webRoute = "${WanDestinations.WEB_ROUTE}/"
+        wanNavActions.navigate(
+            if (route.startsWith(webRoute)) {
+                webRoute + Uri.encode(route.substring(webRoute.length))
+            } else {
+                route
+            }
+        )
+    }
 }
-
-private val authentication = arrayOf(
-    WanDestinations.MY_COIN_ROUTE,
-    WanDestinations.MY_COLLECT_ROUTE,
-    WanDestinations.MY_SHARE_ROUTE,
-)
 
 class WanNavActions(
     private val navController: NavHostController
@@ -275,7 +279,7 @@ class WanNavActions(
         navigate(WanDestinations.REGISTER_ROUTE)
     }
     val navigateToSearch: (key: String) -> Unit = {
-        navigate(WanDestinations.SEARCH_ROUTE, "/$it")
+        navigate(WanDestinations.SEARCH_ROUTE + "/$it")
     }
     val navigateToSetting: () -> Unit = {
         navigate(WanDestinations.SETTING_ROUTE)
@@ -284,29 +288,34 @@ class WanNavActions(
         navigate(WanDestinations.SHARE_ARTICLE_ROUTE)
     }
     val navigateToSystem: (cid: String) -> Unit = {
-        navigate(WanDestinations.SYSTEM_ROUTE, "/$it")
+        navigate(WanDestinations.SYSTEM_ROUTE + "/$it")
     }
     val navigateToUser: (userId: String) -> Unit = {
-        navigate(WanDestinations.USER_ROUTE, "/$it")
+        navigate(WanDestinations.USER_ROUTE + "/$it")
     }
     val navigateToWeb: (url: String) -> Unit = {
-        navigate(WanDestinations.WEB_ROUTE, "/${Uri.encode(it)}")
+        navigate(WanDestinations.WEB_ROUTE + "/${Uri.encode(it)}")
     }
     val navigateUp: () -> Unit = {
-        navController.navigateUp()
+        if (!navController.navigateUp()) {
+            navigate(WanDestinations.MAIN_ROUTE)
+        }
     }
     val popBackStack: (route: String) -> Unit = {
-        navController.popBackStack(it, false)
+        if (!navController.popBackStack(it, false)) {
+            navigate(WanDestinations.MAIN_ROUTE)
+        }
     }
 
-    private fun navigate(directions: String, arguments: String = "") {
-        val options = navOptions { launchSingleTop = false }
+    fun navigate(route: String) {
         WanHelper.getUser { userBean ->
-            if (authentication.contains(directions) && userBean.id.isBlank()) {
-                navController.navigate(WanDestinations.LOGIN_ROUTE, options)
-            } else {
-                navController.navigate(directions + arguments, options)
-            }
+            navController.navigate(
+                if (interceptRoute(route) && userBean.id.isBlank()) {
+                    WanDestinations.LOGIN_ROUTE
+                } else {
+                    route
+                }
+            )
         }
     }
 }
@@ -327,4 +336,17 @@ object WanDestinations {
     const val SYSTEM_ROUTE = "system_route"
     const val USER_ROUTE = "user_route"
     const val WEB_ROUTE = "web_route"
+}
+
+fun interceptRoute(route: String): Boolean {
+    arrayOf(
+        WanDestinations.MY_COIN_ROUTE,
+        WanDestinations.MY_COLLECT_ROUTE,
+        WanDestinations.MY_SHARE_ROUTE,
+    ).forEach {
+        if (route.startsWith(it)) {
+            return@interceptRoute true
+        }
+    }
+    return false
 }

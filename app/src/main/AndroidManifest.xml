@@ -9,7 +9,7 @@
         android:label="${app_name_value}"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
+        android:theme="@style/Theme.Wan"
         tools:ignore="DataExtractionRules">
 
         <meta-data
@@ -20,11 +20,23 @@
             android:name=".WanActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation"
             android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Wan.Splash"
             android:windowSoftInputMode="stateHidden|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="com.fragment.project"
+                    android:scheme="wan" />
             </intent-filter>
         </activity>
 

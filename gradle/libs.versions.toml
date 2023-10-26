@@ -11,7 +11,7 @@ androidx-lifecycle = "2.6.2"
 androidx-navigation-compose = "2.7.4"
 androidx-webkit = "1.8.0"
 asm = "9.5"
-compose = "1.5.3"
+compose = "1.5.4"
 composeCompiler = "1.5.3"
 coil = "2.4.0"
 gson = "2.10.1"
@@ -23,7 +23,7 @@ leakcanary = "2.12"
 material = "1.10.0"
 okhttp = '5.0.0-alpha.11'
 retrofit = '2.9.0'
-room = "2.5.2"
+room = "2.6.0"
 test-espresso-core = '3.5.1'
 test-ext-junit = '1.1.5'
 

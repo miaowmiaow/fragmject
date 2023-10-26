@@ -85,7 +85,7 @@ fun BookmarkHistoryScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                itemsIndexed(if (page == 0) webHistoryList else webBookmarkList) { _, item ->
+                itemsIndexed(if (page == 0) webBookmarkList else webHistoryList) { _, item ->
                     Row(
                         modifier = Modifier
                             .clickable {
@@ -110,27 +110,27 @@ fun BookmarkHistoryScreen(
                         Icon(
                             painter = painterResource(
                                 if (page == 0) {
-                                    R.mipmap.ic_delete
-                                } else {
                                     R.mipmap.ic_collect_checked
+                                } else {
+                                    R.mipmap.ic_delete
                                 }
                             ),
                             contentDescription = null,
                             modifier = Modifier
                                 .clickable {
                                     if (page == 0) {
-                                        onWebHistory(false, item)
-                                    } else {
                                         onWebBookmark(false, item)
+                                    } else {
+                                        onWebHistory(false, item)
                                     }
                                 }
                                 .size(30.dp)
                                 .padding(10.dp, 5.dp, 0.dp, 5.dp),
                             tint = colorResource(
                                 if (page == 0) {
-                                    R.color.theme
-                                } else {
                                     R.color.pink
+                                } else {
+                                    R.color.theme
                                 }
                             )
                         )

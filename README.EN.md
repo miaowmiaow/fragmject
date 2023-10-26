@@ -108,6 +108,9 @@ The goal of this project is to encourage students to build a strong foundation i
 └── settings.gradle                                                         
 ```
 
+## Download
+- [![](https://img.shields.io/badge/Download-apk-green.svg)](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/release/wan-release-1.3.0-free.apk)
+
 ## Jetpack Compose
 
 #### Less code

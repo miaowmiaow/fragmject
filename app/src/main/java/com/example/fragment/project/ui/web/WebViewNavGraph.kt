@@ -20,7 +20,7 @@ fun WebViewNavGraph(
     originalUrl: String,
     navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
-    shouldOverrideUrl: (url: String) -> Unit = {},
+    onLoadUrl: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val navController = rememberNavController()
@@ -69,9 +69,10 @@ fun WebViewNavGraph(
                     navActions.navigateForward()
                 },
                 shouldOverrideUrl = {
-                    shouldOverrideUrl(it)
                     navActions.navigateToWebView(it)
+                    onLoadUrl(it)
                 },
+                onLoadUrl = onLoadUrl,
                 onNavigateUp = onNavigateUp
             )
         }

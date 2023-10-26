@@ -5,6 +5,7 @@
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="android:windowLayoutInDisplayCutoutMode">default</item>
+        <item name="android:statusBarColor">@color/theme</item>
     </style>
 
     <style name="Theme.Wan.Splash" parent="Theme.Wan">

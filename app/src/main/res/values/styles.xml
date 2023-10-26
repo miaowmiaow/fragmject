@@ -8,6 +8,5 @@
     <style name="Theme.Wan.Splash" parent="Theme.Wan">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">@drawable/splash_bg</item>
-        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 </resources>

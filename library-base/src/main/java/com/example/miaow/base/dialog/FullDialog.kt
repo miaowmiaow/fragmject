@@ -5,7 +5,7 @@ import android.view.Gravity
 import android.view.WindowManager
 import com.example.miaow.base.R
 
-open class FullDialog : BottomDialog() {
+open class FullDialog : BaseDialog() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

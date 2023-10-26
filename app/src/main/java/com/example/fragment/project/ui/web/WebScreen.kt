@@ -179,7 +179,7 @@ fun WebScreen(
                 originalUrl = originalUrl,
                 navigator = navigator,
                 modifier = Modifier.fillMaxSize(),
-                shouldOverrideUrl = {
+                onLoadUrl = {
                     onWebHistory(true, it)
                 },
                 onNavigateUp = onNavigateUp

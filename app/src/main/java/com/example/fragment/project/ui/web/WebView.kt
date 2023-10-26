@@ -46,6 +46,7 @@ fun WebView(
     goBack: () -> Unit = {},
     goForward: () -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
+    onLoadUrl: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val url by remember { mutableStateOf(originalUrl) }
@@ -165,6 +166,7 @@ fun WebView(
                     }
                 }
                 if (URLUtil.isValidUrl(url) && !URLUtil.isValidUrl(this.url)) {
+                    onLoadUrl(url)
                     this.loadUrl(url)
                 }
             }.also { webView = it }

@@ -1,7 +1,6 @@
 package com.example.miaow.picture.selector.dialog
 
 import android.content.ContentValues
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -66,7 +65,6 @@ class PictureSelectorDialog : FullDialog() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setStatusBar(binding.root, Color.parseColor("#555555"), false)
         _pictureAlbumPopupWindow = PictureAlbumPopupWindow(view.context)
         initView()
         initViewModel()
@@ -75,7 +73,6 @@ class PictureSelectorDialog : FullDialog() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        setStatusBar(binding.root, Color.parseColor("#00000000"), false)
         binding.list.adapter = null
         pictureAlbumPopupWindow.onDestroy()
         _pictureAlbumPopupWindow = null

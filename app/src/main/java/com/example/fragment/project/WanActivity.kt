@@ -1,6 +1,7 @@
 package com.example.fragment.project
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -16,7 +17,7 @@ class WanActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Theme_Wan)
-        setContentView(intent)
+        setContentView(parseScheme(intent.data))
         //设置显示模式
         WanHelper.getUiMode { mode ->
             when (mode) {
@@ -41,7 +42,9 @@ class WanActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        setContentView(intent)
+        intent?.data?.let {
+            setContentView(parseScheme(it))
+        }
     }
 
     override fun onDestroy() {
@@ -49,24 +52,24 @@ class WanActivity : AppCompatActivity() {
         WanHelper.close()
     }
 
-    private fun setContentView(intent: Intent?) {
-        setContentView(ComposeView(this).apply {
-            /**
-             * 解析 scheme 协议（如果有的话）导航到指定页面
-             * path 为指定页面导航 route，详情参考 WanNavGraph，示例如下：
-             * wan://com.fragment.project/rank_route
-             * wan://com.fragment.project/search_route/动画
-             * wan://com.fragment.project/web_route/https://wanandroid.com
-             */
-            val scheme = intent?.data?.scheme
-            val host = intent?.data?.host
-            val path = intent?.data?.path
-            val route = when {
-                scheme == "wan" && host == "com.fragment.project" ->
-                    path.toString().substring(1)
+    /**
+     * 解析 scheme 协议（如果有的话）导航到指定页面
+     * path 为指定页面导航 route，详情参考 WanNavGraph，示例如下：
+     * wan://com.fragment.project/rank_route
+     * wan://com.fragment.project/search_route/动画
+     * wan://com.fragment.project/web_route/https://wanandroid.com
+     */
+    private fun parseScheme(uri: Uri?): String? {
+        return when {
+            uri != null && uri.scheme == "wan" && uri.host == "com.fragment.project" ->
+                uri.path.toString().substring(1)
 
-                else -> null
-            }
+            else -> null
+        }
+    }
+
+    private fun setContentView(route: String?) {
+        setContentView(ComposeView(this).apply {
             setContent {
                 WanTheme {
                     WanNavGraph(route)

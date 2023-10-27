@@ -53,7 +53,7 @@ class WanActivity : AppCompatActivity() {
     }
 
     /**
-     * 解析 scheme 协议（如果有的话）导航到指定页面
+     * 解析 url scheme（如果有的话）导航到指定页面
      * path 为指定页面导航 route，详情参考 WanNavGraph，示例如下：
      * wan://com.fragment.project/rank_route
      * wan://com.fragment.project/search_route/动画

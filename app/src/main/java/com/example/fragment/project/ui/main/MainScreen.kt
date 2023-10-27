@@ -51,8 +51,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    hotKeyList: List<HotKeyBean>,
-    treeList: List<TreeBean>,
+    hotKeyData: List<HotKeyBean>,
+    systemData: List<TreeBean>,
     onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
@@ -79,7 +79,7 @@ fun MainScreen(
         modifier = Modifier.systemBarsPadding(),
         topBar = {
             SearchBar(
-                data = hotKeyList,
+                data = hotKeyData,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToShareArticle = onNavigateToShareArticle
             )
@@ -117,7 +117,7 @@ fun MainScreen(
 
                 1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
                     NavScreen(
-                        treeList = treeList,
+                        systemData = systemData,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToWeb = onNavigateToWeb,
                     )

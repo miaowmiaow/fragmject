@@ -39,8 +39,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookmarkHistoryScreen(
-    webBookmarkList: List<String>,
-    webHistoryList: List<String>,
+    webBookmarkData: List<String>,
+    webHistoryData: List<String>,
     onWebBookmark: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToWeb: (url: String) -> Unit = {},
@@ -85,7 +85,7 @@ fun BookmarkHistoryScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                itemsIndexed(if (page == 0) webBookmarkList else webHistoryList) { _, item ->
+                itemsIndexed(if (page == 0) webBookmarkData else webHistoryData) { _, item ->
                     Row(
                         modifier = Modifier
                             .clickable {

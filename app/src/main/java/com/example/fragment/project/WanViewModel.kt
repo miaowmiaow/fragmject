@@ -89,6 +89,7 @@ class WanViewModel : BaseViewModel() {
             }
             it.copy(updateTime = System.nanoTime())
         }
+        WanHelper.setSearchHistory(_uiState.value.searchHistoryResult)
     }
 
     fun onWebBookmark(isAdd: Boolean, text: String) {
@@ -101,6 +102,7 @@ class WanViewModel : BaseViewModel() {
             }
             it.copy(updateTime = System.nanoTime())
         }
+        WanHelper.setWebBookmark(_uiState.value.webBookmarkResult)
     }
 
     fun onWebHistory(isAdd: Boolean, text: String) {
@@ -113,34 +115,6 @@ class WanViewModel : BaseViewModel() {
             }
             it.copy(updateTime = System.nanoTime())
         }
-    }
-
-    fun onRestore() {
-        viewModelScope.launch {
-            val searchHistoryList = async { WanHelper.getSearchHistory() }
-            val webBookmarkList = async { WanHelper.getWebBookmark() }
-            val webHistoryList = async { WanHelper.getWebHistory() }
-            _uiState.update { state ->
-                searchHistoryList.await().let {
-                    state.searchHistoryResult.clear()
-                    state.searchHistoryResult.addAll(it)
-                }
-                webBookmarkList.await().let {
-                    state.webBookmarkResult.clear()
-                    state.webBookmarkResult.addAll(it)
-                }
-                webHistoryList.await().let {
-                    state.webHistoryResult.clear()
-                    state.webHistoryResult.addAll(it)
-                }
-                state.copy(updateTime = System.nanoTime())
-            }
-        }
-    }
-
-    fun onSave() {
-        WanHelper.setSearchHistory(_uiState.value.searchHistoryResult)
-        WanHelper.setWebBookmark(_uiState.value.webBookmarkResult)
         WanHelper.setWebHistory(_uiState.value.webHistoryResult)
     }
 

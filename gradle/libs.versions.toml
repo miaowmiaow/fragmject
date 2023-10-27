@@ -1,5 +1,4 @@
 [versions]
-accompanist = "0.32.0"
 agp = "8.3.0-alpha07"
 androidx-activity-compose = "1.8.0"
 androidx-appcompat = "1.6.1"
@@ -28,7 +27,6 @@ test-espresso-core = '3.5.1'
 test-ext-junit = '1.1.5'
 
 [libraries]
-accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" }

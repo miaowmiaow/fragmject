@@ -125,7 +125,6 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
-    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.material)

@@ -28,7 +28,9 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
     val savePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
     val fileName = url.encodeUtf8().md5().hex()
     CoroutineScope(Dispatchers.Main).launch {
-        download(url, savePath = savePath, fileName = fileName)
+        download(savePath, fileName) {
+            setUrl(url)
+        }
         withContext(Dispatchers.IO) {
             val file = File(savePath, fileName)
             if (file.exists() && file.isFile) {

@@ -276,9 +276,7 @@ class WanNavActions(
         }
     }
     val popBackStack: (route: String) -> Unit = {
-        if (!navController.popBackStack(it, false)) {
-            navigate(WanDestinations.MAIN_ROUTE)
-        }
+        navController.popBackStack(it, false)
     }
 
     fun navigate(route: String) {

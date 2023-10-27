@@ -92,12 +92,12 @@ abstract class BaseViewModel : ViewModel() {
     /**
      * 用于解决过度动画卡顿问题
      */
-    suspend fun transitionAnimationEnd(request: HttpRequest, response: HttpResponse) {
+    suspend fun transitionAnimationEnd(time: Long) {
         withContext(Dispatchers.Main) {
             //如果请求结束时间小于转场动画时间则等待转场动画结束后返回数据
-            val time = TRANSITION_ANIMATION_TIME - (response.time - request.time)
-            if (time > 0) {
-                delay(time)
+            val delayMillis = TRANSITION_ANIMATION_TIME - time
+            if (delayMillis > 0) {
+                delay(delayMillis)
             }
         }
     }

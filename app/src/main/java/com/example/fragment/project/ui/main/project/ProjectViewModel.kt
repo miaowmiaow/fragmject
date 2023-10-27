@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.main.project
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,10 +75,11 @@ class ProjectViewModel : BaseViewModel() {
      */
     private fun getList(cid: String, page: Int) {
         viewModelScope.launch {
-            val request = HttpRequest("project/list/{page}/json")
-                .putPath("page", page.toString())
-                .putQuery("cid", cid)
-            val response = get<ArticleListBean>(request)
+            val response = get<ArticleListBean> {
+                setUrl("project/list/{page}/json")
+                putPath("page", page.toString())
+                putQuery("cid", cid)
+            }
             //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt(), cid)
             _uiState.update { state ->

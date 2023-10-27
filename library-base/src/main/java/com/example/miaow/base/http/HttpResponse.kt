@@ -9,4 +9,8 @@ open class HttpResponse @JvmOverloads constructor(
     init {
         time = System.currentTimeMillis()
     }
+
+    fun setRequestTime(reqTime: Long) {
+        time -= reqTime
+    }
 }

@@ -6,7 +6,6 @@ import com.example.fragment.project.bean.HotKeyListBean
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.bean.TreeListBean
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
@@ -69,14 +68,22 @@ class WanViewModel : BaseViewModel() {
      * 获取搜索热词
      */
     private suspend fun getHotKeyList(): HotKeyListBean {
-        return coroutineScope { get(HttpRequest("hotkey/json")) }
+        return coroutineScope {
+            get {
+                setUrl("hotkey/json")
+            }
+        }
     }
 
     /**
      * 获取项目分类
      */
     private suspend fun getTreeList(): TreeListBean {
-        return coroutineScope { get(HttpRequest("tree/json")) }
+        return coroutineScope {
+            get {
+                setUrl("tree/json")
+            }
+        }
     }
 
     fun onSearchHistory(isAdd: Boolean, text: String) {

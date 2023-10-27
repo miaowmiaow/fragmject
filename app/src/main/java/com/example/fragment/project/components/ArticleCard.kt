@@ -42,7 +42,6 @@ import coil.compose.AsyncImage
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.bean.ArticleBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.post
 import kotlinx.coroutines.launch
@@ -222,14 +221,16 @@ fun ArticleCard(
                     contentDescription = "",
                     modifier = footModifier.clickable {
                         scope.launch {
-                            val request = HttpRequest().putPath("id", data.id)
-                            request.setUrl(
-                                if (data.collect)
-                                    "lg/uncollect_originId/{id}/json"
-                                else
-                                    "lg/uncollect_originId/{id}/json"
-                            )
-                            val response = post<HttpResponse>(request)
+                            val response = post<HttpResponse> {
+                                setUrl(
+                                    if (data.collect) {
+                                        "lg/collect/{id}/json"
+                                    } else {
+                                        "lg/uncollect_originId/{id}/json"
+                                    }
+                                )
+                                putPath("id", data.id)
+                            }
                             when (response.errorCode) {
                                 "0" -> {
                                     data.collect = !data.collect

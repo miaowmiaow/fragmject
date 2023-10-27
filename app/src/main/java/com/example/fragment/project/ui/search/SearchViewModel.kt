@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.search
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,12 +54,12 @@ class SearchViewModel : BaseViewModel() {
     private fun getArticleQuery(key: String, page: Int) {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //构建请求体，传入请求参数
-            val request = HttpRequest("article/query/{page}/json")
-                .putParam("k", key)
-                .putPath("page", page.toString())
             //以get方式发起网络请求
-            val response = post<ArticleListBean>(request)
+            val response = post<ArticleListBean> {
+                setUrl("article/query/{page}/json")
+                putParam("k", key)
+                putPath("page", page.toString())
+            }
             //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->

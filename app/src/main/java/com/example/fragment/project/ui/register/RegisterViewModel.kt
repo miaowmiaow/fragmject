@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.register
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.RegisterBean
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,11 +58,12 @@ class RegisterViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("user/register")
-                .putParam("username", username)
-                .putParam("password", password)
-                .putParam("repassword", repassword)
-            val response = post<RegisterBean>(request)
+            val response = post<RegisterBean> {
+                setUrl("user/register")
+                putParam("username", username)
+                putParam("password", password)
+                putParam("repassword", repassword)
+            }
             WanHelper.setUser(response.data)
             _uiState.update {
                 it.copy(

@@ -34,8 +34,9 @@ class ProjectTreeViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("project/tree/json")
-            val response = get<ProjectTreeListBean>(request)
+            val response = get<ProjectTreeListBean> {
+                setUrl("project/tree/json")
+            }
             _uiState.update { state ->
                 response.data?.let { data ->
                     state.result.clear()

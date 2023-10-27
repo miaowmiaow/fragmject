@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.rank
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.CoinBean
 import com.example.fragment.project.bean.CoinRankBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,9 +48,10 @@ class RankViewModel : BaseViewModel() {
      */
     private fun getCoinRank(page: Int) {
         viewModelScope.launch {
-            val request = HttpRequest("coin/rank/{page}/json")
-                .putPath("page", page.toString())
-            val response = get<CoinRankBean>(request)
+            val response = get<CoinRankBean> {
+                setUrl("coin/rank/{page}/json")
+                putPath("page", page.toString())
+            }
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->
                 response.data?.datas?.let { data ->

@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.setting
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.UserBean
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
@@ -71,8 +70,9 @@ class SettingViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("user/logout/json")
-            val response = get<HttpResponse>(request)
+            val response = get<HttpResponse> {
+                setUrl("user/logout/json")
+            }
             if (response.errorCode == "0") {
                 val userBean = UserBean()
                 WanHelper.setUser(userBean)

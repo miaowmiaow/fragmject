@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.CoinBean
 import com.example.fragment.project.bean.ShareArticleListBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,11 +52,11 @@ class UserViewModel(private val id: String) : BaseViewModel() {
      */
     private fun getShareArticlesList(page: Int) {
         viewModelScope.launch {
-            //构建请求体，传入请求参数
-            val request = HttpRequest("user/{id}/share_articles/{page}/json")
-                .putPath("id", id)
-                .putPath("page", page.toString())
-            val response = get<ShareArticleListBean>(request)
+            val response = get<ShareArticleListBean> {
+                setUrl("user/{id}/share_articles/{page}/json")
+                putPath("id", id)
+                putPath("page", page.toString())
+            }
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
             _uiState.update { state ->
                 response.data?.coinInfo?.let { coin ->

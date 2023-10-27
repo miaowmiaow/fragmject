@@ -1,6 +1,8 @@
 package com.example.miaow.base.http
 
 import android.content.ContextWrapper
+import com.example.miaow.base.utils.DslSpannableStringBuilder
+import com.example.miaow.base.utils.DslSpannableStringBuilderImpl
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -11,70 +13,46 @@ import java.io.File
 
 /**
  * get请求
- * @param url      请求地址
- * @param header   请求Header
- * @param progress 进度回调方法
- */
-suspend inline fun CoroutineScope.get(
-    url: String,
-    header: MutableMap<String, String> = HashMap(),
-    noinline progress: ((Double) -> Unit)? = null
-): String {
-    return CoroutineHttp.instance().get(url, header, progress)
-}
-
-/**
- * get请求
- * @param request  http请求体
- * @param progress 进度回调方法
+ * @param init  http请求体
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
-    request: HttpRequest,
-    noinline progress: ((Double) -> Unit)? = null
+    noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.instance().get(request, T::class.java, progress)
+    return CoroutineHttp.instance().get(init, T::class.java)
 }
 
 /**
  * post请求
- * @param request  http请求体
- * @param progress 进度回调方法
+ * @param init  http请求体
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
-    request: HttpRequest,
-    noinline progress: ((Double) -> Unit)? = null
+    noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.instance().post(request, T::class.java, progress)
+    return CoroutineHttp.instance().post(init, T::class.java)
 }
 
 /**
  * form请求
- * @param request  http请求体
- * @param progress 进度回调方法
+ * @param init  http请求体
  */
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
-    request: HttpRequest,
-    noinline progress: ((Double) -> Unit)? = null
+    noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.instance().form(request, T::class.java, progress)
+    return CoroutineHttp.instance().form(init, T::class.java)
 }
 
 /**
  * download请求
- * @param url      请求地址
- * @param header   请求Header
  * @param savePath 保存路径
  * @param fileName 文件名称
- * @param progress 进度回调方法
+ * @param init  http请求体
  */
 suspend inline fun CoroutineScope.download(
-    url: String,
-    header: MutableMap<String, String> = HashMap(),
     savePath: String,
     fileName: String,
-    noinline progress: ((Double) -> Unit)? = null
+    noinline init: HttpRequest.() -> Unit
 ): HttpResponse {
-    return CoroutineHttp.instance().download(url, header, savePath, fileName, progress)
+    return CoroutineHttp.instance().download(savePath, fileName, init)
 }
 
 fun ContextWrapper.setBaseUrl(baseUrl: String) {
@@ -129,88 +107,71 @@ class CoroutineHttp private constructor() {
         return converter ?: GSonConverter.create().also { converter = it }
     }
 
-    suspend fun get(
-        url: String,
-        header: MutableMap<String, String>,
-        progress: ((Double) -> Unit)? = null
-    ): String {
-        return try {
-            progress?.invoke(0.0)
-            val responseBody = getService().get(url, header)
-            responseBody.string()
-        } catch (e: Exception) {
-            e.message.toString()
-        } finally {
-            progress?.invoke(1.0)
-        }
-    }
-
     suspend fun <T : HttpResponse> get(
-        request: HttpRequest,
+        init: HttpRequest.() -> Unit,
         type: Class<T>,
-        progress: ((Double) -> Unit)? = null
     ): T {
         return try {
-            progress?.invoke(0.0)
+            val request = HttpRequest()
+            request.init()
             val responseBody = getService().get(request.getUrl(baseUrl), request.getHeader())
-            getConverter().converter(responseBody, type)
+            getConverter().converter(responseBody, type).apply {
+                setRequestTime(request.time)
+            }
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), type)
-        } finally {
-            progress?.invoke(1.0)
         }
     }
 
     suspend fun <T : HttpResponse> post(
-        request: HttpRequest,
+        init: HttpRequest.() -> Unit,
         type: Class<T>,
-        progress: ((Double) -> Unit)? = null
     ): T {
         return try {
-            progress?.invoke(0.0)
+            val request = HttpRequest()
+            request.init()
             val responseBody = getService().post(
                 request.getUrl(baseUrl),
                 request.getHeader(),
                 request.getParam()
             )
-            getConverter().converter(responseBody, type)
+            getConverter().converter(responseBody, type).apply {
+                setRequestTime(request.time)
+            }
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), type)
-        } finally {
-            progress?.invoke(1.0)
         }
     }
 
     suspend fun <T : HttpResponse> form(
-        request: HttpRequest,
+        init: HttpRequest.() -> Unit,
         type: Class<T>,
-        progress: ((Double) -> Unit)? = null
     ): T {
         return try {
-            progress?.invoke(0.0)
+            val request = HttpRequest()
+            request.init()
             val responseBody = getService().form(
                 request.getUrl(baseUrl),
                 request.getHeader(),
                 request.getMultipartBody()
             )
-            getConverter().converter(responseBody, type)
+            getConverter().converter(responseBody, type).apply {
+                setRequestTime(request.time)
+            }
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), type)
-        } finally {
-            progress?.invoke(1.0)
         }
     }
 
     suspend fun download(
-        url: String,
-        header: MutableMap<String, String>,
         savePath: String,
         fileName: String,
-        progress: ((Double) -> Unit)? = null
+        init: HttpRequest.() -> Unit
     ): HttpResponse {
         return try {
-            progress?.invoke(0.0)
-            getService().get(url, header).use {
+            val request = HttpRequest()
+            request.init()
+            getService().get(request.getUrl(), request.getHeader()).use {
                 val file = File(savePath, fileName)
                 it.byteStream().use { inputStream ->
                     file.writeBytes(inputStream.readBytes())
@@ -219,8 +180,6 @@ class CoroutineHttp private constructor() {
             buildResponse("0", "success", HttpResponse::class.java)
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), HttpResponse::class.java)
-        } finally {
-            progress?.invoke(1.0)
         }
     }
 

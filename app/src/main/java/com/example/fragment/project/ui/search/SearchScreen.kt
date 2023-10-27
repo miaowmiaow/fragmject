@@ -63,8 +63,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun SearchScreen(
     key: String,
-    hotKeyList: List<HotKeyBean>?,
-    searchHistoryList: List<String>,
+    hotKeyData: List<HotKeyBean>?,
+    searchHistoryData: List<String>,
     viewModel: SearchViewModel = viewModel(),
     onSearchHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit = {},
@@ -158,7 +158,7 @@ fun SearchScreen(
                         color = colorResource(R.color.text_333),
                     )
                     FlowRow(modifier = Modifier.fillMaxWidth()) {
-                        hotKeyList?.forEach {
+                        hotKeyData?.forEach {
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
                                     onClick = {
@@ -186,7 +186,7 @@ fun SearchScreen(
                             }
                         }
                     }
-                    if (searchHistoryList.isNotEmpty()) {
+                    if (searchHistoryData.isNotEmpty()) {
                         Text(
                             text = "历史搜索",
                             modifier = Modifier.padding(15.dp),
@@ -197,7 +197,7 @@ fun SearchScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(1.dp),
                         ) {
-                            itemsIndexed(searchHistoryList) { _, item ->
+                            itemsIndexed(searchHistoryData) { _, item ->
                                 Row(
                                     modifier = Modifier
                                         .clickable {

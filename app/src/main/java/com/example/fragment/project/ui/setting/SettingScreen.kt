@@ -58,9 +58,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
-    onNavigateToAbout: () -> Unit = {},
-    onNavigateToFeedback: () -> Unit = {},
-    onNavigateToPrivacyPolicy: () -> Unit = {},
+    onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -178,9 +176,9 @@ fun SettingScreen(
 //                        context.requestIgnoreBatteryOptimizations()
 //                    }
                     Spacer(Modifier.height(1.dp))
-                    ArrowRightItem("隐私政策") { onNavigateToPrivacyPolicy() }
+                    ArrowRightItem("隐私政策") { onNavigateToWeb("file:///android_asset/privacy_policy.html") }
                     Spacer(Modifier.height(1.dp))
-                    ArrowRightItem("问题反馈") { onNavigateToFeedback() }
+                    ArrowRightItem("问题反馈") { onNavigateToWeb("https://github.com/miaowmiaow/fragmject/issues") }
                     Spacer(Modifier.height(1.dp))
                     Row(
                         modifier = Modifier
@@ -229,7 +227,7 @@ fun SettingScreen(
                         )
                     }
                     Spacer(Modifier.height(1.dp))
-                    ArrowRightItem("关于玩Android") { onNavigateToAbout() }
+                    ArrowRightItem("关于玩Android") { onNavigateToWeb("https://wanandroid.com") }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.userBean.id.isNotBlank()) {
                         Button(

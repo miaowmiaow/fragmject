@@ -5,15 +5,10 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -36,7 +31,6 @@ import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.user.UserScreen
 import com.example.fragment.project.ui.web.WebScreen
 import com.example.fragment.project.utils.WanHelper
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * 导航图
@@ -44,30 +38,12 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @Composable
 fun WanNavGraph(
     route: String?,
-    modifier: Modifier = Modifier,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
     val wanNavActions = remember(navController) { WanNavActions(navController) }
     val viewModel: WanViewModel = viewModel()
     val wanUiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val statusBarColor = colorResource(R.color.theme)
-    val systemUiController = rememberSystemUiController()
-    DisposableEffect(lifecycleOwner) {
-        systemUiController.setStatusBarColor(statusBarColor, false)
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.onRestore()
-            }
-            if (event == Lifecycle.Event.ON_PAUSE) {
-                viewModel.onSave()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
     NavHost(
         navController = navController,
         startDestination = WanDestinations.MAIN_ROUTE,
@@ -99,8 +75,8 @@ fun WanNavGraph(
     ) {
         composable(WanDestinations.BOOKMARK_HISTORY_ROUTE) {
             BookmarkHistoryScreen(
-                webBookmarkList = wanUiState.webBookmarkResult,
-                webHistoryList = wanUiState.webHistoryResult,
+                webBookmarkData = wanUiState.webBookmarkResult,
+                webHistoryData = wanUiState.webHistoryResult,
                 onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
                 onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
@@ -116,8 +92,8 @@ fun WanNavGraph(
         }
         composable(WanDestinations.MAIN_ROUTE) {
             MainScreen(
-                hotKeyList = wanUiState.hotKeyResult,
-                treeList = wanUiState.treeResult,
+                hotKeyData = wanUiState.hotKeyResult,
+                systemData = wanUiState.treeResult,
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
@@ -175,8 +151,8 @@ fun WanNavGraph(
         composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
             SearchScreen(
                 key = backStackEntry.arguments?.getString("key") ?: "",
-                hotKeyList = wanUiState.hotKeyResult,
-                searchHistoryList = wanUiState.searchHistoryResult,
+                hotKeyData = wanUiState.hotKeyResult,
+                searchHistoryData = wanUiState.searchHistoryResult,
                 onSearchHistory = { isAdd, text -> viewModel.onSearchHistory(isAdd, text) },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
@@ -187,9 +163,7 @@ fun WanNavGraph(
         }
         composable(WanDestinations.SETTING_ROUTE) {
             SettingScreen(
-                onNavigateToAbout = { wanNavActions.navigateToWeb("https://wanandroid.com") },
-                onNavigateToFeedback = { wanNavActions.navigateToWeb("https://github.com/miaowmiaow/fragmject/issues") },
-                onNavigateToPrivacyPolicy = { wanNavActions.navigateToWeb("file:///android_asset/privacy_policy.html") },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
@@ -206,8 +180,8 @@ fun WanNavGraph(
                     if (children.id == cid) {
                         SystemScreen(
                             title = data.name,
-                            index = index,
-                            tree = data.children,
+                            tabIndex = index,
+                            systemData = data.children,
                             onNavigateToLogin = { wanNavActions.navigateToLogin() },
                             onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
                             onNavigateToUser = { wanNavActions.navigateToUser(it) },
@@ -231,7 +205,7 @@ fun WanNavGraph(
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: "",
-                webBookmarkList = wanUiState.webBookmarkResult,
+                webBookmarkData = wanUiState.webBookmarkResult,
                 onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
                 onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },

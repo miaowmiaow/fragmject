@@ -37,11 +37,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SystemScreen(
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     title: String = "体系",
-    index: Int = 0,
-    tree: List<TreeBean>,
+    tabIndex: Int = 0,
+    systemData: List<TreeBean>,
     systemViewModel: SystemViewModel = viewModel(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
@@ -49,11 +49,11 @@ fun SystemScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(index) { tree.size }
+    val pagerState = rememberPagerState(tabIndex) { systemData.size }
     Column(modifier = Modifier.systemBarsPadding()) {
         TitleBar(title) { onNavigateUp() }
         TabBar(
-            data = tree,
+            data = systemData,
             textMapping = { it.name },
             pagerState = pagerState,
             modifier = Modifier
@@ -67,7 +67,7 @@ fun SystemScreen(
         )
         TabRowDefaults.Divider(color = colorResource(R.color.line))
         HorizontalPager(state = pagerState) { page ->
-            val pageCid = tree[page].id
+            val pageCid = systemData[page].id
             DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
                     if (event == Lifecycle.Event.ON_START) {

@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NavScreen(
-    treeList: List<TreeBean>,
+    systemData: List<TreeBean>,
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
@@ -66,7 +66,7 @@ fun NavScreen(
                 NavLinkContent(onNavigateToWeb = onNavigateToWeb)
             } else if (page == 1) {
                 NavSystemContent(
-                    treeList = treeList,
+                    systemData = systemData,
                     onNavigateToSystem = onNavigateToSystem
                 )
             }
@@ -137,7 +137,7 @@ fun NavLinkContent(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun NavSystemContent(
-    treeList: List<TreeBean>,
+    systemData: List<TreeBean>,
     onNavigateToSystem: (cid: String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -145,7 +145,7 @@ fun NavSystemContent(
         modifier = Modifier.fillMaxSize(),
         state = listState
     ) {
-        treeList.forEach {
+        systemData.forEach {
             stickyHeader {
                 Text(
                     text = it.name,

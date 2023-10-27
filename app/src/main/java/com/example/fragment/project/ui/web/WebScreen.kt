@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebScreen(
     originalUrl: String,
-    webBookmarkList: List<String>,
+    webBookmarkData: List<String>,
     onWebBookmark: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToBookmarkHistory: () -> Unit = {},
@@ -117,7 +117,7 @@ fun WebScreen(
                     Button(
                         onClick = {
                             onWebBookmark(
-                                !webBookmarkList.contains(navigator.lastLoadedUrl),
+                                !webBookmarkData.contains(navigator.lastLoadedUrl),
                                 navigator.lastLoadedUrl.toString()
                             )
                         },
@@ -136,7 +136,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
                             tint = colorResource(
-                                if (webBookmarkList.contains(navigator.lastLoadedUrl)) {
+                                if (webBookmarkData.contains(navigator.lastLoadedUrl)) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme

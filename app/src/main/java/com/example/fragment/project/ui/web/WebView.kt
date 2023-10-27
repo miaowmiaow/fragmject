@@ -143,7 +143,6 @@ fun WebView(
                                 view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
                             } catch (e: Exception) {
                                 Log.e(this.javaClass.name, e.message.toString())
-                                onNavigateUp()
                             }
                             return true
                         }

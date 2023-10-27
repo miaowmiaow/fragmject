@@ -5,7 +5,6 @@ import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
 import com.example.fragment.project.bean.BannerListBean
 import com.example.fragment.project.bean.TopArticleBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
@@ -76,14 +75,22 @@ class HomeViewModel : BaseViewModel() {
      * 获取banner
      */
     private suspend fun getBanner(): BannerListBean {
-        return coroutineScope { get(HttpRequest("banner/json")) }
+        return coroutineScope {
+            get {
+                setUrl("banner/json")
+            }
+        }
     }
 
     /**
      * 获取置顶文章
      */
     private suspend fun getArticleTop(): TopArticleBean {
-        return coroutineScope { get(HttpRequest("article/top/json")) }
+        return coroutineScope {
+            get {
+                setUrl("article/top/json")
+            }
+        }
     }
 
     /**
@@ -91,9 +98,12 @@ class HomeViewModel : BaseViewModel() {
      * page 0开始
      */
     private suspend fun getArticleList(page: Int): ArticleListBean {
-        val request = HttpRequest("article/list/{page}/json")
-            .putPath("page", page.toString())
-        val response = coroutineScope { get<ArticleListBean>(request) }
+        val response = coroutineScope {
+            get<ArticleListBean> {
+                setUrl("article/list/{page}/json")
+                putPath("page", page.toString())
+            }
+        }
         updatePageCont(response.data?.pageCount?.toInt())
         return response
     }

@@ -5,7 +5,6 @@ import com.example.fragment.project.bean.CoinBean
 import com.example.fragment.project.bean.MyCoinBean
 import com.example.fragment.project.bean.MyCoinListBean
 import com.example.fragment.project.bean.UserCoinBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
@@ -77,11 +76,13 @@ class MyCoinViewModel : BaseViewModel() {
      * page 1开始
      */
     private suspend fun getMyCoinList(page: Int): MyCoinListBean {
-        //构建请求体，传入请求参数
-        val request = HttpRequest("lg/coin/list/{page}/json")
-            .putPath("page", page.toString())
         //以get方式发起网络请求
-        val response = coroutineScope { get<MyCoinListBean>(request) }
+        val response = coroutineScope {
+            get<MyCoinListBean> {
+                setUrl("lg/coin/list/{page}/json")
+                putPath("page", page.toString())
+            }
+        }
         //根据接口返回更新总页码
         updatePageCont(response.data?.pageCount?.toInt())
         return response
@@ -91,7 +92,11 @@ class MyCoinViewModel : BaseViewModel() {
      * 获取个人积分
      */
     private suspend fun getUserCoin(): UserCoinBean {
-        return coroutineScope { get(HttpRequest("lg/coin/userinfo/json")) }
+        return coroutineScope {
+            get {
+                setUrl("lg/coin/userinfo/json")
+            }
+        }
     }
 
 }

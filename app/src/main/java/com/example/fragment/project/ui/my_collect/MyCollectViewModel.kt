@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.my_collect
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,11 +50,11 @@ class MyCollectViewModel : BaseViewModel() {
     private fun getList(page: Int) {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //构建请求体，传入请求参数
-            val request = HttpRequest("lg/collect/list/{page}/json")
-                    .putPath("page", page.toString())
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request)
+            val response = get<ArticleListBean> {
+                setUrl("lg/collect/list/{page}/json")
+                putPath("page", page.toString())
+            }
             //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->

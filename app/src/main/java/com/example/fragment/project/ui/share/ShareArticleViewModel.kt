@@ -1,7 +1,6 @@
 package com.example.fragment.project.ui.share
 
 import androidx.lifecycle.viewModelScope
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
@@ -35,12 +34,12 @@ class ShareArticleViewModel : BaseViewModel() {
         }
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //构建请求体，传入请求参数
-            val request = HttpRequest("lg/user_article/add/json")
-                .putParam("title", title)
-                .putParam("link", link)
             //以get方式发起网络请求
-            val response = post<HttpResponse>(request)
+            val response = post<HttpResponse> {
+                setUrl("lg/user_article/add/json")
+                putParam("title", title)
+                putParam("link", link)
+            }
             _uiState.update {
                 it.copy(
                     isLoading = false,

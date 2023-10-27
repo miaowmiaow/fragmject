@@ -3,7 +3,6 @@ package com.example.fragment.project.ui.system
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.bean.ArticleBean
 import com.example.fragment.project.bean.ArticleListBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,18 +76,18 @@ class SystemViewModel : BaseViewModel() {
     private fun getList(cid: String, page: Int) {
         //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //构建请求体，传入请求参数
-            val request = HttpRequest("article/list/{page}/json")
-                .putPath("page", page.toString())
-                .putQuery("cid", cid)
             //以get方式发起网络请求
-            val response = get<ArticleListBean>(request)
+            val response = get<ArticleListBean> {
+                setUrl("article/list/{page}/json")
+                putPath("page", page.toString())
+                putQuery("cid", cid)
+            }
             //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt(), cid)
             _uiState.update { state ->
-                //如果result.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+                //response.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
                 if (state.result[cid].isNullOrEmpty()) {
-                    transitionAnimationEnd(request, response)
+                    transitionAnimationEnd(response.time)
                 }
                 response.data?.datas?.let { datas ->
                     if (isHomePage(cid)) {

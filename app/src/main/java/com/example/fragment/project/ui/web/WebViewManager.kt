@@ -271,7 +271,10 @@ fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceRespon
         val file = File(savePath, fileName)
         if (!file.exists() || !file.isFile) {
             runBlocking {
-                download(url, requestHeaders, savePath, fileName)
+                download(savePath, fileName) {
+                    setUrl(url)
+                    putHeader(requestHeaders)
+                }
             }
         }
         if (file.exists() && file.isFile) {

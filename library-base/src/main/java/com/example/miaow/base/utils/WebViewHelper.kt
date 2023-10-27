@@ -200,7 +200,10 @@ object WebViewHelper {
             val file = File(savePath, fileName)
             if (!file.exists() || !file.isFile) {
                 runBlocking {
-                    download(url, webRequest.requestHeaders, savePath, fileName)
+                    download(savePath, fileName) {
+                        setUrl(url)
+                        putHeader(webRequest.requestHeaders)
+                    }
                 }
             }
             if (file.exists() && file.isFile) {

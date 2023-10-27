@@ -6,7 +6,6 @@ import com.example.fragment.project.bean.NavigationBean
 import com.example.fragment.project.bean.NavigationListBean
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.bean.TreeListBean
-import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,8 +58,9 @@ class NavViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("navi/json")
-            val response = get<NavigationListBean>(request)
+            val response = get<NavigationListBean> {
+                setUrl("navi/json")
+            }
             _uiState.update { state ->
                 response.data?.let { data ->
                     state.navigationResult.clear()
@@ -80,8 +80,9 @@ class NavViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val request = HttpRequest("tree/json")
-            val response = get<TreeListBean>(request)
+            val response = get<TreeListBean> {
+                setUrl("tree/json")
+            }
             _uiState.update { state ->
                 response.data?.let { data ->
                     state.systemTreeResult.clear()

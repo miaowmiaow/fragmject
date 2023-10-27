@@ -20,9 +20,9 @@ import kotlin.collections.set
  */
 open class HttpRequest @JvmOverloads constructor(
     private var url: String = "",
+    private var header: MutableMap<String, String> = HashMap(),
     private var path: MutableMap<String, String> = HashMap(),
     private var query: MutableMap<String, String> = HashMap(),
-    private var header: MutableMap<String, String> = HashMap(),
     private var params: MutableMap<String, String> = HashMap(),
     private var files: MutableMap<String, File> = HashMap()
 ) {
@@ -77,6 +77,11 @@ open class HttpRequest @JvmOverloads constructor(
         return this
     }
 
+    fun putPath(from: Map<String, String>): HttpRequest {
+        this.path.putAll(from)
+        return this
+    }
+
     fun putQuery(key: String, value: String): HttpRequest {
         if (!TextUtils.isEmpty(value)) {
             this.query[key] = value
@@ -84,8 +89,18 @@ open class HttpRequest @JvmOverloads constructor(
         return this
     }
 
+    fun putQuery(from: Map<String, String>): HttpRequest {
+        this.query.putAll(from)
+        return this
+    }
+
     fun putHeader(key: String, value: String): HttpRequest {
         this.header[key] = value
+        return this
+    }
+
+    fun putHeader(from: Map<String, String>): HttpRequest {
+        this.header.putAll(from)
         return this
     }
 
@@ -98,12 +113,22 @@ open class HttpRequest @JvmOverloads constructor(
         return this
     }
 
+    fun putParam(from: Map<String, String>): HttpRequest {
+        this.params.putAll(from)
+        return this
+    }
+
     fun getParam(): MutableMap<String, String> {
         return params
     }
 
     fun putFile(key: String, file: File): HttpRequest {
         this.files[key] = file
+        return this
+    }
+
+    fun putFile(from: Map<String, File>): HttpRequest {
+        this.files.putAll(from)
         return this
     }
 

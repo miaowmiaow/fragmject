@@ -124,7 +124,7 @@ fun WanNavGraph(
             )
         }
         composable(WanDestinations.MY_DEMO_ROUTE) {
-            MyDemoScreen()
+            MyDemoScreen(onNavigateUp = { wanNavActions.navigateUp() })
         }
         composable(WanDestinations.MY_SHARE_ROUTE) {
             MyShareScreen(

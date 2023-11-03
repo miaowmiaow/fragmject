@@ -1,6 +1,5 @@
 package com.example.fragment.project.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animate
@@ -8,15 +7,13 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MutatorMutex
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,9 +22,9 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
-import androidx.compose.material.pullrefresh.PullRefreshDefaults
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +40,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -85,37 +83,57 @@ fun <T> SwipeRefresh(
     contentType: (index: Int, item: T) -> Any? = { _, _ -> null },
     itemContent: @Composable LazyItemScope.(index: Int, item: T) -> Unit
 ) {
-    val state = rememberSwipeRefreshState(refreshing, onRefresh)
     if (items.isNullOrEmpty()) {
-        if (!refreshing) {
-            EmptyContent { onRefresh() }
+        if (!finishing) {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = colorResource(id = R.color.theme_orange)
+                )
+            }
+        } else {
+            EmptyContent {
+                onRefresh()
+            }
         }
     } else {
+        val state = rememberSwipeRefreshState(refreshing, onRefresh)
         Box(
-            modifier = Modifier.swipeRefresh(state),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            LazyColumn(
-                modifier = modifier.graphicsLayer {
+            modifier = Modifier
+                .swipeRefresh(state)
+                .clipToBounds()
+                .background(colorResource(R.color.background_refresh))
+                .graphicsLayer {
                     translationY = state.position
                 },
-                state = listState,
-                contentPadding = contentPadding,
-                verticalArrangement = verticalArrangement,
-            ) {
-                itemsIndexed(
-                    items = items,
-                    key = key,
-                    contentType = contentType
-                ) { index, item ->
-                    itemContent(index, item)
-                    if (loading && items.size - index < 5) {
-                        LaunchedEffect(items.size) { onLoad() }
-                    }
-                }
-                item { MoreIndicator(finishing) }
-            }
+            contentAlignment = Alignment.TopCenter
+        ) {
             RefreshIndicator(refreshing) { state.position }
+            Box(
+                modifier = Modifier.background(colorResource(R.color.background))
+            ) {
+                LazyColumn(
+                    modifier = modifier,
+                    state = listState,
+                    contentPadding = contentPadding,
+                    verticalArrangement = verticalArrangement,
+                ) {
+                    itemsIndexed(
+                        items = items,
+                        key = key,
+                        contentType = contentType
+                    ) { index, item ->
+                        itemContent(index, item)
+                        if (loading && items.size - index < 5) {
+                            LaunchedEffect(items.size) { onLoad() }
+                        }
+                    }
+                    item { MoreIndicator(finishing) }
+                }
+            }
         }
     }
 }
@@ -132,57 +150,83 @@ fun MoreIndicator(
         Text(
             text = if (finishing) "没有更多了！" else "正在加载中...",
             fontSize = 12.sp,
-            color = colorResource(id = R.color.theme),
-            modifier = Modifier.align(alignment = Alignment.Center)
+            color = colorResource(R.color.theme),
+            modifier = Modifier.align(Alignment.Center)
         )
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RefreshIndicator(
     refreshing: Boolean,
     position: () -> Float
 ) {
     val refreshingResId = listOf(
-        R.mipmap.refreshing_big_1,
-        R.mipmap.refreshing_big_4,
-        R.mipmap.refreshing_big_7,
-        R.mipmap.refreshing_big_10,
-        R.mipmap.refreshing_big_13,
-        R.mipmap.refreshing_big_16,
-        R.mipmap.refreshing_big_19,
+        R.mipmap.refreshing_1,
+        R.mipmap.refreshing_2,
+        R.mipmap.refreshing_3,
+        R.mipmap.refreshing_4,
+        R.mipmap.refreshing_5,
+        R.mipmap.refreshing_6,
+        R.mipmap.refreshing_7,
+        R.mipmap.refreshing_8,
+        R.mipmap.refreshing_9,
+        R.mipmap.refreshing_10,
+        R.mipmap.refreshing_11,
+        R.mipmap.refreshing_12,
+        R.mipmap.refreshing_13,
+        R.mipmap.refreshing_14,
+        R.mipmap.refreshing_15,
+        R.mipmap.refreshing_16,
+        R.mipmap.refreshing_17,
+        R.mipmap.refreshing_18,
+        R.mipmap.refreshing_19,
+        R.mipmap.refreshing_20,
+        R.mipmap.refreshing_21,
+        R.mipmap.refreshing_22,
+        R.mipmap.refreshing_23,
+        R.mipmap.refreshing_24,
+        R.mipmap.refreshing_25,
+        R.mipmap.refreshing_26,
+        R.mipmap.refreshing_27,
+        R.mipmap.refreshing_28,
+        R.mipmap.refreshing_29,
+        R.mipmap.refreshing_30,
+        R.mipmap.refreshing_31,
+        R.mipmap.refreshing_32,
+        R.mipmap.refreshing_33,
+        R.mipmap.refreshing_34,
+        R.mipmap.refreshing_35,
+        R.mipmap.refreshing_36,
+        R.mipmap.refreshing_37,
     )
+    val loadingHeight = SwipeRefreshDefaults.RefreshThreshold
     val loadingHeightPx: Float
     with(LocalDensity.current) {
-        loadingHeightPx = 16.dp.toPx()
+        loadingHeightPx = loadingHeight.toPx()
     }
     val infiniteTransition = rememberInfiniteTransition(label = "SwipeRefresh")
     val loadingAnimate by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = refreshingResId.size.toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(250, easing = LinearEasing),
+            animation = tween(1500, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "loadingAnimate"
     )
-    AnimatedVisibility(
-        visible = (refreshing || (position() >= loadingHeightPx)),
+    val id = if (refreshing) loadingAnimate else position() % refreshingResId.size
+    Image(
+        painter = painterResource(refreshingResId[id.toInt()]),
+        contentDescription = null,
         modifier = Modifier
-            .size(40.dp, 16.dp)
             .graphicsLayer {
-                translationY = (position() - loadingHeightPx) * 0.5f
-            },
-        enter = fadeIn() + scaleIn(),
-        exit = fadeOut() + scaleOut()
-    ) {
-        val id = if (refreshing) loadingAnimate else position() % refreshingResId.size
-        Image(
-            painter = painterResource(refreshingResId[id.toInt()]),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-        )
-    }
+                translationY = (-position() - loadingHeightPx) * 0.5f
+            }
+            .size(loadingHeight, loadingHeight),
+        contentScale = ContentScale.Crop,
+    )
 }
 
 @Composable
@@ -190,8 +234,8 @@ fun RefreshIndicator(
 fun rememberSwipeRefreshState(
     refreshing: Boolean,
     onRefresh: () -> Unit,
-    refreshThreshold: Dp = PullRefreshDefaults.RefreshThreshold,
-    refreshingOffset: Dp = PullRefreshDefaults.RefreshingOffset,
+    refreshThreshold: Dp = SwipeRefreshDefaults.RefreshThreshold,
+    refreshingOffset: Dp = SwipeRefreshDefaults.RefreshingOffset,
 ): SwipeRefreshState {
     require(refreshThreshold > 0.dp) { "The refresh trigger must be greater than zero!" }
 
@@ -330,4 +374,18 @@ class SwipeRefreshState internal constructor(
             threshold + extraOffset
         }
     }
+}
+
+@ExperimentalMaterialApi
+object SwipeRefreshDefaults {
+    /**
+     * If the indicator is below this threshold offset when it is released, a refresh
+     * will be triggered.
+     */
+    val RefreshThreshold = 100.dp
+
+    /**
+     * The offset at which the indicator should be rendered whilst a refresh is occurring.
+     */
+    val RefreshingOffset = 100.dp
 }

@@ -25,7 +25,7 @@ data class MyCoinDataBean(
     val datas: List<MyCoinBean>? = null,
     val offset: String = "",
     val over: Boolean = false,
-    val pageCount: String = "",
+    val pageCount: String = "0",
     val size: String = "",
     val total: String = ""
 )
@@ -60,7 +60,7 @@ data class CoinRankDataBean(
     val datas: List<CoinBean>? = null,
     val offset: String = "",
     val over: Boolean = false,
-    val pageCount: String = "",
+    val pageCount: String = "0",
     val size: String = "",
     val total: String = ""
 )

@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -84,51 +83,49 @@ fun RankScreen(
                 )
             }
         }
-        LoadingContent(uiState.refreshing && !uiState.loading) {
-            SwipeRefresh(
-                items = uiState.result,
-                refreshing = uiState.refreshing,
-                loading = uiState.loading,
-                finishing = uiState.finishing,
-                onRefresh = { viewModel.getHome() },
-                onLoad = { viewModel.getNext() },
+        SwipeRefresh(
+            items = uiState.result,
+            refreshing = uiState.refreshing,
+            loading = uiState.loading,
+            finishing = uiState.finishing,
+            onRefresh = { viewModel.getHome() },
+            onLoad = { viewModel.getNext() },
+            modifier = Modifier
+                .background(colorResource(R.color.background))
+                .fillMaxSize(),
+        ) { _, item ->
+            Row(
                 modifier = Modifier
-                    .background(colorResource(R.color.background))
-                    .fillMaxSize(),
-            ) { _, item ->
-                Row(
-                    modifier = Modifier
-                        .background(colorResource(R.color.white))
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = item.getAvatarId()),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .clickable { onNavigateToUser(item.userId) }
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = item.username,
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.text_666),
-                        )
-                    }
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = item.getAvatarId()),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable { onNavigateToUser(item.userId) }
+                            .size(30.dp)
+                    )
+                    Spacer(Modifier.width(10.dp))
                     Text(
-                        text = item.coinCount,
+                        text = item.username,
                         fontSize = 14.sp,
-                        color = colorResource(R.color.orange),
+                        color = colorResource(R.color.text_666),
                     )
                 }
-                Spacer(Modifier.height(1.dp))
+                Text(
+                    text = item.coinCount,
+                    fontSize = 14.sp,
+                    color = colorResource(R.color.orange),
+                )
             }
+            Spacer(Modifier.height(1.dp))
         }
     }
 

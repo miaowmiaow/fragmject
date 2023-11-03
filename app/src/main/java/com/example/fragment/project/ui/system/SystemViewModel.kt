@@ -74,33 +74,30 @@ class SystemViewModel : BaseViewModel() {
      * 	page 0开始
      */
     private fun getList(cid: String, page: Int) {
-        //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //以get方式发起网络请求
             val response = get<ArticleListBean> {
                 setUrl("article/list/{page}/json")
                 putPath("page", page.toString())
                 putQuery("cid", cid)
             }
-            //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt(), cid)
-            _uiState.update { state ->
-                //response.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-                if (state.result[cid].isNullOrEmpty()) {
-                    transitionAnimationEnd(response.time)
-                }
-                response.data?.datas?.let { datas ->
-                    if (isHomePage(cid)) {
-                        state.result[cid] = arrayListOf()
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    //response.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+                    if (state.result[cid].isNullOrEmpty()) {
+                        transitionAnimationEnd(response.time)
                     }
-                    state.result[cid]?.addAll(datas)
+                    data.datas?.let { datas ->
+                        if (isHomePage(cid)) {
+                            state.result[cid] = arrayListOf()
+                        }
+                        state.result[cid]?.addAll(datas)
+                    }
+                    state.refreshing[cid] = false
+                    state.loading[cid] = hasNextPage(cid)
+                    state.finishing[cid] = !hasNextPage(cid)
+                    state.copy(updateTime = System.nanoTime())
                 }
-                //设置下拉刷新状态
-                state.refreshing[cid] = false
-                //设置加载更多状态
-                state.loading[cid] = hasNextPage(cid)
-                state.finishing[cid] = !hasNextPage(cid)
-                state.copy(updateTime = System.nanoTime())
             }
         }
     }

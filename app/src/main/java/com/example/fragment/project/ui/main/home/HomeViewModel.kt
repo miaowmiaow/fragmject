@@ -62,11 +62,18 @@ class HomeViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             val response = getArticleList(getNextPage())
-            _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    state.result.addAll(datas)
+            updatePageCont(response.data?.pageCount?.toInt())
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.datas?.let { datas ->
+                        state.result.addAll(datas)
+                    }
+                    state.copy(
+                        refreshing = false,
+                        loading = hasNextPage(),
+                        finishing = !hasNextPage()
+                    )
                 }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }
@@ -104,7 +111,6 @@ class HomeViewModel : BaseViewModel() {
                 putPath("page", page.toString())
             }
         }
-        updatePageCont(response.data?.pageCount?.toInt())
         return response
     }
 

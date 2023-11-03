@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -33,6 +34,8 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -160,12 +163,15 @@ fun SearchBar(
             .background(colorResource(R.color.theme))
             .fillMaxWidth()
             .height(45.dp)
-            .padding(15.dp, 8.dp, 15.dp, 8.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(Modifier.width(15.dp))
         Box(
             modifier = Modifier
-                .background(colorResource(R.color.three_nine_gray), RoundedCornerShape(50))
+                .clip(RoundedCornerShape(50))
+                .clipToBounds()
+                .background(colorResource(R.color.three_nine_gray))
                 .weight(1f)
                 .fillMaxHeight(),
             contentAlignment = Alignment.CenterStart
@@ -192,15 +198,16 @@ fun SearchBar(
                 }
             }
         }
-        Spacer(Modifier.width(15.dp))
-        Icon(
-            imageVector = Icons.Default.Add,
-            contentDescription = null,
-            modifier = Modifier
-                .clickable { onNavigateToShareArticle() }
-                .padding(0.dp, 5.dp, 0.dp, 5.dp),
-            tint = colorResource(R.color.white)
-        )
+        IconButton(
+            modifier = Modifier.height(45.dp),
+            onClick = onNavigateToShareArticle
+        ) {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = null,
+                tint = colorResource(R.color.white)
+            )
+        }
     }
 }
 

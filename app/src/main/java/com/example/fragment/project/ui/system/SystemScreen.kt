@@ -11,24 +11,20 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.TabRowDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.R
 import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
@@ -65,7 +61,6 @@ fun SystemScreen(
                 }
             },
         )
-        TabRowDefaults.Divider(color = colorResource(R.color.line))
         HorizontalPager(state = pagerState) { page ->
             val pageCid = systemData[page].id
             DisposableEffect(lifecycleOwner) {
@@ -81,28 +76,26 @@ fun SystemScreen(
             }
             val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
-            LoadingContent(systemUiState.getRefreshing(pageCid) && !systemUiState.getLoading(pageCid)) {
-                SwipeRefresh(
-                    items = systemUiState.getResult(pageCid),
-                    refreshing = systemUiState.getRefreshing(pageCid),
-                    loading = systemUiState.getLoading(pageCid),
-                    finishing = systemUiState.getFinishing(pageCid),
-                    onRefresh = { systemViewModel.getHome(pageCid) },
-                    onLoad = { systemViewModel.getNext(pageCid) },
-                    modifier = Modifier.fillMaxSize(),
-                    listState = listState,
-                    contentPadding = PaddingValues(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    key = { _, item -> item.id },
-                ) { _, item ->
-                    ArticleCard(
-                        data = item,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToUser = onNavigateToUser,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToWeb = onNavigateToWeb
-                    )
-                }
+            SwipeRefresh(
+                items = systemUiState.getResult(pageCid),
+                refreshing = systemUiState.getRefreshing(pageCid),
+                loading = systemUiState.getLoading(pageCid),
+                finishing = systemUiState.getFinishing(pageCid),
+                onRefresh = { systemViewModel.getHome(pageCid) },
+                onLoad = { systemViewModel.getNext(pageCid) },
+                modifier = Modifier.fillMaxSize(),
+                listState = listState,
+                contentPadding = PaddingValues(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                key = { _, item -> item.id },
+            ) { _, item ->
+                ArticleCard(
+                    data = item,
+                    onNavigateToLogin = onNavigateToLogin,
+                    onNavigateToUser = onNavigateToUser,
+                    onNavigateToSystem = onNavigateToSystem,
+                    onNavigateToWeb = onNavigateToWeb
+                )
             }
         }
     }

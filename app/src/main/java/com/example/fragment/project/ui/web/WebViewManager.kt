@@ -17,7 +17,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.example.miaow.base.dialog.StandardDialog
+import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.http.download
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.saveImagesToAlbum
@@ -203,29 +203,22 @@ fun WebView.setOnLongClickListener() {
 }
 
 private fun Context.saveImageBase64Dialog(data: String) {
-    StandardDialog.newInstance()
-        .setContent("你希望保存该图片吗?")
-        .setOnDialogClickListener(object :
-            StandardDialog.OnDialogClickListener {
-            override fun onConfirm(dialog: StandardDialog) {
-                if (URLUtil.isValidUrl(data)) {
-                    saveImagesToAlbum(data) { _, _ -> }
-                } else {
-                    var str = data
-                    if (str.contains(",")) {
-                        str = str.split(",")[1]
-                    }
-                    val array = Base64.decode(str, Base64.NO_WRAP)
-                    val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
-                    saveImagesToAlbum(bitmap) { _, _ -> }
+    showStandardDialog(
+        content = "你希望保存该图片吗？",
+        confirm = {
+            if (URLUtil.isValidUrl(data)) {
+                saveImagesToAlbum(data) { _, _ -> }
+            } else {
+                var str = data
+                if (str.contains(",")) {
+                    str = str.split(",")[1]
                 }
+                val array = Base64.decode(str, Base64.NO_WRAP)
+                val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
+                saveImagesToAlbum(bitmap) { _, _ -> }
             }
-
-            override fun onCancel(dialog: StandardDialog) {
-            }
-
-        })
-        .show(this)
+        }
+    )
 }
 
 fun WebResourceRequest.isAssetsResource(): Boolean {

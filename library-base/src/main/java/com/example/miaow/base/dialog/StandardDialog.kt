@@ -1,5 +1,6 @@
 package com.example.miaow.base.dialog
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -57,12 +58,12 @@ class StandardDialog : BaseDialog() {
         }
     }
 
-    fun setTitle(text: String): StandardDialog {
+    fun setTitle(text: String?): StandardDialog {
         this.title = text
         return this
     }
 
-    fun setContent(text: String): StandardDialog {
+    fun setContent(text: String?): StandardDialog {
         this.content = text
         return this
     }
@@ -77,4 +78,28 @@ class StandardDialog : BaseDialog() {
         fun onCancel(dialog: StandardDialog)
     }
 
+}
+
+fun Context.showStandardDialog(
+    title: String? = null,
+    content: String? = null,
+    confirm: (() -> Unit)? = null,
+    cancel: (() -> Unit)? = null
+) {
+    StandardDialog
+        .newInstance()
+        .setTitle(title)
+        .setContent(content)
+        .setOnDialogClickListener(object :
+            StandardDialog.OnDialogClickListener {
+            override fun onConfirm(dialog: StandardDialog) {
+                confirm?.invoke()
+            }
+
+            override fun onCancel(dialog: StandardDialog) {
+                cancel?.invoke()
+            }
+
+        })
+        .show(this)
 }

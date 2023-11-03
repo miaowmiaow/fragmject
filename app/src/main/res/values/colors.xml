@@ -3,6 +3,7 @@
     <color name="theme">#272a36</color>
     <color name="theme_orange">#ff8b80</color>
     <color name="background">#f5f5f5</color>
+    <color name="background_refresh">#010101</color>
     <color name="line">#f0f0f0</color>
     <color name="line_alpha">#69f0f0f0</color>
 

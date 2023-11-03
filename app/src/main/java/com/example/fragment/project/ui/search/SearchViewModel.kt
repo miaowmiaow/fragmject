@@ -15,8 +15,7 @@ data class SearchUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var articlesResult: MutableList<ArticleBean> = ArrayList(),
-    var updateTime: Long = 0
+    var articlesResult: MutableList<ArticleBean> = ArrayList()
 )
 
 class SearchViewModel : BaseViewModel() {
@@ -27,8 +26,7 @@ class SearchViewModel : BaseViewModel() {
 
     fun clearArticles() {
         _uiState.update {
-            it.articlesResult.clear()
-            it.copy(updateTime = System.nanoTime())
+            it.copy(articlesResult = ArrayList())
         }
     }
 
@@ -36,14 +34,14 @@ class SearchViewModel : BaseViewModel() {
         _uiState.update {
             it.copy(refreshing = true, loading = false, finishing = false)
         }
-        getArticleQuery(key, getHomePage())
+        getList(key, getHomePage())
     }
 
     fun getNext(key: String) {
         _uiState.update {
             it.copy(refreshing = false, loading = false, finishing = false)
         }
-        getArticleQuery(key, getNextPage())
+        getList(key, getNextPage())
     }
 
     /**
@@ -51,25 +49,28 @@ class SearchViewModel : BaseViewModel() {
      * k 搜索关键词
      * page 0开始
      */
-    private fun getArticleQuery(key: String, page: Int) {
-        //通过viewModelScope创建一个协程
+    private fun getList(key: String, page: Int) {
         viewModelScope.launch {
-            //以get方式发起网络请求
             val response = post<ArticleListBean> {
                 setUrl("article/query/{page}/json")
                 putParam("k", key)
                 putPath("page", page.toString())
             }
-            //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt())
-            _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.articlesResult.clear()
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.datas?.let { datas ->
+                        if (isHomePage()) {
+                            state.articlesResult.clear()
+                        }
+                        state.articlesResult.addAll(datas)
                     }
-                    state.articlesResult.addAll(datas)
+                    state.copy(
+                        refreshing = false,
+                        loading = hasNextPage(),
+                        finishing = !hasNextPage()
+                    )
                 }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

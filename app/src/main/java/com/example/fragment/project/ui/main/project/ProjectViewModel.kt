@@ -80,21 +80,20 @@ class ProjectViewModel : BaseViewModel() {
                 putPath("page", page.toString())
                 putQuery("cid", cid)
             }
-            //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt(), cid)
-            _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    if (isHomePage(cid)) {
-                        state.result[cid] = arrayListOf()
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.datas?.let { datas ->
+                        if (isHomePage(cid)) {
+                            state.result[cid] = arrayListOf()
+                        }
+                        state.result[cid]?.addAll(datas)
                     }
-                    state.result[cid]?.addAll(datas)
+                    state.refreshing[cid] = false
+                    state.loading[cid] = hasNextPage(cid)
+                    state.finishing[cid] = !hasNextPage(cid)
+                    state.copy(updateTime = System.nanoTime())
                 }
-                //设置下拉刷新状态
-                state.refreshing[cid] = false
-                //设置加载更多状态
-                state.loading[cid] = hasNextPage(cid)
-                state.finishing[cid] = !hasNextPage(cid)
-                state.copy(updateTime = System.nanoTime())
             }
         }
     }

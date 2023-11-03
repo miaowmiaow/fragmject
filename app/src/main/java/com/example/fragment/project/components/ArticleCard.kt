@@ -3,6 +3,7 @@ package com.example.fragment.project.components
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -57,191 +58,189 @@ fun ArticleCard(
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by remember(data.collect) { mutableIntStateOf(getCollectResId(data.collect)) }
-    Card(
-        modifier = modifier,
-        elevation = 2.dp
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(5.dp))
+            .clipToBounds()
+            .clickable { onNavigateToWeb(data.link) }
+            .background(colorResource(R.color.white))
+            .fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .clickable { onNavigateToWeb(data.link) }
-                .fillMaxWidth()
+        Row(
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Image(
+                painter = painterResource(id = data.avatarId),
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable { onNavigateToUser(data.userId) }
+                    .size(30.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(
+                modifier = Modifier
+                    .height(35.dp)
+                    .weight(1f)
+                    .padding(start = 10.dp, end = 10.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Image(
-                    painter = painterResource(id = data.avatarId),
+                Text(
+                    text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(R.color.text_666),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = data.niceDate,
+                    fontSize = 12.sp,
+                    color = colorResource(R.color.text_999),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            data.tags?.let { tags ->
+                if (tags.isNotEmpty()) {
+                    Button(
+                        onClick = {
+                            val uriString = "https://www.wanandroid.com${tags[0].url}"
+                            val uri = Uri.parse(uriString)
+                            var cid = uri.getQueryParameter("cid")
+                            if (cid.isNullOrBlank()) {
+                                val paths = uri.pathSegments
+                                if (paths != null && paths.size >= 3) {
+                                    cid = paths[2]
+                                }
+                            }
+                            onNavigateToSystem(cid ?: "0")
+                        },
+                        modifier = Modifier.height(20.dp),
+                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(3.dp),
+                        border = BorderStroke(1.dp, colorResource(R.color.blue)),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(R.color.white),
+                            contentColor = colorResource(R.color.blue)
+                        ),
+                        contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
+                    ) {
+                        Text(
+                            text = tags[0].name,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.size(10.dp))
+        Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                if (data.desc.isNotBlank()) {
+                    Text(
+                        text = data.titleHtml,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(R.color.text_333),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = data.descHtml,
+                        fontSize = 14.sp,
+                        color = colorResource(R.color.text_666),
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                } else {
+                    Text(
+                        text = data.titleHtml,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(R.color.text_333),
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            if (data.envelopePic.isNotBlank()) {
+                AsyncImage(
+                    model = data.httpsEnvelopePic,
                     contentDescription = null,
                     modifier = Modifier
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .clickable { onNavigateToUser(data.userId) },
+                        .width(45.dp)
+                        .padding(start = 10.dp)
+                        .aspectRatio(2f / 3f),
                     contentScale = ContentScale.Crop
                 )
-                Column(
-                    modifier = Modifier
-                        .height(35.dp)
-                        .weight(1f)
-                        .padding(start = 10.dp, end = 10.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = colorResource(R.color.text_666),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = data.niceDate,
-                        fontSize = 12.sp,
-                        color = colorResource(R.color.text_999),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                data.tags?.let { tags ->
-                    if (tags.isNotEmpty()) {
-                        Button(
-                            onClick = {
-                                val uriString = "https://www.wanandroid.com${tags[0].url}"
-                                val uri = Uri.parse(uriString)
-                                var cid = uri.getQueryParameter("cid")
-                                if (cid.isNullOrBlank()) {
-                                    val paths = uri.pathSegments
-                                    if (paths != null && paths.size >= 3) {
-                                        cid = paths[2]
-                                    }
-                                }
-                                onNavigateToSystem(cid ?: "0")
-                            },
-                            modifier = Modifier.height(20.dp),
-                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
-                            shape = RoundedCornerShape(3.dp),
-                            border = BorderStroke(1.dp, colorResource(R.color.blue)),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.white),
-                                contentColor = colorResource(R.color.blue)
-                            ),
-                            contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
-                        ) {
-                            Text(
-                                text = tags[0].name,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-                }
             }
-            Spacer(Modifier.size(10.dp))
-            Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
-                Column(modifier = Modifier.weight(1f)) {
-                    if (data.desc.isNotBlank()) {
-                        Text(
-                            text = data.titleHtml,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colorResource(R.color.text_333),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = data.descHtml,
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.text_666),
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    } else {
-                        Text(
-                            text = data.titleHtml,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colorResource(R.color.text_333),
-                            maxLines = 4,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-                if (data.envelopePic.isNotBlank()) {
-                    AsyncImage(
-                        model = data.httpsEnvelopePic,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                            .width(45.dp)
-                            .aspectRatio(2f / 3f),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            }
-            Spacer(Modifier.size(5.dp))
+        }
+        Spacer(Modifier.size(5.dp))
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val footModifier = Modifier.height(20.dp)
             Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 15.dp)
             ) {
-                val footModifier = Modifier.height(20.dp)
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 15.dp)
-                ) {
-                    if (data.fresh) {
-                        Text(
-                            text = "新  ",
-                            fontSize = 12.sp,
-                            color = colorResource(R.color.blue),
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
-                        )
-                    }
-                    if (data.top) {
-                        Text(
-                            text = "置顶  ",
-                            fontSize = 12.sp,
-                            color = colorResource(R.color.orange),
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
-                        )
-                    }
+                if (data.fresh) {
                     Text(
-                        text = data.chapterNameHtml,
+                        text = "新  ",
                         fontSize = 12.sp,
-                        color = colorResource(R.color.text_999),
-                        maxLines = 1,
+                        color = colorResource(R.color.blue),
                         overflow = TextOverflow.Ellipsis,
                         modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                     )
                 }
-                Image(
-                    painter = painterResource(id = collectResId),
-                    contentDescription = "",
-                    modifier = footModifier.clickable {
-                        scope.launch {
-                            val response = post<HttpResponse> {
-                                setUrl(
-                                    if (data.collect) {
-                                        "lg/collect/{id}/json"
-                                    } else {
-                                        "lg/uncollect_originId/{id}/json"
-                                    }
-                                )
-                                putPath("id", data.id)
-                            }
-                            when (response.errorCode) {
-                                "0" -> {
-                                    data.collect = !data.collect
-                                    collectResId = getCollectResId(data.collect)
-                                }
-
-                                "-1001" -> onNavigateToLogin()
-                            }
-                        }
-                    })
+                if (data.top) {
+                    Text(
+                        text = "置顶  ",
+                        fontSize = 12.sp,
+                        color = colorResource(R.color.orange),
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                    )
+                }
+                Text(
+                    text = data.chapterNameHtml,
+                    fontSize = 12.sp,
+                    color = colorResource(R.color.text_999),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                )
             }
+            Image(
+                painter = painterResource(id = collectResId),
+                contentDescription = "",
+                modifier = footModifier.clickable {
+                    scope.launch {
+                        val response = post<HttpResponse> {
+                            setUrl(
+                                if (data.collect) {
+                                    "lg/collect/{id}/json"
+                                } else {
+                                    "lg/uncollect_originId/{id}/json"
+                                }
+                            )
+                            putPath("id", data.id)
+                        }
+                        when (response.errorCode) {
+                            "0" -> {
+                                data.collect = !data.collect
+                                collectResId = getCollectResId(data.collect)
+                            }
+
+                            "-1001" -> onNavigateToLogin()
+                        }
+                    }
+                })
         }
     }
 }

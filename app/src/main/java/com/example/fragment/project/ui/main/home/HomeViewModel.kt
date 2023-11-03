@@ -63,17 +63,17 @@ class HomeViewModel : BaseViewModel() {
         viewModelScope.launch {
             val response = getArticleList(getNextPage())
             updatePageCont(response.data?.pageCount?.toInt())
-            response.data?.let { data ->
-                _uiState.update { state ->
+            _uiState.update { state ->
+                response.data?.let { data ->
                     data.datas?.let { datas ->
                         state.result.addAll(datas)
                     }
-                    state.copy(
-                        refreshing = false,
-                        loading = hasNextPage(),
-                        finishing = !hasNextPage()
-                    )
                 }
+                state.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage()
+                )
             }
         }
     }

@@ -61,17 +61,15 @@ class MyCoinViewModel : BaseViewModel() {
         viewModelScope.launch {
             val response = getMyCoinList(getNextPage())
             updatePageCont(response.data?.pageCount?.toInt())
-            response.data?.let { data ->
-                _uiState.update { state ->
-                    data.datas?.let { data ->
-                        state.myCoinResult.addAll(data)
-                    }
-                    state.copy(
-                        refreshing = false,
-                        loading = hasNextPage(),
-                        finishing = !hasNextPage()
-                    )
+            _uiState.update { state ->
+                response.data?.datas?.let { data ->
+                    state.myCoinResult.addAll(data)
                 }
+                state.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage()
+                )
             }
         }
     }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SearchUiState(
+    var isSearch: Boolean = false,
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
@@ -26,13 +27,13 @@ class SearchViewModel : BaseViewModel() {
 
     fun clearArticles() {
         _uiState.update {
-            it.copy(articlesResult = ArrayList())
+            it.copy(isSearch = false, articlesResult = ArrayList())
         }
     }
 
     fun getHome(key: String) {
         _uiState.update {
-            it.copy(refreshing = true, loading = false, finishing = false)
+            it.copy(isSearch = true, refreshing = true, loading = false, finishing = false)
         }
         getList(key, getHomePage())
     }
@@ -57,20 +58,18 @@ class SearchViewModel : BaseViewModel() {
                 putPath("page", page.toString())
             }
             updatePageCont(response.data?.pageCount?.toInt())
-            response.data?.let { data ->
-                _uiState.update { state ->
-                    data.datas?.let { datas ->
-                        if (isHomePage()) {
-                            state.articlesResult.clear()
-                        }
-                        state.articlesResult.addAll(datas)
+            _uiState.update { state ->
+                response.data?.datas?.let { datas ->
+                    if (isHomePage()) {
+                        state.articlesResult.clear()
                     }
-                    state.copy(
-                        refreshing = false,
-                        loading = hasNextPage(),
-                        finishing = !hasNextPage()
-                    )
+                    state.articlesResult.addAll(datas)
                 }
+                state.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage()
+                )
             }
         }
     }

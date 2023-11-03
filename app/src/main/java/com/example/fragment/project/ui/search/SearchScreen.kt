@@ -132,8 +132,12 @@ fun SearchScreen(
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-                        onSearchHistory(true, searchText)
-                        viewModel.getHome(searchText)
+                        if (searchText.isNotBlank()) {
+                            onSearchHistory(true, searchText)
+                            viewModel.getHome(searchText)
+                        } else {
+                            viewModel.clearArticles()
+                        }
                         focusManager.clearFocus()
                         keyboardController?.hide()
                     }
@@ -152,7 +156,7 @@ fun SearchScreen(
             )
         }
         Column {
-            if (searchText.isBlank()) {
+            if (!uiState.isSearch) {
                 Text(
                     text = "大家都在搜",
                     modifier = Modifier.padding(15.dp),

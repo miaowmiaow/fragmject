@@ -54,20 +54,18 @@ class MyShareViewModel : BaseViewModel() {
                 putPath("page", page.toString())
             }
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
-            response.data?.let { data ->
-                _uiState.update { state ->
-                    data.shareArticles?.datas?.let { datas ->
-                        if (isHomePage()) {
-                            state.result.clear()
-                        }
-                        state.result.addAll(datas)
+            _uiState.update { state ->
+                response.data?.shareArticles?.datas?.let { datas ->
+                    if (isHomePage()) {
+                        state.result.clear()
                     }
-                    state.copy(
-                        refreshing = false,
-                        loading = hasNextPage(),
-                        finishing = !hasNextPage()
-                    )
+                    state.result.addAll(datas)
                 }
+                state.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage()
+                )
             }
         }
     }

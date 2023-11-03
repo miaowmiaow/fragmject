@@ -54,20 +54,18 @@ class MyCollectViewModel : BaseViewModel() {
                 putPath("page", page.toString())
             }
             updatePageCont(response.data?.pageCount?.toInt())
-            response.data?.let { data ->
-                _uiState.update { state ->
-                    data.datas?.let { datas ->
-                        if (isHomePage()) {
-                            state.result.clear()
-                        }
-                        state.result.addAll(datas)
+            _uiState.update { state ->
+                response.data?.datas?.let { datas ->
+                    if (isHomePage()) {
+                        state.result.clear()
                     }
-                    state.copy(
-                        refreshing = false,
-                        loading = hasNextPage(),
-                        finishing = !hasNextPage()
-                    )
+                    state.result.addAll(datas)
                 }
+                state.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage()
+                )
             }
         }
     }

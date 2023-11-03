@@ -59,17 +59,15 @@ class UserViewModel(private val id: String) : BaseViewModel() {
             }
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.let { data ->
-                    data.coinInfo?.let { coin ->
-                        state.coinResult = coin
-                    }
-                    data.shareArticles?.let { shareArticles ->
-                        shareArticles.datas?.let { datas ->
-                            if (isHomePage()) {
-                                state.articleResult.clear()
-                            }
-                            state.articleResult.addAll(datas)
+                response.data?.coinInfo?.let { coin ->
+                    state.coinResult = coin
+                }
+                response.data?.shareArticles?.let { shareArticles ->
+                    shareArticles.datas?.let { datas ->
+                        if (isHomePage()) {
+                            state.articleResult.clear()
                         }
+                        state.articleResult.addAll(datas)
                     }
                 }
                 state.copy(

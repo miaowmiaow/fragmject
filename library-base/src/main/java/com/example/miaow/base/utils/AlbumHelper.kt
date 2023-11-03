@@ -43,17 +43,15 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
                         values.put(DISPLAY_NAME, file.name)
                         values.put(MIME_TYPE, mimeType)
                         values.put(RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                        val uri =
-                            contentResolver.insert(
-                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                values
-                            )
-                                ?: Uri.EMPTY
+                        val uri = contentResolver.insert(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            values
+                        ) ?: Uri.EMPTY
                         out = contentResolver.openOutputStream(uri) ?: return@withContext
                         fis = FileInputStream(file)
                         FileUtils.copy(fis, out)
                         MainThreadExecutor.get().execute {
-                            onFinish.invoke(getBitmapPathFromUri(uri), uri)
+                            onFinish.invoke(getBitmapPathFromUri(uri), uri ?: Uri.EMPTY)
                         }
                     } else {
                         val paths = arrayOf(file.absolutePath)
@@ -64,7 +62,7 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
                             mimeTypes
                         ) { path, uri ->
                             MainThreadExecutor.get().execute {
-                                onFinish.invoke(path, uri)
+                                onFinish.invoke(path ?: "", uri ?: Uri.EMPTY)
                             }
                         }
                     }

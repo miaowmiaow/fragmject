@@ -81,23 +81,21 @@ class SystemViewModel : BaseViewModel() {
                 putQuery("cid", cid)
             }
             updatePageCont(response.data?.pageCount?.toInt(), cid)
-            response.data?.let { data ->
-                _uiState.update { state ->
-                    //response.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
-                    if (state.result[cid].isNullOrEmpty()) {
-                        transitionAnimationEnd(response.time)
-                    }
-                    data.datas?.let { datas ->
-                        if (isHomePage(cid)) {
-                            state.result[cid] = arrayListOf()
-                        }
-                        state.result[cid]?.addAll(datas)
-                    }
-                    state.refreshing[cid] = false
-                    state.loading[cid] = hasNextPage(cid)
-                    state.finishing[cid] = !hasNextPage(cid)
-                    state.copy(updateTime = System.nanoTime())
+            _uiState.update { state ->
+                //response.isNullOrEmpty()，则在转场动画结束后加载数据，用于解决过度动画卡顿问题
+                if (state.result[cid].isNullOrEmpty()) {
+                    transitionAnimationEnd(response.time)
                 }
+                response.data?.datas?.let { datas ->
+                    if (isHomePage(cid)) {
+                        state.result[cid] = arrayListOf()
+                    }
+                    state.result[cid]?.addAll(datas)
+                }
+                state.refreshing[cid] = false
+                state.loading[cid] = hasNextPage(cid)
+                state.finishing[cid] = !hasNextPage(cid)
+                state.copy(updateTime = System.nanoTime())
             }
         }
     }

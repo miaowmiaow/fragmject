@@ -528,15 +528,15 @@ fun Sun(
     }
     Canvas(
         modifier = Modifier
-            .width(starRadius * 2f)
-            .height(starRadius * 2f)
             .offset(
                 x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
                 y = (canvasHeight - starRadius * 2f) / 2f,
             )
             .graphicsLayer(alpha = 0.99f)
             .clip(RoundedCornerShape(canvasRadius))
-            .clipToBounds(),
+            .clipToBounds()
+            .width(starRadius * 2f)
+            .height(starRadius * 2f),
     ) {
         // 1: top shadow
         with(drawContext.canvas.nativeCanvas) {
@@ -653,15 +653,15 @@ fun Moon(
 
     Canvas(
         modifier = Modifier
-            .width(starRadius * 2f)
-            .height(starRadius * 2f)
             .offset(
                 x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
                 y = (canvasHeight - starRadius * 2f) / 2f,
             )
             .graphicsLayer(alpha = 0.99f)
             .clip(RoundedCornerShape(canvasRadius))
-            .clipToBounds(),
+            .clipToBounds()
+            .width(starRadius * 2f)
+            .height(starRadius * 2f)
     ) {
         // 1: top shadow
         with(drawContext.canvas.nativeCanvas) {

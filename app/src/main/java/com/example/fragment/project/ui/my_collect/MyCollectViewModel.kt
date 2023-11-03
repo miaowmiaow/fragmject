@@ -48,23 +48,26 @@ class MyCollectViewModel : BaseViewModel() {
      * page 0开始
      */
     private fun getList(page: Int) {
-        //通过viewModelScope创建一个协程
         viewModelScope.launch {
-            //以get方式发起网络请求
             val response = get<ArticleListBean> {
                 setUrl("lg/collect/list/{page}/json")
                 putPath("page", page.toString())
             }
-            //根据接口返回更新总页码
             updatePageCont(response.data?.pageCount?.toInt())
-            _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.result.clear()
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.datas?.let { datas ->
+                        if (isHomePage()) {
+                            state.result.clear()
+                        }
+                        state.result.addAll(datas)
                     }
-                    state.result.addAll(datas)
+                    state.copy(
+                        refreshing = false,
+                        loading = hasNextPage(),
+                        finishing = !hasNextPage()
+                    )
                 }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

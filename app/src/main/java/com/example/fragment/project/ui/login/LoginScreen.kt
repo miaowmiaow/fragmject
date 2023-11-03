@@ -89,11 +89,11 @@ fun LoginScreen(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
                         .paint(
                             painter = painterResource(id = R.mipmap.bg),
                             contentScale = ContentScale.FillBounds
                         )
+                        .fillMaxSize()
                         .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
                         .verticalScroll(scrollState)
                         .systemBarsPadding()

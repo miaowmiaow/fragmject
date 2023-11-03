@@ -1,10 +1,6 @@
 package com.example.miaow.base.vm
 
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.miaow.base.http.HttpRequest
-import com.example.miaow.base.http.HttpResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -16,7 +12,6 @@ abstract class BaseViewModel : ViewModel() {
         const val TRANSITION_ANIMATION_TIME = 350L
         const val DEFAULT_KEY = "null"
         const val DEFAULT_VALUE = 0
-        const val PAGE_CONT = 1
     }
 
     /**
@@ -26,10 +21,9 @@ abstract class BaseViewModel : ViewModel() {
     private val currPage: MutableMap<String, Int> = HashMap()
     private val pageCont: MutableMap<String, Int> = HashMap()
 
-    private val progress = MutableLiveData<Double>()
-
     /**
      * 获取首页
+     * page：首页初始值
      */
     fun getHomePage(page: Int = DEFAULT_VALUE, key: String = DEFAULT_KEY): Int {
         this.homePage[key] = page
@@ -56,37 +50,15 @@ abstract class BaseViewModel : ViewModel() {
 
     fun hasNextPage(key: String = DEFAULT_KEY): Boolean {
         val currPage = this.currPage[key] ?: DEFAULT_VALUE
-        val pageCont = this.pageCont[key] ?: PAGE_CONT
+        val pageCont = this.pageCont[key] ?: DEFAULT_VALUE
         return currPage < pageCont
     }
 
     /**
      * 更新总页码
      */
-    fun updatePageCont(pageCont: Int? = PAGE_CONT, key: String = DEFAULT_KEY) {
-        pageCont?.let {
-            this.pageCont[key] = it
-        }
-    }
-
-    /**
-     * 请求进度，0.0 请求开始, 1.0 请求结束
-     */
-    fun progress(owner: LifecycleOwner, start: () -> Unit, end: () -> Unit) {
-        progress.observe(owner) {
-            when (it) {
-                0.0 -> start.invoke()
-                1.0 -> end.invoke()
-            }
-        }
-    }
-
-    /**
-     * 更新进度
-     * @param num: 0.0 请求开始, 1.0 请求结束
-     */
-    fun updateProgress(num: Double) {
-        if (homePage == currPage) progress.postValue(num)
+    fun updatePageCont(pageCont: Int?, key: String = DEFAULT_KEY) {
+        this.pageCont[key] = pageCont ?: DEFAULT_VALUE
     }
 
     /**

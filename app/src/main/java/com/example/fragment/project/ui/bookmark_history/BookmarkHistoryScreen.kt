@@ -19,7 +19,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -47,7 +46,8 @@ fun BookmarkHistoryScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState { 2 }
+    val tabs = listOf("书签", "历史")
+    val pagerState = rememberPagerState { tabs.size }
     Column {
         Box(
             modifier = Modifier
@@ -66,7 +66,7 @@ fun BookmarkHistoryScreen(
                 )
             }
             TabBar(
-                data = listOf("书签", "历史"),
+                data = tabs,
                 textMapping = { it },
                 pagerState = pagerState,
                 modifier = Modifier
@@ -74,12 +74,13 @@ fun BookmarkHistoryScreen(
                     .height(45.dp)
                     .align(Alignment.Center),
                 backgroundColor = colorResource(R.color.theme),
-                selectedContentColor = colorResource(R.color.text_fff),
-                unselectedContentColor = colorResource(R.color.text_ccc),
+                selectedContentColor = colorResource(R.color.theme_orange),
+                unselectedContentColor = colorResource(R.color.text_fff),
+                indicatorColor = colorResource(R.color.theme),
+                dividerColor = colorResource(R.color.transparent),
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
             )
         }
-        TabRowDefaults.Divider(color = colorResource(R.color.line))
         HorizontalPager(state = pagerState) { page ->
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),

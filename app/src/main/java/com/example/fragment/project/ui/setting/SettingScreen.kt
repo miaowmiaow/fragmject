@@ -47,7 +47,7 @@ import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
 import com.example.fragment.project.components.TitleBar
-import com.example.miaow.base.dialog.StandardDialog
+import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.CacheUtils.getTotalSize
 import com.example.miaow.base.utils.ScreenRecordCallback
@@ -132,37 +132,37 @@ fun SettingScreen(
                             checked = screenRecordState,
                             onCheckedChange = {
                                 screenRecordState = it
-                                if (context is AppCompatActivity) {
-                                    if (screenRecordState) {
-                                        context.startScreenRecord(object : ScreenRecordCallback {
-                                            override fun onActivityResult(
-                                                resultCode: Int,
-                                                message: String
-                                            ) {
-                                                if (resultCode != Activity.RESULT_OK) {
-                                                    screenRecordState = false
-                                                }
-                                                coroutineScope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar(
-                                                        message, "确定"
-                                                    )
-                                                }
+                                if (screenRecordState) {
+                                    (context as AppCompatActivity).startScreenRecord(object :
+                                        ScreenRecordCallback {
+                                        override fun onActivityResult(
+                                            resultCode: Int,
+                                            message: String
+                                        ) {
+                                            if (resultCode != Activity.RESULT_OK) {
+                                                screenRecordState = false
                                             }
-                                        })
-                                    } else {
-                                        context.stopScreenRecord(object : ScreenRecordCallback {
-                                            override fun onActivityResult(
-                                                resultCode: Int,
-                                                message: String
-                                            ) {
-                                                coroutineScope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar(
-                                                        message, "确定"
-                                                    )
-                                                }
+                                            coroutineScope.launch {
+                                                scaffoldState.snackbarHostState.showSnackbar(
+                                                    message, "确定"
+                                                )
                                             }
-                                        })
-                                    }
+                                        }
+                                    })
+                                } else {
+                                    (context as AppCompatActivity).stopScreenRecord(object :
+                                        ScreenRecordCallback {
+                                        override fun onActivityResult(
+                                            resultCode: Int,
+                                            message: String
+                                        ) {
+                                            coroutineScope.launch {
+                                                scaffoldState.snackbarHostState.showSnackbar(
+                                                    message, "确定"
+                                                )
+                                            }
+                                        }
+                                    })
                                 }
                             }
                         )
@@ -183,24 +183,15 @@ fun SettingScreen(
                     Row(
                         modifier = Modifier
                             .clickable {
-                                if (context is AppCompatActivity) {
-                                    StandardDialog
-                                        .newInstance()
-                                        .setContent("确定要清除缓存吗？")
-                                        .setOnDialogClickListener(object :
-                                            StandardDialog.OnDialogClickListener {
-                                            override fun onConfirm(dialog: StandardDialog) {
-                                                coroutineScope.launch {
-                                                    CacheUtils.clearAllCache(context)
-                                                    cacheSize = getTotalSize(context)
-                                                }
-                                            }
-
-                                            override fun onCancel(dialog: StandardDialog) {
-                                            }
-                                        })
-                                        .show(context.supportFragmentManager)
-                                }
+                                context.showStandardDialog(
+                                    content = "确定要清除缓存吗？",
+                                    confirm = {
+                                        coroutineScope.launch {
+                                            CacheUtils.clearAllCache(context)
+                                            cacheSize = getTotalSize(context)
+                                        }
+                                    }
+                                )
                             }
                             .background(colorResource(R.color.white))
                             .fillMaxWidth()
@@ -232,21 +223,12 @@ fun SettingScreen(
                     if (uiState.userBean.id.isNotBlank()) {
                         Button(
                             onClick = {
-                                if (context is AppCompatActivity) {
-                                    StandardDialog.newInstance()
-                                        .setContent("确定退出登录吗？")
-                                        .setOnDialogClickListener(object :
-                                            StandardDialog.OnDialogClickListener {
-                                            override fun onConfirm(dialog: StandardDialog) {
-                                                viewModel.logout()
-                                            }
-
-                                            override fun onCancel(dialog: StandardDialog) {
-                                            }
-
-                                        })
-                                        .show(context.supportFragmentManager)
-                                }
+                                context.showStandardDialog(
+                                    content = "确定退出登录吗？",
+                                    confirm = {
+                                        viewModel.logout()
+                                    }
+                                )
                             },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             shape = RoundedCornerShape(5.dp),

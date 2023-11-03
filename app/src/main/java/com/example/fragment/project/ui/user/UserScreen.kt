@@ -44,7 +44,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.miaow.base.utils.getScreenWidth
 import com.example.miaow.base.utils.px2dp
@@ -54,11 +53,15 @@ import kotlin.math.abs
 @Composable
 fun UserScreen(
     userId: String,
+    viewModel: UserViewModel = viewModel(
+        factory = UserViewModel.provideFactory(userId)
+    ),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val sw = context.getScreenWidth()
@@ -90,11 +93,6 @@ fun UserScreen(
             }
         }
     }
-
-    val viewModel: UserViewModel = viewModel(
-        factory = UserViewModel.provideFactory(userId)
-    )
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .systemBarsPadding()
@@ -122,9 +120,9 @@ fun UserScreen(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
+                    .clip(CircleShape)
                     .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
                     .align(Alignment.Center)
-                    .clip(CircleShape),
             )
             Text(
                 text = uiState.coinResult.nickname,
@@ -149,29 +147,25 @@ fun UserScreen(
                 color = colorResource(R.color.text_fff),
             )
         }
-        LoadingContent(uiState.refreshing && !uiState.loading) {
-            SwipeRefresh(
-                items = uiState.articleResult,
-                refreshing = uiState.refreshing,
-                loading = uiState.loading,
-                finishing = uiState.finishing,
-                onRefresh = { viewModel.getHome() },
-                onLoad = { viewModel.getNext() },
-                modifier = Modifier
-                    .background(colorResource(R.color.white))
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                key = { _, item -> item.id },
-            ) { _, item ->
-                ArticleCard(
-                    data = item,
-                    onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToUser = {},
-                    onNavigateToWeb = onNavigateToWeb,
-                )
-            }
+        SwipeRefresh(
+            items = uiState.articleResult,
+            refreshing = uiState.refreshing,
+            loading = uiState.loading,
+            finishing = uiState.finishing,
+            onRefresh = { viewModel.getHome() },
+            onLoad = { viewModel.getNext() },
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            key = { _, item -> item.id },
+        ) { _, item ->
+            ArticleCard(
+                data = item,
+                onNavigateToLogin = onNavigateToLogin,
+                onNavigateToSystem = onNavigateToSystem,
+                onNavigateToUser = {},
+                onNavigateToWeb = onNavigateToWeb,
+            )
         }
     }
 

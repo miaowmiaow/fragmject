@@ -49,21 +49,25 @@ class MyShareViewModel : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            //以get方式发起网络请求
             val response = get<ShareArticleListBean> {
                 setUrl("user/lg/private_articles/{page}/json")
                 putPath("page", page.toString())
             }
-            //根据接口返回更新总页码
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
-            _uiState.update { state ->
-                response.data?.shareArticles?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.result.clear()
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.shareArticles?.datas?.let { datas ->
+                        if (isHomePage()) {
+                            state.result.clear()
+                        }
+                        state.result.addAll(datas)
                     }
-                    state.result.addAll(datas)
+                    state.copy(
+                        refreshing = false,
+                        loading = hasNextPage(),
+                        finishing = !hasNextPage()
+                    )
                 }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

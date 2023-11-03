@@ -243,6 +243,7 @@ fun WebScreen(
             Button(
                 onClick = {
                     navigator.reload()
+                    scope.launch { sheetState.hide() }
                 },
                 elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(0),

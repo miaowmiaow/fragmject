@@ -1,12 +1,20 @@
 package com.example.fragment.project.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRowDefaults
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -23,6 +31,8 @@ fun <T> TabBar(
     backgroundColor: Color = colorResource(R.color.white),
     selectedContentColor: Color = colorResource(R.color.theme),
     unselectedContentColor: Color = colorResource(R.color.text_999),
+    indicatorColor: Color = colorResource(R.color.theme),
+    dividerColor: Color = colorResource(R.color.line),
     onClick: (index: Int) -> Unit
 ) {
     if (!data.isNullOrEmpty()) {
@@ -31,7 +41,24 @@ fun <T> TabBar(
             modifier = modifier,
             backgroundColor = backgroundColor,
             edgePadding = 0.dp,
-            divider = { TabRowDefaults.Divider(color = colorResource(R.color.transparent)) }
+            indicator = { tabPositions ->
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Spacer(
+                        Modifier
+                            .background(indicatorColor)
+                            .width(20.dp)
+                            .height(2.dp)
+                    )
+                }
+            },
+            divider = {
+                TabRowDefaults.Divider(color = dividerColor)
+            },
         ) {
             data.forEachIndexed { index, item ->
                 Tab(

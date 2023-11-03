@@ -95,7 +95,7 @@ fun ShareArticleScreen(
             IconButton(
                 modifier = Modifier
                     .height(45.dp)
-                    .padding(11.dp)
+                    .padding(vertical = 11.dp)
                     .align(Alignment.CenterEnd),
                 onClick = {
                     if (linkText.isBlank()) {
@@ -204,8 +204,8 @@ fun ShareArticleScreen(
                         viewModel.share(titleText, linkText)
                     },
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f),
+                        .fillMaxWidth(0.8f)
+                        .align(Alignment.CenterHorizontally),
                     shape = RoundedCornerShape(5.dp),
                     border = BorderStroke(1.dp, colorResource(R.color.theme)),
                     colors = ButtonDefaults.buttonColors(

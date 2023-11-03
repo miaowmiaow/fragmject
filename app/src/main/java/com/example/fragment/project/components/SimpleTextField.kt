@@ -1,6 +1,5 @@
 package com.example.fragment.project.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -10,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.res.colorResource
@@ -89,7 +90,9 @@ fun ClearTextField(
         onValueChange = onValueChange,
         enabled = enabled,
         readOnly = readOnly,
-        modifier = modifier.indicatorLine(enabled, isError, interactionSource, colors),
+        modifier = modifier
+            .clipToBounds()
+            .indicatorLine(enabled, isError, interactionSource, colors),
         textStyle = mergedTextStyle,
         cursorBrush = SolidColor(mergedTextStyle.color),
         visualTransformation = visualTransformation,
@@ -114,14 +117,16 @@ fun ClearTextField(
                     trailingIcon()
                 }
                 if (value.isNotBlank()) {
-                    Icon(
-                        imageVector = Icons.Outlined.Clear,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable { onClear() }
-                            .padding(10.dp, 6.dp, 10.dp, 6.dp),
-                        tint = textStyle.color
-                    )
+                    IconButton(
+                        modifier = Modifier.padding(vertical = 6.dp),
+                        onClick = onClear
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Clear,
+                            contentDescription = null,
+                            tint = textStyle.color
+                        )
+                    }
                 }
             }
         })

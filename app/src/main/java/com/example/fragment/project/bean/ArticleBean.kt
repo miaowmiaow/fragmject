@@ -36,7 +36,7 @@ data class ArticleDataBean(
     val datas: List<ArticleBean>? = null,
     val offset: String = "",
     val over: Boolean = false,
-    val pageCount: String = "",
+    val pageCount: String = "0",
     val size: String = "",
     val total: String = ""
 ) : Parcelable
@@ -74,7 +74,7 @@ data class ArticleBean(
     val tags: List<ArticleTagBean>? = null,
     val title: String = "",
     val type: String = "",
-    val userId: String = "",
+    val userId: String = "0",
     val visible: String = "",
     val zan: String = "",
     val banners: List<BannerBean>? = null,

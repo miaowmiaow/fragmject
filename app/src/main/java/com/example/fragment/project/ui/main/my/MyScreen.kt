@@ -51,7 +51,7 @@ fun MyScreen(
     ) {
         Spacer(Modifier.height(45.dp))
         AsyncImage(
-            model = uiState.userBean.avatar.ifBlank { R.mipmap.avatar_1_raster },
+            model = uiState.userBean.getAvatarId(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

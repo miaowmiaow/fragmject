@@ -57,6 +57,7 @@ fun WebView(
     }
     webView?.let {
         LaunchedEffect(it, navigator) {
+            navigator.lastLoadedUrl = it.url
             with(navigator) {
                 handleNavigationEvents(
                     onBack = {

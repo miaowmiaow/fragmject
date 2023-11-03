@@ -39,10 +39,8 @@ class MyCoinViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             //通过async获取需要展示的数据
-            val getUserCoin = async { getUserCoin() }
-            val getMyCoinList = async { getMyCoinList(getHomePage(1)) }
-            val userCoin = getUserCoin.await()
-            val myCoinList = getMyCoinList.await()
+            val userCoin = async { getUserCoin() }.await()
+            val myCoinList = async { getMyCoinList(getHomePage(1)) }.await()
             _uiState.update { state ->
                 userCoin.data?.let { data ->
                     state.userCoinResult = data
@@ -62,11 +60,18 @@ class MyCoinViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             val response = getMyCoinList(getNextPage())
-            _uiState.update { state ->
-                response.data?.datas?.let { data ->
-                    state.myCoinResult.addAll(data)
+            updatePageCont(response.data?.pageCount?.toInt())
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.datas?.let { data ->
+                        state.myCoinResult.addAll(data)
+                    }
+                    state.copy(
+                        refreshing = false,
+                        loading = hasNextPage(),
+                        finishing = !hasNextPage()
+                    )
                 }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }
@@ -76,15 +81,12 @@ class MyCoinViewModel : BaseViewModel() {
      * page 1开始
      */
     private suspend fun getMyCoinList(page: Int): MyCoinListBean {
-        //以get方式发起网络请求
         val response = coroutineScope {
             get<MyCoinListBean> {
                 setUrl("lg/coin/list/{page}/json")
                 putPath("page", page.toString())
             }
         }
-        //根据接口返回更新总页码
-        updatePageCont(response.data?.pageCount?.toInt())
         return response
     }
 

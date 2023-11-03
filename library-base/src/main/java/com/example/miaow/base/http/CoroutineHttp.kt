@@ -1,8 +1,6 @@
 package com.example.miaow.base.http
 
 import android.content.ContextWrapper
-import com.example.miaow.base.utils.DslSpannableStringBuilder
-import com.example.miaow.base.utils.DslSpannableStringBuilderImpl
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -18,7 +16,7 @@ import java.io.File
 suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.instance().get(init, T::class.java)
+    return CoroutineHttp.getInstance().get(init, T::class.java)
 }
 
 /**
@@ -28,7 +26,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
 suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
     noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.instance().post(init, T::class.java)
+    return CoroutineHttp.getInstance().post(init, T::class.java)
 }
 
 /**
@@ -38,7 +36,7 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
 suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
     noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.instance().form(init, T::class.java)
+    return CoroutineHttp.getInstance().form(init, T::class.java)
 }
 
 /**
@@ -52,15 +50,15 @@ suspend inline fun CoroutineScope.download(
     fileName: String,
     noinline init: HttpRequest.() -> Unit
 ): HttpResponse {
-    return CoroutineHttp.instance().download(savePath, fileName, init)
+    return CoroutineHttp.getInstance().download(savePath, fileName, init)
 }
 
 fun ContextWrapper.setBaseUrl(baseUrl: String) {
-    CoroutineHttp.instance().setBaseUrl(baseUrl)
+    CoroutineHttp.getInstance().setBaseUrl(baseUrl)
 }
 
 fun ContextWrapper.setHttpClient(client: OkHttpClient) {
-    CoroutineHttp.instance().setHttpClient(client)
+    CoroutineHttp.getInstance().setHttpClient(client)
 }
 
 /**
@@ -73,7 +71,7 @@ class CoroutineHttp private constructor() {
         @Volatile
         private var INSTANCE: CoroutineHttp? = null
 
-        fun instance() = INSTANCE ?: synchronized(CoroutineHttp::class.java) {
+        fun getInstance() = INSTANCE ?: synchronized(CoroutineHttp::class.java) {
             INSTANCE ?: CoroutineHttp().also { INSTANCE = it }
         }
 

@@ -36,21 +36,21 @@ class UserViewModel(private val id: String) : BaseViewModel() {
         _uiState.update {
             it.copy(refreshing = true, loading = false, finishing = false)
         }
-        getShareArticlesList(getHomePage(1))
+        getList(getHomePage(1))
     }
 
     fun getNext() {
         _uiState.update {
             it.copy(refreshing = false, loading = false, finishing = false)
         }
-        getShareArticlesList(getNextPage())
+        getList(getNextPage())
     }
 
     /**
      * 获取用户分享文章
      * page 1开始
      */
-    private fun getShareArticlesList(page: Int) {
+    private fun getList(page: Int) {
         viewModelScope.launch {
             val response = get<ShareArticleListBean> {
                 setUrl("user/{id}/share_articles/{page}/json")
@@ -59,19 +59,24 @@ class UserViewModel(private val id: String) : BaseViewModel() {
             }
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.coinInfo?.let { coin ->
-                    state.coinResult = coin
-                }
-                response.data?.shareArticles?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.articleResult.clear()
+                response.data?.let { data ->
+                    data.coinInfo?.let { coin ->
+                        state.coinResult = coin
                     }
-                    state.articleResult.addAll(datas)
+                    data.shareArticles?.let { shareArticles ->
+                        shareArticles.datas?.let { datas ->
+                            if (isHomePage()) {
+                                state.articleResult.clear()
+                            }
+                            state.articleResult.addAll(datas)
+                        }
+                    }
                 }
-                if (response.data == null) {
-                    state.coinResult.username = response.errorMsg
-                }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
+                state.copy(
+                    refreshing = false,
+                    loading = hasNextPage(),
+                    finishing = !hasNextPage()
+                )
             }
         }
     }

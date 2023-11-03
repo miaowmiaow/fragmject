@@ -53,14 +53,20 @@ class RankViewModel : BaseViewModel() {
                 putPath("page", page.toString())
             }
             updatePageCont(response.data?.pageCount?.toInt())
-            _uiState.update { state ->
-                response.data?.datas?.let { data ->
-                    if (isHomePage()) {
-                        state.result.clear()
+            response.data?.let { data ->
+                _uiState.update { state ->
+                    data.datas?.let { data ->
+                        if (isHomePage()) {
+                            state.result.clear()
+                        }
+                        state.result.addAll(data)
                     }
-                    state.result.addAll(data)
+                    state.copy(
+                        refreshing = false,
+                        loading = hasNextPage(),
+                        finishing = !hasNextPage()
+                    )
                 }
-                state.copy(refreshing = false, loading = hasNextPage(), finishing = !hasNextPage())
             }
         }
     }

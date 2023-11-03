@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -39,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.miaow.base.utils.getScreenWidth
 import com.example.miaow.base.utils.px2dp
@@ -108,13 +108,13 @@ fun MyCoinScreen(
             IconButton(
                 modifier = Modifier
                     .height(45.dp)
-                    .padding(13.dp)
                     .align(Alignment.TopEnd),
                 onClick = onNavigateToRank
             ) {
                 Icon(
                     painter = painterResource(R.mipmap.ic_rank),
                     contentDescription = null,
+                    modifier = Modifier.size(16.dp),
                     tint = colorResource(R.color.white)
                 )
             }
@@ -141,49 +141,47 @@ fun MyCoinScreen(
                 color = colorResource(R.color.text_fff),
             )
         }
-        LoadingContent(uiState.refreshing && !uiState.loading) {
-            SwipeRefresh(
-                items = uiState.myCoinResult,
-                refreshing = uiState.refreshing,
-                loading = uiState.loading,
-                finishing = uiState.finishing,
-                onRefresh = { viewModel.getHome() },
-                onLoad = { viewModel.getNext() },
-                modifier = Modifier.fillMaxSize(),
-                key = { _, item -> item.id },
-            ) { _, item ->
-                Row(
-                    modifier = Modifier
-                        .background(colorResource(R.color.white))
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column {
-                        Text(
-                            text = item.getTitle(),
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.text_666),
-                        )
-                        Text(
-                            text = item.getTime(),
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.text_999),
-                        )
-                    }
+        SwipeRefresh(
+            items = uiState.myCoinResult,
+            refreshing = uiState.refreshing,
+            loading = uiState.loading,
+            finishing = uiState.finishing,
+            onRefresh = { viewModel.getHome() },
+            onLoad = { viewModel.getNext() },
+            modifier = Modifier.fillMaxSize(),
+            key = { _, item -> item.id },
+        ) { _, item ->
+            Row(
+                modifier = Modifier
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
                     Text(
-                        text = item.coinCount,
+                        text = item.getTitle(),
                         fontSize = 14.sp,
-                        color = colorResource(R.color.orange),
+                        color = colorResource(R.color.text_666),
+                    )
+                    Text(
+                        text = item.getTime(),
+                        fontSize = 14.sp,
+                        color = colorResource(R.color.text_999),
                     )
                 }
-                Spacer(
-                    Modifier
-                        .background(colorResource(R.color.line))
-                        .fillMaxWidth()
-                        .height(1.dp)
+                Text(
+                    text = item.coinCount,
+                    fontSize = 14.sp,
+                    color = colorResource(R.color.orange),
                 )
             }
+            Spacer(
+                Modifier
+                    .background(colorResource(R.color.line))
+                    .fillMaxWidth()
+                    .height(1.dp)
+            )
         }
     }
 

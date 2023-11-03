@@ -52,9 +52,9 @@ fun <T> Banner(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .clip(RoundedCornerShape(16f))
                     .clickable { onClick(page, item) }
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(16f))
             )
         }
     }

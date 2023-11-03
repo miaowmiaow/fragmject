@@ -216,7 +216,7 @@ fun RefreshIndicator(
         ),
         label = "loadingAnimate"
     )
-    val id = if (refreshing) loadingAnimate else position() % refreshingResId.size
+    val id = (if (refreshing) loadingAnimate else position()) % refreshingResId.size
     Image(
         painter = painterResource(refreshingResId[id.toInt()]),
         contentDescription = null,

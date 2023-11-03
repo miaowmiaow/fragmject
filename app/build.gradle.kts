@@ -26,6 +26,9 @@ android {
         targetSdk = configProperties.getProperty("targetSdkVersion").toInt()
         versionCode = configProperties.getProperty("versionCode").toInt()
         versionName = configProperties.getProperty("versionName")
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -66,6 +69,7 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("config")
+            ndk.abiFilters.add("x86")
         }
     }
 

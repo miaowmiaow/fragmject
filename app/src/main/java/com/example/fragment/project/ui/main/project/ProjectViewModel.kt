@@ -81,19 +81,17 @@ class ProjectViewModel : BaseViewModel() {
                 putQuery("cid", cid)
             }
             updatePageCont(response.data?.pageCount?.toInt(), cid)
-            response.data?.let { data ->
-                _uiState.update { state ->
-                    data.datas?.let { datas ->
-                        if (isHomePage(cid)) {
-                            state.result[cid] = arrayListOf()
-                        }
-                        state.result[cid]?.addAll(datas)
+            _uiState.update { state ->
+                response.data?.datas?.let { datas ->
+                    if (isHomePage(cid)) {
+                        state.result[cid] = arrayListOf()
                     }
-                    state.refreshing[cid] = false
-                    state.loading[cid] = hasNextPage(cid)
-                    state.finishing[cid] = !hasNextPage(cid)
-                    state.copy(updateTime = System.nanoTime())
+                    state.result[cid]?.addAll(datas)
                 }
+                state.refreshing[cid] = false
+                state.loading[cid] = hasNextPage(cid)
+                state.finishing[cid] = !hasNextPage(cid)
+                state.copy(updateTime = System.nanoTime())
             }
         }
     }

@@ -116,7 +116,7 @@ object WanHelper {
      * 关闭数据库
      */
     fun close() {
-        KVDatabase.closeDatabase()
+        KVDatabase.closeDB()
     }
 
 }

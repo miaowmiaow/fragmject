@@ -64,10 +64,8 @@ class HomeViewModel : BaseViewModel() {
             val response = getArticleList(getNextPage())
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.let { data ->
-                    data.datas?.let { datas ->
-                        state.result.addAll(datas)
-                    }
+                response.data?.datas?.let { datas ->
+                    state.result.addAll(datas)
                 }
                 state.copy(
                     refreshing = false,

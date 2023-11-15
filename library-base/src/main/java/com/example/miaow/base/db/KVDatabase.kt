@@ -54,7 +54,7 @@ abstract class KVDatabase : RoomDatabase() {
             getDB().getValue(key, result)
         }
 
-        fun closeDatabase() {
+        fun closeDB() {
             getDB().close()
         }
 

@@ -5,20 +5,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -93,60 +93,60 @@ fun UserScreen(
             }
         }
     }
-    Column(
-        modifier = Modifier
-            .systemBarsPadding()
-            .nestedScroll(nestedScrollConnection)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(colorResource(R.color.theme))
-                .fillMaxWidth()
-                .height(titleBarSize + targetHeight * targetPercent.value)
-        ) {
-            IconButton(
-                modifier = Modifier.height(titleBarSize),
-                onClick = onNavigateUp
+    Scaffold(
+        modifier = Modifier.nestedScroll(nestedScrollConnection),
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
+                    .height(titleBarSize + targetHeight * targetPercent.value)
             ) {
-                Icon(
-                    Icons.Filled.ArrowBack,
+                IconButton(
+                    modifier = Modifier.height(titleBarSize),
+                    onClick = onNavigateUp
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = colorResource(R.color.white)
+                    )
+                }
+                Image(
+                    painter = painterResource(id = uiState.coinResult.getAvatarId()),
                     contentDescription = null,
-                    tint = colorResource(R.color.white)
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
+                        .clip(CircleShape)
+                        .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
+                        .align(Alignment.Center)
+                )
+                Text(
+                    text = uiState.coinResult.nickname,
+                    modifier = Modifier
+                        .offset(
+                            x = -(avatarOffsetX - (titleBarSize * 2)) * (1 - targetPercent.value),
+                            y = 35.dp * targetPercent.value
+                        )
+                        .align(Alignment.Center),
+                    fontSize = 16.sp,
+                    color = colorResource(R.color.text_fff),
+                )
+                Text(
+                    text = "积分:${uiState.coinResult.coinCount}",
+                    modifier = Modifier
+                        .offset(x = 0.dp, y = 55.dp * targetPercent.value)
+                        .graphicsLayer {
+                            alpha = targetPercent.value
+                        }
+                        .align(Alignment.Center),
+                    fontSize = 12.sp,
+                    color = colorResource(R.color.text_fff),
                 )
             }
-            Image(
-                painter = painterResource(id = uiState.coinResult.getAvatarId()),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
-                    .clip(CircleShape)
-                    .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
-                    .align(Alignment.Center)
-            )
-            Text(
-                text = uiState.coinResult.nickname,
-                modifier = Modifier
-                    .offset(
-                        x = -(avatarOffsetX - (titleBarSize * 2)) * (1 - targetPercent.value),
-                        y = 35.dp * targetPercent.value
-                    )
-                    .align(Alignment.Center),
-                fontSize = 16.sp,
-                color = colorResource(R.color.text_fff),
-            )
-            Text(
-                text = "积分:${uiState.coinResult.coinCount}",
-                modifier = Modifier
-                    .offset(x = 0.dp, y = 55.dp * targetPercent.value)
-                    .graphicsLayer {
-                        alpha = targetPercent.value
-                    }
-                    .align(Alignment.Center),
-                fontSize = 12.sp,
-                color = colorResource(R.color.text_fff),
-            )
         }
+    ) { innerPadding ->
         SwipeRefresh(
             items = uiState.articleResult,
             refreshing = uiState.refreshing,
@@ -154,7 +154,9 @@ fun UserScreen(
             finishing = uiState.finishing,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             contentPadding = PaddingValues(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             key = { _, item -> item.id },
@@ -168,5 +170,4 @@ fun UserScreen(
             )
         }
     }
-
 }

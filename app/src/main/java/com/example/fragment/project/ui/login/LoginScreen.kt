@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.login
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,39 +8,42 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Snackbar
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.Text
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -54,7 +56,6 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.WhiteTextField
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
@@ -64,24 +65,23 @@ fun LoginScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
     SideEffect {
         if (uiState.success) {
             onPopBackStackToMain()
         }
     }
-    LaunchedEffect(uiState.message, scaffoldState.snackbarHostState) {
+    LaunchedEffect(uiState.message, snackbarHostState) {
         if (uiState.message.isNotBlank()) {
-            scaffoldState.snackbarHostState.showSnackbar(uiState.message)
+            snackbarHostState.showSnackbar(uiState.message)
             viewModel.resetMessage()
         }
     }
     var usernameText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     Scaffold(
-        scaffoldState = scaffoldState,
-        snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             LoadingContent(
                 isLoading = uiState.isLoading,
@@ -94,39 +94,44 @@ fun LoginScreen(
                             contentScale = ContentScale.FillBounds
                         )
                         .fillMaxSize()
-                        .padding(start = 40.dp, top = 15.dp, end = 40.dp, bottom = 15.dp)
+                        .padding(15.dp)
                         .verticalScroll(scrollState)
-                        .systemBarsPadding()
-                        .navigationBarsPadding()
                 ) {
-                    Image(
-                        painter = painterResource(R.mipmap.ic_back),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable { onNavigateUp() }
-                            .size(15.dp)
-                    )
+                    IconButton(
+                        modifier = Modifier.height(45.dp),
+                        onClick = onNavigateUp
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = colorResource(R.color.white)
+                        )
+                    }
                     Spacer(Modifier.height(30.dp))
                     Text(
                         text = "Welcome",
-                        style = MaterialTheme.typography.h4,
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        style = MaterialTheme.typography.headlineMedium,
                         color = colorResource(R.color.white),
                     )
                     Spacer(Modifier.height(20.dp))
                     Text(
                         text = "玩Android",
-                        style = MaterialTheme.typography.h6,
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        style = MaterialTheme.typography.titleLarge,
                         color = colorResource(R.color.white),
                     )
                     Spacer(Modifier.weight(1f))
                     WhiteTextField(
                         value = usernameText,
                         onValueChange = { usernameText = it },
+                        textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 14.sp),
                         placeholder = { Text("请输入用户名") },
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .wrapContentHeight()
+                            .padding(horizontal = 20.dp)
                     )
                     Spacer(Modifier.height(15.dp))
                     WhiteTextField(
@@ -134,7 +139,9 @@ fun LoginScreen(
                         onValueChange = { passwordText = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
+                            .wrapContentHeight()
+                            .padding(horizontal = 20.dp),
+                        textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 14.sp),
                         placeholder = { Text("请输入用户密码") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -149,7 +156,10 @@ fun LoginScreen(
                         ),
                     )
                     Spacer(Modifier.height(30.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = "登录",
                             fontSize = 20.sp,
@@ -158,12 +168,12 @@ fun LoginScreen(
                         Spacer(Modifier.weight(1f))
                         Button(
                             onClick = { viewModel.login(usernameText, passwordText) },
-                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.theme_orange),
+                                containerColor = colorResource(R.color.theme_orange),
                                 contentColor = colorResource(R.color.white)
                             ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                             contentPadding = PaddingValues(15.dp),
                             modifier = Modifier.size(55.dp)
                         ) {
@@ -176,10 +186,12 @@ fun LoginScreen(
                     Spacer(Modifier.height(30.dp))
                     Text(
                         text = "去注册",
+                        modifier = Modifier
+                            .clickable { onNavigateToRegister() }
+                            .padding(horizontal = 25.dp),
                         textDecoration = TextDecoration.Underline,
                         fontSize = 12.sp,
                         color = colorResource(R.color.white),
-                        modifier = Modifier.clickable { onNavigateToRegister() }
                     )
                     Spacer(Modifier.height(30.dp))
                 }

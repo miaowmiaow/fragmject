@@ -2,30 +2,30 @@ package com.example.fragment.project.components
 
 import android.animation.ValueAnimator
 import android.view.animation.DecelerateInterpolator
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FractionalThreshold
-import androidx.compose.material.SwipeableDefaults
-import androidx.compose.material.SwipeableState
-import androidx.compose.material.swipeable
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -34,7 +34,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -60,29 +63,56 @@ import kotlin.random.Random
  * 基于此封装成 NightSwitchButton 方便使用
  * 文章地址：https://juejin.cn/post/7225454746949615673
  */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NightSwitchButton(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    val coroutineScope = rememberCoroutineScope()
     BoxWithConstraints(modifier = modifier) {
+        val coroutineScope = rememberCoroutineScope()
         val canvasWidth = maxWidth
         val canvasHeight = maxHeight
         val canvasRadius = canvasHeight / 2f
-        val starSize = canvasRadius * 0.9f
-        val swipeableState = rememberSwipeableStateFor(checked, onCheckedChange ?: {})
         val minBound = 0f
-        val maxBound = with(LocalDensity.current) { (canvasWidth - starSize).toPx() }
+        val maxBound = with(LocalDensity.current) { (canvasWidth * 0.5f).toPx() }
+        var forceAnimationCheck by remember { mutableStateOf(false) }
+        val anchoredDraggableState = remember(maxBound) {
+            AnchoredDraggableState(
+                initialValue = checked,
+                animationSpec = TweenSpec(durationMillis = 1000),
+                anchors = DraggableAnchors {
+                    false at minBound
+                    true at maxBound
+                },
+                positionalThreshold = { distance -> distance * 0.5f },
+                velocityThreshold = { maxBound }
+            )
+        }
+        val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
+        val currentChecked by rememberUpdatedState(checked)
+        LaunchedEffect(anchoredDraggableState) {
+            snapshotFlow { anchoredDraggableState.currentValue }
+                .collectLatest { newValue ->
+                    if (currentChecked != newValue) {
+                        currentOnCheckedChange?.invoke(newValue)
+                        forceAnimationCheck = !forceAnimationCheck
+                    }
+                }
+        }
+        LaunchedEffect(checked, forceAnimationCheck) {
+            if (checked != anchoredDraggableState.currentValue) {
+                anchoredDraggableState.animateTo(checked)
+            }
+        }
         Box(
             modifier = Modifier
                 .toggleable(
                     value = checked,
                     onValueChange = {
                         coroutineScope.launch {
-                            swipeableState.animateTo(it)
+                            anchoredDraggableState.animateTo(it)
                             onCheckedChange?.invoke(it)
                         }
                     },
@@ -90,56 +120,22 @@ fun NightSwitchButton(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 )
-                .swipeable(
-                    state = swipeableState,
-                    anchors = mapOf(minBound to false, maxBound to true),
-                    thresholds = { _, _ -> FractionalThreshold(0.5f) },
-                    orientation = Orientation.Horizontal
+                .anchoredDraggable(
+                    state = anchoredDraggableState,
+                    orientation = Orientation.Horizontal,
+                    enabled = onCheckedChange != null,
                 )
         ) {
-            val progress = if (!swipeableState.progress.from && !swipeableState.progress.to) {
-                0f
-            } else if (swipeableState.progress.from && !swipeableState.progress.to) {
-                1f - swipeableState.progress.fraction
-            } else {
-                swipeableState.progress.fraction
-            }
+            println(anchoredDraggableState.offset)
+            println(anchoredDraggableState.progress)
+            println(anchoredDraggableState.currentValue)
+            val progress = anchoredDraggableState.offset / maxBound
             Sky(progress, canvasWidth, canvasHeight, canvasRadius)
             Cloud(progress, canvasWidth, canvasHeight, canvasRadius)
             Stars(progress, canvasWidth, canvasHeight, canvasRadius)
             SunAndMoon(progress, canvasWidth, canvasHeight, canvasRadius)
         }
     }
-}
-
-@Composable
-@ExperimentalMaterialApi
-internal fun <T : Any> rememberSwipeableStateFor(
-    value: T,
-    onValueChange: (T) -> Unit,
-    animationSpec: AnimationSpec<Float> = SwipeableDefaults.AnimationSpec
-): SwipeableState<T> {
-    val swipeableState = remember {
-        SwipeableState(
-            initialValue = value,
-            animationSpec = animationSpec,
-            confirmStateChange = { true }
-        )
-    }
-    val forceAnimationCheck = remember { mutableStateOf(false) }
-    LaunchedEffect(value, forceAnimationCheck.value) {
-        if (value != swipeableState.currentValue) {
-            swipeableState.animateTo(value)
-        }
-    }
-    DisposableEffect(swipeableState.currentValue) {
-        if (value != swipeableState.currentValue) {
-            onValueChange(swipeableState.currentValue)
-            forceAnimationCheck.value = !forceAnimationCheck.value
-        }
-        onDispose { }
-    }
-    return swipeableState
 }
 
 @Composable
@@ -455,20 +451,25 @@ fun SunAndMoon(
     } else if (progress >= 1f) {
         initProgress = 1f
     }
-    val mSunCloudRadius = canvasRadius - canvasHeight / 10f
-    val starRadius = mSunCloudRadius * 0.9f
-    val starMove = canvasWidth - (canvasHeight - starRadius * 2f) - starRadius * 2f
+    val starRadius = canvasRadius * 0.75f
+    val starDiameter = starRadius * 2f
+    val moveDistance = canvasWidth - (canvasHeight - starDiameter) - starDiameter
     Box(
-        modifier = Modifier
-            .height(starRadius * 2)
-            .width(starRadius * 2),
+        modifier = Modifier.size(starDiameter),
     ) {
         if (progress >= initProgress) {
-            Sun(progress, false, canvasHeight, canvasRadius, starRadius, starMove)
+            Sun(progress, false, canvasHeight, canvasRadius, starRadius, moveDistance)
         }
-        Moon(progress, progress < initProgress, canvasHeight, canvasRadius, starRadius, starMove)
+        Moon(
+            progress,
+            progress < initProgress,
+            canvasHeight,
+            canvasRadius,
+            starRadius,
+            moveDistance
+        )
         if (progress < initProgress) {
-            Sun(progress, true, canvasHeight, canvasRadius, starRadius, starMove)
+            Sun(progress, true, canvasHeight, canvasRadius, starRadius, moveDistance)
         }
     }
 }
@@ -487,7 +488,7 @@ fun Sun(
     canvasHeight: Dp,
     canvasRadius: Dp,
     starRadius: Dp,
-    starMove: Dp
+    moveDistance: Dp
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "Sun")
     val offset by infiniteTransition.animateFloat(
@@ -514,6 +515,7 @@ fun Sun(
         ),
         label = "animationOffsetSun",
     )
+    val starDiameter = starRadius * 2f
     // for sun/moon change, this is Moon move animation
     val progressX = if (reversal) {
         if (progress <= perDistance) {
@@ -529,14 +531,14 @@ fun Sun(
     Canvas(
         modifier = Modifier
             .offset(
-                x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
-                y = (canvasHeight - starRadius * 2f) / 2f,
+                x = (canvasHeight - starDiameter) / 2f + moveDistance * progress,
+                y = (canvasHeight - starDiameter) / 2f,
             )
             .graphicsLayer(alpha = 0.99f)
             .clip(RoundedCornerShape(canvasRadius))
             .clipToBounds()
-            .width(starRadius * 2f)
-            .height(starRadius * 2f),
+            .width(starDiameter)
+            .height(starDiameter),
     ) {
         // 1: top shadow
         with(drawContext.canvas.nativeCanvas) {
@@ -609,7 +611,7 @@ fun Moon(
     canvasHeight: Dp,
     canvasRadius: Dp,
     starRadius: Dp,
-    starMove: Dp
+    moveDistance: Dp
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "Moon")
     val offset by infiniteTransition.animateFloat(
@@ -637,7 +639,7 @@ fun Moon(
         ),
         label = "offsetMoonDown",
     )
-
+    val starDiameter = starRadius * 2f
     // for sun/moon change, this is Moon move animation
     val progressX = if (reversal) {
         0.dp
@@ -654,14 +656,14 @@ fun Moon(
     Canvas(
         modifier = Modifier
             .offset(
-                x = (canvasHeight - starRadius * 2f) / 2f + starMove * progress,
-                y = (canvasHeight - starRadius * 2f) / 2f,
+                x = (canvasHeight - starDiameter) / 2f + moveDistance * progress,
+                y = (canvasHeight - starDiameter) / 2f,
             )
             .graphicsLayer(alpha = 0.99f)
             .clip(RoundedCornerShape(canvasRadius))
             .clipToBounds()
-            .width(starRadius * 2f)
-            .height(starRadius * 2f)
+            .width(starDiameter)
+            .height(starDiameter)
     ) {
         // 1: top shadow
         with(drawContext.canvas.nativeCanvas) {

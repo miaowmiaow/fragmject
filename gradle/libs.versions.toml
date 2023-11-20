@@ -1,5 +1,5 @@
 [versions]
-agp = "8.3.0-alpha07"
+agp = "8.3.0-alpha13"
 androidx-activity-compose = "1.8.0"
 androidx-appcompat = "1.6.1"
 androidx-constraintlayout = "2.1.4"
@@ -10,12 +10,13 @@ androidx-lifecycle = "2.6.2"
 androidx-navigation-compose = "2.7.5"
 androidx-webkit = "1.8.0"
 asm = "9.5"
-compose = "1.5.4"
-compose-compiler = "1.5.3"
+compose = "1.6.0-beta01"
+compose-compiler = "1.5.4"
+compose-material3 = "1.2.0-alpha11"
 coil = "2.4.0"
 gson = "2.10.1"
 junit = "4.13.2"
-kotlin = "1.9.10"
+kotlin = "1.9.20"
 kotlinx-coroutines = "1.7.3"
 ksp = "1.9.10-1.0.13"
 leakcanary = "2.12"
@@ -29,7 +30,8 @@ test-ext-junit = '1.1.5'
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "compose-material3" }
+androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "compose-material3" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util", version.ref = "compose" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }

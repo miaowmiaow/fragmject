@@ -13,13 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -31,51 +31,50 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.DatePicker
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerScreen() {
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-    )
-    ModalBottomSheetLayout(
-        sheetState = sheetState,
+    val bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
+    BottomSheetScaffold(
         sheetContent = {
             Row(
                 Modifier
+                    .background(colorResource(R.color.white))
                     .fillMaxWidth()
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = { scope.launch { sheetState.hide() } },
+                    onClick = { scope.launch { bottomSheetState.hide() } },
                     modifier = Modifier
                         .width(50.dp)
                         .height(25.dp),
-                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                     shape = RoundedCornerShape(5.dp),
-                    border = BorderStroke(1.dp, colorResource(R.color.gray)),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = colorResource(R.color.gray),
+                        containerColor = colorResource(R.color.gray),
                         contentColor = colorResource(R.color.text_666)
                     ),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                    border = BorderStroke(1.dp, colorResource(R.color.gray)),
                     contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
                 ) {
                     Text(text = "取消", fontSize = 13.sp)
                 }
                 Spacer(Modifier.weight(1f))
                 Button(
-                    onClick = { scope.launch { sheetState.hide() } },
+                    onClick = { scope.launch { bottomSheetState.hide() } },
                     modifier = Modifier
                         .width(50.dp)
                         .height(25.dp),
-                    elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                     shape = RoundedCornerShape(5.dp),
-                    border = BorderStroke(1.dp, colorResource(R.color.gray)),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = colorResource(R.color.theme_orange),
+                        containerColor = colorResource(R.color.theme_orange),
                         contentColor = colorResource(R.color.text_fff)
                     ),
+                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                    border = BorderStroke(1.dp, colorResource(R.color.gray)),
                     contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
                 ) {
                     Text(text = "确定", fontSize = 13.sp)
@@ -88,6 +87,10 @@ fun DatePickerScreen() {
                     .height(1.dp)
             )
             DatePicker(
+                modifier = Modifier
+                    .background(colorResource(R.color.white))
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 onSelectYear = {
                     println("year: $it")
                 },
@@ -98,27 +101,30 @@ fun DatePickerScreen() {
                     println("day: $it")
                 }
             )
-        }
-    ) {
+        },
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 0.dp,
+        sheetDragHandle = null
+    ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
                 onClick = {
-                    scope.launch {
-                        sheetState.show()
-                    }
+                    scope.launch { bottomSheetState.expand() }
                 },
                 modifier = Modifier.height(30.dp),
-                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(3.dp),
-                border = BorderStroke(1.dp, colorResource(R.color.theme_orange)),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = colorResource(R.color.white),
+                    containerColor = colorResource(R.color.white),
                     contentColor = colorResource(R.color.theme_orange)
                 ),
+                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                border = BorderStroke(1.dp, colorResource(R.color.theme_orange)),
                 contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
             ) {
                 Text(

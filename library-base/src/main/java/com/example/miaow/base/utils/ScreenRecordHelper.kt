@@ -66,6 +66,7 @@ class ScreenRecordFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode != Activity.RESULT_OK || result.data == null) {
                 callback?.onActivityResult(result.resultCode, "没有屏幕录制权限")
+                stopScreenRecord(callback)
                 return@registerForActivityResult
             }
             try {
@@ -87,8 +88,8 @@ class ScreenRecordFragment : Fragment() {
                 isRunning = true
                 callback?.onActivityResult(Activity.RESULT_OK, "屏幕录制中")
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
                 callback?.onActivityResult(Activity.RESULT_CANCELED, "屏幕录制异常:${e.message}")
+                stopScreenRecord(callback)
             }
         }
 
@@ -167,17 +168,18 @@ class ScreenRecordFragment : Fragment() {
 
             override fun deny() {
                 callback?.onActivityResult(Activity.RESULT_CANCELED, "没有麦克风权限")
+                stopScreenRecord(callback)
             }
         })
     }
 
     fun stopScreenRecord(callback: ScreenRecordCallback?) {
         this.callback = callback
+        requireActivity().stopMediaService()
         callback?.onActivityResult(Activity.RESULT_CANCELED, "屏幕录制结束")
         if (!isRunning) {
             return
         }
-        requireActivity().stopMediaService()
         try {
             getMediaRecorder().stop()
             getMediaRecorder().reset()

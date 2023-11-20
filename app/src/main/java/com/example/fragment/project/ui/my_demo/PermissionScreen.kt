@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -85,13 +85,13 @@ fun PermissionScreen() {
                 }
             },
             modifier = Modifier.height(30.dp),
-            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
             shape = RoundedCornerShape(3.dp),
-            border = BorderStroke(1.dp, colorResource(R.color.theme_orange)),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = colorResource(R.color.white),
+                containerColor = colorResource(R.color.white),
                 contentColor = colorResource(R.color.theme_orange)
             ),
+            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+            border = BorderStroke(1.dp, colorResource(R.color.theme_orange)),
             contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
         ) {
             Text(

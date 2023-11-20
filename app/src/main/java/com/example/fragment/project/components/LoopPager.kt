@@ -41,8 +41,9 @@ fun <T> LoopHorizontalPager(
         return
     }
     val pageCount = data.size
-    val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(startIndex - startIndex % pageCount) { Int.MAX_VALUE }
+    val size = pageCount * 10000
+    val startIndex = size / 2
+    val pagerState = rememberPagerState(startIndex - startIndex % pageCount) { size }
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()
@@ -112,8 +113,9 @@ fun <T> LoopVerticalPager(
         return
     }
     val pageCount = data.size
-    val startIndex = Int.MAX_VALUE / 2
-    val pagerState = rememberPagerState(startIndex - startIndex % pageCount) { Int.MAX_VALUE }
+    val size = pageCount * 10000
+    val startIndex = size / 2
+    val pagerState = rememberPagerState(startIndex - startIndex % pageCount) { size }
     val coroutineScope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val timer = Timer()

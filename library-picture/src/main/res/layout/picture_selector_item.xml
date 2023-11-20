@@ -44,12 +44,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:background="@color/b_zero_blue"
+        android:background="#b0567ba3"
         android:paddingStart="6dp"
         android:paddingTop="2dp"
         android:paddingEnd="6dp"
         android:paddingBottom="2dp"
-        android:textColor="@color/white"
+        android:textColor="#ffffff"
         android:textSize="12sp"
         android:visibility="gone" />
 

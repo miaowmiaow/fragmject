@@ -17,17 +17,15 @@
 package com.example.fragment.project
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorPalette = darkColors(
+private val appDarkColorScheme = darkColorScheme(
     primary = Color(0xFF000000),
-    primaryVariant = Color(0xFF000000),
     secondary = Color(0XFFFF8B80),
-    secondaryVariant = Color(0XFFFF8B80),
     background = Color(0xFF121212),
     surface = Color(0xFF121212),
     error = Color(0xFFCF6679),
@@ -38,13 +36,11 @@ private val DarkColorPalette = darkColors(
     onError = Color.Black
 )
 
-private val LightColorPalette = lightColors(
+private val appLightColorScheme = lightColorScheme(
     primary = Color(0xFF272A36),
-    primaryVariant = Color(0xFF272A36),
     secondary = Color(0XFFFF8B80),
-    secondaryVariant = Color(0XFFFF8B80),
-    background = Color.White,
-    surface = Color.White,
+    background = Color(0XFFF5F5F5),
+    surface = Color(0XFFF5F5F5),
     error = Color(0xFFB00020),
     onPrimary = Color.White,
     onSecondary = Color.Black,
@@ -55,14 +51,14 @@ private val LightColorPalette = lightColors(
 
 @Composable
 fun WanTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
+    val appColorScheme = if (darkTheme) {
+        appDarkColorScheme
     } else {
-        LightColorPalette
+        appLightColorScheme
     }
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = appColorScheme,
         content = content
     )
 }

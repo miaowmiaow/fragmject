@@ -18,18 +18,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Snackbar
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -66,23 +67,23 @@ fun SettingScreen(
     var screenRecordState by rememberSaveable { mutableStateOf(false) }
     var cacheSize by rememberSaveable { mutableStateOf("0KB") }
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         cacheSize = getTotalSize(context)
     }
     Scaffold(
-        scaffoldState = scaffoldState,
-        snackbarHost = { SnackbarHost(it) { data -> Snackbar(snackbarData = data) } },
+        topBar = {
+            TitleBar("设置") { onNavigateUp() }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             LoadingContent(uiState.isLoading) {
                 Column(
                     modifier = Modifier
-                        .background(colorResource(R.color.background))
                         .fillMaxSize()
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TitleBar("设置") { onNavigateUp() }
                     Row(
                         modifier = Modifier
                             .background(colorResource(R.color.white))
@@ -108,7 +109,7 @@ fun SettingScreen(
                                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                                 }
                             },
-                            Modifier.size(40.dp, 20.dp)
+                            modifier = Modifier.size(52.dp, 32.dp)
                         )
                         Spacer(Modifier.width(5.dp))
                     }
@@ -143,7 +144,7 @@ fun SettingScreen(
                                                 screenRecordState = false
                                             }
                                             coroutineScope.launch {
-                                                scaffoldState.snackbarHostState.showSnackbar(
+                                                snackbarHostState.showSnackbar(
                                                     message, "确定"
                                                 )
                                             }
@@ -157,15 +158,16 @@ fun SettingScreen(
                                             message: String
                                         ) {
                                             coroutineScope.launch {
-                                                scaffoldState.snackbarHostState.showSnackbar(
+                                                snackbarHostState.showSnackbar(
                                                     message, "确定"
                                                 )
                                             }
                                         }
                                     })
                                 }
-                            }
+                            },
                         )
+                        Spacer(Modifier.width(5.dp))
                     }
 //                    Spacer(Modifier.height(1.dp))
 //                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
@@ -234,7 +236,7 @@ fun SettingScreen(
                             shape = RoundedCornerShape(5.dp),
                             border = BorderStroke(1.dp, colorResource(R.color.theme)),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.theme),
+                                containerColor = colorResource(R.color.theme),
                                 contentColor = colorResource(R.color.white)
                             ),
                             contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)

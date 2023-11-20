@@ -1,10 +1,10 @@
 package com.example.fragment.project.ui.my_collect
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -25,10 +25,11 @@ fun MyCollectScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    Column(
-        modifier = Modifier.systemBarsPadding()
-    ) {
-        TitleBar("我的收藏") { onNavigateUp() }
+    Scaffold(
+        topBar = {
+            TitleBar("我的收藏") { onNavigateUp() }
+        }
+    ) { innerPadding ->
         SwipeRefresh(
             items = uiState.result,
             refreshing = uiState.refreshing,
@@ -36,7 +37,9 @@ fun MyCollectScreen(
             finishing = uiState.finishing,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             contentPadding = PaddingValues(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             key = { _, item -> item.id },
@@ -50,5 +53,4 @@ fun MyCollectScreen(
             )
         }
     }
-
 }

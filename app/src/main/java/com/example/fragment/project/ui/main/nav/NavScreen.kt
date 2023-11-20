@@ -23,9 +23,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -112,12 +112,12 @@ fun NavLinkContent(
                     Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
                         Button(
                             onClick = { onNavigateToWeb(it.link) },
-                            elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(R.color.gray_e5),
+                                containerColor = colorResource(R.color.gray_e5),
                                 contentColor = colorResource(R.color.text_666)
                             ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                             contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
                         ) {
                             Text(
@@ -165,12 +165,12 @@ fun NavSystemContent(
                         Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                             Button(
                                 onClick = { onNavigateToSystem(children.id) },
-                                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                                 shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = colorResource(R.color.gray_e5),
+                                    containerColor = colorResource(R.color.gray_e5),
                                     contentColor = colorResource(R.color.text_666)
                                 ),
+                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                                 contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
                             ) {
                                 Text(

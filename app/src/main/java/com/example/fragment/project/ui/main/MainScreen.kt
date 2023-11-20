@@ -12,19 +12,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -79,7 +80,6 @@ fun MainScreen(
         NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
     )
     Scaffold(
-        modifier = Modifier.systemBarsPadding(),
         topBar = {
             SearchBar(
                 data = hotKeyData,
@@ -88,7 +88,7 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            NavigationBar(
+            BottomNavigation(
                 items = navItems
             ) {
                 //首页双击返回顶部
@@ -103,9 +103,7 @@ fun MainScreen(
     ) { innerPadding ->
         val saveableStateHolder = rememberSaveableStateHolder()
         Column(
-            modifier = Modifier
-                .background(colorResource(R.color.background))
-                .padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             when (navIndex) {
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
@@ -212,18 +210,18 @@ fun SearchBar(
 }
 
 @Composable
-fun NavigationBar(
+fun BottomNavigation(
     items: List<NavigationItem> = listOf(),
     onClick: (index: Int) -> Unit
 ) {
     var currItem by rememberSaveable { mutableIntStateOf(0) }
-    BottomNavigation(
+    NavigationBar(
         modifier = Modifier,
-        backgroundColor = colorResource(R.color.white)
+        containerColor = colorResource(R.color.white)
     ) {
         items.forEachIndexed { index, item ->
             val colorId = if (currItem == index) item.selectedColor else item.unselectedColor
-            BottomNavigationItem(
+            NavigationBarItem(
                 selected = currItem == index,
                 onClick = {
                     currItem = index
@@ -233,15 +231,18 @@ fun NavigationBar(
                     Icon(
                         painter = painterResource(id = item.resId),
                         contentDescription = null,
-                        modifier = Modifier
-                            .size(25.dp)
-                            .padding(bottom = 3.dp),
+                        modifier = Modifier.size(25.dp),
                         tint = colorResource(colorId)
                     )
                 },
-                label = { Text(text = item.label, fontSize = 13.sp) },
-                selectedContentColor = colorResource(item.selectedColor),
-                unselectedContentColor = colorResource(item.unselectedColor)
+                label = { Text(text = item.label, fontSize = 13.sp, lineHeight = 13.sp) },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.Transparent,
+                    selectedIconColor = colorResource(item.selectedColor),
+                    selectedTextColor = colorResource(item.selectedColor),
+                    unselectedIconColor = colorResource(item.unselectedColor),
+                    unselectedTextColor = colorResource(item.unselectedColor)
+                )
             )
         }
     }
@@ -269,5 +270,5 @@ fun WanBottomNavigationPreview() {
         NavigationItem("项目", R.mipmap.ic_bottom_bar_project),
         NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
     )
-    WanTheme { NavigationBar(items = navItems, onClick = { _ -> }) }
+    WanTheme { BottomNavigation(items = navItems, onClick = { _ -> }) }
 }

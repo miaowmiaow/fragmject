@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRowDefaults
-import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material.Text
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +39,7 @@ fun <T> TabBar(
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             modifier = modifier,
-            backgroundColor = backgroundColor,
+            containerColor = backgroundColor,
             edgePadding = 0.dp,
             indicator = { tabPositions ->
                 Box(
@@ -50,14 +50,14 @@ fun <T> TabBar(
                 ) {
                     Spacer(
                         Modifier
-                            .background(indicatorColor)
                             .width(20.dp)
-                            .height(2.dp)
+                            .height(3.dp)
+                            .background(indicatorColor)
                     )
                 }
             },
             divider = {
-                TabRowDefaults.Divider(color = dividerColor)
+                HorizontalDivider(color = dividerColor)
             },
         ) {
             data.forEachIndexed { index, item ->

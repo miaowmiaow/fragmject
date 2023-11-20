@@ -13,12 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,63 +84,63 @@ fun MyCoinScreen(
         }
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    Column(
-        modifier = Modifier
-            .systemBarsPadding()
-            .nestedScroll(nestedScrollConnection)
-    ) {
-        Box(
-            modifier = Modifier
-                .background(colorResource(R.color.theme))
-                .fillMaxWidth()
-                .height(titleBarSize + targetHeight * targetPercent.value)
-        ) {
-            IconButton(
-                modifier = Modifier.height(45.dp),
-                onClick = onNavigateUp
+    Scaffold(
+        modifier = Modifier.nestedScroll(nestedScrollConnection),
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
+                    .height(titleBarSize + targetHeight * targetPercent.value)
             ) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = colorResource(R.color.white)
+                IconButton(
+                    modifier = Modifier.height(45.dp),
+                    onClick = onNavigateUp
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = colorResource(R.color.white)
+                    )
+                }
+                IconButton(
+                    modifier = Modifier
+                        .height(45.dp)
+                        .align(Alignment.TopEnd),
+                    onClick = onNavigateToRank
+                ) {
+                    Icon(
+                        painter = painterResource(R.mipmap.ic_rank),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = colorResource(R.color.white)
+                    )
+                }
+                Text(
+                    text = "我的积分",
+                    modifier = Modifier
+                        .offset(
+                            x = -(coinOffsetX - titleBarSize - 10.dp) * (1 - targetPercent.value),
+                            y = -titleBarSize * targetPercent.value
+                        )
+                        .align(Alignment.Center),
+                    fontSize = 16.sp,
+                    color = colorResource(R.color.text_fff),
+                )
+                Text(
+                    text = uiState.userCoinResult.coinCount,
+                    modifier = Modifier
+                        .offset(
+                            x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
+                            y = 10.dp * targetPercent.value
+                        )
+                        .align(Alignment.Center),
+                    fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
+                    color = colorResource(R.color.text_fff),
                 )
             }
-            IconButton(
-                modifier = Modifier
-                    .height(45.dp)
-                    .align(Alignment.TopEnd),
-                onClick = onNavigateToRank
-            ) {
-                Icon(
-                    painter = painterResource(R.mipmap.ic_rank),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = colorResource(R.color.white)
-                )
-            }
-            Text(
-                text = "我的积分",
-                modifier = Modifier
-                    .offset(
-                        x = -(coinOffsetX - titleBarSize - 10.dp) * (1 - targetPercent.value),
-                        y = -titleBarSize * targetPercent.value
-                    )
-                    .align(Alignment.Center),
-                fontSize = 16.sp,
-                color = colorResource(R.color.text_fff),
-            )
-            Text(
-                text = uiState.userCoinResult.coinCount,
-                modifier = Modifier
-                    .offset(
-                        x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
-                        y = 10.dp * targetPercent.value
-                    )
-                    .align(Alignment.Center),
-                fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
-                color = colorResource(R.color.text_fff),
-            )
         }
+    ) { innerPadding ->
         SwipeRefresh(
             items = uiState.myCoinResult,
             refreshing = uiState.refreshing,
@@ -148,7 +148,9 @@ fun MyCoinScreen(
             finishing = uiState.finishing,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             key = { _, item -> item.id },
         ) { _, item ->
             Row(
@@ -184,5 +186,4 @@ fun MyCoinScreen(
             )
         }
     }
-
 }

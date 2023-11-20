@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,11 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 import com.example.fragment.project.components.TabBar
 import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -48,40 +49,46 @@ fun BookmarkHistoryScreen(
     val coroutineScope = rememberCoroutineScope()
     val tabs = listOf("书签", "历史")
     val pagerState = rememberPagerState { tabs.size }
-    Column {
-        Box(
-            modifier = Modifier
-                .background(colorResource(R.color.theme))
-                .fillMaxWidth()
-                .height(45.dp)
-        ) {
-            IconButton(
-                modifier = Modifier.height(45.dp),
-                onClick = onNavigateUp
+    Scaffold(
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
+                    .height(45.dp)
             ) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = colorResource(R.color.white)
+                IconButton(
+                    modifier = Modifier.height(45.dp),
+                    onClick = onNavigateUp
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = colorResource(R.color.white)
+                    )
+                }
+                TabBar(
+                    data = tabs,
+                    textMapping = { it },
+                    pagerState = pagerState,
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(45.dp)
+                        .align(Alignment.Center),
+                    backgroundColor = colorResource(R.color.theme),
+                    selectedContentColor = colorResource(R.color.theme_orange),
+                    unselectedContentColor = colorResource(R.color.text_fff),
+                    indicatorColor = colorResource(R.color.theme),
+                    dividerColor = colorResource(R.color.transparent),
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
                 )
             }
-            TabBar(
-                data = tabs,
-                textMapping = { it },
-                pagerState = pagerState,
-                modifier = Modifier
-                    .width(200.dp)
-                    .height(45.dp)
-                    .align(Alignment.Center),
-                backgroundColor = colorResource(R.color.theme),
-                selectedContentColor = colorResource(R.color.theme_orange),
-                unselectedContentColor = colorResource(R.color.text_fff),
-                indicatorColor = colorResource(R.color.theme),
-                dividerColor = colorResource(R.color.transparent),
-                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
-            )
         }
-        HorizontalPager(state = pagerState) { page ->
+    ) { innerPadding ->
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.padding(innerPadding)
+        ) { page ->
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(1.dp),

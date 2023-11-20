@@ -7,10 +7,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -46,57 +47,63 @@ fun SystemScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(tabIndex) { systemData.size }
-    Column(modifier = Modifier.systemBarsPadding()) {
-        TitleBar(title) { onNavigateUp() }
-        TabBar(
-            data = systemData,
-            textMapping = { it.name },
-            pagerState = pagerState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp),
-            onClick = {
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(it)
-                }
-            },
-        )
-        HorizontalPager(state = pagerState) { page ->
-            val pageCid = systemData[page].id
-            DisposableEffect(lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_START) {
-                        systemViewModel.init(pageCid)
+    Scaffold(
+        topBar = {
+            TitleBar(title) { onNavigateUp() }
+        }
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            TabBar(
+                data = systemData,
+                textMapping = { it.name },
+                pagerState = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
+                onClick = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(it)
+                    }
+                },
+            )
+            HorizontalPager(state = pagerState) { page ->
+                val pageCid = systemData[page].id
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_START) {
+                            systemViewModel.init(pageCid)
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
                     }
                 }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
+                val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
+                val listState = rememberLazyListState()
+                SwipeRefresh(
+                    items = systemUiState.getResult(pageCid),
+                    refreshing = systemUiState.getRefreshing(pageCid),
+                    loading = systemUiState.getLoading(pageCid),
+                    finishing = systemUiState.getFinishing(pageCid),
+                    onRefresh = { systemViewModel.getHome(pageCid) },
+                    onLoad = { systemViewModel.getNext(pageCid) },
+                    modifier = Modifier.fillMaxSize(),
+                    listState = listState,
+                    contentPadding = PaddingValues(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    key = { _, item -> item.id },
+                ) { _, item ->
+                    ArticleCard(
+                        data = item,
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToUser = onNavigateToUser,
+                        onNavigateToSystem = onNavigateToSystem,
+                        onNavigateToWeb = onNavigateToWeb
+                    )
                 }
-            }
-            val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
-            val listState = rememberLazyListState()
-            SwipeRefresh(
-                items = systemUiState.getResult(pageCid),
-                refreshing = systemUiState.getRefreshing(pageCid),
-                loading = systemUiState.getLoading(pageCid),
-                finishing = systemUiState.getFinishing(pageCid),
-                onRefresh = { systemViewModel.getHome(pageCid) },
-                onLoad = { systemViewModel.getNext(pageCid) },
-                modifier = Modifier.fillMaxSize(),
-                listState = listState,
-                contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                key = { _, item -> item.id },
-            ) { _, item ->
-                ArticleCard(
-                    data = item,
-                    onNavigateToLogin = onNavigateToLogin,
-                    onNavigateToUser = onNavigateToUser,
-                    onNavigateToSystem = onNavigateToSystem,
-                    onNavigateToWeb = onNavigateToWeb
-                )
             }
         }
     }
+
 }

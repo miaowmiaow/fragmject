@@ -16,11 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -81,8 +82,8 @@ fun ArticleCard(
             )
             Column(
                 modifier = Modifier
-                    .height(35.dp)
                     .weight(1f)
+                    .wrapContentHeight()
                     .padding(start = 10.dp, end = 10.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
@@ -91,6 +92,7 @@ fun ArticleCard(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = colorResource(R.color.text_666),
+                    lineHeight = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -98,13 +100,14 @@ fun ArticleCard(
                     text = data.niceDate,
                     fontSize = 12.sp,
                     color = colorResource(R.color.text_999),
+                    lineHeight = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
             data.tags?.let { tags ->
                 if (tags.isNotEmpty()) {
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             val uriString = "https://www.wanandroid.com${tags[0].url}"
                             val uri = Uri.parse(uriString)
@@ -118,48 +121,52 @@ fun ArticleCard(
                             onNavigateToSystem(cid ?: "0")
                         },
                         modifier = Modifier.height(20.dp),
-                        elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                         shape = RoundedCornerShape(3.dp),
-                        border = BorderStroke(1.dp, colorResource(R.color.blue)),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = colorResource(R.color.white),
+                            containerColor = colorResource(R.color.white),
                             contentColor = colorResource(R.color.blue)
                         ),
+                        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                        border = BorderStroke(1.dp, colorResource(R.color.blue)),
                         contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
                     ) {
                         Text(
                             text = tags[0].name,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            lineHeight = 12.sp
                         )
                     }
                 }
             }
         }
         Spacer(Modifier.size(10.dp))
-        Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Column(modifier = Modifier.weight(1f)) {
                 if (data.desc.isNotBlank()) {
                     Text(
                         text = data.titleHtml,
+                        color = colorResource(R.color.text_333),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colorResource(R.color.text_333),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = data.descHtml,
-                        fontSize = 14.sp,
                         color = colorResource(R.color.text_666),
+                        fontSize = 14.sp,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                     )
                 } else {
                     Text(
                         text = data.titleHtml,
+                        color = colorResource(R.color.text_333),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = colorResource(R.color.text_333),
                         maxLines = 4,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -170,7 +177,7 @@ fun ArticleCard(
                     model = data.httpsEnvelopePic,
                     contentDescription = null,
                     modifier = Modifier
-                        .width(45.dp)
+                        .width(60.dp)
                         .padding(start = 10.dp)
                         .aspectRatio(2f / 3f),
                     contentScale = ContentScale.Crop
@@ -183,7 +190,7 @@ fun ArticleCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val footModifier = Modifier.height(20.dp)
+            val footModifier = Modifier.wrapContentHeight()
             Row(
                 modifier = Modifier
                     .weight(1f)
@@ -192,55 +199,60 @@ fun ArticleCard(
                 if (data.fresh) {
                     Text(
                         text = "新  ",
+                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                         fontSize = 12.sp,
                         color = colorResource(R.color.blue),
+                        lineHeight = 12.sp,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                     )
                 }
                 if (data.top) {
                     Text(
                         text = "置顶  ",
+                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                         fontSize = 12.sp,
                         color = colorResource(R.color.orange),
+                        lineHeight = 12.sp,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                     )
                 }
                 Text(
                     text = data.chapterNameHtml,
+                    modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                     fontSize = 12.sp,
                     color = colorResource(R.color.text_999),
+                    lineHeight = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
                 )
             }
             Image(
                 painter = painterResource(id = collectResId),
                 contentDescription = "",
-                modifier = footModifier.clickable {
-                    scope.launch {
-                        val response = post<HttpResponse> {
-                            setUrl(
-                                if (data.collect) {
-                                    "lg/collect/{id}/json"
-                                } else {
-                                    "lg/uncollect_originId/{id}/json"
-                                }
-                            )
-                            putPath("id", data.id)
-                        }
-                        when (response.errorCode) {
-                            "0" -> {
-                                data.collect = !data.collect
-                                collectResId = getCollectResId(data.collect)
+                modifier = footModifier
+                    .height(20.dp)
+                    .clickable {
+                        scope.launch {
+                            val response = post<HttpResponse> {
+                                setUrl(
+                                    if (data.collect) {
+                                        "lg/collect/{id}/json"
+                                    } else {
+                                        "lg/uncollect_originId/{id}/json"
+                                    }
+                                )
+                                putPath("id", data.id)
                             }
+                            when (response.errorCode) {
+                                "0" -> {
+                                    data.collect = !data.collect
+                                    collectResId = getCollectResId(data.collect)
+                                }
 
-                            "-1001" -> onNavigateToLogin()
+                                "-1001" -> onNavigateToLogin()
+                            }
                         }
-                    }
-                })
+                    })
         }
     }
 }

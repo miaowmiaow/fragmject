@@ -9,26 +9,25 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -60,7 +58,7 @@ import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.SwipeRefresh
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
     key: String,
@@ -86,76 +84,80 @@ fun SearchScreen(
             keyboardController?.show()
         }
     }
-    Column {
-        Row(
-            modifier = Modifier
-                .background(colorResource(R.color.theme))
-                .fillMaxWidth()
-                .height(45.dp)
-                .padding(15.dp, 8.dp, 15.dp, 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClearTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                onClear = {
-                    searchText = ""
-                    viewModel.clearArticles()
-                },
+    Scaffold(
+        topBar = {
+            Row(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .clipToBounds()
-                    .background(colorResource(R.color.three_nine_gray))
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .focusRequester(focusRequester),
-                textStyle = TextStyle.Default.copy(
-                    color = colorResource(R.color.text_fff),
-                    fontSize = 13.sp,
-                    background = colorResource(R.color.transparent),
-                ),
-                placeholder = {
-                    Text(
-                        text = key.ifBlank { "多个关键词请用空格隔开" },
-                        color = colorResource(R.color.text_999),
+                    .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .padding(15.dp, 8.dp, 0.dp, 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ClearTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    onClear = {
+                        searchText = ""
+                        viewModel.clearArticles()
+                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .clipToBounds()
+                        .background(colorResource(R.color.three_nine_gray))
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .focusRequester(focusRequester),
+                    textStyle = TextStyle.Default.copy(
+                        color = colorResource(R.color.text_fff),
                         fontSize = 13.sp,
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        modifier = Modifier.padding(10.dp, 5.dp, 10.dp, 5.dp),
-                        tint = colorResource(R.color.white)
-                    )
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(
-                    onSearch = {
-                        if (searchText.isNotBlank()) {
-                            onSearchHistory(true, searchText)
-                            viewModel.getHome(searchText)
-                        } else {
-                            viewModel.clearArticles()
+                        background = colorResource(R.color.transparent),
+                    ),
+                    placeholder = {
+                        Text(
+                            text = key.ifBlank { "多个关键词请用空格隔开" },
+                            color = colorResource(R.color.text_999),
+                            fontSize = 13.sp,
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier.padding(10.dp, 5.dp, 10.dp, 5.dp),
+                            tint = colorResource(R.color.white)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            if (searchText.isNotBlank()) {
+                                onSearchHistory(true, searchText)
+                                viewModel.getHome(searchText)
+                            } else {
+                                viewModel.clearArticles()
+                            }
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
                         }
-                        focusManager.clearFocus()
-                        keyboardController?.hide()
-                    }
-                ),
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = colorResource(id = R.color.transparent),
-                    unfocusedIndicatorColor = colorResource(id = R.color.transparent),
+                    ),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = colorResource(id = R.color.transparent),
+                        unfocusedIndicatorColor = colorResource(id = R.color.transparent),
+                    )
                 )
-            )
-            Spacer(Modifier.width(15.dp))
-            Text(
-                text = "取消",
-                modifier = Modifier.clickable { onNavigateUp() },
-                fontSize = 14.sp,
-                color = colorResource(R.color.white),
-            )
+                Text(
+                    text = "取消",
+                    modifier = Modifier
+                        .clickable { onNavigateUp() }
+                        .padding(horizontal = 15.dp),
+                    fontSize = 14.sp,
+                    color = colorResource(R.color.white),
+                )
+            }
         }
-        Column {
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
             if (!uiState.isSearch) {
                 Text(
                     text = "大家都在搜",
@@ -176,12 +178,12 @@ fun SearchScreen(
                                 modifier = Modifier
                                     .height(40.dp)
                                     .padding(top = 5.dp, bottom = 5.dp),
-                                elevation = ButtonDefaults.elevation(0.dp, 0.dp, 0.dp),
                                 shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = colorResource(R.color.gray_e5),
+                                    containerColor = colorResource(R.color.gray_e5),
                                     contentColor = colorResource(R.color.text_666)
                                 ),
+                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                                 contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
                             ) {
                                 Text(

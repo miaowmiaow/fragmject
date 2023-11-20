@@ -22,10 +22,8 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Text
-import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -41,7 +39,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.debugInspectorInfo
@@ -49,6 +51,7 @@ import androidx.compose.ui.platform.inspectable
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
@@ -66,7 +69,6 @@ import kotlin.math.pow
  * @param onRefresh  下拉刷新回调
  * @param onLoad     加载更多回调
  */
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun <T> SwipeRefresh(
     items: List<T>?,
@@ -156,7 +158,6 @@ fun MoreIndicator(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RefreshIndicator(
     refreshing: Boolean,
@@ -230,7 +231,6 @@ fun RefreshIndicator(
 }
 
 @Composable
-@ExperimentalMaterialApi
 fun rememberSwipeRefreshState(
     refreshing: Boolean,
     onRefresh: () -> Unit,
@@ -262,19 +262,61 @@ fun rememberSwipeRefreshState(
     return state
 }
 
-@ExperimentalMaterialApi
 fun Modifier.swipeRefresh(
     state: SwipeRefreshState,
     enabled: Boolean = true
 ) = inspectable(inspectorInfo = debugInspectorInfo {
-    name = "pullRefresh"
+    name = "swipeRefresh"
     properties["state"] = state
     properties["enabled"] = enabled
+    properties["onPull"] = state::onPull
+    properties["onRelease"] = state::onRelease
 }) {
-    Modifier.pullRefresh(state::onPull, state::onRelease, enabled)
+    Modifier.nestedScroll(
+        SwipeRefreshNestedScrollConnection(
+            state::onPull,
+            state::onRelease,
+            enabled
+        )
+    )
 }
 
-@ExperimentalMaterialApi
+private class SwipeRefreshNestedScrollConnection(
+    private val onPull: (pullDelta: Float) -> Float,
+    private val onRelease: suspend (flingVelocity: Float) -> Float,
+    private val enabled: Boolean
+) : NestedScrollConnection {
+
+    override fun onPreScroll(
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset = when {
+        !enabled -> Offset.Zero
+        source == NestedScrollSource.Drag && available.y < 0 -> Offset(
+            0f,
+            onPull(available.y)
+        ) // Swiping up
+        else -> Offset.Zero
+    }
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset = when {
+        !enabled -> Offset.Zero
+        source == NestedScrollSource.Drag && available.y > 0 -> Offset(
+            0f,
+            onPull(available.y)
+        ) // Pulling down
+        else -> Offset.Zero
+    }
+
+    override suspend fun onPreFling(available: Velocity): Velocity {
+        return Velocity(0f, onRelease(available.y))
+    }
+}
+
 class SwipeRefreshState internal constructor(
     private val animationScope: CoroutineScope,
     private val onRefreshState: State<() -> Unit>,
@@ -376,7 +418,6 @@ class SwipeRefreshState internal constructor(
     }
 }
 
-@ExperimentalMaterialApi
 object SwipeRefreshDefaults {
     /**
      * If the indicator is below this threshold offset when it is released, a refresh

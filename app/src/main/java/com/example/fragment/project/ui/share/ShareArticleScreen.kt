@@ -16,14 +16,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,188 +65,195 @@ fun ShareArticleScreen(
             }
         }
     }
-    Column(
-        modifier = Modifier
-            .background(colorResource(R.color.white))
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .background(colorResource(R.color.theme))
-                .fillMaxWidth()
-                .height(45.dp)
-        ) {
-            IconButton(
-                modifier = Modifier.height(45.dp),
-                onClick = onNavigateUp
-            ) {
-                Icon(
-                    Icons.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = colorResource(R.color.white)
-                )
-            }
-            Text(
-                text = "分享文章",
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 16.sp,
-                color = colorResource(R.color.text_fff),
-            )
-            IconButton(
+    Scaffold(
+        topBar = {
+            Box(
                 modifier = Modifier
+                    .background(colorResource(R.color.theme))
+                    .fillMaxWidth()
                     .height(45.dp)
-                    .padding(vertical = 11.dp)
-                    .align(Alignment.CenterEnd),
-                onClick = {
-                    if (linkText.isBlank()) {
-                        Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
-                        return@IconButton
-                    }
-                    onNavigateToWeb(linkText)
-                }
             ) {
-                Icon(
-                    painter = painterResource(R.mipmap.ic_browser),
-                    contentDescription = null,
-                    tint = colorResource(R.color.white)
-                )
-            }
-        }
-        LoadingContent(uiState.isLoading) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(15.dp)
-                    .verticalScroll(scrollState),
-            ) {
-                Text(
-                    text = "文章标题",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.text_666),
-                    modifier = Modifier
-                )
-                Spacer(Modifier.height(15.dp))
-                ClearTextField(
-                    value = titleText,
-                    onValueChange = { titleText = it },
-                    onClear = { titleText = "" },
+                IconButton(
                     modifier = Modifier.height(45.dp),
-                    textStyle = TextStyle.Default.copy(
-                        color = colorResource(R.color.text_333),
-                        fontSize = 14.sp,
-                        background = colorResource(R.color.transparent),
-                    ),
-                    placeholder = {
-                        Text(
-                            text = "请输入文章标题",
-                            color = colorResource(R.color.text_ccc),
-                            fontSize = 14.sp,
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next
-                    ),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = colorResource(id = R.color.theme),
-                        unfocusedIndicatorColor = colorResource(id = R.color.theme),
-                    ),
-                )
-                Spacer(Modifier.height(15.dp))
-                Text(
-                    text = "文章链接",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.text_666),
-                    modifier = Modifier
-                )
-                Spacer(Modifier.height(15.dp))
-                ClearTextField(
-                    value = linkText,
-                    onValueChange = { linkText = it },
-                    onClear = { linkText = "" },
-                    modifier = Modifier.height(45.dp),
-                    textStyle = TextStyle.Default.copy(
-                        color = colorResource(R.color.text_333),
-                        fontSize = 14.sp,
-                        background = colorResource(R.color.transparent),
-                    ),
-                    placeholder = {
-                        Text(
-                            text = "请输入文章链接",
-                            color = colorResource(R.color.text_ccc),
-                            fontSize = 14.sp,
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next
-                    ),
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = colorResource(id = R.color.theme),
-                        unfocusedIndicatorColor = colorResource(id = R.color.theme),
-                    ),
-                )
-                Spacer(Modifier.height(15.dp))
-                Text(
-                    text = "记得点击右上角按钮检查链接哦",
-                    color = colorResource(R.color.theme_orange),
-                    fontSize = 12.sp,
-                )
-                Spacer(Modifier.height(20.dp))
-                Button(
-                    onClick = {
-                        if (titleText.isBlank()) {
-                            Toast.makeText(context, "文章标题不能为空", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        if (linkText.isBlank()) {
-                            Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        viewModel.share(titleText, linkText)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .align(Alignment.CenterHorizontally),
-                    shape = RoundedCornerShape(5.dp),
-                    border = BorderStroke(1.dp, colorResource(R.color.theme)),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = colorResource(R.color.theme),
-                        contentColor = colorResource(R.color.white)
-                    ),
-                    contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
+                    onClick = onNavigateUp
                 ) {
-                    Text(
-                        text = "分享",
-                        fontSize = 16.sp
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = colorResource(R.color.white)
                     )
                 }
-                Spacer(Modifier.weight(1f))
                 Text(
-                    text = "1. 只要是任何好文都可以分享哈，并不一定要是原创！投递的文章会进入广场 tab;",
-                    color = colorResource(R.color.text_999),
-                    fontSize = 12.sp,
+                    text = "分享文章",
+                    modifier = Modifier.align(Alignment.Center),
+                    fontSize = 16.sp,
+                    color = colorResource(R.color.text_fff),
                 )
-                Text(
-                    text = "2. CSDN，掘金，简书等官方博客站点会直接通过，不需要审核;",
-                    color = colorResource(R.color.text_999),
-                    fontSize = 12.sp,
-                )
-                Text(
-                    text = "3. 其他个人站点会进入审核阶段，不要投递任何无效链接，否则可能会对你的账号产生一定影响;",
-                    color = colorResource(R.color.text_999),
-                    fontSize = 12.sp,
-                )
-                Text(
-                    text = "4. 如果你发现错误，可以提交日志，让我们一起使网站变得更好。",
-                    color = colorResource(R.color.text_999),
-                    fontSize = 12.sp,
-                )
-                Text(
-                    text = "5. 由于本站为个人开发与维护，会尽力保证24小时内审核，当然有可能哪天太累，会延期，请保持佛系...",
-                    color = colorResource(R.color.text_999),
-                    fontSize = 12.sp,
-                )
+                IconButton(
+                    modifier = Modifier
+                        .height(45.dp)
+                        .padding(vertical = 11.dp)
+                        .align(Alignment.CenterEnd),
+                    onClick = {
+                        if (linkText.isBlank()) {
+                            Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
+                            return@IconButton
+                        }
+                        onNavigateToWeb(linkText)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(R.mipmap.ic_browser),
+                        contentDescription = null,
+                        tint = colorResource(R.color.white)
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        LoadingContent(uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .background(colorResource(R.color.white))
+                    .padding(innerPadding),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(15.dp)
+                        .verticalScroll(scrollState),
+                ) {
+                    Text(
+                        text = "文章标题",
+                        fontSize = 14.sp,
+                        color = colorResource(R.color.text_666),
+                        modifier = Modifier
+                    )
+                    Spacer(Modifier.height(15.dp))
+                    ClearTextField(
+                        value = titleText,
+                        onValueChange = { titleText = it },
+                        onClear = { titleText = "" },
+                        modifier = Modifier.height(45.dp),
+                        textStyle = TextStyle.Default.copy(
+                            color = colorResource(R.color.text_333),
+                            fontSize = 14.sp,
+                            background = colorResource(R.color.transparent),
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "请输入文章标题",
+                                color = colorResource(R.color.text_ccc),
+                                fontSize = 14.sp,
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next
+                        ),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = colorResource(id = R.color.theme),
+                            unfocusedIndicatorColor = colorResource(id = R.color.theme),
+                        ),
+                    )
+                    Spacer(Modifier.height(15.dp))
+                    Text(
+                        text = "文章链接",
+                        fontSize = 14.sp,
+                        color = colorResource(R.color.text_666),
+                        modifier = Modifier
+                    )
+                    Spacer(Modifier.height(15.dp))
+                    ClearTextField(
+                        value = linkText,
+                        onValueChange = { linkText = it },
+                        onClear = { linkText = "" },
+                        modifier = Modifier.height(45.dp),
+                        textStyle = TextStyle.Default.copy(
+                            color = colorResource(R.color.text_333),
+                            fontSize = 14.sp,
+                            background = colorResource(R.color.transparent),
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "请输入文章链接",
+                                color = colorResource(R.color.text_ccc),
+                                fontSize = 14.sp,
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next
+                        ),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = colorResource(id = R.color.theme),
+                            unfocusedIndicatorColor = colorResource(id = R.color.theme),
+                        ),
+                    )
+                    Spacer(Modifier.height(15.dp))
+                    Text(
+                        text = "记得点击右上角按钮检查链接哦",
+                        color = colorResource(R.color.theme_orange),
+                        fontSize = 12.sp,
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    Button(
+                        onClick = {
+                            if (titleText.isBlank()) {
+                                Toast.makeText(context, "文章标题不能为空", Toast.LENGTH_SHORT)
+                                    .show()
+                                return@Button
+                            }
+                            if (linkText.isBlank()) {
+                                Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT)
+                                    .show()
+                                return@Button
+                            }
+                            viewModel.share(titleText, linkText)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .align(Alignment.CenterHorizontally),
+                        shape = RoundedCornerShape(5.dp),
+                        border = BorderStroke(1.dp, colorResource(R.color.theme)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(R.color.theme),
+                            contentColor = colorResource(R.color.white)
+                        ),
+                        contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
+                    ) {
+                        Text(
+                            text = "分享",
+                            fontSize = 16.sp
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = "1. 只要是任何好文都可以分享哈，并不一定要是原创！投递的文章会进入广场 tab;",
+                        color = colorResource(R.color.text_999),
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        text = "2. CSDN，掘金，简书等官方博客站点会直接通过，不需要审核;",
+                        color = colorResource(R.color.text_999),
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        text = "3. 其他个人站点会进入审核阶段，不要投递任何无效链接，否则可能会对你的账号产生一定影响;",
+                        color = colorResource(R.color.text_999),
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        text = "4. 如果你发现错误，可以提交日志，让我们一起使网站变得更好。",
+                        color = colorResource(R.color.text_999),
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        text = "5. 由于本站为个人开发与维护，会尽力保证24小时内审核，当然有可能哪天太累，会延期，请保持佛系...",
+                        color = colorResource(R.color.text_999),
+                        fontSize = 12.sp,
+                    )
+                }
             }
         }
     }
+
 }

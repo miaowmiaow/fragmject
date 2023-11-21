@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -87,15 +88,15 @@ fun MyScreen(
         )
         Spacer(Modifier.height(45.dp))
         ArrowRightItem("我的Demo") { onNavigateToMyDemo() }
-        Spacer(Modifier.height(1.dp))
+        HorizontalDivider()
         ArrowRightItem("我的积分") { onNavigateToMyCoin() }
-        Spacer(Modifier.height(1.dp))
+        HorizontalDivider()
         ArrowRightItem("我的收藏") { onNavigateToMyCollect() }
-        Spacer(Modifier.height(1.dp))
+        HorizontalDivider()
         ArrowRightItem("我的分享") { onNavigateToMyShare() }
-        Spacer(Modifier.height(1.dp))
+        HorizontalDivider()
         ArrowRightItem("书签历史") { onNavigateToBookmarkHistory() }
-        Spacer(Modifier.height(1.dp))
+        HorizontalDivider()
         ArrowRightItem("系统设置") { onNavigateToSetting() }
     }
 }

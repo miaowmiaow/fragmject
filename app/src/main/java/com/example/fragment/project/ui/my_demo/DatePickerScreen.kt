@@ -1,137 +1,125 @@
 package com.example.fragment.project.ui.my_demo
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.fragment.project.R
-import com.example.fragment.project.components.DatePicker
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerScreen() {
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
-    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
-    BottomSheetScaffold(
-        sheetContent = {
-            Row(
-                Modifier
-                    .background(colorResource(R.color.white))
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { scope.launch { bottomSheetState.hide() } },
-                    modifier = Modifier
-                        .width(50.dp)
-                        .height(25.dp),
-                    shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(R.color.gray),
-                        contentColor = colorResource(R.color.text_666)
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                    border = BorderStroke(1.dp, colorResource(R.color.gray)),
-                    contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
-                ) {
-                    Text(text = "取消", fontSize = 13.sp)
-                }
-                Spacer(Modifier.weight(1f))
-                Button(
-                    onClick = { scope.launch { bottomSheetState.hide() } },
-                    modifier = Modifier
-                        .width(50.dp)
-                        .height(25.dp),
-                    shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(R.color.theme_orange),
-                        contentColor = colorResource(R.color.text_fff)
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                    border = BorderStroke(1.dp, colorResource(R.color.gray)),
-                    contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
-                ) {
-                    Text(text = "确定", fontSize = 13.sp)
-                }
-            }
-            Spacer(
-                Modifier
-                    .background(colorResource(R.color.line))
-                    .fillMaxWidth()
-                    .height(1.dp)
-            )
-            DatePicker(
-                modifier = Modifier
-                    .background(colorResource(R.color.white))
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                onSelectYear = {
-                    println("year: $it")
-                },
-                onSelectMonth = {
-                    println("month: $it")
-                },
-                onSelectDay = {
-                    println("day: $it")
-                }
-            )
-        },
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 0.dp,
-        sheetDragHandle = null
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = {
-                    scope.launch { bottomSheetState.expand() }
-                },
-                modifier = Modifier.height(30.dp),
-                shape = RoundedCornerShape(3.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(R.color.white),
-                    contentColor = colorResource(R.color.theme_orange)
-                ),
-                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, colorResource(R.color.theme_orange)),
-                contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
-            ) {
-                Text(
-                    text = "日期选择demo",
-                    fontSize = 12.sp
-                )
+    val snackState = remember { SnackbarHostState() }
+    val snackScope = rememberCoroutineScope()
+    SnackbarHost(hostState = snackState, Modifier)
+    val openDialog = remember { mutableStateOf(false) }
+    val dateType = remember { mutableIntStateOf(0) }
+    if (openDialog.value) {
+        val datePickerState = rememberDatePickerState()
+        val dateRangePickerState = rememberDateRangePickerState()
+        val confirmEnabled = derivedStateOf {
+            if (dateType.value == 0) {
+                datePickerState.selectedDateMillis != null
+            } else {
+                dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null
             }
         }
+        DatePickerDialog(
+            onDismissRequest = {
+                openDialog.value = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        openDialog.value = false
+                        snackScope.launch {
+                            snackState.showSnackbar(
+                                if (dateType.value == 0) {
+                                    "Selected date timestamp: ${datePickerState.selectedDateMillis}"
+                                } else {
+                                    "Saved range (timestamps): " +
+                                            "${dateRangePickerState.selectedStartDateMillis!!..dateRangePickerState.selectedEndDateMillis!!}"
+                                }
+                            )
+                        }
+                    },
+                    enabled = confirmEnabled.value
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        openDialog.value = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            if (dateType.value == 0) {
+                DatePicker(state = datePickerState)
+            } else {
+                DateRangePicker(state = dateRangePickerState, modifier = Modifier.weight(1f))
+            }
+        }
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AssistChip(
+            onClick = {
+                openDialog.value = true
+                dateType.value = 0
+            },
+            label = { Text("选择日期") },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.DateRange,
+                    contentDescription = null,
+                    Modifier.size(AssistChipDefaults.IconSize)
+                )
+            }
+        )
+        AssistChip(
+            onClick = {
+                openDialog.value = true
+                dateType.value = 1
+            },
+            label = { Text("选择日期范围") },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.DateRange,
+                    contentDescription = null,
+                    Modifier.size(AssistChipDefaults.IconSize)
+                )
+            }
+        )
     }
 }

@@ -18,8 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -56,6 +62,7 @@ import com.example.miaow.base.utils.startScreenRecord
 import com.example.miaow.base.utils.stopScreenRecord
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
@@ -73,7 +80,18 @@ fun SettingScreen(
     }
     Scaffold(
         topBar = {
-            TitleBar("设置") { onNavigateUp() }
+            TitleBar(
+                title = "设置",
+                navigationIcon = {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = colorResource(R.color.white)
+                        )
+                    }
+                },
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
@@ -113,7 +131,7 @@ fun SettingScreen(
                         )
                         Spacer(Modifier.width(5.dp))
                     }
-                    Spacer(Modifier.height(1.dp))
+                    HorizontalDivider()
                     Row(
                         modifier = Modifier
                             .background(colorResource(R.color.white))
@@ -169,19 +187,19 @@ fun SettingScreen(
                         )
                         Spacer(Modifier.width(5.dp))
                     }
-//                    Spacer(Modifier.height(1.dp))
+//                    HorizontalDivider()
 //                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
 //                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
 //                    }
-//                    Spacer(Modifier.height(1.dp))
+//                    HorizontalDivider()
 //                    ArrowRightItem("电池优化", "(跳过广告与我配合效果更佳哦~)") {
 //                        context.requestIgnoreBatteryOptimizations()
 //                    }
-                    Spacer(Modifier.height(1.dp))
+                    HorizontalDivider()
                     ArrowRightItem("隐私政策") { onNavigateToWeb("file:///android_asset/privacy_policy.html") }
-                    Spacer(Modifier.height(1.dp))
+                    HorizontalDivider()
                     ArrowRightItem("问题反馈") { onNavigateToWeb("https://github.com/miaowmiaow/fragmject/issues") }
-                    Spacer(Modifier.height(1.dp))
+                    HorizontalDivider()
                     Row(
                         modifier = Modifier
                             .clickable {
@@ -219,7 +237,7 @@ fun SettingScreen(
                             modifier = Modifier.padding(start = 25.dp, end = 25.dp)
                         )
                     }
-                    Spacer(Modifier.height(1.dp))
+                    HorizontalDivider()
                     ArrowRightItem("关于玩Android") { onNavigateToWeb("https://wanandroid.com") }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.userBean.id.isNotBlank()) {

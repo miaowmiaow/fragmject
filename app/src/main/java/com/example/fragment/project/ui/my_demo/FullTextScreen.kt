@@ -1,9 +1,9 @@
 package com.example.fragment.project.ui.my_demo
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,52 +29,55 @@ fun FullTextScreen() {
             var expand1 by remember { mutableStateOf(false) }
             var ellipsis2 by remember { mutableStateOf(false) }
             var expand2 by remember { mutableStateOf(false) }
-            EllipsisText(
-                text = buildAnnotatedString {
-                    append(
-                        "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。"
-                    )
-                },
-                color = colorResource(R.color.text_333),
-                backgroundColor = colorResource(R.color.white),
-                fontSize = 14.sp,
-                maxLines = if (expand1) Int.MAX_VALUE else 2,
-                onTextLayout = {
-                    ellipsis1 = it.isLineEllipsized(it.lineCount - 1)
-                },
-                ellipsisText = if (expand1) {
-                    "...收起"
-                } else if (ellipsis1) {
-                    "...展开"
-                } else {
-                    ""
+            Box(modifier = Modifier.padding(10.dp)) {
+                EllipsisText(
+                    text = buildAnnotatedString {
+                        append(
+                            "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。"
+                        )
+                    },
+                    color = colorResource(R.color.text_333),
+                    backgroundColor = colorResource(R.color.background),
+                    fontSize = 14.sp,
+                    maxLines = if (expand1) Int.MAX_VALUE else 2,
+                    onTextLayout = {
+                        ellipsis1 = it.isLineEllipsized(it.lineCount - 1)
+                    },
+                    ellipsisText = if (expand1) {
+                        "...收起"
+                    } else if (ellipsis1) {
+                        "...展开"
+                    } else {
+                        ""
+                    }
+                ) {
+                    expand1 = !expand1
                 }
-            ) {
-                expand1 = !expand1
             }
-            Spacer(Modifier.height(1.dp))
-            EllipsisText(
-                text = buildAnnotatedString {
-                    append(
-                        "I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation."
-                    )
-                },
-                color = colorResource(R.color.text_333),
-                backgroundColor = colorResource(R.color.white),
-                fontSize = 14.sp,
-                maxLines = if (expand2) Int.MAX_VALUE else 2,
-                onTextLayout = {
-                    ellipsis2 = it.isLineEllipsized(it.lineCount - 1)
-                },
-                ellipsisText = if (expand2) {
-                    "...收起"
-                } else if (ellipsis2) {
-                    "...展开"
-                } else {
-                    ""
+            Box(modifier = Modifier.padding(10.dp)) {
+                EllipsisText(
+                    text = buildAnnotatedString {
+                        append(
+                            "I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation."
+                        )
+                    },
+                    color = colorResource(R.color.text_333),
+                    backgroundColor = colorResource(R.color.background),
+                    fontSize = 14.sp,
+                    maxLines = if (expand2) Int.MAX_VALUE else 2,
+                    onTextLayout = {
+                        ellipsis2 = it.isLineEllipsized(it.lineCount - 1)
+                    },
+                    ellipsisText = if (expand2) {
+                        "...收起"
+                    } else if (ellipsis2) {
+                        "...展开"
+                    } else {
+                        ""
+                    }
+                ) {
+                    expand2 = !expand2
                 }
-            ) {
-                expand2 = !expand2
             }
         }
     }

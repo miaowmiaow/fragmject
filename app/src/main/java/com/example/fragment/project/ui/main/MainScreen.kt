@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
@@ -39,6 +41,8 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -228,12 +232,27 @@ fun BottomNavigation(
                     onClick(index)
                 },
                 icon = {
-                    Icon(
-                        painter = painterResource(id = item.resId),
-                        contentDescription = null,
-                        modifier = Modifier.size(25.dp),
-                        tint = colorResource(colorId)
-                    )
+                    BadgedBox(
+                        badge = {
+                            if ("我的" == item.label) {
+                                Badge {
+                                    val badgeNumber = "1"
+                                    Text(
+                                        badgeNumber,
+                                        modifier = Modifier.semantics {
+                                            contentDescription = "$badgeNumber new notifications"
+                                        }
+                                    )
+                                }
+                            }
+                        }) {
+                        Icon(
+                            painter = painterResource(id = item.resId),
+                            contentDescription = null,
+                            modifier = Modifier.size(25.dp),
+                            tint = colorResource(colorId)
+                        )
+                    }
                 },
                 label = { Text(text = item.label, fontSize = 13.sp, lineHeight = 13.sp) },
                 colors = NavigationBarItemDefaults.colors(

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -45,7 +46,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.LoadingContent
+import com.example.fragment.project.components.TitleBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShareArticleScreen(
     viewModel: ShareArticleViewModel = viewModel(),
@@ -67,12 +70,7 @@ fun ShareArticleScreen(
     }
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .background(colorResource(R.color.theme))
-                    .fillMaxWidth()
-                    .height(45.dp)
-            ) {
+            TitleBar(title = "分享文章", navigationIcon = {
                 IconButton(
                     modifier = Modifier.height(45.dp),
                     onClick = onNavigateUp
@@ -83,17 +81,8 @@ fun ShareArticleScreen(
                         tint = colorResource(R.color.white)
                     )
                 }
-                Text(
-                    text = "分享文章",
-                    modifier = Modifier.align(Alignment.Center),
-                    fontSize = 16.sp,
-                    color = colorResource(R.color.text_fff),
-                )
+            }, actions = {
                 IconButton(
-                    modifier = Modifier
-                        .height(45.dp)
-                        .padding(vertical = 11.dp)
-                        .align(Alignment.CenterEnd),
                     onClick = {
                         if (linkText.isBlank()) {
                             Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
@@ -108,7 +97,7 @@ fun ShareArticleScreen(
                         tint = colorResource(R.color.white)
                     )
                 }
-            }
+            })
         }
     ) { innerPadding ->
         LoadingContent(uiState.isLoading) {

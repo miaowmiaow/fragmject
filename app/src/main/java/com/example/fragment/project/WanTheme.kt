@@ -33,7 +33,9 @@ private val appDarkColorScheme = darkColorScheme(
     onSecondary = Color.Black,
     onBackground = Color.White,
     onSurface = Color.White,
-    onError = Color.Black
+    onError = Color.Black,
+    outline = Color(0xFFF0F0F0),
+    outlineVariant = Color(0xFFF0F0F0),
 )
 
 private val appLightColorScheme = lightColorScheme(
@@ -46,7 +48,9 @@ private val appLightColorScheme = lightColorScheme(
     onSecondary = Color.Black,
     onBackground = Color.Black,
     onSurface = Color.Black,
-    onError = Color.White
+    onError = Color.White,
+    outline = Color(0xFFF0F0F0),
+    outlineVariant = Color(0xFFF0F0F0),
 )
 
 @Composable

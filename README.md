@@ -19,8 +19,10 @@
 - 字节码插桩(ASM...)
 
 ## 开发环境
-为了您能正常运行本项目，请使用最新预览版本 `Android Studio` 。   
-[Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
+为了您能正常运行本项目，请先更新你的 `Android Studio` 。
+- [master](https://github.com/miaowmiaow/fragmject/tree/master) 分支需 `Android Studio Giraffe | 2022.3.1 Patch 3` 及以上版本运行(可能需要梯子)。 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=en)
+- [dev](https://github.com/miaowmiaow/fragmject/tree/dev) 分支需最新预览版本 `Android Studio Iguana | 2023.2.1.13` 及以上版本运行(可能需要梯子)。 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
+- 您也可以自行配置 `AGP` 和 `compose`。 [libs.versions.toml](https://github.com/miaowmiaow/fragmject/blob/master/gradle/libs.versions.toml)
 
 ## 将 Android 应用迁移到版本目录
 [将 build 迁移到版本目录 | Android Developer](https://developer.android.google.cn/studio/build/migrate-to-catalogs?hl=zh-cn)

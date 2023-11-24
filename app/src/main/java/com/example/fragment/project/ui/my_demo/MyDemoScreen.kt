@@ -39,7 +39,7 @@ fun MyDemoScreen(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
-    val tabs = listOf("日期控件", "滚轮控件", "下拉控件", "全文控件", "申请权限", "图片编辑")
+    val tabs = listOf("日期控件", "滚轮控件", "菜单控件", "全文控件", "申请权限", "图片编辑")
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
         topBar = {

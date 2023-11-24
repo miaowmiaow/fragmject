@@ -1,6 +1,6 @@
 [versions]
 agp = "8.3.0-alpha13"
-androidx-activity-compose = "1.8.0"
+androidx-activity-compose = "1.8.1"
 androidx-appcompat = "1.6.1"
 androidx-constraintlayout = "2.1.4"
 androidx-constraintlayout-compose = "1.0.1"

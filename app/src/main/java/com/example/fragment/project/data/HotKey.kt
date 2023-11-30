@@ -1,12 +1,12 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import com.example.miaow.base.http.HttpResponse
 
-data class HotKeyListBean(
-    val data: List<HotKeyBean>? = null
+data class HotKeyList(
+    val data: List<HotKey>? = null
 ) : HttpResponse()
 
-data class HotKeyBean @JvmOverloads constructor(
+data class HotKey @JvmOverloads constructor(
     val id: String = "",
     val link: String = "",
     val name: String = "",

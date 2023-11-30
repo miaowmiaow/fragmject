@@ -53,7 +53,7 @@ fun <T> LoopHorizontalPager(
                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                 }
             }
-        }, 3000, 3000)
+        }, 5000, 5000)
         onDispose {
             timer.cancel()
         }
@@ -125,7 +125,7 @@ fun <T> LoopVerticalPager(
                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                 }
             }
-        }, 3000, 3000)
+        }, 5000, 5000)
         onDispose {
             timer.cancel()
         }

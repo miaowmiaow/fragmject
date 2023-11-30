@@ -14,11 +14,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fragment.project.ui.bookmark_history.BookmarkHistoryScreen
+import com.example.fragment.project.ui.demo.DemoScreen
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
 import com.example.fragment.project.ui.my_coin.MyCoinScreen
 import com.example.fragment.project.ui.my_collect.MyCollectScreen
-import com.example.fragment.project.ui.my_demo.MyDemoScreen
 import com.example.fragment.project.ui.my_share.MyShareScreen
 import com.example.fragment.project.ui.rank.RankScreen
 import com.example.fragment.project.ui.register.RegisterScreen
@@ -38,13 +38,14 @@ fun WanNavGraph(
     route: String?,
     modifier: Modifier = Modifier
 ) {
-    val navController = rememberNavController()
-    val wanNavActions = remember(navController) { WanNavActions(navController) }
     val viewModel: WanViewModel = viewModel()
     val wanUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val navController = rememberNavController()
+    val wanNavActions = remember(navController) { WanNavActions(navController) }
     NavHost(
         navController = navController,
         startDestination = WanDestinations.MAIN_ROUTE,
+        modifier = modifier,
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -80,6 +81,9 @@ fun WanNavGraph(
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
+        composable(WanDestinations.DEMO_ROUTE) {
+            DemoScreen(onNavigateUp = { wanNavActions.navigateUp() })
+        }
         composable(WanDestinations.LOGIN_ROUTE) {
             LoginScreen(
                 onNavigateToRegister = { wanNavActions.navigateToRegister() },
@@ -92,10 +96,10 @@ fun WanNavGraph(
                 hotKeyData = wanUiState.hotKeyResult,
                 systemData = wanUiState.treeResult,
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
+                onNavigateToDemo = { wanNavActions.navigateToDemo() },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
                 onNavigateToMyCollect = { wanNavActions.navigateToMyCollect() },
-                onNavigateToMyDemo = { wanNavActions.navigateToMyDemo() },
                 onNavigateToMyShare = { wanNavActions.navigateToMyShare() },
                 onNavigateToSearch = { wanNavActions.navigateToSearch(it) },
                 onNavigateToSetting = { wanNavActions.navigateToSetting() },
@@ -119,9 +123,6 @@ fun WanNavGraph(
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
-        }
-        composable(WanDestinations.MY_DEMO_ROUTE) {
-            MyDemoScreen(onNavigateUp = { wanNavActions.navigateUp() })
         }
         composable(WanDestinations.MY_SHARE_ROUTE) {
             MyShareScreen(
@@ -228,6 +229,9 @@ class WanNavActions(
     val navigateToBookmarkHistory: () -> Unit = {
         navigate(WanDestinations.BOOKMARK_HISTORY_ROUTE)
     }
+    val navigateToDemo: () -> Unit = {
+        navigate(WanDestinations.DEMO_ROUTE)
+    }
     val navigateToLogin: () -> Unit = {
         navigate(WanDestinations.LOGIN_ROUTE)
     }
@@ -236,9 +240,6 @@ class WanNavActions(
     }
     val navigateToMyCollect: () -> Unit = {
         navigate(WanDestinations.MY_COLLECT_ROUTE)
-    }
-    val navigateToMyDemo: () -> Unit = {
-        navigate(WanDestinations.MY_DEMO_ROUTE)
     }
     val navigateToMyShare: () -> Unit = {
         navigate(WanDestinations.MY_SHARE_ROUTE)
@@ -291,11 +292,11 @@ class WanNavActions(
 
 object WanDestinations {
     const val BOOKMARK_HISTORY_ROUTE = "bookmark_history_route"
+    const val DEMO_ROUTE = "demo_route"
     const val LOGIN_ROUTE = "login_route"
     const val MAIN_ROUTE = "main_route"
     const val MY_COIN_ROUTE = "my_coin_route"
     const val MY_COLLECT_ROUTE = "my_collect_route"
-    const val MY_DEMO_ROUTE = "my_demo_route"
     const val MY_SHARE_ROUTE = "my_share_route"
     const val RANK_ROUTE = "rank_route"
     const val REGISTER_ROUTE = "register_route"

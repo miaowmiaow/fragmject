@@ -12,7 +12,8 @@ class BaseContentProvider : ContentProvider() {
         private lateinit var contentProvider: ContentProvider
 
         @JvmStatic
-        fun get() = contentProvider.context!!
+        fun context() = contentProvider.context!!
+
     }
 
     override fun onCreate(): Boolean {

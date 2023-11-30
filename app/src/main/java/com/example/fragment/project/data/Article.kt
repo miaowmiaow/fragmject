@@ -1,4 +1,4 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import android.os.Parcelable
 import android.text.Html
@@ -10,30 +10,30 @@ import kotlinx.parcelize.Parcelize
 import kotlin.math.abs
 
 @Parcelize
-data class ShareArticleListBean(
-    val data: ShareArticleBean? = null
+data class ShareArticleList(
+    val data: ShareArticle? = null
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class ShareArticleBean(
-    val coinInfo: CoinBean? = null,
-    val shareArticles: ArticleDataBean? = null,
+data class ShareArticle(
+    val coinInfo: Coin? = null,
+    val shareArticles: ArticleData? = null,
 ) : Parcelable
 
 @Parcelize
-data class ArticleListBean(
-    val data: ArticleDataBean? = null
+data class ArticleList(
+    val data: ArticleData? = null
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class TopArticleBean(
-    val data: List<ArticleBean>? = null
+data class TopArticle(
+    val data: List<Article>? = null
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class ArticleDataBean(
+data class ArticleData(
     val curPage: String = "",
-    val datas: List<ArticleBean>? = null,
+    val datas: List<Article>? = null,
     val offset: String = "",
     val over: Boolean = false,
     val pageCount: String = "0",
@@ -42,7 +42,7 @@ data class ArticleDataBean(
 ) : Parcelable
 
 @Parcelize
-data class ArticleBean(
+data class Article(
     val apkLink: String = "",
     val audit: String = "",
     val author: String = "",
@@ -71,13 +71,13 @@ data class ArticleBean(
     val shareUser: String = "",
     val superChapterId: String = "",
     val superChapterName: String = "",
-    val tags: List<ArticleTagBean>? = null,
+    val tags: List<ArticleTag>? = null,
     val title: String = "",
     val type: String = "",
     val userId: String = "0",
     val visible: String = "",
     val zan: String = "",
-    val banners: List<BannerBean>? = null,
+    val banners: List<Banner>? = null,
     var viewType: Int = 1
 ) : Parcelable {
 
@@ -136,7 +136,7 @@ data class ArticleBean(
 }
 
 @Parcelize
-data class ArticleTagBean(
+data class ArticleTag(
     val name: String = "",
     val url: String = ""
 ) : Parcelable

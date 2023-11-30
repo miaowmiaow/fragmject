@@ -1,8 +1,8 @@
 package com.example.fragment.project.ui.rank
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.CoinBean
-import com.example.fragment.project.bean.CoinRankBean
+import com.example.fragment.project.data.Coin
+import com.example.fragment.project.data.CoinRank
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ data class RankUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var result: MutableList<CoinBean> = ArrayList(),
+    var result: MutableList<Coin> = ArrayList(),
 )
 
 class RankViewModel : BaseViewModel() {
@@ -48,7 +48,7 @@ class RankViewModel : BaseViewModel() {
      */
     private fun getCoinRank(page: Int) {
         viewModelScope.launch {
-            val response = get<CoinRankBean> {
+            val response = get<CoinRank> {
                 setUrl("coin/rank/{page}/json")
                 putPath("page", page.toString())
             }

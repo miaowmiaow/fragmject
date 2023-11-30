@@ -1,17 +1,17 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import android.os.Parcelable
 import com.example.miaow.base.http.HttpResponse
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class TreeListBean(
-    val data: List<TreeBean>? = null,
+data class TreeList(
+    val data: List<Tree>? = null,
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class TreeBean(
-    val children: List<TreeBean>? = null,
+data class Tree(
+    val children: List<Tree>? = null,
     var childrenSelectPosition: Int = 0,
     val courseId: String = "",
     val id: String = "",

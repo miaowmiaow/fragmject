@@ -1,8 +1,8 @@
 package com.example.fragment.project.ui.search
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.ArticleListBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.ArticleList
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +16,7 @@ data class SearchUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var articlesResult: MutableList<ArticleBean> = ArrayList()
+    var articlesResult: MutableList<Article> = ArrayList()
 )
 
 class SearchViewModel : BaseViewModel() {
@@ -52,7 +52,7 @@ class SearchViewModel : BaseViewModel() {
      */
     private fun getList(key: String, page: Int) {
         viewModelScope.launch {
-            val response = post<ArticleListBean> {
+            val response = post<ArticleList> {
                 setUrl("article/query/{page}/json")
                 putParam("k", key)
                 putPath("page", page.toString())

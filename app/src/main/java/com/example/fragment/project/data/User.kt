@@ -1,4 +1,4 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import android.util.Log
 import com.example.fragment.project.R
@@ -6,15 +6,15 @@ import com.example.miaow.base.http.HttpResponse
 import com.google.gson.Gson
 import kotlinx.parcelize.IgnoredOnParcel
 
-data class LoginBean(
-    val data: UserBean? = null
+data class Login(
+    val data: User? = null
 ) : HttpResponse()
 
-data class RegisterBean(
-    val data: UserBean? = null
+data class Register(
+    val data: User? = null
 ) : HttpResponse()
 
-data class UserBean @JvmOverloads constructor(
+data class User @JvmOverloads constructor(
     val admin: String = "",
     val chapterTops: List<Any>? = null,
     var coinCount: String = "",

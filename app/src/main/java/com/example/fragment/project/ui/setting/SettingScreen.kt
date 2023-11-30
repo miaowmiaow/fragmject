@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,7 +61,6 @@ import com.example.miaow.base.utils.startScreenRecord
 import com.example.miaow.base.utils.stopScreenRecord
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
@@ -118,14 +116,14 @@ fun SettingScreen(
                             color = colorResource(R.color.text_333),
                         )
                         NightSwitchButton(
-                            checked = uiState.darkTheme,
+                            checked = uiState.mode == AppCompatDelegate.MODE_NIGHT_YES,
                             onCheckedChange = {
-                                viewModel.updateUiMode(it)
-                                if (it) {
-                                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                                val mode = if (it) {
+                                    AppCompatDelegate.MODE_NIGHT_YES
                                 } else {
-                                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                                    AppCompatDelegate.MODE_NIGHT_NO
                                 }
+                                viewModel.updateUiMode(mode)
                             },
                             modifier = Modifier.size(52.dp, 32.dp)
                         )
@@ -240,7 +238,7 @@ fun SettingScreen(
                     HorizontalDivider()
                     ArrowRightItem("关于玩Android") { onNavigateToWeb("https://wanandroid.com") }
                     Spacer(Modifier.height(20.dp))
-                    if (uiState.userBean.id.isNotBlank()) {
+                    if (uiState.user.id.isNotBlank()) {
                         Button(
                             onClick = {
                                 context.showStandardDialog(

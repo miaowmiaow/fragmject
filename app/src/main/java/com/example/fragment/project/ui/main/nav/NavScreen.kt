@@ -37,15 +37,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
+import com.example.fragment.project.data.Tree
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NavScreen(
-    systemData: List<TreeBean>,
+    systemData: List<Tree>,
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
@@ -135,7 +135,7 @@ fun NavLinkContent(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun NavSystemContent(
-    systemData: List<TreeBean>,
+    systemData: List<Tree>,
     onNavigateToSystem: (cid: String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()

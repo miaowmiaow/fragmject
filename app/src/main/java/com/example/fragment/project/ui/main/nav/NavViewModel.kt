@@ -1,11 +1,11 @@
 package com.example.fragment.project.ui.main.nav
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.NavigationBean
-import com.example.fragment.project.bean.NavigationListBean
-import com.example.fragment.project.bean.TreeBean
-import com.example.fragment.project.bean.TreeListBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.Navigation
+import com.example.fragment.project.data.NavigationList
+import com.example.fragment.project.data.Tree
+import com.example.fragment.project.data.TreeList
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +17,9 @@ import kotlinx.coroutines.launch
 data class NavUiState(
     var isLoading: Boolean = false,
     var currentPosition: Int = 0,
-    var navigationResult: MutableList<NavigationBean> = ArrayList(),
-    var articlesResult: MutableList<ArticleBean> = ArrayList(),
-    var systemTreeResult: MutableList<TreeBean> = ArrayList(),
+    var navigationResult: MutableList<Navigation> = ArrayList(),
+    var articlesResult: MutableList<Article> = ArrayList(),
+    var systemTreeResult: MutableList<Tree> = ArrayList(),
 )
 
 class NavViewModel : BaseViewModel() {
@@ -58,7 +58,7 @@ class NavViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = get<NavigationListBean> {
+            val response = get<NavigationList> {
                 setUrl("navi/json")
             }
             _uiState.update { state ->
@@ -80,7 +80,7 @@ class NavViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = get<TreeListBean> {
+            val response = get<TreeList> {
                 setUrl("tree/json")
             }
             _uiState.update { state ->

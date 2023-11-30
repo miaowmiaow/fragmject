@@ -33,10 +33,10 @@ import com.example.fragment.project.components.ArrowRightItem
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
     onNavigateToBookmarkHistory: () -> Unit = {},
+    onNavigateToDemo: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
-    onNavigateToMyDemo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSetting: () -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
@@ -87,7 +87,7 @@ fun MyScreen(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(45.dp))
-        ArrowRightItem("我的Demo") { onNavigateToMyDemo() }
+        ArrowRightItem("组件Demo") { onNavigateToDemo() }
         HorizontalDivider()
         ArrowRightItem("我的积分") { onNavigateToMyCoin() }
         HorizontalDivider()

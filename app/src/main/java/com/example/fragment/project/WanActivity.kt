@@ -9,9 +9,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
 import com.example.fragment.project.utils.WanHelper
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class WanActivity : AppCompatActivity() {
 
+    private val mainScope = MainScope()
     private var exitTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,11 +23,10 @@ class WanActivity : AppCompatActivity() {
         setTheme(R.style.Theme_Wan)
         setContentView(parseScheme(intent.data))
         //设置显示模式
-        WanHelper.getUiMode { mode ->
-            when (mode) {
-                "1" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                "2" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        mainScope.launch {
+            val mode = WanHelper.getUiMode()
+            if (mode != AppCompatDelegate.getDefaultNightMode()) {
+                AppCompatDelegate.setDefaultNightMode(WanHelper.getUiMode())
             }
         }
         //双击返回键回退桌面
@@ -49,6 +52,7 @@ class WanActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mainScope.cancel()
         WanHelper.close()
     }
 

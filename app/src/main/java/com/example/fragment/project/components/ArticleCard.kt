@@ -43,14 +43,14 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.bean.ArticleBean
+import com.example.fragment.project.data.Article
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.post
 import kotlinx.coroutines.launch
 
 @Composable
 fun ArticleCard(
-    data: ArticleBean,
+    data: Article,
     modifier: Modifier = Modifier,
     onNavigateToLogin: () -> Unit,
     onNavigateToSystem: (cid: String) -> Unit,
@@ -269,7 +269,7 @@ private fun getCollectResId(collect: Boolean): Int {
 fun ArticleCardPreview() {
     WanTheme {
         ArticleCard(
-            data = ArticleBean(
+            data = Article(
                 niceDate = "2022-10-13 11:11",
                 title = "我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户我是测试用户",
                 desc = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",

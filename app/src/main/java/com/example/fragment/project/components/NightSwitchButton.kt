@@ -126,9 +126,6 @@ fun NightSwitchButton(
                     enabled = onCheckedChange != null,
                 )
         ) {
-            println(anchoredDraggableState.offset)
-            println(anchoredDraggableState.progress)
-            println(anchoredDraggableState.currentValue)
             val progress = anchoredDraggableState.offset / maxBound
             Sky(progress, canvasWidth, canvasHeight, canvasRadius)
             Cloud(progress, canvasWidth, canvasHeight, canvasRadius)

@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.bean.HotKeyBean
-import com.example.fragment.project.bean.TreeBean
+import com.example.fragment.project.data.HotKey
+import com.example.fragment.project.data.Tree
 import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.my.MyScreen
@@ -59,13 +59,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    hotKeyData: List<HotKeyBean>,
-    systemData: List<TreeBean>,
+    hotKeyData: List<HotKey>,
+    systemData: List<Tree>,
     onNavigateToBookmarkHistory: () -> Unit = {},
+    onNavigateToDemo: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
     onNavigateToMyCoin: () -> Unit = {},
     onNavigateToMyCollect: () -> Unit = {},
-    onNavigateToMyDemo: () -> Unit = {},
     onNavigateToMyShare: () -> Unit = {},
     onNavigateToSearch: (key: String) -> Unit = {},
     onNavigateToShareArticle: () -> Unit = {},
@@ -140,10 +140,10 @@ fun MainScreen(
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
                     MyScreen(
                         onNavigateToBookmarkHistory = onNavigateToBookmarkHistory,
+                        onNavigateToDemo = onNavigateToDemo,
                         onNavigateToLogin = onNavigateToLogin,
                         onNavigateToMyCoin = onNavigateToMyCoin,
                         onNavigateToMyCollect = onNavigateToMyCollect,
-                        onNavigateToMyDemo = onNavigateToMyDemo,
                         onNavigateToMyShare = onNavigateToMyShare,
                         onNavigateToSetting = onNavigateToSetting,
                         onNavigateToUser = onNavigateToUser,
@@ -156,7 +156,7 @@ fun MainScreen(
 
 @Composable
 fun SearchBar(
-    data: List<HotKeyBean>?,
+    data: List<HotKey>?,
     onNavigateToSearch: (key: String) -> Unit = {},
     onNavigateToShareArticle: () -> Unit = {},
 ) {
@@ -277,7 +277,7 @@ data class NavigationItem(
 @Preview(showBackground = true, backgroundColor = 0xFFF0EAE2)
 @Composable
 fun SearchBarPreview() {
-    WanTheme { SearchBar(data = listOf(HotKeyBean(name = "问答"))) }
+    WanTheme { SearchBar(data = listOf(HotKey(name = "问答"))) }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0EAE2)

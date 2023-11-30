@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.*
 /**
  * 倒计时
  */
+@OptIn(DelicateCoroutinesApi::class)
 @ExperimentalCoroutinesApi
 fun countDownCoroutines(
     total: Int,

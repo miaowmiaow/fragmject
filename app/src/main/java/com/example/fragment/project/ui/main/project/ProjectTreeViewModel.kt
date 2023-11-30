@@ -1,9 +1,8 @@
 package com.example.fragment.project.ui.main.project
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ProjectTreeBean
-import com.example.fragment.project.bean.ProjectTreeListBean
-import com.example.miaow.base.http.HttpRequest
+import com.example.fragment.project.data.ProjectTree
+import com.example.fragment.project.data.ProjectTreeList
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +12,7 @@ import kotlinx.coroutines.launch
 
 data class ProjectTreeUiState(
     var isLoading: Boolean = false,
-    var result: MutableList<ProjectTreeBean> = ArrayList(),
+    var result: MutableList<ProjectTree> = ArrayList(),
 )
 
 class ProjectTreeViewModel : BaseViewModel() {
@@ -34,7 +33,7 @@ class ProjectTreeViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = get<ProjectTreeListBean> {
+            val response = get<ProjectTreeList> {
                 setUrl("project/tree/json")
             }
             _uiState.update { state ->

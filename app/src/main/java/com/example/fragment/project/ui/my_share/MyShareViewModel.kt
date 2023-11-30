@@ -1,8 +1,8 @@
 package com.example.fragment.project.ui.my_share
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.ShareArticleListBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.ShareArticleList
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ data class MyShareUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var result: MutableList<ArticleBean> = ArrayList(),
+    var result: MutableList<Article> = ArrayList(),
 )
 
 class MyShareViewModel : BaseViewModel() {
@@ -49,7 +49,7 @@ class MyShareViewModel : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            val response = get<ShareArticleListBean> {
+            val response = get<ShareArticleList> {
                 setUrl("user/lg/private_articles/{page}/json")
                 putPath("page", page.toString())
             }

@@ -1,7 +1,8 @@
 package com.example.fragment.project.ui.setting
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.UserBean
+import com.example.fragment.project.data.User
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.get
@@ -14,8 +15,8 @@ import kotlinx.coroutines.launch
 
 data class SettingUiState(
     var isLoading: Boolean = false,
-    var darkTheme: Boolean = false,
-    var userBean: UserBean = UserBean(),
+    var mode: Int = -1,
+    var user: User = User(),
 )
 
 class SettingViewModel : BaseViewModel() {
@@ -30,34 +31,31 @@ class SettingViewModel : BaseViewModel() {
     }
 
     private fun getUiMode() {
-        WanHelper.getUiMode {
-            if (it == "1") {
-                _uiState.update { state ->
-                    state.copy(darkTheme = false)
-                }
-            } else if (it == "2") {
-                _uiState.update { state ->
-                    state.copy(darkTheme = true)
-                }
+        viewModelScope.launch {
+            val mode = WanHelper.getUiMode()
+            _uiState.update { state ->
+                state.copy(mode = mode)
             }
         }
     }
 
-    fun updateUiMode(darkTheme: Boolean) {
-        if (darkTheme) {
-            WanHelper.setUiMode("2")
-        } else {
-            WanHelper.setUiMode("1")
-        }
-        _uiState.update { state ->
-            state.copy(darkTheme = darkTheme)
+    fun updateUiMode(mode: Int) {
+        viewModelScope.launch {
+            WanHelper.setUiMode(mode)
+            _uiState.update { state ->
+                state.copy(mode = mode)
+            }
+            if (mode != AppCompatDelegate.getDefaultNightMode()) {
+                AppCompatDelegate.setDefaultNightMode(mode)
+            }
         }
     }
 
     private fun getUser() {
-        WanHelper.getUser { userBean ->
+        viewModelScope.launch {
+            val user = WanHelper.getUser()
             _uiState.update {
-                it.copy(userBean = userBean)
+                it.copy(user = user)
             }
         }
     }
@@ -74,10 +72,10 @@ class SettingViewModel : BaseViewModel() {
                 setUrl("user/logout/json")
             }
             if (response.errorCode == "0") {
-                val userBean = UserBean()
-                WanHelper.setUser(userBean)
+                val user = User()
+                WanHelper.setUser(user)
                 _uiState.update {
-                    it.copy(isLoading = false, userBean = userBean)
+                    it.copy(isLoading = false, user = user)
                 }
             }
         }

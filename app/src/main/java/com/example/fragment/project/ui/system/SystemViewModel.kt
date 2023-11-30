@@ -1,8 +1,8 @@
 package com.example.fragment.project.ui.system
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.ArticleListBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.ArticleList
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ data class SystemUiState(
     val refreshing: MutableMap<String, Boolean> = HashMap(),
     val loading: MutableMap<String, Boolean> = HashMap(),
     val finishing: MutableMap<String, Boolean> = HashMap(),
-    val result: MutableMap<String, ArrayList<ArticleBean>> = HashMap(),
+    val result: MutableMap<String, ArrayList<Article>> = HashMap(),
     var updateTime: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
@@ -30,7 +30,7 @@ data class SystemUiState(
         return finishing[cid] ?: false
     }
 
-    fun getResult(cid: String): ArrayList<ArticleBean>? {
+    fun getResult(cid: String): ArrayList<Article>? {
         return result[cid]
     }
 
@@ -75,7 +75,7 @@ class SystemViewModel : BaseViewModel() {
      */
     private fun getList(cid: String, page: Int) {
         viewModelScope.launch {
-            val response = get<ArticleListBean> {
+            val response = get<ArticleList> {
                 setUrl("article/list/{page}/json")
                 putPath("page", page.toString())
                 putQuery("cid", cid)

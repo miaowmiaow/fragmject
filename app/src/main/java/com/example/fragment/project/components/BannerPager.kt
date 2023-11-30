@@ -4,12 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -17,7 +16,7 @@ import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
 
 @Composable
-fun <T> Banner(
+fun <T> BannerPager(
     data: List<T>?,
     pathMapping: (T) -> String,
     modifier: Modifier = Modifier,
@@ -32,8 +31,11 @@ fun <T> Banner(
         data = data,
         indicator = true
     ) { page, pageOffset, item ->
-        Card(
-            Modifier
+        AsyncImage(
+            model = pathMapping(item),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
                 .graphicsLayer {
                     lerp(
                         start = 0.95f,
@@ -44,18 +46,11 @@ fun <T> Banner(
                         scaleY = scale
                     }
                 }
-                .fillMaxWidth()
+                .clip(RoundedCornerShape(5.dp))
+                .clipToBounds()
+                .clickable { onClick(page, item) }
+                .fillMaxSize()
                 .aspectRatio(16f / 9f)
-        ) {
-            AsyncImage(
-                model = pathMapping(item),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16f))
-                    .clickable { onClick(page, item) }
-                    .fillMaxSize()
-            )
-        }
+        )
     }
 }

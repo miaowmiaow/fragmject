@@ -1,10 +1,10 @@
 package com.example.fragment.project.ui.main.home
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.ArticleListBean
-import com.example.fragment.project.bean.BannerListBean
-import com.example.fragment.project.bean.TopArticleBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.ArticleList
+import com.example.fragment.project.data.BannerList
+import com.example.fragment.project.data.TopArticle
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
@@ -19,7 +19,7 @@ data class HomeUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var result: MutableList<ArticleBean> = ArrayList(),
+    var result: MutableList<Article> = ArrayList(),
 )
 
 class HomeViewModel : BaseViewModel() {
@@ -41,8 +41,8 @@ class HomeViewModel : BaseViewModel() {
             val banner = async { getBanner() }
             val articleTop = async { getArticleTop() }
             val articleList = async { getArticleList(getHomePage()) }
-            val articleData: MutableList<ArticleBean> = arrayListOf()
-            banner.await().data?.let { articleData.add(ArticleBean(banners = it, viewType = 0)) }
+            val articleData: MutableList<Article> = arrayListOf()
+            banner.await().data?.let { articleData.add(Article(banners = it, viewType = 0)) }
             articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
             articleList.await().data?.datas?.let { articleData.addAll(it) }
             _uiState.update {
@@ -79,7 +79,7 @@ class HomeViewModel : BaseViewModel() {
     /**
      * 获取banner
      */
-    private suspend fun getBanner(): BannerListBean {
+    private suspend fun getBanner(): BannerList {
         return coroutineScope {
             get {
                 setUrl("banner/json")
@@ -90,7 +90,7 @@ class HomeViewModel : BaseViewModel() {
     /**
      * 获取置顶文章
      */
-    private suspend fun getArticleTop(): TopArticleBean {
+    private suspend fun getArticleTop(): TopArticle {
         return coroutineScope {
             get {
                 setUrl("article/top/json")
@@ -102,9 +102,9 @@ class HomeViewModel : BaseViewModel() {
      * 获取首页文章列表
      * page 0开始
      */
-    private suspend fun getArticleList(page: Int): ArticleListBean {
+    private suspend fun getArticleList(page: Int): ArticleList {
         val response = coroutineScope {
-            get<ArticleListBean> {
+            get<ArticleList> {
                 setUrl("article/list/{page}/json")
                 putPath("page", page.toString())
             }

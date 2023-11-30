@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.my_demo
+package com.example.fragment.project.ui.demo
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement

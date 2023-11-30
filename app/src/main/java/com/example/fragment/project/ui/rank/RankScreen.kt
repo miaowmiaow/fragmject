@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +36,6 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.fragment.project.components.TitleBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RankScreen(
     viewModel: RankViewModel = viewModel(),

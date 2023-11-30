@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.my_demo
+package com.example.fragment.project.ui.demo
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,17 +34,27 @@ import com.example.fragment.project.components.TitleBar
 import kotlinx.coroutines.launch
 
 @Composable
-fun MyDemoScreen(
+fun DemoScreen(
     onNavigateUp: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
-    val tabs = listOf("日期控件", "滚轮控件", "菜单控件", "全文控件", "申请权限", "图片编辑")
+    val tabs = listOf(
+        "日期",
+        "滚轮",
+        "菜单",
+        "全文",
+        "权限",
+        "相册",
+        "滚动",
+        "拖动",
+        "多点触控"
+    )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
         topBar = {
             TitleBar(
-                title = "我的Demo",
+                title = "组件Demo",
                 navigationIcon = {
                     IconButton(
                         onClick = {
@@ -109,6 +119,9 @@ fun MyDemoScreen(
                         3 -> FullTextScreen()
                         4 -> PermissionScreen()
                         5 -> PictureSelectorScreen()
+                        6 -> ScrollableScreen()
+                        7 -> DraggableScreen()
+                        8 -> TransformableScreen()
                     }
                 }
             }

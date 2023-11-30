@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.share
 
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -20,16 +19,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,23 +50,25 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TitleBar
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShareArticleScreen(
     viewModel: ShareArticleViewModel = viewModel(),
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     var titleText by rememberSaveable { mutableStateOf("") }
     var linkText by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(uiState.message) {
         if (uiState.message.isNotBlank()) {
             if (context is AppCompatActivity) {
-                Toast.makeText(context, uiState.message, Toast.LENGTH_SHORT).show()
+                snackbarHostState.showSnackbar(uiState.message)
                 viewModel.resetMessage()
             }
         }
@@ -85,7 +90,9 @@ fun ShareArticleScreen(
                 IconButton(
                     onClick = {
                         if (linkText.isBlank()) {
-                            Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT).show()
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("文章链接不能为空")
+                            }
                             return@IconButton
                         }
                         onNavigateToWeb(linkText)
@@ -94,11 +101,13 @@ fun ShareArticleScreen(
                     Icon(
                         painter = painterResource(R.mipmap.ic_browser),
                         contentDescription = null,
+                        modifier = Modifier.padding(8.dp),
                         tint = colorResource(R.color.white)
                     )
                 }
             })
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
     ) { innerPadding ->
         LoadingContent(uiState.isLoading) {
             Box(
@@ -187,13 +196,15 @@ fun ShareArticleScreen(
                     Button(
                         onClick = {
                             if (titleText.isBlank()) {
-                                Toast.makeText(context, "文章标题不能为空", Toast.LENGTH_SHORT)
-                                    .show()
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("文章标题不能为空")
+                                }
                                 return@Button
                             }
                             if (linkText.isBlank()) {
-                                Toast.makeText(context, "文章链接不能为空", Toast.LENGTH_SHORT)
-                                    .show()
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("文章链接不能为空")
+                                }
                                 return@Button
                             }
                             viewModel.share(titleText, linkText)

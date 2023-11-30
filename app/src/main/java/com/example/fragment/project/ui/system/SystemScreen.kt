@@ -13,7 +13,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -31,19 +30,19 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.bean.TreeBean
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
+import com.example.fragment.project.data.Tree
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SystemScreen(
     title: String = "体系",
     tabIndex: Int = 0,
-    systemData: List<TreeBean>,
+    systemData: List<Tree>,
     systemViewModel: SystemViewModel = viewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateToLogin: () -> Unit = {},

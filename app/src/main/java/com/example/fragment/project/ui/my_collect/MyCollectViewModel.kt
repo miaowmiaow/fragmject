@@ -1,8 +1,8 @@
 package com.example.fragment.project.ui.my_collect
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.ArticleListBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.ArticleList
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ data class MyCollectUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var result: MutableList<ArticleBean> = ArrayList(),
+    var result: MutableList<Article> = ArrayList(),
 )
 
 class MyCollectViewModel : BaseViewModel() {
@@ -49,7 +49,7 @@ class MyCollectViewModel : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            val response = get<ArticleListBean> {
+            val response = get<ArticleList> {
                 setUrl("lg/collect/list/{page}/json")
                 putPath("page", page.toString())
             }

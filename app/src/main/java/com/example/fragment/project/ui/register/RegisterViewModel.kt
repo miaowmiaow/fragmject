@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.register
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.RegisterBean
+import com.example.fragment.project.data.Register
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
@@ -58,7 +58,7 @@ class RegisterViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = post<RegisterBean> {
+            val response = post<Register> {
                 setUrl("user/register")
                 putParam("username", username)
                 putParam("password", password)

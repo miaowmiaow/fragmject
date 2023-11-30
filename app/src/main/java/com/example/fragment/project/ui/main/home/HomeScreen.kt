@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.Banner
+import com.example.fragment.project.components.BannerPager
 import com.example.fragment.project.components.SwipeRefresh
 
 @Composable
@@ -40,7 +40,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) { _, item ->
         if (item.viewType == 0) {
-            Banner(
+            BannerPager(
                 data = item.banners,
                 pathMapping = { it.imagePath },
                 onClick = { _, banner -> onNavigateToWeb(banner.url) }

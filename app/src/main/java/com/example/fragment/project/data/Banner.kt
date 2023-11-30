@@ -1,16 +1,16 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import android.os.Parcelable
 import com.example.miaow.base.http.HttpResponse
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class BannerListBean(
-    val data: List<BannerBean>? = null
+data class BannerList(
+    val data: List<Banner>? = null
 ) : HttpResponse(), Parcelable
 
 @Parcelize
-data class BannerBean(
+data class Banner(
     val desc: String = "",
     val id: String = "",
     val imagePath: String = "",

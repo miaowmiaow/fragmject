@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.my_demo
+package com.example.fragment.project.ui.demo
 
 import android.Manifest
 import android.content.pm.PackageManager

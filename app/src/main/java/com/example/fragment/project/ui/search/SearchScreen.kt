@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.bean.HotKeyBean
+import com.example.fragment.project.data.HotKey
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.SwipeRefresh
@@ -62,7 +62,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SearchScreen(
     key: String,
-    hotKeyData: List<HotKeyBean>?,
+    hotKeyData: List<HotKey>?,
     searchHistoryData: List<String>,
     viewModel: SearchViewModel = viewModel(),
     onSearchHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },

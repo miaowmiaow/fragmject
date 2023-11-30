@@ -3,9 +3,9 @@ package com.example.fragment.project.ui.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.ArticleBean
-import com.example.fragment.project.bean.CoinBean
-import com.example.fragment.project.bean.ShareArticleListBean
+import com.example.fragment.project.data.Article
+import com.example.fragment.project.data.Coin
+import com.example.fragment.project.data.ShareArticleList
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,8 +18,8 @@ data class UserUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var coinResult: CoinBean = CoinBean(),
-    var articleResult: MutableList<ArticleBean> = ArrayList(),
+    var coinResult: Coin = Coin(),
+    var articleResult: MutableList<Article> = ArrayList(),
 )
 
 class UserViewModel(private val id: String) : BaseViewModel() {
@@ -52,7 +52,7 @@ class UserViewModel(private val id: String) : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            val response = get<ShareArticleListBean> {
+            val response = get<ShareArticleList> {
                 setUrl("user/{id}/share_articles/{page}/json")
                 putPath("id", id)
                 putPath("page", page.toString())

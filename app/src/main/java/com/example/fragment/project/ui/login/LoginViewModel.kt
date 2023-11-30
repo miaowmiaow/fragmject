@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.login
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.LoginBean
+import com.example.fragment.project.data.Login
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
@@ -46,7 +46,7 @@ class LoginViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = post<LoginBean> {
+            val response = post<Login> {
                 setUrl("user/login")
                 putParam("username", username)
                 putParam("password", password)

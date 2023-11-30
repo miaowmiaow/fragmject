@@ -1,10 +1,14 @@
 package com.example.fragment.project.utils
 
 import android.util.Log
-import com.example.fragment.project.bean.UserBean
-import com.example.miaow.base.db.KVDatabase
+import com.example.fragment.project.data.User
+import com.example.miaow.base.database.AppDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 数据持久化辅助类
@@ -20,8 +24,8 @@ object WanHelper {
     /**
      * 设置搜索历史
      */
-    fun setSearchHistory(list: List<String>) {
-        KVDatabase.set(SEARCH_HISTORY, Gson().toJson(list))
+    suspend fun setSearchHistory(list: List<String>) {
+        AppDatabase.set(SEARCH_HISTORY, Gson().toJson(list))
     }
 
     /**
@@ -29,7 +33,7 @@ object WanHelper {
      */
     suspend fun getSearchHistory(): List<String> {
         return try {
-            val json = KVDatabase.get(SEARCH_HISTORY)
+            val json = AppDatabase.get(SEARCH_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -37,13 +41,13 @@ object WanHelper {
         }
     }
 
-    fun setWebBookmark(list: List<String>) {
-        KVDatabase.set(WEB_BOOKMARK, Gson().toJson(list))
+    suspend fun setWebBookmark(list: List<String>) {
+        AppDatabase.set(WEB_BOOKMARK, Gson().toJson(list))
     }
 
     suspend fun getWebBookmark(): List<String> {
         return try {
-            val json = KVDatabase.get(WEB_BOOKMARK)
+            val json = AppDatabase.get(WEB_BOOKMARK)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -51,13 +55,13 @@ object WanHelper {
         }
     }
 
-    fun setWebHistory(list: List<String>) {
-        KVDatabase.set(WEB_HISTORY, Gson().toJson(list))
+    suspend fun setWebHistory(list: List<String>) {
+        AppDatabase.set(WEB_HISTORY, Gson().toJson(list))
     }
 
     suspend fun getWebHistory(): List<String> {
         return try {
-            val json = KVDatabase.get(WEB_HISTORY)
+            val json = AppDatabase.get(WEB_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -71,8 +75,8 @@ object WanHelper {
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
-    fun setUiMode(mode: String) {
-        KVDatabase.set(UI_MODE, mode)
+    suspend fun setUiMode(mode: Int): Boolean {
+        return AppDatabase.set(UI_MODE, mode.toString())
     }
 
     /**
@@ -82,33 +86,42 @@ object WanHelper {
      *       1 : AppCompatDelegate.MODE_NIGHT_NO,
      *       2 : AppCompatDelegate.MODE_NIGHT_YES
      */
-    fun getUiMode(result: (String) -> Unit) {
-        KVDatabase.get(UI_MODE) {
-            result.invoke(it)
+    suspend fun getUiMode(): Int {
+        return try {
+            AppDatabase.get(UI_MODE).toInt()
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+            -1
         }
     }
 
     /**
      * 设置用户信息
      */
-    fun setUser(userBean: UserBean?) {
+    suspend fun setUser(userBean: User?) {
         userBean?.let {
-            KVDatabase.set(USER, it.toJson())
+            AppDatabase.set(USER, it.toJson())
         }
     }
 
     /**
      * 获取用户信息
      */
-    fun getUser(result: (UserBean) -> Unit) {
-        KVDatabase.get(USER) {
-            val userBean = try {
-                Gson().fromJson(it, UserBean::class.java) ?: UserBean()
-            } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
-                UserBean()
+    suspend fun getUser(): User {
+        return try {
+            Gson().fromJson(AppDatabase.get(USER), User::class.java) ?: User()
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+            User()
+        }
+    }
+
+    fun getUser(result: (User) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val userBean = getUser()
+            withContext(Dispatchers.Main) {
+                result.invoke(userBean)
             }
-            result.invoke(userBean)
         }
     }
 
@@ -116,7 +129,7 @@ object WanHelper {
      * 关闭数据库
      */
     fun close() {
-        KVDatabase.closeDB()
+        AppDatabase.closeDB()
     }
 
 }

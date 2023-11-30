@@ -1,4 +1,4 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import android.os.Parcelable
 import android.util.Log
@@ -8,21 +8,21 @@ import com.google.gson.Gson
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
-data class UserCoinBean(
-    val data: CoinBean? = null
+data class UserCoin(
+    val data: Coin? = null
 ) : HttpResponse()
 
-data class MyCoinListBean(
-    val data: MyCoinDataBean? = null
+data class MyCoinList(
+    val data: MyCoinData? = null
 ) : HttpResponse()
 
-data class CoinRankBean(
-    val data: CoinRankDataBean? = null
+data class CoinRank(
+    val data: CoinRankData? = null
 ) : HttpResponse()
 
-data class MyCoinDataBean(
+data class MyCoinData(
     val curPage: String = "",
-    val datas: List<MyCoinBean>? = null,
+    val datas: List<MyCoin>? = null,
     val offset: String = "",
     val over: Boolean = false,
     val pageCount: String = "0",
@@ -30,13 +30,13 @@ data class MyCoinDataBean(
     val total: String = ""
 )
 
-data class MyCoinBean(
+data class MyCoin(
     val date: String = "",
     val desc: String = "",
     val id: String = "",
     val reason: String = "",
     val type: String = "",
-) : CoinBean() {
+) : Coin() {
 
     private fun getFirstSpace(): Int {
         return desc.indexOf(" ")
@@ -55,9 +55,9 @@ data class MyCoinBean(
     }
 }
 
-data class CoinRankDataBean(
+data class CoinRankData(
     val curPage: String = "",
-    val datas: List<CoinBean>? = null,
+    val datas: List<Coin>? = null,
     val offset: String = "",
     val over: Boolean = false,
     val pageCount: String = "0",
@@ -66,7 +66,7 @@ data class CoinRankDataBean(
 )
 
 @Parcelize
-open class CoinBean @JvmOverloads constructor(
+open class Coin @JvmOverloads constructor(
     val coinCount: String = "0",
     val level: String = "",
     val nickname: String = "---",

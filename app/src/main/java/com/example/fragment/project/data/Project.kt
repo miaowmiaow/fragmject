@@ -1,12 +1,12 @@
-package com.example.fragment.project.bean
+package com.example.fragment.project.data
 
 import com.example.miaow.base.http.HttpResponse
 
-data class ProjectTreeListBean(
-    val data: List<ProjectTreeBean>? = null,
+data class ProjectTreeList(
+    val data: List<ProjectTree>? = null,
 ) : HttpResponse()
 
-data class ProjectTreeBean(
+data class ProjectTree(
     val courseId: String = "",
     val id: String = "",
     val name: String = "",

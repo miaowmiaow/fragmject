@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.my_demo
+package com.example.fragment.project.ui.demo
 
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api

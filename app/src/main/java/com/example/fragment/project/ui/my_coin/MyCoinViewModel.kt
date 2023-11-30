@@ -1,10 +1,10 @@
 package com.example.fragment.project.ui.my_coin
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.bean.CoinBean
-import com.example.fragment.project.bean.MyCoinBean
-import com.example.fragment.project.bean.MyCoinListBean
-import com.example.fragment.project.bean.UserCoinBean
+import com.example.fragment.project.data.Coin
+import com.example.fragment.project.data.MyCoin
+import com.example.fragment.project.data.MyCoinList
+import com.example.fragment.project.data.UserCoin
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
@@ -19,8 +19,8 @@ data class MyCoinUiState(
     var refreshing: Boolean = false,
     var loading: Boolean = false,
     var finishing: Boolean = false,
-    var userCoinResult: CoinBean = CoinBean(),
-    var myCoinResult: MutableList<MyCoinBean> = ArrayList(),
+    var userCoinResult: Coin = Coin(),
+    var myCoinResult: MutableList<MyCoin> = ArrayList(),
 )
 
 class MyCoinViewModel : BaseViewModel() {
@@ -78,9 +78,9 @@ class MyCoinViewModel : BaseViewModel() {
      * 获取个人积分获取列表
      * page 1开始
      */
-    private suspend fun getMyCoinList(page: Int): MyCoinListBean {
+    private suspend fun getMyCoinList(page: Int): MyCoinList {
         val response = coroutineScope {
-            get<MyCoinListBean> {
+            get<MyCoinList> {
                 setUrl("lg/coin/list/{page}/json")
                 putPath("page", page.toString())
             }
@@ -91,7 +91,7 @@ class MyCoinViewModel : BaseViewModel() {
     /**
      * 获取个人积分
      */
-    private suspend fun getUserCoin(): UserCoinBean {
+    private suspend fun getUserCoin(): UserCoin {
         return coroutineScope {
             get {
                 setUrl("lg/coin/userinfo/json")

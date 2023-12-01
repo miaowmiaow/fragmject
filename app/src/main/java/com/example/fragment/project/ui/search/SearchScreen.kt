@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.search
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,6 +78,10 @@ fun SearchScreen(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    BackHandler(searchText.isNotBlank()) {
+        searchText = ""
+        viewModel.clearArticles()
+    }
     LaunchedEffect(Unit) {
         delay(350)
         if (searchText.isBlank()) {

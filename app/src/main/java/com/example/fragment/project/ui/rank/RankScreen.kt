@@ -62,11 +62,13 @@ fun RankScreen(
                 },
                 actions = {
                     IconButton(
+                        modifier = Modifier.height(45.dp),
                         onClick = { onNavigateToWeb("https://www.wanandroid.com/blog/show/2653") }
                     ) {
                         Icon(
                             painter = painterResource(R.mipmap.ic_rule),
                             contentDescription = null,
+                            modifier = Modifier.size(18.dp),
                             tint = colorResource(R.color.white)
                         )
                     }

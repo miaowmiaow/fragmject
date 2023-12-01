@@ -31,7 +31,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,12 +68,10 @@ fun RegisterScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
-    SideEffect {
+    LaunchedEffect(uiState.success, uiState.message, snackbarHostState) {
         if (uiState.success) {
             onPopBackStackToMain()
         }
-    }
-    LaunchedEffect(uiState.message, snackbarHostState) {
         if (uiState.message.isNotBlank()) {
             snackbarHostState.showSnackbar(uiState.message)
             viewModel.resetMessage()

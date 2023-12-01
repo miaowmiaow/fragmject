@@ -48,7 +48,8 @@ fun DemoScreen(
         "相册",
         "滚动",
         "拖动",
-        "多点触控"
+        "触控",
+        "动画"
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -122,6 +123,7 @@ fun DemoScreen(
                         6 -> ScrollableScreen()
                         7 -> DraggableScreen()
                         8 -> TransformableScreen()
+                        9 -> AnimatedContentScreen()
                     }
                 }
             }

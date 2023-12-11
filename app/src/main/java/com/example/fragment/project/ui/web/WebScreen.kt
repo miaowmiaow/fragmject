@@ -294,13 +294,13 @@ fun WebScreen(
             },
             onNavigateUp = onNavigateUp
         )
-        AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
-            LinearProgressIndicator(
-                progress = { navigator.progress },
-                modifier = Modifier.fillMaxWidth(),
-                color = colorResource(R.color.theme_orange),
-                trackColor = colorResource(R.color.white)
-            )
-        }
+//        AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
+//            LinearProgressIndicator(
+//                progress = { navigator.progress },
+//                modifier = Modifier.fillMaxWidth(),
+//                color = colorResource(R.color.theme_orange),
+//                trackColor = colorResource(R.color.white)
+//            )
+//        }
     }
 }

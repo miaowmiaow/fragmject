@@ -27,7 +27,8 @@ android {
         versionCode = configProperties.getProperty("versionCode").toInt()
         versionName = configProperties.getProperty("versionName")
         ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
+            //noinspection ChromeOsAbiSupport
+            abiFilters += listOf("arm64-v8a")
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

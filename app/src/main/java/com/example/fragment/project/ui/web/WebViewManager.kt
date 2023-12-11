@@ -138,6 +138,8 @@ class WebViewManager private constructor() {
                 lastBackWebView.clear()
                 webViewMap.destroyWebView()
                 webViewQueue.destroyWebView()
+                //重新缓存一个webView
+                webViewQueue.add(create(MutableContextWrapper(webView.context.applicationContext)))
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())

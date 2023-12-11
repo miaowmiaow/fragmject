@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,7 @@ fun AnimatedContentScreen() {
             }
 
     ) {
+        Text("点我，点我，快点我")
     }
 
     var moved by remember { mutableStateOf(false) }
@@ -75,7 +77,9 @@ fun AnimatedContentScreen() {
             ) {
                 moved = !moved
             }
-    )
+    ){
+        Text("点我")
+    }
 
     val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
     val animatedColor by infiniteTransition.animateColor(

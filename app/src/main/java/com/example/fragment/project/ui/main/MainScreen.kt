@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -98,7 +99,7 @@ fun MainScreen(
                 //首页双击返回顶部
                 if ((it == 0) && (navIndex == 0) && homeListState.canScrollBackward) {
                     coroutineScope.launch {
-                        homeListState.scrollToItem(0)
+                        homeListState.animateScrollToItem(0)
                     }
                 }
                 navIndex = it
@@ -220,7 +221,7 @@ fun BottomNavigation(
 ) {
     var currItem by rememberSaveable { mutableIntStateOf(0) }
     NavigationBar(
-        modifier = Modifier,
+        modifier = Modifier.shadow(5.dp),
         containerColor = colorResource(R.color.white)
     ) {
         items.forEachIndexed { index, item ->

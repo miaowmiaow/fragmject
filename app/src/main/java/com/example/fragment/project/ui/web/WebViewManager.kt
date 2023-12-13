@@ -7,6 +7,7 @@ import android.content.MutableContextWrapper
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
+import android.os.Looper
 import android.util.Base64
 import android.util.Log
 import android.view.ViewGroup
@@ -35,6 +36,14 @@ class WebViewManager private constructor() {
 
         private fun getInstance() = INSTANCE ?: synchronized(WebViewManager::class.java) {
             INSTANCE ?: WebViewManager().also { INSTANCE = it }
+        }
+
+        fun prepare(context: Context) {
+            getInstance().prepare(context)
+        }
+
+        fun destroy() {
+            getInstance().destroy()
         }
 
         fun obtain(context: Context, url: String): WebView {
@@ -78,6 +87,27 @@ class WebViewManager private constructor() {
         webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         return webView
+    }
+
+    private fun prepare(context: Context) {
+        if (webViewQueue.isEmpty()) {
+            Looper.myQueue().addIdleHandler {
+                webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
+                false
+            }
+        }
+    }
+
+    private fun destroy() {
+        try {
+            backStack.clear()
+            forwardStack.clear()
+            lastBackWebView.clear()
+            webViewMap.destroyWebView()
+            webViewQueue.destroyWebView()
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+        }
     }
 
     private fun obtain(context: Context, url: String): WebView {
@@ -133,11 +163,7 @@ class WebViewManager private constructor() {
                     backStack.add(originalUrl)
                 }
             } else {
-                backStack.clear()
-                forwardStack.clear()
-                lastBackWebView.clear()
-                webViewMap.destroyWebView()
-                webViewQueue.destroyWebView()
+                destroy()
                 //重新缓存一个webView
                 webViewQueue.add(create(MutableContextWrapper(webView.context.applicationContext)))
             }

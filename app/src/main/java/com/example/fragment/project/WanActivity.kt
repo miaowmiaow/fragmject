@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
+import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -41,6 +42,7 @@ class WanActivity : AppCompatActivity() {
                 }
             }
         })
+        WebViewManager.prepare(applicationContext)
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -54,6 +56,7 @@ class WanActivity : AppCompatActivity() {
         super.onDestroy()
         mainScope.cancel()
         WanHelper.close()
+        WebViewManager.destroy()
     }
 
     /**

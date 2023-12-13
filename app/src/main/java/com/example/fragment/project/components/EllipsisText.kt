@@ -1,5 +1,6 @@
 package com.example.fragment.project.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -48,7 +49,7 @@ fun EllipsisText(
         style = style
     )
     val ellipsisWidth = ellipsisLayoutResult.size.width
-    Box {
+    Box(modifier = Modifier.animateContentSize()) {
         Text(
             text = text,
             modifier = Modifier

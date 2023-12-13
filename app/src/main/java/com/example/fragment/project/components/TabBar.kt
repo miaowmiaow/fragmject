@@ -57,7 +57,7 @@ fun <T> TabBar(
                 }
             },
             divider = {
-                HorizontalDivider(color = dividerColor)
+                HorizontalDivider(thickness = 2.dp, color = dividerColor)
             },
         ) {
             data.forEachIndexed { index, item ->

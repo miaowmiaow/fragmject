@@ -2,10 +2,13 @@ package com.example.fragment.project.ui.demo
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -39,6 +42,7 @@ fun DemoScreen(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
     val tabs = listOf(
         "日期",
         "滚轮",
@@ -49,7 +53,8 @@ fun DemoScreen(
         "滚动",
         "拖动",
         "触控",
-        "动画"
+        "动画",
+        "网格"
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -89,7 +94,9 @@ fun DemoScreen(
     ) { innerPadding ->
         ModalNavigationDrawer(
             drawerContent = {
-                ModalDrawerSheet {
+                ModalDrawerSheet(
+                    modifier = Modifier.fillMaxHeight().verticalScroll(scrollState)
+                ) {
                     Spacer(Modifier.height(12.dp))
                     tabs.forEach { tab ->
                         NavigationDrawerItem(
@@ -124,6 +131,7 @@ fun DemoScreen(
                         7 -> DraggableScreen()
                         8 -> TransformableScreen()
                         9 -> AnimatedContentScreen()
+                        10 -> PhotosGridScreen()
                     }
                 }
             }

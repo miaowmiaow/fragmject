@@ -85,7 +85,7 @@ class Photo(
 }
 
 @Composable
-fun PhotosGridScreen(
+fun GridSelectScreen(
     photos: List<Photo> = List(100) { Photo(it) },
     selectedIds: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
 ) {

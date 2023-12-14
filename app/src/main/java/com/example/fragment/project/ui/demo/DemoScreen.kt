@@ -44,17 +44,18 @@ fun DemoScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val tabs = listOf(
-        "日期",
-        "滚轮",
-        "菜单",
-        "全文",
-        "权限",
-        "相册",
-        "滚动",
-        "拖动",
-        "触控",
-        "动画",
-        "网格"
+        "日期控件",
+        "滚轮控件",
+        "菜单控件",
+        "全文控件",
+        "申请权限",
+        "调用相册",
+        "滚动示例",
+        "拖动示例",
+        "多点触控",
+        "动画示例",
+        "网格选择",
+        "拖动排序",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -95,7 +96,9 @@ fun DemoScreen(
         ModalNavigationDrawer(
             drawerContent = {
                 ModalDrawerSheet(
-                    modifier = Modifier.fillMaxHeight().verticalScroll(scrollState)
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .verticalScroll(scrollState)
                 ) {
                     Spacer(Modifier.height(12.dp))
                     tabs.forEach { tab ->
@@ -131,7 +134,8 @@ fun DemoScreen(
                         7 -> DraggableScreen()
                         8 -> TransformableScreen()
                         9 -> AnimatedContentScreen()
-                        10 -> PhotosGridScreen()
+                        10 -> GridSelectScreen()
+                        11 -> GridSortScreen()
                     }
                 }
             }

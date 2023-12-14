@@ -278,6 +278,7 @@ class WanNavActions(
     }
 
     fun navigate(route: String) {
+        navController.graph.findNode(route) ?: return
         WanHelper.getUser { userBean ->
             navController.navigate(
                 if (interceptRoute(route) && userBean.id.isBlank()) {

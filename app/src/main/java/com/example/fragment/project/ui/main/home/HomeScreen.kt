@@ -35,7 +35,6 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         listState = listState,
         contentPadding = PaddingValues(top = 10.dp),
-        key = { _, item -> item.id },
         contentType = { _, item -> item.viewType },
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) { _, item ->

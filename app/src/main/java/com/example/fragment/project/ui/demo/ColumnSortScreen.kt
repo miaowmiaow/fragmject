@@ -1,19 +1,23 @@
 package com.example.fragment.project.ui.demo
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.example.fragment.project.components.ReorderLazyVerticalGrid
+import com.example.fragment.project.components.ReorderLazyColumn
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,40 +28,47 @@ import kotlinx.coroutines.flow.update
  * 第一个 item 向下拖动时会出现异常滚动，待解决中
  */
 @Composable
-fun GridSortScreen(
-    viewModel: PhotosGridViewModel = viewModel(),
+fun ColumnSortScreen(
+    viewModel: ColumnViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val state = rememberLazyGridState()
-    ReorderLazyVerticalGrid(
+    val state = rememberLazyListState()
+
+    ReorderLazyColumn(
         items = uiState.result,
         key = { _, item -> item.id },
         onMove = { from, to ->
             viewModel.move(from, to)
         },
-        columns = GridCells.Fixed(3),
         modifier = Modifier.fillMaxSize(),
         state = state,
         verticalArrangement = Arrangement.spacedBy(3.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
     ) { _, item ->
-        Image(
-            painter = rememberAsyncImagePainter(item.getAvatarRes()),
-            contentDescription = null,
-            modifier = Modifier.aspectRatio(1f)
-        )
+        Row(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxWidth()
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(item.getAvatarRes()),
+                contentDescription = null,
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(100.dp)
+            )
+        }
     }
 }
 
-data class PhotosGridUiState(
+data class ColumnUiState(
     var result: MutableList<Photo> = ArrayList(),
     val updateTime: Long = 0
 )
 
-class PhotosGridViewModel : BaseViewModel() {
-    private val _uiState = MutableStateFlow(PhotosGridUiState())
+class ColumnViewModel : BaseViewModel() {
+    private val _uiState = MutableStateFlow(ColumnUiState())
 
-    val uiState: StateFlow<PhotosGridUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<ColumnUiState> = _uiState.asStateFlow()
 
     init {
         _uiState.update { state ->

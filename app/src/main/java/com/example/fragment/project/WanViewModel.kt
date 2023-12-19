@@ -5,7 +5,6 @@ import com.example.fragment.project.data.HotKey
 import com.example.fragment.project.data.HotKeyList
 import com.example.fragment.project.data.Tree
 import com.example.fragment.project.data.TreeList
-import com.example.fragment.project.data.User
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class WanUiState(
-    var user: User = User(),
     var hotKeyResult: MutableList<HotKey> = ArrayList(),
     var treeResult: MutableList<Tree> = ArrayList(),
     var searchHistoryResult: MutableList<String> = ArrayList(),
@@ -41,7 +39,6 @@ class WanViewModel : BaseViewModel() {
             val webBookmarkList = async { WanHelper.getWebBookmark() }
             val webHistoryList = async { WanHelper.getWebHistory() }
             _uiState.update { state ->
-                state.user = WanHelper.getUser()
                 hotKeyList.await().data?.let { data ->
                     state.hotKeyResult.clear()
                     state.hotKeyResult.addAll(data)

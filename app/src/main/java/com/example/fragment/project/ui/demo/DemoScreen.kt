@@ -54,8 +54,9 @@ fun DemoScreen(
         "拖动示例",
         "多点触控",
         "动画示例",
+        "列表重排",
+        "网格重排",
         "网格选择",
-        "拖动排序",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -134,8 +135,9 @@ fun DemoScreen(
                         7 -> DraggableScreen()
                         8 -> TransformableScreen()
                         9 -> AnimatedContentScreen()
-                        10 -> GridSelectScreen()
+                        10 -> ColumnSortScreen()
                         11 -> GridSortScreen()
+                        12 -> GridSelectScreen()
                     }
                 }
             }

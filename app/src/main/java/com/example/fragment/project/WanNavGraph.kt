@@ -38,8 +38,8 @@ fun WanNavGraph(
     route: String?,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: WanViewModel = viewModel()
-    val wanUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val wanViewModel: WanViewModel = viewModel()
+    val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     val wanNavActions = remember(navController) { WanNavActions(navController) }
     NavHost(
@@ -75,8 +75,8 @@ fun WanNavGraph(
             BookmarkHistoryScreen(
                 webBookmarkData = wanUiState.webBookmarkResult,
                 webHistoryData = wanUiState.webHistoryResult,
-                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
-                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
+                onWebBookmark = { isAdd, text -> wanViewModel.onWebBookmark(isAdd, text) },
+                onWebHistory = { isAdd, text -> wanViewModel.onWebHistory(isAdd, text) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -151,7 +151,7 @@ fun WanNavGraph(
                 key = backStackEntry.arguments?.getString("key") ?: "",
                 hotKeyData = wanUiState.hotKeyResult,
                 searchHistoryData = wanUiState.searchHistoryResult,
-                onSearchHistory = { isAdd, text -> viewModel.onSearchHistory(isAdd, text) },
+                onSearchHistory = { isAdd, text -> wanViewModel.onSearchHistory(isAdd, text) },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },
@@ -204,8 +204,8 @@ fun WanNavGraph(
             WebScreen(
                 originalUrl = backStackEntry.arguments?.getString("url") ?: "",
                 webBookmarkData = wanUiState.webBookmarkResult,
-                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
-                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
+                onWebBookmark = { isAdd, text -> wanViewModel.onWebBookmark(isAdd, text) },
+                onWebHistory = { isAdd, text -> wanViewModel.onWebHistory(isAdd, text) },
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -279,9 +279,9 @@ class WanNavActions(
 
     fun navigate(route: String) {
         navController.graph.findNode(route) ?: return
-        WanHelper.getUser { userBean ->
+        WanHelper.getUser { user ->
             navController.navigate(
-                if (interceptRoute(route) && userBean.id.isBlank()) {
+                if (interceptRoute(route) && user.id.isBlank()) {
                     WanDestinations.LOGIN_ROUTE
                 } else {
                     route
@@ -309,15 +309,8 @@ object WanDestinations {
     const val WEB_ROUTE = "web_route"
 }
 
-fun interceptRoute(route: String): Boolean {
-    arrayOf(
-        WanDestinations.MY_COIN_ROUTE,
-        WanDestinations.MY_COLLECT_ROUTE,
-        WanDestinations.MY_SHARE_ROUTE,
-    ).forEach {
-        if (route.startsWith(it)) {
-            return@interceptRoute true
-        }
-    }
-    return false
+private fun interceptRoute(route: String): Boolean {
+    return route.startsWith(WanDestinations.MY_COIN_ROUTE)
+            || route.startsWith(WanDestinations.MY_COLLECT_ROUTE)
+            || route.startsWith(WanDestinations.MY_SHARE_ROUTE)
 }

@@ -98,8 +98,8 @@ object WanHelper {
     /**
      * 设置用户信息
      */
-    suspend fun setUser(userBean: User?) {
-        userBean?.let {
+    suspend fun setUser(user: User?) {
+        user?.let {
             AppDatabase.set(USER, it.toJson())
         }
     }

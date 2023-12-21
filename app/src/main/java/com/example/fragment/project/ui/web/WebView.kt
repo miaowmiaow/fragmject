@@ -205,9 +205,9 @@ class WebViewNavigator(
     ) = withContext(Dispatchers.Main) {
         navigationEvents.debounce(350).collect { event ->
             when (event) {
-                is NavigationEvent.Back -> onBack()
-                is NavigationEvent.Forward -> onForward()
-                is NavigationEvent.Reload -> reload()
+                NavigationEvent.Back -> onBack()
+                NavigationEvent.Forward -> onForward()
+                NavigationEvent.Reload -> reload()
             }
         }
     }

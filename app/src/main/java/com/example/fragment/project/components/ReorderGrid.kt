@@ -34,10 +34,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -59,53 +59,56 @@ fun <T> ReorderLazyVerticalGrid(
     userScrollEnabled: Boolean = true,
     itemContent: @Composable BoxScope.(index: Int, item: T) -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+    val autoScrollThreshold = with(LocalDensity.current) { 50.dp.toPx() }
     val layoutInfo by remember { derivedStateOf { state.layoutInfo } }
-    var pressedKey by remember { mutableIntStateOf(-1) }
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
-    val autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
+    var draggingItemIndex by remember { mutableIntStateOf(-1) }
+    var draggingItemDelta by remember { mutableStateOf(Offset.Zero) }
 
     LazyVerticalGrid(
         columns = columns,
         modifier = modifier.pointerInput(Unit) {
             detectDragGesturesAfterLongPress(
                 onDragStart = { offset ->
-                    layoutInfo.gridItemAtPosition(offset)?.let { info ->
-                        pressedKey = info.index
-                    }
+                    draggingItemIndex = layoutInfo.firstOrNull(offset)?.index ?: -1
                 },
                 onDragEnd = {
-                    offsetX = 0f
-                    offsetY = 0f
-                    pressedKey = -1
+                    draggingItemIndex = -1
+                    draggingItemDelta = Offset.Zero
                 },
-                onDragCancel = {
-                    pressedKey = -1
-                },
-                onDrag = { change, offset ->
+                onDrag = { change, dragAmount ->
                     change.consume()
-                    offsetX += offset.x
-                    offsetY += offset.y
-                    layoutInfo.gridItemAtPosition(change.position)?.let { info ->
-                        val nextKey = info.index
-                        if (pressedKey != -1 && pressedKey != nextKey) {
-                            onMove(pressedKey, nextKey)
-                            offsetX = change.position.x - info.offset.x - info.size.width * 0.5f
-                            offsetY = change.position.y - info.offset.y - info.size.height * 0.5f
-                            pressedKey = nextKey
-                        }
-                        coroutineScope.launch {
-                            val distFromBottom =
-                                state.layoutInfo.viewportSize.height - change.position.y
+                    draggingItemDelta += dragAmount
+                    val targetItem = layoutInfo.firstOrNull(change.position)
+                        ?: return@detectDragGesturesAfterLongPress
+                    val targetItemIndex = targetItem.index
+                    val targetItemOffset = targetItem.offset.toOffset()
+                    val targetItemCenter = targetItem.size.toOffset() * 0.5f
+                    scope.launch {
+                        draggingItemDelta = change.position - targetItemOffset - targetItemCenter
+                        if (draggingItemIndex != -1 && draggingItemIndex != targetItemIndex) {
+                            when {
+                                targetItemIndex == state.firstVisibleItemIndex -> draggingItemIndex
+                                draggingItemIndex == state.firstVisibleItemIndex -> targetItemIndex
+                                else -> null
+                            }?.let {
+                                // this is needed to neutralize automatic keeping the first item first.
+                                // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/foundation/foundation/integration-tests/foundation-demos/src/main/java/androidx/compose/foundation/demos/LazyGridDragAndDropDemo.kt
+                                state.scrollToItem(it, state.firstVisibleItemScrollOffset)
+                            }
+                            onMove(draggingItemIndex, targetItemIndex)
+                            draggingItemIndex = targetItemIndex
+                        } else {
                             val distFromTop = change.position.y
-                            state.scrollBy(
-                                when {
-                                    distFromBottom < autoScrollThreshold -> autoScrollThreshold - distFromBottom
-                                    distFromTop < autoScrollThreshold -> -(autoScrollThreshold - distFromTop)
-                                    else -> 0f
-                                }
-                            )
+                            if (distFromTop < autoScrollThreshold) {
+                                state.scrollBy(-(autoScrollThreshold - distFromTop))
+                            }
+                            val distFromBottom =
+                                layoutInfo.viewportEndOffset - change.position.y
+                            if (distFromBottom < autoScrollThreshold) {
+                                state.scrollBy(autoScrollThreshold - distFromBottom)
+                            }
+                            delay(50)
                         }
                     }
                 }
@@ -122,16 +125,19 @@ fun <T> ReorderLazyVerticalGrid(
         itemsIndexed(items, key) { index, item ->
             Box(modifier = Modifier
                 .scale(
-                    updateTransition(pressedKey == index, label = "selected")
+                    updateTransition(draggingItemIndex == index, label = "selected")
                         .animateFloat(label = "scale") { selected ->
                             if (selected) 0.9f else 1f
                         }.value
                 )
                 .then(
-                    if (pressedKey == index) {
+                    if (draggingItemIndex == index) {
                         Modifier
                             .offset {
-                                IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
+                                IntOffset(
+                                    draggingItemDelta.x.roundToInt(),
+                                    draggingItemDelta.y.roundToInt()
+                                )
                             }
                             .zIndex(1f)
                             .shadow(8.dp)
@@ -148,12 +154,12 @@ fun <T> ReorderLazyVerticalGrid(
     }
 }
 
-fun LazyGridLayoutInfo.gridItemAtPosition(hitPoint: Offset): LazyGridItemInfo? =
-    visibleItemsInfo.find { itemInfo ->
-        IntRect(
-            left = itemInfo.offset.x,
-            top = itemInfo.offset.y,
-            right = itemInfo.offset.x + itemInfo.size.width,
-            bottom = itemInfo.offset.y + itemInfo.size.height
-        ).contains(hitPoint.round())
+fun IntSize.toOffset() = IntOffset(width, height).toOffset()
+
+fun IntOffset.toOffset() = Offset(x.toFloat(), y.toFloat())
+
+fun LazyGridLayoutInfo.firstOrNull(hitPoint: Offset): LazyGridItemInfo? =
+    visibleItemsInfo.firstOrNull() { item ->
+        hitPoint.x.toInt() in item.offset.x..item.offset.x + item.size.width &&
+                hitPoint.y.toInt() in item.offset.y..item.offset.y + item.size.height
     }

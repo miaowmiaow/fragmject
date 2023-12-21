@@ -24,9 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-/**
- * 第一个 item 向下拖动时会出现异常滚动，待解决中
- */
 @Composable
 fun ColumnSortScreen(
     viewModel: ColumnViewModel = viewModel(),

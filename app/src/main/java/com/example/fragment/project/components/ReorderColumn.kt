@@ -1,8 +1,12 @@
 package com.example.fragment.project.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -55,10 +59,10 @@ fun <T> ReorderLazyColumn(
     itemContent: @Composable BoxScope.(index: Int, item: T) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val autoScrollThreshold = with(LocalDensity.current) { 50.dp.toPx() }
     val layoutInfo by remember { derivedStateOf { state.layoutInfo } }
     var draggingItemIndex by remember { mutableIntStateOf(-1) }
-    var draggingItemDelta by remember { mutableStateOf(0f) }
+    val draggingItemDelta by remember { mutableStateOf(Animatable(0f)) }
+    val autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
 
     LazyColumn(
         modifier = modifier.pointerInput(Unit) {
@@ -67,19 +71,41 @@ fun <T> ReorderLazyColumn(
                     draggingItemIndex = layoutInfo.firstOrNull(offset)?.index ?: -1
                 },
                 onDragEnd = {
-                    draggingItemIndex = -1
-                    draggingItemDelta = 0f
+                    scope.launch {
+                        draggingItemDelta.animateTo(
+                            targetValue = 0f,
+                            animationSpec = spring(
+                                stiffness = Spring.StiffnessMediumLow,
+                                visibilityThreshold = 1f
+                            )
+                        ) {
+                            if (value == targetValue) {
+                                draggingItemIndex = -1
+                            }
+                        }
+                    }
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()
-                    draggingItemDelta += dragAmount.y
                     val targetItem = layoutInfo.firstOrNull(change.position)
                         ?: return@detectDragGesturesAfterLongPress
                     val targetItemIndex = targetItem.index
-                    val targetItemOffset = targetItem.offset
-                    val targetItemCenter = targetItem.size * 0.5f
                     scope.launch {
-                        draggingItemDelta = change.position.y - targetItemOffset - targetItemCenter
+                        draggingItemDelta.snapTo(draggingItemDelta.value + dragAmount.y)
+
+                        val distFromTop = change.position.y
+                        val distFromBottom = layoutInfo.viewportSize.height - change.position.y
+                        when {
+                            distFromTop < autoScrollThreshold -> distFromTop - autoScrollThreshold
+                            distFromBottom < autoScrollThreshold -> autoScrollThreshold - distFromBottom
+                            else -> null
+                        }?.let {
+                            if(state.scrollBy(it) != 0f){
+                                draggingItemDelta.snapTo(draggingItemDelta.value + it)
+                                delay(10)
+                            }
+                        }
+
                         if (draggingItemIndex != -1 && draggingItemIndex != targetItemIndex) {
                             when {
                                 targetItemIndex == state.firstVisibleItemIndex -> draggingItemIndex
@@ -87,21 +113,11 @@ fun <T> ReorderLazyColumn(
                                 else -> null
                             }?.let {
                                 // this is needed to neutralize automatic keeping the first item first.
-                                // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/foundation/foundation/integration-tests/foundation-demos/src/main/java/androidx/compose/foundation/demos/LazyColumnDragAndDropDemo.kt
                                 state.scrollToItem(it, state.firstVisibleItemScrollOffset)
                             }
                             onMove(draggingItemIndex, targetItemIndex)
                             draggingItemIndex = targetItemIndex
-                        } else {
-                            val distFromTop = change.position.y
-                            if (distFromTop < autoScrollThreshold) {
-                                state.scrollBy(distFromTop - autoScrollThreshold)
-                            }
-                            val distFromBottom = layoutInfo.viewportEndOffset - change.position.y
-                            if (distFromBottom < autoScrollThreshold) {
-                                state.scrollBy(autoScrollThreshold - distFromBottom)
-                            }
-                            delay(50)
+                            draggingItemDelta.snapTo(change.position.y - targetItem.offset - targetItem.size * 0.5f)
                         }
                     }
                 }
@@ -121,7 +137,10 @@ fun <T> ReorderLazyColumn(
                     if (draggingItemIndex == index) {
                         Modifier
                             .offset {
-                                IntOffset(0, draggingItemDelta.roundToInt())
+                                IntOffset(
+                                    0,
+                                    draggingItemDelta.value.roundToInt()
+                                )
                             }
                             .zIndex(1f)
                             .shadow(8.dp)

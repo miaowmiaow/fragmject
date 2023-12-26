@@ -1,6 +1,11 @@
 package com.example.fragment.project.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
@@ -60,10 +65,17 @@ fun <T> ReorderLazyVerticalGrid(
     itemContent: @Composable BoxScope.(index: Int, item: T) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val autoScrollThreshold = with(LocalDensity.current) { 50.dp.toPx() }
     val layoutInfo by remember { derivedStateOf { state.layoutInfo } }
     var draggingItemIndex by remember { mutableIntStateOf(-1) }
-    var draggingItemDelta by remember { mutableStateOf(Offset.Zero) }
+    val draggingItemDelta by remember {
+        mutableStateOf(
+            Animatable(
+                Offset.Zero,
+                Offset.VectorConverter
+            )
+        )
+    }
+    val autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
 
     LazyVerticalGrid(
         columns = columns,
@@ -73,19 +85,41 @@ fun <T> ReorderLazyVerticalGrid(
                     draggingItemIndex = layoutInfo.firstOrNull(offset)?.index ?: -1
                 },
                 onDragEnd = {
-                    draggingItemIndex = -1
-                    draggingItemDelta = Offset.Zero
+                    scope.launch {
+                        draggingItemDelta.animateTo(
+                            targetValue = Offset.Zero,
+                            animationSpec = spring(
+                                stiffness = Spring.StiffnessMediumLow,
+                                visibilityThreshold = Offset.VisibilityThreshold
+                            )
+                        ) {
+                            if (value == targetValue) {
+                                draggingItemIndex = -1
+                            }
+                        }
+                    }
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()
-                    draggingItemDelta += dragAmount
                     val targetItem = layoutInfo.firstOrNull(change.position)
                         ?: return@detectDragGesturesAfterLongPress
                     val targetItemIndex = targetItem.index
-                    val targetItemOffset = targetItem.offset.toOffset()
-                    val targetItemCenter = targetItem.size.toOffset() * 0.5f
                     scope.launch {
-                        draggingItemDelta = change.position - targetItemOffset - targetItemCenter
+                        draggingItemDelta.snapTo(draggingItemDelta.value + dragAmount)
+
+                        val distFromTop = change.position.y
+                        val distFromBottom = layoutInfo.viewportSize.height - change.position.y
+                        when {
+                            distFromTop < autoScrollThreshold -> distFromTop - autoScrollThreshold
+                            distFromBottom < autoScrollThreshold -> autoScrollThreshold - distFromBottom
+                            else -> null
+                        }?.let {
+                            if (state.scrollBy(it) != 0f) {
+                                draggingItemDelta.snapTo(draggingItemDelta.value + Offset(0f, it))
+                                delay(10)
+                            }
+                        }
+
                         if (draggingItemIndex != -1 && draggingItemIndex != targetItemIndex) {
                             when {
                                 targetItemIndex == state.firstVisibleItemIndex -> draggingItemIndex
@@ -93,22 +127,11 @@ fun <T> ReorderLazyVerticalGrid(
                                 else -> null
                             }?.let {
                                 // this is needed to neutralize automatic keeping the first item first.
-                                // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/foundation/foundation/integration-tests/foundation-demos/src/main/java/androidx/compose/foundation/demos/LazyGridDragAndDropDemo.kt
                                 state.scrollToItem(it, state.firstVisibleItemScrollOffset)
                             }
                             onMove(draggingItemIndex, targetItemIndex)
                             draggingItemIndex = targetItemIndex
-                        } else {
-                            val distFromTop = change.position.y
-                            if (distFromTop < autoScrollThreshold) {
-                                state.scrollBy(-(autoScrollThreshold - distFromTop))
-                            }
-                            val distFromBottom =
-                                layoutInfo.viewportEndOffset - change.position.y
-                            if (distFromBottom < autoScrollThreshold) {
-                                state.scrollBy(autoScrollThreshold - distFromBottom)
-                            }
-                            delay(50)
+                            draggingItemDelta.snapTo(change.position - targetItem.offset.toOffset() - targetItem.size.toOffset() * 0.5f)
                         }
                     }
                 }
@@ -135,8 +158,8 @@ fun <T> ReorderLazyVerticalGrid(
                         Modifier
                             .offset {
                                 IntOffset(
-                                    draggingItemDelta.x.roundToInt(),
-                                    draggingItemDelta.y.roundToInt()
+                                    draggingItemDelta.value.x.roundToInt(),
+                                    draggingItemDelta.value.y.roundToInt()
                                 )
                             }
                             .zIndex(1f)

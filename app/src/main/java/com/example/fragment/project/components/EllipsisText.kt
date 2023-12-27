@@ -42,7 +42,7 @@ fun EllipsisText(
 ) {
     val style = TextStyle.Default.copy(color = color, fontSize = fontSize)
     var ellipsisBottom by remember { mutableFloatStateOf(0f) }
-    var ellipsisRight by remember { mutableFloatStateOf(0f) }
+    var ellipsisLeft by remember { mutableFloatStateOf(0f) }
     val ellipsisMeasure = rememberTextMeasurer()
     val ellipsisLayoutResult = ellipsisMeasure.measure(
         text = ellipsisText,
@@ -66,7 +66,7 @@ fun EllipsisText(
             onTextLayout = {
                 val offset = if (maxLines == Int.MAX_VALUE) 0 else ellipsisWidth
                 ellipsisBottom = it.getLineBottom(it.lineCount - 1)
-                ellipsisRight = it.getHorizontalPosition(
+                ellipsisLeft = it.getHorizontalPosition(
                     it.getOffsetForPosition(
                         Offset(
                             it.getLineRight(it.lineCount - 1) - offset,
@@ -74,8 +74,8 @@ fun EllipsisText(
                         )
                     ), true
                 )
-                if (ellipsisRight + ellipsisWidth > it.size.width) {
-                    ellipsisRight = it.getHorizontalPosition(
+                if (ellipsisLeft + ellipsisWidth > it.size.width) {
+                    ellipsisLeft = it.getHorizontalPosition(
                         it.getOffsetForPosition(
                             Offset(
                                 (it.size.width - ellipsisWidth).toFloat(),
@@ -92,7 +92,7 @@ fun EllipsisText(
             text = "$ellipsisText ",
             modifier = Modifier
                 .graphicsLayer {
-                    translationX = ellipsisRight
+                    translationX = ellipsisLeft
                     translationY = ellipsisBottom - size.height
                 }
                 .clickable { onEllipsisClick() }

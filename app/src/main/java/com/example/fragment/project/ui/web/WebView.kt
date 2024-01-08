@@ -49,7 +49,7 @@ fun WebView(
     onLoadUrl: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val url by remember { mutableStateOf(originalUrl) }
+    var url by remember { mutableStateOf(originalUrl) }
     var webView by remember { mutableStateOf<WebView?>(null) }
     var injectState by remember { mutableStateOf(false) }
     BackHandler(true) {
@@ -149,6 +149,7 @@ fun WebView(
                         }
                         if (!request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
                             shouldOverrideUrl(requestUrl)
+                            url = requestUrl
                             return true
                         }
                         return false

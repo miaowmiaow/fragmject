@@ -98,7 +98,7 @@ fun SwipeBoxScreen() {
             )
             Spacer(Modifier.size(5.dp))
             Text(
-                text = "        一个人在家好无聊呀",
+                text = "我的电脑坏了，你能过来看看嘛。",
                 color = colorResource(R.color.text_666),
                 fontSize = 12.sp
             )

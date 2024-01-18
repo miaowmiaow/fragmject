@@ -57,6 +57,7 @@ fun DemoScreen(
         "列表重排",
         "网格重排",
         "网格选择",
+        "侧滑控件",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -138,6 +139,7 @@ fun DemoScreen(
                         10 -> ColumnSortScreen()
                         11 -> GridSortScreen()
                         12 -> GridSelectScreen()
+                        13 -> SwipeBoxScreen()
                     }
                 }
             }

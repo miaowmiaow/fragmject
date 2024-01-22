@@ -91,7 +91,7 @@ object WanHelper {
             AppDatabase.get(UI_MODE).toInt()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
-            -1
+            1
         }
     }
 

@@ -1,6 +1,7 @@
 package com.example.fragment.project.utils
 
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.project.data.User
 import com.example.miaow.base.database.AppDatabase
 import com.google.gson.Gson
@@ -71,9 +72,9 @@ object WanHelper {
 
     /**
      * mode :
-     *      -1 : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
-     *       1 : AppCompatDelegate.MODE_NIGHT_NO,
-     *       2 : AppCompatDelegate.MODE_NIGHT_YES
+     *      AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+     *      AppCompatDelegate.MODE_NIGHT_NO,
+     *      AppCompatDelegate.MODE_NIGHT_YES
      */
     suspend fun setUiMode(mode: Int): Boolean {
         return AppDatabase.set(UI_MODE, mode.toString())
@@ -82,16 +83,16 @@ object WanHelper {
     /**
      * 显示模式状态
      * return
-     *      -1 : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
-     *       1 : AppCompatDelegate.MODE_NIGHT_NO,
-     *       2 : AppCompatDelegate.MODE_NIGHT_YES
+     *       AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+     *       AppCompatDelegate.MODE_NIGHT_NO,
+     *       AppCompatDelegate.MODE_NIGHT_YES
      */
     suspend fun getUiMode(): Int {
         return try {
             AppDatabase.get(UI_MODE).toInt()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
-            1
+            AppCompatDelegate.MODE_NIGHT_NO
         }
     }
 

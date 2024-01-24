@@ -235,17 +235,17 @@ fun BottomNavigation(
                 icon = {
                     BadgedBox(
                         badge = {
-                            if ("我的" == item.label) {
-                                Badge {
-                                    val badgeNumber = "1"
-                                    Text(
-                                        badgeNumber,
-                                        modifier = Modifier.semantics {
-                                            contentDescription = "$badgeNumber new notifications"
-                                        }
-                                    )
-                                }
-                            }
+//                            if ("我的" == item.label) {
+//                                Badge {
+//                                    val badgeNumber = "1"
+//                                    Text(
+//                                        badgeNumber,
+//                                        modifier = Modifier.semantics {
+//                                            contentDescription = "$badgeNumber new notifications"
+//                                        }
+//                                    )
+//                                }
+//                            }
                         }) {
                         Icon(
                             painter = painterResource(id = item.resId),

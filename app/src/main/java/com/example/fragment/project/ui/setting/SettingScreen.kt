@@ -116,10 +116,10 @@ fun SettingScreen(
                             color = colorResource(R.color.text_333),
                         )
                         NightSwitchButton(
-                            checked = uiState.mode == AppCompatDelegate.MODE_NIGHT_YES,
+                            checked = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES,
                             onCheckedChange = {
                                 val mode = if (it) {
-                                    AppCompatDelegate.MODE_NIGHT_YES
+                                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
                                 } else {
                                     AppCompatDelegate.MODE_NIGHT_NO
                                 }

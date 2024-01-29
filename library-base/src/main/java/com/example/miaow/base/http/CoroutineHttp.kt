@@ -19,6 +19,12 @@ suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
     return CoroutineHttp.getInstance().get(init, T::class.java)
 }
 
+suspend inline fun CoroutineScope.string(
+    noinline init: HttpRequest.() -> Unit
+): String {
+    return CoroutineHttp.getInstance().string(init)
+}
+
 /**
  * post请求
  * @param init  http请求体
@@ -118,6 +124,21 @@ class CoroutineHttp private constructor() {
             }
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), type)
+        }
+    }
+
+    suspend fun string(
+        init: HttpRequest.() -> Unit,
+    ): String {
+        return try {
+            val request = HttpRequest()
+            request.init()
+            getService().get(
+                request.getUrl(baseUrl),
+                request.getHeader()
+            ).string()
+        } catch (e: Exception) {
+            e.message.toString()
         }
     }
 

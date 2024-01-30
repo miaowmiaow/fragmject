@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ScrollableScreen() {
     // actual composable state
-    var offset by remember { mutableStateOf(0f) }
+    var offset by remember { mutableFloatStateOf(0f) }
     Box(
         Modifier
             .size(150.dp)

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -18,8 +19,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 @Composable
 fun TransformableScreen() {
     // set up all transformation states
-    var scale by remember { mutableStateOf(0.5f) }
-    var rotation by remember { mutableStateOf(0f) }
+    var scale by remember { mutableFloatStateOf(0.5f) }
+    var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
         scale *= zoomChange

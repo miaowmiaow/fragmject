@@ -4,17 +4,17 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.ui.platform.ComposeView
 import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class WanActivity : AppCompatActivity() {
+class WanActivity : ComponentActivity() {
 
     private val mainScope = MainScope()
     private var exitTime = 0L
@@ -76,13 +76,11 @@ class WanActivity : AppCompatActivity() {
     }
 
     private fun setContentView(route: String?) {
-        setContentView(ComposeView(this).apply {
-            setContent {
-                WanTheme {
-                    WanNavGraph(route)
-                }
+        setContent {
+            WanTheme {
+                WanNavGraph(route)
             }
-        })
+        }
     }
 
 }

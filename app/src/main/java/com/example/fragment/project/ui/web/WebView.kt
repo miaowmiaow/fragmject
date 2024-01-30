@@ -1,11 +1,14 @@
 package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -51,6 +54,7 @@ fun WebView(
 ) {
     var url by remember { mutableStateOf(originalUrl) }
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var fullScreenLayer by remember { mutableStateOf<View?>(null) }
     var injectState by remember { mutableStateOf(false) }
     BackHandler(true) {
         navigator.navigateBack()
@@ -81,6 +85,8 @@ fun WebView(
     }
     AndroidView(
         factory = { context ->
+            val activity = context as Activity
+            val windowManager = activity.windowManager
             WebViewManager.obtain(context, url).apply {
                 setDownloadListener()
                 setOnLongClickListener()
@@ -108,6 +114,23 @@ fun WebView(
                         if (newProgress > 80 && navigator.injectVConsole && !injectState) {
                             view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
                             injectState = true
+                        }
+                    }
+
+                    override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+                        super.onShowCustomView(view, callback)
+                        windowManager.addView(
+                            view,
+                            WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_APPLICATION)
+                        )
+                        fullScreenLayer = view
+                    }
+
+                    override fun onHideCustomView() {
+                        super.onHideCustomView()
+                        fullScreenLayer?.let {
+                            windowManager.removeViewImmediate(fullScreenLayer)
+                            fullScreenLayer = null
                         }
                     }
                 }

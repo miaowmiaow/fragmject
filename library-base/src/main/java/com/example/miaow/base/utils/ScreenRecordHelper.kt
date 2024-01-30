@@ -13,13 +13,13 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.example.miaow.base.service.MediaService.Companion.startMediaService
 import com.example.miaow.base.service.MediaService.Companion.stopMediaService
 import java.io.File
 
-fun AppCompatActivity.startScreenRecord(callback: ScreenRecordCallback?) {
+fun FragmentActivity.startScreenRecord(callback: ScreenRecordCallback?) {
     val tag = ScreenRecordFragment::class.java.simpleName
     var fragment = supportFragmentManager.findFragmentByTag(tag)
     if (fragment == null) {
@@ -34,7 +34,7 @@ fun AppCompatActivity.startScreenRecord(callback: ScreenRecordCallback?) {
     }
 }
 
-fun AppCompatActivity.stopScreenRecord(callback: ScreenRecordCallback?) {
+fun FragmentActivity.stopScreenRecord(callback: ScreenRecordCallback?) {
     val tag = ScreenRecordFragment::class.java.simpleName
     val fragment = supportFragmentManager.findFragmentByTag(tag)
     val fragmentTransaction = supportFragmentManager.beginTransaction()

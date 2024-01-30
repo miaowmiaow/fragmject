@@ -1,7 +1,6 @@
 package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -17,6 +16,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,7 +85,7 @@ fun WebView(
     }
     AndroidView(
         factory = { context ->
-            val activity = context as Activity
+            val activity = context as AppCompatActivity
             val windowManager = activity.windowManager
             WebViewManager.obtain(context, url).apply {
                 setDownloadListener()

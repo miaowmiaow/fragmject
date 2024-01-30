@@ -22,6 +22,7 @@ import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
 @Composable
 fun PictureSelectorScreen() {
     val context = LocalContext.current
+    val activity = context as AppCompatActivity
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -29,15 +30,13 @@ fun PictureSelectorScreen() {
     ) {
         AssistChip(
             onClick = {
-                if (context is AppCompatActivity) {
-                    PictureSelectorDialog
-                        .newInstance()
-                        .setPictureSelectorCallback(object : PictureSelectorCallback {
-                            override fun onSelectedData(data: List<MediaBean>) {
-                            }
-                        })
-                        .show(context.supportFragmentManager)
-                }
+                PictureSelectorDialog
+                    .newInstance()
+                    .setPictureSelectorCallback(object : PictureSelectorCallback {
+                        override fun onSelectedData(data: List<MediaBean>) {
+                        }
+                    })
+                    .show(activity.supportFragmentManager)
             },
             label = { Text("打开相册") },
             leadingIcon = {

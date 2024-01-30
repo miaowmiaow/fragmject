@@ -119,7 +119,7 @@ fun SettingScreen(
                             checked = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES,
                             onCheckedChange = {
                                 val mode = if (it) {
-                                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                                    AppCompatDelegate.MODE_NIGHT_YES
                                 } else {
                                     AppCompatDelegate.MODE_NIGHT_NO
                                 }

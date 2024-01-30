@@ -407,14 +407,14 @@ fun Stars(
                 val starRadius = canvasRadius * 0.9f
                 val buttonHeight = canvasHeight - canvasHeight / 10f * 2
                 val temp = Pair(
-                    (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f + (canvasWidth.toPx() / 2f - (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f) * nightStar.x.value,
-                    (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f + (buttonHeight.toPx() - (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f) * nightStar.y.value,
+                    (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f + (canvasWidth.toPx() / 2f - (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f) * nightStar.x.floatValue,
+                    (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f + (buttonHeight.toPx() - (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f) * nightStar.y.floatValue,
                 )
                 // you can check the start position is not too nearly with other stars
                 val x = temp.first
                 val y = temp.second
                 val radius =
-                    canvasHeight.toPx() / 30f + (canvasHeight.toPx() / 60f) * nightStar.radius.value
+                    canvasHeight.toPx() / 30f + (canvasHeight.toPx() / 60f) * nightStar.radius.floatValue
                 val path = Path()
                 path.moveTo(x, y + radius)
                 path.lineTo(x + radius / 3f, y + radius / 3f)

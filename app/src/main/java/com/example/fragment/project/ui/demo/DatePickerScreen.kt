@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.demo
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerScreen() {
@@ -41,7 +43,7 @@ fun DatePickerScreen() {
         val datePickerState = rememberDatePickerState()
         val dateRangePickerState = rememberDateRangePickerState()
         val confirmEnabled = derivedStateOf {
-            if (dateType.value == 0) {
+            if (dateType.intValue == 0) {
                 datePickerState.selectedDateMillis != null
             } else {
                 dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null
@@ -57,7 +59,7 @@ fun DatePickerScreen() {
                         openDialog.value = false
                         snackScope.launch {
                             snackState.showSnackbar(
-                                if (dateType.value == 0) {
+                                if (dateType.intValue == 0) {
                                     "Selected date timestamp: ${datePickerState.selectedDateMillis}"
                                 } else {
                                     "Saved range (timestamps): " +
@@ -81,7 +83,7 @@ fun DatePickerScreen() {
                 }
             }
         ) {
-            if (dateType.value == 0) {
+            if (dateType.intValue == 0) {
                 DatePicker(state = datePickerState)
             } else {
                 DateRangePicker(state = dateRangePickerState, modifier = Modifier.weight(1f))
@@ -96,7 +98,7 @@ fun DatePickerScreen() {
         AssistChip(
             onClick = {
                 openDialog.value = true
-                dateType.value = 0
+                dateType.intValue = 0
             },
             label = { Text("选择日期") },
             leadingIcon = {
@@ -110,7 +112,7 @@ fun DatePickerScreen() {
         AssistChip(
             onClick = {
                 openDialog.value = true
-                dateType.value = 1
+                dateType.intValue = 1
             },
             label = { Text("选择日期范围") },
             leadingIcon = {

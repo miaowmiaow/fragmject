@@ -4,9 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
@@ -14,7 +14,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class WanActivity : ComponentActivity() {
+class WanActivity : AppCompatActivity() {
 
     private val mainScope = MainScope()
     private var exitTime = 0L

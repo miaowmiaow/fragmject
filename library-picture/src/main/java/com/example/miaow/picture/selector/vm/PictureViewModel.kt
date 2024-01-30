@@ -32,9 +32,7 @@ class PictureViewModel : BaseViewModel() {
     )
     private val sortOrder = "$DATE_MODIFIED DESC"
 
-    private val mediaMap = HashMap<String, MutableList<MediaBean>>().apply {
-        this[DEFAULT_BUCKET_NAME] = ArrayList()
-    }
+    private val mediaMap = HashMap<String, MutableList<MediaBean>>()
     val albumResult = MutableLiveData<List<AlbumBean>>()
     val currAlbumResult = MutableLiveData<List<MediaBean>>()
 
@@ -54,6 +52,10 @@ class PictureViewModel : BaseViewModel() {
     fun queryAlbum(context: Context) {
         viewModelScope.launch {
             try {
+                mediaMap.apply {
+                    clear()
+                    this[DEFAULT_BUCKET_NAME] = ArrayList()
+                }
                 val cursor = context.contentResolver.query(
                     uri,
                     projection,

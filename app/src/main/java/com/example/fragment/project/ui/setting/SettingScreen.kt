@@ -56,10 +56,12 @@ import com.example.fragment.project.components.TitleBar
 import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.CacheUtils.getTotalSize
+import com.example.miaow.base.utils.FileUtil
 import com.example.miaow.base.utils.ScreenRecordCallback
 import com.example.miaow.base.utils.startScreenRecord
 import com.example.miaow.base.utils.stopScreenRecord
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun SettingScreen(
@@ -197,6 +199,15 @@ fun SettingScreen(
                     ArrowRightItem("隐私政策") { onNavigateToWeb("file:///android_asset/privacy_policy.html") }
                     HorizontalDivider()
                     ArrowRightItem("问题反馈") { onNavigateToWeb("https://github.com/miaowmiaow/fragmject/issues") }
+                    HorizontalDivider()
+                    ArrowRightItem("抹除数据") {
+                        context.showStandardDialog(
+                            content = "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。",
+                            confirm = {
+                                FileUtil.writeDirtyRead(File(CacheUtils.getDirPath(context, "org"), "DirtyRead"))
+                            }
+                        )
+                    }
                     HorizontalDivider()
                     Row(
                         modifier = Modifier

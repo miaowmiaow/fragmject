@@ -50,7 +50,6 @@ android {
 }
 
 dependencies {
-    api(libs.androidx.appcompat)
     api(libs.androidx.constraintlayout)
     api(libs.androidx.core.ktx)
     api(libs.androidx.fragment.ktx)

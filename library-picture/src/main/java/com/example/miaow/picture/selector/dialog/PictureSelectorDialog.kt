@@ -18,7 +18,7 @@ import com.example.miaow.base.dialog.FullDialog
 import com.example.miaow.base.dialog.PermissionDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.PermissionsCallback
-import com.example.miaow.base.utils.requestStorage
+import com.example.miaow.base.utils.requestMediaImages
 import com.example.miaow.picture.databinding.PictureSelectorDialogBinding
 import com.example.miaow.picture.selector.adapter.OnPictureClickListener
 import com.example.miaow.picture.selector.adapter.PictureSelectorAdapter
@@ -159,7 +159,7 @@ class PictureSelectorDialog : FullDialog() {
 
     private fun initData() {
         if (viewModel.albumResult.value == null) {
-            childFragmentManager.requestStorage(object : PermissionsCallback {
+            childFragmentManager.requestMediaImages(object : PermissionsCallback {
                 override fun allow() {
                     viewModel.queryAlbum(requireActivity())
                 }

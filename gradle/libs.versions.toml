@@ -1,17 +1,15 @@
 [versions]
-agp = "8.4.0-alpha07"
+agp = "8.4.0-alpha12"
 androidxActivityCompose = "1.8.2"
-androidxAppcompat = "1.6.1"
+androidxComposeBom = "2024.02.01"
 androidxConstraintlayout = "2.1.4"
 androidxCoreKtx = "1.12.0"
 androidxFragmentKtx = "1.6.2"
 androidxLifecycle = "2.7.0"
-androidxNavigationCompose = "2.7.6"
+androidxNavigationCompose = "2.7.7"
 androidxWebkit = "1.10.0"
 asm = "9.6"
-compose = "1.6.0"
-composeCompiler = "1.5.8"
-composeMaterial3 = "1.2.0-rc01"
+composeMaterial3 = "1.2.0"
 coil = "2.4.0"
 gson = "2.10.1"
 junit = "4.13.2"
@@ -28,15 +26,15 @@ testExtJunit = '1.1.5'
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppcompat" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
 androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "composeMaterial3" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
-androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util", version.ref = "compose" }
-androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
-androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintlayout" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }

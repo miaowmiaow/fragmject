@@ -210,13 +210,9 @@ class PictureSelectorDialog : FullDialog() {
         } else {
             val cachePath = CacheUtils.getDirPath(requireContext(), Environment.DIRECTORY_PICTURES)
             val imageFile = File(cachePath, pictureName)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
-                val authority = "${requireContext().packageName}.FileProvider"
-                FileProvider.getUriForFile(requireContext(), authority, imageFile)
-            } else {
-                Uri.fromFile(imageFile)
-            }
+            //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
+            val authority = "${requireContext().packageName}.FileProvider"
+            FileProvider.getUriForFile(requireContext(), authority, imageFile)
         }.also {
             takePictureUri = it
         }

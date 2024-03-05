@@ -140,7 +140,14 @@ fun FragmentManager.requestSMS(callback: PermissionsCallback) {
  * @param callback 回调
  */
 fun FragmentManager.requestStorage(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_AUDIO,
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+        )
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_AUDIO,
             Manifest.permission.READ_MEDIA_IMAGES,
@@ -155,7 +162,12 @@ fun FragmentManager.requestStorage(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestMediaImages(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+        )
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_IMAGES,
         )
@@ -168,7 +180,12 @@ fun FragmentManager.requestMediaImages(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestMediaVideo(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+        )
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_VIDEO,
         )
@@ -181,7 +198,12 @@ fun FragmentManager.requestMediaVideo(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestMediaAudio(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_AUDIO,
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+        )
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_AUDIO,
         )

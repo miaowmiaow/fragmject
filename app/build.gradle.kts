@@ -27,11 +27,10 @@ android {
         versionName = configProperties.getProperty("versionName")
         ndk {
             //noinspection ChromeOsAbiSupport
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += "arm64-v8a"
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -69,7 +68,8 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("config")
-            ndk.abiFilters.add("x86")
+            //noinspection ChromeOsAbiSupport
+            ndk.abiFilters += "x86"
         }
     }
 
@@ -91,12 +91,12 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
 
     packaging {
         resources {
-            excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 
@@ -130,7 +130,7 @@ dependencies {
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.appcompat)
+    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.window.size)
     implementation(libs.androidx.compose.ui)

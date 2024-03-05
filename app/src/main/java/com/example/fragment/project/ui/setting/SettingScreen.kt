@@ -57,9 +57,9 @@ import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.CacheUtils.getTotalSize
 import com.example.miaow.base.utils.FileUtil
-import com.example.miaow.base.utils.ScreenRecordCallback
-import com.example.miaow.base.utils.startScreenRecord
-import com.example.miaow.base.utils.stopScreenRecord
+import com.example.miaow.base.utils.ScreenCaptureCallback
+import com.example.miaow.base.utils.startScreenCapture
+import com.example.miaow.base.utils.stopScreenCapture
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -71,7 +71,7 @@ fun SettingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var screenRecordState by rememberSaveable { mutableStateOf(false) }
+    var screenCaptureState by rememberSaveable { mutableStateOf(false) }
     var cacheSize by rememberSaveable { mutableStateOf("0KB") }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -148,18 +148,18 @@ fun SettingScreen(
                             color = colorResource(R.color.text_333),
                         )
                         Switch(
-                            checked = screenRecordState,
+                            checked = screenCaptureState,
                             onCheckedChange = {
-                                screenRecordState = it
-                                if (screenRecordState) {
-                                    (context as AppCompatActivity).startScreenRecord(object :
-                                        ScreenRecordCallback {
+                                screenCaptureState = it
+                                if (screenCaptureState) {
+                                    (context as AppCompatActivity).startScreenCapture(object :
+                                        ScreenCaptureCallback {
                                         override fun onActivityResult(
                                             resultCode: Int,
                                             message: String
                                         ) {
                                             if (resultCode != Activity.RESULT_OK) {
-                                                screenRecordState = false
+                                                screenCaptureState = false
                                             }
                                             coroutineScope.launch {
                                                 snackbarHostState.showSnackbar(
@@ -169,19 +169,7 @@ fun SettingScreen(
                                         }
                                     })
                                 } else {
-                                    (context as AppCompatActivity).stopScreenRecord(object :
-                                        ScreenRecordCallback {
-                                        override fun onActivityResult(
-                                            resultCode: Int,
-                                            message: String
-                                        ) {
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message, "确定"
-                                                )
-                                            }
-                                        }
-                                    })
+                                    (context as AppCompatActivity).stopScreenCapture()
                                 }
                             },
                         )

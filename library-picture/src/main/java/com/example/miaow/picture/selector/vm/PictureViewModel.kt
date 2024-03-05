@@ -53,7 +53,7 @@ class PictureViewModel : BaseViewModel() {
         viewModelScope.launch {
             try {
                 mediaMap.apply {
-                    clear()
+                    this.clear()
                     this[DEFAULT_BUCKET_NAME] = ArrayList()
                 }
                 val cursor = context.contentResolver.query(

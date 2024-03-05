@@ -52,10 +52,8 @@ class PictureViewModel : BaseViewModel() {
     fun queryAlbum(context: Context) {
         viewModelScope.launch {
             try {
-                mediaMap.apply {
-                    this.clear()
-                    this[DEFAULT_BUCKET_NAME] = ArrayList()
-                }
+                mediaMap.clear()
+                mediaMap[DEFAULT_BUCKET_NAME] = ArrayList()
                 val cursor = context.contentResolver.query(
                     uri,
                     projection,

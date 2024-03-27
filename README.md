@@ -138,6 +138,7 @@
 - [Jetpack Compose : 超简单实现滚轮控件(WheelPicker)](https://juejin.cn/post/7266702105829277754)
 - [Jetpack Compose : 超简单实现文本展开和收起](https://juejin.cn/post/7317132381013082122)
 - [Jetpack Compose : 超简单实现侧滑删除](https://juejin.cn/spost/7325259560523677747)
+- [Jetpack Compose : 超简单实现侧滑删除（威力加强版）](https://juejin.cn/post/7350824272321314854)
 
 ## WebView 优化及 H5 秒开实践
 - [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)

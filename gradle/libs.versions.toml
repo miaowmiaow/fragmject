@@ -1,7 +1,7 @@
 [versions]
 agp = "8.4.0-alpha12"
 androidxActivityCompose = "1.8.2"
-androidxComposeBom = "2024.02.02"
+androidxComposeBom = "2024.03.00"
 androidxConstraintlayout = "2.1.4"
 androidxCoreKtx = "1.12.0"
 androidxFragmentKtx = "1.6.2"

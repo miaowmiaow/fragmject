@@ -48,6 +48,7 @@ fun DemoScreen(
         "滚轮控件",
         "菜单控件",
         "全文控件",
+        "侧滑控件",
         "申请权限",
         "调用相册",
         "滚动示例",
@@ -57,7 +58,6 @@ fun DemoScreen(
         "列表重排",
         "网格重排",
         "网格选择",
-        "侧滑控件",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -130,16 +130,16 @@ fun DemoScreen(
                         1 -> WheelPickerScreen()
                         2 -> DropdownMenuScreen()
                         3 -> FullTextScreen()
-                        4 -> PermissionScreen()
-                        5 -> PictureSelectorScreen()
-                        6 -> ScrollableScreen()
-                        7 -> DraggableScreen()
-                        8 -> TransformableScreen()
-                        9 -> AnimatedContentScreen()
-                        10 -> ColumnSortScreen()
-                        11 -> GridSortScreen()
-                        12 -> GridSelectScreen()
-                        13 -> SwipeBoxScreen()
+                        4 -> SwipeBoxScreen()
+                        5 -> PermissionScreen()
+                        6 -> PictureSelectorScreen()
+                        7 -> ScrollableScreen()
+                        8 -> DraggableScreen()
+                        9 -> TransformableScreen()
+                        10 -> AnimatedContentScreen()
+                        11 -> ColumnSortScreen()
+                        12 -> GridSortScreen()
+                        13 -> GridSelectScreen()
                     }
                 }
             }

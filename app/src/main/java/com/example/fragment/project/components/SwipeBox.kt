@@ -31,9 +31,9 @@ import kotlin.math.roundToInt
 fun SwipeBox(
     modifier: Modifier = Modifier,
     actionWidth: Dp,
-    startAction: List<@Composable BoxScope.() -> Unit>,
+    startAction: List<@Composable BoxScope.() -> Unit> = listOf(),
     startFillAction: (@Composable BoxScope.() -> Unit)? = null,
-    endAction: List<@Composable BoxScope.() -> Unit>,
+    endAction: List<@Composable BoxScope.() -> Unit> = listOf(),
     endFillAction: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -55,7 +55,7 @@ fun SwipeBox(
                 DragAnchors.Start at (if (startFillAction != null) actionWidthPx else 0f) + startWidth
                 DragAnchors.StartFill at (if (startFillAction != null) contentWidth else 0f) + startWidth
                 DragAnchors.Center at 0f
-                DragAnchors.End at (if (startFillAction != null) -actionWidthPx else 0f) - endWidth
+                DragAnchors.End at (if (endFillAction != null) -actionWidthPx else 0f) - endWidth
                 DragAnchors.EndFill at (if (endFillAction != null) -contentWidth else 0f) - endWidth
             },
             positionalThreshold = { distance -> distance * 0.5f },

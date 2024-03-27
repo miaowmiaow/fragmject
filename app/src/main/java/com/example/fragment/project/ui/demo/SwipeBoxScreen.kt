@@ -1,6 +1,8 @@
 package com.example.fragment.project.ui.demo
 
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -24,6 +27,7 @@ import com.example.fragment.project.components.SwipeBox
 
 @Composable
 fun SwipeBoxScreen() {
+    val context = LocalContext.current
     SwipeBox(
         modifier = Modifier
             .fillMaxWidth()
@@ -34,6 +38,11 @@ fun SwipeBoxScreen() {
                 modifier = Modifier
                     .background(colorResource(R.color.green))
                     .fillMaxSize()
+                    .clickable {
+                        Toast
+                            .makeText(context, "置顶", Toast.LENGTH_SHORT)
+                            .show()
+                    }
             ) {
                 Text(
                     text = "置顶",
@@ -56,6 +65,11 @@ fun SwipeBoxScreen() {
                         .align(Alignment.CenterEnd)
                         .width(70.dp)
                         .fillMaxHeight()
+                        .clickable {
+                            Toast
+                                .makeText(context, "取消置顶", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                 ) {
                     Text(
                         text = "取消置顶",
@@ -74,6 +88,11 @@ fun SwipeBoxScreen() {
                     modifier = Modifier
                         .background(colorResource(R.color.blue))
                         .fillMaxSize()
+                        .clickable {
+                            Toast
+                                .makeText(context, "标为未读", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                 ) {
                     Text(
                         text = "标为未读",
@@ -90,6 +109,11 @@ fun SwipeBoxScreen() {
                     modifier = Modifier
                         .background(colorResource(R.color.yellow))
                         .fillMaxSize()
+                        .clickable {
+                            Toast
+                                .makeText(context, "不显示", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                 ) {
                     Text(
                         text = "不显示",
@@ -107,6 +131,11 @@ fun SwipeBoxScreen() {
                 modifier = Modifier
                     .background(colorResource(R.color.red))
                     .fillMaxSize()
+                    .clickable {
+                        Toast
+                            .makeText(context, "删除", Toast.LENGTH_SHORT)
+                            .show()
+                    }
             ) {
                 Box(
                     modifier = Modifier

@@ -1,5 +1,6 @@
 package com.example.fragment.project.components
 
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +51,10 @@ fun <T> LoopHorizontalPager(
         timer.schedule(object : TimerTask() {
             override fun run() {
                 coroutineScope.launch {
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                    pagerState.animateScrollToPage(
+                        page = pagerState.currentPage + 1,
+                        animationSpec = TweenSpec(durationMillis = 1000)
+                    )
                 }
             }
         }, 5000, 5000)
@@ -122,7 +126,10 @@ fun <T> LoopVerticalPager(
         timer.schedule(object : TimerTask() {
             override fun run() {
                 coroutineScope.launch {
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                    pagerState.animateScrollToPage(
+                        page = pagerState.currentPage + 1,
+                        animationSpec = TweenSpec(durationMillis = 1000)
+                    )
                 }
             }
         }, 5000, 5000)

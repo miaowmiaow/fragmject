@@ -201,7 +201,7 @@
 # 将下面替换成自己的实体类
 -keep class **bean.** {*;}
 -keep interface **bean.** {*;}
--keep public class * extends com.example.fragment.library.base.http.HttpResponse
+-keep public class * extends com.example.miaow.base.http.HttpResponse
 #----------------------------- okhttp ---------------------------------
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
@@ -252,8 +252,16 @@
 -if interface * { @retrofit2.http.* <methods>; }
 -keep,allowobfuscation interface * extends <1>
 
-# Keep generic signature of Call, Response (R8 full mode strips signatures from non-kept items).
--keep,allowobfuscation,allowshrinking interface retrofit2.Call
+# With R8 full mode generic signatures are stripped for classes that are not
+# kept. Suspend functions are wrapped in continuations where the type argument
+# is used.
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+
+# R8 full mode strips generic signatures from return types if not kept.
+-if interface * { @retrofit2.http.* public *** *(...); }
+-keep,allowoptimization,allowshrinking,allowobfuscation class <3>
+
+# With R8 full mode generic signatures are stripped for classes that are not kept.
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 
 # With R8 full mode generic signatures are stripped for classes that are not

@@ -68,12 +68,7 @@ fun <T> ReorderLazyVerticalGrid(
     val layoutInfo by remember { derivedStateOf { state.layoutInfo } }
     var draggingItemIndex by remember { mutableIntStateOf(-1) }
     val draggingItemDelta by remember {
-        mutableStateOf(
-            Animatable(
-                Offset.Zero,
-                Offset.VectorConverter
-            )
-        )
+        mutableStateOf(Animatable(Offset.Zero, Offset.VectorConverter))
     }
     val autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
 

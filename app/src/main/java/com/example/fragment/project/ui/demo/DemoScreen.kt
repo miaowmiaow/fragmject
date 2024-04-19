@@ -1,5 +1,7 @@
 package com.example.fragment.project.ui.demo
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -36,6 +38,7 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.TitleBar
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DemoScreen(
     onNavigateUp: () -> Unit = {}
@@ -45,6 +48,7 @@ fun DemoScreen(
     val scrollState = rememberScrollState()
     val tabs = listOf(
         "日期控件",
+        "日历控件",
         "滚轮控件",
         "菜单控件",
         "全文控件",
@@ -127,19 +131,20 @@ fun DemoScreen(
                 ) {
                     when (tabs.indexOf(selectedTab)) {
                         0 -> DatePickerScreen()
-                        1 -> WheelPickerScreen()
-                        2 -> DropdownMenuScreen()
-                        3 -> FullTextScreen()
-                        4 -> SwipeBoxScreen()
-                        5 -> PermissionScreen()
-                        6 -> PictureSelectorScreen()
-                        7 -> ScrollableScreen()
-                        8 -> DraggableScreen()
-                        9 -> TransformableScreen()
-                        10 -> AnimatedContentScreen()
-                        11 -> ColumnSortScreen()
-                        12 -> GridSortScreen()
-                        13 -> GridSelectScreen()
+                        1 -> CalendarScreen()
+                        2 -> WheelPickerScreen()
+                        3 -> DropdownMenuScreen()
+                        4 -> FullTextScreen()
+                        5 -> SwipeBoxScreen()
+                        6 -> PermissionScreen()
+                        7 -> PictureSelectorScreen()
+                        8 -> ScrollableScreen()
+                        9 -> DraggableScreen()
+                        10 -> TransformableScreen()
+                        11 -> AnimatedContentScreen()
+                        12 -> ColumnSortScreen()
+                        13 -> GridSortScreen()
+                        14 -> GridSelectScreen()
                     }
                 }
             }

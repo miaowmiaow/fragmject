@@ -1,7 +1,5 @@
 package com.example.fragment.project.ui.demo
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
 import com.example.fragment.project.components.Calendar
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarScreen() {
     val customCalendar = mutableMapOf(

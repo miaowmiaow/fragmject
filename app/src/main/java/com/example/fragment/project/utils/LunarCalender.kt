@@ -68,8 +68,8 @@ class LunarCalender private constructor() {
             "0815" to "中秋节",
             "0909" to "重阳节",
             "1208" to "腊八节",
-            "1222" to "北方小年",
-            "1223" to "南方小年",
+            "1222" to "北小年",
+            "1223" to "南小年",
             "0100" to "除夕"
         )
 

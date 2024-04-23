@@ -1,7 +1,5 @@
 package com.example.fragment.project.ui.demo
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -38,7 +36,6 @@ import com.example.fragment.project.R
 import com.example.fragment.project.components.TitleBar
 import kotlinx.coroutines.launch
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DemoScreen(
     onNavigateUp: () -> Unit = {}

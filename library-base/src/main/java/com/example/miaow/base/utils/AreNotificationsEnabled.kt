@@ -26,19 +26,11 @@ fun Context.areNotificationsEnabled(): Boolean {
 
 fun Context.gotoNotificationSettings() {
     try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val intent = Intent()
-            intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
-            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-            intent.putExtra(Settings.EXTRA_CHANNEL_ID, applicationInfo.uid)
-            startActivity(intent)
-        } else {
-            val intent = Intent()
-            intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
-            intent.putExtra("app_package", packageName)
-            intent.putExtra("app_uid", applicationInfo.uid)
-            startActivity(intent)
-        }
+        val intent = Intent()
+        intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+        intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        intent.putExtra(Settings.EXTRA_CHANNEL_ID, applicationInfo.uid)
+        startActivity(intent)
     } catch (e: Exception) {
         gotoAppDetailsSettings()
     }

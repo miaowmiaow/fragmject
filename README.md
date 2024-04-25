@@ -20,7 +20,7 @@
 
 ## 开发环境
 为了您能正常运行本项目，请先更新你的 `Android Studio` 。
-- 最新预览版本 `Android Studio Koala | 2024.1.1 Canary 6` 及以上版本运行(可能需要梯子)。 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
+- `Android Studio Iguana | 2023.2.1 Patch 1` 及以上版本运行(可能需要梯子)。 [Download Android Studio | Android Developer](https://developer.android.com/studio?hl=zh-cn)
 - 您也可以自行配置 `AGP` 和 `compose`。 [libs.versions.toml](https://github.com/miaowmiaow/fragmject/blob/master/gradle/libs.versions.toml)
 
 ## 将 Android 应用迁移到版本目录

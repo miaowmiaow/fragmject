@@ -376,7 +376,7 @@ class LunarCalender private constructor() {
         } else {
             year - 1
         }
-        return lY + " " +animalsYear(animalsYear) + " " + lM + lD
+        return lY + " " + animalsYear(animalsYear) + " " + lM + lD
     }
 
     /**
@@ -388,6 +388,9 @@ class LunarCalender private constructor() {
      * @return
      */
     fun getLunarDate(year: Int, month: Int, day: Int): DateInfo {
+        if (year < 1900 || (year == 1900 && month == 1 && day < 31) || year > 2100) {
+            return DateInfo(year, month, day, "", "", "", "")
+        }
         //农历节假日
         val lDateInt = getLunarDateInt(year, month, day)
         //得到当前年对应的农历年份
@@ -744,9 +747,9 @@ data class DateInfo(
     val lunarYear: String,
     val lunarMonth: String,
     val lunarDay: String,
-    val lunarFestival: String?,
-    val solarFestival: String?,
-    val solarTerms: String?,
+    val lunarFestival: String? = null,
+    val solarFestival: String? = null,
+    val solarTerms: String? = null,
 ) {
 
     fun getDay(): String {

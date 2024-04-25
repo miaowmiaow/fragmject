@@ -42,15 +42,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -90,10 +87,9 @@ import java.time.temporal.WeekFields
 import kotlin.math.ceil
 import kotlin.math.max
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Calendar(
-    state: CalendarState = rememberCalendarState(),
     padding: Dp = 0.dp,
     hasCustomCalendar: (date: DateInfo) -> Boolean,
     contentPadding: PaddingValues = PaddingValues(10.dp),
@@ -118,92 +114,89 @@ fun Calendar(
 
     var calendarState by remember { mutableStateOf(CalendarDefaults.DragAnchors.MONTH) }
 
-    val map = remember { mutableMapOf<String, MonthInfo>() }
+    val yearRange = IntRange(1900, 2100)
 
-    fun getMonthData(map: MutableMap<String, MonthInfo>, year: Int, month: Int): MonthInfo {
-        return map.getOrPut("${year}${month}") {
-            val localDate = LocalDate.of(year, month, 1)
-            val daysInMonth = localDate.lengthOfMonth()
-            val difference = localDate.dayOfWeek.value - firstDayOfWeek
-            val firstDayOfMonth = if (difference < 0) {
-                difference + CalendarDefaults.DAYS_IN_WEEK
-            } else {
-                difference
-            }
-            val days = (daysInMonth + firstDayOfMonth).toDouble()
-            val weeksInMonth = ceil(days / CalendarDefaults.DAYS_IN_WEEK).toInt()
-            var cellIndex = 0
-            var selectedWeek = 0
-            val data = mutableListOf<List<DateInfo>>()
-            for (weekIndex in 0 until weeksInMonth) {
-                val weekDate = mutableListOf<DateInfo>()
-                for (dayIndex in 0 until CalendarDefaults.DAYS_IN_WEEK) {
-                    var y = year
-                    var m = month
-                    if (cellIndex < firstDayOfMonth) {
-                        val lastMonth = localDate.plusMonths(-1)
-                        val daysInLastMonth = lastMonth.lengthOfMonth()
-                        val d = daysInLastMonth - (firstDayOfMonth - cellIndex) + 1
-                        m -= 1
-                        if (m < 1) {
-                            y -= 1
-                            m = 12
-                        }
-                        weekDate.add(getLunarDate(y, m, d))
-                    } else if (cellIndex >= (firstDayOfMonth + daysInMonth)) {
-                        val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
-                        m += 1
-                        if (m > 12) {
-                            y += 1
-                            m = 1
-                        }
-                        weekDate.add(getLunarDate(y, m, d))
+    var localDate = LocalDate.now()
+    val currYear = localDate.year
+    val currMonth = localDate.monthValue
+    val currDay = localDate.dayOfMonth
+
+    val date = remember {
+        mutableListOf<MonthInfo>().also {
+            for (year in yearRange.first until yearRange.last) {
+                for (month in 1..12) {
+                    localDate = localDate.withYear(year).withMonth(month).withDayOfMonth(1)
+                    val daysInMonth = localDate.lengthOfMonth()
+                    val difference = localDate.dayOfWeek.value - firstDayOfWeek
+                    val firstDayOfMonth = if (difference < 0) {
+                        difference + CalendarDefaults.DAYS_IN_WEEK
                     } else {
-                        val d = cellIndex - firstDayOfMonth + 1
-                        if (m == state.selectedMonth.value && d == state.selectedDay.value) {
-                            selectedWeek = weekIndex
-                        }
-                        weekDate.add(getLunarDate(y, m, d))
+                        difference
                     }
-                    cellIndex++
+                    val days = (daysInMonth + firstDayOfMonth).toDouble()
+                    val weeksInMonth = ceil(days / CalendarDefaults.DAYS_IN_WEEK).toInt()
+                    var cellIndex = 0
+                    var selectedWeek = 0
+                    val data = mutableListOf<List<DayInfo>>()
+                    for (weekIndex in 0 until weeksInMonth) {
+                        val weekDate = mutableListOf<DayInfo>()
+                        for (dayIndex in 0 until CalendarDefaults.DAYS_IN_WEEK) {
+                            var y = year
+                            var m = month
+                            if (cellIndex < firstDayOfMonth) {
+                                val lastMonth = localDate.plusMonths(-1)
+                                val daysInLastMonth = lastMonth.lengthOfMonth()
+                                val d = daysInLastMonth - (firstDayOfMonth - cellIndex) + 1
+                                m -= 1
+                                if (m < 1) {
+                                    y -= 1
+                                    m = 12
+                                }
+                                weekDate.add(DayInfo(y, m, d))
+                            } else if (cellIndex >= (firstDayOfMonth + daysInMonth)) {
+                                val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
+                                m += 1
+                                if (m > 12) {
+                                    y += 1
+                                    m = 1
+                                }
+                                weekDate.add(DayInfo(y, m, d))
+                            } else {
+                                val d = cellIndex - firstDayOfMonth + 1
+                                if (y == currYear && m == currMonth && d == currDay) {
+                                    selectedWeek = weekIndex
+                                }
+                                weekDate.add(DayInfo(y, m, d))
+                            }
+                            cellIndex++
+                        }
+                        data.add(weekDate)
+                    }
+                    it.add(
+                        MonthInfo(year, month, data, firstDayOfMonth, weeksInMonth, selectedWeek)
+                    )
                 }
-                data.add(weekDate)
             }
-            MonthInfo(year, month, data, firstDayOfMonth, weeksInMonth, selectedWeek)
         }
     }
 
-    val yearRange = state.yearRange
-    val monthsRange = (yearRange.last - yearRange.first + 1) * 12
     val firstYear = yearRange.first
-    val initialPage = (state.selectedYear.value - firstYear) * 12 + state.selectedMonth.value - 1
-    val pagerState = rememberPagerState(initialPage) { monthsRange }
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect {
-            if (calendarState != CalendarDefaults.DragAnchors.WEEK) {
-                val y = firstYear + pagerState.currentPage / 12
-                val m = pagerState.currentPage % 12 + 1
-                if (y != state.selectedYear.value || m != state.selectedMonth.value) {
-                    state.selectedYear.value = y
-                    state.selectedMonth.value = m
-                    state.selectedDay.value = 1
-                    getMonthData(map, y, m).selectedWeek = 0
-                }
-            }
-        }
-    }
+    val pageCount = (yearRange.last - yearRange.first + 1) * 12
+    val initialPage = (currYear - firstYear) * 12 + currMonth - 1
+    val pagerState = rememberPagerState(initialPage) { pageCount }
 
     val density = LocalDensity.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
     val monthExpandHeightDp =
         screenHeightDp - padding - CalendarDefaults.YearHeight - CalendarDefaults.DayHeight
+    var selectedYear by remember { mutableIntStateOf(currYear) }
+    var selectedMonth by remember { mutableIntStateOf(currMonth) }
+    var selectedDay by remember { mutableIntStateOf(currDay) }
 
     Column {
         var yearPickerVisible by remember { mutableStateOf(false) }
         TextButton(
-            onClick = {
-                yearPickerVisible = !yearPickerVisible
-            },
+            onClick = { yearPickerVisible = !yearPickerVisible },
             modifier = Modifier.height(CalendarDefaults.YearHeight),
             shape = CircleShape,
             colors = ButtonDefaults.textButtonColors(contentColor = LocalContentColor.current),
@@ -211,7 +204,7 @@ fun Calendar(
             border = null,
         ) {
             Text(
-                text = "${state.selectedYear.value}年${state.selectedMonth.value}月",
+                text = "${selectedYear}年${selectedMonth}月",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -228,9 +221,9 @@ fun Calendar(
             enter = expandVertically() + fadeIn(initialAlpha = 0.6f),
             exit = shrinkVertically() + fadeOut()
         ) {
-            YearPicker(state.selectedYear.value, yearRange) {
+            YearPicker(selectedYear, yearRange) {
                 coroutineScope.launch {
-                    pagerState.scrollToPage(pagerState.currentPage + (it - state.selectedYear.value) * 12)
+                    pagerState.scrollToPage(pagerState.currentPage + (it - selectedYear) * 12)
                 }
                 yearPickerVisible = false
             }
@@ -239,48 +232,45 @@ fun Calendar(
         HorizontalPager(state = pagerState) { page ->
             //实现周和月数据的切换
             val monthDate = if (calendarState == CalendarDefaults.DragAnchors.WEEK) {
-                var y = state.selectedYear.value
-                var m = state.selectedMonth.value
-                var monthDate = getMonthData(map, y, m)
+                var selectedPage = (selectedYear - firstYear) * 12 + selectedMonth - 1
+                var monthDate = date[selectedPage]
                 if (page == pagerState.targetPage && pagerState.targetPage - pagerState.currentPage > 0) {
                     var selectedWeek = monthDate.selectedWeek + 1
                     if (selectedWeek > monthDate.weeksInMonth - 1) {
-                        m = monthDate.month + 1
-                        if (m > 12) {
-                            y = monthDate.year + 1
-                            m = 1
-                        }
-                        monthDate = getMonthData(map, y, m)
+                        selectedPage += 1
+                        monthDate = date[selectedPage]
                         selectedWeek = -1
-                        state.selectedYear.value = y
-                        state.selectedMonth.value = m
-                        state.selectedDay.value = 1
+                        selectedYear = firstYear + selectedPage / 12
+                        selectedMonth = selectedPage % 12 + 1
+                        selectedDay = 1
                     }
                     monthDate.selectedWeek = selectedWeek
                 } else if (page == pagerState.targetPage && pagerState.targetPage - pagerState.currentPage < 0) {
                     var selectedWeek = monthDate.selectedWeek - 1
                     if (selectedWeek < 0) {
-                        monthDate.selectedWeek = -1
-                        m = monthDate.month - 1
-                        if (m < 1) {
-                            y = monthDate.year
-                            m = 12
-                        }
-                        monthDate = getMonthData(map, y, m)
+                        selectedPage -= 1
+                        monthDate = date[selectedPage]
                         selectedWeek = monthDate.weeksInMonth
-                        state.selectedYear.value = y
-                        state.selectedMonth.value = m
-                        state.selectedDay.value = 1
+                        selectedYear = firstYear + selectedPage / 12
+                        selectedMonth = selectedPage % 12 + 1
+                        selectedDay = 1
                     }
                     monthDate.selectedWeek = selectedWeek
                 }
                 monthDate
             } else {
-                getMonthData(map, firstYear + page / 12, page % 12 + 1)
+                val monthDate = date[page]
+                val y = firstYear + pagerState.currentPage / 12
+                val m = pagerState.currentPage % 12 + 1
+                if (y != selectedYear || m != selectedMonth) {
+                    selectedYear = y
+                    selectedMonth = m
+                    selectedDay = 1
+                }
+                monthDate
             }
-
             val monthHeightDp = CalendarDefaults.WeekHeight * monthDate.weeksInMonth
-            val adState = remember(pagerState.currentPage) {
+            val anchoredDraggableState = remember(pagerState.currentPage) {
                 AnchoredDraggableState(
                     initialValue = calendarState,
                     animationSpec = TweenSpec(durationMillis = 350),
@@ -295,14 +285,13 @@ fun Calendar(
             }
             var scrollEnabled by remember { mutableStateOf(false) }
             val listState = rememberLazyListState()
-            LaunchedEffect(adState) {
-                snapshotFlow { adState.currentValue }
+            LaunchedEffect(anchoredDraggableState) {
+                snapshotFlow { anchoredDraggableState.currentValue }
                     .collectLatest {
                         calendarState = it
                         scrollEnabled =
                             it == CalendarDefaults.DragAnchors.WEEK && listState.canScrollForward
-                        val monthPage =
-                            (state.selectedYear.value - firstYear) * 12 + state.selectedMonth.value - 1
+                        val monthPage = (selectedYear - firstYear) * 12 + selectedMonth - 1
                         //切换到正确的月份
                         if (it != CalendarDefaults.DragAnchors.WEEK && monthPage != pagerState.currentPage) {
                             pagerState.scrollToPage(monthPage)
@@ -313,28 +302,31 @@ fun Calendar(
             Box(
                 modifier = Modifier
                     .anchoredDraggable(
-                        state = adState,
+                        state = anchoredDraggableState,
                         orientation = Orientation.Vertical,
                     )
             ) {
-                val monthOffset = with(density) { adState.offset.toDp() }
-                val monthExpand = adState.currentValue == CalendarDefaults.DragAnchors.MONTH_EXPAND
+                val monthOffset = with(density) { anchoredDraggableState.offset.toDp() }
+                val monthExpand =
+                    anchoredDraggableState.currentValue == CalendarDefaults.DragAnchors.MONTH_EXPAND
                 Month(
                     monthDate,
                     monthOffset,
                     monthExpandHeightDp,
                     monthExpand
-                ) { weekIndex, date ->
+                ) { weekIndex, dayInfo ->
                     Day(
-                        date,
+                        dayInfo,
                         monthExpand,
-                        state.selectedMonth.value,
-                        state.selectedDay.value
+                        selectedMonth,
+                        selectedDay
                     ) {
-                        monthDate.selectedWeek = weekIndex
-                        state.selectedYear.value = date.year
-                        state.selectedMonth.value = date.month
-                        state.selectedDay.value = date.day
+                        selectedYear = dayInfo.year
+                        if (dayInfo.month == selectedMonth) {
+                            selectedMonth = dayInfo.month
+                            selectedDay = dayInfo.day
+                            monthDate.selectedWeek = weekIndex
+                        }
                     }
                 }
                 Column(
@@ -344,7 +336,8 @@ fun Calendar(
                         .offset(0.dp, monthOffset)
                         .background(colorResource(id = R.color.background))
                 ) {
-                    val selectedDate = state.getSelectedDate()
+                    val selectedDate =
+                        getLunarDate(selectedYear, selectedMonth, selectedDay)
                     Text(
                         text = selectedDate.lunarYear + " " + selectedDate.animalsYear + " " + selectedDate.lunarMonth + selectedDate.lunarDay,
                         modifier = Modifier.padding(10.dp)
@@ -367,7 +360,6 @@ fun Calendar(
                             )
                         }
                     } else {
-
                         LaunchedEffect(listState) {
                             snapshotFlow { listState.isScrollInProgress }
                                 .collect {
@@ -376,7 +368,6 @@ fun Calendar(
                                     }
                                 }
                         }
-
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             state = listState,
@@ -463,7 +454,7 @@ internal fun Month(
     monthOffset: Dp,
     monthExpandHeight: Dp,
     monthExpand: Boolean,
-    content: @Composable BoxScope.(weekIndex: Int, date: DateInfo) -> Unit
+    content: @Composable BoxScope.(weekIndex: Int, dayInfo: DayInfo) -> Unit
 ) {
     val monthHeight = CalendarDefaults.WeekHeight * monthDate.weeksInMonth
     val animatedColor by animateColorAsState(
@@ -521,12 +512,13 @@ internal fun Month(
 
 @Composable
 internal fun Day(
-    date: DateInfo,
+    dayInfo: DayInfo,
     monthExpand: Boolean,
     currMonth: Int,
     currDay: Int,
     onClick: () -> Unit = {}
 ) {
+    val date = getLunarDate(dayInfo.year, dayInfo.month, dayInfo.day)
     Column {
         Column(modifier = Modifier
             .fillMaxWidth()
@@ -598,7 +590,6 @@ internal fun Day(
 object CalendarDefaults {
 
     const val DAYS_IN_WEEK = 7
-    val YearRange: IntRange = IntRange(1900, 2100)
     val YearHeight = 45.dp
     val WeekHeight = 70.dp
     val DayHeight = 45.dp
@@ -610,45 +601,17 @@ object CalendarDefaults {
     }
 }
 
-@Stable
-class CalendarState(
-    var yearRange: IntRange,
-    var selectedYear: MutableState<Int>,
-    var selectedMonth: MutableState<Int>,
-    var selectedDay: MutableState<Int>,
-) {
-    fun getSelectedDate(): DateInfo {
-        return getLunarDate(
-            selectedYear.value,
-            selectedMonth.value,
-            selectedDay.value
-        )
-    }
-}
-
-@Composable
-@ExperimentalMaterial3Api
-fun rememberCalendarState(
-    yearRange: IntRange = CalendarDefaults.YearRange,
-    selectedYear: MutableState<Int>? = null,
-    selectedMonth: MutableState<Int>? = null,
-    selectedDay: MutableState<Int>? = null,
-): CalendarState {
-    val localDate = LocalDate.now()
-    val state = remember(localDate) {
-        val year = selectedYear ?: mutableIntStateOf(localDate.year)
-        val month = selectedMonth ?: mutableIntStateOf(localDate.monthValue)
-        val day = selectedDay ?: mutableIntStateOf(localDate.dayOfMonth)
-        CalendarState(yearRange, year, month, day)
-    }
-    return state
-}
-
 data class MonthInfo(
     val year: Int,
     val month: Int,
-    val days: MutableList<List<DateInfo>>,
+    val days: MutableList<List<DayInfo>>,
     val firstDayOfMonth: Int,
     val weeksInMonth: Int,
     var selectedWeek: Int = 0,
+)
+
+data class DayInfo(
+    val year: Int,
+    val month: Int,
+    val day: Int
 )

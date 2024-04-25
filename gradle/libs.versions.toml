@@ -1,9 +1,9 @@
 [versions]
-agp = "8.5.0-alpha04"
-androidxActivityCompose = "1.8.2"
-androidxComposeBom = "2024.04.00"
+agp = "8.3.2"
+androidxActivityCompose = "1.9.0"
+androidxComposeBom = "2024.04.01"
 androidxConstraintlayout = "2.1.4"
-androidxCoreKtx = "1.12.0"
+androidxCoreKtx = "1.13.0"
 androidxFragmentKtx = "1.6.2"
 androidxLifecycle = "2.7.0"
 androidxNavigationCompose = "2.7.7"

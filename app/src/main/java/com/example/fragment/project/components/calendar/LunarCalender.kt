@@ -1,4 +1,4 @@
-package com.example.fragment.project.utils
+package com.example.fragment.project.components.calendar
 
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -6,7 +6,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-fun getLunarDate(year: Int, month: Int, day: Int): DateInfo {
+fun getLunarDate(year: Int, month: Int, day: Int): LunarDate {
     return LunarCalender.getInstance().getLunarDate(year, month, day)
 }
 
@@ -387,9 +387,9 @@ class LunarCalender private constructor() {
      * @param
      * @return
      */
-    fun getLunarDate(year: Int, month: Int, day: Int): DateInfo {
+    fun getLunarDate(year: Int, month: Int, day: Int): LunarDate {
         if (year < 1900 || (year == 1900 && month == 1 && day < 31) || year > 2100) {
-            return DateInfo(year, month, day, "", "", "", "")
+            return LunarDate(year, month, day, "", "", "", "")
         }
         //农历节假日
         val lDateInt = getLunarDateInt(year, month, day)
@@ -428,7 +428,7 @@ class LunarCalender private constructor() {
         } else if (day == b % 100) {
             solarTerms = THE_24_SOLAR_TERMS[(month - 1) * 2 + 1]
         }
-        return DateInfo(
+        return LunarDate(
             year,
             month,
             day,
@@ -739,7 +739,7 @@ class LunarCalender private constructor() {
 
 }
 
-data class DateInfo(
+data class LunarDate(
     val year: Int,
     val month: Int,
     val day: Int,

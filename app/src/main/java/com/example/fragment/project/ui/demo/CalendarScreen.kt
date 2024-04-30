@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
-import com.example.fragment.project.components.Calendar
+import com.example.fragment.project.components.calendar.Calendar
 
 @Composable
 fun CalendarScreen() {
@@ -31,7 +31,6 @@ fun CalendarScreen() {
         ),
     )
     Calendar(
-        padding = 45.dp,
         hasCustomCalendar = {
             customCalendar.containsKey(it.getDay())
         }

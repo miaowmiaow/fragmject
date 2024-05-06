@@ -45,6 +45,7 @@ class CalendarViewModel : ViewModel() {
             dayNames.add(weekdays[i])
         }
         var localDate = LocalDate.now()
+        val selectedDay = localDate.dayOfMonth
         var monthCount = 0
         var weekCount = 0
         val monthMap = mutableMapOf<String, Month>()
@@ -63,6 +64,7 @@ class CalendarViewModel : ViewModel() {
                 val weeksInMonth =
                     ceil((daysInMonth + firstDayOfMonth).toDouble() / CalendarDefaults.DAYS_IN_WEEK).toInt()
                 var cellIndex = 0
+                var selectedWeek = 0
                 val weeksData = mutableListOf<List<Date>>()
                 for (week in 0 until weeksInMonth) {
                     val data = mutableListOf<Date>()
@@ -89,6 +91,9 @@ class CalendarViewModel : ViewModel() {
                             data.add(Date(y, m, d, false))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
+                            if(d == selectedDay){
+                                selectedWeek = week
+                            }
                             data.add(Date(y, m, d, true))
                         }
                         cellIndex++
@@ -99,6 +104,7 @@ class CalendarViewModel : ViewModel() {
                     monthMappingWeek["${year}-${month}-${week}"] = index
                 }
                 val monthInfo = Month(year, month, weeksData)
+                monthInfo.selectedWeek = selectedWeek
                 monthMap["${year}-${month}"] = monthInfo
                 monthCount++
             }

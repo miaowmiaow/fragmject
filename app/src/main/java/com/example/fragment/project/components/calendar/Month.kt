@@ -4,7 +4,7 @@ data class Month(
     val year: Int,
     val month: Int,
     val weeks: MutableList<List<Date>>,
-    var selectWeek: Int = 0,
+    var selectedWeek: Int = 0,
 ) {
     fun weeksInMonth(): Int {
         return weeks.size

@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -99,14 +100,16 @@ fun Calendar(
 
     var calendarState by remember { mutableStateOf(CalendarDefaults.DragAnchors.MONTH) }
 
-    var contentHeight by remember { mutableFloatStateOf(0f) }
+    var calendarHeight by remember { mutableFloatStateOf(0f) }
 
     val localDate = LocalDate.now()
 
     var selectedYear by remember { mutableIntStateOf(localDate.year) }
     var selectedMonth by remember { mutableIntStateOf(localDate.monthValue) }
     var selectedDay by remember { mutableIntStateOf(localDate.dayOfMonth) }
-    var selectedWeek by remember { mutableIntStateOf(0) }
+    var selectedWeek by remember {
+        mutableIntStateOf(uiState.monthMap["${selectedYear}-${selectedMonth}"]?.selectedWeek ?: 0)
+    }
 
     val weekInitialPage =
         uiState.monthMappingWeek["${selectedYear}-${selectedMonth}-${selectedWeek}"] ?: 0
@@ -120,7 +123,7 @@ fun Calendar(
         modifier = Modifier
             .fillMaxSize()
             .onSizeChanged {
-                contentHeight = it.height.toFloat()
+                calendarHeight = it.height.toFloat()
             }
     ) {
         var yearPickerVisible by remember { mutableStateOf(false) }
@@ -166,22 +169,35 @@ fun Calendar(
             }
         }
         WeekDays(uiState.dayNames)
-        val weekMode = calendarState == CalendarDefaults.DragAnchors.WEEK
-        val state = if (weekMode) {
+        val pagerState = if (calendarState == CalendarDefaults.DragAnchors.WEEK) {
             weekPagerState
         } else {
             monthPagerState
         }
-        HorizontalPager(state = state) { page ->
-            val month = if (weekMode) {
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.currentPage }.collectLatest {
+                if (calendarState == CalendarDefaults.DragAnchors.WEEK) {
+                    val pair = uiState.weekMappingMonth[it] ?: return@collectLatest
+                    val ym = pair.first.split("-")
+                    selectedYear = ym[0].toInt()
+                    selectedMonth = ym[1].toInt()
+                    selectedWeek = pair.second
+                } else {
+                    selectedYear = uiState.yearRange.first + it / 12
+                    selectedMonth = it % 12 + 1
+                }
+            }
+        }
+        HorizontalPager(state = pagerState) { page ->
+            val month = if (calendarState == CalendarDefaults.DragAnchors.WEEK) {
                 val pair = uiState.weekMappingMonth[page] ?: return@HorizontalPager
                 val month = uiState.monthMap[pair.first] ?: return@HorizontalPager
-                month.selectWeek = pair.second
+                month.selectedWeek = pair.second
                 month
             } else {
                 val key = "${uiState.yearRange.first + page / 12}-${page % 12 + 1}"
                 val month = uiState.monthMap[key] ?: return@HorizontalPager
-                month.selectWeek = selectedWeek
+                month.selectedWeek = selectedWeek
                 month
             }
             HorizontalMonthsPage(
@@ -195,7 +211,7 @@ fun Calendar(
                     selectedDay = d
                     selectedWeek = w
                 },
-                contentHeight,
+                calendarHeight,
                 calendarState,
                 { state ->
                     calendarState = state
@@ -205,20 +221,6 @@ fun Calendar(
                 verticalArrangement,
                 content
             )
-            if (weekMode) {
-                if (page == weekPagerState.currentPage && weekPagerState.currentPage != weekPagerState.targetPage) {
-                    val pair = uiState.weekMappingMonth[page] ?: return@HorizontalPager
-                    val ym = pair.first.split("-")
-                    selectedYear = ym[0].toInt()
-                    selectedMonth = ym[1].toInt()
-                    selectedWeek = pair.second
-                }
-            } else {
-                if (page == monthPagerState.targetPage && monthPagerState.currentPage != monthPagerState.targetPage) {
-                    selectedYear = uiState.yearRange.first + page / 12
-                    selectedMonth = page % 12 + 1
-                }
-            }
         }
     }
 }
@@ -294,7 +296,7 @@ internal fun HorizontalMonthsPage(
     selectedMonth: Int,
     selectedDay: Int,
     onSelectedDateChange: (selectedYear: Int, selectedMonth: Int, selectedDay: Int, selectedWeek: Int) -> Unit,
-    contentHeight: Float,
+    calendarHeight: Float,
     calendarState: CalendarDefaults.DragAnchors,
     onCalendarStateChange: (state: CalendarDefaults.DragAnchors) -> Unit,
     hasCustomCalendar: (date: LunarDate) -> Boolean,
@@ -304,11 +306,11 @@ internal fun HorizontalMonthsPage(
 ) {
     val density = LocalDensity.current
     val monthHeightDp = CalendarDefaults.WeekHeight * month.weeksInMonth()
-    val contentHeightDp = with(density) {
-        contentHeight.toDp()
+    val calendarHeightDp = with(density) {
+        calendarHeight.toDp()
     }
     val monthExpandHeightDp =
-        contentHeightDp - CalendarDefaults.YearHeight - CalendarDefaults.DayHeight
+        calendarHeightDp - CalendarDefaults.YearHeight - CalendarDefaults.DayHeight - CalendarDefaults.ArrowHeight
     val anchoredDraggableState = remember(monthHeightDp, monthExpandHeightDp) {
         AnchoredDraggableState(
             initialValue = calendarState,
@@ -322,8 +324,18 @@ internal fun HorizontalMonthsPage(
             velocityThreshold = { with(density) { 100.dp.toPx() } },
         )
     }
+    var scrollEnabled by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isScrollInProgress }.collectLatest {
+            if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0) {
+                scrollEnabled = false
+            }
+        }
+    }
     LaunchedEffect(anchoredDraggableState) {
         snapshotFlow { anchoredDraggableState.currentValue }.collectLatest {
+            scrollEnabled = it == CalendarDefaults.DragAnchors.WEEK && listState.canScrollForward
             onCalendarStateChange(it)
         }
     }
@@ -335,31 +347,49 @@ internal fun HorizontalMonthsPage(
             )
     ) {
         val monthOffset = with(density) { anchoredDraggableState.offset.toDp() }
-        val monthExpand =
+        val monthExpandMode =
             anchoredDraggableState.currentValue == CalendarDefaults.DragAnchors.MONTH_EXPAND
         Month(
             month,
             monthOffset,
             monthExpandHeightDp,
-            monthExpand
+            monthExpandMode
         ) { weekIndex, date ->
             Day(
                 date,
                 selectedMonth,
                 selectedDay,
-                monthExpand
+                monthExpandMode
             ) {
-                month.selectWeek = weekIndex
+                month.selectedWeek = weekIndex
                 onSelectedDateChange(date.year, date.month, date.day, weekIndex)
             }
         }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(monthExpandHeightDp - monthOffset)
+                .height(monthExpandHeightDp - monthOffset + CalendarDefaults.ArrowHeight)
                 .offset(0.dp, monthOffset)
                 .background(colorResource(id = R.color.background))
         ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(
+                        id = when (calendarState) {
+                            CalendarDefaults.DragAnchors.WEEK -> R.mipmap.ic_obtuse_bottom
+                            CalendarDefaults.DragAnchors.MONTH_EXPAND -> R.mipmap.ic_obtuse_top
+                            else -> R.mipmap.ic_line
+                        }
+                    ),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .height(CalendarDefaults.ArrowHeight)
+                        .aspectRatio(1f)
+                )
+            }
             val selectedDate = getLunarDate(selectedYear, selectedMonth, selectedDay)
             Text(
                 text = selectedDate.lunarYear + " " + selectedDate.animalsYear + " " + selectedDate.lunarMonth + selectedDate.lunarDay,
@@ -383,9 +413,6 @@ internal fun HorizontalMonthsPage(
                     )
                 }
             } else {
-                val listState = rememberLazyListState()
-                val weekMode = calendarState == CalendarDefaults.DragAnchors.WEEK
-                val scrollEnabled by remember { mutableStateOf(weekMode) }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     state = listState,
@@ -405,12 +432,12 @@ internal fun Month(
     monthDate: Month,
     monthOffset: Dp,
     monthExpandHeight: Dp,
-    monthExpand: Boolean,
+    monthExpandMode: Boolean,
     content: @Composable BoxScope.(weekIndex: Int, date: Date) -> Unit
 ) {
     val monthHeight = CalendarDefaults.WeekHeight * monthDate.weeksInMonth()
     val animatedColor by animateColorAsState(
-        if (monthExpand) colorResource(R.color.white) else colorResource(R.color.background),
+        if (monthExpandMode) colorResource(R.color.white) else colorResource(R.color.background),
         animationSpec = TweenSpec(350),
         label = "color"
     )
@@ -428,7 +455,7 @@ internal fun Month(
             val offsetY = if (monthOffset <= monthHeight) {
                 weekHeight = CalendarDefaults.WeekHeight
                 val offset = currWeekOffset + monthOffset - monthHeight
-                if (monthDate.selectWeek == weekIndex && offset < 0.dp) {
+                if (monthDate.selectedWeek == weekIndex && offset < 0.dp) {
                     zIndex = 1f
                     0.dp
                 } else {
@@ -444,7 +471,7 @@ internal fun Month(
                     .requiredHeight(weekHeight)
                     .offset(0.dp, offsetY)
                     .zIndex(zIndex)
-                    .then(if (monthExpand) Modifier.padding(bottom = 1.dp) else Modifier)
+                    .then(if (monthExpandMode) Modifier.padding(bottom = 1.dp) else Modifier)
                     .background(animatedColor),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.Top
@@ -466,7 +493,7 @@ internal fun Day(
     date: Date,
     currMonth: Int,
     currDay: Int,
-    monthExpand: Boolean,
+    monthExpandMode: Boolean,
     onClick: () -> Unit = {}
 ) {
     Column {
@@ -474,7 +501,11 @@ internal fun Day(
             .fillMaxWidth()
             .padding(1.dp)
             .clip(CircleShape)
-            .clickable { onClick() }
+            .clickable {
+                if (date.isMonth) {
+                    onClick()
+                }
+            }
             .then(
                 if (date.isMonth && currDay == date.day) {
                     Modifier
@@ -497,7 +528,7 @@ internal fun Day(
             )
             Text(
                 text = "  ${
-                    if (monthExpand) {
+                    if (monthExpandMode) {
                         date.lunarDate().lunarDay
                     } else {
                         date.lunarDate().getFirstFestival()
@@ -507,9 +538,9 @@ internal fun Day(
                     .fillMaxWidth()
                     .clipToBounds(),
                 color = colorResource(
-                    if (currMonth == date.month && currDay == date.day) {
+                    if (date.isMonth && currDay == date.day) {
                         R.color.text_fff
-                    } else if (date.lunarDate().isFestival() && !monthExpand) {
+                    } else if (date.lunarDate().isFestival() && !monthExpandMode) {
                         if (currMonth == date.month) {
                             R.color.theme_orange
                         } else {
@@ -526,7 +557,7 @@ internal fun Day(
                 maxLines = 1,
             )
         }
-        if (monthExpand) {
+        if (monthExpandMode) {
             date.lunarDate().getFestival().forEach {
                 Text(
                     text = it,
@@ -555,6 +586,7 @@ object CalendarDefaults {
     val YearHeight = 45.dp
     val WeekHeight = 70.dp
     val DayHeight = 45.dp
+    val ArrowHeight = 25.dp
 
     enum class DragAnchors {
         WEEK,

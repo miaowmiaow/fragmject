@@ -13,23 +13,56 @@ import java.util.Locale
 import kotlin.math.ceil
 
 data class CalendarUiState(
-    val yearRange: IntRange = IntRange(1900, 2100),
     val dayNames: List<Pair<String, String>> = arrayListOf(),
-    val monthMap: MutableMap<String, Month> = mutableMapOf(),
-    val weekMappingMonth: MutableMap<Int, Pair<String, Int>> = mutableMapOf(),
-    val monthMappingWeek: MutableMap<String, Int> = mutableMapOf(),
+    private val monthMap: MutableMap<String, Month> = mutableMapOf(),
+    private val weekIndexMappingDate: MutableMap<Int, Pair<String, Int>> = mutableMapOf(),
+    private val dateMappingWeekIndex: MutableMap<String, Int> = mutableMapOf(),
     var monthCount: Int = 0,
     var weekCount: Int = 0,
-)
+) {
+    fun monthByDate(year: Int, month: Int): Month? {
+        return monthMap["${year}-${month}"]
+    }
+
+    fun weekIndexByDate(year: Int, month: Int, week: Int): Int {
+        return dateMappingWeekIndex["${year}-${month}-${week}"] ?: 0
+    }
+
+    fun yearByWeekIndex(index: Int): Int {
+        val pair = weekIndexMappingDate[index] ?: return startYear()
+        return pair.first.split("-")[0].toInt()
+    }
+
+    fun monthByWeekIndex(index: Int): Int {
+        val pair = weekIndexMappingDate[index] ?: return 0
+        return pair.first.split("-")[1].toInt()
+    }
+
+    fun weekByWeekIndex(index: Int): Int {
+        val pair = weekIndexMappingDate[index] ?: return 0
+        return pair.second
+    }
+
+    fun startYear(): Int {
+        return CalendarViewModel.YearRange.first
+    }
+
+    fun lastYear(): Int {
+        return CalendarViewModel.YearRange.last
+    }
+}
 
 class CalendarViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CalendarUiState())
+    companion object {
+        val YearRange: IntRange = IntRange(1900, 2100)
+        const val DAYS_IN_WEEK = 7
+    }
 
+    private val _uiState = MutableStateFlow(CalendarUiState())
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
     init {
-        val yearRange = IntRange(1900, 2100)
         val locale = Locale.CHINA
         val firstDayOfWeek = WeekFields.of(locale).firstDayOfWeek.value
         val weekdays = with(locale) {
@@ -49,26 +82,26 @@ class CalendarViewModel : ViewModel() {
         var monthCount = 0
         var weekCount = 0
         val monthMap = mutableMapOf<String, Month>()
-        val weekMappingMonth = mutableMapOf<Int, Pair<String, Int>>()
-        val monthMappingWeek = mutableMapOf<String, Int>()
-        for (year in yearRange.first..yearRange.last) {
+        val weekIndexMappingDate = mutableMapOf<Int, Pair<String, Int>>()
+        val dateMappingWeekIndex = mutableMapOf<String, Int>()
+        for (year in YearRange.first..YearRange.last) {
             for (month in 1..12) {
                 localDate = localDate.withYear(year).withMonth(month).withDayOfMonth(1)
                 val daysInMonth = localDate.lengthOfMonth()
                 val difference = localDate.dayOfWeek.value - firstDayOfWeek
                 val firstDayOfMonth = if (difference < 0) {
-                    difference + CalendarDefaults.DAYS_IN_WEEK
+                    difference + DAYS_IN_WEEK
                 } else {
                     difference
                 }
                 val weeksInMonth =
-                    ceil((daysInMonth + firstDayOfMonth).toDouble() / CalendarDefaults.DAYS_IN_WEEK).toInt()
+                    ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
                 var cellIndex = 0
                 var selectedWeek = 0
                 val weeksData = mutableListOf<List<Date>>()
                 for (week in 0 until weeksInMonth) {
                     val data = mutableListOf<Date>()
-                    for (dayIndex in 0 until CalendarDefaults.DAYS_IN_WEEK) {
+                    for (dayIndex in 0 until DAYS_IN_WEEK) {
                         var y = year
                         var m = month
                         if (cellIndex < firstDayOfMonth) {
@@ -91,7 +124,7 @@ class CalendarViewModel : ViewModel() {
                             data.add(Date(y, m, d, false))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
-                            if(d == selectedDay){
+                            if (d == selectedDay) {
                                 selectedWeek = week
                             }
                             data.add(Date(y, m, d, true))
@@ -100,8 +133,8 @@ class CalendarViewModel : ViewModel() {
                     }
                     weeksData.add(data)
                     val index = weekCount++
-                    weekMappingMonth[index] = Pair("${year}-${month}", week)
-                    monthMappingWeek["${year}-${month}-${week}"] = index
+                    weekIndexMappingDate[index] = Pair("${year}-${month}", week)
+                    dateMappingWeekIndex["${year}-${month}-${week}"] = index
                 }
                 val monthInfo = Month(year, month, weeksData)
                 monthInfo.selectedWeek = selectedWeek
@@ -111,15 +144,47 @@ class CalendarViewModel : ViewModel() {
         }
         _uiState.update {
             it.copy(
-                yearRange = yearRange,
                 dayNames = dayNames,
                 monthMap = monthMap,
-                weekMappingMonth = weekMappingMonth,
-                monthMappingWeek = monthMappingWeek,
+                weekIndexMappingDate = weekIndexMappingDate,
+                dateMappingWeekIndex = dateMappingWeekIndex,
                 monthCount = monthCount,
                 weekCount = weekCount
             )
         }
     }
+}
 
+data class Month(
+    val year: Int,
+    val month: Int,
+    val weeks: MutableList<List<Date>>,
+    var selectedWeek: Int = 0,
+) {
+    fun weeksInMonth(): Int {
+        return weeks.size
+    }
+}
+
+data class Date(
+    val year: Int,
+    val month: Int,
+    val day: Int,
+    val isMonth: Boolean,
+) {
+    fun year(): String {
+        return year.toString()
+    }
+
+    fun month(): String {
+        return month.toString().padStart(2, '0')
+    }
+
+    fun day(): String {
+        return day.toString().padStart(2, '0')
+    }
+
+    fun lunar(): LunarDate {
+        return getLunarDate(year, month, day)
+    }
 }

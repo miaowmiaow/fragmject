@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 140,
-      "versionName": "1.4.0",
-      "outputFile": "wan-release-1.4.0-free.apk"
+      "versionCode": 160,
+      "versionName": "1.6.0",
+      "outputFile": "wan-release-1.6.0-free.apk"
     }
   ],
   "elementType": "File",
@@ -22,16 +22,16 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/wan-release-1.4.0-free.dm"
+        "baselineProfiles/1/wan-release-1.6.0-free.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/wan-release-1.4.0-free.dm"
+        "baselineProfiles/0/wan-release-1.6.0-free.dm"
       ]
     }
   ],
-  "minSdkVersionForDexing": 24
+  "minSdkVersionForDexing": 26
 }

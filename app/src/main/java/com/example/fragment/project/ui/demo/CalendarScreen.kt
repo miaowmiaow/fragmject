@@ -31,11 +31,13 @@ fun CalendarScreen() {
         ),
     )
     Calendar(
-        hasCustomCalendar = {
-            customCalendar.containsKey(it.getDay())
+        customCalendar = { date ->
+            val key = "${date.year()}${date.month()}${date.day()}"
+            customCalendar[key]
         }
     ) { date ->
-        customCalendar[date.getDay()]?.let {
+        val key = "${date.year()}${date.month()}${date.day()}"
+        customCalendar[key]?.let {
             itemsIndexed(items = it) { _, item ->
                 Column(
                     modifier = Modifier
@@ -49,7 +51,7 @@ fun CalendarScreen() {
             }
         }
         itemsIndexed(
-            items = date.getFestival(),
+            items = date.lunar().getFestival(),
         ) { _, item ->
             Column(
                 modifier = Modifier

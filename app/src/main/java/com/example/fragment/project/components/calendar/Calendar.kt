@@ -16,8 +16,10 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,6 +34,7 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -51,8 +54,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,7 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -73,59 +74,90 @@ import androidx.compose.ui.semantics.verticalScrollAxisRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import kotlin.math.max
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Calendar(
-    viewModel: CalendarViewModel = viewModel(),
-    contentPadding: PaddingValues = PaddingValues(10.dp),
-    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(10.dp),
-    customCalendar: (date: Date) -> List<String>?,
-    content: LazyListScope.(date: Date) -> Unit
+    schedules: MutableList<CalendarSchedule>,
+    modifier: Modifier = Modifier,
+    onSelectedDateChange: (year: Int, month: Int, day: Int) -> Unit,
+    content: LazyListScope.(date: CalendarDate) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val coroutineScope = rememberCoroutineScope()
+    val defaultLocale = LocalConfiguration.current.locales[0]
+    val calendarModel = remember(defaultLocale) { CalendarModel(defaultLocale) }
 
-    var calendarMode by remember { mutableStateOf(CalendarMode.Month) }
-    var calendarHeight by remember { mutableFloatStateOf(0f) }
+    calendarModel.updateSchedule(schedules)
 
-    val localDate = LocalDate.now()
+    val weekModePagerState = rememberCalendarPagerState(
+        initialPage = calendarModel.weekModeIndexByDate(
+            calendarModel.localYear,
+            calendarModel.localMonth
+        )
+    ) { calendarModel.weekModeCount() }
 
-    var currYear by remember { mutableIntStateOf(localDate.year) }
-    var currMonth by remember { mutableIntStateOf(localDate.monthValue) }
-    var currDay by remember { mutableIntStateOf(localDate.dayOfMonth) }
-    var currWeek by remember {
-        mutableIntStateOf(uiState.monthByDate(currYear, currMonth)?.selectedWeek ?: 0)
+    val monthModePagerState = rememberCalendarPagerState(
+        initialPage = (calendarModel.localYear - calendarModel.startYear()) * 12 + calendarModel.localMonth - 1
+    ) { calendarModel.monthModeCount() }
+
+    BoxWithConstraints(modifier = modifier) {
+        val calendarHeight = maxHeight
+        var calendarMode by remember { mutableStateOf(CalendarMode.Week) }
+        Column(modifier = Modifier.fillMaxSize()) {
+            YearPicker(
+                calendarModel = calendarModel,
+                calendarMode = calendarMode,
+                weekModePagerState = weekModePagerState,
+                monthModePagerState = monthModePagerState,
+            )
+            WeekDays(calendarModel.dayNames)
+            MonthPager(
+                calendarHeight = calendarHeight,
+                calendarModel = calendarModel,
+                calendarMode = calendarMode,
+                weekModePagerState = weekModePagerState,
+                monthModePagerState = monthModePagerState,
+                onCalendarStateChange = { mode -> calendarMode = mode },
+                onSelectedDateChange = onSelectedDateChange,
+                content = content
+            )
+        }
     }
+}
 
-    val weekInitialPage = uiState.weekIndexByDate(currYear, currMonth, currWeek)
-    val weekPagerState =
-        rememberCalendarPagerState(key1 = calendarMode, weekInitialPage) { uiState.weekCount }
-    val monthInitialPage = (currYear - uiState.startYear()) * 12 + currMonth - 1
-    val monthPagerState =
-        rememberCalendarPagerState(key1 = calendarMode, monthInitialPage) { uiState.monthCount }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .onSizeChanged {
-                calendarHeight = it.height.toFloat()
-            }
-    ) {
-        var yearPickerVisible by remember { mutableStateOf(false) }
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun YearPicker(
+    calendarModel: CalendarModel,
+    calendarMode: CalendarMode,
+    weekModePagerState: PagerState,
+    monthModePagerState: PagerState,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val weekMode = calendarMode == CalendarMode.Week
+    val selectedYear = if (weekMode) {
+        calendarModel.yearByWeekModeIndex(weekModePagerState.currentPage)
+    } else {
+        calendarModel.startYear() + monthModePagerState.currentPage / 12
+    }
+    val selectedMonth = if (weekMode) {
+        calendarModel.monthByWeekModeIndex(weekModePagerState.currentPage)
+    } else {
+        monthModePagerState.currentPage % 12 + 1
+    }
+    Column {
+        var pickerVisible by remember { mutableStateOf(false) }
         TextButton(
-            onClick = { yearPickerVisible = !yearPickerVisible },
+            onClick = { pickerVisible = !pickerVisible },
             modifier = Modifier.height(YearHeight),
             shape = CircleShape,
             colors = ButtonDefaults.textButtonColors(contentColor = LocalContentColor.current),
@@ -133,7 +165,7 @@ fun Calendar(
             border = null,
         ) {
             Text(
-                text = "${currYear}年${currMonth}月",
+                text = "${selectedYear}年${selectedMonth}月",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -141,124 +173,63 @@ fun Calendar(
             Icon(
                 Icons.Filled.ArrowDropDown,
                 contentDescription = "",
-                Modifier.rotate(if (yearPickerVisible) 180f else 0f)
+                Modifier.rotate(if (pickerVisible) 180f else 0f)
             )
         }
         AnimatedVisibility(
-            visible = yearPickerVisible,
+            visible = pickerVisible,
             modifier = Modifier.clipToBounds(),
             enter = expandVertically() + fadeIn(initialAlpha = 0.6f),
             exit = shrinkVertically() + fadeOut()
         ) {
-            YearPicker(currYear, uiState.startYear(), uiState.lastYear()) {
-                coroutineScope.launch {
-                    if (calendarMode == CalendarMode.Week) {
-                        val page = uiState.weekIndexByDate(currYear, currMonth, currWeek)
-                        weekPagerState.scrollToPage(page)
-                    } else {
-                        val page = (currYear - uiState.startYear()) * 12 + currMonth - 1
-                        monthPagerState.scrollToPage(page)
-                    }
-                }
-                currYear = it
-                yearPickerVisible = false
-            }
-        }
-        WeekDays(uiState.dayNames)
-        val pagerState = if (calendarMode == CalendarMode.Week) weekPagerState else monthPagerState
-        LaunchedEffect(pagerState) {
-            snapshotFlow { pagerState.currentPage }.collectLatest {
-                if (calendarMode == CalendarMode.Week) {
-                    currYear = uiState.yearByWeekIndex(it)
-                    currMonth = uiState.monthByWeekIndex(it)
-                    currWeek = uiState.weekByWeekIndex(it)
-                } else {
-                    currYear = uiState.startYear() + it / 12
-                    currMonth = it % 12 + 1
-                }
-            }
-        }
-        HorizontalPager(state = pagerState) { page ->
-            val month = if (calendarMode == CalendarMode.Week) {
-                val month = uiState.monthByDate(
-                    uiState.yearByWeekIndex(page),
-                    uiState.monthByWeekIndex(page)
-                ) ?: return@HorizontalPager
-                month.selectedWeek = uiState.weekByWeekIndex(page)
-                month
-            } else {
-                val month = uiState.monthByDate(
-                    uiState.startYear() + page / 12,
-                    page % 12 + 1
-                ) ?: return@HorizontalPager
-                month.selectedWeek = currWeek
-                month
-            }
-            Month(
-                calendarMode,
-                calendarHeight,
-                month,
-                currYear,
-                currMonth,
-                currDay,
-                { y, m, d, w ->
-                    currYear = y
-                    currMonth = m
-                    currDay = d
-                    currWeek = w
-                },
-                { mode ->
-                    calendarMode = mode
-                },
-                contentPadding,
-                verticalArrangement,
-                customCalendar,
-                content
+            val yearsInRow = 3
+            val lazyGridState = rememberLazyGridState(
+                initialFirstVisibleItemIndex = max(
+                    0, selectedYear - calendarModel.startYear() - yearsInRow
+                )
             )
-        }
-    }
-}
-
-
-@Composable
-internal fun YearPicker(
-    currentYear: Int,
-    startYear: Int,
-    lastYear: Int,
-    onSelectedYear: (year: Int) -> Unit
-) {
-    val yearsInRow = 3
-    val lazyGridState = rememberLazyGridState(
-        initialFirstVisibleItemIndex = max(
-            0, currentYear - startYear - yearsInRow
-        )
-    )
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(yearsInRow),
-        modifier = Modifier
-            .background(colorResource(R.color.background))
-            .semantics {
-                verticalScrollAxisRange = ScrollAxisRange(value = { 0f }, maxValue = { 0f })
-            },
-        state = lazyGridState,
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        items(lastYear - startYear) {
-            val localizedYear = it + startYear
-            Text(
-                text = localizedYear.toString(),
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(yearsInRow),
                 modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .clickable { onSelectedYear(localizedYear) }
-                    .background(
-                        colorResource(if (localizedYear == currentYear) R.color.theme else R.color.transparent),
-                        RoundedCornerShape(50)
-                    ),
-                color = colorResource(if (localizedYear == currentYear) R.color.text_fff else R.color.text_333),
-                fontSize = 18.sp,
-                textAlign = TextAlign.Center
-            )
+                    .background(colorResource(R.color.background))
+                    .semantics {
+                        verticalScrollAxisRange = ScrollAxisRange(value = { 0f }, maxValue = { 0f })
+                    },
+                state = lazyGridState,
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                items(calendarModel.lastYear() - calendarModel.startYear()) {
+                    val localizedYear = it + calendarModel.startYear()
+                    Text(
+                        text = localizedYear.toString(),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .clickable {
+                                coroutineScope.launch {
+                                    if (weekMode) {
+                                        val page = calendarModel.weekModeIndexByDate(
+                                            localizedYear,
+                                            selectedMonth
+                                        )
+                                        weekModePagerState.scrollToPage(page)
+                                    } else {
+                                        val page = it * 12 + selectedMonth - 1
+                                        monthModePagerState.scrollToPage(page)
+                                    }
+                                }
+                                pickerVisible = false
+                            }
+                            .background(
+                                colorResource(if (localizedYear == selectedYear) R.color.theme else R.color.transparent),
+                                RoundedCornerShape(50)
+                            ),
+                        color = colorResource(if (localizedYear == selectedYear) R.color.text_fff else R.color.text_333),
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
@@ -285,183 +256,197 @@ internal fun WeekDays(dayNames: List<Pair<String, String>>) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun Month(
+internal fun MonthPager(
+    calendarHeight: Dp,
+    calendarModel: CalendarModel,
     calendarMode: CalendarMode,
-    calendarHeight: Float,
-    month: Month,
-    currYear: Int,
-    currMonth: Int,
-    currDay: Int,
-    onSelectedDateChange: (year: Int, month: Int, day: Int, week: Int) -> Unit,
+    monthModePagerState: PagerState,
+    weekModePagerState: PagerState,
     onCalendarStateChange: (mode: CalendarMode) -> Unit,
-    contentPadding: PaddingValues,
-    verticalArrangement: Arrangement.Vertical,
-    customCalendar: (date: Date) -> List<String>?,
-    content: LazyListScope.(date: Date) -> Unit
+    onSelectedDateChange: (year: Int, month: Int, day: Int) -> Unit,
+    content: LazyListScope.(date: CalendarDate) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val calendarHeightDp = with(density) {
-        calendarHeight.toDp()
-    }
-    val weekModeHeight = WeekHeight
-    val monthModeHeight = WeekHeight * month.weeksInMonth()
-    val festivalModeHeight = calendarHeightDp - YearHeight - WeekDayHeight - VerticalArrowHeight
-    val anchoredDraggableState = remember(monthModeHeight, festivalModeHeight) {
-        AnchoredDraggableState(
-            initialValue = calendarMode,
-            animationSpec = TweenSpec(durationMillis = 350),
-            anchors = DraggableAnchors {
-                CalendarMode.Week at with(density) { weekModeHeight.toPx() }
-                CalendarMode.Month at with(density) { monthModeHeight.toPx() }
-                CalendarMode.Festival at with(density) { festivalModeHeight.toPx() }
-            },
-            positionalThreshold = { distance -> distance * 0.5f },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
+    val weekMode = calendarMode == CalendarMode.Week
+    var selectedDate by remember {
+        mutableStateOf(
+            calendarModel.calendarDate(
+                calendarModel.localYear,
+                calendarModel.localMonth,
+                calendarModel.localDay
+            )
         )
     }
-    var scrollEnabled by remember { mutableStateOf(false) }
-    val listState = rememberLazyListState()
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.isScrollInProgress }.collectLatest {
-            if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0) {
-                scrollEnabled = false
+    LaunchedEffect(selectedDate.year, selectedDate.month, selectedDate.day) {
+        onSelectedDateChange(selectedDate.year, selectedDate.month, selectedDate.day)
+    }
+    val pagerState = if (weekMode) weekModePagerState else monthModePagerState
+    //周模式和月模式联动
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collectLatest { page ->
+            if (calendarMode == CalendarMode.Week) {
+                val month = calendarModel.weekModeByIndex(page) ?: return@collectLatest
+                val selectedWeek = calendarModel.weekByWeekModeIndex(page)
+                val isDate = month.weeks[selectedWeek].firstOrNull { it.isDay }
+                if (isDate == null) {
+                    selectedDate.isDay = false
+                    val date = month.weeks[selectedWeek].first { it.isMonth }
+                    date.isDay = true
+                    selectedDate = date
+                }
+                val p = (month.year - calendarModel.startYear()) * 12 + month.month - 1
+                calendarModel.monthModeByIndex(p)?.let {
+                    it.selectedWeek = selectedWeek
+                }
+                if (monthModePagerState.currentPage != p) {
+                    coroutineScope.launch {
+                        monthModePagerState.scrollToPage(p)
+                    }
+                }
+            } else {
+                val month = calendarModel.monthModeByIndex(page) ?: return@collectLatest
+                val isDate = month.weeks[month.selectedWeek].firstOrNull { it.isDay }
+                if (isDate == null) {
+                    val selectedMonth =
+                        calendarModel.monthModeByDate(selectedDate.year, selectedDate.month)
+                    selectedMonth?.selectedWeek = 0
+                    selectedDate.isDay = false
+                    val date = month.weeks[month.selectedWeek].first { it.isMonth }
+                    date.isDay = true
+                    selectedDate = date
+                }
+                val p = calendarModel.weekModeIndexByDate(month.year, month.month)
+                if (weekModePagerState.currentPage != p) {
+                    coroutineScope.launch {
+                        weekModePagerState.scrollToPage(p)
+                    }
+                }
             }
         }
     }
-    LaunchedEffect(anchoredDraggableState) {
-        snapshotFlow { anchoredDraggableState.currentValue }.collectLatest {
-            scrollEnabled = it == CalendarMode.Week && listState.canScrollForward
-            onCalendarStateChange(it)
-        }
-    }
-    Box(
-        modifier = Modifier
-            .anchoredDraggable(
-                state = anchoredDraggableState,
-                orientation = Orientation.Vertical,
+    HorizontalPager(state = pagerState) { page ->
+        val calendarMonth = if (weekMode) {
+            calendarModel.weekModeByIndex(page)
+        } else {
+            calendarModel.monthModeByIndex(page)
+        } ?: return@HorizontalPager
+        val weekModeHeight = with(density) { WeekHeight.toPx() }
+        val monthModeHeight = with(density) { (WeekHeight * calendarMonth.weeksInMonth()).toPx() }
+        val festivalModeHeight =
+            with(density) { (calendarHeight - YearHeight - WeekDayHeight - VerticalArrowHeight).toPx() }
+        val anchoredDraggableState = remember(monthModeHeight, festivalModeHeight) {
+            AnchoredDraggableState(
+                initialValue = calendarMode,
+                anchors = DraggableAnchors {
+                    CalendarMode.Week at weekModeHeight
+                    CalendarMode.Month at monthModeHeight
+                    CalendarMode.Festival at festivalModeHeight
+                },
+                positionalThreshold = { distance -> distance * 0.5f },
+                velocityThreshold = { with(density) { 100.dp.toPx() } },
+                animationSpec = TweenSpec(durationMillis = 350),
             )
-    ) {
-        val offset = with(density) { anchoredDraggableState.offset.toDp() }
-        val festivalMode = anchoredDraggableState.currentValue == CalendarMode.Festival
-        val animatedColor by animateColorAsState(
-            if (festivalMode) colorResource(R.color.white) else colorResource(R.color.background),
-            animationSpec = TweenSpec(350),
-            label = "color"
-        )
+        }
+        LaunchedEffect(calendarModel) {
+            if (calendarModel.firstStartup) {
+                anchoredDraggableState.animateTo(CalendarMode.Month)
+                calendarModel.firstStartup = false
+            }
+        }
+        var scrollEnabled by remember { mutableStateOf(false) }
+        val listState = rememberLazyListState()
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.isScrollInProgress }.collectLatest {
+                if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0) {
+                    scrollEnabled = false
+                }
+            }
+        }
+        LaunchedEffect(anchoredDraggableState) {
+            snapshotFlow { anchoredDraggableState.currentValue }.collectLatest {
+                scrollEnabled = it == CalendarMode.Week && listState.canScrollForward
+                onCalendarStateChange(it)
+            }
+        }
         Box(
             modifier = Modifier
+                .anchoredDraggable(
+                    state = anchoredDraggableState,
+                    orientation = Orientation.Vertical,
+                )
                 .background(colorResource(id = R.color.background))
-                .fillMaxWidth()
-                .requiredHeight(festivalModeHeight)
+                .fillMaxSize()
                 .clipToBounds(),
         ) {
-            for (weekIndex in 0 until month.weeksInMonth()) {
+            val offset = anchoredDraggableState.requireOffset()
+            val festivalMode = anchoredDraggableState.currentValue == CalendarMode.Festival
+            val animatedColor by animateColorAsState(
+                if (festivalMode) colorResource(R.color.white) else colorResource(R.color.background),
+                animationSpec = TweenSpec(350),
+                label = "color"
+            )
+            for (weekIndex in 0 until calendarMonth.weeksInMonth()) {
                 var zIndex = 0f
-                val weekOffset = WeekHeight * weekIndex
-                var weekHeight = festivalModeHeight / month.weeksInMonth()
+                val weekOffset = weekModeHeight * weekIndex
+                var weekHeight = festivalModeHeight / calendarMonth.weeksInMonth()
                 val offsetY = if (offset <= monthModeHeight) {
-                    weekHeight = WeekHeight
+                    weekHeight = weekModeHeight
                     val currOffset = weekOffset + offset - monthModeHeight
-                    if (month.selectedWeek == weekIndex && currOffset < 0.dp) {
+                    if (calendarMonth.selectedWeek == weekIndex && currOffset < 0) {
                         zIndex = 1f
-                        0.dp
+                        0
                     } else {
                         zIndex = 0f
                         currOffset
                     }
                 } else {
-                    offset / month.weeksInMonth() * weekIndex
+                    offset / calendarMonth.weeksInMonth() * weekIndex
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .requiredHeight(weekHeight)
-                        .offset(0.dp, offsetY)
+                        .requiredHeight(with(density) { weekHeight.toDp() })
+                        .offset { IntOffset(x = 0, y = offsetY.toInt()) }
                         .zIndex(zIndex)
                         .then(if (festivalMode) Modifier.padding(bottom = 1.dp) else Modifier)
                         .background(animatedColor),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.Top
                 ) {
-                    val week = month.weeks[weekIndex]
+                    val week = calendarMonth.weeks[weekIndex]
                     for (date in week) {
                         Box(modifier = Modifier.weight(1f)) {
-                            Day(date, currMonth, currDay, festivalMode, customCalendar) {
-                                month.selectedWeek = weekIndex
-                                onSelectedDateChange(date.year, date.month, date.day, weekIndex)
+                            Day(date, festivalMode) {
+                                selectedDate.isDay = false
+                                date.isDay = true
+                                if (calendarMode != CalendarMode.Week) {
+                                    calendarMonth.selectedWeek = weekIndex
+                                    val p = calendarModel.weekModeIndexByDate(
+                                        calendarMonth.year,
+                                        calendarMonth.month
+                                    )
+                                    if (weekModePagerState.currentPage != p) {
+                                        coroutineScope.launch {
+                                            weekModePagerState.scrollToPage(p)
+                                        }
+                                    }
+                                }
+                                selectedDate = date
                             }
                         }
                     }
                 }
             }
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .requiredHeight(calendarHeightDp - YearHeight - WeekDayHeight - WeekHeight)
-                .offset(0.dp, offset)
-                .background(colorResource(id = R.color.background))
-        ) {
-            val currDate = Date(currYear, currMonth, currDay, true)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .zIndex(1f),
-                contentAlignment = Alignment.Center
+            Schedule(
+                calendarHeight = calendarHeight,
+                calendarMode = calendarMode,
+                calendarDate = selectedDate,
+                scrollProvider = { offset.toInt() },
+                listState = listState,
+                scrollEnabled = scrollEnabled
             ) {
-                Image(
-                    painter = painterResource(
-                        id = when (calendarMode) {
-                            CalendarMode.Week -> R.mipmap.ic_obtuse_bottom
-                            CalendarMode.Festival -> R.mipmap.ic_obtuse_top
-                            else -> R.mipmap.ic_line
-                        }
-                    ),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .height(VerticalArrowHeight)
-                        .aspectRatio(1f)
-                )
-            }
-            Text(
-                text = currDate.lunar().lunarYear + " " + currDate.lunar().animalsYear + " " + currDate.lunar().lunarMonth + currDate.lunar().lunarDay,
-                modifier = Modifier
-                    .height(LunarHeight)
-                    .padding(10.dp)
-            )
-            if (
-                customCalendar(currDate).isNullOrEmpty()
-                && currDate.lunar().getFestival().isEmpty()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .requiredHeight(calendarHeightDp - YearHeight - WeekDayHeight - VerticalArrowHeight - LunarHeight - offset),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.mipmap.ic_calendar),
-                        contentDescription = null,
-                        modifier = Modifier.size(65.dp)
-                    )
-                    Spacer(Modifier.size(10.dp))
-                    Text(
-                        text = "没有日程",
-                        fontSize = 14.sp,
-                        color = colorResource(R.color.text_999)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    state = listState,
-                    contentPadding = contentPadding,
-                    verticalArrangement = verticalArrangement,
-                    userScrollEnabled = scrollEnabled
-                ) {
-                    content(currDate)
-                }
+                content(it)
             }
         }
     }
@@ -469,25 +454,22 @@ internal fun Month(
 
 @Composable
 internal fun Day(
-    date: Date,
-    currMonth: Int,
-    currDay: Int,
+    calendarDate: CalendarDate,
     festivalMode: Boolean,
-    customCalendar: (date: Date) -> List<String>?,
     onClick: () -> Unit = {}
 ) {
     Column {
         Column(modifier = Modifier
-            .fillMaxWidth()
             .padding(1.dp)
+            .aspectRatio(1f)
             .clip(CircleShape)
             .clickable {
-                if (date.isMonth) {
+                if (calendarDate.isMonth) {
                     onClick()
                 }
             }
             .then(
-                if (date.isMonth && currDay == date.day) {
+                if (calendarDate.isMonth && calendarDate.isDay) {
                     Modifier
                         .background(colorResource(R.color.theme_orange))
                         .border(1.dp, colorResource(R.color.theme_orange), CircleShape)
@@ -497,11 +479,11 @@ internal fun Day(
             )
         ) {
             Text(
-                text = date.day.toString(),
+                text = calendarDate.day.toString(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
-                color = colorResource(if (date.isMonth) R.color.text_333 else R.color.text_999),
+                color = colorResource(if (calendarDate.isMonth) R.color.text_333 else R.color.text_999),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -509,19 +491,19 @@ internal fun Day(
             Text(
                 text = "  ${
                     if (festivalMode) {
-                        date.lunar().lunarDay
+                        calendarDate.lunarDay()
                     } else {
-                        date.lunar().getFirstFestival()
+                        calendarDate.getFirstFestival()
                     }
                 }  ",
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
                 color = colorResource(
-                    if (date.isMonth && currDay == date.day) {
+                    if (calendarDate.isMonth && calendarDate.isDay) {
                         R.color.text_fff
-                    } else if (date.lunar().isFestival() && !festivalMode) {
-                        if (currMonth == date.month) {
+                    } else if (calendarDate.isFestival() && !festivalMode) {
+                        if (calendarDate.isMonth) {
                             R.color.theme_orange
                         } else {
                             R.color.b_zero_theme_orange
@@ -536,42 +518,112 @@ internal fun Day(
                 maxLines = 1,
             )
         }
-        customCalendar(date)?.forEach {
-            Text(
-                text = it,
-                modifier = Modifier
-                    .padding(horizontal = 3.dp, vertical = 1.dp)
-                    .background(
-                        colorResource(R.color.gray_e5),
-                        RoundedCornerShape(3.dp)
-                    )
-                    .fillMaxWidth(),
-                color = colorResource(R.color.text_999),
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 14.sp,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-            )
+        calendarDate.getSchedule().forEach {
+            Festival(it)
         }
         if (festivalMode) {
-            date.lunar().getFestival().forEach {
-                Text(
-                    text = it,
-                    modifier = Modifier
-                        .padding(horizontal = 3.dp, vertical = 1.dp)
-                        .background(
-                            colorResource(R.color.gray_e5),
-                            RoundedCornerShape(3.dp)
-                        )
-                        .fillMaxWidth(),
-                    color = colorResource(R.color.text_999),
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 14.sp,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
+            calendarDate.getFestival().forEach {
+                Festival(it)
+            }
+        }
+    }
+}
+
+@Composable
+internal fun Festival(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 3.dp, vertical = 1.dp)
+            .background(
+                colorResource(R.color.gray_e5),
+                RoundedCornerShape(3.dp)
+            ),
+        color = colorResource(R.color.text_999),
+        fontSize = 10.sp,
+        textAlign = TextAlign.Center,
+        lineHeight = 14.sp,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+    )
+}
+
+@Composable
+internal fun Schedule(
+    calendarHeight: Dp,
+    calendarMode: CalendarMode,
+    calendarDate: CalendarDate,
+    scrollProvider: () -> Int,
+    listState: LazyListState,
+    scrollEnabled: Boolean,
+    content: LazyListScope.(date: CalendarDate) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .requiredHeight(calendarHeight - YearHeight - WeekDayHeight - WeekHeight)
+            .offset { IntOffset(x = 0, y = scrollProvider()) }
+            .background(colorResource(id = R.color.background))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(
+                    id = when (calendarMode) {
+                        CalendarMode.Week -> R.mipmap.ic_obtuse_bottom
+                        CalendarMode.Festival -> R.mipmap.ic_obtuse_top
+                        else -> R.mipmap.ic_line
+                    }
+                ),
+                contentDescription = "",
+                modifier = Modifier
+                    .height(VerticalArrowHeight)
+                    .aspectRatio(1f)
+            )
+        }
+        Text(
+            text = calendarDate.lunarYear() + " " + calendarDate.animalsYear() + " " + calendarDate.lunarMonth() + calendarDate.lunarDay(),
+            modifier = Modifier
+                .height(LunarHeight)
+                .padding(10.dp)
+        )
+        if (calendarDate.getSchedule().isEmpty() && calendarDate.getFestival().isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .requiredHeight(
+                        calendarHeight - YearHeight - WeekDayHeight - VerticalArrowHeight - LunarHeight - with(
+                            LocalDensity.current
+                        ) { scrollProvider().toDp() }),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(R.mipmap.ic_calendar),
+                    contentDescription = null,
+                    modifier = Modifier.size(65.dp)
                 )
+                Spacer(Modifier.size(10.dp))
+                Text(
+                    text = "没有日程",
+                    fontSize = 14.sp,
+                    color = colorResource(R.color.text_999)
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                contentPadding = PaddingValues(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                userScrollEnabled = scrollEnabled
+            ) {
+                content(calendarDate)
             }
         }
     }
@@ -604,12 +656,11 @@ value class CalendarMode internal constructor(internal val value: Int) {
 @ExperimentalFoundationApi
 @Composable
 fun rememberCalendarPagerState(
-    key1: Any?,
     initialPage: Int = 0,
     initialPageOffsetFraction: Float = 0f,
     pageCount: () -> Int
 ): PagerState {
-    return remember(key1) {
+    return remember {
         CalendarPagerState(initialPage, initialPageOffsetFraction, pageCount)
     }.apply {
         pageCountState.value = pageCount

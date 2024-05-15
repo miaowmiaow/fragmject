@@ -15,7 +15,7 @@
 - Kotlin
 - Compose
 - MVVM、MVI
-- 常用控件封装(图片选择器、图片编辑器、日期控件、全面屏沉浸、屏幕录制...)
+- 常用控件封装(图片选择器、图片编辑器、日历控件、滚轮控件、全面屏沉浸、屏幕录制...)
 - 字节码插桩(ASM...)
 
 ## 开发环境
@@ -143,7 +143,7 @@
 - [满满的 WebView 优化干货，让你的 H5 实现秒开体验](https://juejin.cn/post/7043706765879279629)
 - [Jetpack Compose : 优雅的使用WebView](https://juejin.cn/post/7194360493866221628)
 
-![webview.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/4.webp)
+![4.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/4.webp)
 
 ## SharedFlowBus
 [SharedFlowBus：30行代码实现消息总线你确定不看吗](https://juejin.cn/post/7028067962200260615)
@@ -167,6 +167,87 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 }
 ```
 
+## 字节码插桩
+[最通俗易懂的字节码插桩实战 —— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
+
+[最通俗易懂的字节码插桩实战 —— 自动埋点](https://juejin.cn/post/6985366891447451662)
+
+#### 隐私合规 ———— 替换目标字段或方法（library-plugin）
+[一文学会字节码替换，再也不用担心隐私合规审核](https://juejin.cn/post/7121985493445083149)
+
+#### 源码位置
+```
+├── library-plugin                              
+|  └── src 
+|     └── main 
+|        ├── kotlin                             
+|        └── resources                          
+|           └── statistic.properties            插件配置
+| 
+└── repos                                       插件生成目录                  
+```
+
+#### 快速使用
+在 `MiaowPlugin` 添加 `ScanBean` 并配置目标字段或方法以及对应的替换字段或方法。
+```
+ScanBean(
+    owner = "android/os/Build",
+    name = "BRAND",
+    desc = "Ljava/lang/String;",
+    replaceOpcode = Opcodes.INVOKESTATIC,
+    replaceOwner = "com/example/fragment/library/common/utils/BuildUtils",
+    replaceName = "getBrand",
+    "()Ljava/lang/String;"
+)
+```
+
+#### 耗时扫描 ———— 打印方法执行时间
+在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围。
+```
+TimeBean( //以包名和执行时间为条件
+    "com/example/fragment/library/base",
+    time = 50L
+)
+```
+
+#### 埋点统计 ———— 自动埋点
+在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法。
+```
+TraceBean(
+    owner = "Landroid/view/View\$OnClickListener;",
+    name = "onClick",
+    desc = "(Landroid/view/View;)V",
+    traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
+    traceName = "viewOnClick",
+    traceDesc = "(Landroid/view/View;)V" //参数应在desc范围之内
+)
+```
+配置完成后 `gradle` 执行 `publish` 任务生成插件。   
+在根目录 `setting.gradle` 添加本地插件源。
+```
+pluginManagement {
+    repositories {
+        maven {
+            url uri('repo')
+        }
+    }
+}
+```
+在根目录 `build.gradle` 添加插件依赖。
+```
+buildscript {
+    dependencies {
+        classpath 'com.example.miaow:plugin:1.0.0'
+    }
+}
+```
+在app目录 `build.gradle` apply插件。
+```
+plugins {
+    id 'miaow'
+}
+```
+
 ## 图片编辑器（library-picture）
 [自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 
@@ -174,8 +255,12 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 | ![5.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/5.webp) | ![6.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/6.gif) | ![7.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/7.gif) |
 |-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
+#### 源码位置
+```                                    
+└── library-picture                                          
+```
+
 #### 快速使用
-源代码在 `library-picture` 目录下。
 ```
 PictureEditorDialog.newInstance()
     .setBitmapPath(path)
@@ -250,75 +335,32 @@ if (context is AppCompatActivity) {
 }
 ```
 
-## 字节码插桩
-[最通俗易懂的字节码插桩实战 —— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
+## Calendar
+![8.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/8.gif)
 
-[最通俗易懂的字节码插桩实战 —— 自动埋点](https://juejin.cn/post/6985366891447451662)
-
-#### 隐私合规 ———— 替换目标字段或方法（library-plugin）
-[一文学会字节码替换，再也不用担心隐私合规审核](https://juejin.cn/post/7121985493445083149)
+#### 源码位置
+```
+└── app                                         
+   └── src
+      └── main
+          └── java                                                  
+             ├── components         
+             |  └── calendar                             
+             |     └── Calendar                  
+             └── ui                             
+                └── demo                        
+                   └── CalendarScreen                     
+```
 
 #### 快速使用
-源代码在 `library-plugin` 目录下。   
-在 `MiaowPlugin` 添加 `ScanBean` 并配置目标字段或方法以及对应的替换字段或方法。
 ```
-ScanBean(
-    owner = "android/os/Build",
-    name = "BRAND",
-    desc = "Ljava/lang/String;",
-    replaceOpcode = Opcodes.INVOKESTATIC,
-    replaceOwner = "com/example/fragment/library/common/utils/BuildUtils",
-    replaceName = "getBrand",
-    "()Ljava/lang/String;"
-)
-```
+Calendar(
+    schedules = uiState.schedules,
+    modifier = Modifier.padding(vertical = 15.dp),
+    onSelectedDateChange = { year, month, day ->
 
-#### 耗时扫描 ———— 打印方法执行时间
-在 `MiaowPlugin` 添加 `TimeBean` 并配置打印目标或范围。
-```
-TimeBean( //以包名和执行时间为条件
-    "com/example/fragment/library/base",
-    time = 50L
-)
-```
-
-#### 埋点统计 ———— 自动埋点
-在 `MiaowPlugin` 添加 `TraceBean` 并配置埋点目标以及对应埋点方法。
-```
-TraceBean(
-    owner = "Landroid/view/View\$OnClickListener;",
-    name = "onClick",
-    desc = "(Landroid/view/View;)V",
-    traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
-    traceName = "viewOnClick",
-    traceDesc = "(Landroid/view/View;)V" //参数应在desc范围之内
-)
-```
-
-配置完成后 `gradle` 执行 `publish` 任务生成插件。   
-在根目录 `setting.gradle` 添加本地插件源。
-```
-pluginManagement {
-    repositories {
-        maven {
-            url uri('repo')
-        }
     }
-}
-```
-在根目录 `build.gradle` 添加插件依赖。
-```
-buildscript {
-    dependencies {
-        classpath 'com.example.miaow:plugin:1.0.0'
-    }
-}
-```
-在app目录 `build.gradle` apply插件。
-```
-plugins {
-    id 'miaow'
-}
+)
 ```
 
 ## 主要开源库

@@ -358,7 +358,7 @@ internal fun MonthPager(
         val listState = rememberLazyListState()
         LaunchedEffect(listState) {
             snapshotFlow { listState.isScrollInProgress }.collectLatest {
-                if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0) {
+                if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 && !listState.canScrollForward) {
                     scrollEnabled = false
                 }
             }

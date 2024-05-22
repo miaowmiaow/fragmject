@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.update
 
 data class CalendarUiState(
     var schedules: MutableList<CalendarSchedule> = mutableListOf(
-        CalendarSchedule(2024, 4, 18, mutableListOf("11", "22", "33")),
+        CalendarSchedule(2024, 4, 18, mutableListOf("11", "22", "33","11", "22", "33","11", "22", "33","11", "22", "33","11", "22", "33")),
         CalendarSchedule(2024, 4, 19, mutableListOf("aa", "bb", "cc")),
     ),
     private val updateTime: Long = 0

@@ -109,6 +109,7 @@ class HomeViewModel : BaseViewModel() {
                 putPath("page", page.toString())
             }
         }
+        updatePageCont(response.data?.pageCount?.toInt())
         return response
     }
 

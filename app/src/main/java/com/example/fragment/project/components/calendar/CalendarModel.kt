@@ -10,20 +10,20 @@ import kotlin.math.ceil
 class CalendarModel(locale: CalendarLocale) {
 
     var firstStartup: Boolean = true
+    var dayNames: MutableList<Pair<String, String>> = arrayListOf()
     var localYear: Int = 0
     var localMonth: Int = 0
-    var localDay: Int = 0
-    var dayNames: MutableList<Pair<String, String>> = arrayListOf()
-    private val calendarDateMap: MutableMap<String, CalendarDate> = mutableMapOf()
+    private var localDay: Int = 0
     private val calendarMonthMap: MutableMap<Int, CalendarMonth> = mutableMapOf()
-    private val calendarWeekMap: MutableMap<Int, CalendarMonth> = mutableMapOf()
     private val monthModeDateMappingIndex: MutableMap<String, Int> = mutableMapOf()
     private val weekModeIndexMappingDate: MutableMap<Int, Pair<String, Int>> = mutableMapOf()
     private val weekModeDateMappingIndex: MutableMap<Pair<String, Int>, Int> = mutableMapOf()
+    private var monthModeCount = 0
+    private var weekModeCount = 0
 
     fun updateSchedule(schedules: List<CalendarSchedule>) {
         schedules.forEach {
-            calendarDateMap["${it.year}-${it.month}-${it.day}"]?.setSchedule(it.schedules)
+            calendarDate(it.year, it.month, it.day)?.setSchedule(it.schedules)
         }
     }
 
@@ -44,8 +44,6 @@ class CalendarModel(locale: CalendarLocale) {
         localYear = localDate.year
         localMonth = localDate.monthValue
         localDay = localDate.dayOfMonth
-        var monthCount = 0
-        var weekCount = 0
 
         for (year in YEAR_RANGE.first..YEAR_RANGE.last) {
             for (month in 1..12) {
@@ -60,8 +58,8 @@ class CalendarModel(locale: CalendarLocale) {
                 val weeksInMonth =
                     ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
                 var cellIndex = 0
-                var selectedWeek = 0
                 val weeksData = mutableListOf<MutableList<CalendarDate>>()
+                val daysData = mutableListOf<CalendarDate>()
                 for (week in 0 until weeksInMonth) {
                     val data = mutableListOf<CalendarDate>()
                     for (dayIndex in 0 until DAYS_IN_WEEK) {
@@ -76,7 +74,7 @@ class CalendarModel(locale: CalendarLocale) {
                                 y -= 1
                                 m = 12
                             }
-                            data.add(CalendarDate(y, m, d))
+                            data.add(CalendarDate(y, m, d, week))
                         } else if (cellIndex >= (firstDayOfMonth + daysInMonth)) {
                             val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
                             m += 1
@@ -84,35 +82,27 @@ class CalendarModel(locale: CalendarLocale) {
                                 y += 1
                                 m = 1
                             }
-                            data.add(CalendarDate(y, m, d))
+                            data.add(CalendarDate(y, m, d, week))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
-                            if (y == localYear && m == localMonth && d == localDay) {
-                                selectedWeek = week
-                                val date = CalendarDate(y, m, d, isMonth = true, isDay = true)
-                                data.add(date)
-                                calendarDateMap["${year}-${m}-${d}"] = date
+                            val date = if (y == localYear && m == localMonth && d == localDay) {
+                                CalendarDate(y, m, d, week, isMonth = true, isDay = true)
                             } else {
-                                val date = CalendarDate(y, m, d, true)
-                                data.add(date)
-                                calendarDateMap["${year}-${m}-${d}"] = date
+                                CalendarDate(y, m, d, week, true)
                             }
+                            data.add(date)
+                            daysData.add(date)
                         }
                         cellIndex++
                     }
                     weeksData.add(data)
-                    weekModeIndexMappingDate[weekCount] = Pair("${year}-${month}", week)
-                    weekModeDateMappingIndex[Pair("${year}-${month}", week)] = weekCount
-                    calendarWeekMap[weekCount] = CalendarMonth(year, month, weeksData).also {
-                        it.selectedWeek = week
-                    }
-                    weekCount++
+                    weekModeIndexMappingDate[weekModeCount] = Pair("${year}-${month}", week)
+                    weekModeDateMappingIndex[Pair("${year}-${month}", week)] = weekModeCount
+                    weekModeCount++
                 }
-                monthModeDateMappingIndex["${year}-${month}"] = monthCount
-                calendarMonthMap[monthCount] = CalendarMonth(year, month, weeksData).also {
-                    it.selectedWeek = selectedWeek
-                }
-                monthCount++
+                monthModeDateMappingIndex["${year}-${month}"] = monthModeCount
+                calendarMonthMap[monthModeCount] = CalendarMonth(year, month, weeksData, daysData)
+                monthModeCount++
             }
         }
     }
@@ -120,21 +110,23 @@ class CalendarModel(locale: CalendarLocale) {
     /**
      * 获取指定年月的日历日期对象
      */
-    fun calendarDate(year: Int, month: Int, day: Int): CalendarDate {
-        return calendarDateMap.getOrPut("${year}-${month}-${day}") {
-            CalendarDate(year, month, day)
-        }
+    private fun calendarDate(year: Int, month: Int, day: Int): CalendarDate? {
+        return monthModeByDate(year, month)?.days?.getOrNull(day - 1)
+    }
+
+    fun localCalendarDate(): CalendarDate? {
+        return monthModeByDate(localYear, localMonth)?.days?.getOrNull(localDay - 1)
     }
 
     fun monthModeCount(): Int {
-        return calendarMonthMap.size
+        return monthModeCount
     }
 
     fun weekModeCount(): Int {
-        return calendarWeekMap.size
+        return weekModeCount
     }
 
-    fun monthModeByDate(year: Int, month: Int): CalendarMonth? {
+    private fun monthModeByDate(year: Int, month: Int): CalendarMonth? {
         val key = monthModeDateMappingIndex["${year}-${month}"] ?: 0
         return calendarMonthMap[key]
     }
@@ -150,16 +142,21 @@ class CalendarModel(locale: CalendarLocale) {
      * 根据索引获取周模式的日历月份
      */
     fun weekModeByIndex(index: Int): CalendarMonth? {
-        return calendarWeekMap[index]
+        val year = yearByWeekModeIndex(index)
+        val month = monthByWeekModeIndex(index)
+        return monthModeByDate(year, month)
     }
 
     /**
      * 根据日期获取周模式的日历月份
      */
-    fun weekModeIndexByDate(year: Int, month: Int): Int {
-        val key = monthModeDateMappingIndex["${year}-${month}"] ?: 0
-        val week = calendarMonthMap[key]?.selectedWeek ?: 0
+    fun weekModeIndexByDate(year: Int, month: Int, week: Int = 0): Int {
         return weekModeDateMappingIndex[Pair("${year}-${month}", week)] ?: 0
+    }
+
+    fun weekModeIndexByLocalDate(): Int {
+        val week = calendarDate(localYear, localMonth, localDay)?.week ?: 0
+        return weekModeIndexByDate(localYear, localMonth, week)
     }
 
     fun yearByWeekModeIndex(index: Int): Int {
@@ -193,7 +190,7 @@ data class CalendarMonth(
     val year: Int,
     val month: Int,
     val weeks: MutableList<MutableList<CalendarDate>>,
-    var selectedWeek: Int = 0,
+    val days: MutableList<CalendarDate>,
 ) {
     fun weeksInMonth(): Int {
         return weeks.size
@@ -204,6 +201,7 @@ data class CalendarDate(
     val year: Int,
     val month: Int,
     val day: Int = 1,
+    val week: Int,
     val isMonth: Boolean = false,
     var isDay: Boolean = false,
 ) {

@@ -54,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -99,10 +100,7 @@ fun Calendar(
     calendarModel.updateSchedule(schedules)
 
     val weekModePagerState = rememberCalendarPagerState(
-        initialPage = calendarModel.weekModeIndexByDate(
-            calendarModel.localYear,
-            calendarModel.localMonth
-        )
+        initialPage = calendarModel.weekModeIndexByLocalDate()
     ) { calendarModel.weekModeCount() }
 
     val monthModePagerState = rememberCalendarPagerState(
@@ -269,17 +267,12 @@ internal fun MonthPager(
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
     val weekMode = calendarMode == CalendarMode.Week
-    var selectedDate by remember {
-        mutableStateOf(
-            calendarModel.calendarDate(
-                calendarModel.localYear,
-                calendarModel.localMonth,
-                calendarModel.localDay
-            )
-        )
-    }
-    LaunchedEffect(selectedDate.year, selectedDate.month, selectedDate.day) {
-        onSelectedDateChange(selectedDate.year, selectedDate.month, selectedDate.day)
+    var selectedWeek by remember { mutableIntStateOf(0) }
+    var selectedDate by remember { mutableStateOf(calendarModel.localCalendarDate()) }
+    LaunchedEffect(selectedDate?.year, selectedDate?.month, selectedDate?.day) {
+        selectedDate?.let {
+            onSelectedDateChange(it.year, it.month, it.day)
+        }
     }
     val pagerState = if (weekMode) weekModePagerState else monthModePagerState
     //周模式和月模式联动
@@ -287,18 +280,15 @@ internal fun MonthPager(
         snapshotFlow { pagerState.currentPage }.collectLatest { page ->
             if (calendarMode == CalendarMode.Week) {
                 val month = calendarModel.weekModeByIndex(page) ?: return@collectLatest
-                val selectedWeek = calendarModel.weekByWeekModeIndex(page)
+                selectedWeek = calendarModel.weekByWeekModeIndex(page)
                 val isDate = month.weeks[selectedWeek].firstOrNull { it.isDay }
                 if (isDate == null) {
-                    selectedDate.isDay = false
+                    selectedDate?.isDay = false
                     val date = month.weeks[selectedWeek].first { it.isMonth }
                     date.isDay = true
                     selectedDate = date
                 }
                 val p = (month.year - calendarModel.startYear()) * 12 + month.month - 1
-                calendarModel.monthModeByIndex(p)?.let {
-                    it.selectedWeek = selectedWeek
-                }
                 if (monthModePagerState.currentPage != p) {
                     coroutineScope.launch {
                         monthModePagerState.scrollToPage(p)
@@ -306,17 +296,15 @@ internal fun MonthPager(
                 }
             } else {
                 val month = calendarModel.monthModeByIndex(page) ?: return@collectLatest
-                val isDate = month.weeks[month.selectedWeek].firstOrNull { it.isDay }
+                val isDate = month.weeks[selectedWeek].firstOrNull { it.isDay }
                 if (isDate == null) {
-                    val selectedMonth =
-                        calendarModel.monthModeByDate(selectedDate.year, selectedDate.month)
-                    selectedMonth?.selectedWeek = 0
-                    selectedDate.isDay = false
-                    val date = month.weeks[month.selectedWeek].first { it.isMonth }
+                    selectedWeek = 0
+                    selectedDate?.isDay = false
+                    val date = month.weeks[selectedWeek].first { it.isMonth }
                     date.isDay = true
                     selectedDate = date
                 }
-                val p = calendarModel.weekModeIndexByDate(month.year, month.month)
+                val p = calendarModel.weekModeIndexByDate(month.year, month.month, selectedWeek)
                 if (weekModePagerState.currentPage != p) {
                     coroutineScope.launch {
                         weekModePagerState.scrollToPage(p)
@@ -393,7 +381,7 @@ internal fun MonthPager(
                 val offsetY = if (offset <= monthModeHeight) {
                     weekHeight = weekModeHeight
                     val currOffset = weekOffset + offset - monthModeHeight
-                    if (calendarMonth.selectedWeek == weekIndex && currOffset < 0) {
+                    if (selectedWeek == weekIndex && currOffset < 0) {
                         zIndex = 1f
                         0
                     } else {
@@ -418,13 +406,14 @@ internal fun MonthPager(
                     for (date in week) {
                         Box(modifier = Modifier.weight(1f)) {
                             Day(date, festivalMode) {
-                                selectedDate.isDay = false
+                                selectedDate?.isDay = false
                                 date.isDay = true
                                 if (calendarMode != CalendarMode.Week) {
-                                    calendarMonth.selectedWeek = weekIndex
+                                    selectedWeek = weekIndex
                                     val p = calendarModel.weekModeIndexByDate(
                                         calendarMonth.year,
-                                        calendarMonth.month
+                                        calendarMonth.month,
+                                        weekIndex
                                     )
                                     if (weekModePagerState.currentPage != p) {
                                         coroutineScope.launch {
@@ -553,12 +542,13 @@ internal fun Festival(text: String) {
 internal fun Schedule(
     calendarHeight: Dp,
     calendarMode: CalendarMode,
-    calendarDate: CalendarDate,
+    calendarDate: CalendarDate?,
     scrollProvider: () -> Int,
     listState: LazyListState,
     scrollEnabled: Boolean,
     content: LazyListScope.(date: CalendarDate) -> Unit
 ) {
+    if (calendarDate == null) return
     Column(
         modifier = Modifier
             .fillMaxWidth()

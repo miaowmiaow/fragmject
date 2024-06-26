@@ -54,7 +54,7 @@ class WebViewManager private constructor() {
             return getInstance().back(webView)
         }
 
-        fun forward(webView: WebView): Boolean {
+        fun forward(webView: WebView): String? {
             return getInstance().forward(webView)
         }
 
@@ -69,6 +69,16 @@ class WebViewManager private constructor() {
     private val backStack: ArrayDeque<String> = ArrayDeque()
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
+
+    private fun getWebView(context: Context): WebView {
+        val webView = if (webViewQueue.isEmpty()) {
+            create(MutableContextWrapper(context))
+        } else {
+            webViewQueue.removeFirst()
+        }
+        prepare(MutableContextWrapper(context.applicationContext))
+        return webView
+    }
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -111,13 +121,12 @@ class WebViewManager private constructor() {
     }
 
     private fun obtain(context: Context, url: String): WebView {
-        val webView = if (webViewQueue.isEmpty()) {
+        val webView = webViewMap.getOrPut(url) {
             backStack.remove(url)
-            webViewMap.getOrPut(url) {
-                create(MutableContextWrapper(context))
-            }
-        } else {
-            webViewQueue.removeFirst()
+            getWebView(MutableContextWrapper(context))
+        }
+        if (webView.parent != null) {
+            (webView.parent as ViewGroup).removeView(webView)
         }
         val contextWrapper = webView.context as MutableContextWrapper
         contextWrapper.baseContext = context
@@ -126,12 +135,8 @@ class WebViewManager private constructor() {
 
     private fun back(webView: WebView): Boolean {
         return try {
-            val backLastUrl = backStack.removeLast()
-            webViewMap[backLastUrl]?.let {
-                webViewQueue.add(0, it)
-            }
-            val originalUrl = webView.originalUrl.toString()
-            forwardStack.add(originalUrl)
+            backStack.removeLast()
+            forwardStack.add(webView.originalUrl.toString())
             true
         } catch (e: Exception) {
             lastBackWebView = WeakReference(webView)
@@ -139,18 +144,14 @@ class WebViewManager private constructor() {
         }
     }
 
-    private fun forward(webView: WebView): Boolean {
+    private fun forward(webView: WebView): String? {
         return try {
             val forwardLastUrl = forwardStack.removeLast()
-            webViewMap[forwardLastUrl]?.let {
-                webViewQueue.add(0, it)
-            }
-            val originalUrl = webView.originalUrl.toString()
-            backStack.add(originalUrl)
-            true
+            backStack.add(webView.originalUrl.toString())
+            forwardLastUrl
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
-            false
+            null
         }
     }
 
@@ -165,7 +166,7 @@ class WebViewManager private constructor() {
             } else {
                 destroy()
                 //重新缓存一个webView
-                webViewQueue.add(create(MutableContextWrapper(webView.context.applicationContext)))
+                prepare(MutableContextWrapper(webView.context.applicationContext))
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())

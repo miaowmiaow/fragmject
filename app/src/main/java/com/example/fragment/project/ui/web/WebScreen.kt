@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebScreen(
-    originalUrl: String,
+    url: String,
     webBookmarkData: List<String>,
     onWebBookmark: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
@@ -284,7 +284,7 @@ fun WebScreen(
         sheetSwipeEnabled = false
     ) { padding ->
         WebViewNavGraph(
-            originalUrl = originalUrl,
+            url = url,
             navigator = navigator,
             modifier = Modifier
                 .fillMaxSize()
@@ -294,13 +294,13 @@ fun WebScreen(
             },
             onNavigateUp = onNavigateUp
         )
-//        AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
-//            LinearProgressIndicator(
-//                progress = { navigator.progress },
-//                modifier = Modifier.fillMaxWidth(),
-//                color = colorResource(R.color.theme_orange),
-//                trackColor = colorResource(R.color.white)
-//            )
-//        }
+        AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
+            LinearProgressIndicator(
+                progress = { navigator.progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = colorResource(R.color.theme_orange),
+                trackColor = colorResource(R.color.white)
+            )
+        }
     }
 }

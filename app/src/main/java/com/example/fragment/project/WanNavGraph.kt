@@ -202,7 +202,7 @@ fun WanNavGraph(
         }
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(
-                originalUrl = backStackEntry.arguments?.getString("url") ?: "",
+                url = backStackEntry.arguments?.getString("url") ?: "",
                 webBookmarkData = wanUiState.webBookmarkResult,
                 onWebBookmark = { isAdd, text -> wanViewModel.onWebBookmark(isAdd, text) },
                 onWebHistory = { isAdd, text -> wanViewModel.onWebHistory(isAdd, text) },

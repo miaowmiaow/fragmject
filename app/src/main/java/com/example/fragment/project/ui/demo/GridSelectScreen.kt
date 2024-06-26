@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,8 +44,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.onLongClick
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
@@ -95,7 +91,6 @@ fun GridSelectScreen(
             it.addAll(photos)
         }
     }
-    val inSelectionMode by remember { derivedStateOf { selectedIds.value.isNotEmpty() } }
     val state = rememberLazyGridState()
     val autoScrollSpeed = remember { mutableFloatStateOf(0f) }
     LaunchedEffect(autoScrollSpeed.floatValue) {
@@ -109,11 +104,11 @@ fun GridSelectScreen(
 
     LazyVerticalGrid(
         state = state,
-        columns = GridCells.Adaptive(minSize = 128.dp),
+        columns = GridCells.Adaptive(minSize = 80.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp),
         horizontalArrangement = Arrangement.spacedBy(3.dp),
         modifier = Modifier.photoGridDragHandler(
-            lazyGridState = state,
+            state = state,
             haptics = LocalHapticFeedback.current,
             selectedIds = selectedIds,
             autoScrollSpeed = autoScrollSpeed,
@@ -122,39 +117,13 @@ fun GridSelectScreen(
     ) {
         items(data, key = { it.id }) { photo ->
             val selected by remember { derivedStateOf { selectedIds.value.contains(photo.id) } }
-            ImageItem(
-                photo, inSelectionMode, selected,
-                Modifier
-                    .semantics {
-                        if (!inSelectionMode) {
-                            onLongClick("Select") {
-                                data.remove(photo)
-                                selectedIds.value += photo.id
-                                true
-                            }
-                        }
-                    }
-                    .then(if (inSelectionMode) {
-                        Modifier.toggleable(
-                            value = selected,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null, // do not show a ripple
-                            onValueChange = {
-                                if (it) {
-                                    selectedIds.value += photo.id
-                                } else {
-                                    selectedIds.value -= photo.id
-                                }
-                            }
-                        )
-                    } else Modifier)
-            )
+            ImageItem(photo, selected, Modifier)
         }
     }
 }
 
 fun Modifier.photoGridDragHandler(
-    lazyGridState: LazyGridState,
+    state: LazyGridState,
     haptics: HapticFeedback,
     selectedIds: MutableState<Set<Int>>,
     autoScrollSpeed: MutableState<Float>,
@@ -165,41 +134,45 @@ fun Modifier.photoGridDragHandler(
             itemInfo.size.toIntRect().contains(hitPoint.round() - itemInfo.offset)
         }?.key as? Int
 
-    var initialKey: Int? = null
-    var currentKey: Int? = null
+    var currentKey = -1
     detectDragGesturesAfterLongPress(
         onDragStart = { offset ->
-            lazyGridState.gridItemKeyAtPosition(offset)?.let { key ->
+            state.gridItemKeyAtPosition(offset)?.let { key ->
+                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                currentKey = key
                 if (!selectedIds.value.contains(key)) {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    initialKey = key
-                    currentKey = key
                     selectedIds.value += key
+                } else {
+                    selectedIds.value -= key
                 }
             }
         },
-        onDragCancel = { initialKey = null; autoScrollSpeed.value = 0f },
-        onDragEnd = { initialKey = null; autoScrollSpeed.value = 0f },
+        onDragCancel = { autoScrollSpeed.value = 0f },
+        onDragEnd = { autoScrollSpeed.value = 0f },
         onDrag = { change, _ ->
-            if (initialKey != null) {
-                val distFromBottom =
-                    lazyGridState.layoutInfo.viewportSize.height - change.position.y
-                val distFromTop = change.position.y
-                autoScrollSpeed.value = when {
-                    distFromBottom < autoScrollThreshold -> autoScrollThreshold - distFromBottom
-                    distFromTop < autoScrollThreshold -> -(autoScrollThreshold - distFromTop)
-                    else -> 0f
-                }
+            val distFromBottom = state.layoutInfo.viewportSize.height - change.position.y
+            val distFromTop = change.position.y
+            autoScrollSpeed.value = when {
+                distFromBottom < autoScrollThreshold -> autoScrollThreshold - distFromBottom
+                distFromTop < autoScrollThreshold -> -(autoScrollThreshold - distFromTop)
+                else -> 0f
+            }
 
-                lazyGridState.gridItemKeyAtPosition(change.position)?.let { key ->
-                    if (currentKey != key) {
-                        selectedIds.value = selectedIds.value
-                            .minus(initialKey!!..currentKey!!)
-                            .minus(currentKey!!..initialKey!!)
-                            .plus(initialKey!!..key)
-                            .plus(key..initialKey!!)
-                        currentKey = key
+            state.gridItemKeyAtPosition(change.position)?.let { key ->
+                if (currentKey != key) {
+                    val range = if (key > currentKey) {
+                        (currentKey + 1)..key
+                    } else {
+                        key until currentKey
                     }
+                    range.forEach { i ->
+                        if (i !in selectedIds.value) {
+                            selectedIds.value += i
+                        } else {
+                            selectedIds.value -= i
+                        }
+                    }
+                    currentKey = key
                 }
             }
         }
@@ -209,7 +182,6 @@ fun Modifier.photoGridDragHandler(
 @Composable
 private fun ImageItem(
     photo: Photo,
-    inSelectionMode: Boolean,
     selected: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -233,27 +205,25 @@ private fun ImageItem(
                     .padding(padding)
                     .clip(RoundedCornerShape(roundedCornerShape))
             )
-            if (inSelectionMode) {
-                if (selected) {
-                    val bgColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                    Icon(
-                        Icons.Filled.CheckCircle,
-                        tint = MaterialTheme.colorScheme.primary,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .border(2.dp, bgColor, CircleShape)
-                            .clip(CircleShape)
-                            .background(bgColor)
-                    )
-                } else {
-                    Icon(
-                        Icons.Filled.Face,
-                        tint = Color.White.copy(alpha = 0.7f),
-                        contentDescription = null,
-                        modifier = Modifier.padding(6.dp)
-                    )
-                }
+            if (selected) {
+                val bgColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .border(2.dp, bgColor, CircleShape)
+                        .clip(CircleShape)
+                        .background(bgColor)
+                )
+            } else {
+                Icon(
+                    Icons.Filled.Face,
+                    tint = Color.White.copy(alpha = 0.7f),
+                    contentDescription = null,
+                    modifier = Modifier.padding(6.dp)
+                )
             }
         }
     }

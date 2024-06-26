@@ -17,7 +17,7 @@ import androidx.navigation.navOptions
  */
 @Composable
 fun WebViewNavGraph(
-    originalUrl: String,
+    url: String,
     navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
     onLoadUrl: (url: String) -> Unit = {},
@@ -27,7 +27,7 @@ fun WebViewNavGraph(
     val navActions = remember(navController) { WebViewNavActions(navController) }
     NavHost(
         navController = navController,
-        startDestination = WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(originalUrl)}",
+        startDestination = WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(url)}",
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
@@ -56,7 +56,7 @@ fun WebViewNavGraph(
     ) {
         composable("${WebViewDestinations.WEB_VIEW_ROUTE}/{url}") { backStackEntry ->
             WebView(
-                originalUrl = backStackEntry.arguments?.getString("url") ?: originalUrl,
+                url = backStackEntry.arguments?.getString("url") ?: url,
                 navigator = navigator,
                 goBack = {
                     if (navActions.canBack()) {
@@ -66,7 +66,9 @@ fun WebViewNavGraph(
                     }
                 },
                 goForward = {
-                    navActions.navigateForward()
+                    if (it != null) {
+                        navActions.navigateToWebView(it)
+                    }
                 },
                 shouldOverrideUrl = {
                     navActions.navigateToWebView(it)
@@ -88,17 +90,12 @@ class WebViewNavActions(
     val navigateBack: () -> Unit = {
         navController.navigateUp()
     }
-    val navigateForward: () -> Unit = {
-        navController.navigate(
-            WebViewDestinations.WEB_VIEW_ROUTE + "/forward",
-            navOptions { launchSingleTop = false }
-        )
-    }
     val navigateToWebView: (url: String) -> Unit = { url ->
-        navController.navigate(
-            WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(url)}",
-            navOptions { launchSingleTop = false }
-        )
+        navigate(WebViewDestinations.WEB_VIEW_ROUTE + "/${Uri.encode(url)}")
+    }
+
+    private fun navigate(route: String) {
+        navController.navigate(route, navOptions { launchSingleTop = false })
     }
 }
 

@@ -43,16 +43,15 @@ import kotlinx.coroutines.withContext
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun WebView(
-    originalUrl: String,
+    url: String,
     navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
     goBack: () -> Unit = {},
-    goForward: () -> Unit = {},
+    goForward: (url: String?) -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
     onLoadUrl: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    var url by remember { mutableStateOf(originalUrl) }
     var webView by remember { mutableStateOf<WebView?>(null) }
     var fullScreenLayer by remember { mutableStateOf<View?>(null) }
     var injectState by remember { mutableStateOf(false) }
@@ -72,9 +71,7 @@ fun WebView(
                         }
                     },
                     onForward = {
-                        if (WebViewManager.forward(it)) {
-                            goForward()
-                        }
+                        goForward(WebViewManager.forward(it))
                     },
                     reload = {
                         it.reload()
@@ -162,17 +159,16 @@ fun WebView(
                             return false
                         }
                         val requestUrl = request.url.toString()
+                        if (!request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
+                            shouldOverrideUrl(requestUrl)
+                            return true
+                        }
                         if (!URLUtil.isValidUrl(requestUrl)) {
                             try {
                                 view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
                             } catch (e: Exception) {
                                 Log.e(this.javaClass.name, e.message.toString())
                             }
-                            return true
-                        }
-                        if (!request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
-                            shouldOverrideUrl(requestUrl)
-                            url = requestUrl
                             return true
                         }
                         return false
@@ -190,8 +186,8 @@ fun WebView(
                     }
                 }
                 if (URLUtil.isValidUrl(url) && !URLUtil.isValidUrl(this.url)) {
-                    onLoadUrl(url)
                     this.loadUrl(url)
+                    onLoadUrl(url)
                 }
             }.also { webView = it }
         },

@@ -166,7 +166,7 @@ class WebViewManager private constructor() {
             } else {
                 destroy()
                 //重新缓存一个webView
-                prepare(MutableContextWrapper(webView.context.applicationContext))
+                prepare(webView.context)
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())

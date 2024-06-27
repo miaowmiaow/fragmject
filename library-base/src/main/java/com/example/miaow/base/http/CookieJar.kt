@@ -28,7 +28,7 @@ class CookieJar : CookieJar {
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptCookie(true)
         for (cookie in cookies) {
-            cookieManager.setCookie(url.host, cookie.toString())
+            cookieManager.setCookie(url.toString(), cookie.toString())
         }
         cookieManager.flush()
     }

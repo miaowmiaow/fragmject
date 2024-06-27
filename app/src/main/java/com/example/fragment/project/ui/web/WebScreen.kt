@@ -280,6 +280,7 @@ fun WebScreen(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 50.dp,
         sheetShape = RoundedCornerShape(0.dp),
+        sheetShadowElevation = 10.dp,
         sheetDragHandle = null,
         sheetSwipeEnabled = false
     ) { padding ->

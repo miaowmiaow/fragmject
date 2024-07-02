@@ -159,7 +159,7 @@ fun WebView(
                             return false
                         }
                         val requestUrl = request.url.toString()
-                        if (!request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
+                        if (request.hasGesture() && !request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
                             shouldOverrideUrl(requestUrl)
                             return true
                         }

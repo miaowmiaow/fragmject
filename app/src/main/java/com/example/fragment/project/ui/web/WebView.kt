@@ -64,7 +64,9 @@ fun WebView(
             with(navigator) {
                 handleNavigationEvents(
                     onBack = {
-                        if (WebViewManager.back(it)) {
+                        if (it.canGoBack()) {
+                            it.goBack()
+                        } else if (WebViewManager.back(it)) {
                             goBack()
                         } else {
                             onNavigateUp()
@@ -159,7 +161,10 @@ fun WebView(
                             return false
                         }
                         val requestUrl = request.url.toString()
-                        if (request.hasGesture() && !request.isRedirect && URLUtil.isNetworkUrl(requestUrl) && requestUrl != url) {
+                        if (request.hasGesture() && !request.isRedirect && URLUtil.isNetworkUrl(
+                                requestUrl
+                            ) && requestUrl != url
+                        ) {
                             shouldOverrideUrl(requestUrl)
                             return true
                         }

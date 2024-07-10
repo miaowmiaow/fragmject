@@ -135,6 +135,8 @@ fun WebView(
                 }
                 webViewClient = object : WebViewClient() {
 
+                    private val charsetMap: MutableMap<String, String> = HashMap()
+
                     override fun shouldInterceptRequest(
                         view: WebView?,
                         request: WebResourceRequest?
@@ -142,11 +144,11 @@ fun WebView(
                         if (view != null && request != null) {
                             when {
                                 request.isAssetsResource() -> {
-                                    return request.assetsResourceRequest(view.context)
+                                    return request.assetsResourceRequest(view, charsetMap)
                                 }
 
                                 request.isCacheResource() -> {
-                                    return request.cacheResourceRequest(view.context)
+                                    return request.cacheResourceRequest(view, charsetMap)
                                 }
                             }
                         }
@@ -161,9 +163,10 @@ fun WebView(
                             return false
                         }
                         val requestUrl = request.url.toString()
-                        if (request.hasGesture() && !request.isRedirect && URLUtil.isNetworkUrl(
-                                requestUrl
-                            ) && requestUrl != url
+                        if (request.hasGesture()
+                            && !request.isRedirect
+                            && URLUtil.isNetworkUrl(requestUrl)
+                            && requestUrl != url
                         ) {
                             shouldOverrideUrl(requestUrl)
                             return true
@@ -183,6 +186,9 @@ fun WebView(
                         super.onPageStarted(view, url, favicon)
                         navigator.lastLoadedUrl = url
                         injectState = false
+                        view.evaluateJavascript("javascript:document.charset;") {
+                            charsetMap[view.url.toString()] = it
+                        }
                     }
 
                     override fun onPageFinished(view: WebView, url: String?) {

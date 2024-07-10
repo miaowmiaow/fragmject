@@ -265,7 +265,10 @@ fun WebResourceRequest.isCacheResource(): Boolean {
             || extension == "otf" || extension == "ttf" || extension == "woff"
 }
 
-fun WebResourceRequest.assetsResourceRequest(context: Context): WebResourceResponse? {
+fun WebResourceRequest.assetsResourceRequest(
+    webView: WebView,
+    charsetMap: Map<String, String>
+): WebResourceResponse? {
     try {
         val url = url.toString()
         val filenameIndex = url.lastIndexOf("/") + 1
@@ -274,10 +277,11 @@ fun WebResourceRequest.assetsResourceRequest(context: Context): WebResourceRespo
         val suffix = url.substring(suffixIndex + 1)
         val webResourceResponse = WebResourceResponse(
             url.getMimeTypeFromUrl(),
-            "UTF-8",
-            context.assets.open("$suffix/$filename")
+            charsetMap.getOrDefault(webView.url.toString(), "UTF-8"),
+            webView.context.assets.open("$suffix/$filename")
         )
-        webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
+        webResourceResponse.responseHeaders =
+            requestHeaders.plus("access-control-allow-origin" to "*")
         return webResourceResponse
     } catch (e: Exception) {
         Log.e(this.javaClass.name, e.message.toString())
@@ -285,10 +289,13 @@ fun WebResourceRequest.assetsResourceRequest(context: Context): WebResourceRespo
     return null
 }
 
-fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceResponse? {
+fun WebResourceRequest.cacheResourceRequest(
+    webView: WebView,
+    charsetMap: Map<String, String>
+): WebResourceResponse? {
     try {
         val url = url.toString()
-        val savePath = CacheUtils.getDirPath(context, "web_cache")
+        val savePath = CacheUtils.getDirPath(webView.context, "web_cache")
         val fileName = url.encodeUtf8().md5().hex()
         val file = File(savePath, fileName)
         if (!file.exists() || !file.isFile) {
@@ -302,10 +309,11 @@ fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceRespon
         if (file.exists() && file.isFile) {
             val webResourceResponse = WebResourceResponse(
                 url.getMimeTypeFromUrl(),
-                "UTF-8",
+                charsetMap.getOrDefault(webView.url.toString(), "UTF-8"),
                 file.inputStream()
             )
-            webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
+            webResourceResponse.responseHeaders =
+                requestHeaders.plus("access-control-allow-origin" to "*")
             return webResourceResponse
         }
     } catch (e: Exception) {

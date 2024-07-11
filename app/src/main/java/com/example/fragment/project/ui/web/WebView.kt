@@ -135,8 +135,6 @@ fun WebView(
                 }
                 webViewClient = object : WebViewClient() {
 
-                    private val charsetMap: MutableMap<String, String> = HashMap()
-
                     override fun shouldInterceptRequest(
                         view: WebView?,
                         request: WebResourceRequest?
@@ -144,11 +142,11 @@ fun WebView(
                         if (view != null && request != null) {
                             when {
                                 request.isAssetsResource() -> {
-                                    return request.assetsResourceRequest(view, charsetMap)
+                                    return request.assetsResourceRequest(view.context)
                                 }
 
                                 request.isCacheResource() -> {
-                                    return request.cacheResourceRequest(view, charsetMap)
+                                    return request.cacheResourceRequest(view.context)
                                 }
                             }
                         }
@@ -186,9 +184,6 @@ fun WebView(
                         super.onPageStarted(view, url, favicon)
                         navigator.lastLoadedUrl = url
                         injectState = false
-                        view.evaluateJavascript("javascript:document.charset;") {
-                            charsetMap[view.url.toString()] = it
-                        }
                     }
 
                     override fun onPageFinished(view: WebView, url: String?) {

@@ -1,11 +1,11 @@
 [versions]
 agp = "8.3.2"
 androidxActivityCompose = "1.9.0"
-androidxComposeBom = "2024.05.00"
+androidxComposeBom = "2024.06.00"
 androidxConstraintlayout = "2.1.4"
 androidxCoreKtx = "1.13.1"
-androidxFragmentKtx = "1.7.0"
-androidxLifecycle = "2.7.0"
+androidxFragmentKtx = "1.8.1"
+androidxLifecycle = "2.8.3"
 androidxNavigationCompose = "2.7.7"
 androidxWebkit = "1.11.0"
 asm = "9.6"
@@ -21,8 +21,8 @@ material = "1.12.0"
 okhttp = '5.0.0-alpha.11'
 retrofit = '2.9.0'
 room = "2.6.1"
-testEspressoCore = '3.5.1'
-testExtJunit = '1.1.5'
+testEspressoCore = '3.6.1'
+testExtJunit = '1.2.1'
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }

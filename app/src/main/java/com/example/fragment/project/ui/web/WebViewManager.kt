@@ -86,12 +86,12 @@ class WebViewManager private constructor() {
         webView.overScrollMode = WebView.OVER_SCROLL_NEVER
         webView.isVerticalScrollBarEnabled = false
         val webSettings = webView.settings
+        webSettings.setSupportZoom(true)
         webSettings.allowFileAccess = true
         webSettings.cacheMode = WebSettings.LOAD_DEFAULT
         webSettings.domStorageEnabled = true
         webSettings.javaScriptEnabled = true
         webSettings.loadWithOverviewMode = true
-        webSettings.setSupportZoom(true)
         webSettings.displayZoomControls = false
         webSettings.useWideViewPort = true
         webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
@@ -122,7 +122,6 @@ class WebViewManager private constructor() {
 
     private fun obtain(context: Context, url: String): WebView {
         val webView = webViewMap.getOrPut(url) {
-            backStack.remove(url)
             getWebView(MutableContextWrapper(context))
         }
         if (webView.parent != null) {
@@ -135,7 +134,7 @@ class WebViewManager private constructor() {
 
     private fun back(webView: WebView): Boolean {
         return try {
-            backStack.removeLast()
+            backStack.removeLast()//通过NoSuchElementException判断是否处在第一页
             forwardStack.add(webView.originalUrl.toString())
             true
         } catch (e: Exception) {
@@ -160,7 +159,7 @@ class WebViewManager private constructor() {
             webView.removeParentView()
             val originalUrl = webView.originalUrl.toString()
             if (lastBackWebView.get() != webView) {
-                if (!backStack.contains(originalUrl) && !forwardStack.contains(originalUrl)) {
+                if (!forwardStack.contains(originalUrl)) {
                     backStack.add(originalUrl)
                 }
             } else {

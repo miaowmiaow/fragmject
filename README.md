@@ -30,11 +30,8 @@
 在学习前希望您能了解以下知识，这将帮助您更快的上手本项目。
 - [Kotlin 语言学习 | Android Developer](https://developer.android.google.cn/kotlin/learn?hl=zh_cn)
 - [Kotlin 代码示例 | Android Developer](https://play.kotlinlang.org/byExample/overview)
-- [ViewBinding 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/view-binding?hl=zh-cn)
-- [LiveData 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/architecture/livedata?hl=zh_cn)
 - [ViewModel 使用入门 | Android Developer](https://developer.android.google.cn/topic/libraries/architecture/viewmodel?hl=zh_cn)
 - [Coroutines 使用入门 | Android Developer](https://developer.android.google.cn/kotlin/coroutines?hl=zh_cn)
-- [Navigation 使用入门 | Android Developer](https://developer.android.google.cn/guide/navigation/navigation-getting-started?hl=zh_cn)
 - [Room 使用入门 | Android Developer](https://developer.android.google.cn/training/data-storage/room?hl=zh_cn)
 - [Compose 使用入门 | Android Developer](https://developer.android.google.cn/jetpack/compose)
 

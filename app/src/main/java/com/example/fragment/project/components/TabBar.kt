@@ -35,39 +35,41 @@ fun <T> TabBar(
     dividerColor: Color = colorResource(R.color.line),
     onClick: (index: Int) -> Unit
 ) {
-    if (!data.isNullOrEmpty()) {
-        ScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            modifier = modifier,
-            containerColor = backgroundColor,
-            edgePadding = 0.dp,
-            indicator = { tabPositions ->
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Spacer(
+    Box(modifier = modifier) {
+        if (!data.isNullOrEmpty()) {
+            ScrollableTabRow(
+                selectedTabIndex = pagerState.currentPage,
+                modifier = modifier,
+                containerColor = backgroundColor,
+                edgePadding = 0.dp,
+                indicator = { tabPositions ->
+                    Box(
                         Modifier
-                            .width(20.dp)
-                            .height(3.dp)
-                            .background(indicatorColor)
+                            .fillMaxWidth()
+                            .tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Spacer(
+                            Modifier
+                                .width(20.dp)
+                                .height(3.dp)
+                                .background(indicatorColor)
+                        )
+                    }
+                },
+                divider = {
+                    HorizontalDivider(thickness = 2.dp, color = dividerColor)
+                },
+            ) {
+                data.forEachIndexed { index, item ->
+                    Tab(
+                        text = { Text(textMapping(item)) },
+                        onClick = { onClick(index) },
+                        selected = pagerState.currentPage == index,
+                        selectedContentColor = selectedContentColor,
+                        unselectedContentColor = unselectedContentColor
                     )
                 }
-            },
-            divider = {
-                HorizontalDivider(thickness = 2.dp, color = dividerColor)
-            },
-        ) {
-            data.forEachIndexed { index, item ->
-                Tab(
-                    text = { Text(textMapping(item)) },
-                    onClick = { onClick(index) },
-                    selected = pagerState.currentPage == index,
-                    selectedContentColor = selectedContentColor,
-                    unselectedContentColor = unselectedContentColor
-                )
             }
         }
     }

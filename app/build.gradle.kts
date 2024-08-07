@@ -143,7 +143,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
-    debugImplementation(libs.leakcanary.android)
+//    debugImplementation(libs.leakcanary.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)

@@ -48,47 +48,32 @@ class CalendarModel(locale: CalendarLocale) {
         for (year in YEAR_RANGE.first..YEAR_RANGE.last) {
             for (month in 1..12) {
                 localDate = localDate.withYear(year).withMonth(month).withDayOfMonth(1)
+                //当月第一天的星期索引
+                val firstDayOfMonth = (localDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
                 val daysInMonth = localDate.lengthOfMonth()
-                val difference = localDate.dayOfWeek.value - firstDayOfWeek
-                val firstDayOfMonth = if (difference < 0) {
-                    difference + DAYS_IN_WEEK
-                } else {
-                    difference
-                }
-                val weeksInMonth =
-                    ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
-                var cellIndex = 0
+                val weeksInMonth = ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
                 val weeksData = mutableListOf<MutableList<CalendarDate>>()
                 val daysData = mutableListOf<CalendarDate>()
+                var cellIndex = 0
                 for (week in 0 until weeksInMonth) {
                     val data = mutableListOf<CalendarDate>()
                     for (dayIndex in 0 until DAYS_IN_WEEK) {
-                        var y = year
-                        var m = month
                         if (cellIndex < firstDayOfMonth) {
-                            val lastMonth = localDate.plusMonths(-1)
+                            val lastMonth = localDate.minusMonths(1)
                             val daysInLastMonth = lastMonth.lengthOfMonth()
                             val d = daysInLastMonth - (firstDayOfMonth - cellIndex) + 1
-                            m -= 1
-                            if (m < 1) {
-                                y -= 1
-                                m = 12
-                            }
+                            val (y, m) = adjustYearAndMonth(year, month, -1)
                             data.add(CalendarDate(y, m, d, week))
                         } else if (cellIndex >= (firstDayOfMonth + daysInMonth)) {
                             val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
-                            m += 1
-                            if (m > 12) {
-                                y += 1
-                                m = 1
-                            }
+                            val (y, m) = adjustYearAndMonth(year, month, 1)
                             data.add(CalendarDate(y, m, d, week))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
-                            val date = if (y == localYear && m == localMonth && d == localDay) {
-                                CalendarDate(y, m, d, week, isMonth = true, isDay = true)
+                            val date = if (year == localYear && month == localMonth && d == localDay) {
+                                CalendarDate(year, month, d, week, isMonth = true, isDay = true)
                             } else {
-                                CalendarDate(y, m, d, week, true)
+                                CalendarDate(year, month, d, week, true)
                             }
                             data.add(date)
                             daysData.add(date)
@@ -105,6 +90,19 @@ class CalendarModel(locale: CalendarLocale) {
                 monthModeCount++
             }
         }
+    }
+
+    private fun adjustYearAndMonth(year: Int, month: Int, delta: Int): Pair<Int, Int> {
+        var y = year
+        var m = month + delta
+        if (m < 1) {
+            y -= 1
+            m += 12
+        } else if (m > 12) {
+            y += 1
+            m -= 12
+        }
+        return Pair(y, m)
     }
 
     /**

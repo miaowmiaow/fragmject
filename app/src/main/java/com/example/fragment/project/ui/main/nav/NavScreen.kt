@@ -139,44 +139,48 @@ fun NavSystemContent(
     onNavigateToSystem: (cid: String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = listState
+    LoadingContent(
+        isLoading = systemData.isEmpty(),
     ) {
-        systemData.forEach {
-            stickyHeader {
-                Text(
-                    text = it.name,
-                    modifier = Modifier
-                        .background(colorResource(R.color.background))
-                        .fillMaxWidth()
-                        .padding(15.dp, 5.dp, 15.dp, 5.dp),
-                    color = colorResource(R.color.text_666),
-                    fontSize = 13.sp
-                )
-            }
-            item {
-                FlowRow(
-                    modifier = Modifier
-                        .background(colorResource(R.color.background))
-                        .fillMaxWidth()
-                ) {
-                    it.children?.forEach { children ->
-                        Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
-                            Button(
-                                onClick = { onNavigateToSystem(children.id) },
-                                shape = RoundedCornerShape(50),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.gray_e5),
-                                    contentColor = colorResource(R.color.text_666)
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
-                            ) {
-                                Text(
-                                    text = children.name,
-                                    fontSize = 13.sp
-                                )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState
+        ) {
+            systemData.forEach {
+                stickyHeader {
+                    Text(
+                        text = it.name,
+                        modifier = Modifier
+                            .background(colorResource(R.color.background))
+                            .fillMaxWidth()
+                            .padding(15.dp, 5.dp, 15.dp, 5.dp),
+                        color = colorResource(R.color.text_666),
+                        fontSize = 13.sp
+                    )
+                }
+                item {
+                    FlowRow(
+                        modifier = Modifier
+                            .background(colorResource(R.color.background))
+                            .fillMaxWidth()
+                    ) {
+                        it.children?.forEach { children ->
+                            Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
+                                Button(
+                                    onClick = { onNavigateToSystem(children.id) },
+                                    shape = RoundedCornerShape(50),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colorResource(R.color.gray_e5),
+                                        contentColor = colorResource(R.color.text_666)
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                                    contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
+                                ) {
+                                    Text(
+                                        text = children.name,
+                                        fontSize = 13.sp
+                                    )
+                                }
                             }
                         }
                     }

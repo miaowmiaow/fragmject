@@ -44,11 +44,13 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
 import coil.compose.rememberAsyncImagePainter
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -227,4 +229,10 @@ private fun ImageItem(
             }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun GridSelectScreenPreview() {
+    WanTheme { GridSelectScreen() }
 }

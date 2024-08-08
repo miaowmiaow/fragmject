@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.fragment.project.WanTheme
 import com.example.miaow.picture.selector.bean.MediaBean
 import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
 import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
@@ -48,4 +50,10 @@ fun PictureSelectorScreen() {
             }
         )
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun PictureSelectorScreenPreview() {
+    WanTheme { PictureSelectorScreen() }
 }

@@ -12,6 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.fragment.project.WanTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,4 +52,10 @@ fun DropdownMenuScreen() {
             }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun DropdownMenuScreenPreview() {
+    WanTheme { DropdownMenuScreen() }
 }

@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnrememberedMutableState")
@@ -124,4 +126,10 @@ fun DatePickerScreen() {
             }
         )
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun DatePickerScreenPreview() {
+    WanTheme { DatePickerScreen() }
 }

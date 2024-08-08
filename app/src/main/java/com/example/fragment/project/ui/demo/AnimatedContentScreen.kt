@@ -31,9 +31,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import kotlin.math.roundToInt
 
 @Composable
@@ -158,4 +160,10 @@ fun AnimatedContentScreen() {
         modifier = Modifier.size(100.dp),
         contentScale = ContentScale.Crop,
     )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun AnimatedContentScreenPreview() {
+    WanTheme { AnimatedContentScreen() }
 }

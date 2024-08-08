@@ -96,6 +96,12 @@ object WanHelper {
         }
     }
 
+    fun getUiMode(result: (Int) -> Unit) {
+        CoroutineScope(Dispatchers.Default).launch {
+            result.invoke(getUiMode())
+        }
+    }
+
     /**
      * 设置用户信息
      */

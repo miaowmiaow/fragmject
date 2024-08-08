@@ -18,11 +18,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.EllipsisText
 
 @Composable
@@ -108,4 +110,10 @@ fun FullTextScreen() {
         }
     }
 
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun FullTextScreenPreview() {
+    WanTheme { FullTextScreen() }
 }

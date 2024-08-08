@@ -10,13 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
 class WanActivity : AppCompatActivity() {
 
-    private val mainScope = MainScope()
     private var exitTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,10 +20,9 @@ class WanActivity : AppCompatActivity() {
         setTheme(R.style.Theme_Wan)
         setContentView(parseScheme(intent.data))
         //设置显示模式
-        mainScope.launch {
-            val mode = WanHelper.getUiMode()
+        WanHelper.getUiMode() { mode ->
             if (mode != AppCompatDelegate.getDefaultNightMode()) {
-                AppCompatDelegate.setDefaultNightMode(WanHelper.getUiMode())
+                AppCompatDelegate.setDefaultNightMode(mode)
             }
         }
         //双击返回键回退桌面
@@ -54,7 +49,6 @@ class WanActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mainScope.cancel()
         WanHelper.close()
         WebViewManager.destroy()
     }

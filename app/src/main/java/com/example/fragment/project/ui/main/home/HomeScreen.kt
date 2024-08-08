@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.BannerPager
 import com.example.fragment.project.components.SwipeRefresh
@@ -55,4 +58,10 @@ fun HomeScreen(
             )
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun HomeScreenPreview() {
+    WanTheme { HomeScreen(rememberLazyListState()) }
 }

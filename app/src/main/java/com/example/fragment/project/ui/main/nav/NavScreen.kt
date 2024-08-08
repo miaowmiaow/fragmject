@@ -32,11 +32,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.data.Tree
@@ -188,4 +190,10 @@ fun NavSystemContent(
             }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun NavScreenPreview() {
+    WanTheme { NavScreen(systemData = listOf()) }
 }

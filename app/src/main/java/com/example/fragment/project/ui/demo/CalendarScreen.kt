@@ -19,11 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.calendar.Calendar
 import com.example.fragment.project.components.calendar.CalendarSchedule
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +35,28 @@ import kotlinx.coroutines.flow.update
 
 data class CalendarUiState(
     var schedules: MutableList<CalendarSchedule> = mutableListOf(
-        CalendarSchedule(2024, 4, 18, mutableListOf("11", "22", "33","11", "22", "33","11", "22", "33","11", "22", "33","11", "22", "33")),
+        CalendarSchedule(
+            2024,
+            4,
+            18,
+            mutableListOf(
+                "11",
+                "22",
+                "33",
+                "11",
+                "22",
+                "33",
+                "11",
+                "22",
+                "33",
+                "11",
+                "22",
+                "33",
+                "11",
+                "22",
+                "33"
+            )
+        ),
         CalendarSchedule(2024, 4, 19, mutableListOf("aa", "bb", "cc")),
     ),
     private val updateTime: Long = 0
@@ -124,7 +147,9 @@ fun CalendarScreen(
             ),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(15.dp),
-            modifier = Modifier.padding(15.dp).size(55.dp)
+            modifier = Modifier
+                .padding(15.dp)
+                .size(55.dp)
         ) {
             Icon(
                 painter = painterResource(R.mipmap.ic_add),
@@ -132,4 +157,10 @@ fun CalendarScreen(
             )
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun CalendarScreenPreview() {
+    WanTheme { CalendarScreen() }
 }

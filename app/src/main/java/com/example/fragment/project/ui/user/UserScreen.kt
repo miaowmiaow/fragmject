@@ -37,12 +37,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.miaow.base.utils.getScreenWidth
@@ -170,4 +172,10 @@ fun UserScreen(
             )
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun UserScreenPreview() {
+    WanTheme { UserScreen("0") }
 }

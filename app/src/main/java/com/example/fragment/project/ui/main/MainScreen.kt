@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,16 +41,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.data.HotKey
 import com.example.fragment.project.data.Tree
-import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.my.MyScreen
 import com.example.fragment.project.ui.main.nav.NavScreen
@@ -275,13 +272,19 @@ data class NavigationItem(
     val unselectedColor: Int = R.color.theme
 )
 
-@Preview(showBackground = true, backgroundColor = 0xFFF0EAE2)
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun MainScreenPreview() {
+    WanTheme { MainScreen(hotKeyData = listOf(HotKey(name = "问答")), systemData = listOf()) }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun SearchBarPreview() {
     WanTheme { SearchBar(data = listOf(HotKey(name = "问答"))) }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF0EAE2)
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun WanBottomNavigationPreview() {
     val navItems = listOf(

@@ -29,9 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.TabBar
 import kotlinx.coroutines.launch
 
@@ -146,4 +148,10 @@ fun BookmarkHistoryScreen(
             }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun BookmarkHistoryScreenPreview() {
+    WanTheme { BookmarkHistoryScreen(listOf(), listOf()) }
 }

@@ -44,11 +44,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
@@ -192,7 +194,12 @@ fun SettingScreen(
                         context.showStandardDialog(
                             content = "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。",
                             confirm = {
-                                FileUtil.writeDirtyRead(File(CacheUtils.getDirPath(context, "org"), "DirtyRead"))
+                                FileUtil.writeDirtyRead(
+                                    File(
+                                        CacheUtils.getDirPath(context, "org"),
+                                        "DirtyRead"
+                                    )
+                                )
                             }
                         )
                     }
@@ -266,4 +273,10 @@ fun SettingScreen(
             }
         }
     )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun SettingScreenPreview() {
+    WanTheme { SettingScreen() }
 }

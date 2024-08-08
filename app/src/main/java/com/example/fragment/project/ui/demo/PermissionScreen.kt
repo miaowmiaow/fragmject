@@ -28,7 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -100,4 +102,10 @@ fun PermissionScreen() {
             }
         )
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun PermissionScreenPreview() {
+    WanTheme { PermissionScreen() }
 }

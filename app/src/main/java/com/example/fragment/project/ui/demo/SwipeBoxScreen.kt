@@ -61,17 +61,17 @@ fun SwipeBoxScreen() {
                 modifier = Modifier
                     .background(colorResource(R.color.pink))
                     .fillMaxSize()
+                    .clickable {
+                        Toast
+                            .makeText(context, "取消置顶", Toast.LENGTH_SHORT)
+                            .show()
+                    }
             ) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .width(70.dp)
                         .fillMaxHeight()
-                        .clickable {
-                            Toast
-                                .makeText(context, "取消置顶", Toast.LENGTH_SHORT)
-                                .show()
-                        }
                 ) {
                     Text(
                         text = "取消置顶",

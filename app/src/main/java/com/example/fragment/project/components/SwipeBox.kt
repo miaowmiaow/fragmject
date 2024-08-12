@@ -43,8 +43,10 @@ fun SwipeBox(
     }
     val startWidth = actionWidthPx * startAction.size
     val startActionSize = startAction.size + 1 // startAction + startFillAction
+    val startFillWidth = actionWidthPx * startActionSize
     val endWidth = actionWidthPx * endAction.size
     val endActionSize = endAction.size + 1 // endAction + endFillAction
+    val endFillWidth = actionWidthPx * endActionSize
     var contentWidth by remember { mutableFloatStateOf(0f) }
     var contentHeight by remember { mutableFloatStateOf(0f) }
     val state = remember(startWidth, endWidth, contentWidth) {
@@ -58,7 +60,15 @@ fun SwipeBox(
                 DragAnchors.End at (if (endFillAction != null) -actionWidthPx else 0f) - endWidth
                 DragAnchors.EndFill at (if (endFillAction != null) -contentWidth else 0f) - endWidth
             },
-            positionalThreshold = { distance -> distance * 0.5f },
+            positionalThreshold = { distance ->
+                if (startFillAction != null && distance > startFillWidth) {
+                    startWidth
+                } else if (endFillAction != null && distance > endFillWidth) {
+                    endWidth
+                } else {
+                    distance
+                } * 0.5f
+            },
             velocityThreshold = { with(density) { 100.dp.toPx() } },
         )
     }

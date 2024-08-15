@@ -74,7 +74,7 @@ fun SystemScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             TabBar(
                 data = systemData,
-                textMapping = { it.name },
+                dataMapping = { it.name },
                 pagerState = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()

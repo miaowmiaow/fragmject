@@ -104,7 +104,7 @@ fun <T> SwipeRefresh(
     } else {
         val state = rememberSwipeRefreshState(refreshing, onRefresh)
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .swipeRefresh(state)
                 .clipToBounds()
                 .background(colorResource(R.color.background_refresh))
@@ -115,10 +115,11 @@ fun <T> SwipeRefresh(
         ) {
             RefreshIndicator(refreshing) { state.position }
             Box(
-                modifier = Modifier.background(colorResource(R.color.background))
+                modifier = Modifier
+                    .background(colorResource(R.color.background))
+                    .fillMaxSize()
             ) {
                 LazyColumn(
-                    modifier = modifier,
                     state = listState,
                     contentPadding = contentPadding,
                     verticalArrangement = verticalArrangement,

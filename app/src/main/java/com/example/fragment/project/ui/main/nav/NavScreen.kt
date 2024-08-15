@@ -56,9 +56,12 @@ fun NavScreen(
     val pagerState = rememberPagerState { tabs.size }
     Column {
         TabBar(
-            pagerState = pagerState,
             data = tabs,
-            textMapping = { it },
+            dataMapping = { it },
+            pagerState = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp),
             onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(state = pagerState) { page ->

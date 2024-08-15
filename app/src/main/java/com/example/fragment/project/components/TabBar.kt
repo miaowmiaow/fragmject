@@ -25,7 +25,7 @@ import com.example.fragment.project.R
 @Composable
 fun <T> TabBar(
     data: List<T>?,
-    textMapping: (T) -> String,
+    dataMapping: (T) -> String,
     pagerState: PagerState,
     modifier: Modifier = Modifier,
     backgroundColor: Color = colorResource(R.color.white),
@@ -63,7 +63,7 @@ fun <T> TabBar(
             ) {
                 data.forEachIndexed { index, item ->
                     Tab(
-                        text = { Text(textMapping(item)) },
+                        text = { Text(dataMapping(item)) },
                         onClick = { onClick(index) },
                         selected = pagerState.currentPage == index,
                         selectedContentColor = selectedContentColor,

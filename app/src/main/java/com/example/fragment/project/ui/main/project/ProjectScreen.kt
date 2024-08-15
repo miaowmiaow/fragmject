@@ -47,7 +47,7 @@ fun ProjectScreen(
     Column {
         TabBar(
             data = projectTreeUiState.result,
-            textMapping = { it.name },
+            dataMapping = { it.name },
             pagerState = pagerState,
             modifier = Modifier
                 .fillMaxWidth()

@@ -32,7 +32,7 @@ object WanHelper {
     /**
      * 获取搜索历史
      */
-    suspend fun getSearchHistory(): List<String> {
+    suspend fun getSearchHistory(): MutableList<String> {
         return try {
             val json = AppDatabase.get(SEARCH_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
@@ -46,7 +46,7 @@ object WanHelper {
         AppDatabase.set(WEB_BOOKMARK, Gson().toJson(list))
     }
 
-    suspend fun getWebBookmark(): List<String> {
+    suspend fun getWebBookmark(): MutableList<String> {
         return try {
             val json = AppDatabase.get(WEB_BOOKMARK)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
@@ -60,7 +60,7 @@ object WanHelper {
         AppDatabase.set(WEB_HISTORY, Gson().toJson(list))
     }
 
-    suspend fun getWebHistory(): List<String> {
+    suspend fun getWebHistory(): MutableList<String> {
         return try {
             val json = AppDatabase.get(WEB_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()

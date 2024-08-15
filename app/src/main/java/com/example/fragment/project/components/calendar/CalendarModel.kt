@@ -1,6 +1,7 @@
 package com.example.fragment.project.components.calendar
 
 import androidx.compose.material3.CalendarLocale
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -21,12 +22,6 @@ class CalendarModel(locale: CalendarLocale) {
     private var monthModeCount = 0
     private var weekModeCount = 0
 
-    fun updateSchedule(schedules: List<CalendarSchedule>) {
-        schedules.forEach {
-            calendarDate(it.year, it.month, it.day)?.setSchedule(it.schedules)
-        }
-    }
-
     init {
         val firstDayOfWeek = WeekFields.of(locale).firstDayOfWeek.value
         val weekdays = with(locale) {
@@ -44,14 +39,15 @@ class CalendarModel(locale: CalendarLocale) {
         localYear = localDate.year
         localMonth = localDate.monthValue
         localDay = localDate.dayOfMonth
-
         for (year in YEAR_RANGE.first..YEAR_RANGE.last) {
             for (month in 1..12) {
                 localDate = localDate.withYear(year).withMonth(month).withDayOfMonth(1)
                 //当月第一天的星期索引
-                val firstDayOfMonth = (localDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
+                val firstDayOfMonth =
+                    (localDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
                 val daysInMonth = localDate.lengthOfMonth()
-                val weeksInMonth = ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
+                val weeksInMonth =
+                    ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
                 val weeksData = mutableListOf<MutableList<CalendarDate>>()
                 val daysData = mutableListOf<CalendarDate>()
                 var cellIndex = 0
@@ -70,11 +66,12 @@ class CalendarModel(locale: CalendarLocale) {
                             data.add(CalendarDate(y, m, d, week))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
-                            val date = if (year == localYear && month == localMonth && d == localDay) {
-                                CalendarDate(year, month, d, week, isMonth = true, isDay = true)
-                            } else {
-                                CalendarDate(year, month, d, week, true)
-                            }
+                            val date =
+                                if (year == localYear && month == localMonth && d == localDay) {
+                                    CalendarDate(year, month, d, week, isMonth = true, isDay = true)
+                                } else {
+                                    CalendarDate(year, month, d, week, true)
+                                }
                             data.add(date)
                             daysData.add(date)
                         }
@@ -204,17 +201,20 @@ data class CalendarDate(
     var isDay: Boolean = false,
 ) {
 
-    private var schedule: MutableList<String> = mutableListOf()
+    var dayState: DayState? = null
 
-    fun setSchedule(schedule: List<String>?) {
-        schedule?.let {
-            this.schedule.clear()
-            this.schedule.addAll(it)
-        }
+    val scheduleState: MutableStateFlow<MutableList<String>> = MutableStateFlow(mutableListOf())
+
+    suspend fun addSchedule(text: String) {
+        val value = scheduleState.value.toMutableList()
+        value.add(text)
+        scheduleState.emit(value)
     }
 
-    fun getSchedule(): MutableList<String> {
-        return schedule
+    suspend fun removeSchedule(text: String) {
+        val value = scheduleState.value.toMutableList()
+        value.remove(text)
+        scheduleState.emit(value)
     }
 
     private var lunarDate: LunarDate? = null
@@ -251,10 +251,3 @@ data class CalendarDate(
         return lunar().isFestival()
     }
 }
-
-data class CalendarSchedule(
-    val year: Int,
-    val month: Int,
-    val day: Int,
-    val schedules: MutableList<String>,
-)

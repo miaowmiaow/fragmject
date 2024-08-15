@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class WanUiState(
-    var hotKeyResult: MutableList<HotKey> = ArrayList(),
-    var treeResult: MutableList<Tree> = ArrayList(),
+    var hotKeyResult: List<HotKey> = ArrayList(),
+    var treeResult: List<Tree> = ArrayList(),
     var searchHistoryResult: MutableList<String> = ArrayList(),
     var webBookmarkResult: MutableList<String> = ArrayList(),
     var webHistoryResult: MutableList<String> = ArrayList(),
@@ -40,24 +40,19 @@ class WanViewModel : BaseViewModel() {
             val webHistoryList = async { WanHelper.getWebHistory() }
             _uiState.update { state ->
                 hotKeyList.await().data?.let { data ->
-                    state.hotKeyResult.clear()
-                    state.hotKeyResult.addAll(data)
+                    state.hotKeyResult = data
                 }
                 treeList.await().data?.let { data ->
-                    state.treeResult.clear()
-                    state.treeResult.addAll(data)
+                    state.treeResult = data
                 }
                 searchHistoryList.await().let {
-                    state.searchHistoryResult.clear()
-                    state.searchHistoryResult.addAll(it)
+                    state.searchHistoryResult = it
                 }
                 webHistoryList.await().let {
-                    state.webHistoryResult.clear()
-                    state.webHistoryResult.addAll(it)
+                    state.webHistoryResult = it
                 }
                 webBookmarkList.await().let {
-                    state.webBookmarkResult.clear()
-                    state.webBookmarkResult.addAll(it)
+                    state.webBookmarkResult = it
                 }
                 state.copy(updateTime = System.nanoTime())
             }

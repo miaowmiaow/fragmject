@@ -7,25 +7,25 @@ import java.util.Date
 import java.util.Locale
 
 fun getLunarDate(year: Int, month: Int, day: Int): LunarDate {
-    return LunarCalender.getInstance().getLunarDate(year, month, day)
+    return LunarHelper.getInstance().getLunarDate(year, month, day)
 }
 
 fun getDaysOfTwoDate(bY: Int, bM: Int, bD: Int, nY: Int, nM: Int, nD: Int): Int {
-    return LunarCalender.getInstance().getDaysOfTwoDate(bY, bM, bD, nY, nM, nD)
+    return LunarHelper.getInstance().getDaysOfTwoDate(bY, bM, bD, nY, nM, nD)
 }
 
 /**
  * 中国农历工具类-
  */
-class LunarCalender private constructor() {
+class LunarHelper private constructor() {
 
     companion object {
 
         @Volatile
-        private var INSTANCE: LunarCalender? = null
+        private var INSTANCE: LunarHelper? = null
 
-        fun getInstance() = INSTANCE ?: synchronized(LunarCalender::class.java) {
-            INSTANCE ?: LunarCalender().also { INSTANCE = it }
+        fun getInstance() = INSTANCE ?: synchronized(LunarHelper::class.java) {
+            INSTANCE ?: LunarHelper().also { INSTANCE = it }
         }
 
         val CHINESE_DATE_FORMAT = SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA)

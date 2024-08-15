@@ -84,7 +84,7 @@ fun Calendar(
 
 @Stable
 class CalendarState(
-    private val coroutineScope: CoroutineScope
+    private val scope: CoroutineScope
 ) {
     private sealed interface CalendarEvent {
         data class Schedule(val text: String) : CalendarEvent
@@ -103,15 +103,15 @@ class CalendarState(
     }
 
     fun onSchedule(text: String) {
-        coroutineScope.launch { calendarEvents.emit(CalendarEvent.Schedule(text)) }
+        scope.launch { calendarEvents.emit(CalendarEvent.Schedule(text)) }
     }
 
 }
 
 @Composable
 fun rememberCalendarState(
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
-): CalendarState = remember(coroutineScope) { CalendarState(coroutineScope) }
+    scope: CoroutineScope = rememberCoroutineScope()
+): CalendarState = remember(scope) { CalendarState(scope) }
 
 internal const val YearInRow = 3
 internal val YearHeight = 45.dp

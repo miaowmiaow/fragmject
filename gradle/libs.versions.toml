@@ -1,5 +1,5 @@
 [versions]
-agp = "8.3.2"
+agp = "8.5.2"
 androidxActivityCompose = "1.9.1"
 androidxComposeBom = "2024.06.00"
 androidxConstraintlayout = "2.1.4"
@@ -8,18 +8,18 @@ androidxFragmentKtx = "1.8.2"
 androidxLifecycle = "2.8.4"
 androidxNavigationCompose = "2.7.7"
 androidxWebkit = "1.11.0"
-asm = "9.6"
+asm = "9.7"
 composeMaterial3 = "1.2.1"
-coil = "2.4.0"
-gson = "2.10.1"
+coil = "2.7.0"
+gson = "2.11.0"
 junit = "4.13.2"
-kotlin = "1.9.23"
-kotlinxCoroutines = "1.7.3"
-ksp = "1.9.23-1.0.20"
+kotlin = "2.0.10"
+kotlinxCoroutines = "1.8.1"
+ksp = "2.0.10-1.0.24"
 leakcanary = "2.12"
 material = "1.12.0"
-okhttp = '5.0.0-alpha.11'
-retrofit = '2.9.0'
+okhttp = "5.0.0-alpha.14"
+retrofit = "2.11.0"
 room = "2.6.1"
 testEspressoCore = '3.6.1'
 testExtJunit = '1.2.1'
@@ -73,6 +73,7 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -1,144 +1,127 @@
 package com.example.fragment.project.ui.demo
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.components.WhiteTextField
 import com.example.fragment.project.components.calendar.Calendar
-import com.example.fragment.project.components.calendar.CalendarSchedule
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-
-data class CalendarUiState(
-    var schedules: MutableList<CalendarSchedule> = mutableListOf(
-        CalendarSchedule(
-            2024,
-            4,
-            18,
-            mutableListOf(
-                "11",
-                "22",
-                "33",
-                "11",
-                "22",
-                "33",
-                "11",
-                "22",
-                "33",
-                "11",
-                "22",
-                "33",
-                "11",
-                "22",
-                "33"
-            )
-        ),
-        CalendarSchedule(2024, 4, 19, mutableListOf("aa", "bb", "cc")),
-    ),
-    private val updateTime: Long = 0
-)
-
-class CalendarViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(CalendarUiState())
-    val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
-
-    fun updateSchedule(year: Int, month: Int, day: Int, strs: MutableList<String>) {
-        _uiState.update { state ->
-            state.schedules
-                .associateBy({ "${it.year}-${it.month}-${it.day}" }, { it.schedules })
-                .getOrElse("${year}-${month}-${day}") { mutableListOf() }
-                .apply {
-                    if (isEmpty()) {
-                        state.schedules.add(CalendarSchedule(year, month, day, strs))
-                    } else {
-                        this.clear()
-                        this.addAll(strs)
-                    }
-                }
-            state.copy(updateTime = System.nanoTime())
-        }
-    }
-}
+import com.example.fragment.project.components.calendar.rememberCalendarState
 
 @Composable
-fun CalendarScreen(
-    viewModel: CalendarViewModel = viewModel(),
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    var selectedYear = 0
-    var selectedMonth = 0
-    var selectedDay = 0
-
+fun CalendarScreen() {
     Box(contentAlignment = Alignment.BottomEnd) {
-        Calendar(
-            schedules = uiState.schedules,
-            modifier = Modifier.padding(vertical = 15.dp),
-            onSelectedDateChange = { year, month, day ->
-                selectedYear = year
-                selectedMonth = month
-                selectedDay = day
-            }
-        ) { date ->
-            itemsIndexed(
-                items = date.getSchedule(),
-            ) { _, item ->
-                Column(
+        val calendarState = rememberCalendarState()
+        var openDialog by remember { mutableStateOf(false) }
+        var text by rememberSaveable { mutableStateOf("") }
+        if (openDialog) {
+            Dialog(onDismissRequest = { openDialog = false }) {
+                Card(
                     modifier = Modifier
-                        .background(colorResource(R.color.white), RoundedCornerShape(10.dp))
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .wrapContentHeight()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardColors(
+                        containerColor = colorResource(id = R.color.theme),
+                        contentColor = colorResource(id = R.color.theme),
+                        disabledContainerColor = colorResource(id = R.color.theme_orange),
+                        disabledContentColor = colorResource(id = R.color.theme_orange),
+                    )
                 ) {
-                    Text(text = item)
-                    Text(text = "${date.year}年${date.month}月${date.day}日")
-                }
-            }
-            itemsIndexed(
-                items = date.getFestival(),
-            ) { _, item ->
-                Column(
-                    modifier = Modifier
-                        .background(colorResource(R.color.white), RoundedCornerShape(10.dp))
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                ) {
-                    Text(text = item)
-                    Text(text = "${date.year}年${date.month}月${date.day}日")
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        WhiteTextField(
+                            value = text,
+                            onValueChange = { text = it },
+                            textStyle = TextStyle.Default.copy(
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp
+                            ),
+                            placeholder = { Text("创建日程") },
+                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(16.dp)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            TextButton(
+                                onClick = { openDialog = false },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = "取消",
+                                    fontSize = 14.sp,
+                                    color = colorResource(R.color.text_999)
+                                )
+                            }
+                            TextButton(
+                                onClick = {
+                                    calendarState.onSchedule(text)
+                                    openDialog = false
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = "确定",
+                                    fontSize = 14.sp,
+                                    color = colorResource(R.color.text_999)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
+        Calendar(
+            state = calendarState,
+            modifier = Modifier.padding(vertical = 15.dp),
+            onSelectedDateChange = { _, _, _ ->
+
+            }
+        )
         Button(
             onClick = {
-                viewModel.updateSchedule(
-                    selectedYear,
-                    selectedMonth,
-                    selectedDay,
-                    mutableListOf("qq", "ww", "ee")
-                )
+                openDialog = true
             },
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(

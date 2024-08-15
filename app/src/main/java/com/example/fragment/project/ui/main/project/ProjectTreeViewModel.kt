@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 data class ProjectTreeUiState(
     var isLoading: Boolean = false,
-    var result: MutableList<ProjectTree> = ArrayList(),
+    var result: List<ProjectTree> = ArrayList(),
 )
 
 class ProjectTreeViewModel : BaseViewModel() {
@@ -38,8 +38,7 @@ class ProjectTreeViewModel : BaseViewModel() {
             }
             _uiState.update { state ->
                 response.data?.let { data ->
-                    state.result.clear()
-                    state.result.addAll(data)
+                    state.result = data
                 }
                 state.copy(isLoading = false)
             }

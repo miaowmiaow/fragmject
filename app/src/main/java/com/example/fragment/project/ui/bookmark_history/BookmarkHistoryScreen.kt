@@ -70,7 +70,7 @@ fun BookmarkHistoryScreen(
                 }
                 TabBar(
                     data = tabs,
-                    textMapping = { it },
+                    dataMapping = { it },
                     pagerState = pagerState,
                     modifier = Modifier
                         .width(200.dp)

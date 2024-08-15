@@ -66,12 +66,10 @@ class CalendarModel(locale: CalendarLocale) {
                             data.add(CalendarDate(y, m, d, week))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
-                            val date =
-                                if (year == localYear && month == localMonth && d == localDay) {
-                                    CalendarDate(year, month, d, week, isMonth = true, isDay = true)
-                                } else {
-                                    CalendarDate(year, month, d, week, true)
-                                }
+                            val date = CalendarDate(year, month, d, week, true)
+                            if (year == localYear && month == localMonth && d == localDay) {
+                                date.selectedDay.tryEmit(true)
+                            }
                             data.add(date)
                             daysData.add(date)
                         }
@@ -197,24 +195,23 @@ data class CalendarDate(
     val month: Int,
     val day: Int = 1,
     val week: Int,
-    val isMonth: Boolean = false,
-    var isDay: Boolean = false,
+    val currMonth: Boolean = false,
 ) {
 
-    var dayState: DayState? = null
+    val selectedDay: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    val scheduleState: MutableStateFlow<MutableList<String>> = MutableStateFlow(mutableListOf())
+    val schedule: MutableStateFlow<MutableList<String>> = MutableStateFlow(mutableListOf())
 
-    suspend fun addSchedule(text: String) {
-        val value = scheduleState.value.toMutableList()
+    fun addSchedule(text: String) {
+        val value = schedule.value.toMutableList()
         value.add(text)
-        scheduleState.emit(value)
+        schedule.tryEmit(value)
     }
 
-    suspend fun removeSchedule(text: String) {
-        val value = scheduleState.value.toMutableList()
+    fun removeSchedule(text: String) {
+        val value = schedule.value.toMutableList()
         value.remove(text)
-        scheduleState.emit(value)
+        schedule.tryEmit(value)
     }
 
     private var lunarDate: LunarDate? = null

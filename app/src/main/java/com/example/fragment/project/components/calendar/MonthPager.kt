@@ -51,7 +51,7 @@ internal fun MonthPager(
     LaunchedEffect(state) {
         state.handleCalendarEvent(
             onSchedule = {
-                selectedDate?.dayState?.onSchedule(it)
+                selectedDate?.addSchedule(it)
             }
         )
     }
@@ -62,33 +62,35 @@ internal fun MonthPager(
             if (isWeekMode) {
                 val month = model.weekModeByIndex(page) ?: return@collectLatest
                 selectedWeek = model.weekByWeekModeIndex(page)
-                val isDate = month.weeks[selectedWeek].firstOrNull { it.isDay }
-                if (isDate == null) {
-                    selectedDate?.dayState?.onSelected(false)
-                    val date = month.weeks[selectedWeek].first { it.isMonth }
-                    date.dayState?.onSelected(true)
-                    selectedDate = date
+                val isDay = month.weeks[selectedWeek].firstOrNull { it.selectedDay.value }
+                if (isDay == null) {
+                    month.days.filter { it.selectedDay.value }.forEach {
+                        it.selectedDay.emit(false)
+                    }
+                    selectedDate = month.weeks[selectedWeek].firstOrNull { it.currMonth }
+                    selectedDate?.selectedDay?.emit(true)
                 }
-                val date = (month.year - model.startYear()) * 12 + month.month - 1
-                if (monthModePagerState.currentPage != date) {
+                val index = (month.year - model.startYear()) * 12 + month.month - 1
+                if (monthModePagerState.currentPage != index) {
                     scope.launch {
-                        monthModePagerState.scrollToPage(date)
+                        monthModePagerState.scrollToPage(index)
                     }
                 }
             } else {
                 val month = model.monthModeByIndex(page) ?: return@collectLatest
-                val isDate = month.weeks[selectedWeek].firstOrNull { it.isDay }
-                if (isDate == null) {
+                val isDay = month.weeks[selectedWeek].firstOrNull { it.selectedDay.value }
+                if (isDay == null) {
+                    month.days.filter { it.selectedDay.value }.forEach {
+                        it.selectedDay.emit(false)
+                    }
                     selectedWeek = 0
-                    selectedDate?.dayState?.onSelected(false)
-                    val date = month.weeks[selectedWeek].first { it.isMonth }
-                    date.dayState?.onSelected(true)
-                    selectedDate = date
+                    selectedDate = month.weeks[selectedWeek].firstOrNull { it.currMonth }
+                    selectedDate?.selectedDay?.emit(true)
                 }
-                val date = model.weekModeIndexByDate(month.year, month.month, selectedWeek)
-                if (weekModePagerState.currentPage != date) {
+                val index = model.weekModeIndexByDate(month.year, month.month, selectedWeek)
+                if (weekModePagerState.currentPage != index) {
                     scope.launch {
-                        weekModePagerState.scrollToPage(date)
+                        weekModePagerState.scrollToPage(index)
                     }
                 }
             }
@@ -162,22 +164,25 @@ internal fun MonthPager(
                     isMonthFillMode = isMonthFillMode,
                     offsetProvider = { anchoredDraggableOffset },
                 ) { date ->
-                    date.dayState = rememberDayState()
                     DayContent(date, isMonthFillMode) {
-                        if (mode != CalendarMode.Week) {
-                            selectedWeek = date.week
-                            model.weekModeIndexByDate(date.year, date.month, date.week).let {
-                                if (weekModePagerState.currentPage != it) {
-                                    scope.launch {
-                                        weekModePagerState.scrollToPage(it)
-                                    }
-                                }
+                        scope.launch {
+                            month.days.filter { it.selectedDay.value }.forEach {
+                                it.selectedDay.emit(false)
+                            }
+                            selectedDate = date
+                            selectedDate?.selectedDay?.emit(true)
+                        }
+                        onSelectedDateChange(date.year, date.month, date.day)
+                        if (mode == CalendarMode.Week) {
+                            return@DayContent
+                        }
+                        selectedWeek = date.week
+                        val index = model.weekModeIndexByDate(date.year, date.month, date.week)
+                        if (weekModePagerState.currentPage != index) {
+                            scope.launch {
+                                weekModePagerState.scrollToPage(index)
                             }
                         }
-                        selectedDate?.dayState?.onSelected(false)
-                        date.dayState?.onSelected(true)
-                        onSelectedDateChange(date.year, date.month, date.day)
-                        selectedDate = date
                     }
                 }
                 ScheduleContent(

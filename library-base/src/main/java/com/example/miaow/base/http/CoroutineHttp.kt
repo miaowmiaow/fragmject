@@ -119,9 +119,7 @@ class CoroutineHttp private constructor() {
             val request = HttpRequest()
             request.init()
             val responseBody = getService().get(request.getUrl(baseUrl), request.getHeader())
-            getConverter().converter(responseBody, type).apply {
-                setRequestTime(request.time)
-            }
+            getConverter().converter(responseBody, type).apply { setRequestTime(request.time) }
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), type)
         }

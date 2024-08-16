@@ -20,7 +20,7 @@ class WanActivity : AppCompatActivity() {
         setTheme(R.style.Theme_Wan)
         setContentView(parseScheme(intent.data))
         //设置显示模式
-        WanHelper.getUiMode() { mode ->
+        WanHelper.getUiMode { mode ->
             if (mode != AppCompatDelegate.getDefaultNightMode()) {
                 AppCompatDelegate.setDefaultNightMode(mode)
             }

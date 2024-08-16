@@ -9,13 +9,13 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * 数据持久化辅助类
  */
 object WanHelper {
 
+    private const val SCHEDULE = "schedule"
     private const val SEARCH_HISTORY = "search_history"
     private const val WEB_BOOKMARK = "web_bookmark"
     private const val WEB_HISTORY = "web_history"
@@ -97,7 +97,7 @@ object WanHelper {
     }
 
     fun getUiMode(result: (Int) -> Unit) {
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             result.invoke(getUiMode())
         }
     }
@@ -106,9 +106,10 @@ object WanHelper {
      * 设置用户信息
      */
     suspend fun setUser(user: User?) {
-        user?.let {
-            AppDatabase.set(USER, it.toJson())
+        if (user == null) {
+            return
         }
+        AppDatabase.set(USER, user.toJson())
     }
 
     /**
@@ -124,11 +125,22 @@ object WanHelper {
     }
 
     fun getUser(result: (User) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val userBean = getUser()
-            withContext(Dispatchers.Main) {
-                result.invoke(userBean)
-            }
+        CoroutineScope(Dispatchers.Main).launch {
+            result.invoke(getUser())
+        }
+    }
+
+    suspend fun setSchedule(year: Int, month: Int, day: Int, list: MutableList<String>) {
+        AppDatabase.set("${SCHEDULE}_${year}_${month}_${day}", Gson().toJson(list))
+    }
+
+    suspend fun getSchedule(year: Int, month: Int, day: Int): MutableList<String> {
+        return try {
+            val json = AppDatabase.get("${SCHEDULE}_${year}_${month}_${day}")
+            Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+            ArrayList()
         }
     }
 

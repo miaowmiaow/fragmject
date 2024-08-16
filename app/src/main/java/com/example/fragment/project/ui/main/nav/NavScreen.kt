@@ -52,7 +52,7 @@ fun NavScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val tabs = listOf("导航", "体系")
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState { tabs.size }
     Column {
         TabBar(
@@ -62,7 +62,7 @@ fun NavScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp),
-            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
+            onClick = { scope.launch { pagerState.animateScrollToPage(it) } },
         )
         HorizontalPager(state = pagerState) { page ->
             if (page == 0) {

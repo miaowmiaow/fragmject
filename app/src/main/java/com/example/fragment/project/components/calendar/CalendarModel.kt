@@ -1,7 +1,11 @@
 package com.example.fragment.project.components.calendar
 
 import androidx.compose.material3.CalendarLocale
+import com.example.fragment.project.utils.WanHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -198,26 +202,33 @@ data class CalendarDate(
     val currMonth: Boolean = false,
 ) {
 
+    val schedule: MutableStateFlow<MutableList<String>> = MutableStateFlow(mutableListOf())
     val selectedDay: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    val schedule: MutableStateFlow<MutableList<String>> = MutableStateFlow(mutableListOf())
-
-    fun addSchedule(text: String) {
+    suspend fun addSchedule(text: String) {
         val value = schedule.value.toMutableList()
         value.add(text)
-        schedule.tryEmit(value)
+        schedule.emit(value)
+        WanHelper.setSchedule(year, month, day, value)
     }
 
-    fun removeSchedule(text: String) {
+    suspend fun removeSchedule(text: String) {
         val value = schedule.value.toMutableList()
         value.remove(text)
-        schedule.tryEmit(value)
+        schedule.emit(value)
+        WanHelper.setSchedule(year, month, day, value)
     }
 
     private var lunarDate: LunarDate? = null
 
     private fun lunar(): LunarDate {
-        return lunarDate ?: getLunarDate(year, month, day).also { lunarDate = it }
+        return lunarDate ?: getLunarDate(year, month, day).also {
+            CoroutineScope(Dispatchers.Main).launch {
+                //保证日程只从数据库取一次
+                schedule.emit(WanHelper.getSchedule(year, month, day))
+            }
+            lunarDate = it
+        }
     }
 
     fun animalsYear(): String {

@@ -42,7 +42,7 @@ fun ProjectScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState { projectTreeUiState.result.size }
     Column {
         TabBar(
@@ -52,7 +52,7 @@ fun ProjectScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp),
-            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(it) } },
+            onClick = { scope.launch { pagerState.animateScrollToPage(it) } },
         )
         LoadingContent(
             isLoading = projectTreeUiState.isLoading,

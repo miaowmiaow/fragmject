@@ -72,7 +72,7 @@ fun MainScreen(
     onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val homeListState = rememberLazyListState()
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = listOf(
@@ -95,7 +95,7 @@ fun MainScreen(
             ) {
                 //首页双击返回顶部
                 if ((it == 0) && (navIndex == 0) && homeListState.canScrollBackward) {
-                    coroutineScope.launch {
+                    scope.launch {
                         homeListState.animateScrollToItem(0)
                     }
                 }

@@ -14,6 +14,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Update
 import com.example.miaow.base.provider.BaseContentProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * 对RoomDatabase进行封装
@@ -61,15 +63,17 @@ abstract class AppDatabase : RoomDatabase() {
 
     suspend fun setValue(key: String, value: String): Boolean {
         return try {
-            var kv = kvDao().findByKey(key)
-            if (kv == null) {
-                kv = KV(key = key, value = value)
-                val id = kvDao().insert(kv) //返回 主键值 > -1 表示 insert 成功
-                id > -1
-            } else {
-                kv.value = value
-                val up = kvDao().update(kv) //返回 更新数 > 0表示 update 成功
-                up > 0
+            withContext(Dispatchers.IO) {
+                var kv = kvDao().findByKey(key)
+                if (kv == null) {
+                    kv = KV(key = key, value = value)
+                    val id = kvDao().insert(kv) //返回 主键值 > -1 表示 insert 成功
+                    id > -1
+                } else {
+                    kv.value = value
+                    val up = kvDao().update(kv) //返回 更新数 > 0表示 update 成功
+                    up > 0
+                }
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -79,7 +83,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     suspend fun getValue(key: String): String {
         return try {
-            kvDao().findByKey(key)?.value ?: ""
+            withContext(Dispatchers.IO) {
+                kvDao().findByKey(key)?.value ?: ""
+            }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
             ""

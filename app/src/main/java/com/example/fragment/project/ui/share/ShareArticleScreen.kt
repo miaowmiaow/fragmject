@@ -63,7 +63,7 @@ fun ShareArticleScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var titleText by rememberSaveable { mutableStateOf("") }
     var linkText by rememberSaveable { mutableStateOf("") }
@@ -92,7 +92,7 @@ fun ShareArticleScreen(
                 IconButton(
                     onClick = {
                         if (linkText.isBlank()) {
-                            coroutineScope.launch {
+                            scope.launch {
                                 snackbarHostState.showSnackbar("文章链接不能为空")
                             }
                             return@IconButton
@@ -198,13 +198,13 @@ fun ShareArticleScreen(
                     Button(
                         onClick = {
                             if (titleText.isBlank()) {
-                                coroutineScope.launch {
+                                scope.launch {
                                     snackbarHostState.showSnackbar("文章标题不能为空")
                                 }
                                 return@Button
                             }
                             if (linkText.isBlank()) {
-                                coroutineScope.launch {
+                                scope.launch {
                                     snackbarHostState.showSnackbar("文章链接不能为空")
                                 }
                                 return@Button

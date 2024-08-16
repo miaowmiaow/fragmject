@@ -51,7 +51,9 @@ internal fun MonthPager(
     LaunchedEffect(state) {
         state.handleCalendarEvent(
             onSchedule = {
-                selectedDate?.addSchedule(it)
+                scope.launch {
+                    selectedDate?.addSchedule(it)
+                }
             }
         )
     }
@@ -64,9 +66,7 @@ internal fun MonthPager(
                 selectedWeek = model.weekByWeekModeIndex(page)
                 val isDay = month.weeks[selectedWeek].firstOrNull { it.selectedDay.value }
                 if (isDay == null) {
-                    month.days.filter { it.selectedDay.value }.forEach {
-                        it.selectedDay.emit(false)
-                    }
+                    selectedDate?.selectedDay?.emit(false)
                     selectedDate = month.weeks[selectedWeek].firstOrNull { it.currMonth }
                     selectedDate?.selectedDay?.emit(true)
                 }
@@ -80,10 +80,8 @@ internal fun MonthPager(
                 val month = model.monthModeByIndex(page) ?: return@collectLatest
                 val isDay = month.weeks[selectedWeek].firstOrNull { it.selectedDay.value }
                 if (isDay == null) {
-                    month.days.filter { it.selectedDay.value }.forEach {
-                        it.selectedDay.emit(false)
-                    }
                     selectedWeek = 0
+                    selectedDate?.selectedDay?.emit(false)
                     selectedDate = month.weeks[selectedWeek].firstOrNull { it.currMonth }
                     selectedDate?.selectedDay?.emit(true)
                 }
@@ -166,9 +164,7 @@ internal fun MonthPager(
                 ) { date ->
                     DayContent(date, isMonthFillMode) {
                         scope.launch {
-                            month.days.filter { it.selectedDay.value }.forEach {
-                                it.selectedDay.emit(false)
-                            }
+                            selectedDate?.selectedDay?.emit(false)
                             selectedDate = date
                             selectedDate?.selectedDay?.emit(true)
                         }

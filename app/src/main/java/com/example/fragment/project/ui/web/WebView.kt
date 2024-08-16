@@ -206,7 +206,7 @@ fun WebView(
 
 @Stable
 class WebViewNavigator(
-    private val coroutineScope: CoroutineScope
+    private val scope: CoroutineScope
 ) {
     private sealed interface NavigationEvent {
         data object Back : NavigationEvent
@@ -239,15 +239,15 @@ class WebViewNavigator(
     }
 
     fun navigateBack() {
-        coroutineScope.launch { navigationEvents.emit(NavigationEvent.Back) }
+        scope.launch { navigationEvents.emit(NavigationEvent.Back) }
     }
 
     fun navigateForward() {
-        coroutineScope.launch { navigationEvents.emit(NavigationEvent.Forward) }
+        scope.launch { navigationEvents.emit(NavigationEvent.Forward) }
     }
 
     fun reload() {
-        coroutineScope.launch { navigationEvents.emit(NavigationEvent.Reload) }
+        scope.launch { navigationEvents.emit(NavigationEvent.Reload) }
     }
 
     fun injectVConsole(): Boolean {

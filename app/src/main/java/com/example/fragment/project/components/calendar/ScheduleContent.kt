@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragment.project.R
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun ScheduleContent(
@@ -48,6 +50,7 @@ internal fun ScheduleContent(
     offsetProvider: () -> Int,
 ) {
     if (date == null) return
+    val scope = rememberCoroutineScope()
     val schedule by date.schedule.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
@@ -119,7 +122,9 @@ internal fun ScheduleContent(
                             .clip(RoundedCornerShape(10.dp))
                             .clipToBounds()
                             .clickable {
-                                date.removeSchedule(item)
+                                scope.launch {
+                                    date.removeSchedule(item)
+                                }
                             }
                             .background(colorResource(R.color.white))
                             .fillMaxWidth()

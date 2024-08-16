@@ -55,7 +55,7 @@ fun MyCoinScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val sw = context.getScreenWidth()
     val titleBarSize = 45.dp
     val titleBarSizePx = with(LocalDensity.current) { titleBarSize.roundToPx().toFloat() }
@@ -75,7 +75,7 @@ fun MyCoinScreen(
                 dyConsumed += delta
                 dyConsumed = dyConsumed.coerceAtMost(0f)
                 val percent = dyConsumed / targetHeightPx
-                coroutineScope.launch {
+                scope.launch {
                     targetPercent.animateTo(1 - abs(percent.coerceIn(-1f, 0f)))
                 }
                 if (percent > -1 && percent < 0) {

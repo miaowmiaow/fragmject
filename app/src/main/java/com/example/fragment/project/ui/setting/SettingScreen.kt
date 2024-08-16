@@ -75,7 +75,7 @@ fun SettingScreen(
     val context = LocalContext.current
     var screenCaptureState by rememberSaveable { mutableStateOf(false) }
     var cacheSize by rememberSaveable { mutableStateOf("0KB") }
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         cacheSize = getTotalSize(context)
@@ -163,7 +163,7 @@ fun SettingScreen(
                                             if (resultCode != Activity.RESULT_OK) {
                                                 screenCaptureState = false
                                             }
-                                            coroutineScope.launch {
+                                            scope.launch {
                                                 snackbarHostState.showSnackbar(
                                                     message, "确定"
                                                 )
@@ -210,7 +210,7 @@ fun SettingScreen(
                                 context.showStandardDialog(
                                     content = "确定要清除缓存吗？",
                                     confirm = {
-                                        coroutineScope.launch {
+                                        scope.launch {
                                             CacheUtils.clearAllCache(context)
                                             cacheSize = getTotalSize(context)
                                         }

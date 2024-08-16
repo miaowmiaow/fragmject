@@ -53,7 +53,7 @@ fun SystemScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(tabIndex) { systemData.size }
     Scaffold(
         topBar = {
@@ -80,7 +80,7 @@ fun SystemScreen(
                     .fillMaxWidth()
                     .height(45.dp),
                 onClick = {
-                    coroutineScope.launch {
+                    scope.launch {
                         pagerState.animateScrollToPage(it)
                     }
                 },

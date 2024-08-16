@@ -29,6 +29,7 @@ import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.user.UserScreen
 import com.example.fragment.project.ui.web.WebScreen
 import com.example.fragment.project.utils.WanHelper
+import com.example.miaow.base.vm.TRANSITION_TIME
 
 /**
  * 导航图
@@ -49,25 +50,25 @@ fun WanNavGraph(
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(350)
+                animationSpec = tween(TRANSITION_TIME)
             )
         },
         exitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(350)
+                animationSpec = tween(TRANSITION_TIME)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(350)
+                animationSpec = tween(TRANSITION_TIME)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(350)
+                animationSpec = tween(TRANSITION_TIME)
             )
         },
     ) {

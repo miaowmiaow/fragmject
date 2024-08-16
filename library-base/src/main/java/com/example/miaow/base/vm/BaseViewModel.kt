@@ -5,11 +5,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
+//转场动画时间
+const val TRANSITION_TIME = 350
+
 abstract class BaseViewModel : ViewModel() {
 
     companion object {
-        //动画时间见WanNavGraph
-        const val TRANSITION_ANIMATION_TIME = 350L
         const val DEFAULT_KEY = "null"
         const val DEFAULT_VALUE = 0
     }
@@ -67,7 +68,7 @@ abstract class BaseViewModel : ViewModel() {
     suspend fun transitionAnimationEnd(time: Long) {
         withContext(Dispatchers.Main) {
             //如果请求结束时间小于转场动画时间则等待转场动画结束后返回数据
-            val delayMillis = TRANSITION_ANIMATION_TIME - time
+            val delayMillis = TRANSITION_TIME - time
             if (delayMillis > 0) {
                 delay(delayMillis)
             }

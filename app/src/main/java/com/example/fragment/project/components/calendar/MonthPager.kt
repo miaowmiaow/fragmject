@@ -126,18 +126,23 @@ internal fun MonthPager(
                 }
             }
             //日历和日程联动
+            var enabled by remember { mutableStateOf(true) }
             val listState = rememberLazyListState()
-            var scrollEnabled by remember { mutableStateOf(false) }
             LaunchedEffect(listState) {
                 snapshotFlow { listState.isScrollInProgress }.collectLatest {
                     if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 && !listState.canScrollForward) {
-                        scrollEnabled = false
+                        enabled = false
                     }
                 }
             }
             LaunchedEffect(anchoredDraggableState) {
                 snapshotFlow { anchoredDraggableState.currentValue }.collectLatest {
-                    scrollEnabled = it == CalendarMode.Week && listState.canScrollForward
+                    if (it == CalendarMode.Week) {
+                        enabled = true
+                    } else {
+                        listState.animateScrollToItem(0)
+                        enabled = false
+                    }
                     onCalendarStateChange(it)
                 }
             }
@@ -186,7 +191,7 @@ internal fun MonthPager(
                     mode = mode,
                     height = height,
                     listState = listState,
-                    scrollEnabled = scrollEnabled,
+                    userScrollEnabled = enabled,
                     offsetProvider = { anchoredDraggableOffset.toInt() },
                 )
             }

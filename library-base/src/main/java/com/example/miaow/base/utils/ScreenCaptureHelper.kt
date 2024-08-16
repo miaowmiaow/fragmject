@@ -67,6 +67,8 @@ class ScreenCaptureFragment : Fragment() {
                 stopScreenCapture()
             } else {
                 try {
+                    val width = convertOddToEven(resources.displayMetrics.widthPixels)
+                    val height = convertOddToEven(resources.displayMetrics.heightPixels)
                     mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)//设置音频源
                     mediaRecorder?.setVideoSource(MediaRecorder.VideoSource.SURFACE)//设置视频源
                     mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)//设置输出的编码格式
@@ -74,11 +76,8 @@ class ScreenCaptureFragment : Fragment() {
                     mediaRecorder?.setVideoEncoder(MediaRecorder.VideoEncoder.H264)//图像编码
                     //设置录屏时屏幕大小,这个可跟VirtualDisplay一起控制屏幕大小
                     // VirtualDisplay是将屏幕设置成多大多小setVideoSize是输出文件时屏幕多大多小,需要传偶数否则会报错
-                    mediaRecorder?.setVideoSize(
-                        resources.displayMetrics.widthPixels,
-                        resources.displayMetrics.heightPixels
-                    )
-                    mediaRecorder?.setVideoEncodingBitRate((resources.displayMetrics.widthPixels * resources.displayMetrics.heightPixels * 2.6).toInt())//设置码率
+                    mediaRecorder?.setVideoSize(width, height)
+                    mediaRecorder?.setVideoEncodingBitRate((width * height * 2.6).toInt())//设置码率
                     mediaRecorder?.setVideoFrameRate(24)//设置帧率，该帧率必须是硬件支持的，可以通过Camera.CameraParameter.getSupportedPreviewFpsRange()方法获取相机支持的帧率
                     mediaRecorder?.setOutputFile(savePath)
                     mediaRecorder?.prepare()
@@ -121,6 +120,16 @@ class ScreenCaptureFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         callback = null
+    }
+
+    /**
+     * 将一个奇数转换为小于它1的偶数
+     * 计算机中 -2 的补码表示为 11111110
+     * 对一个奇数 a 进行 a & 11111110 运算，会将 a 的最后一位二进制位置为 0，从而将奇数转换为偶数
+     * 例如：奇数 a=7，二进制表示为 00000111，经过 a & 11111110 运算后得到 00000110，即偶数 6
+     */
+    private fun convertOddToEven(a: Int): Int {
+        return a and -2
     }
 
     fun startScreenCapture(callback: ScreenCaptureCallback?) {

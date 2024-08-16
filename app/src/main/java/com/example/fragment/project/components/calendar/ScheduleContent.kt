@@ -46,7 +46,7 @@ internal fun ScheduleContent(
     mode: CalendarMode,
     height: Dp,
     listState: LazyListState,
-    scrollEnabled: Boolean,
+    userScrollEnabled: Boolean,
     offsetProvider: () -> Int,
 ) {
     if (date == null) return
@@ -112,7 +112,7 @@ internal fun ScheduleContent(
                 state = listState,
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                userScrollEnabled = scrollEnabled
+                userScrollEnabled = userScrollEnabled
             ) {
                 itemsIndexed(
                     items = schedule,

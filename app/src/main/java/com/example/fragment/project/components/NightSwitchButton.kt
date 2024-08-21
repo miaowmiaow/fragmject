@@ -448,7 +448,7 @@ fun SunAndMoon(
     } else if (progress >= 1f) {
         initProgress = 1f
     }
-    val starRadius = canvasRadius * 0.75f
+    val starRadius = canvasRadius * 0.5f
     val starDiameter = starRadius * 2f
     val moveDistance = canvasWidth - (canvasHeight - starDiameter) - starDiameter
     Box(

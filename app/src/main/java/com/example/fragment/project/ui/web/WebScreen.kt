@@ -26,6 +26,7 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -51,6 +52,7 @@ fun WebScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var isBookmark by remember { mutableStateOf(webBookmarkData.contains(url)) }
     var sheetValue by rememberSaveable { mutableStateOf(SheetValue.PartiallyExpanded) }
     val bottomSheetState = rememberStandardBottomSheetState(
         initialValue = sheetValue,
@@ -220,10 +222,8 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            onWebBookmark(
-                                !webBookmarkData.contains(navigator.lastLoadedUrl),
-                                navigator.lastLoadedUrl.toString()
-                            )
+                            isBookmark = !webBookmarkData.contains(navigator.lastLoadedUrl)
+                            onWebBookmark(isBookmark, navigator.lastLoadedUrl.toString())
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
@@ -240,7 +240,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
                             tint = colorResource(
-                                if (webBookmarkData.contains(navigator.lastLoadedUrl)) {
+                                if (isBookmark) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme

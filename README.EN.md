@@ -210,6 +210,23 @@ if (context is AppCompatActivity) {
 }
 ```
 
+## Calendar
+![8.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/8.gif)
+
+#### Quick access
+```
+val calendarState = rememberCalendarState()
+calendarState.addSchedule(text)
+
+Calendar(
+    state = calendarState,
+    modifier = Modifier.padding(vertical = 15.dp),
+    onSelectedDateChange = { y, m, d ->
+        println("CalendarScreen: $y - $m - $d")
+    }
+)
+```
+
 ## Main open-source libraries
 - [coil-kt/coil](https://github.com/coil-kt/coil)
 - [google/gson](https://github.com/google/gson)

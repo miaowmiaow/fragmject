@@ -9,6 +9,7 @@ import android.os.StatFs
 import android.util.Base64
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.example.miaow.base.provider.BaseContentProvider
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
 import java.io.Closeable
@@ -443,6 +444,28 @@ object FileUtil {
             quickClose(inputStream)
         }
         return null
+    }
+
+    fun readAssetString(fileName: String): String {
+        val sb = StringBuilder()
+        var inputStream: InputStream? = null
+        var bufferedReader: BufferedReader? = null
+        try {
+            inputStream = BaseContentProvider.context().assets.open(fileName)
+            bufferedReader = BufferedReader(InputStreamReader(inputStream))
+            var line: String?
+            do {
+                line = bufferedReader.readLine()
+                if (line != null) {
+                    sb.append(line)
+                }
+            } while (line != null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            quickClose(inputStream)
+            quickClose(bufferedReader)
+        }
+        return sb.toString()
     }
 
     fun readAssetString(context: Context, fileName: String): String {

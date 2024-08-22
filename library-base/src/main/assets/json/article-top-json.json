@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "adminAdd": false,
+      "apkLink": "",
+      "audit": 1,
+      "author": "干货",
+      "canEdit": false,
+      "chapterId": 249,
+      "chapterName": "干货资源",
+      "collect": false,
+      "courseId": 13,
+      "desc": "",
+      "descMd": "",
+      "envelopePic": "",
+      "fresh": false,
+      "host": "",
+      "id": 27996,
+      "isAdminAdd": false,
+      "link": "https://www.xiangxueketang.cn/enjoy/play/native_19",
+      "niceDate": "2024-06-06 14:00",
+      "niceShareDate": "2024-02-16 15:59",
+      "origin": "",
+      "prefix": "",
+      "projectLink": "",
+      "publishTime": 1717653646000,
+      "realSuperChapterId": 248,
+      "selfVisible": 0,
+      "shareDate": 1708070363000,
+      "shareUser": "",
+      "superChapterId": 249,
+      "superChapterName": "干货资源",
+      "tags": [],
+      "title": "年薪86W！这个新兴领域真香！建议大家冲一下，钱景真不一般！！！",
+      "type": 1,
+      "userId": -1,
+      "visible": 1,
+      "zan": 0
+    }
+  ],
+  "errorCode": 0,
+  "errorMsg": ""
+}

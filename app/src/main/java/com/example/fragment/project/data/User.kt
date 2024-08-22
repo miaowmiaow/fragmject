@@ -61,4 +61,8 @@ data class User @JvmOverloads constructor(
         return Gson().toJson(this)
     }
 
+    fun isLogin(): Boolean {
+        return id.isBlank()
+    }
+
 }

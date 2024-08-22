@@ -1,6 +1,7 @@
 package com.example.miaow.base.http
 
 import android.content.ContextWrapper
+import com.example.miaow.base.utils.FileUtil
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -115,28 +116,19 @@ class CoroutineHttp private constructor() {
         init: HttpRequest.() -> Unit,
         type: Class<T>,
     ): T {
+        val request = HttpRequest().apply(init)
         return try {
-            val request = HttpRequest()
-            request.init()
             val responseBody = getService().get(request.getUrl(baseUrl), request.getHeader())
             getConverter().converter(responseBody, type).apply { setRequestTime(request.time) }
         } catch (e: Exception) {
-            buildResponse("-1", e.message.toString(), type)
-        }
-    }
-
-    suspend fun string(
-        init: HttpRequest.() -> Unit,
-    ): String {
-        return try {
-            val request = HttpRequest()
-            request.init()
-            getService().get(
-                request.getUrl(baseUrl),
-                request.getHeader()
-            ).string()
-        } catch (e: Exception) {
-            e.message.toString()
+            //网络异常时读取预置数据（仅支持部分接口）
+            val jsonName = request.getUrl(baseUrl).replace("/", "-").replace("?", "_")
+            val json = FileUtil.readAssetString("json/${jsonName}.json")
+            if (json.isNotBlank()) {
+                getConverter().fromJson(json, type)
+            } else {
+                buildResponse("-1", e.message.toString(), type)
+            }
         }
     }
 
@@ -144,19 +136,23 @@ class CoroutineHttp private constructor() {
         init: HttpRequest.() -> Unit,
         type: Class<T>,
     ): T {
+        val request = HttpRequest().apply(init)
         return try {
-            val request = HttpRequest()
-            request.init()
             val responseBody = getService().post(
                 request.getUrl(baseUrl),
                 request.getHeader(),
                 request.getParam()
             )
-            getConverter().converter(responseBody, type).apply {
-                setRequestTime(request.time)
-            }
+            getConverter().converter(responseBody, type).apply { setRequestTime(request.time) }
         } catch (e: Exception) {
-            buildResponse("-1", e.message.toString(), type)
+            //网络异常时读取预置数据（仅支持部分接口）
+            val jsonName = request.getUrl(baseUrl).replace("/", "-").replace("?", "_")
+            val json = FileUtil.readAssetString("json/${jsonName}.json")
+            if (json.isNotBlank()) {
+                getConverter().fromJson(json, type)
+            } else {
+                buildResponse("-1", e.message.toString(), type)
+            }
         }
     }
 
@@ -197,6 +193,21 @@ class CoroutineHttp private constructor() {
             buildResponse("0", "success", HttpResponse::class.java)
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), HttpResponse::class.java)
+        }
+    }
+
+    suspend fun string(
+        init: HttpRequest.() -> Unit,
+    ): String {
+        return try {
+            val request = HttpRequest()
+            request.init()
+            getService().get(
+                request.getUrl(baseUrl),
+                request.getHeader()
+            ).string()
+        } catch (e: Exception) {
+            e.message.toString()
         }
     }
 

@@ -37,14 +37,13 @@ class WanActivity : AppCompatActivity() {
                 }
             }
         })
+        //WebView预创建
         WebViewManager.prepare(applicationContext)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent.data?.let {
-            setContentView(parseScheme(it))
-        }
+        setContentView(parseScheme(intent.data))
     }
 
     override fun onDestroy() {

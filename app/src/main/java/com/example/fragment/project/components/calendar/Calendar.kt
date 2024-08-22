@@ -93,16 +93,16 @@ class CalendarState(
     private val calendarEvents: MutableSharedFlow<CalendarEvent> = MutableSharedFlow()
 
     internal suspend fun handleCalendarEvent(
-        onSchedule: (String) -> Unit = {},
+        addSchedule: (String) -> Unit = {},
     ): Nothing = withContext(Dispatchers.Main) {
         calendarEvents.collect { event ->
             when (event) {
-                is CalendarEvent.Schedule -> onSchedule(event.text)
+                is CalendarEvent.Schedule -> addSchedule(event.text)
             }
         }
     }
 
-    fun onSchedule(text: String) {
+    fun addSchedule(text: String) {
         scope.launch { calendarEvents.emit(CalendarEvent.Schedule(text)) }
     }
 

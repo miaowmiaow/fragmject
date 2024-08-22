@@ -352,11 +352,15 @@ if (context is AppCompatActivity) {
 
 #### 快速使用
 ```
-Calendar(
-    schedules = uiState.schedules,
-    modifier = Modifier.padding(vertical = 15.dp),
-    onSelectedDateChange = { year, month, day ->
+val calendarState = rememberCalendarState()
 
+calendarState.addSchedule(text)
+
+Calendar(
+    state = calendarState,
+    modifier = Modifier.padding(vertical = 15.dp),
+    onSelectedDateChange = { y, m, d ->
+        println("CalendarScreen: $y - $m - $d")
     }
 )
 ```

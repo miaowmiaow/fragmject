@@ -50,7 +50,7 @@ internal fun MonthPager(
     var selectedDate by remember { mutableStateOf(model.localCalendarDate()) }
     LaunchedEffect(state) {
         state.handleCalendarEvent(
-            onSchedule = {
+            addSchedule = {
                 scope.launch {
                     selectedDate?.addSchedule(it)
                 }

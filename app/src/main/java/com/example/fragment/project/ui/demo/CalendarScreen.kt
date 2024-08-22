@@ -96,7 +96,7 @@ fun CalendarScreen() {
                             }
                             TextButton(
                                 onClick = {
-                                    calendarState.onSchedule(text)
+                                    calendarState.addSchedule(text)
                                     openDialog = false
                                 },
                                 modifier = Modifier.weight(1f)

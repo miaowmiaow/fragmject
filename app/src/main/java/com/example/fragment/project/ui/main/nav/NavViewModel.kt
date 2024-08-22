@@ -43,8 +43,7 @@ class NavViewModel : BaseViewModel() {
             val navigationResult = state.navigationResult[position]
             navigationResult.isSelected = true
             navigationResult.articles?.let { articles ->
-                state.articlesResult.clear()
-                state.articlesResult.addAll(articles)
+                state.articlesResult = articles
             }
             state.copy(currentPosition = position)
         }
@@ -63,12 +62,11 @@ class NavViewModel : BaseViewModel() {
             }
             _uiState.update { state ->
                 response.data?.let { data ->
-                    state.navigationResult.clear()
-                    state.navigationResult.addAll(data)
-                    updateSelectNavigation(0)
+                    state.navigationResult = data
                 }
                 state.copy(isLoading = false)
             }
+            updateSelectNavigation(0)
         }
     }
 
@@ -85,8 +83,7 @@ class NavViewModel : BaseViewModel() {
             }
             _uiState.update { state ->
                 response.data?.let { data ->
-                    state.systemTreeResult.clear()
-                    state.systemTreeResult.addAll(data)
+                    state.systemTreeResult = data
                 }
                 state.copy(isLoading = false)
             }

@@ -91,7 +91,7 @@ fun NavLinkContent(
                 modifier = Modifier.width(150.dp),
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                itemsIndexed(uiState.navigationResult.toList()) { index, item ->
+                itemsIndexed(uiState.navigationResult) { index, item ->
                     Box(
                         modifier = Modifier
                             .clickable { viewModel.updateSelectNavigation(index) }

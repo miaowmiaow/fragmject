@@ -280,14 +280,16 @@ class WanNavActions(
 
     fun navigate(route: String) {
         navController.graph.findNode(route) ?: return
-        WanHelper.getUser { user ->
-            navController.navigate(
-                if (interceptRoute(route) && user.id.isBlank()) {
+        if (requiredLoginRoute(route)) {
+            WanHelper.getUser {
+                navController.navigate(if (it.isLogin()) {
                     WanDestinations.LOGIN_ROUTE
                 } else {
                     route
-                }
-            )
+                })
+            }
+        } else {
+            navController.navigate(route)
         }
     }
 }
@@ -310,7 +312,7 @@ object WanDestinations {
     const val WEB_ROUTE = "web_route"
 }
 
-private fun interceptRoute(route: String): Boolean {
+private fun requiredLoginRoute(route: String): Boolean {
     return route.startsWith(WanDestinations.MY_COIN_ROUTE)
             || route.startsWith(WanDestinations.MY_COLLECT_ROUTE)
             || route.startsWith(WanDestinations.MY_SHARE_ROUTE)

@@ -1,0 +1,56 @@
+{
+  "data": {
+    "curPage": 1,
+    "datas": [
+      {
+        "adminAdd": false,
+        "apkLink": "",
+        "audit": 1,
+        "author": "zeleven",
+        "canEdit": false,
+        "chapterId": 312,
+        "chapterName": "富文本编辑器",
+        "collect": false,
+        "courseId": 13,
+        "desc": "开源的Android Markdown编辑器\r\n\r\n",
+        "descMd": "",
+        "envelopePic": "http://www.wanandroid.com/blogimgs/ba881591-c386-44ad-8d8a-d30d3984a63f.png",
+        "fresh": false,
+        "host": "",
+        "id": 2339,
+        "isAdminAdd": false,
+        "link": "https://www.wanandroid.com/blog/show/2046",
+        "niceDate": "2018-02-22 19:15",
+        "niceShareDate": "未知时间",
+        "origin": "",
+        "prefix": "",
+        "projectLink": "https://github.com/zeleven/mua",
+        "publishTime": 1519298150000,
+        "realSuperChapterId": 293,
+        "selfVisible": 0,
+        "shareDate": null,
+        "shareUser": "",
+        "superChapterId": 294,
+        "superChapterName": "开源项目主Tab",
+        "tags": [
+          {
+            "name": "项目",
+            "url": "/project/list/1?cid=312"
+          }
+        ],
+        "title": "开源Markdown 编辑器：mua",
+        "type": 0,
+        "userId": -1,
+        "visible": 1,
+        "zan": 0
+      }
+    ],
+    "offset": 0,
+    "over": true,
+    "pageCount": 1,
+    "size": 15,
+    "total": 1
+  },
+  "errorCode": 0,
+  "errorMsg": ""
+}

@@ -353,7 +353,6 @@ if (context is AppCompatActivity) {
 #### 快速使用
 ```
 val calendarState = rememberCalendarState()
-
 calendarState.addSchedule(text)
 
 Calendar(

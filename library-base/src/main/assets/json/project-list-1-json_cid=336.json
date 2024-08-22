@@ -1,0 +1,98 @@
+{
+  "data": {
+    "curPage": 1,
+    "datas": [
+      {
+        "adminAdd": false,
+        "apkLink": "",
+        "audit": 1,
+        "author": "onlyloveyd",
+        "canEdit": false,
+        "chapterId": 336,
+        "chapterName": "键盘",
+        "collect": false,
+        "courseId": 13,
+        "desc": "自定义安全键盘，支持字母，符号和数字\r\n",
+        "descMd": "",
+        "envelopePic": "http://www.wanandroid.com/blogimgs/053727d1-fbbc-4c72-8f4d-9848ae8ab9e1.png",
+        "fresh": false,
+        "host": "",
+        "id": 3094,
+        "isAdminAdd": false,
+        "link": "https://www.wanandroid.com/blog/show/2190",
+        "niceDate": "2018-07-03 19:06",
+        "niceShareDate": "未知时间",
+        "origin": "",
+        "prefix": "",
+        "projectLink": "https://github.com/onlyloveyd/LazyKeyboard",
+        "publishTime": 1530615987000,
+        "realSuperChapterId": 293,
+        "selfVisible": 0,
+        "shareDate": null,
+        "shareUser": "",
+        "superChapterId": 294,
+        "superChapterName": "开源项目主Tab",
+        "tags": [
+          {
+            "name": "项目",
+            "url": "/project/list/1?cid=336"
+          }
+        ],
+        "title": "自定义安全键盘 LazyKeyboard",
+        "type": 0,
+        "userId": -1,
+        "visible": 1,
+        "zan": 0
+      },
+      {
+        "adminAdd": false,
+        "apkLink": "",
+        "audit": 1,
+        "author": "Jacksgong",
+        "canEdit": false,
+        "chapterId": 336,
+        "chapterName": "键盘",
+        "collect": false,
+        "courseId": 13,
+        "desc": "起源，之前在微信工作的时候，为了给用户带来更好的基础体验，做了很多尝试，踩了很多输入法的坑，特别是动态调整键盘高度，二级页面是透明背景，魅族早期的Smart bar等, 后来逐一完善了，考虑到拥抱开源，看业界还是有很多应用存在类似问题。",
+        "descMd": "",
+        "envelopePic": "http://www.wanandroid.com/blogimgs/f50aca02-8af1-438f-a1d3-d56a45597c33.gif",
+        "fresh": false,
+        "host": "",
+        "id": 2693,
+        "isAdminAdd": false,
+        "link": "https://www.wanandroid.com/blog/show/2093",
+        "niceDate": "2018-03-22 09:28",
+        "niceShareDate": "未知时间",
+        "origin": "",
+        "prefix": "",
+        "projectLink": "https://github.com/Jacksgong/JKeyboardPanelSwitch",
+        "publishTime": 1521682081000,
+        "realSuperChapterId": 293,
+        "selfVisible": 0,
+        "shareDate": null,
+        "shareUser": "",
+        "superChapterId": 294,
+        "superChapterName": "开源项目主Tab",
+        "tags": [
+          {
+            "name": "项目",
+            "url": "/project/list/1?cid=336"
+          }
+        ],
+        "title": "Android键盘面板冲突 布局闪动处理方案",
+        "type": 0,
+        "userId": -1,
+        "visible": 1,
+        "zan": 0
+      }
+    ],
+    "offset": 0,
+    "over": true,
+    "pageCount": 1,
+    "size": 15,
+    "total": 2
+  },
+  "errorCode": 0,
+  "errorMsg": ""
+}

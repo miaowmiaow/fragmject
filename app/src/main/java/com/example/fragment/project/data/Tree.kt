@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class TreeList(
-    val data: List<Tree>? = null,
+    val data: MutableList<Tree>? = null,
 ) : HttpResponse(), Parcelable
 
 @Parcelize

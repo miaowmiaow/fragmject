@@ -42,10 +42,10 @@ fun SwipeBox(
         actionWidth.toPx()
     }
     val startWidth = actionWidthPx * startAction.size
-    val startActionSize = startAction.size + 1 // startAction + startFillAction
+    val startActionSize = if (startFillAction == null) startAction.size else startAction.size + 1 // startAction + startFillAction
     val startFillWidth = actionWidthPx * startActionSize
     val endWidth = actionWidthPx * endAction.size
-    val endActionSize = endAction.size + 1 // endAction + endFillAction
+    val endActionSize = if (endFillAction == null) endAction.size else endAction.size + 1 // endAction + endFillAction
     val endFillWidth = actionWidthPx * endActionSize
     var contentWidth by remember { mutableFloatStateOf(0f) }
     var contentHeight by remember { mutableFloatStateOf(0f) }

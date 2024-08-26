@@ -1,4 +1,5 @@
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -123,7 +124,11 @@ android {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
+    featureFlags = setOf(
+        ComposeFeatureFlag.IntrinsicRemember.disabled(),
+        ComposeFeatureFlag.OptimizeNonSkippingGroups,
+        ComposeFeatureFlag.StrongSkipping.disabled()
+    )
 }
 
 dependencies {

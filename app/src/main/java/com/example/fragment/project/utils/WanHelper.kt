@@ -26,7 +26,12 @@ object WanHelper {
      * 设置搜索历史
      */
     suspend fun setSearchHistory(list: List<String>) {
-        AppDatabase.set(SEARCH_HISTORY, Gson().toJson(list))
+        val sublist = if (list.size > 1000) {
+            list.takeLast(1000)
+        } else {
+            list
+        }
+        AppDatabase.set(SEARCH_HISTORY, Gson().toJson(sublist))
     }
 
     /**
@@ -43,7 +48,12 @@ object WanHelper {
     }
 
     suspend fun setWebBookmark(list: List<String>) {
-        AppDatabase.set(WEB_BOOKMARK, Gson().toJson(list))
+        val sublist = if (list.size > 1000) {
+            list.takeLast(1000)
+        } else {
+            list
+        }
+        AppDatabase.set(WEB_BOOKMARK, Gson().toJson(sublist))
     }
 
     suspend fun getWebBookmark(): MutableList<String> {
@@ -57,7 +67,12 @@ object WanHelper {
     }
 
     suspend fun setWebHistory(list: List<String>) {
-        AppDatabase.set(WEB_HISTORY, Gson().toJson(list))
+        val sublist = if (list.size > 1000) {
+            list.takeLast(1000)
+        } else {
+            list
+        }
+        AppDatabase.set(WEB_HISTORY, Gson().toJson(sublist))
     }
 
     suspend fun getWebHistory(): MutableList<String> {

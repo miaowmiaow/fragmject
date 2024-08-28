@@ -37,10 +37,10 @@ import com.example.miaow.base.vm.TRANSITION_TIME
 @Composable
 fun WanNavGraph(
     route: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: WanViewModel = viewModel()
 ) {
-    val wanViewModel: WanViewModel = viewModel()
-    val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     val wanNavActions = remember(navController) { WanNavActions(navController) }
     NavHost(
@@ -74,10 +74,10 @@ fun WanNavGraph(
     ) {
         composable(WanDestinations.BOOKMARK_HISTORY_ROUTE) {
             BookmarkHistoryScreen(
-                webBookmarkData = wanUiState.webBookmarkResult,
-                webHistoryData = wanUiState.webHistoryResult,
-                onWebBookmark = { isAdd, text -> wanViewModel.onWebBookmark(isAdd, text) },
-                onWebHistory = { isAdd, text -> wanViewModel.onWebHistory(isAdd, text) },
+                webBookmarkData = uiState.webBookmarkResult,
+                webHistoryData = uiState.webHistoryResult,
+                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
+                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -94,8 +94,8 @@ fun WanNavGraph(
         }
         composable(WanDestinations.MAIN_ROUTE) {
             MainScreen(
-                hotKeyData = wanUiState.hotKeyResult,
-                systemData = wanUiState.treeResult,
+                hotKeyData = uiState.hotKeyResult,
+                systemData = uiState.treeResult,
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateToDemo = { wanNavActions.navigateToDemo() },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
@@ -150,9 +150,9 @@ fun WanNavGraph(
         composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
             SearchScreen(
                 key = backStackEntry.arguments?.getString("key") ?: "",
-                hotKeyData = wanUiState.hotKeyResult,
-                searchHistoryData = wanUiState.searchHistoryResult,
-                onSearchHistory = { isAdd, text -> wanViewModel.onSearchHistory(isAdd, text) },
+                hotKeyData = uiState.hotKeyResult,
+                searchHistoryData = uiState.searchHistoryResult,
+                onSearchHistory = { isAdd, text -> viewModel.onSearchHistory(isAdd, text) },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },
@@ -174,7 +174,7 @@ fun WanNavGraph(
         }
         composable("${WanDestinations.SYSTEM_ROUTE}/{cid}") { backStackEntry ->
             val cid = backStackEntry.arguments?.getString("cid").toString()
-            wanUiState.treeResult.forEach { data ->
+            uiState.treeResult.forEach { data ->
                 data.children?.forEachIndexed { index, children ->
                     if (children.id == cid) {
                         SystemScreen(
@@ -204,9 +204,9 @@ fun WanNavGraph(
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(
                 url = backStackEntry.arguments?.getString("url") ?: "",
-                webBookmarkData = wanUiState.webBookmarkResult,
-                onWebBookmark = { isAdd, text -> wanViewModel.onWebBookmark(isAdd, text) },
-                onWebHistory = { isAdd, text -> wanViewModel.onWebHistory(isAdd, text) },
+                webBookmarkData = uiState.webBookmarkResult,
+                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
+                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )

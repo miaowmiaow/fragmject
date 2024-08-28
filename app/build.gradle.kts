@@ -135,22 +135,25 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.window.size)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.util)
+    // Android Studio Preview support
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    // UI Tests
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    implementation(libs.androidx.lifecycle.runtime.compose)
+    // Optional - Integration with activities
+    implementation(libs.androidx.activity.compose)
+    // Optional - Integration with ViewModels
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
-//    debugImplementation(libs.leakcanary.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    debugImplementation(libs.leakcanary.android)
 }

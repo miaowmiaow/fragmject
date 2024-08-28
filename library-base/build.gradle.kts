@@ -50,6 +50,7 @@ android {
 }
 
 dependencies {
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     api(libs.androidx.constraintlayout)
     api(libs.androidx.core.ktx)
     api(libs.androidx.fragment.ktx)
@@ -60,11 +61,10 @@ dependencies {
     api(libs.coil.gif)
     api(libs.coil.svg)
     api(libs.coil.video)
-    api(libs.material)
     api(libs.gson)
     api(libs.kotlin.stdlib)
     api(libs.kotlinx.coroutines)
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    api(libs.material)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
     annotationProcessor(libs.androidx.room.compiler)

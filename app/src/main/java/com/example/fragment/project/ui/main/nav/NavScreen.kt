@@ -3,6 +3,8 @@ package com.example.fragment.project.ui.main.nav
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,11 +30,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +51,7 @@ import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.data.Tree
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -77,25 +87,56 @@ fun NavScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun NavLinkContent(
     viewModel: NavViewModel = viewModel(),
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    val pagerState = rememberPagerState { uiState.navigationResult.size }
     val scrollState = rememberScrollState()
+    var velocity by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(listState) {
+        snapshotFlow { pagerState.currentPage }.collectLatest {
+            val halfVisibleItemSize = listState.layoutInfo.visibleItemsInfo.size / 2 - 1
+            val index = (pagerState.currentPage - halfVisibleItemSize).coerceAtLeast(0)
+            listState.animateScrollToItem(index)
+            scrollState.scrollTo(0)
+        }
+    }
+    LaunchedEffect(scrollState) {
+        var scrollValue = 0
+        snapshotFlow { scrollState.isScrollInProgress }.collectLatest {
+            if (scrollState.isScrollInProgress) {
+                scrollValue = scrollState.value
+            } else {
+                if (velocity < -3000 && scrollState.value == 0) { //顶部上拉切换上一项
+                    pagerState.scrollToPage((pagerState.currentPage - 1))
+                } else if (velocity > 3000 && scrollState.value == scrollValue) { //底部上拉切换下一项
+                    pagerState.scrollToPage(pagerState.currentPage + 1)
+                }
+            }
+        }
+    }
     LoadingContent(uiState.isLoading) {
         Row {
             LazyColumn(
-                modifier = Modifier.width(150.dp),
+                modifier = Modifier.width(100.dp),
+                state = listState,
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
                 itemsIndexed(uiState.navigationResult) { index, item ->
                     Box(
                         modifier = Modifier
-                            .clickable { viewModel.updateSelectNavigation(index) }
-                            .background(colorResource(if (item.isSelected) R.color.background else R.color.white))
+                            .clickable {
+                                scope.launch {
+                                    pagerState.scrollToPage(index)
+                                }
+                            }
+                            .background(colorResource(if (index == pagerState.currentPage) R.color.background else R.color.white))
                             .fillMaxWidth()
                             .height(45.dp),
                         contentAlignment = Alignment.Center,
@@ -103,32 +144,41 @@ fun NavLinkContent(
                         Text(
                             text = item.name,
                             color = colorResource(id = R.color.text_333),
-                            fontSize = 16.sp,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-            ) {
-                uiState.articlesResult.forEach {
-                    Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
-                        Button(
-                            onClick = { onNavigateToWeb(it.link) },
-                            shape = RoundedCornerShape(50),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(R.color.gray_e5),
-                                contentColor = colorResource(R.color.text_666)
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
-                        ) {
-                            Text(
-                                text = it.title,
-                                fontSize = 13.sp
-                            )
+            VerticalPager(state = pagerState, userScrollEnabled = false) { page ->
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(state = scrollState, flingBehavior = object :
+                            FlingBehavior {
+                            override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+                                velocity = initialVelocity
+                                return initialVelocity
+                            }
+                        })
+                ) {
+                    uiState.navigationResult.getOrNull(page)?.articles?.forEach {
+                        Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
+                            Button(
+                                onClick = { onNavigateToWeb(it.link) },
+                                shape = RoundedCornerShape(50),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorResource(R.color.gray_e5),
+                                    contentColor = colorResource(R.color.text_666)
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                                contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
+                            ) {
+                                Text(
+                                    text = it.title,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }

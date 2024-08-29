@@ -5,6 +5,7 @@ import com.example.fragment.project.data.HotKey
 import com.example.fragment.project.data.HotKeyList
 import com.example.fragment.project.data.Tree
 import com.example.fragment.project.data.TreeList
+import com.example.fragment.project.database.user.User
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
@@ -22,6 +23,7 @@ data class WanUiState(
     var searchHistoryResult: MutableList<String> = ArrayList(),
     var webBookmarkResult: MutableList<String> = ArrayList(),
     var webHistoryResult: MutableList<String> = ArrayList(),
+    var user: User? = User("", "", ""),
     var updateTime: Long = 0
 )
 
@@ -38,23 +40,25 @@ class WanViewModel : BaseViewModel() {
             val searchHistoryList = async { WanHelper.getSearchHistory() }
             val webBookmarkList = async { WanHelper.getWebBookmark() }
             val webHistoryList = async { WanHelper.getWebHistory() }
-            _uiState.update { state ->
-                hotKeyList.await().data?.let { data ->
-                    state.hotKeyResult = data
+            WanHelper.getUser().collect { user ->
+                _uiState.update { state ->
+                    hotKeyList.await().data?.let { data ->
+                        state.hotKeyResult = data
+                    }
+                    treeList.await().data?.let { data ->
+                        state.treeResult = data
+                    }
+                    searchHistoryList.await().let {
+                        state.searchHistoryResult = it
+                    }
+                    webHistoryList.await().let {
+                        state.webHistoryResult = it
+                    }
+                    webBookmarkList.await().let {
+                        state.webBookmarkResult = it
+                    }
+                    state.copy(user = user, updateTime = System.nanoTime())
                 }
-                treeList.await().data?.let { data ->
-                    state.treeResult = data
-                }
-                searchHistoryList.await().let {
-                    state.searchHistoryResult = it
-                }
-                webHistoryList.await().let {
-                    state.webHistoryResult = it
-                }
-                webBookmarkList.await().let {
-                    state.webBookmarkResult = it
-                }
-                state.copy(updateTime = System.nanoTime())
             }
         }
     }
@@ -83,14 +87,14 @@ class WanViewModel : BaseViewModel() {
 
     fun onSearchHistory(isAdd: Boolean, text: String) {
         viewModelScope.launch {
-            _uiState.update {
-                if (it.searchHistoryResult.contains(text)) {
-                    it.searchHistoryResult.remove(text)
+            _uiState.update { state ->
+                if (state.searchHistoryResult.contains(text)) {
+                    state.searchHistoryResult.remove(text)
                 }
                 if (isAdd) {
-                    it.searchHistoryResult.add(0, text)
+                    state.searchHistoryResult.add(0, text)
                 }
-                it.copy(updateTime = System.nanoTime())
+                state.copy(updateTime = System.nanoTime())
             }
             WanHelper.setSearchHistory(_uiState.value.searchHistoryResult)
         }
@@ -98,14 +102,14 @@ class WanViewModel : BaseViewModel() {
 
     fun onWebBookmark(isAdd: Boolean, text: String) {
         viewModelScope.launch {
-            _uiState.update {
-                if (it.webBookmarkResult.contains(text)) {
-                    it.webBookmarkResult.remove(text)
+            _uiState.update { state ->
+                if (state.webBookmarkResult.contains(text)) {
+                    state.webBookmarkResult.remove(text)
                 }
                 if (isAdd) {
-                    it.webBookmarkResult.add(0, text)
+                    state.webBookmarkResult.add(0, text)
                 }
-                it.copy(updateTime = System.nanoTime())
+                state.copy(updateTime = System.nanoTime())
             }
             WanHelper.setWebBookmark(_uiState.value.webBookmarkResult)
         }
@@ -113,14 +117,14 @@ class WanViewModel : BaseViewModel() {
 
     fun onWebHistory(isAdd: Boolean, text: String) {
         viewModelScope.launch {
-            _uiState.update {
-                if (it.webHistoryResult.contains(text)) {
-                    it.webHistoryResult.remove(text)
+            _uiState.update { state ->
+                if (state.webHistoryResult.contains(text)) {
+                    state.webHistoryResult.remove(text)
                 }
                 if (isAdd) {
-                    it.webHistoryResult.add(0, text)
+                    state.webHistoryResult.add(0, text)
                 }
-                it.copy(updateTime = System.nanoTime())
+                state.copy(updateTime = System.nanoTime())
             }
             WanHelper.setWebHistory(_uiState.value.webHistoryResult)
         }

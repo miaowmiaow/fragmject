@@ -22,41 +22,42 @@ import kotlinx.coroutines.withContext
  * 详细使用方法参考WanHelper.kt
  */
 @Database(entities = [KV::class], version = 1, exportSchema = false)
-abstract class AppDatabase : RoomDatabase() {
+abstract class KVDatabase : RoomDatabase() {
 
     abstract fun kvDao(): KVDao
 
     companion object {
 
         @Volatile
-        private var instance: AppDatabase? = null
+        private var INSTANCE: KVDatabase? = null
 
-        private fun getInstance() = instance ?: synchronized(AppDatabase::class.java) {
-            instance ?: buildDatabase(BaseContentProvider.context()).also {
-                instance = it
+        private fun getDatabase() = INSTANCE ?: synchronized(KVDatabase::class.java) {
+            INSTANCE ?: buildDatabase().also {
+                INSTANCE = it
             }
         }
 
-        private fun buildDatabase(context: Context): AppDatabase {
+        private fun buildDatabase(context: Context = BaseContentProvider.context()): KVDatabase {
             return Room.databaseBuilder(
                 context,
-                AppDatabase::class.java,
-                "app-database"
+                KVDatabase::class.java,
+                "kv_database"
             ).build()
         }
 
         @JvmStatic
         suspend fun set(key: String, value: String): Boolean {
-            return getInstance().setValue(key, value)
+            return getDatabase().setValue(key, value)
         }
 
         @JvmStatic
         suspend fun get(key: String): String {
-            return getInstance().getValue(key)
+            return getDatabase().getValue(key)
         }
 
+        @JvmStatic
         fun closeDB() {
-            getInstance().close()
+            getDatabase().close()
         }
 
     }
@@ -95,7 +96,7 @@ abstract class AppDatabase : RoomDatabase() {
     override fun close() {
         super.close()
         //数据库关闭后把instance置空
-        instance = null
+        INSTANCE = null
     }
 
 }

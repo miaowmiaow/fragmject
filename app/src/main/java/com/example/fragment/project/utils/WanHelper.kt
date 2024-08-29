@@ -2,13 +2,19 @@ package com.example.fragment.project.utils
 
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.fragment.project.data.User
-import com.example.miaow.base.database.AppDatabase
+import com.example.fragment.project.database.AppDatabase
+import com.example.fragment.project.database.user.User
+import com.example.miaow.base.database.KVDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 数据持久化辅助类
@@ -20,7 +26,45 @@ object WanHelper {
     private const val WEB_BOOKMARK = "web_bookmark"
     private const val WEB_HISTORY = "web_history"
     private const val UI_MODE = "ui_mode"
-    private const val USER = "user"
+    private const val USER_NAME = "user_name"
+
+    /**
+     * 设置用户信息
+     */
+    suspend fun setUser(user: User) {
+        setUsername(user.username)
+        val u = AppDatabase.getUserDao().getById(user.id)
+        if (u == null) {
+            AppDatabase.getUserDao().insert(user)
+        } else {
+            AppDatabase.getUserDao().update(user)
+        }
+    }
+
+    /**
+     * 删除用户信息
+     */
+    suspend fun deleteUser(user: User) {
+        AppDatabase.getUserDao().delete(user)
+        setUsername("")
+    }
+
+    /**
+     * 获取用户信息
+     */
+    suspend fun getUser(): Flow<User?> {
+        return withContext(Dispatchers.Main) {
+            AppDatabase.getUserDao().getByName(getUsername())
+        }
+    }
+
+    private suspend fun setUsername(username: String): Boolean {
+        return KVDatabase.set(USER_NAME, username)
+    }
+
+    private suspend fun getUsername(): String {
+        return KVDatabase.get(USER_NAME)
+    }
 
     /**
      * 设置搜索历史
@@ -31,7 +75,7 @@ object WanHelper {
         } else {
             list
         }
-        AppDatabase.set(SEARCH_HISTORY, Gson().toJson(sublist))
+        KVDatabase.set(SEARCH_HISTORY, Gson().toJson(sublist))
     }
 
     /**
@@ -39,7 +83,7 @@ object WanHelper {
      */
     suspend fun getSearchHistory(): MutableList<String> {
         return try {
-            val json = AppDatabase.get(SEARCH_HISTORY)
+            val json = KVDatabase.get(SEARCH_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -53,12 +97,12 @@ object WanHelper {
         } else {
             list
         }
-        AppDatabase.set(WEB_BOOKMARK, Gson().toJson(sublist))
+        KVDatabase.set(WEB_BOOKMARK, Gson().toJson(sublist))
     }
 
     suspend fun getWebBookmark(): MutableList<String> {
         return try {
-            val json = AppDatabase.get(WEB_BOOKMARK)
+            val json = KVDatabase.get(WEB_BOOKMARK)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -72,12 +116,12 @@ object WanHelper {
         } else {
             list
         }
-        AppDatabase.set(WEB_HISTORY, Gson().toJson(sublist))
+        KVDatabase.set(WEB_HISTORY, Gson().toJson(sublist))
     }
 
     suspend fun getWebHistory(): MutableList<String> {
         return try {
-            val json = AppDatabase.get(WEB_HISTORY)
+            val json = KVDatabase.get(WEB_HISTORY)
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -92,7 +136,7 @@ object WanHelper {
      *      AppCompatDelegate.MODE_NIGHT_YES
      */
     suspend fun setUiMode(mode: Int): Boolean {
-        return AppDatabase.set(UI_MODE, mode.toString())
+        return KVDatabase.set(UI_MODE, mode.toString())
     }
 
     /**
@@ -104,7 +148,7 @@ object WanHelper {
      */
     suspend fun getUiMode(): Int {
         return try {
-            AppDatabase.get(UI_MODE).toInt()
+            KVDatabase.get(UI_MODE).toInt()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
             AppCompatDelegate.MODE_NIGHT_NO
@@ -117,41 +161,13 @@ object WanHelper {
         }
     }
 
-    /**
-     * 设置用户信息
-     */
-    suspend fun setUser(user: User?) {
-        if (user == null) {
-            return
-        }
-        AppDatabase.set(USER, user.toJson())
-    }
-
-    /**
-     * 获取用户信息
-     */
-    suspend fun getUser(): User {
-        return try {
-            Gson().fromJson(AppDatabase.get(USER), User::class.java) ?: User()
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-            User()
-        }
-    }
-
-    fun getUser(result: (User) -> Unit) {
-        CoroutineScope(Dispatchers.Main).launch {
-            result.invoke(getUser())
-        }
-    }
-
     suspend fun setSchedule(year: Int, month: Int, day: Int, list: MutableList<String>) {
-        AppDatabase.set("${SCHEDULE}_${year}_${month}_${day}", Gson().toJson(list))
+        KVDatabase.set("${SCHEDULE}_${year}_${month}_${day}", Gson().toJson(list))
     }
 
     suspend fun getSchedule(year: Int, month: Int, day: Int): MutableList<String> {
         return try {
-            val json = AppDatabase.get("${SCHEDULE}_${year}_${month}_${day}")
+            val json = KVDatabase.get("${SCHEDULE}_${year}_${month}_${day}")
             Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -164,6 +180,7 @@ object WanHelper {
      */
     fun close() {
         AppDatabase.closeDB()
+        KVDatabase.closeDB()
     }
 
 }

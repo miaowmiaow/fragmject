@@ -68,8 +68,8 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
-    LaunchedEffect(uiState.success, uiState.message, snackbarHostState) {
-        if (uiState.success) {
+    LaunchedEffect(uiState.isLogin, uiState.message, snackbarHostState) {
+        if (uiState.isLogin) {
             onPopBackStackToMain()
         }
         if (uiState.message.isNotBlank()) {

@@ -2,7 +2,7 @@ package com.example.fragment.project.ui.setting
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.data.User
+import com.example.fragment.project.database.user.User
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.get
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 data class SettingUiState(
     var isLoading: Boolean = false,
     var mode: Int = -1,
-    var user: User = User(),
+    var user: User? = null,
 )
 
 class SettingViewModel : BaseViewModel() {
@@ -26,36 +26,23 @@ class SettingViewModel : BaseViewModel() {
     val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
 
     init {
-        getUiMode()
-        getUser()
-    }
-
-    private fun getUiMode() {
         viewModelScope.launch {
-            val mode = WanHelper.getUiMode()
-            _uiState.update { state ->
-                state.copy(mode = mode)
+            WanHelper.getUser().collect { user ->
+                _uiState.update { state ->
+                    state.copy(user = user, mode = WanHelper.getUiMode())
+                }
             }
         }
     }
 
     fun updateUiMode(mode: Int) {
         viewModelScope.launch {
-            WanHelper.setUiMode(mode)
             _uiState.update { state ->
+                WanHelper.setUiMode(mode)
                 state.copy(mode = mode)
             }
             if (mode != AppCompatDelegate.getDefaultNightMode()) {
                 AppCompatDelegate.setDefaultNightMode(mode)
-            }
-        }
-    }
-
-    private fun getUser() {
-        viewModelScope.launch {
-            val user = WanHelper.getUser()
-            _uiState.update {
-                it.copy(user = user)
             }
         }
     }
@@ -71,12 +58,13 @@ class SettingViewModel : BaseViewModel() {
             val response = get<HttpResponse> {
                 setUrl("user/logout/json")
             }
-            if (response.errorCode == "0") {
-                val user = User()
-                WanHelper.setUser(user)
-                _uiState.update {
-                    it.copy(isLoading = false, user = user)
+            _uiState.update { state ->
+                if (response.errorCode == "0") {
+                    state.user?.let { user ->
+                        WanHelper.deleteUser(user)
+                    }
                 }
+                state.copy(isLoading = false)
             }
         }
     }

@@ -30,7 +30,7 @@ publishing {
     }
     repositories {
         maven {
-            url = uri(layout.buildDirectory.dir("repo"))
+            url = uri(rootProject.file("repo"))
         }
     }
 }

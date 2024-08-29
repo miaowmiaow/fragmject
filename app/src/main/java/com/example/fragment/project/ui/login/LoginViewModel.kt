@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.login
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.data.Login
+import com.example.fragment.project.database.user.Login
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 data class LoginUiState(
     var isLoading: Boolean = false,
-    var success: Boolean = false,
+    var isLogin: Boolean = false,
     var message: String = "",
 )
 
@@ -51,11 +51,13 @@ class LoginViewModel : BaseViewModel() {
                 putParam("username", username)
                 putParam("password", password)
             }
-            WanHelper.setUser(response.data)
             _uiState.update {
+                response.data?.let { user ->
+                    WanHelper.setUser(user)
+                }
                 it.copy(
                     isLoading = false,
-                    success = response.errorCode == "0",
+                    isLogin = response.errorCode == "0",
                     message = response.errorMsg
                 )
             }

@@ -1,8 +1,8 @@
-buildscript {
-    dependencies {
-//        classpath 'com.example.miaow:plugin:1.0.0'
-    }
-}
+//buildscript {
+//    dependencies {
+//        classpath(libs.miaow.plugin)
+//    }
+//}
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {

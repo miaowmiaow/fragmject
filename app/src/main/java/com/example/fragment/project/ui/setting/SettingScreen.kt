@@ -244,7 +244,7 @@ fun SettingScreen(
                     HorizontalDivider()
                     ArrowRightItem("关于玩Android") { onNavigateToWeb("https://wanandroid.com") }
                     Spacer(Modifier.height(20.dp))
-                    if (uiState.user.id.isNotBlank()) {
+                    if (uiState.user != null) {
                         Button(
                             onClick = {
                                 context.showStandardDialog(

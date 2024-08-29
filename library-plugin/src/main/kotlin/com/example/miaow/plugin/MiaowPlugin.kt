@@ -55,7 +55,7 @@ class MiaowPlugin : Plugin<Project> {
                 it.listOfTimes.set(
                     listOf(
                         TimeBean(
-                            "com/example/fragment/project/activity/MainActivity",
+                            "com/example/fragment/project/WanActivity",
                             "onCreate",
                             "(Landroid/os/Bundle;)V"
                         ),
@@ -74,7 +74,7 @@ class MiaowPlugin : Plugin<Project> {
                 it.listOfTraces.set(
                     listOf(
                         TraceBean(
-                            traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
+                            traceOwner = "com/example/fragment/project/utils/StatisticHelper",
                             traceName = "viewOnClick",
                             traceDesc = "(Landroid/view/View;)V", //参数应在desc范围之内
                             owner = "Landroid/view/View\$OnClickListener;",
@@ -82,10 +82,10 @@ class MiaowPlugin : Plugin<Project> {
                             desc = "(Landroid/view/View;)V"
                         ),
                         TraceBean(
-                            traceOwner = "com/example/fragment/library/common/utils/StatisticHelper",
+                            traceOwner = "com/example/fragment/project/utils/StatisticHelper",
                             traceName = "testAnnotation",
                             traceDesc = "(Ljava/lang/Object;ILjava/lang/String;)V", //对照annotationParams，注意参数顺序
-                            annotationDesc = "Lcom/example/fragment/library/common/utils/TestAnnotation;",
+                            annotationDesc = "Lcom/example/fragment/project/utils/TestAnnotation;",
                             annotationParams = mapOf(
                                 //参数名 : 参数类型（对应的ASM指令，加载不同类型的参数需要不同的指令）
                                 //this  : 所在方法的当前对象的引用（默认关键字，按需可选配置）

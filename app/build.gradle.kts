@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.ksp)
 //    id("miaow")
 }
 
@@ -152,6 +153,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)

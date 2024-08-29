@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.fragment.project.database.user.User
 import com.example.fragment.project.ui.bookmark_history.BookmarkHistoryScreen
 import com.example.fragment.project.ui.demo.DemoScreen
 import com.example.fragment.project.ui.login.LoginScreen
@@ -28,7 +29,6 @@ import com.example.fragment.project.ui.share.ShareArticleScreen
 import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.user.UserScreen
 import com.example.fragment.project.ui.web.WebScreen
-import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.vm.TRANSITION_TIME
 
 /**
@@ -42,7 +42,7 @@ fun WanNavGraph(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
-    val wanNavActions = remember(navController) { WanNavActions(navController) }
+    val wanNavActions = remember(navController, uiState.user) { WanNavActions(navController, uiState.user) }
     NavHost(
         navController = navController,
         startDestination = WanDestinations.MAIN_ROUTE,
@@ -225,7 +225,8 @@ fun WanNavGraph(
 }
 
 class WanNavActions(
-    private val navController: NavHostController
+    private val navController: NavHostController,
+    private val user: User?,
 ) {
     val navigateToBookmarkHistory: () -> Unit = {
         navigate(WanDestinations.BOOKMARK_HISTORY_ROUTE)
@@ -280,14 +281,8 @@ class WanNavActions(
 
     fun navigate(route: String) {
         navController.graph.findNode(route) ?: return
-        if (requiredLoginRoute(route)) {
-            WanHelper.getUser {
-                navController.navigate(if (it.isLogin()) {
-                    WanDestinations.LOGIN_ROUTE
-                } else {
-                    route
-                })
-            }
+        if (requiredLoginRoute(route, user)) {
+            navController.navigate(WanDestinations.LOGIN_ROUTE)
         } else {
             navController.navigate(route)
         }
@@ -312,8 +307,9 @@ object WanDestinations {
     const val WEB_ROUTE = "web_route"
 }
 
-private fun requiredLoginRoute(route: String): Boolean {
-    return route.startsWith(WanDestinations.MY_COIN_ROUTE)
+private fun requiredLoginRoute(route: String, user: User?): Boolean {
+    return (route.startsWith(WanDestinations.MY_COIN_ROUTE)
             || route.startsWith(WanDestinations.MY_COLLECT_ROUTE)
-            || route.startsWith(WanDestinations.MY_SHARE_ROUTE)
+            || route.startsWith(WanDestinations.MY_SHARE_ROUTE))
+            && (user == null || user.id.isBlank())
 }

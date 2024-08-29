@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.register
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.data.Register
+import com.example.fragment.project.database.user.Register
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 data class RegisterUiState(
     var isLoading: Boolean = false,
-    var success: Boolean = false,
+    var isLogin: Boolean = false,
     var message: String = "",
 )
 
@@ -64,11 +64,13 @@ class RegisterViewModel : BaseViewModel() {
                 putParam("password", password)
                 putParam("repassword", repassword)
             }
-            WanHelper.setUser(response.data)
             _uiState.update {
+                response.data?.let { user ->
+                    WanHelper.setUser(user)
+                }
                 it.copy(
                     isLoading = false,
-                    success = response.errorCode == "0",
+                    isLogin = response.errorCode == "0",
                     message = response.errorMsg
                 )
             }

@@ -18,6 +18,7 @@ kotlinxCoroutines = "1.8.1"
 ksp = "2.0.20-1.0.24"
 leakcanary = "2.12"
 material = "1.12.0"
+miaowPlugin = "1.0.0"
 okhttp = "5.0.0-alpha.14"
 retrofit = "2.11.0"
 room = "2.6.1"
@@ -64,6 +65,7 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+miaow-plugin = { module = "com.example.miaow:plugin", version.ref = "miaowPlugin" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

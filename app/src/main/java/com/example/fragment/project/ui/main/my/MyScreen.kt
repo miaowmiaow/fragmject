@@ -44,24 +44,20 @@ fun MyScreen(
     onNavigateToUser: (userId: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    DisposableEffect(Unit) {
-        viewModel.getUser()
-        onDispose {}
-    }
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(45.dp))
         AsyncImage(
-            model = uiState.userBean.getAvatarId(),
+            model = uiState.user.avatar,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (uiState.isLogin()) {
-                        onNavigateToUser(uiState.userBean.id)
+                    if (uiState.user.id.isNotBlank()) {
+                        onNavigateToUser(uiState.user.id)
                     } else {
                         onNavigateToLogin()
                     }
@@ -69,12 +65,12 @@ fun MyScreen(
                 .size(90.dp)
         )
         Text(
-            text = uiState.userBean.username.ifBlank { "去登录" },
+            text = uiState.user.username.ifBlank { "去登录" },
             modifier = Modifier
                 .clickable(
                     onClick = {
-                        if (uiState.isLogin()) {
-                            onNavigateToUser(uiState.userBean.id)
+                        if (uiState.user.id.isNotBlank()) {
+                            onNavigateToUser(uiState.user.id)
                         } else {
                             onNavigateToLogin()
                         }

@@ -14,7 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fragment.project.database.user.User
-import com.example.fragment.project.ui.bookmark_history.BookmarkHistoryScreen
+import com.example.fragment.project.ui.browse_history.BrowseHistoryScreen
 import com.example.fragment.project.ui.demo.DemoScreen
 import com.example.fragment.project.ui.login.LoginScreen
 import com.example.fragment.project.ui.main.MainScreen
@@ -42,7 +42,8 @@ fun WanNavGraph(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
-    val wanNavActions = remember(navController, uiState.user) { WanNavActions(navController, uiState.user) }
+    val wanNavActions =
+        remember(navController, uiState.user) { WanNavActions(navController, uiState.user) }
     NavHost(
         navController = navController,
         startDestination = WanDestinations.MAIN_ROUTE,
@@ -72,12 +73,8 @@ fun WanNavGraph(
             )
         },
     ) {
-        composable(WanDestinations.BOOKMARK_HISTORY_ROUTE) {
-            BookmarkHistoryScreen(
-                webBookmarkData = uiState.webBookmarkResult,
-                webHistoryData = uiState.webHistoryResult,
-                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
-                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
+        composable(WanDestinations.BROWSE_HISTORY_ROUTE) {
+            BrowseHistoryScreen(
                 onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -151,8 +148,6 @@ fun WanNavGraph(
             SearchScreen(
                 key = backStackEntry.arguments?.getString("key") ?: "",
                 hotKeyData = uiState.hotKeyResult,
-                searchHistoryData = uiState.searchHistoryResult,
-                onSearchHistory = { isAdd, text -> viewModel.onSearchHistory(isAdd, text) },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },
@@ -204,9 +199,6 @@ fun WanNavGraph(
         composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
             WebScreen(
                 url = backStackEntry.arguments?.getString("url") ?: "",
-                webBookmarkData = uiState.webBookmarkResult,
-                onWebBookmark = { isAdd, text -> viewModel.onWebBookmark(isAdd, text) },
-                onWebHistory = { isAdd, text -> viewModel.onWebHistory(isAdd, text) },
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
@@ -229,7 +221,7 @@ class WanNavActions(
     private val user: User?,
 ) {
     val navigateToBookmarkHistory: () -> Unit = {
-        navigate(WanDestinations.BOOKMARK_HISTORY_ROUTE)
+        navigate(WanDestinations.BROWSE_HISTORY_ROUTE)
     }
     val navigateToDemo: () -> Unit = {
         navigate(WanDestinations.DEMO_ROUTE)
@@ -290,7 +282,7 @@ class WanNavActions(
 }
 
 object WanDestinations {
-    const val BOOKMARK_HISTORY_ROUTE = "bookmark_history_route"
+    const val BROWSE_HISTORY_ROUTE = "browse_history_route"
     const val DEMO_ROUTE = "demo_route"
     const val LOGIN_ROUTE = "login_route"
     const val MAIN_ROUTE = "main_route"

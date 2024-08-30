@@ -5,25 +5,18 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) //覆盖插入模式，根据主键值判断是否覆盖
     suspend fun insert(user: User): Long
-
-    @Update
-    suspend fun update(user: User): Int
 
     @Delete
     suspend fun delete(user: User): Int
 
-    @Query("SELECT * FROM user WHERE id = :id")
-    suspend fun getById(id: String): User?
-
-    @Query("SELECT * FROM user WHERE username = :username")
-    fun getByName(username: String): Flow<User?>
+    @Query("SELECT * FROM user")
+    fun get(): Flow<User?>
 
 }

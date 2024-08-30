@@ -1,27 +1,18 @@
 package com.example.fragment.project.database.user
 
 import android.os.Parcelable
-import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import com.example.fragment.project.R
-import com.example.miaow.base.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlin.math.abs
 
-data class Login(
-    val data: User? = null
-) : HttpResponse()
-
-data class Register(
-    val data: User? = null
-) : HttpResponse()
-
-@Entity(primaryKeys = ["id", "username"])
+@Entity(primaryKeys = ["unique_id"])
 @Parcelize
 data class User @JvmOverloads constructor(
+    @ColumnInfo(name = "unique_id") var uniqueId: Long = 0,
     @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "username") val username: String,
     @ColumnInfo(name = "nickname") val nickname: String,
@@ -32,7 +23,7 @@ data class User @JvmOverloads constructor(
     @Ignore val icon: String = "",
     @Ignore val type: String = "",
     @Ignore val publicName: String = "",
-    @Ignore var coinCount: String = "",
+    @Ignore val coinCount: String = "",
     @Ignore val collectIds: List<Int>? = null,
 ) : Parcelable {
 

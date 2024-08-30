@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.register
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.database.user.Register
+import com.example.fragment.project.data.Register
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel

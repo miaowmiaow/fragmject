@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.fragment.project.database.history.History
+import com.example.fragment.project.database.history.HistoryDao
 import com.example.fragment.project.database.user.User
 import com.example.fragment.project.database.user.UserDao
 import com.example.miaow.base.provider.BaseContentProvider
 
-@Database(entities = [User::class], version = 1, exportSchema = false)
+@Database(entities = [History::class, User::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
+    abstract fun historyDao(): HistoryDao
     abstract fun userDao(): UserDao
 
     companion object {
@@ -30,6 +33,11 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "app_database"
             ).build()
+        }
+
+        @JvmStatic
+        fun getHistoryDao(): HistoryDao {
+            return getDatabase().historyDao()
         }
 
         @JvmStatic

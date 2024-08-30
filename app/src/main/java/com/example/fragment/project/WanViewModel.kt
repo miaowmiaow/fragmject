@@ -20,10 +20,7 @@ import kotlinx.coroutines.launch
 data class WanUiState(
     var hotKeyResult: List<HotKey> = ArrayList(),
     var treeResult: List<Tree> = ArrayList(),
-    var searchHistoryResult: MutableList<String> = ArrayList(),
-    var webBookmarkResult: MutableList<String> = ArrayList(),
-    var webHistoryResult: MutableList<String> = ArrayList(),
-    var user: User? = User("", "", ""),
+    var user: User? = null,
     var updateTime: Long = 0
 )
 
@@ -37,9 +34,6 @@ class WanViewModel : BaseViewModel() {
         viewModelScope.launch {
             val hotKeyList = async { getHotKeyList() }
             val treeList = async { getTreeList() }
-            val searchHistoryList = async { WanHelper.getSearchHistory() }
-            val webBookmarkList = async { WanHelper.getWebBookmark() }
-            val webHistoryList = async { WanHelper.getWebHistory() }
             WanHelper.getUser().collect { user ->
                 _uiState.update { state ->
                     hotKeyList.await().data?.let { data ->
@@ -47,15 +41,6 @@ class WanViewModel : BaseViewModel() {
                     }
                     treeList.await().data?.let { data ->
                         state.treeResult = data
-                    }
-                    searchHistoryList.await().let {
-                        state.searchHistoryResult = it
-                    }
-                    webHistoryList.await().let {
-                        state.webHistoryResult = it
-                    }
-                    webBookmarkList.await().let {
-                        state.webBookmarkResult = it
                     }
                     state.copy(user = user, updateTime = System.nanoTime())
                 }
@@ -82,51 +67,6 @@ class WanViewModel : BaseViewModel() {
             get {
                 setUrl("tree/json")
             }
-        }
-    }
-
-    fun onSearchHistory(isAdd: Boolean, text: String) {
-        viewModelScope.launch {
-            _uiState.update { state ->
-                if (state.searchHistoryResult.contains(text)) {
-                    state.searchHistoryResult.remove(text)
-                }
-                if (isAdd) {
-                    state.searchHistoryResult.add(0, text)
-                }
-                state.copy(updateTime = System.nanoTime())
-            }
-            WanHelper.setSearchHistory(_uiState.value.searchHistoryResult)
-        }
-    }
-
-    fun onWebBookmark(isAdd: Boolean, text: String) {
-        viewModelScope.launch {
-            _uiState.update { state ->
-                if (state.webBookmarkResult.contains(text)) {
-                    state.webBookmarkResult.remove(text)
-                }
-                if (isAdd) {
-                    state.webBookmarkResult.add(0, text)
-                }
-                state.copy(updateTime = System.nanoTime())
-            }
-            WanHelper.setWebBookmark(_uiState.value.webBookmarkResult)
-        }
-    }
-
-    fun onWebHistory(isAdd: Boolean, text: String) {
-        viewModelScope.launch {
-            _uiState.update { state ->
-                if (state.webHistoryResult.contains(text)) {
-                    state.webHistoryResult.remove(text)
-                }
-                if (isAdd) {
-                    state.webHistoryResult.add(0, text)
-                }
-                state.copy(updateTime = System.nanoTime())
-            }
-            WanHelper.setWebHistory(_uiState.value.webHistoryResult)
         }
     }
 

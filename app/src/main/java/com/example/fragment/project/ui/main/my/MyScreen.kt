@@ -93,7 +93,7 @@ fun MyScreen(
         HorizontalDivider()
         ArrowRightItem("我的分享") { onNavigateToMyShare() }
         HorizontalDivider()
-        ArrowRightItem("书签历史") { onNavigateToBookmarkHistory() }
+        ArrowRightItem("浏览历史") { onNavigateToBookmarkHistory() }
         HorizontalDivider()
         ArrowRightItem("系统设置") { onNavigateToSetting() }
     }

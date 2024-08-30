@@ -14,7 +14,7 @@ sealed interface MyUiState {
     val user: User
 
     data class NoUser(
-        override var user: User = User("", "", ""),
+        override var user: User = User(id = "", username = "", nickname = ""),
     ) : MyUiState
 }
 

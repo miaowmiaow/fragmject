@@ -66,9 +66,7 @@ import kotlinx.coroutines.delay
 fun SearchScreen(
     key: String,
     hotKeyData: List<HotKey>?,
-    searchHistoryData: List<String>,
     viewModel: SearchViewModel = viewModel(),
-    onSearchHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
@@ -139,7 +137,6 @@ fun SearchScreen(
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             if (searchText.isNotBlank()) {
-                                onSearchHistory(true, searchText)
                                 viewModel.getHome(searchText)
                             } else {
                                 viewModel.clearArticles()
@@ -179,7 +176,6 @@ fun SearchScreen(
                                 onClick = {
                                     focusManager.clearFocus()
                                     searchText = it.name
-                                    onSearchHistory(true, searchText)
                                     viewModel.getHome(searchText)
                                 },
                                 modifier = Modifier
@@ -201,7 +197,7 @@ fun SearchScreen(
                         }
                     }
                 }
-                if (searchHistoryData.isNotEmpty()) {
+                if (uiState.searchHistoryResult.isNotEmpty()) {
                     Text(
                         text = "历史搜索",
                         modifier = Modifier.padding(15.dp),
@@ -212,12 +208,12 @@ fun SearchScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(1.dp),
                     ) {
-                        itemsIndexed(searchHistoryData) { _, item ->
+                        itemsIndexed(uiState.searchHistoryResult) { _, item ->
                             Row(
                                 modifier = Modifier
                                     .clickable {
                                         focusManager.clearFocus()
-                                        searchText = item
+                                        searchText = item.value
                                         viewModel.getHome(searchText)
                                     }
                                     .background(colorResource(R.color.white))
@@ -226,7 +222,7 @@ fun SearchScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = item,
+                                    text = item.value,
                                     modifier = Modifier.weight(1f),
                                     color = colorResource(id = R.color.text_333),
                                     fontSize = 14.sp,
@@ -235,7 +231,9 @@ fun SearchScreen(
                                     painter = painterResource(R.mipmap.ic_delete),
                                     contentDescription = null,
                                     modifier = Modifier
-                                        .clickable { onSearchHistory(false, item) }
+                                        .clickable {
+                                            viewModel.deleteHistory(item)
+                                        }
                                         .size(30.dp)
                                         .padding(10.dp, 5.dp, 0.dp, 5.dp),
                                 )
@@ -273,5 +271,5 @@ fun SearchScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun SearchScreenPreview() {
-    WanTheme { SearchScreen(key = "", hotKeyData = listOf(), searchHistoryData = listOf()) }
+    WanTheme { SearchScreen(key = "", hotKeyData = listOf()) }
 }

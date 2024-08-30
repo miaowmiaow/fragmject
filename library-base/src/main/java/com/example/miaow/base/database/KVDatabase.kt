@@ -14,8 +14,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Update
 import com.example.miaow.base.provider.BaseContentProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * 对RoomDatabase进行封装
@@ -64,17 +62,15 @@ abstract class KVDatabase : RoomDatabase() {
 
     suspend fun setValue(key: String, value: String): Boolean {
         return try {
-            withContext(Dispatchers.IO) {
-                var kv = kvDao().findByKey(key)
-                if (kv == null) {
-                    kv = KV(key = key, value = value)
-                    val id = kvDao().insert(kv) //返回 主键值 > -1 表示 insert 成功
-                    id > -1
-                } else {
-                    kv.value = value
-                    val up = kvDao().update(kv) //返回 更新数 > 0表示 update 成功
-                    up > 0
-                }
+            var kv = kvDao().findByKey(key)
+            if (kv == null) {
+                kv = KV(key = key, value = value)
+                val id = kvDao().insert(kv) //返回 主键值 > -1 表示 insert 成功
+                id > -1
+            } else {
+                kv.value = value
+                val up = kvDao().update(kv) //返回 更新数 > 0表示 update 成功
+                up > 0
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -84,9 +80,7 @@ abstract class KVDatabase : RoomDatabase() {
 
     suspend fun getValue(key: String): String {
         return try {
-            withContext(Dispatchers.IO) {
-                kvDao().findByKey(key)?.value ?: ""
-            }
+            kvDao().findByKey(key)?.value ?: ""
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
             ""
@@ -117,14 +111,7 @@ interface KVDao {
 
 @Entity(tableName = "kv_table")
 data class KV(
-
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-
-    @ColumnInfo(name = "first")
-    val key: String,
-
-    @ColumnInfo(name = "second")
-    var value: String?
-
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @ColumnInfo(name = "first") val key: String,
+    @ColumnInfo(name = "second") var value: String?
 )

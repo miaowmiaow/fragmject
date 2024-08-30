@@ -26,7 +26,6 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -36,6 +35,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.launch
@@ -44,15 +45,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebScreen(
     url: String,
-    webBookmarkData: List<String>,
-    onWebBookmark: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
-    onWebHistory: (isAdd: Boolean, text: String) -> Unit = { _, _ -> },
+    viewModel: WebViewModel = viewModel(),
     onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var isBookmark by remember { mutableStateOf(webBookmarkData.contains(url)) }
     var sheetValue by rememberSaveable { mutableStateOf(SheetValue.PartiallyExpanded) }
     val bottomSheetState = rememberStandardBottomSheetState(
         initialValue = sheetValue,
@@ -222,8 +221,12 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            isBookmark = !webBookmarkData.contains(navigator.lastLoadedUrl)
-                            onWebBookmark(isBookmark, navigator.lastLoadedUrl.toString())
+                            val result = uiState.getResult(navigator.lastLoadedUrl)
+                            if (result == null) {
+                                viewModel.setBookmark(navigator.lastLoadedUrl ?: "")
+                            } else {
+                                viewModel.deleteHistory(result)
+                            }
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
@@ -240,7 +243,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
                             tint = colorResource(
-                                if (isBookmark) {
+                                if (uiState.getResult(url) != null) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme
@@ -293,7 +296,7 @@ fun WebScreen(
                 .fillMaxSize()
                 .padding(padding),
             onLoadUrl = { url ->
-                onWebHistory(true, url)
+                viewModel.setBrowseHistory(url)
             },
             onNavigateUp = onNavigateUp
         )
@@ -311,5 +314,5 @@ fun WebScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun WebScreenPreview() {
-    WanTheme { WebScreen(url = "https://wanandroid.com/", webBookmarkData = listOf()) }
+    WanTheme { WebScreen(url = "https://wanandroid.com/") }
 }

@@ -24,8 +24,10 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -35,21 +37,19 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.database.history.History
+import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebScreen(
     url: String,
-    viewModel: WebViewModel = viewModel(),
     onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var sheetValue by rememberSaveable { mutableStateOf(SheetValue.PartiallyExpanded) }
@@ -63,6 +63,14 @@ fun WebScreen(
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     val navigator = rememberWebViewNavigator()
+    var bookmark by remember { mutableStateOf<History?>(null) }
+    LaunchedEffect(navigator.lastLoadedUrl) {
+        WanHelper.getBookmark().collect {
+            WanHelper.getBookmark().collect { bk ->
+                bookmark = bk.firstOrNull { it.value == navigator.lastLoadedUrl }
+            }
+        }
+    }
     BottomSheetScaffold(
         sheetContent = {
             Column {
@@ -221,11 +229,12 @@ fun WebScreen(
                     }
                     Button(
                         onClick = {
-                            val result = uiState.getResult(navigator.lastLoadedUrl)
-                            if (result == null) {
-                                viewModel.setBookmark(navigator.lastLoadedUrl ?: "")
-                            } else {
-                                viewModel.deleteHistory(result)
+                            scope.launch {
+                                if (bookmark != null) {
+                                    WanHelper.deleteHistory(bookmark!!)
+                                } else {
+                                    WanHelper.setBookmark(navigator.lastLoadedUrl ?: "")
+                                }
                             }
                         },
                         shape = RoundedCornerShape(0),
@@ -243,7 +252,7 @@ fun WebScreen(
                             painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
                             tint = colorResource(
-                                if (uiState.getResult(url) != null) {
+                                if (bookmark != null) {
                                     R.color.theme_orange
                                 } else {
                                     R.color.theme
@@ -296,7 +305,9 @@ fun WebScreen(
                 .fillMaxSize()
                 .padding(padding),
             onLoadUrl = { url ->
-                viewModel.setBrowseHistory(url)
+                scope.launch {
+                    WanHelper.setBrowseHistory(url)
+                }
             },
             onNavigateUp = onNavigateUp
         )

@@ -65,8 +65,8 @@ fun ShareArticleScreen(
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var titleText by rememberSaveable { mutableStateOf("") }
-    var linkText by rememberSaveable { mutableStateOf("") }
+    var titleText by rememberSaveable { mutableStateOf("活体人脸检测") }
+    var linkText by rememberSaveable { mutableStateOf("https://code.juejin.cn/pen/7143888053151465480") }
     LaunchedEffect(uiState.message) {
         if (uiState.message.isNotBlank()) {
             if (context is AppCompatActivity) {

@@ -13,8 +13,7 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <uses-permission android:name="android.permission.CAMERA"
-        tools:node="remove" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <!--通讯录-->
 <!--    <uses-permission android:name="android.permission.GET_ACCOUNTS" />-->
@@ -39,6 +38,7 @@
 
     <!--录音-->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <!--短信-->
 <!--    <uses-permission android:name="android.permission.READ_SMS" />-->

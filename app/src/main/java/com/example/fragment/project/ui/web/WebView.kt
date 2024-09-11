@@ -141,7 +141,7 @@ fun WebView(
                             return
                         }
                         if(request.resources.contains("android.webkit.resource.VIDEO_CAPTURE")) {
-                            activity.supportFragmentManager.requestCamera(object : PermissionsCallback{
+                            activity.requestCamera(object : PermissionsCallback{
                                 override fun allow() {
                                     request.grant(arrayOf("android.webkit.resource.VIDEO_CAPTURE"))
                                 }
@@ -152,7 +152,7 @@ fun WebView(
                             })
                         }
                         if(request.resources.contains("android.webkit.resource.AUDIO_CAPTURE")) {
-                            activity.supportFragmentManager.requestCamera(object : PermissionsCallback{
+                            activity.requestCamera(object : PermissionsCallback{
                                 override fun allow() {
                                     request.grant(arrayOf("android.webkit.resource.AUDIO_CAPTURE"))
                                 }

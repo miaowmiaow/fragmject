@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.PermissionRequest
 import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -31,7 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.example.miaow.base.utils.PermissionsCallback
 import com.example.miaow.base.utils.injectVConsoleJs
+import com.example.miaow.base.utils.requestCamera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -130,6 +133,34 @@ fun WebView(
                         fullScreenLayer?.let {
                             windowManager.removeViewImmediate(fullScreenLayer)
                             fullScreenLayer = null
+                        }
+                    }
+
+                    override fun onPermissionRequest(request: PermissionRequest?) {
+                        if(request == null){
+                            return
+                        }
+                        if(request.resources.contains("android.webkit.resource.VIDEO_CAPTURE")) {
+                            activity.supportFragmentManager.requestCamera(object : PermissionsCallback{
+                                override fun allow() {
+                                    request.grant(arrayOf("android.webkit.resource.VIDEO_CAPTURE"))
+                                }
+
+                                override fun deny() {
+                                }
+
+                            })
+                        }
+                        if(request.resources.contains("android.webkit.resource.AUDIO_CAPTURE")) {
+                            activity.supportFragmentManager.requestCamera(object : PermissionsCallback{
+                                override fun allow() {
+                                    request.grant(arrayOf("android.webkit.resource.AUDIO_CAPTURE"))
+                                }
+
+                                override fun deny() {
+                                }
+
+                            })
                         }
                     }
                 }

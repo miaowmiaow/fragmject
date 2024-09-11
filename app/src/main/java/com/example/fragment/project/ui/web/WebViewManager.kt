@@ -94,6 +94,7 @@ class WebViewManager private constructor() {
         webSettings.loadWithOverviewMode = true
         webSettings.displayZoomControls = false
         webSettings.useWideViewPort = true
+        webSettings.mediaPlaybackRequiresUserGesture = true
         webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         return webView

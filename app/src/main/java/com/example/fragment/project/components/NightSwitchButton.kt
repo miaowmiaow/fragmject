@@ -6,6 +6,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -81,13 +82,14 @@ fun NightSwitchButton(
         val anchoredDraggableState = remember(maxBound) {
             AnchoredDraggableState(
                 initialValue = checked,
-                animationSpec = TweenSpec(durationMillis = 1000),
                 anchors = DraggableAnchors {
                     false at minBound
                     true at maxBound
                 },
                 positionalThreshold = { distance -> distance * 0.5f },
-                velocityThreshold = { maxBound }
+                velocityThreshold = { maxBound },
+                snapAnimationSpec = TweenSpec(durationMillis = 350),
+                decayAnimationSpec = exponentialDecay(10f),
             )
         }
         val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)

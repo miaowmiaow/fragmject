@@ -35,7 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,7 +44,6 @@ import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.miaow.base.utils.getScreenWidth
-import com.example.miaow.base.utils.px2dp
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -55,14 +54,14 @@ fun MyCoinScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val sw = context.getScreenWidth()
     val titleBarSize = 45.dp
-    val titleBarSizePx = with(LocalDensity.current) { titleBarSize.roundToPx().toFloat() }
+    val titleBarSizePx = with(density) { titleBarSize.roundToPx() }
     val coinOffsetXPx = (sw - titleBarSizePx) / 2
-    val coinOffsetX = Dp(context.px2dp(coinOffsetXPx))
     val targetHeight = 100.dp
-    val targetHeightPx = with(LocalDensity.current) { targetHeight.roundToPx().toFloat() }
+    val targetHeightPx = with(density) { targetHeight.roundToPx() }
     val targetPercent by remember { mutableStateOf(Animatable(1f)) }
 
     val nestedScrollConnection = remember {
@@ -121,10 +120,12 @@ fun MyCoinScreen(
                 Text(
                     text = "我的积分",
                     modifier = Modifier
-                        .offset(
-                            x = -(coinOffsetX - titleBarSize - 10.dp) * (1 - targetPercent.value),
-                            y = -titleBarSize * targetPercent.value
-                        )
+                        .offset {
+                            IntOffset(
+                                x = -((coinOffsetXPx - titleBarSizePx - with(density) { 10.dp.roundToPx() }) * (1 - targetPercent.value)).toInt(),
+                                y = -(titleBarSizePx * targetPercent.value).toInt()
+                            )
+                        }
                         .align(Alignment.Center),
                     fontSize = 16.sp,
                     color = colorResource(R.color.text_fff),
@@ -132,10 +133,12 @@ fun MyCoinScreen(
                 Text(
                     text = uiState.userCoinResult.coinCount,
                     modifier = Modifier
-                        .offset(
-                            x = -(coinOffsetX - titleBarSize - 75.dp) * (1 - targetPercent.value),
-                            y = 10.dp * targetPercent.value
-                        )
+                        .offset {
+                            IntOffset(
+                                x = -((coinOffsetXPx - titleBarSizePx - with(density) { 75.dp.roundToPx() }) * (1 - targetPercent.value)).toInt(),
+                                y = (with(density) { 10.dp.roundToPx() } * targetPercent.value).toInt()
+                            )
+                        }
                         .align(Alignment.Center),
                     fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
                     color = colorResource(R.color.text_fff),

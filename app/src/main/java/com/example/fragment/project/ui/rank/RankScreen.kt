@@ -99,7 +99,7 @@ fun RankScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = item.getAvatarId()),
+                        painter = painterResource(id = item.avatarId),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,7 +48,6 @@ import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.SwipeRefresh
 import com.example.miaow.base.utils.getScreenWidth
-import com.example.miaow.base.utils.px2dp
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -65,14 +64,14 @@ fun UserScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val sw = context.getScreenWidth()
     val titleBarSize = 45.dp
-    val titleBarSizePx = with(LocalDensity.current) { titleBarSize.roundToPx().toFloat() }
+    val titleBarSizePx = with(density) { titleBarSize.roundToPx().toFloat() }
     val avatarOffsetXPx = (sw - titleBarSizePx) / 2
-    val avatarOffsetX = Dp(context.px2dp(avatarOffsetXPx))
     val targetHeight = 100.dp
-    val targetHeightPx = with(LocalDensity.current) { targetHeight.roundToPx().toFloat() }
+    val targetHeightPx = with(density) { targetHeight.roundToPx().toFloat() }
     val targetPercent by remember { mutableStateOf(Animatable(1f)) }
 
     val nestedScrollConnection = remember {
@@ -115,11 +114,16 @@ fun UserScreen(
                     )
                 }
                 Image(
-                    painter = painterResource(id = uiState.coinResult.getAvatarId()),
+                    painter = painterResource(id = uiState.coinResult.avatarId),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .offset(x = -(avatarOffsetX - titleBarSize) * (1 - targetPercent.value))
+                        .offset {
+                            IntOffset(
+                                x = -((avatarOffsetXPx - titleBarSizePx) * (1 - targetPercent.value)).toInt(),
+                                y = 0
+                            )
+                        }
                         .clip(CircleShape)
                         .size(titleBarSize * targetPercent.value.coerceAtLeast(0.75f))
                         .align(Alignment.Center)
@@ -127,10 +131,12 @@ fun UserScreen(
                 Text(
                     text = uiState.coinResult.nickname,
                     modifier = Modifier
-                        .offset(
-                            x = -(avatarOffsetX - (titleBarSize * 2)) * (1 - targetPercent.value),
-                            y = 35.dp * targetPercent.value
-                        )
+                        .offset {
+                            IntOffset(
+                                x = -((avatarOffsetXPx - (titleBarSizePx * 2)) * (1 - targetPercent.value)).toInt(),
+                                y = (with(density) { 35.dp.roundToPx() } * targetPercent.value).toInt()
+                            )
+                        }
                         .align(Alignment.Center),
                     fontSize = 16.sp,
                     color = colorResource(R.color.text_fff),
@@ -138,7 +144,12 @@ fun UserScreen(
                 Text(
                     text = "积分:${uiState.coinResult.coinCount}",
                     modifier = Modifier
-                        .offset(x = 0.dp, y = 55.dp * targetPercent.value)
+                        .offset {
+                            IntOffset(
+                                x = 0,
+                                y = (with(density) { 55.dp.roundToPx() } * targetPercent.value).toInt()
+                            )
+                        }
                         .graphicsLayer {
                             alpha = targetPercent.value
                         }

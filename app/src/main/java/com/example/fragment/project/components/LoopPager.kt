@@ -1,7 +1,6 @@
 package com.example.fragment.project.components
 
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +28,6 @@ import java.util.Timer
 import java.util.TimerTask
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LoopHorizontalPager(
     data: List<T>?,
@@ -104,7 +102,6 @@ fun <T> LoopHorizontalPager(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> LoopVerticalPager(
     data: List<T>?,

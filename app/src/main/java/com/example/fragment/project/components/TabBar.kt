@@ -21,7 +21,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> TabBar(
     data: List<T>?,

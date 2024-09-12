@@ -1,6 +1,7 @@
 package com.example.fragment.project.components.calendar
 
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -115,7 +116,8 @@ internal fun MonthPager(
                     },
                     positionalThreshold = { distance -> distance * 0.5f },
                     velocityThreshold = { with(density) { 100.dp.toPx() } },
-                    animationSpec = TweenSpec(durationMillis = 350),
+                    snapAnimationSpec = TweenSpec(durationMillis = 350),
+                    decayAnimationSpec = exponentialDecay(10f),
                 )
             }
             //展开日历
@@ -174,10 +176,10 @@ internal fun MonthPager(
                             selectedDate?.selectedDay?.emit(true)
                         }
                         onSelectedDateChange(date.year, date.month, date.day)
+                        selectedWeek = date.week
                         if (mode == CalendarMode.Week) {
                             return@DayContent
                         }
-                        selectedWeek = date.week
                         val index = model.weekModeIndexByDate(date.year, date.month, date.week)
                         if (weekModePagerState.currentPage != index) {
                             scope.launch {

@@ -1,15 +1,13 @@
 [versions]
 agp = "8.5.2"
-androidxActivityCompose = "1.9.1"
-androidxComposeBom = "2024.08.00"
+androidxComposeBom = "2024.09.01"
 androidxConstraintlayout = "2.1.4"
 androidxCoreKtx = "1.13.1"
-androidxFragmentKtx = "1.8.2"
-androidxLifecycle = "2.8.4"
-androidxNavigationCompose = "2.7.7"
+androidxFragmentKtx = "1.8.3"
+androidxLifecycle = "2.8.5"
+androidxNavigationCompose = "2.8.0"
 androidxWebkit = "1.11.0"
 asm = "9.7"
-composeMaterial3 = "1.2.1"
 coil = "2.7.0"
 gson = "2.11.0"
 junit = "4.13.2"
@@ -26,10 +24,11 @@ testEspressoCore = '3.6.1'
 testExtJunit = '1.2.1'
 
 [libraries]
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
-androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "composeMaterial3" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }

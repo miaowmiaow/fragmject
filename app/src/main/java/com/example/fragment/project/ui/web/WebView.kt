@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.web
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
@@ -34,7 +35,7 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.example.miaow.base.utils.PermissionsCallback
 import com.example.miaow.base.utils.injectVConsoleJs
-import com.example.miaow.base.utils.requestCamera
+import com.example.miaow.base.utils.requestPermissions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -137,31 +138,26 @@ fun WebView(
                     }
 
                     override fun onPermissionRequest(request: PermissionRequest?) {
-                        if(request == null){
+                        if (request == null) {
                             return
                         }
-                        if(request.resources.contains("android.webkit.resource.VIDEO_CAPTURE")) {
-                            activity.requestCamera(object : PermissionsCallback{
-                                override fun allow() {
-                                    request.grant(arrayOf("android.webkit.resource.VIDEO_CAPTURE"))
-                                }
+                        val permissions = arrayListOf<String>().apply {
+                            if (request.resources.contains("android.webkit.resource.VIDEO_CAPTURE")) {
+                                add(Manifest.permission.CAMERA)
+                            }
+                            if (request.resources.contains("android.webkit.resource.AUDIO_CAPTURE")) {
+                                add(Manifest.permission.RECORD_AUDIO)
+                            }
+                        }.toTypedArray()
+                        activity.requestPermissions(permissions, object : PermissionsCallback {
+                            override fun allow() {
+                                request.grant(request.resources)
+                            }
 
-                                override fun deny() {
-                                }
+                            override fun deny() {
+                            }
 
-                            })
-                        }
-                        if(request.resources.contains("android.webkit.resource.AUDIO_CAPTURE")) {
-                            activity.requestCamera(object : PermissionsCallback{
-                                override fun allow() {
-                                    request.grant(arrayOf("android.webkit.resource.AUDIO_CAPTURE"))
-                                }
-
-                                override fun deny() {
-                                }
-
-                            })
-                        }
+                        })
                     }
                 }
                 webViewClient = object : WebViewClient() {

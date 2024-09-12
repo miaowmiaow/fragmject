@@ -136,6 +136,7 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
+    implementation(libs.androidx.compose.animation)
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)

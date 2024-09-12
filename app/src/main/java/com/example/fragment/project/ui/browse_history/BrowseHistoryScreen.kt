@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.browse_history
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +39,6 @@ import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BrowseHistoryScreen(
     viewModel: BrowseHistoryViewModel = viewModel(),

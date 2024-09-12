@@ -130,7 +130,7 @@ fun Modifier.photoGridDragHandler(
     selectedIds: MutableState<Set<Int>>,
     autoScrollSpeed: MutableState<Float>,
     autoScrollThreshold: Float
-) = this.then(pointerInput(Unit) {
+) = this.then(Modifier.pointerInput(Unit) {
     fun LazyGridState.gridItemKeyAtPosition(hitPoint: Offset): Int? =
         layoutInfo.visibleItemsInfo.find { itemInfo ->
             itemInfo.size.toIntRect().contains(hitPoint.round() - itemInfo.offset)

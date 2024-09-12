@@ -2,8 +2,8 @@ package com.example.fragment.project.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -40,7 +40,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> ReorderLazyColumn(
     items: List<T>,
@@ -99,7 +98,7 @@ fun <T> ReorderLazyColumn(
                             distFromBottom < autoScrollThreshold -> autoScrollThreshold - distFromBottom
                             else -> null
                         }?.let {
-                            if(state.scrollBy(it) != 0f){
+                            if (state.scrollBy(it) != 0f) {
                                 draggingItemDelta.snapTo(draggingItemDelta.value + it)
                                 delay(10)
                             }
@@ -147,7 +146,13 @@ fun <T> ReorderLazyColumn(
                         Modifier
                             .zIndex(0f)
                             .shadow(0.dp)
-                            .animateItemPlacement()
+                            .animateItem(
+                                fadeInSpec = null, fadeOutSpec = null,
+                                placementSpec = spring(
+                                    stiffness = Spring.StiffnessMediumLow,
+                                    visibilityThreshold = IntOffset.VisibilityThreshold
+                                )
+                            )
                     }
                 )) {
                 itemContent(index, item)

@@ -7,7 +7,6 @@ import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -46,7 +45,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> ReorderLazyVerticalGrid(
     items: List<T>,
@@ -163,7 +161,7 @@ fun <T> ReorderLazyVerticalGrid(
                         Modifier
                             .zIndex(0f)
                             .shadow(0.dp)
-                            .animateItemPlacement()
+                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
                     }
                 )) {
                 itemContent(index, item)

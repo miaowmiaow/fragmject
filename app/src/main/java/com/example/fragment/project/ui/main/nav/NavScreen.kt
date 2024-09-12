@@ -54,7 +54,6 @@ import com.example.fragment.project.data.Tree
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NavScreen(
     systemData: List<Tree>,
@@ -87,7 +86,7 @@ fun NavScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NavLinkContent(
     viewModel: NavViewModel = viewModel(),

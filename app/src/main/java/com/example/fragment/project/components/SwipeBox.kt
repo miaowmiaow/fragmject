@@ -1,6 +1,7 @@
 package com.example.fragment.project.components
 
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -42,17 +43,18 @@ fun SwipeBox(
         actionWidth.toPx()
     }
     val startWidth = actionWidthPx * startAction.size
-    val startActionSize = if (startFillAction == null) startAction.size else startAction.size + 1 // startAction + startFillAction
+    val startActionSize =
+        if (startFillAction == null) startAction.size else startAction.size + 1 // startAction + startFillAction
     val startFillWidth = actionWidthPx * startActionSize
     val endWidth = actionWidthPx * endAction.size
-    val endActionSize = if (endFillAction == null) endAction.size else endAction.size + 1 // endAction + endFillAction
+    val endActionSize =
+        if (endFillAction == null) endAction.size else endAction.size + 1 // endAction + endFillAction
     val endFillWidth = actionWidthPx * endActionSize
     var contentWidth by remember { mutableFloatStateOf(0f) }
     var contentHeight by remember { mutableFloatStateOf(0f) }
     val state = remember(startWidth, endWidth, contentWidth) {
         AnchoredDraggableState(
             initialValue = DragAnchors.Center,
-            animationSpec = TweenSpec(durationMillis = 350),
             anchors = DraggableAnchors {
                 DragAnchors.Start at (if (startFillAction != null) actionWidthPx else 0f) + startWidth
                 DragAnchors.StartFill at (if (startFillAction != null) contentWidth else 0f) + startWidth
@@ -70,6 +72,8 @@ fun SwipeBox(
                 } * 0.5f
             },
             velocityThreshold = { with(density) { 100.dp.toPx() } },
+            snapAnimationSpec = TweenSpec(durationMillis = 350),
+            decayAnimationSpec = exponentialDecay(10f),
         )
     }
 

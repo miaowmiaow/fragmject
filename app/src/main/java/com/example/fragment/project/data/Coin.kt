@@ -7,6 +7,7 @@ import com.example.miaow.base.http.HttpResponse
 import com.google.gson.Gson
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import kotlin.math.abs
 
 data class UserCoin(
     val data: Coin? = null
@@ -71,7 +72,7 @@ open class Coin @JvmOverloads constructor(
     val level: String = "",
     val nickname: String = "---",
     val rank: String = "",
-    val userId: String = "",
+    val userId: String = "0",
     var username: String = ""
 ) : Parcelable {
 
@@ -85,17 +86,14 @@ open class Coin @JvmOverloads constructor(
         R.mipmap.avatar_6_raster,
     )
 
-    fun getAvatarId(): Int {
-        var index = 0
+    @IgnoredOnParcel
+    val avatarId by lazy {
         try {
-            val id = userId.toInt()
-            if (id >= 0) {
-                index = id % 6
-            }
+            avatarList[abs(userId.toInt()) % 6]
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
+            1
         }
-        return avatarList[index]
     }
 
     fun toJson(): String {

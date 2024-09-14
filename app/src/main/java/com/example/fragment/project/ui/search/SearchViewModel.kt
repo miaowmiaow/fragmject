@@ -15,9 +15,9 @@ import kotlinx.coroutines.launch
 
 data class SearchUiState(
     var isSearch: Boolean = false,
-    var refreshing: Boolean = false,
-    var loading: Boolean = false,
-    var finishing: Boolean = false,
+    var isRefreshing: Boolean = false,
+    var isLoading: Boolean = false,
+    var isFinishing: Boolean = false,
     var searchHistoryResult: List<History> = ArrayList(),
     var articlesResult: MutableList<Article> = ArrayList(),
 )
@@ -55,14 +55,14 @@ class SearchViewModel : BaseViewModel() {
             WanHelper.setSearchHistory(key)
         }
         _uiState.update {
-            it.copy(isSearch = true, refreshing = true, loading = false, finishing = false)
+            it.copy(isSearch = true, isRefreshing = true, isLoading = false, isFinishing = false)
         }
         getList(key, getHomePage())
     }
 
     fun getNext(key: String) {
         _uiState.update {
-            it.copy(refreshing = false, loading = false, finishing = false)
+            it.copy(isRefreshing = false, isLoading = false, isFinishing = false)
         }
         getList(key, getNextPage())
     }
@@ -88,9 +88,9 @@ class SearchViewModel : BaseViewModel() {
                     state.articlesResult.addAll(datas)
                 }
                 state.copy(
-                    refreshing = false,
-                    loading = hasNextPage(),
-                    finishing = !hasNextPage()
+                    isRefreshing = false,
+                    isLoading = hasNextPage(),
+                    isFinishing = !hasNextPage()
                 )
             }
         }

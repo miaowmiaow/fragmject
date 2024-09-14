@@ -141,12 +141,11 @@ fun WebView(
                         if (request == null) {
                             return
                         }
-                        val permissions = arrayListOf<String>().apply {
-                            if (request.resources.contains("android.webkit.resource.VIDEO_CAPTURE")) {
-                                add(Manifest.permission.CAMERA)
-                            }
-                            if (request.resources.contains("android.webkit.resource.AUDIO_CAPTURE")) {
-                                add(Manifest.permission.RECORD_AUDIO)
+                        val permissions = request.resources.mapNotNull { resource ->
+                            when (resource) {
+                                "android.webkit.resource.VIDEO_CAPTURE" -> Manifest.permission.CAMERA
+                                "android.webkit.resource.AUDIO_CAPTURE" -> Manifest.permission.RECORD_AUDIO
+                                else -> null
                             }
                         }.toTypedArray()
                         activity.requestPermissions(permissions, object : PermissionsCallback {

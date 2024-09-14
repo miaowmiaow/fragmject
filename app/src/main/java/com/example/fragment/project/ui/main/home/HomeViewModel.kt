@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
-    var refreshing: Boolean = false,
-    var loading: Boolean = false,
-    var finishing: Boolean = false,
+    var isRefreshing: Boolean = false,
+    var isLoading: Boolean = false,
+    var isFinishing: Boolean = false,
     var result: MutableList<Article> = ArrayList(),
 )
 
@@ -34,7 +34,7 @@ class HomeViewModel : BaseViewModel() {
 
     fun getHome() {
         _uiState.update {
-            it.copy(refreshing = true, loading = false, finishing = false)
+            it.copy(isRefreshing = true, isLoading = false, isFinishing = false)
         }
         viewModelScope.launch {
             //通过async获取首页需要展示的数据
@@ -47,9 +47,9 @@ class HomeViewModel : BaseViewModel() {
             articleList.await().data?.datas?.let { articleData.addAll(it) }
             _uiState.update {
                 it.copy(
-                    refreshing = false,
-                    loading = hasNextPage(),
-                    finishing = !hasNextPage(),
+                    isRefreshing = false,
+                    isLoading = hasNextPage(),
+                    isFinishing = !hasNextPage(),
                     result = articleData
                 )
             }
@@ -58,7 +58,7 @@ class HomeViewModel : BaseViewModel() {
 
     fun getNext() {
         _uiState.update {
-            it.copy(refreshing = false, loading = false, finishing = false)
+            it.copy(isRefreshing = false, isLoading = false, isFinishing = false)
         }
         viewModelScope.launch {
             val response = getArticleList(getNextPage())
@@ -68,9 +68,9 @@ class HomeViewModel : BaseViewModel() {
                     state.result.addAll(datas)
                 }
                 state.copy(
-                    refreshing = false,
-                    loading = hasNextPage(),
-                    finishing = !hasNextPage()
+                    isRefreshing = false,
+                    isLoading = hasNextPage(),
+                    isFinishing = !hasNextPage()
                 )
             }
         }

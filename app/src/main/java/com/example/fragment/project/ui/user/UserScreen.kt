@@ -46,7 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.SwipeRefresh
+import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.miaow.base.utils.getScreenWidth
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -160,11 +160,11 @@ fun UserScreen(
             }
         }
     ) { innerPadding ->
-        SwipeRefresh(
+        SwipeRefreshBox(
             items = uiState.articleResult,
-            refreshing = uiState.refreshing,
-            loading = uiState.loading,
-            finishing = uiState.finishing,
+            isRefreshing = uiState.isRefreshing,
+            isLoading = uiState.isLoading,
+            isFinishing = uiState.isFinishing,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },
             modifier = Modifier

@@ -25,7 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.LoadingContent
-import com.example.fragment.project.components.SwipeRefresh
+import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.fragment.project.components.TabBar
 import kotlinx.coroutines.launch
 
@@ -70,11 +70,11 @@ fun ProjectScreen(
                         lifecycleOwner.lifecycle.removeObserver(observer)
                     }
                 }
-                SwipeRefresh(
+                SwipeRefreshBox(
                     items = projectUiState.getResult(pageCid),
-                    refreshing = projectUiState.getRefreshing(pageCid),
-                    loading = projectUiState.getLoading(pageCid),
-                    finishing = projectUiState.getFinishing(pageCid),
+                    isRefreshing = projectUiState.getRefreshing(pageCid),
+                    isLoading = projectUiState.getLoading(pageCid),
+                    isFinishing = projectUiState.getFinishing(pageCid),
                     onRefresh = { projectViewModel.getHome(pageCid) },
                     onLoad = { projectViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),

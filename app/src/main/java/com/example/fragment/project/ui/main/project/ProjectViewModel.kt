@@ -12,22 +12,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ProjectUiState(
-    val refreshing: MutableMap<String, Boolean> = HashMap(),
-    val loading: MutableMap<String, Boolean> = HashMap(),
-    val finishing: MutableMap<String, Boolean> = HashMap(),
+    val isRefreshing: MutableMap<String, Boolean> = HashMap(),
+    val isLoading: MutableMap<String, Boolean> = HashMap(),
+    val isFinishing: MutableMap<String, Boolean> = HashMap(),
     val result: MutableMap<String, ArrayList<Article>> = HashMap(),
     val updateTime: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
-        return refreshing[cid] ?: true
+        return isRefreshing[cid] ?: true
     }
 
     fun getLoading(cid: String): Boolean {
-        return loading[cid] ?: false
+        return isLoading[cid] ?: false
     }
 
     fun getFinishing(cid: String): Boolean {
-        return finishing[cid] ?: false
+        return isFinishing[cid] ?: false
     }
 
     fun getResult(cid: String): ArrayList<Article>? {
@@ -50,9 +50,9 @@ class ProjectViewModel : BaseViewModel() {
 
     fun getHome(cid: String) {
         _uiState.update { state ->
-            state.refreshing[cid] = true
-            state.loading[cid] = false
-            state.finishing[cid] = false
+            state.isRefreshing[cid] = true
+            state.isLoading[cid] = false
+            state.isFinishing[cid] = false
             state.copy(updateTime = System.nanoTime())
         }
         getList(cid, getHomePage(1, cid))
@@ -60,9 +60,9 @@ class ProjectViewModel : BaseViewModel() {
 
     fun getNext(cid: String) {
         _uiState.update { state ->
-            state.refreshing[cid] = false
-            state.loading[cid] = false
-            state.finishing[cid] = false
+            state.isRefreshing[cid] = false
+            state.isLoading[cid] = false
+            state.isFinishing[cid] = false
             state.copy(updateTime = System.nanoTime())
         }
         getList(cid, getNextPage(cid))
@@ -88,9 +88,9 @@ class ProjectViewModel : BaseViewModel() {
                     }
                     state.result[cid]?.addAll(datas)
                 }
-                state.refreshing[cid] = false
-                state.loading[cid] = hasNextPage(cid)
-                state.finishing[cid] = !hasNextPage(cid)
+                state.isRefreshing[cid] = false
+                state.isLoading[cid] = hasNextPage(cid)
+                state.isFinishing[cid] = !hasNextPage(cid)
                 state.copy(updateTime = System.nanoTime())
             }
         }

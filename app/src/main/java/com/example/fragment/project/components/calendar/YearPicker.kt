@@ -47,7 +47,6 @@ import com.example.fragment.project.R
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun YearPicker(
     mode: CalendarMode,

@@ -12,22 +12,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SystemUiState(
-    val refreshing: MutableMap<String, Boolean> = HashMap(),
-    val loading: MutableMap<String, Boolean> = HashMap(),
-    val finishing: MutableMap<String, Boolean> = HashMap(),
+    val isRefreshing: MutableMap<String, Boolean> = HashMap(),
+    val isLoading: MutableMap<String, Boolean> = HashMap(),
+    val isFinishing: MutableMap<String, Boolean> = HashMap(),
     val result: MutableMap<String, ArrayList<Article>> = HashMap(),
     var updateTime: Long = 0
 ) {
     fun getRefreshing(cid: String): Boolean {
-        return refreshing[cid] ?: true
+        return isRefreshing[cid] ?: true
     }
 
     fun getLoading(cid: String): Boolean {
-        return loading[cid] ?: false
+        return isLoading[cid] ?: false
     }
 
     fun getFinishing(cid: String): Boolean {
-        return finishing[cid] ?: false
+        return isFinishing[cid] ?: false
     }
 
     fun getResult(cid: String): ArrayList<Article>? {
@@ -50,9 +50,9 @@ class SystemViewModel : BaseViewModel() {
 
     fun getHome(cid: String) {
         _uiState.update {
-            it.refreshing[cid] = true
-            it.loading[cid] = false
-            it.finishing[cid] = false
+            it.isRefreshing[cid] = true
+            it.isLoading[cid] = false
+            it.isFinishing[cid] = false
             it.copy(updateTime = System.nanoTime())
         }
         getList(cid, getHomePage(key = cid))
@@ -60,9 +60,9 @@ class SystemViewModel : BaseViewModel() {
 
     fun getNext(cid: String) {
         _uiState.update {
-            it.refreshing[cid] = false
-            it.loading[cid] = false
-            it.finishing[cid] = false
+            it.isRefreshing[cid] = false
+            it.isLoading[cid] = false
+            it.isFinishing[cid] = false
             it.copy(updateTime = System.nanoTime())
         }
         getList(cid, getNextPage(cid))
@@ -92,9 +92,9 @@ class SystemViewModel : BaseViewModel() {
                     }
                     state.result[cid]?.addAll(datas)
                 }
-                state.refreshing[cid] = false
-                state.loading[cid] = hasNextPage(cid)
-                state.finishing[cid] = !hasNextPage(cid)
+                state.isRefreshing[cid] = false
+                state.isLoading[cid] = hasNextPage(cid)
+                state.isFinishing[cid] = !hasNextPage(cid)
                 state.copy(updateTime = System.nanoTime())
             }
         }

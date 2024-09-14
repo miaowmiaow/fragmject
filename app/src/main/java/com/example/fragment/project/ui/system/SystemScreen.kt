@@ -32,7 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
-import com.example.fragment.project.components.SwipeRefresh
+import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
 import com.example.fragment.project.data.Tree
@@ -98,11 +98,11 @@ fun SystemScreen(
                 }
                 val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
                 val listState = rememberLazyListState()
-                SwipeRefresh(
+                SwipeRefreshBox(
                     items = systemUiState.getResult(pageCid),
-                    refreshing = systemUiState.getRefreshing(pageCid),
-                    loading = systemUiState.getLoading(pageCid),
-                    finishing = systemUiState.getFinishing(pageCid),
+                    isRefreshing = systemUiState.getRefreshing(pageCid),
+                    isLoading = systemUiState.getLoading(pageCid),
+                    isFinishing = systemUiState.getFinishing(pageCid),
                     onRefresh = { systemViewModel.getHome(pageCid) },
                     onLoad = { systemViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),

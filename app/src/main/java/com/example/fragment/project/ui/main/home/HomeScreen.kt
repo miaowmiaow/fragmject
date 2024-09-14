@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.BannerPager
-import com.example.fragment.project.components.SwipeRefresh
+import com.example.fragment.project.components.SwipeRefreshBox
 
 @Composable
 fun HomeScreen(
@@ -28,11 +28,11 @@ fun HomeScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    SwipeRefresh(
+    SwipeRefreshBox(
         items = uiState.result,
-        refreshing = uiState.refreshing,
-        loading = uiState.loading,
-        finishing = uiState.finishing,
+        isRefreshing = uiState.isRefreshing,
+        isLoading = uiState.isLoading,
+        isFinishing = uiState.isFinishing,
         onRefresh = { viewModel.getHome() },
         onLoad = { viewModel.getNext() },
         modifier = Modifier.fillMaxSize(),

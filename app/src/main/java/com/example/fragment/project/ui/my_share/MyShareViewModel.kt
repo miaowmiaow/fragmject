@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MyShareUiState(
-    var refreshing: Boolean = false,
-    var loading: Boolean = false,
-    var finishing: Boolean = false,
+    var isRefreshing: Boolean = false,
+    var isLoading: Boolean = false,
+    var isFinishing: Boolean = false,
     var result: MutableList<Article> = ArrayList(),
 )
 
@@ -30,14 +30,14 @@ class MyShareViewModel : BaseViewModel() {
 
     fun getHome() {
         _uiState.update {
-            it.copy(refreshing = true, loading = false, finishing = false)
+            it.copy(isRefreshing = true, isLoading = false, isFinishing = false)
         }
         getList(getHomePage())
     }
 
     fun getNext() {
         _uiState.update {
-            it.copy(refreshing = false, loading = false, finishing = false)
+            it.copy(isRefreshing = false, isLoading = false, isFinishing = false)
         }
         getList(getNextPage())
     }
@@ -62,9 +62,9 @@ class MyShareViewModel : BaseViewModel() {
                     state.result.addAll(datas)
                 }
                 state.copy(
-                    refreshing = false,
-                    loading = hasNextPage(),
-                    finishing = !hasNextPage()
+                    isRefreshing = false,
+                    isLoading = hasNextPage(),
+                    isFinishing = !hasNextPage()
                 )
             }
         }

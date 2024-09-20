@@ -141,16 +141,30 @@ fun WebView(
                         if (request == null) {
                             return
                         }
-                        val permissions = request.resources.mapNotNull { resource ->
+
+                        val resources = mutableListOf<String>()
+                        val permissions = mutableListOf<String>()
+
+                        request.resources.forEach { resource ->
                             when (resource) {
-                                "android.webkit.resource.VIDEO_CAPTURE" -> Manifest.permission.CAMERA
-                                "android.webkit.resource.AUDIO_CAPTURE" -> Manifest.permission.RECORD_AUDIO
-                                else -> null
+                                "android.webkit.resource.VIDEO_CAPTURE" -> {
+                                    resources.add(resource)
+                                    permissions.add(Manifest.permission.CAMERA)
+                                }
+
+                                "android.webkit.resource.AUDIO_CAPTURE" -> {
+                                    resources.add(resource)
+                                    permissions.add(Manifest.permission.RECORD_AUDIO)
+                                }
                             }
-                        }.toTypedArray()
-                        activity.requestPermissions(permissions, object : PermissionsCallback {
+                        }
+
+                        val resourcesArray = resources.toTypedArray()
+                        val permissionsArray = permissions.toTypedArray()
+
+                        activity.requestPermissions(permissionsArray, object : PermissionsCallback {
                             override fun allow() {
-                                request.grant(request.resources)
+                                request.grant(resourcesArray)
                             }
 
                             override fun deny() {

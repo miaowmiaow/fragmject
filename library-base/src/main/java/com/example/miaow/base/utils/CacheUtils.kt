@@ -16,7 +16,7 @@ object CacheUtils {
     }
 
     suspend fun getTotalSize(context: Context): String {
-        return withContext(Dispatchers.Main) {
+        return withContext(Dispatchers.IO) {
             var cacheSize = FileUtil.getSize(context.cacheDir)
             if (FileUtil.isSDCardAlive()) {
                 context.externalCacheDir?.apply {

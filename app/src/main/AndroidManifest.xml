@@ -18,7 +18,7 @@
 
         <activity
             android:name=".WanActivity"
-            android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation"
+            android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation|uiMode"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Wan.Splash"

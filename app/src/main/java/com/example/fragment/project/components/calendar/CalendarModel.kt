@@ -223,7 +223,7 @@ data class CalendarDate(
 
     private fun lunar(): LunarDate {
         return lunarDate ?: getLunarDate(year, month, day).also {
-            CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 //保证日程只从数据库取一次
                 schedule.emit(WanHelper.getSchedule(year, month, day))
             }

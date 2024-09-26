@@ -142,20 +142,18 @@ fun WebView(
                             return
                         }
 
+                        val resourceToPermissionMap = mapOf(
+                            "android.webkit.resource.VIDEO_CAPTURE" to Manifest.permission.CAMERA,
+                            "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO
+                        )
+
                         val resources = mutableListOf<String>()
                         val permissions = mutableListOf<String>()
 
                         request.resources.forEach { resource ->
-                            when (resource) {
-                                "android.webkit.resource.VIDEO_CAPTURE" -> {
-                                    resources.add(resource)
-                                    permissions.add(Manifest.permission.CAMERA)
-                                }
-
-                                "android.webkit.resource.AUDIO_CAPTURE" -> {
-                                    resources.add(resource)
-                                    permissions.add(Manifest.permission.RECORD_AUDIO)
-                                }
+                            resourceToPermissionMap[resource]?.let { permission ->
+                                resources.add(resource)
+                                permissions.add(permission)
                             }
                         }
 

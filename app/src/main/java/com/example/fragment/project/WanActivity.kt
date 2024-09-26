@@ -62,7 +62,7 @@ class WanActivity : AppCompatActivity() {
     private fun parseScheme(uri: Uri?): String? {
         return when {
             uri != null && uri.scheme == "wan" && uri.host == "com.fragment.project" ->
-                uri.path.toString().substring(1)
+                uri.path?.substring(1)
 
             else -> null
         }

@@ -17,7 +17,6 @@ import com.example.miaow.base.http.download
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 import java.io.FileInputStream
@@ -27,52 +26,50 @@ import java.io.OutputStream
 fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
     val savePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
     val fileName = url.encodeUtf8().md5().hex()
-    CoroutineScope(Dispatchers.Main).launch {
+    CoroutineScope(Dispatchers.IO).launch {
         download(savePath, fileName) {
             setUrl(url)
         }
-        withContext(Dispatchers.IO) {
-            val file = File(savePath, fileName)
-            if (file.exists() && file.isFile) {
-                var out: OutputStream? = null
-                var fis: FileInputStream? = null
-                try {
-                    val mimeType = FileUtil.getFileMimeType(file)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        val values = ContentValues()
-                        values.put(DISPLAY_NAME, file.name)
-                        values.put(MIME_TYPE, mimeType)
-                        values.put(RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                        val uri = contentResolver.insert(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            values
-                        ) ?: Uri.EMPTY
-                        out = contentResolver.openOutputStream(uri) ?: return@withContext
-                        fis = FileInputStream(file)
-                        FileUtils.copy(fis, out)
+        val file = File(savePath, fileName)
+        if (file.exists() && file.isFile) {
+            var out: OutputStream? = null
+            var fis: FileInputStream? = null
+            try {
+                val mimeType = FileUtil.getFileMimeType(file)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val values = ContentValues()
+                    values.put(DISPLAY_NAME, file.name)
+                    values.put(MIME_TYPE, mimeType)
+                    values.put(RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                    val uri = contentResolver.insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        values
+                    ) ?: Uri.EMPTY
+                    out = contentResolver.openOutputStream(uri) ?: return@launch
+                    fis = FileInputStream(file)
+                    FileUtils.copy(fis, out)
+                    MainThreadExecutor.get().execute {
+                        onFinish.invoke(getBitmapPathFromUri(uri), uri ?: Uri.EMPTY)
+                    }
+                } else {
+                    val paths = arrayOf(file.absolutePath)
+                    val mimeTypes = arrayOf(mimeType)
+                    MediaScannerConnection.scanFile(
+                        this@saveImagesToAlbum,
+                        paths,
+                        mimeTypes
+                    ) { path, uri ->
                         MainThreadExecutor.get().execute {
-                            onFinish.invoke(getBitmapPathFromUri(uri), uri ?: Uri.EMPTY)
-                        }
-                    } else {
-                        val paths = arrayOf(file.absolutePath)
-                        val mimeTypes = arrayOf(mimeType)
-                        MediaScannerConnection.scanFile(
-                            this@saveImagesToAlbum,
-                            paths,
-                            mimeTypes
-                        ) { path, uri ->
-                            MainThreadExecutor.get().execute {
-                                onFinish.invoke(path ?: "", uri ?: Uri.EMPTY)
-                            }
+                            onFinish.invoke(path ?: "", uri ?: Uri.EMPTY)
                         }
                     }
-                    file.delete()
-                } catch (e: Exception) {
-                    Log.e(this.javaClass.name, e.message.toString())
-                } finally {
-                    fis?.close()
-                    out?.close()
                 }
+                file.delete()
+            } catch (e: Exception) {
+                Log.e(this.javaClass.name, e.message.toString())
+            } finally {
+                fis?.close()
+                out?.close()
             }
         }
     }

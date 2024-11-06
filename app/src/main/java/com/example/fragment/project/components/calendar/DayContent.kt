@@ -9,20 +9,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 
 @Composable
 internal fun DayContent(
@@ -45,8 +45,8 @@ internal fun DayContent(
             .then(
                 if (date.currMonth && selectedDay) {
                     Modifier
-                        .background(colorResource(R.color.theme_orange))
-                        .border(1.dp, colorResource(R.color.theme_orange), CircleShape)
+                        .background(WanTheme.orange)
+                        .border(1.dp, WanTheme.orange, CircleShape)
                 } else {
                     Modifier
                 }
@@ -57,7 +57,7 @@ internal fun DayContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
-                color = colorResource(if (date.currMonth) R.color.text_333 else R.color.text_999),
+                color = if (date.currMonth) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -73,17 +73,15 @@ internal fun DayContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
-                color = colorResource(
-                    if (date.currMonth && selectedDay) {
-                        R.color.text_fff
-                    } else if (date.currMonth && date.isFestival() && !isMonthFillMode) {
-                        R.color.theme_orange
-                    } else if (!date.currMonth && date.isFestival() && !isMonthFillMode) {
-                        R.color.b_zero_theme_orange
-                    } else {
-                        R.color.text_999
-                    }
-                ),
+                color = if (date.currMonth && selectedDay) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else if (date.currMonth && date.isFestival() && !isMonthFillMode) {
+                    WanTheme.orange
+                } else if (!date.currMonth && date.isFestival() && !isMonthFillMode) {
+                    WanTheme.alphaOrange
+                } else {
+                    MaterialTheme.colorScheme.onTertiaryContainer
+                },
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
                 overflow = TextOverflow.Ellipsis,
@@ -97,10 +95,10 @@ internal fun DayContent(
                     .fillMaxWidth()
                     .padding(horizontal = 3.dp, vertical = 1.dp)
                     .background(
-                        colorResource(R.color.gray_e5),
+                        MaterialTheme.colorScheme.primaryContainer,
                         RoundedCornerShape(3.dp)
                     ),
-                color = colorResource(R.color.text_999),
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 14.sp,
@@ -116,10 +114,10 @@ internal fun DayContent(
                         .fillMaxWidth()
                         .padding(horizontal = 3.dp, vertical = 1.dp)
                         .background(
-                            colorResource(R.color.gray_e5),
+                            MaterialTheme.colorScheme.primaryContainer,
                             RoundedCornerShape(3.dp)
                         ),
-                    color = colorResource(R.color.text_999),
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 14.sp,

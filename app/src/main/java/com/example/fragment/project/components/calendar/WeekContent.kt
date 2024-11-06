@@ -11,15 +11,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.example.fragment.project.R
 
 @Composable
 internal fun WeekContent(
@@ -51,7 +50,7 @@ internal fun WeekContent(
             offsetY = offsetProvider() / items.size * index
         }
         val animatedColor by animateColorAsState(
-            colorResource(if (isMonthFillMode) R.color.white else R.color.background),
+            if (isMonthFillMode) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.background,
             animationSpec = TweenSpec(350),
             label = "color"
         )

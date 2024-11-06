@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
@@ -32,10 +33,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -77,7 +78,7 @@ fun <T> SwipeRefreshBox(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = colorResource(id = R.color.theme_orange)
+                    color = Color(0xFFFF8B80)
                 )
             }
         } else {
@@ -91,7 +92,7 @@ fun <T> SwipeRefreshBox(
             modifier = modifier
                 .pullToRefresh(state = state, isRefreshing = isRefreshing, onRefresh = onRefresh)
                 .clipToBounds()
-                .background(colorResource(R.color.background_refresh))
+                .background(Color(0xFF010101))
                 .graphicsLayer {
                     translationY = state.distanceFraction * threshold.roundToPx()
                 },
@@ -102,7 +103,7 @@ fun <T> SwipeRefreshBox(
             }
             Box(
                 modifier = Modifier
-                    .background(colorResource(R.color.background))
+                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
             ) {
                 LazyColumn(
@@ -141,7 +142,7 @@ fun MoreIndicator(
         Text(
             text = if (finishing) "没有更多了！" else "正在加载中...",
             fontSize = 12.sp,
-            color = colorResource(R.color.theme),
+            color = Color(0xFF272A36),
             modifier = Modifier.align(Alignment.Center)
         )
     }

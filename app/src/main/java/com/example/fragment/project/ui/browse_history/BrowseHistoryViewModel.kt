@@ -32,9 +32,9 @@ class BrowseHistoryViewModel : BaseViewModel() {
         }
     }
 
-    fun setBrowseHistory(url: String) {
+    fun setBrowseHistory(title: String, url: String) {
         viewModelScope.launch {
-            WanHelper.setBrowseHistory(url)
+            WanHelper.setBrowseHistory(title, url)
         }
     }
 

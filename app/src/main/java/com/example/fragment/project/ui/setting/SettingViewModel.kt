@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.setting
 
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.database.user.User
 import com.example.fragment.project.utils.WanHelper
@@ -15,7 +14,6 @@ import kotlinx.coroutines.launch
 
 data class SettingUiState(
     var isLoading: Boolean = false,
-    var mode: Int = -1,
     var user: User? = null,
 )
 
@@ -29,20 +27,17 @@ class SettingViewModel : BaseViewModel() {
         viewModelScope.launch {
             WanHelper.getUser().collect { user ->
                 _uiState.update { state ->
-                    state.copy(user = user, mode = WanHelper.getUiMode())
+                    state.copy(user = user)
                 }
             }
         }
     }
 
-    fun updateUiMode(mode: Int) {
+    fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch {
-            _uiState.update { state ->
-                WanHelper.setUiMode(mode)
-                state.copy(mode = mode)
-            }
-            if (mode != AppCompatDelegate.getDefaultNightMode()) {
-                AppCompatDelegate.setDefaultNightMode(mode)
+            _uiState.value.user?.let { user ->
+                user.darkTheme = darkTheme
+                WanHelper.setUser(user)
             }
         }
     }

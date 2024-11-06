@@ -13,10 +13,9 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) //覆盖插入模式，根据主键值判断是否覆盖
     suspend fun insert(user: User): Long
 
-    @Delete
-    suspend fun delete(user: User): Int
-
     @Query("SELECT * FROM user")
     fun get(): Flow<User?>
 
+    @Delete
+    suspend fun delete(user: User): Int
 }

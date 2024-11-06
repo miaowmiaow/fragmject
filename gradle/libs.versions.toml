@@ -1,19 +1,21 @@
 [versions]
-agp = "8.6.1"
-androidxComposeBom = "2024.09.02"
-androidxConstraintlayout = "2.1.4"
-androidxCoreKtx = "1.13.1"
-androidxFragmentKtx = "1.8.3"
-androidxLifecycle = "2.8.6"
-androidxNavigationCompose = "2.8.1"
-androidxWebkit = "1.12.0"
+agp = "8.7.2"
+activity = "1.9.3"
+androidxComposeBom = "2024.10.01"
+androidxConstraintlayout = "2.2.0"
+androidxCoreKtx = "1.15.0"
+androidxCoreSplashscreen = "1.0.1"
+androidxFragmentKtx = "1.8.5"
+androidxLifecycle = "2.8.7"
+androidxNavigationCompose = "2.8.3"
+androidxWebkit = "1.12.1"
 asm = "9.7"
 coil = "2.7.0"
 gson = "2.11.0"
 junit = "4.13.2"
 kotlin = "2.0.20"
-kotlinxCoroutines = "1.8.1"
-ksp = "2.0.20-1.0.24"
+kotlinxCoroutines = "1.9.0"
+ksp = "2.0.20-1.0.25"
 leakcanary = "2.12"
 material = "1.12.0"
 miaowPlugin = "1.0.0"
@@ -24,6 +26,8 @@ testEspressoCore = '3.6.1'
 testExtJunit = '1.2.1'
 
 [libraries]
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
@@ -35,6 +39,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintlayout" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }

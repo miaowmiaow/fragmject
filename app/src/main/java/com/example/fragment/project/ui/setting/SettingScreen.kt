@@ -1,8 +1,6 @@
 package com.example.fragment.project.ui.setting
 
-import android.app.Activity
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,11 +23,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,12 +56,10 @@ import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.CacheUtils.getTotalSize
 import com.example.miaow.base.utils.FileUtil
-import com.example.miaow.base.utils.ScreenCaptureCallback
-import com.example.miaow.base.utils.startScreenCapture
-import com.example.miaow.base.utils.stopScreenCapture
 import kotlinx.coroutines.launch
 import java.io.File
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
@@ -73,7 +68,7 @@ fun SettingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var screenCaptureState by rememberSaveable { mutableStateOf(false) }
+//    var screenCaptureState by rememberSaveable { mutableStateOf(false) }
     var cacheSize by rememberSaveable { mutableStateOf("0KB") }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -89,7 +84,7 @@ fun SettingScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                 },
@@ -104,79 +99,74 @@ fun SettingScreen(
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "深色模式",
+                    if (uiState.user != null) {
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
-                        )
-                        NightSwitchButton(
-                            checked = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES,
-                            onCheckedChange = {
-                                val mode = if (it) {
-                                    AppCompatDelegate.MODE_NIGHT_YES
-                                } else {
-                                    AppCompatDelegate.MODE_NIGHT_NO
-                                }
-                                viewModel.updateUiMode(mode)
-                            },
-                            modifier = Modifier.size(52.dp, 32.dp)
-                        )
-                        Spacer(Modifier.width(5.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                .fillMaxWidth()
+                                .height(45.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "深色模式",
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 25.dp, end = 25.dp),
+                                fontSize = 13.sp,
+                            )
+                            NightSwitchButton(
+                                checked = uiState.user?.darkTheme ?: false,
+                                onCheckedChange = {
+                                    viewModel.updateDarkTheme(it)
+                                },
+                                modifier = Modifier.size(52.dp, 32.dp)
+                            )
+                            Spacer(Modifier.width(5.dp))
+                        }
                     }
-                    HorizontalDivider()
-                    Row(
-                        modifier = Modifier
-                            .background(colorResource(R.color.white))
-                            .fillMaxWidth()
-                            .height(45.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "屏幕录制",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
-                        )
-                        Switch(
-                            checked = screenCaptureState,
-                            onCheckedChange = {
-                                screenCaptureState = it
-                                if (screenCaptureState) {
-                                    (context as AppCompatActivity).startScreenCapture(object :
-                                        ScreenCaptureCallback {
-                                        override fun onActivityResult(
-                                            resultCode: Int,
-                                            message: String
-                                        ) {
-                                            if (resultCode != Activity.RESULT_OK) {
-                                                screenCaptureState = false
-                                            }
-                                            scope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message, "确定"
-                                                )
-                                            }
-                                        }
-                                    })
-                                } else {
-                                    (context as AppCompatActivity).stopScreenCapture()
-                                }
-                            },
-                        )
-                        Spacer(Modifier.width(5.dp))
-                    }
+//                    HorizontalDivider()
+//                    Row(
+//                        modifier = Modifier
+//                            .background(MaterialTheme.colorScheme.surfaceContainer)
+//                            .fillMaxWidth()
+//                            .height(45.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Text(
+//                            text = "屏幕录制",
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .padding(start = 25.dp, end = 25.dp),
+//                            fontSize = 13.sp,
+//                        )
+//                        Switch(
+//                            checked = screenCaptureState,
+//                            onCheckedChange = {
+//                                screenCaptureState = it
+//                                if (screenCaptureState) {
+//                                    (context as AppCompatActivity).startScreenCapture(object :
+//                                        ScreenCaptureCallback {
+//                                        override fun onActivityResult(
+//                                            resultCode: Int,
+//                                            message: String
+//                                        ) {
+//                                            if (resultCode != Activity.RESULT_OK) {
+//                                                screenCaptureState = false
+//                                            }
+//                                            scope.launch {
+//                                                snackbarHostState.showSnackbar(
+//                                                    message, "确定"
+//                                                )
+//                                            }
+//                                        }
+//                                    })
+//                                } else {
+//                                    (context as AppCompatActivity).stopScreenCapture()
+//                                }
+//                            },
+//                        )
+//                        Spacer(Modifier.width(5.dp))
+//                    }
 //                    HorizontalDivider()
 //                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
 //                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -217,7 +207,7 @@ fun SettingScreen(
                                     }
                                 )
                             }
-                            .background(colorResource(R.color.white))
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
                             .fillMaxWidth()
                             .height(45.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -228,12 +218,10 @@ fun SettingScreen(
                                 .weight(1f)
                                 .padding(start = 25.dp, end = 25.dp),
                             fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
                         )
                         Text(
                             text = cacheSize,
                             fontSize = 13.sp,
-                            color = colorResource(R.color.text_333),
                         )
                         Image(
                             painter = painterResource(id = R.mipmap.ic_right),
@@ -247,19 +235,14 @@ fun SettingScreen(
                     if (uiState.user != null) {
                         Button(
                             onClick = {
-                                context.showStandardDialog(
-                                    content = "确定退出登录吗？",
-                                    confirm = {
-                                        viewModel.logout()
-                                    }
-                                )
+                                viewModel.logout()
                             },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             shape = RoundedCornerShape(5.dp),
-                            border = BorderStroke(1.dp, colorResource(R.color.theme)),
+                            border = BorderStroke(1.dp, WanTheme.theme),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(R.color.theme),
-                                contentColor = colorResource(R.color.white)
+                                containerColor = WanTheme.theme,
+                                contentColor = MaterialTheme.colorScheme.secondary
                             ),
                             contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
                         ) {

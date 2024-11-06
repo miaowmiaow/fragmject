@@ -1,17 +1,13 @@
 package com.example.fragment.project.utils
 
 import android.util.Log
-import androidx.appcompat.app.AppCompatDelegate
 import com.example.fragment.project.database.AppDatabase
 import com.example.fragment.project.database.history.History
 import com.example.fragment.project.database.user.User
 import com.example.miaow.base.database.KVDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 /**
  * 数据持久化辅助类
@@ -22,48 +18,50 @@ object WanHelper {
     private const val BROWSE_HISTORY = "browse_history"
     private const val SCHEDULE = "schedule"
     private const val SEARCH_HISTORY = "search_history"
-    private const val UI_MODE = "ui_mode"
 
-    suspend fun setBookmark(url: String) {
-        val history = AppDatabase.getHistoryDao().getByValue(key = BOOKMARK, value = url)
+    suspend fun setBookmark(value: String, url: String) {
+        val historyDao = AppDatabase.getHistoryDao()
+        val history = historyDao.getByUrl(key = BOOKMARK, url = url)
         if (history != null) {
-            AppDatabase.getHistoryDao().delete(history)
+            historyDao.delete(history)
         }
-        AppDatabase.getHistoryDao().insert(History(key = BOOKMARK, value = url))
+        historyDao.insertWithLimitCheck(History(key = BOOKMARK, value = value, url = url))
     }
 
     fun getBookmark(): Flow<List<History>> {
-        return AppDatabase.getHistoryDao().getByType(BOOKMARK)
+        return AppDatabase.getHistoryDao().getByKey(BOOKMARK)
     }
 
-    suspend fun setBrowseHistory(url: String) {
-        val history = AppDatabase.getHistoryDao().getByValue(key = BROWSE_HISTORY, value = url)
+    suspend fun setBrowseHistory(value: String, url: String) {
+        val historyDao = AppDatabase.getHistoryDao()
+        val history = historyDao.getByUrl(key = BROWSE_HISTORY, url = url)
         if (history != null) {
-            AppDatabase.getHistoryDao().delete(history)
+            historyDao.delete(history)
         }
-        AppDatabase.getHistoryDao().insert(History(key = BROWSE_HISTORY, value = url))
+        historyDao.insertWithLimitCheck(History(key = BROWSE_HISTORY, value = value, url = url))
     }
 
     fun getBrowseHistory(): Flow<List<History>> {
-        return AppDatabase.getHistoryDao().getByType(BROWSE_HISTORY)
+        return AppDatabase.getHistoryDao().getByKey(BROWSE_HISTORY)
     }
 
     /**
      * 设置搜索历史
      */
-    suspend fun setSearchHistory(title: String) {
-        val history = AppDatabase.getHistoryDao().getByValue(key = SEARCH_HISTORY, value = title)
+    suspend fun setSearchHistory(value: String) {
+        val historyDao = AppDatabase.getHistoryDao()
+        val history = historyDao.getByValue(key = SEARCH_HISTORY, value = value)
         if (history != null) {
-            AppDatabase.getHistoryDao().delete(history)
+            historyDao.delete(history)
         }
-        AppDatabase.getHistoryDao().insert(History(key = SEARCH_HISTORY, value = title))
+        historyDao.insertWithLimitCheck(History(key = SEARCH_HISTORY, value = value))
     }
 
     /**
      * 获取搜索历史
      */
     fun getSearchHistory(): Flow<List<History>> {
-        return AppDatabase.getHistoryDao().getByType(SEARCH_HISTORY)
+        return AppDatabase.getHistoryDao().getByKey(SEARCH_HISTORY)
     }
 
     suspend fun deleteHistory(history: History) {
@@ -89,38 +87,6 @@ object WanHelper {
      */
     fun getUser(): Flow<User?> {
         return AppDatabase.getUserDao().get()
-    }
-
-    /**
-     * mode :
-     *      AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
-     *      AppCompatDelegate.MODE_NIGHT_NO,
-     *      AppCompatDelegate.MODE_NIGHT_YES
-     */
-    suspend fun setUiMode(mode: Int): Boolean {
-        return KVDatabase.set(UI_MODE, mode.toString())
-    }
-
-    /**
-     * 显示模式状态
-     * return
-     *       AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
-     *       AppCompatDelegate.MODE_NIGHT_NO,
-     *       AppCompatDelegate.MODE_NIGHT_YES
-     */
-    suspend fun getUiMode(): Int {
-        return try {
-            KVDatabase.get(UI_MODE).toInt()
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-            AppCompatDelegate.MODE_NIGHT_NO
-        }
-    }
-
-    fun getUiMode(result: (Int) -> Unit) {
-        CoroutineScope(Dispatchers.Main).launch {
-            result.invoke(getUiMode())
-        }
     }
 
     suspend fun setSchedule(year: Int, month: Int, day: Int, list: MutableList<String>) {

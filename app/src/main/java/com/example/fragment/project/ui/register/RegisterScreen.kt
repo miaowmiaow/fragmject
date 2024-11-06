@@ -1,6 +1,7 @@
 package com.example.fragment.project.ui.register
 
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,7 +44,6 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -83,6 +84,9 @@ fun RegisterScreen(
     var passwordText by rememberSaveable { mutableStateOf("") }
     var againPasswordText by rememberSaveable { mutableStateOf("") }
     Scaffold(
+        modifier = Modifier
+            .background(WanTheme.theme)
+            .statusBarsPadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             LoadingContent(uiState.isLoading, innerPadding = innerPadding) {
@@ -103,7 +107,7 @@ fun RegisterScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                     Spacer(Modifier.height(30.dp))
@@ -111,14 +115,14 @@ fun RegisterScreen(
                         text = "Create",
                         modifier = Modifier.padding(horizontal = 20.dp),
                         style = MaterialTheme.typography.headlineMedium,
-                        color = colorResource(R.color.white),
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(Modifier.height(20.dp))
                     Text(
                         text = "Account",
                         modifier = Modifier.padding(horizontal = 20.dp),
                         style = MaterialTheme.typography.titleLarge,
-                        color = colorResource(R.color.white),
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(Modifier.weight(1f))
                     WhiteTextField(
@@ -180,7 +184,7 @@ fun RegisterScreen(
                         Text(
                             text = "注册",
                             fontSize = 20.sp,
-                            color = colorResource(R.color.white),
+                            color = MaterialTheme.colorScheme.secondary,
                         )
                         Spacer(Modifier.weight(1f))
                         Button(
@@ -193,8 +197,8 @@ fun RegisterScreen(
                             },
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(R.color.theme_orange),
-                                contentColor = colorResource(R.color.white)
+                                containerColor = WanTheme.orange,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                             contentPadding = PaddingValues(15.dp),
@@ -211,14 +215,14 @@ fun RegisterScreen(
                         text = "去登录",
                         modifier = Modifier
                             .clickable {
-                                if (context is AppCompatActivity) {
+                                if (context is ComponentActivity) {
                                     context.onBackPressedDispatcher.onBackPressed()
                                 }
                             }
                             .padding(horizontal = 20.dp),
                         textDecoration = TextDecoration.Underline,
                         fontSize = 12.sp,
-                        color = colorResource(R.color.white)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                     Spacer(Modifier.height(30.dp))
                 }

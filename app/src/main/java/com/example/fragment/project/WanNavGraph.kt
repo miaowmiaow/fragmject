@@ -4,11 +4,8 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,13 +34,11 @@ import com.example.miaow.base.vm.TRANSITION_TIME
 @Composable
 fun WanNavGraph(
     route: String?,
+    user: User?,
     modifier: Modifier = Modifier,
-    viewModel: WanViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val navController = rememberNavController()
-    val wanNavActions =
-        remember(navController, uiState.user) { WanNavActions(navController, uiState.user) }
+    val wanNavActions = WanNavActions(navController, user)
     NavHost(
         navController = navController,
         startDestination = WanDestinations.MAIN_ROUTE,
@@ -91,8 +86,6 @@ fun WanNavGraph(
         }
         composable(WanDestinations.MAIN_ROUTE) {
             MainScreen(
-                hotKeyData = uiState.hotKeyResult,
-                systemData = uiState.treeResult,
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateToDemo = { wanNavActions.navigateToDemo() },
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
@@ -147,7 +140,6 @@ fun WanNavGraph(
         composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
             SearchScreen(
                 key = backStackEntry.arguments?.getString("key") ?: "",
-                hotKeyData = uiState.hotKeyResult,
                 onNavigateToLogin = { wanNavActions.navigateToLogin() },
                 onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
                 onNavigateToUser = { wanNavActions.navigateToUser(it) },
@@ -169,23 +161,14 @@ fun WanNavGraph(
         }
         composable("${WanDestinations.SYSTEM_ROUTE}/{cid}") { backStackEntry ->
             val cid = backStackEntry.arguments?.getString("cid").toString()
-            uiState.treeResult.forEach { data ->
-                data.children?.forEachIndexed { index, children ->
-                    if (children.id == cid) {
-                        SystemScreen(
-                            title = data.name,
-                            tabIndex = index,
-                            systemData = data.children,
-                            onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                            onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                            onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                            onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
-                            onNavigateUp = { wanNavActions.navigateUp() }
-                        )
-                        return@composable
-                    }
-                }
-            }
+            SystemScreen(
+                cid = cid,
+                onNavigateToLogin = { wanNavActions.navigateToLogin() },
+                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
+                onNavigateToUser = { wanNavActions.navigateToUser(it) },
+                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateUp = { wanNavActions.navigateUp() }
+            )
         }
         composable("${WanDestinations.USER_ROUTE}/{userId}") { backStackEntry ->
             UserScreen(
@@ -200,19 +183,21 @@ fun WanNavGraph(
             WebScreen(
                 url = backStackEntry.arguments?.getString("url") ?: "",
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
-                onNavigateUp = { wanNavActions.navigateUp() }
+                onNavigateUp = { wanNavActions.navigateUp() },
             )
         }
     }
-    if (!route.isNullOrBlank()) {
-        val webRoute = "${WanDestinations.WEB_ROUTE}/"
-        wanNavActions.navigate(
-            if (route.startsWith(webRoute)) {
-                webRoute + Uri.encode(route.substring(webRoute.length))
-            } else {
-                route
-            }
-        )
+    LaunchedEffect(route) {
+        if (!route.isNullOrBlank()) {
+            val webRoute = "${WanDestinations.WEB_ROUTE}/"
+            wanNavActions.navigate(
+                if (route.startsWith(webRoute)) {
+                    webRoute + Uri.encode(route.substring(webRoute.length))
+                } else {
+                    route
+                }
+            )
+        }
     }
 }
 

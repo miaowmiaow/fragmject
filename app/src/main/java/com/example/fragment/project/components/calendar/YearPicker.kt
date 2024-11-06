@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.ScrollAxisRange
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.verticalScrollAxisRange
@@ -42,7 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
@@ -73,6 +74,7 @@ internal fun YearPicker(
         ) {
             Text(
                 text = "${year}年${month}月",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -80,7 +82,8 @@ internal fun YearPicker(
             Icon(
                 Icons.Filled.ArrowDropDown,
                 contentDescription = "",
-                Modifier.rotate(if (visible) 180f else 0f)
+                Modifier.rotate(if (visible) 180f else 0f),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
         AnimatedVisibility(
@@ -96,7 +99,7 @@ internal fun YearPicker(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(YearInRow),
                 modifier = Modifier
-                    .background(colorResource(R.color.background))
+                    .background(MaterialTheme.colorScheme.background)
                     .semantics {
                         verticalScrollAxisRange = ScrollAxisRange(value = { 0f }, maxValue = { 0f })
                     },
@@ -123,10 +126,10 @@ internal fun YearPicker(
                                 visible = false
                             }
                             .background(
-                                colorResource(if (localYear == year) R.color.theme else R.color.transparent),
+                                if (localYear == year) WanTheme.theme else Color.Transparent,
                                 RoundedCornerShape(50)
                             ),
-                        color = colorResource(if (localYear == year) R.color.text_fff else R.color.text_333),
+                        color = if (localYear == year) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )

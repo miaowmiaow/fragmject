@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
@@ -24,13 +25,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.fragment.project.R
 
 @Composable
 fun WhiteTextField(
@@ -54,16 +54,16 @@ fun WhiteTextField(
         keyboardActions = keyboardActions,
         singleLine = true,
         colors = TextFieldDefaults.colors(
-            focusedTextColor = colorResource(id = R.color.text_fff),
-            unfocusedTextColor = colorResource(id = R.color.text_fff),
-            focusedContainerColor = colorResource(id = R.color.transparent),
-            unfocusedContainerColor = colorResource(id = R.color.transparent),
-            cursorColor = colorResource(id = R.color.white),
-            errorCursorColor = colorResource(id = R.color.white),
-            focusedIndicatorColor = colorResource(id = R.color.white),
-            unfocusedIndicatorColor = colorResource(id = R.color.white),
-            focusedPlaceholderColor = colorResource(id = R.color.text_ccc),
-            unfocusedPlaceholderColor = colorResource(id = R.color.text_ccc),
+            focusedTextColor = MaterialTheme.colorScheme.secondary,
+            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            cursorColor = MaterialTheme.colorScheme.secondary,
+            errorCursorColor = MaterialTheme.colorScheme.secondary,
+            focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+            focusedPlaceholderColor = MaterialTheme.colorScheme.secondary,
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.secondary,
         ),
     )
 }

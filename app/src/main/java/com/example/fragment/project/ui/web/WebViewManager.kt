@@ -18,6 +18,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.Toast
 import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.http.download
 import com.example.miaow.base.utils.CacheUtils
@@ -50,11 +51,11 @@ class WebViewManager private constructor() {
             return getInstance().obtain(context, url)
         }
 
-        fun back(webView: WebView): Boolean {
+        fun back(webView: WebView): String {
             return getInstance().back(webView)
         }
 
-        fun forward(webView: WebView): String? {
+        fun forward(webView: WebView): String {
             return getInstance().forward(webView)
         }
 
@@ -133,25 +134,25 @@ class WebViewManager private constructor() {
         return webView
     }
 
-    private fun back(webView: WebView): Boolean {
+    private fun back(webView: WebView): String {
         return try {
-            backStack.removeLast()//通过NoSuchElementException判断是否处在第一页
+            val backLastUrl = backStack.removeLast()//通过NoSuchElementException判断是否处在第一页
             forwardStack.add(webView.originalUrl.toString())
-            true
+            backLastUrl
         } catch (e: Exception) {
             lastBackWebView = WeakReference(webView)
-            false
+            ""
         }
     }
 
-    private fun forward(webView: WebView): String? {
+    private fun forward(webView: WebView): String {
         return try {
             val forwardLastUrl = forwardStack.removeLast()
             backStack.add(webView.originalUrl.toString())
             forwardLastUrl
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
-            null
+            ""
         }
     }
 
@@ -221,7 +222,7 @@ fun WebView.setOnLongClickListener() {
             WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                 result.extra?.let { extra ->
                     val contextWrapper = context as MutableContextWrapper
-                    contextWrapper.baseContext.saveImageBase64Dialog(extra)
+                    contextWrapper.baseContext.saveImageDialog(extra)
                 }
                 true
             }
@@ -231,12 +232,14 @@ fun WebView.setOnLongClickListener() {
     }
 }
 
-private fun Context.saveImageBase64Dialog(data: String) {
+private fun Context.saveImageDialog(data: String) {
     showStandardDialog(
         content = "你希望保存该图片吗？",
         confirm = {
             if (URLUtil.isValidUrl(data)) {
-                saveImagesToAlbum(data) { _, _ -> }
+                saveImagesToAlbum(data) { _, _ ->
+                    Toast.makeText(this, "保存图片成功", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 var str = data
                 if (str.contains(",")) {
@@ -244,7 +247,9 @@ private fun Context.saveImageBase64Dialog(data: String) {
                 }
                 val array = Base64.decode(str, Base64.NO_WRAP)
                 val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
-                saveImagesToAlbum(bitmap) { _, _ -> }
+                saveImagesToAlbum(bitmap) { _, _ ->
+                    Toast.makeText(this, "保存图片成功", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     )

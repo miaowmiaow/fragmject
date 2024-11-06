@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.login
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -80,6 +81,9 @@ fun LoginScreen(
     var usernameText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     Scaffold(
+        modifier = Modifier
+            .background(WanTheme.theme)
+            .statusBarsPadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             LoadingContent(
@@ -103,7 +107,7 @@ fun LoginScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                     Spacer(Modifier.height(30.dp))
@@ -111,14 +115,14 @@ fun LoginScreen(
                         text = "Welcome",
                         modifier = Modifier.padding(horizontal = 20.dp),
                         style = MaterialTheme.typography.headlineMedium,
-                        color = colorResource(R.color.white),
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(Modifier.height(20.dp))
                     Text(
                         text = "玩Android",
                         modifier = Modifier.padding(horizontal = 20.dp),
                         style = MaterialTheme.typography.titleLarge,
-                        color = colorResource(R.color.white),
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(Modifier.weight(1f))
                     WhiteTextField(
@@ -162,15 +166,15 @@ fun LoginScreen(
                         Text(
                             text = "登录",
                             fontSize = 20.sp,
-                            color = colorResource(R.color.white)
+                            color = MaterialTheme.colorScheme.secondary
                         )
                         Spacer(Modifier.weight(1f))
                         Button(
                             onClick = { viewModel.login(usernameText, passwordText) },
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(R.color.theme_orange),
-                                contentColor = colorResource(R.color.white)
+                                containerColor = WanTheme.orange,
+                                contentColor = MaterialTheme.colorScheme.secondary
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                             contentPadding = PaddingValues(15.dp),
@@ -190,7 +194,7 @@ fun LoginScreen(
                             .padding(horizontal = 25.dp),
                         textDecoration = TextDecoration.Underline,
                         fontSize = 12.sp,
-                        color = colorResource(R.color.white),
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(Modifier.height(30.dp))
                 }

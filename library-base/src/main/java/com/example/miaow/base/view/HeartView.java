@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnticipateOvershootInterpolator;
 
+import androidx.annotation.NonNull;
+
 public class HeartView extends View {
 
     private int width;
@@ -56,11 +58,11 @@ public class HeartView extends View {
     public void start() {
         this.isStopped = false;
 
-        leftHeartX = width / 4 + width / 8;
-        leftHeartY = height / 4 + height / 8;
+        leftHeartX = width* 0.25f + width* 0.125f;
+        leftHeartY = height* 0.25f + height* 0.125f;
 
-        PropertyValuesHolder widthPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_X, width / 4 + width / 8, width / 2 + width / 8);
-        PropertyValuesHolder heightPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_Y, height / 4 + height / 8, height / 2 + height / 8);
+        PropertyValuesHolder widthPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_X, width* 0.25f + width* 0.125f, width* 0.5f + width* 0.125f);
+        PropertyValuesHolder heightPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_Y, height* 0.25f + height* 0.125f, height* 0.5f + height* 0.125f);
         animatorLeftHeart = ValueAnimator.ofPropertyValuesHolder(widthPropertyHolder, heightPropertyHolder);
         animatorLeftHeart.setDuration(1000);
         animatorLeftHeart.setStartDelay(500);
@@ -69,8 +71,8 @@ public class HeartView extends View {
         animatorLeftHeart.setRepeatMode(ValueAnimator.REVERSE);
         animatorLeftHeart.setRepeatCount(ValueAnimator.INFINITE);
 
-        widthPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_X, width / 2 + width / 8, width / 4 + width / 8);
-        heightPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_Y, height / 4 + height / 8, height / 2 + height / 8);
+        widthPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_X, width * 0.5f + width* 0.125f, width* 0.25f + width* 0.125f);
+        heightPropertyHolder = PropertyValuesHolder.ofFloat(POSITION_Y, height* 0.25f + height* 0.125f, height* 0.5f + height* 0.125f);
         animatorRightHeart = ValueAnimator.ofPropertyValuesHolder(widthPropertyHolder, heightPropertyHolder);
         animatorRightHeart.setDuration(1000);
         animatorRightHeart.setInterpolator(new AnticipateOvershootInterpolator());
@@ -152,7 +154,7 @@ public class HeartView extends View {
     }
 
     private float measureCircleRadius(int width, int height) {
-        float radius = (float) Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2)) / 4;
+        float radius = (float) Math.sqrt(Math.pow(width* 0.5f, 2) + Math.pow(height* 0.5f, 2))* 0.25f;
         return radius + 2;
     }
 
@@ -160,7 +162,7 @@ public class HeartView extends View {
 
     ValueAnimator.AnimatorUpdateListener leftHeartAnimationUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
         @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
+        public void onAnimationUpdate(@NonNull ValueAnimator animation) {
             if (!isStopped) {
                 leftHeartX = (Float) animation.getAnimatedValue(POSITION_X);
                 leftHeartY = (Float) animation.getAnimatedValue(POSITION_Y);
@@ -171,7 +173,7 @@ public class HeartView extends View {
 
     ValueAnimator.AnimatorUpdateListener rightHeartAnimationUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
         @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
+        public void onAnimationUpdate(@NonNull ValueAnimator animation) {
             if (!isStopped) {
                 rightHeartX = (Float) animation.getAnimatedValue(POSITION_X);
                 rightHeartY = (Float) animation.getAnimatedValue(POSITION_Y);
@@ -183,7 +185,7 @@ public class HeartView extends View {
 // #MARK - Override Methods
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
         canvas.save();
         if (this.width != this.height) {
@@ -218,7 +220,7 @@ public class HeartView extends View {
         float sizeOffset = (float) (width * 0.145);
         float xOffset = (float) (width * 0.075);
         float yOffset = (float) (height * 0.075);
-        rect.set(width / 4 + xOffset, height / 4 + sizeOffset - yOffset, width - width / 4 - sizeOffset + xOffset, height - height / 4 - yOffset);
+        rect.set(width* 0.25f + xOffset, height* 0.25f + sizeOffset - yOffset, width - width* 0.25f - sizeOffset + xOffset, height - height* 0.25f - yOffset);
         canvas.rotate(-45f, rect.centerX(), rect.centerY());
         canvas.drawRect(rect, rectPaint);
         canvas.rotate(45f, rect.centerX(), rect.centerY());
@@ -233,14 +235,14 @@ public class HeartView extends View {
 
         Path path = new Path();
         path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(width / 2, height / 4);
-        path.lineTo(width / 4, height / 2);
-        path.moveTo(width / 4, height / 2);
-        path.lineTo(width / 2, height - height / 4);
-        path.moveTo(width / 2, height - height / 4);
-        path.lineTo(width - width / 4, height / 2);
-        path.moveTo(width - width / 4, height / 2);
-        path.lineTo(width / 2, height / 4);
+        path.moveTo(width* 0.5f, height* 0.25f);
+        path.lineTo(width* 0.25f, height* 0.5f);
+        path.moveTo(width* 0.25f, height* 0.5f);
+        path.lineTo(width* 0.5f, height - height* 0.25f);
+        path.moveTo(width* 0.5f, height - height* 0.25f);
+        path.lineTo(width - width* 0.25f, height* 0.5f);
+        path.moveTo(width - width* 0.25f, height* 0.5f);
+        path.lineTo(width* 0.5f, height* 0.25f);
         path.close();
         canvas.drawPath(path, paint);
     }

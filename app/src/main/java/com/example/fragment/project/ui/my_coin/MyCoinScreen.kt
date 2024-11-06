@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +34,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -90,7 +91,8 @@ fun MyCoinScreen(
         topBar = {
             Box(
                 modifier = Modifier
-                    .background(colorResource(R.color.theme))
+                    .background(WanTheme.theme)
+                    .statusBarsPadding()
                     .fillMaxWidth()
                     .height(titleBarSize + targetHeight * targetPercent.value)
             ) {
@@ -101,7 +103,7 @@ fun MyCoinScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        tint = colorResource(R.color.white)
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
                 IconButton(
@@ -114,7 +116,7 @@ fun MyCoinScreen(
                         painter = painterResource(R.mipmap.ic_rank),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = colorResource(R.color.white)
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
                 Text(
@@ -128,7 +130,7 @@ fun MyCoinScreen(
                         }
                         .align(Alignment.Center),
                     fontSize = 16.sp,
-                    color = colorResource(R.color.text_fff),
+                    color = MaterialTheme.colorScheme.secondary,
                 )
                 Text(
                     text = uiState.userCoinResult.coinCount,
@@ -141,7 +143,7 @@ fun MyCoinScreen(
                         }
                         .align(Alignment.Center),
                     fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
-                    color = colorResource(R.color.text_fff),
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
@@ -160,7 +162,7 @@ fun MyCoinScreen(
         ) { _, item ->
             Row(
                 modifier = Modifier
-                    .background(colorResource(R.color.white))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .fillMaxWidth()
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -169,18 +171,18 @@ fun MyCoinScreen(
                     Text(
                         text = item.getTitle(),
                         fontSize = 14.sp,
-                        color = colorResource(R.color.text_666),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                     Text(
                         text = item.getTime(),
                         fontSize = 14.sp,
-                        color = colorResource(R.color.text_999),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                 }
                 Text(
                     text = item.coinCount,
                     fontSize = 14.sp,
-                    color = colorResource(R.color.orange),
+                    color = WanTheme.orange,
                 )
             }
             HorizontalDivider()

@@ -9,4 +9,5 @@ data class History(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "key") val key: String,
     @ColumnInfo(name = "value") val value: String,
+    @ColumnInfo(name = "url") val url: String = "",
 )

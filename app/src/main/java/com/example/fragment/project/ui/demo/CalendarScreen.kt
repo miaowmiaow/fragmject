@@ -26,7 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -55,10 +55,10 @@ fun CalendarScreen() {
                         .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardColors(
-                        containerColor = colorResource(id = R.color.theme),
-                        contentColor = colorResource(id = R.color.theme),
-                        disabledContainerColor = colorResource(id = R.color.theme_orange),
-                        disabledContentColor = colorResource(id = R.color.theme_orange),
+                        containerColor = WanTheme.theme,
+                        contentColor = WanTheme.theme,
+                        disabledContainerColor = WanTheme.orange,
+                        disabledContentColor = WanTheme.orange,
                     )
                 ) {
                     Column(
@@ -91,7 +91,6 @@ fun CalendarScreen() {
                                 Text(
                                     text = "取消",
                                     fontSize = 14.sp,
-                                    color = colorResource(R.color.text_999)
                                 )
                             }
                             TextButton(
@@ -104,7 +103,6 @@ fun CalendarScreen() {
                                 Text(
                                     text = "确定",
                                     fontSize = 14.sp,
-                                    color = colorResource(R.color.text_999)
                                 )
                             }
                         }
@@ -125,8 +123,8 @@ fun CalendarScreen() {
             },
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = colorResource(R.color.theme_orange),
-                contentColor = colorResource(R.color.white)
+                containerColor = WanTheme.orange,
+                contentColor = Color.White
             ),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(15.dp),

@@ -52,9 +52,7 @@ fun ProjectScreen(
                 .height(45.dp),
             onClick = { scope.launch { pagerState.animateScrollToPage(it) } },
         )
-        LoadingContent(
-            isLoading = projectTreeUiState.isLoading,
-        ) {
+        LoadingContent(isLoading = projectTreeUiState.isLoading) {
             HorizontalPager(state = pagerState) { page ->
                 val pageCid = projectTreeUiState.result[page].id
                 val projectUiState by projectViewModel.uiState.collectAsStateWithLifecycle()

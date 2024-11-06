@@ -16,6 +16,7 @@ data class User @JvmOverloads constructor(
     @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "username") val username: String,
     @ColumnInfo(name = "nickname") val nickname: String,
+    @ColumnInfo(name = "dark_theme") var darkTheme: Boolean,
     @Ignore val token: String = "",
     @Ignore val password: String = "",
     @Ignore val admin: String = "",

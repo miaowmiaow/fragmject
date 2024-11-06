@@ -5,8 +5,6 @@ import com.example.fragment.project.data.HotKey
 import com.example.fragment.project.data.HotKeyList
 import com.example.fragment.project.data.Tree
 import com.example.fragment.project.data.TreeList
-import com.example.fragment.project.database.user.User
-import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
@@ -20,9 +18,20 @@ import kotlinx.coroutines.launch
 data class WanUiState(
     var hotKeyResult: List<HotKey> = ArrayList(),
     var treeResult: List<Tree> = ArrayList(),
-    var user: User? = null,
-    var updateTime: Long = 0
-)
+    var isLoading: Boolean = false,
+) {
+
+    fun getTree(cid: String): Triple<Int, String, List<Tree>> {
+        treeResult.forEach { tree ->
+            tree.children?.forEachIndexed { index, data ->
+                if (data.id == cid) {
+                    return Triple(index, tree.name, tree.children)
+                }
+            }
+        }
+        return Triple(0, "体系", listOf())
+    }
+}
 
 class WanViewModel : BaseViewModel() {
 
@@ -31,19 +40,20 @@ class WanViewModel : BaseViewModel() {
     val uiState: StateFlow<WanUiState> = _uiState.asStateFlow()
 
     init {
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
             val hotKeyList = async { getHotKeyList() }
             val treeList = async { getTreeList() }
-            WanHelper.getUser().collect { user ->
-                _uiState.update { state ->
-                    hotKeyList.await().data?.let { data ->
-                        state.hotKeyResult = data
-                    }
-                    treeList.await().data?.let { data ->
-                        state.treeResult = data
-                    }
-                    state.copy(user = user, updateTime = System.nanoTime())
+            _uiState.update { state ->
+                hotKeyList.await().data?.let { data ->
+                    state.hotKeyResult = data
                 }
+                treeList.await().data?.let { data ->
+                    state.treeResult = data
+                }
+                state.copy(isLoading = false)
             }
         }
     }

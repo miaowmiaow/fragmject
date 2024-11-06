@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -25,11 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.WheelPicker
 import kotlinx.coroutines.launch
@@ -45,7 +45,7 @@ fun WheelPickerScreen() {
         Box(modifier = Modifier.weight(1f))
         Row(
             Modifier
-                .background(colorResource(R.color.white))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -57,11 +57,11 @@ fun WheelPickerScreen() {
                     .height(25.dp),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(R.color.gray),
-                    contentColor = colorResource(R.color.text_666)
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ),
                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, colorResource(R.color.gray)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
                 contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
             ) {
                 Text(text = "取消", fontSize = 13.sp)
@@ -80,11 +80,11 @@ fun WheelPickerScreen() {
                     .height(25.dp),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(R.color.theme_orange),
-                    contentColor = colorResource(R.color.text_fff)
+                    containerColor = WanTheme.orange,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, colorResource(R.color.gray)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
                 contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
             ) {
                 Text(text = "确定", fontSize = 13.sp)
@@ -93,7 +93,7 @@ fun WheelPickerScreen() {
         HorizontalDivider()
         Box(
             modifier = Modifier
-                .background(colorResource(R.color.white))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
@@ -142,13 +142,13 @@ fun WheelPickerScreen() {
             }
             Column(Modifier.height(175.dp)) {
                 val whiteMaskModifier = Modifier
-                    .background(colorResource(R.color.bb_white))
+                    .background(Color(0xBBFFFFFF))
                     .fillMaxWidth()
                     .weight(1f)
                 Spacer(whiteMaskModifier)
                 Spacer(
                     Modifier
-                        .background(colorResource(R.color.one_b_black), RoundedCornerShape(5.dp))
+                        .background(Color(0x1B000000), RoundedCornerShape(5.dp))
                         .fillMaxWidth()
                         .height(30.dp)
                 )

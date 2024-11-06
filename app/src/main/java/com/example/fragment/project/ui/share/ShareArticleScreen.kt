@@ -1,8 +1,6 @@
 package com.example.fragment.project.ui.share
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -37,8 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -60,7 +58,6 @@ fun ShareArticleScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
@@ -69,10 +66,8 @@ fun ShareArticleScreen(
     var linkText by rememberSaveable { mutableStateOf("https://code.juejin.cn/pen/7143888053151465480") }
     LaunchedEffect(uiState.message) {
         if (uiState.message.isNotBlank()) {
-            if (context is AppCompatActivity) {
-                snackbarHostState.showSnackbar(uiState.message)
-                viewModel.resetMessage()
-            }
+            snackbarHostState.showSnackbar(uiState.message)
+            viewModel.resetMessage()
         }
     }
     Scaffold(
@@ -85,7 +80,7 @@ fun ShareArticleScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        tint = colorResource(R.color.white)
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
             }, actions = {
@@ -104,7 +99,7 @@ fun ShareArticleScreen(
                         painter = painterResource(R.mipmap.ic_browser),
                         contentDescription = null,
                         modifier = Modifier.padding(8.dp),
-                        tint = colorResource(R.color.white)
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
             })
@@ -114,7 +109,6 @@ fun ShareArticleScreen(
         LoadingContent(uiState.isLoading) {
             Box(
                 modifier = Modifier
-                    .background(colorResource(R.color.white))
                     .padding(innerPadding),
             ) {
                 Column(
@@ -126,7 +120,6 @@ fun ShareArticleScreen(
                     Text(
                         text = "文章标题",
                         fontSize = 14.sp,
-                        color = colorResource(R.color.text_666),
                         modifier = Modifier
                     )
                     Spacer(Modifier.height(15.dp))
@@ -136,14 +129,12 @@ fun ShareArticleScreen(
                         onClear = { titleText = "" },
                         modifier = Modifier.height(45.dp),
                         textStyle = TextStyle.Default.copy(
-                            color = colorResource(R.color.text_333),
                             fontSize = 14.sp,
-                            background = colorResource(R.color.transparent),
+                            background = Color.Transparent,
                         ),
                         placeholder = {
                             Text(
                                 text = "请输入文章标题",
-                                color = colorResource(R.color.text_ccc),
                                 fontSize = 14.sp,
                             )
                         },
@@ -151,15 +142,14 @@ fun ShareArticleScreen(
                             imeAction = ImeAction.Next
                         ),
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = colorResource(id = R.color.theme),
-                            unfocusedIndicatorColor = colorResource(id = R.color.theme),
+                            focusedIndicatorColor = WanTheme.theme,
+                            unfocusedIndicatorColor = WanTheme.theme,
                         ),
                     )
                     Spacer(Modifier.height(15.dp))
                     Text(
                         text = "文章链接",
                         fontSize = 14.sp,
-                        color = colorResource(R.color.text_666),
                         modifier = Modifier
                     )
                     Spacer(Modifier.height(15.dp))
@@ -169,14 +159,12 @@ fun ShareArticleScreen(
                         onClear = { linkText = "" },
                         modifier = Modifier.height(45.dp),
                         textStyle = TextStyle.Default.copy(
-                            color = colorResource(R.color.text_333),
                             fontSize = 14.sp,
-                            background = colorResource(R.color.transparent),
+                            background = Color.Transparent,
                         ),
                         placeholder = {
                             Text(
                                 text = "请输入文章链接",
-                                color = colorResource(R.color.text_ccc),
                                 fontSize = 14.sp,
                             )
                         },
@@ -184,14 +172,14 @@ fun ShareArticleScreen(
                             imeAction = ImeAction.Next
                         ),
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = colorResource(id = R.color.theme),
-                            unfocusedIndicatorColor = colorResource(id = R.color.theme),
+                            focusedIndicatorColor = WanTheme.theme,
+                            unfocusedIndicatorColor = WanTheme.theme,
                         ),
                     )
                     Spacer(Modifier.height(15.dp))
                     Text(
                         text = "记得点击右上角按钮检查链接哦",
-                        color = colorResource(R.color.theme_orange),
+                        color = WanTheme.orange,
                         fontSize = 12.sp,
                     )
                     Spacer(Modifier.height(20.dp))
@@ -215,10 +203,10 @@ fun ShareArticleScreen(
                             .fillMaxWidth(0.8f)
                             .align(Alignment.CenterHorizontally),
                         shape = RoundedCornerShape(5.dp),
-                        border = BorderStroke(1.dp, colorResource(R.color.theme)),
+                        border = BorderStroke(1.dp, WanTheme.theme),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.theme),
-                            contentColor = colorResource(R.color.white)
+                            containerColor = WanTheme.theme,
+                            contentColor = MaterialTheme.colorScheme.secondary
                         ),
                         contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
                     ) {
@@ -230,27 +218,22 @@ fun ShareArticleScreen(
                     Spacer(Modifier.weight(1f))
                     Text(
                         text = "1. 只要是任何好文都可以分享哈，并不一定要是原创！投递的文章会进入广场 tab;",
-                        color = colorResource(R.color.text_999),
                         fontSize = 12.sp,
                     )
                     Text(
                         text = "2. CSDN，掘金，简书等官方博客站点会直接通过，不需要审核;",
-                        color = colorResource(R.color.text_999),
                         fontSize = 12.sp,
                     )
                     Text(
                         text = "3. 其他个人站点会进入审核阶段，不要投递任何无效链接，否则可能会对你的账号产生一定影响;",
-                        color = colorResource(R.color.text_999),
                         fontSize = 12.sp,
                     )
                     Text(
                         text = "4. 如果你发现错误，可以提交日志，让我们一起使网站变得更好。",
-                        color = colorResource(R.color.text_999),
                         fontSize = 12.sp,
                     )
                     Text(
                         text = "5. 由于本站为个人开发与维护，会尽力保证24小时内审核，当然有可能哪天太累，会延期，请保持佛系...",
-                        color = colorResource(R.color.text_999),
                         fontSize = 12.sp,
                     )
                 }

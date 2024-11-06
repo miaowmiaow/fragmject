@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -43,7 +42,7 @@ fun AnimatedContentScreen() {
     var expanded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
-            .background(colorResource(R.color.blue))
+            .background(Color(0xFF508CEE))
             .animateContentSize()
             .height(if (expanded) 400.dp else 200.dp)
             .fillMaxWidth()
@@ -76,7 +75,7 @@ fun AnimatedContentScreen() {
             .offset {
                 offset
             }
-            .background(colorResource(R.color.yellow))
+            .background(Color(0xFFFFB636))
             .size(100.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

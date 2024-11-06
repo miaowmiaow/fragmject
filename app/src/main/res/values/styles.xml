@@ -1,13 +1,18 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.Wan" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:statusBarColor">@color/theme</item>
-        <item name="android:windowFullscreen">false</item>
-        <item name="android:windowBackground">@color/background</item>
+    <!-- Allows us to override night specific attributes in the
+     values-night folder. -->
+    <style name="NightAdjusted.Theme.Nia" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- The final theme we use -->
+    <style name="Theme.Nia" parent="NightAdjusted.Theme.Nia" />
+
+    <style name="NightAdjusted.Theme.Splash" parent="Theme.SplashScreen">
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 
-    <style name="Theme.Wan.Splash" parent="Theme.Wan">
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowBackground">@drawable/splash_bg</item>
+    <style name="Theme.Nia.Splash" parent="NightAdjusted.Theme.Splash">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_bg</item>
+        <item name="postSplashScreenTheme">@style/Theme.Nia</item>
     </style>
 </resources>

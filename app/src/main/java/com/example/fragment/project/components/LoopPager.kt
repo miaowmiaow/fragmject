@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.launch
 import java.util.Timer
 import java.util.TimerTask
@@ -86,9 +87,9 @@ fun <T> LoopHorizontalPager(
                 repeat(pageCount) { iteration ->
                     val currentPage = (pagerState.currentPage - startIndex).floorMod(pageCount)
                     val color = if (currentPage == iteration)
-                        colorResource(R.color.orange)
+                        WanTheme.orange
                     else
-                        colorResource(R.color.theme)
+                        WanTheme.theme
                     Box(
                         modifier = Modifier
                             .size(10.dp)

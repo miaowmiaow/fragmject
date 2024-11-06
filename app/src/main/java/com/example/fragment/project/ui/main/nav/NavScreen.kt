@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,14 +40,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
@@ -135,14 +134,14 @@ fun NavLinkContent(
                                     pagerState.scrollToPage(index)
                                 }
                             }
-                            .background(colorResource(if (index == pagerState.currentPage) R.color.background else R.color.white))
+                            .background(if (index == pagerState.currentPage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer)
                             .fillMaxWidth()
                             .height(45.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = item.name,
-                            color = colorResource(id = R.color.text_333),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -167,8 +166,8 @@ fun NavLinkContent(
                                 onClick = { onNavigateToWeb(it.link) },
                                 shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.gray_e5),
-                                    contentColor = colorResource(R.color.text_666)
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                                 contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
@@ -205,17 +204,16 @@ fun NavSystemContent(
                     Text(
                         text = it.name,
                         modifier = Modifier
-                            .background(colorResource(R.color.background))
+                            .background(MaterialTheme.colorScheme.background)
                             .fillMaxWidth()
                             .padding(15.dp, 5.dp, 15.dp, 5.dp),
-                        color = colorResource(R.color.text_666),
                         fontSize = 13.sp
                     )
                 }
                 item {
                     FlowRow(
                         modifier = Modifier
-                            .background(colorResource(R.color.background))
+                            .background(MaterialTheme.colorScheme.background)
                             .fillMaxWidth()
                     ) {
                         it.children?.forEach { children ->
@@ -224,8 +222,8 @@ fun NavSystemContent(
                                     onClick = { onNavigateToSystem(children.id) },
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = colorResource(R.color.gray_e5),
-                                        contentColor = colorResource(R.color.text_666)
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
                                     elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                                     contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)

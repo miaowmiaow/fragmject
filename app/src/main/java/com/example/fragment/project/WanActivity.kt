@@ -4,27 +4,33 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.fragment.project.database.user.User
 import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
+import kotlinx.coroutines.launch
 
-class WanActivity : AppCompatActivity() {
+class WanActivity : ComponentActivity() {
 
+    private var data by mutableStateOf<Uri?>(null)
+    private var user by mutableStateOf<User?>(null)
     private var exitTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        setTheme(R.style.Theme_Wan)
-        setContentView(parseScheme(intent.data))
-        //设置显示模式
-        WanHelper.getUiMode { mode ->
-            if (mode != AppCompatDelegate.getDefaultNightMode()) {
-                AppCompatDelegate.setDefaultNightMode(mode)
-            }
-        }
+        enableEdgeToEdge()
         //双击返回键回退桌面
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -37,13 +43,28 @@ class WanActivity : AppCompatActivity() {
                 }
             }
         })
-        //WebView预创建
-        WebViewManager.prepare(applicationContext)
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WanHelper.getUser().collect {
+                    user = it
+                }
+            }
+        }
+        setContent {
+            val darkTheme = user?.darkTheme ?: false
+            // 设置状态栏为亮色模式，字体变为深色
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+            insetsController.isAppearanceLightStatusBars = false
+            insetsController.isAppearanceLightNavigationBars = !darkTheme //设置导航栏亮起
+            WanTheme(darkTheme) {
+                WanNavGraph(parseScheme(data ?: intent.data), user)
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setContentView(parseScheme(intent.data))
+        data = intent.data
     }
 
     override fun onDestroy() {
@@ -65,14 +86,6 @@ class WanActivity : AppCompatActivity() {
                 uri.path?.substring(1)
 
             else -> null
-        }
-    }
-
-    private fun setContentView(route: String?) {
-        setContent {
-            WanTheme {
-                WanNavGraph(route)
-            }
         }
     }
 

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +58,7 @@ fun RankScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                 },
@@ -71,7 +71,7 @@ fun RankScreen(
                             painter = painterResource(R.mipmap.ic_rule),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
@@ -91,7 +91,7 @@ fun RankScreen(
         ) { _, item ->
             Row(
                 modifier = Modifier
-                    .background(colorResource(R.color.white))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .fillMaxWidth()
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -111,13 +111,13 @@ fun RankScreen(
                     Text(
                         text = item.username,
                         fontSize = 14.sp,
-                        color = colorResource(R.color.text_666),
+                        color = MaterialTheme.colorScheme.onSecondary,
                     )
                 }
                 Text(
                     text = item.coinCount,
                     fontSize = 14.sp,
-                    color = colorResource(R.color.orange),
+                    color = WanTheme.orange,
                 )
             }
             HorizontalDivider()

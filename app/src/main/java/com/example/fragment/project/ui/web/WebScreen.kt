@@ -3,6 +3,7 @@ package com.example.fragment.project.ui.web
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
@@ -20,10 +22,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,10 +37,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.database.history.History
@@ -64,11 +68,21 @@ fun WebScreen(
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     val navigator = rememberWebViewNavigator()
     var bookmark by remember { mutableStateOf<History?>(null) }
-    LaunchedEffect(navigator.lastLoadedUrl) {
+    LaunchedEffect(navigator.loadedUrl) {
         WanHelper.getBookmark().collect {
             WanHelper.getBookmark().collect { bk ->
-                bookmark = bk.firstOrNull { it.value == navigator.lastLoadedUrl }
+                bookmark = bk.firstOrNull { it.url == navigator.loadedUrl }
             }
+        }
+    }
+    DisposableEffect(Unit) {
+        // 设置状态栏为亮色模式，字体变为深色
+        val activity = context as ComponentActivity
+        val window = activity.window
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.isAppearanceLightStatusBars = !insetsController.isAppearanceLightStatusBars
+        onDispose {
+            insetsController.isAppearanceLightStatusBars = !insetsController.isAppearanceLightStatusBars
         }
     }
     BottomSheetScaffold(
@@ -76,7 +90,7 @@ fun WebScreen(
             Column {
                 Row(
                     modifier = Modifier
-                        .background(colorResource(R.color.white))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
                         .height(50.dp)
                 ) {
                     Button(
@@ -85,8 +99,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(17.dp),
@@ -97,7 +111,7 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_back),
                             contentDescription = null,
-                            tint = colorResource(R.color.theme)
+                            tint = WanTheme.theme
                         )
                     }
                     Button(
@@ -106,8 +120,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(17.dp),
@@ -118,7 +132,7 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_forward),
                             contentDescription = null,
-                            tint = colorResource(R.color.theme)
+                            tint = WanTheme.theme
                         )
                     }
                     Button(
@@ -128,8 +142,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(15.dp),
@@ -140,7 +154,7 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_refresh),
                             contentDescription = null,
-                            tint = colorResource(R.color.theme)
+                            tint = WanTheme.theme
                         )
                     }
                     Button(
@@ -155,8 +169,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(16.dp),
@@ -167,19 +181,19 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_more),
                             contentDescription = null,
-                            tint = colorResource(R.color.theme)
+                            tint = WanTheme.theme
                         )
                     }
                 }
                 Row(
                     modifier = Modifier
-                        .background(colorResource(R.color.white))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
                         .height(50.dp)
                 ) {
                     Button(
                         onClick = {
                             try {
-                                val uri = Uri.parse(navigator.lastLoadedUrl)
+                                val uri = Uri.parse(navigator.loadedUrl)
                                 val intent = Intent(Intent.ACTION_VIEW, uri)
                                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                                 context.startActivity(intent)
@@ -190,8 +204,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(16.dp),
@@ -202,7 +216,7 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_browse),
                             contentDescription = null,
-                            tint = colorResource(R.color.theme)
+                            tint = WanTheme.theme
                         )
                     }
                     Button(
@@ -212,8 +226,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(16.dp),
@@ -224,7 +238,7 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_history),
                             contentDescription = null,
-                            tint = colorResource(R.color.theme)
+                            tint = WanTheme.theme
                         )
                     }
                     Button(
@@ -233,14 +247,17 @@ fun WebScreen(
                                 if (bookmark != null) {
                                     WanHelper.deleteHistory(bookmark!!)
                                 } else {
-                                    WanHelper.setBookmark(navigator.lastLoadedUrl ?: "")
+                                    WanHelper.setBookmark(
+                                        navigator.title.toString(),
+                                        navigator.loadedUrl.toString()
+                                    )
                                 }
                             }
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(16.dp),
@@ -251,13 +268,11 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_bookmark),
                             contentDescription = null,
-                            tint = colorResource(
-                                if (bookmark != null) {
-                                    R.color.theme_orange
-                                } else {
-                                    R.color.theme
-                                }
-                            )
+                            tint = if (bookmark != null) {
+                                WanTheme.orange
+                            } else {
+                                WanTheme.theme
+                            }
                         )
                     }
                     Button(
@@ -267,8 +282,8 @@ fun WebScreen(
                         },
                         shape = RoundedCornerShape(0),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.theme)
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            contentColor = WanTheme.theme
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
                         contentPadding = PaddingValues(16.dp),
@@ -279,13 +294,11 @@ fun WebScreen(
                         Icon(
                             painter = painterResource(R.mipmap.ic_web_debug),
                             contentDescription = null,
-                            tint = colorResource(
-                                if (navigator.injectVConsole) {
-                                    R.color.theme_orange
-                                } else {
-                                    R.color.theme
-                                }
-                            )
+                            tint = if (navigator.injectVConsole) {
+                                WanTheme.orange
+                            } else {
+                                WanTheme.theme
+                            }
                         )
                     }
                 }
@@ -300,23 +313,20 @@ fun WebScreen(
     ) { padding ->
         WebViewNavGraph(
             url = url,
-            navigator = navigator,
             modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .statusBarsPadding()
                 .fillMaxSize()
                 .padding(padding),
-            onLoadUrl = { url ->
-                scope.launch {
-                    WanHelper.setBrowseHistory(url)
-                }
-            },
-            onNavigateUp = onNavigateUp
+            navigator = navigator,
+            navigateUp = onNavigateUp,
         )
         AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
             LinearProgressIndicator(
                 progress = { navigator.progress },
                 modifier = Modifier.fillMaxWidth(),
-                color = colorResource(R.color.theme_orange),
-                trackColor = colorResource(R.color.white)
+                color = WanTheme.orange,
+                trackColor = MaterialTheme.colorScheme.surfaceContainer
             )
         }
     }

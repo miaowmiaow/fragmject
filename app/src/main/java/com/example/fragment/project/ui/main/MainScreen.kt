@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -39,16 +41,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.data.HotKey
-import com.example.fragment.project.data.Tree
 import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.my.MyScreen
 import com.example.fragment.project.ui.main.nav.NavScreen
@@ -57,8 +60,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
-    hotKeyData: List<HotKey>,
-    systemData: List<Tree>,
+    viewModel: WanViewModel = viewModel(),
     onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateToDemo: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
@@ -73,6 +75,7 @@ fun MainScreen(
     onNavigateToWeb: (url: String) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeListState = rememberLazyListState()
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = listOf(
@@ -84,7 +87,7 @@ fun MainScreen(
     Scaffold(
         topBar = {
             SearchBar(
-                data = hotKeyData,
+                data = uiState.hotKeyResult,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToShareArticle = onNavigateToShareArticle
             )
@@ -120,7 +123,7 @@ fun MainScreen(
 
                 1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
                     NavScreen(
-                        systemData = systemData,
+                        systemData = uiState.treeResult,
                         onNavigateToSystem = onNavigateToSystem,
                         onNavigateToWeb = onNavigateToWeb,
                     )
@@ -160,7 +163,8 @@ fun SearchBar(
 ) {
     Row(
         modifier = Modifier
-            .background(colorResource(R.color.theme))
+            .background(WanTheme.theme)
+            .statusBarsPadding()
             .fillMaxWidth()
             .height(45.dp)
             .padding(vertical = 8.dp),
@@ -171,7 +175,7 @@ fun SearchBar(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
                 .clipToBounds()
-                .background(colorResource(R.color.three_nine_gray))
+                .background(WanTheme.alphaGray)
                 .weight(1f)
                 .fillMaxHeight(),
             contentAlignment = Alignment.CenterStart
@@ -180,7 +184,7 @@ fun SearchBar(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
                 modifier = Modifier.padding(10.dp, 5.dp, 0.dp, 5.dp),
-                tint = colorResource(R.color.white)
+                tint = MaterialTheme.colorScheme.secondary
             )
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
@@ -193,7 +197,7 @@ fun SearchBar(
                         text = item.name,
                         modifier = Modifier.padding(start = 40.dp),
                         fontSize = 13.sp,
-                        color = colorResource(R.color.text_fff),
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             }
@@ -205,7 +209,7 @@ fun SearchBar(
             Icon(
                 Icons.Filled.Add,
                 contentDescription = null,
-                tint = colorResource(R.color.white)
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
     }
@@ -217,12 +221,8 @@ fun BottomNavigation(
     onClick: (index: Int) -> Unit
 ) {
     var currItem by rememberSaveable { mutableIntStateOf(0) }
-    NavigationBar(
-        modifier = Modifier.shadow(5.dp),
-        containerColor = colorResource(R.color.white)
-    ) {
+    NavigationBar(modifier = Modifier.shadow(5.dp)) {
         items.forEachIndexed { index, item ->
-            val colorId = if (currItem == index) item.selectedColor else item.unselectedColor
             NavigationBarItem(
                 selected = currItem == index,
                 onClick = {
@@ -248,17 +248,15 @@ fun BottomNavigation(
                             painter = painterResource(id = item.resId),
                             contentDescription = null,
                             modifier = Modifier.size(25.dp),
-                            tint = colorResource(colorId)
                         )
                     }
                 },
                 label = { Text(text = item.label, fontSize = 13.sp, lineHeight = 13.sp) },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color.Transparent,
-                    selectedIconColor = colorResource(item.selectedColor),
-                    selectedTextColor = colorResource(item.selectedColor),
-                    unselectedIconColor = colorResource(item.unselectedColor),
-                    unselectedTextColor = colorResource(item.unselectedColor)
+                    selectedIconColor = item.selectedColor,
+                    selectedTextColor = item.selectedColor,
+                    unselectedIconColor = item.unselectedColor,
+                    unselectedTextColor = item.unselectedColor
                 )
             )
         }
@@ -268,14 +266,14 @@ fun BottomNavigation(
 data class NavigationItem(
     val label: String,
     val resId: Int,
-    val selectedColor: Int = R.color.theme_orange,
-    val unselectedColor: Int = R.color.theme
+    val selectedColor: Color = WanTheme.orange,
+    val unselectedColor: Color = WanTheme.theme
 )
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun MainScreenPreview() {
-    WanTheme { MainScreen(hotKeyData = listOf(HotKey(name = "问答")), systemData = listOf()) }
+    WanTheme { MainScreen() }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)

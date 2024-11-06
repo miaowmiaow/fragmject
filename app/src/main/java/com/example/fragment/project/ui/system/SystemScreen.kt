@@ -31,7 +31,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.ArticleCard
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
@@ -40,9 +42,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SystemScreen(
-    title: String = "体系",
-    tabIndex: Int = 0,
-    systemData: List<Tree>,
+    cid: String,
+    wanViewModel: WanViewModel = viewModel(),
     systemViewModel: SystemViewModel = viewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateToLogin: () -> Unit = {},
@@ -52,11 +53,13 @@ fun SystemScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(tabIndex) { systemData.size }
+    val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
+    val treeData = wanUiState.getTree(cid)
+    val pagerState = rememberPagerState(treeData.first) { treeData.third.size }
     Scaffold(
         topBar = {
             TitleBar(
-                title = title,
+                title = treeData.second,
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -71,7 +74,7 @@ fun SystemScreen(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             TabBar(
-                data = systemData,
+                data = treeData.third,
                 dataMapping = { it.name },
                 pagerState = pagerState,
                 modifier = Modifier
@@ -83,41 +86,43 @@ fun SystemScreen(
                     }
                 },
             )
-            HorizontalPager(state = pagerState) { page ->
-                val pageCid = systemData[page].id
-                DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        if (event == Lifecycle.Event.ON_START) {
-                            systemViewModel.init(pageCid)
+            LoadingContent(isLoading = wanUiState.isLoading) {
+                HorizontalPager(state = pagerState) { page ->
+                    val pageCid = treeData.third[page].id
+                    DisposableEffect(lifecycleOwner) {
+                        val observer = LifecycleEventObserver { _, event ->
+                            if (event == Lifecycle.Event.ON_START) {
+                                systemViewModel.init(pageCid)
+                            }
+                        }
+                        lifecycleOwner.lifecycle.addObserver(observer)
+                        onDispose {
+                            lifecycleOwner.lifecycle.removeObserver(observer)
                         }
                     }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
+                    val listState = rememberLazyListState()
+                    SwipeRefreshBox(
+                        items = systemUiState.getResult(pageCid),
+                        isRefreshing = systemUiState.getRefreshing(pageCid),
+                        isLoading = systemUiState.getLoading(pageCid),
+                        isFinishing = systemUiState.getFinishing(pageCid),
+                        onRefresh = { systemViewModel.getHome(pageCid) },
+                        onLoad = { systemViewModel.getNext(pageCid) },
+                        modifier = Modifier.fillMaxSize(),
+                        listState = listState,
+                        contentPadding = PaddingValues(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        key = { _, item -> item.id },
+                    ) { _, item ->
+                        ArticleCard(
+                            data = item,
+                            onNavigateToLogin = onNavigateToLogin,
+                            onNavigateToUser = onNavigateToUser,
+                            onNavigateToSystem = onNavigateToSystem,
+                            onNavigateToWeb = onNavigateToWeb
+                        )
                     }
-                }
-                val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
-                val listState = rememberLazyListState()
-                SwipeRefreshBox(
-                    items = systemUiState.getResult(pageCid),
-                    isRefreshing = systemUiState.getRefreshing(pageCid),
-                    isLoading = systemUiState.getLoading(pageCid),
-                    isFinishing = systemUiState.getFinishing(pageCid),
-                    onRefresh = { systemViewModel.getHome(pageCid) },
-                    onLoad = { systemViewModel.getNext(pageCid) },
-                    modifier = Modifier.fillMaxSize(),
-                    listState = listState,
-                    contentPadding = PaddingValues(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    key = { _, item -> item.id },
-                ) { _, item ->
-                    ArticleCard(
-                        data = item,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToUser = onNavigateToUser,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToWeb = onNavigateToWeb
-                    )
                 }
             }
         }
@@ -128,5 +133,5 @@ fun SystemScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun SystemScreenPreview() {
-    WanTheme { SystemScreen(systemData = listOf()) }
+    WanTheme { SystemScreen("") }
 }

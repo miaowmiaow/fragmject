@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -16,9 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 
 @Composable
 fun <T> TabBar(
@@ -26,11 +25,10 @@ fun <T> TabBar(
     dataMapping: (T) -> String,
     pagerState: PagerState,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = colorResource(R.color.white),
-    selectedContentColor: Color = colorResource(R.color.theme),
-    unselectedContentColor: Color = colorResource(R.color.text_999),
-    indicatorColor: Color = colorResource(R.color.theme),
-    dividerColor: Color = colorResource(R.color.line),
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+    selectedContentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    unselectedContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    indicatorColor: Color = WanTheme.theme,
     onClick: (index: Int) -> Unit
 ) {
     Box(modifier = modifier) {
@@ -54,9 +52,6 @@ fun <T> TabBar(
                                 .background(indicatorColor)
                         )
                     }
-                },
-                divider = {
-                    HorizontalDivider(thickness = 2.dp, color = dividerColor)
                 },
             ) {
                 data.forEachIndexed { index, item ->

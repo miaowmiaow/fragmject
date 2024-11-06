@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,7 +58,7 @@ fun BrowseHistoryScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                 },
@@ -91,11 +91,11 @@ fun BrowseHistoryScreen(
                             modifier = Modifier
                                 .clickable {
                                     if (page == 0) {
-                                        viewModel.setBrowseHistory(item.value)
+                                        viewModel.setBrowseHistory(item.value, item.url)
                                     }
-                                    onNavigateToWeb(item.value)
+                                    onNavigateToWeb(item.url)
                                 }
-                                .background(colorResource(R.color.white))
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
                                 .height(45.dp)
                                 .padding(horizontal = 15.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -103,7 +103,6 @@ fun BrowseHistoryScreen(
                             Text(
                                 text = item.value,
                                 modifier = Modifier.weight(1f),
-                                color = colorResource(id = R.color.text_333),
                                 fontSize = 14.sp,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
@@ -123,13 +122,11 @@ fun BrowseHistoryScreen(
                                     }
                                     .size(30.dp)
                                     .padding(10.dp, 5.dp, 0.dp, 5.dp),
-                                tint = colorResource(
-                                    if (page == 0) {
-                                        R.color.pink
-                                    } else {
-                                        R.color.theme
-                                    }
-                                )
+                                tint = if (page == 0) {
+                                    WanTheme.pink
+                                } else {
+                                    WanTheme.theme
+                                }
                             )
                         }
                     }

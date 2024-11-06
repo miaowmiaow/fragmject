@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -42,9 +44,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -55,32 +57,34 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.ClearTextField
+import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.SwipeRefreshBox
-import com.example.fragment.project.data.HotKey
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
     key: String,
-    hotKeyData: List<HotKey>?,
-    viewModel: SearchViewModel = viewModel(),
+    wanViewModel: WanViewModel = viewModel(),
+    searchViewModel: SearchViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
     onNavigateToSystem: (cid: String) -> Unit = {},
     onNavigateToUser: (userId: String) -> Unit = {},
     onNavigateToWeb: (url: String) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
+    val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
     var searchText by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     BackHandler(searchText.isNotBlank()) {
         searchText = ""
-        viewModel.clearArticles()
+        searchViewModel.clearArticles()
     }
     LaunchedEffect(Unit) {
         delay(350)
@@ -93,7 +97,8 @@ fun SearchScreen(
         topBar = {
             Row(
                 modifier = Modifier
-                    .background(colorResource(R.color.theme))
+                    .background(WanTheme.theme)
+                    .statusBarsPadding()
                     .fillMaxWidth()
                     .height(45.dp)
                     .padding(15.dp, 8.dp, 0.dp, 8.dp),
@@ -104,24 +109,24 @@ fun SearchScreen(
                     onValueChange = { searchText = it },
                     onClear = {
                         searchText = ""
-                        viewModel.clearArticles()
+                        searchViewModel.clearArticles()
                     },
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
                         .clipToBounds()
-                        .background(colorResource(R.color.three_nine_gray))
+                        .background(WanTheme.alphaGray)
                         .weight(1f)
                         .fillMaxHeight()
                         .focusRequester(focusRequester),
                     textStyle = TextStyle.Default.copy(
-                        color = colorResource(R.color.text_fff),
+                        color = MaterialTheme.colorScheme.secondary,
                         fontSize = 13.sp,
-                        background = colorResource(R.color.transparent),
+                        background = Color.Transparent,
                     ),
                     placeholder = {
                         Text(
                             text = key.ifBlank { "多个关键词请用空格隔开" },
-                            color = colorResource(R.color.text_999),
+                            color = MaterialTheme.colorScheme.secondary,
                             fontSize = 13.sp,
                         )
                     },
@@ -130,24 +135,24 @@ fun SearchScreen(
                             imageVector = Icons.Default.Search,
                             contentDescription = null,
                             modifier = Modifier.padding(10.dp, 5.dp, 10.dp, 5.dp),
-                            tint = colorResource(R.color.white)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             if (searchText.isNotBlank()) {
-                                viewModel.getHome(searchText)
+                                searchViewModel.getHome(searchText)
                             } else {
-                                viewModel.clearArticles()
+                                searchViewModel.clearArticles()
                             }
                             focusManager.clearFocus()
                             keyboardController?.hide()
                         }
                     ),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = colorResource(id = R.color.transparent),
-                        unfocusedIndicatorColor = colorResource(id = R.color.transparent),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
                     )
                 )
                 Text(
@@ -156,112 +161,111 @@ fun SearchScreen(
                         .clickable { onNavigateUp() }
                         .padding(horizontal = 15.dp),
                     fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            if (!uiState.isSearch) {
-                Text(
-                    text = "大家都在搜",
-                    modifier = Modifier.padding(15.dp),
-                    fontSize = 16.sp,
-                    color = colorResource(R.color.text_333),
-                )
-                FlowRow(modifier = Modifier.fillMaxWidth()) {
-                    hotKeyData?.forEach {
-                        Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
-                            Button(
-                                onClick = {
-                                    focusManager.clearFocus()
-                                    searchText = it.name
-                                    viewModel.getHome(searchText)
-                                },
-                                modifier = Modifier
-                                    .height(40.dp)
-                                    .padding(top = 5.dp, bottom = 5.dp),
-                                shape = RoundedCornerShape(50),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.gray_e5),
-                                    contentColor = colorResource(R.color.text_666)
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
-                            ) {
-                                Text(
-                                    text = it.name,
-                                    fontSize = 13.sp
-                                )
-                            }
-                        }
-                    }
-                }
-                if (uiState.searchHistoryResult.isNotEmpty()) {
+        LoadingContent(isLoading = wanUiState.isLoading) {
+            Column(modifier = Modifier.padding(innerPadding)) {
+                if (!searchUiState.isSearch) {
                     Text(
-                        text = "历史搜索",
+                        text = "大家都在搜",
                         modifier = Modifier.padding(15.dp),
                         fontSize = 16.sp,
-                        color = colorResource(R.color.text_333),
                     )
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(1.dp),
-                    ) {
-                        itemsIndexed(uiState.searchHistoryResult) { _, item ->
-                            Row(
-                                modifier = Modifier
-                                    .clickable {
+                    FlowRow(modifier = Modifier.fillMaxWidth()) {
+                        wanUiState.hotKeyResult.forEach {
+                            Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
+                                Button(
+                                    onClick = {
                                         focusManager.clearFocus()
-                                        searchText = item.value
-                                        viewModel.getHome(searchText)
-                                    }
-                                    .background(colorResource(R.color.white))
-                                    .height(45.dp)
-                                    .padding(horizontal = 15.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = item.value,
-                                    modifier = Modifier.weight(1f),
-                                    color = colorResource(id = R.color.text_333),
-                                    fontSize = 14.sp,
-                                )
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_delete),
-                                    contentDescription = null,
+                                        searchText = it.name
+                                        searchViewModel.getHome(searchText)
+                                    },
                                     modifier = Modifier
-                                        .clickable {
-                                            viewModel.deleteHistory(item)
-                                        }
-                                        .size(30.dp)
-                                        .padding(10.dp, 5.dp, 0.dp, 5.dp),
-                                )
+                                        .height(40.dp)
+                                        .padding(top = 5.dp, bottom = 5.dp),
+                                    shape = RoundedCornerShape(50),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                                    contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
+                                ) {
+                                    Text(
+                                        text = it.name,
+                                        fontSize = 13.sp
+                                    )
+                                }
                             }
                         }
                     }
-                }
-            } else {
-                SwipeRefreshBox(
-                    items = uiState.articlesResult,
-                    isRefreshing = uiState.isRefreshing,
-                    isLoading = uiState.isLoading,
-                    isFinishing = uiState.isFinishing,
-                    onRefresh = { viewModel.getHome(searchText) },
-                    onLoad = { viewModel.getNext(searchText) },
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    key = { _, item -> item.id },
-                ) { _, item ->
-                    ArticleCard(
-                        data = item,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUser = onNavigateToUser,
-                        onNavigateToWeb = onNavigateToWeb,
-                        modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                    )
+                    if (searchUiState.searchHistoryResult.isNotEmpty()) {
+                        Text(
+                            text = "历史搜索",
+                            modifier = Modifier.padding(15.dp),
+                            fontSize = 16.sp,
+                        )
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(1.dp),
+                        ) {
+                            itemsIndexed(searchUiState.searchHistoryResult) { _, item ->
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            focusManager.clearFocus()
+                                            searchText = item.value
+                                            searchViewModel.getHome(searchText)
+                                        }
+                                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                                        .height(45.dp)
+                                        .padding(horizontal = 15.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = item.value,
+                                        modifier = Modifier.weight(1f),
+                                        fontSize = 14.sp,
+                                    )
+                                    Icon(
+                                        painter = painterResource(R.mipmap.ic_delete),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .clickable {
+                                                searchViewModel.deleteHistory(item)
+                                            }
+                                            .size(30.dp)
+                                            .padding(10.dp, 5.dp, 0.dp, 5.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    SwipeRefreshBox(
+                        items = searchUiState.articlesResult,
+                        isRefreshing = searchUiState.isRefreshing,
+                        isLoading = searchUiState.isLoading,
+                        isFinishing = searchUiState.isFinishing,
+                        onRefresh = { searchViewModel.getHome(searchText) },
+                        onLoad = { searchViewModel.getNext(searchText) },
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(top = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        key = { _, item -> item.id },
+                    ) { _, item ->
+                        ArticleCard(
+                            data = item,
+                            onNavigateToLogin = onNavigateToLogin,
+                            onNavigateToSystem = onNavigateToSystem,
+                            onNavigateToUser = onNavigateToUser,
+                            onNavigateToWeb = onNavigateToWeb,
+                            modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                        )
+                    }
                 }
             }
         }
@@ -271,5 +275,5 @@ fun SearchScreen(
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun SearchScreenPreview() {
-    WanTheme { SearchScreen(key = "", hotKeyData = listOf()) }
+    WanTheme { SearchScreen(key = "") }
 }

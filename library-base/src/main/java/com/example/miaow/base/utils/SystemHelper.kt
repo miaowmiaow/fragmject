@@ -34,7 +34,7 @@ fun Context.getAppName(): String {
     var name = ""
     try {
         packageManager.getPackageInfo(packageName, 0).let {
-            name = resources.getString(it.applicationInfo.labelRes)
+            name = resources.getString(it.applicationInfo!!.labelRes)
         }
     } catch (e: Exception) {
         Log.e(this.javaClass.name, e.message.toString())
@@ -49,7 +49,7 @@ fun Context.getVersionName(): String {
     var name = ""
     try {
         packageManager.getPackageInfo(packageName, 0).let {
-            name = it.versionName
+            name = it.versionName.toString()
         }
     } catch (e: Exception) {
         Log.e(this.javaClass.name, e.message.toString())

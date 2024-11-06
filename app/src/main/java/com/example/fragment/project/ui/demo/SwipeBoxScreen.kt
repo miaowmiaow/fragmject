@@ -13,17 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.SwipeBox
 
@@ -38,7 +37,7 @@ fun SwipeBoxScreen() {
         startAction = listOf {
             Box(
                 modifier = Modifier
-                    .background(colorResource(R.color.green))
+                    .background(WanTheme.green)
                     .fillMaxSize()
                     .clickable {
                         Toast
@@ -50,7 +49,7 @@ fun SwipeBoxScreen() {
                     text = "置顶",
                     modifier = Modifier.align(Alignment.Center),
                     style = TextStyle.Default.copy(
-                        color = colorResource(R.color.white),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 12.sp
                     )
                 )
@@ -59,7 +58,7 @@ fun SwipeBoxScreen() {
         startFillAction = {
             Box(
                 modifier = Modifier
-                    .background(colorResource(R.color.pink))
+                    .background(WanTheme.pink)
                     .fillMaxSize()
                     .clickable {
                         Toast
@@ -77,7 +76,7 @@ fun SwipeBoxScreen() {
                         text = "取消置顶",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = colorResource(R.color.white),
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 12.sp
                         )
                     )
@@ -88,7 +87,7 @@ fun SwipeBoxScreen() {
             {
                 Box(
                     modifier = Modifier
-                        .background(colorResource(R.color.blue))
+                        .background(WanTheme.blue)
                         .fillMaxSize()
                         .clickable {
                             Toast
@@ -100,7 +99,7 @@ fun SwipeBoxScreen() {
                         text = "标为未读",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = colorResource(R.color.white),
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 12.sp
                         )
                     )
@@ -109,7 +108,7 @@ fun SwipeBoxScreen() {
             {
                 Box(
                     modifier = Modifier
-                        .background(colorResource(R.color.yellow))
+                        .background(WanTheme.yellow)
                         .fillMaxSize()
                         .clickable {
                             Toast
@@ -121,7 +120,7 @@ fun SwipeBoxScreen() {
                         text = "不显示",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = colorResource(R.color.white),
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 12.sp
                         )
                     )
@@ -131,7 +130,7 @@ fun SwipeBoxScreen() {
         endFillAction = {
             Box(
                 modifier = Modifier
-                    .background(colorResource(R.color.red))
+                    .background(WanTheme.red)
                     .fillMaxSize()
                     .clickable {
                         Toast
@@ -149,7 +148,7 @@ fun SwipeBoxScreen() {
                         text = "删除",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = colorResource(R.color.white),
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 12.sp
                         )
                     )
@@ -160,18 +159,16 @@ fun SwipeBoxScreen() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(R.color.white))
+                .background(MaterialTheme.colorScheme.secondaryContainer)
                 .padding(20.dp, 10.dp)
         ) {
             Text(
                 text = "小美",
-                color = colorResource(R.color.text_333),
                 fontSize = 14.sp
             )
             Spacer(Modifier.size(5.dp))
             Text(
                 text = "我的电脑坏了，你能过来看看嘛。",
-                color = colorResource(R.color.text_666),
                 fontSize = 12.sp
             )
         }

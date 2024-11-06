@@ -16,14 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import com.example.fragment.project.R
+import com.example.fragment.project.WanTheme
 
 @Composable
 fun EllipsisText(
@@ -36,7 +35,7 @@ fun EllipsisText(
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     ellipsisText: String = "...全文",
-    ellipsisColor: Color = colorResource(R.color.blue),
+    ellipsisColor: Color = WanTheme.blue,
     onClick: () -> Unit = {},
     onEllipsisClick: () -> Unit = {},
 ) {

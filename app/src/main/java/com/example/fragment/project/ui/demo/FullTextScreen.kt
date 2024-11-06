@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -89,8 +90,8 @@ fun FullTextScreen() {
                             "I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation."
                         )
                     },
-                    color = colorResource(R.color.text_333),
-                    backgroundColor = colorResource(R.color.background),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
                     maxLines = if (expand2) Int.MAX_VALUE else 2,
                     onTextLayout = {

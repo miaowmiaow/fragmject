@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -17,9 +16,10 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -31,11 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
-import com.example.miaow.base.utils.PermissionsCallback
 import com.example.miaow.base.utils.injectVConsoleJs
-import com.example.miaow.base.utils.requestPermissions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -50,11 +46,11 @@ fun WebView(
     url: String,
     navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
-    goBack: () -> Unit = {},
-    goForward: (url: String?) -> Unit = {},
+    goBack: (url: String) -> Unit = {},
+    goForward: (url: String) -> Unit = {},
+    navigateUp: () -> Unit = {},
+    onReceivedTitle: (url: String?, title: String?) -> Unit = { _, _ -> },
     shouldOverrideUrl: (url: String) -> Unit = {},
-    onLoadUrl: (url: String) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
     var fullScreenLayer by remember { mutableStateOf<View?>(null) }
@@ -64,20 +60,26 @@ fun WebView(
     }
     webView?.let {
         LaunchedEffect(it, navigator) {
-            navigator.lastLoadedUrl = it.url
+            navigator.loadedUrl = it.url
             with(navigator) {
                 handleNavigationEvents(
                     onBack = {
                         if (it.canGoBack()) {
                             it.goBack()
-                        } else if (WebViewManager.back(it)) {
-                            goBack()
                         } else {
-                            onNavigateUp()
+                            val backUrl = WebViewManager.back(it)
+                            if (backUrl.isNotBlank()) {
+                                goBack(backUrl)
+                            } else {
+                                navigateUp()
+                            }
                         }
                     },
                     onForward = {
-                        goForward(WebViewManager.forward(it))
+                        val forwardUrl = WebViewManager.forward(it)
+                        if (forwardUrl.isNotBlank()) {
+                            goForward(forwardUrl)
+                        }
                     },
                     reload = {
                         it.reload()
@@ -86,9 +88,39 @@ fun WebView(
             }
         }
     }
+    val resourceToPermissionMap = mapOf(
+        "android.webkit.resource.VIDEO_CAPTURE" to Manifest.permission.CAMERA,
+        "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO
+    )
+    var permissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
+    val requestPermissions =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            permissionRequest?.apply {
+                var isGranted = true
+                result.entries.forEach { entry ->
+                    if (!entry.value) {
+                        isGranted = false
+                    }
+                }
+                if (isGranted) {
+                    grant(resources)
+                }
+            }
+        }
+    LaunchedEffect(permissionRequest) {
+        val permissions = mutableListOf<String>()
+        permissionRequest?.resources?.forEach { resource ->
+            resourceToPermissionMap[resource]?.let { permission ->
+                permissions.add(permission)
+            }
+        }
+        permissions.toTypedArray().apply {
+            requestPermissions.launch(this)
+        }
+    }
     AndroidView(
         factory = { context ->
-            val activity = context as AppCompatActivity
+            val activity = context as ComponentActivity
             val windowManager = activity.windowManager
             WebViewManager.obtain(context, url).apply {
                 setDownloadListener()
@@ -97,18 +129,6 @@ fun WebView(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                val forceDarkMode =
-                    AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    settings.isAlgorithmicDarkeningAllowed = forceDarkMode
-                } else {
-                    if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                        WebSettingsCompat.setForceDark(
-                            settings,
-                            if (forceDarkMode) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
-                        )
-                    }
-                }
                 webChromeClient = object : WebChromeClient() {
 
                     override fun onProgressChanged(view: WebView, newProgress: Int) {
@@ -118,6 +138,15 @@ fun WebView(
                             view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
                             injectState = true
                         }
+                    }
+
+                    override fun onReceivedTitle(view: WebView?, title: String?) {
+                        super.onReceivedTitle(view, title)
+                        if (view == null) {
+                            return
+                        }
+                        navigator.title = title
+                        onReceivedTitle(view.url, title)
                     }
 
                     override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
@@ -138,37 +167,7 @@ fun WebView(
                     }
 
                     override fun onPermissionRequest(request: PermissionRequest?) {
-                        if (request == null) {
-                            return
-                        }
-
-                        val resourceToPermissionMap = mapOf(
-                            "android.webkit.resource.VIDEO_CAPTURE" to Manifest.permission.CAMERA,
-                            "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO
-                        )
-
-                        val resources = mutableListOf<String>()
-                        val permissions = mutableListOf<String>()
-
-                        request.resources.forEach { resource ->
-                            resourceToPermissionMap[resource]?.let { permission ->
-                                resources.add(resource)
-                                permissions.add(permission)
-                            }
-                        }
-
-                        val resourcesArray = resources.toTypedArray()
-                        val permissionsArray = permissions.toTypedArray()
-
-                        activity.requestPermissions(permissionsArray, object : PermissionsCallback {
-                            override fun allow() {
-                                request.grant(resourcesArray)
-                            }
-
-                            override fun deny() {
-                            }
-
-                        })
+                        permissionRequest = request
                     }
                 }
                 webViewClient = object : WebViewClient() {
@@ -220,7 +219,7 @@ fun WebView(
 
                     override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                         super.onPageStarted(view, url, favicon)
-                        navigator.lastLoadedUrl = url
+                        navigator.loadedUrl = url
                         injectState = false
                     }
 
@@ -231,7 +230,6 @@ fun WebView(
                 }
                 if (URLUtil.isValidUrl(url) && !URLUtil.isValidUrl(this.url)) {
                     this.loadUrl(url)
-                    onLoadUrl(url)
                 }
             }.also { webView = it }
         },
@@ -254,7 +252,9 @@ class WebViewNavigator(
 
     private val navigationEvents: MutableSharedFlow<NavigationEvent> = MutableSharedFlow()
 
-    var lastLoadedUrl: String? by mutableStateOf(null)
+    var title: String? by mutableStateOf(null)
+        internal set
+    var loadedUrl: String? by mutableStateOf(null)
         internal set
     var injectVConsole: Boolean by mutableStateOf(false)
         internal set

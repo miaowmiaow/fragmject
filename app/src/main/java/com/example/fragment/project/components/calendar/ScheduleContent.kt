@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -103,7 +104,7 @@ internal fun ScheduleContent(
                 Text(
                     text = "没有日程",
                     fontSize = 14.sp,
-                    color = colorResource(R.color.text_999)
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         } else {
@@ -126,7 +127,7 @@ internal fun ScheduleContent(
                                     date.removeSchedule(item)
                                 }
                             }
-                            .background(colorResource(R.color.white))
+                            .background(MaterialTheme.colorScheme.surface)
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
@@ -141,7 +142,7 @@ internal fun ScheduleContent(
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .clipToBounds()
-                            .background(colorResource(R.color.white))
+                            .background(MaterialTheme.colorScheme.surface)
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {

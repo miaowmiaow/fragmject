@@ -5,11 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
@@ -58,7 +60,7 @@ fun BrowseHistoryScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },
@@ -96,17 +98,27 @@ fun BrowseHistoryScreen(
                                     onNavigateToWeb(item.url)
                                 }
                                 .background(MaterialTheme.colorScheme.surfaceContainer)
-                                .height(45.dp)
+                                .wrapContentHeight()
                                 .padding(horizontal = 15.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = item.value,
-                                modifier = Modifier.weight(1f),
-                                fontSize = 14.sp,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Column(modifier = Modifier.weight(1f).padding(vertical = 10.dp)) {
+                                Text(
+                                    text = item.value,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize = 16.sp,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(Modifier.size(2.dp))
+                                Text(
+                                    text = item.url,
+                                    color = MaterialTheme.colorScheme.onTertiary,
+                                    fontSize = 14.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                             Icon(
                                 painter = painterResource(
                                     if (page == 0) {

@@ -142,7 +142,7 @@ fun MoreIndicator(
         Text(
             text = if (finishing) "没有更多了！" else "正在加载中...",
             fontSize = 12.sp,
-            color = Color(0xFF272A36),
+            color = Color(0xFF999999),
             modifier = Modifier.align(Alignment.Center)
         )
     }

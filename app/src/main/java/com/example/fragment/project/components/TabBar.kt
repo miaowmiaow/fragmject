@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.fragment.project.WanTheme
 
 @Composable
 fun <T> TabBar(
@@ -26,9 +25,9 @@ fun <T> TabBar(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
-    selectedContentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    unselectedContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-    indicatorColor: Color = WanTheme.theme,
+    selectedContentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    unselectedContentColor: Color = MaterialTheme.colorScheme.onSecondary,
+    indicatorColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     onClick: (index: Int) -> Unit
 ) {
     Box(modifier = modifier) {

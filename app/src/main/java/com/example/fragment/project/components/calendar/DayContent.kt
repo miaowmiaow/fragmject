@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,8 +46,18 @@ internal fun DayContent(
             .then(
                 if (date.currMonth && selectedDay) {
                     Modifier
-                        .background(WanTheme.orange)
-                        .border(1.dp, WanTheme.orange, CircleShape)
+                        .background(
+                            if (date.isFestival()) {
+                                Color.Transparent
+                            } else {
+                                MaterialTheme.colorScheme.onSecondaryContainer
+                            }
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.onSecondaryContainer,
+                            CircleShape
+                        )
                 } else {
                     Modifier
                 }
@@ -57,7 +68,15 @@ internal fun DayContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
-                color = if (date.currMonth) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onTertiaryContainer,
+                color = if (date.currMonth) {
+                    if (selectedDay && !date.isFestival()) {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onPrimary
+                    }
+                } else {
+                    MaterialTheme.colorScheme.onTertiary
+                },
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -74,13 +93,17 @@ internal fun DayContent(
                     .fillMaxWidth()
                     .clipToBounds(),
                 color = if (date.currMonth && selectedDay) {
-                    MaterialTheme.colorScheme.onPrimary
+                    if (date.isFestival()) {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
                 } else if (date.currMonth && date.isFestival() && !isMonthFillMode) {
-                    WanTheme.orange
+                    MaterialTheme.colorScheme.onSecondaryContainer
                 } else if (!date.currMonth && date.isFestival() && !isMonthFillMode) {
                     WanTheme.alphaOrange
                 } else {
-                    MaterialTheme.colorScheme.onTertiaryContainer
+                    MaterialTheme.colorScheme.onTertiary
                 },
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
@@ -95,10 +118,10 @@ internal fun DayContent(
                     .fillMaxWidth()
                     .padding(horizontal = 3.dp, vertical = 1.dp)
                     .background(
-                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.surfaceContainerHigh,
                         RoundedCornerShape(3.dp)
                     ),
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 14.sp,
@@ -114,10 +137,10 @@ internal fun DayContent(
                         .fillMaxWidth()
                         .padding(horizontal = 3.dp, vertical = 1.dp)
                         .background(
-                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.surfaceContainerHigh,
                             RoundedCornerShape(3.dp)
                         ),
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 14.sp,

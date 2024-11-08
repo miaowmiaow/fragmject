@@ -89,7 +89,7 @@ fun ArticleCard(
             ) {
                 Text(
                     text = "${data.author}${data.shareUser}".ifBlank { "匿名" },
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 12.sp,
@@ -98,7 +98,7 @@ fun ArticleCard(
                 )
                 Text(
                     text = data.niceDate,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
                     maxLines = 1,
@@ -123,11 +123,11 @@ fun ArticleCard(
                         modifier = Modifier.height(20.dp),
                         shape = RoundedCornerShape(3.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = WanTheme.blue
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                        border = BorderStroke(1.dp, WanTheme.blue),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onTertiaryContainer),
                         contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
                     ) {
                         Text(
@@ -148,7 +148,7 @@ fun ArticleCard(
                 if (data.desc.isNotBlank()) {
                     Text(
                         text = data.titleHtml,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -156,7 +156,7 @@ fun ArticleCard(
                     )
                     Text(
                         text = data.descHtml,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
@@ -164,7 +164,7 @@ fun ArticleCard(
                 } else {
                     Text(
                         text = data.titleHtml,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 4,
@@ -200,7 +200,7 @@ fun ArticleCard(
                     Text(
                         text = "新  ",
                         modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
-                        color = WanTheme.blue,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
                         overflow = TextOverflow.Ellipsis,
@@ -210,7 +210,7 @@ fun ArticleCard(
                     Text(
                         text = "置顶  ",
                         modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
-                        color = WanTheme.orange,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
                         overflow = TextOverflow.Ellipsis,
@@ -219,7 +219,7 @@ fun ArticleCard(
                 Text(
                     text = data.chapterNameHtml,
                     modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = MaterialTheme.colorScheme.onTertiary,
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
                     maxLines = 1,

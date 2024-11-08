@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -58,7 +57,7 @@ internal fun ScheduleContent(
             .fillMaxWidth()
             .requiredHeight(height - LunarHeight - TipArrowHeight)
             .offset { IntOffset(x = 0, y = offsetProvider()) }
-            .background(colorResource(id = R.color.background))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Box(
             modifier = Modifier

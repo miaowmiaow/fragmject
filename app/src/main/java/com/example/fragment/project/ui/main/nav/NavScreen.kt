@@ -134,14 +134,14 @@ fun NavLinkContent(
                                     pagerState.scrollToPage(index)
                                 }
                             }
-                            .background(if (index == pagerState.currentPage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer)
+                            .background(if (index == pagerState.currentPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainer)
                             .fillMaxWidth()
                             .height(45.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = item.name,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -166,7 +166,7 @@ fun NavLinkContent(
                                 onClick = { onNavigateToWeb(it.link) },
                                 shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
@@ -222,7 +222,7 @@ fun NavSystemContent(
                                     onClick = { onNavigateToSystem(children.id) },
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
                                     elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),

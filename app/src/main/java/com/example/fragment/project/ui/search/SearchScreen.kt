@@ -97,7 +97,7 @@ fun SearchScreen(
         topBar = {
             Row(
                 modifier = Modifier
-                    .background(WanTheme.theme)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
                     .statusBarsPadding()
                     .fillMaxWidth()
                     .height(45.dp)
@@ -119,14 +119,14 @@ fun SearchScreen(
                         .fillMaxHeight()
                         .focusRequester(focusRequester),
                     textStyle = TextStyle.Default.copy(
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontSize = 13.sp,
                         background = Color.Transparent,
                     ),
                     placeholder = {
                         Text(
                             text = key.ifBlank { "多个关键词请用空格隔开" },
-                            color = MaterialTheme.colorScheme.secondary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 13.sp,
                         )
                     },
@@ -135,7 +135,7 @@ fun SearchScreen(
                             imageVector = Icons.Default.Search,
                             contentDescription = null,
                             modifier = Modifier.padding(10.dp, 5.dp, 10.dp, 5.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
@@ -161,7 +161,7 @@ fun SearchScreen(
                         .clickable { onNavigateUp() }
                         .padding(horizontal = 15.dp),
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
@@ -188,7 +188,7 @@ fun SearchScreen(
                                         .padding(top = 5.dp, bottom = 5.dp),
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
                                     elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),

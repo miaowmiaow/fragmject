@@ -25,7 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -163,7 +162,7 @@ fun SearchBar(
 ) {
     Row(
         modifier = Modifier
-            .background(WanTheme.theme)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .statusBarsPadding()
             .fillMaxWidth()
             .height(45.dp)
@@ -184,7 +183,7 @@ fun SearchBar(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
                 modifier = Modifier.padding(10.dp, 5.dp, 0.dp, 5.dp),
-                tint = MaterialTheme.colorScheme.secondary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
@@ -197,7 +196,7 @@ fun SearchBar(
                         text = item.name,
                         modifier = Modifier.padding(start = 40.dp),
                         fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
@@ -209,7 +208,7 @@ fun SearchBar(
             Icon(
                 Icons.Filled.Add,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
     }
@@ -252,12 +251,6 @@ fun BottomNavigation(
                     }
                 },
                 label = { Text(text = item.label, fontSize = 13.sp, lineHeight = 13.sp) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = item.selectedColor,
-                    selectedTextColor = item.selectedColor,
-                    unselectedIconColor = item.unselectedColor,
-                    unselectedTextColor = item.unselectedColor
-                )
             )
         }
     }

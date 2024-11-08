@@ -43,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.project.WanTheme
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
@@ -74,7 +73,7 @@ internal fun YearPicker(
         ) {
             Text(
                 text = "${year}年${month}月",
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -83,7 +82,7 @@ internal fun YearPicker(
                 Icons.Filled.ArrowDropDown,
                 contentDescription = "",
                 Modifier.rotate(if (visible) 180f else 0f),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                tint = MaterialTheme.colorScheme.onPrimary
             )
         }
         AnimatedVisibility(
@@ -126,10 +125,10 @@ internal fun YearPicker(
                                 visible = false
                             }
                             .background(
-                                if (localYear == year) WanTheme.theme else Color.Transparent,
+                                if (localYear == year) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent,
                                 RoundedCornerShape(50)
                             ),
-                        color = if (localYear == year) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = if (localYear == year) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary,
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )

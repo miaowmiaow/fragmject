@@ -57,11 +57,11 @@ fun WheelPickerScreen() {
                     .height(25.dp),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHigh),
                 contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
             ) {
                 Text(text = "取消", fontSize = 13.sp)
@@ -80,11 +80,11 @@ fun WheelPickerScreen() {
                     .height(25.dp),
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = WanTheme.orange,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.onSurface,
+                    contentColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
                 contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
             ) {
                 Text(text = "确定", fontSize = 13.sp)

@@ -58,7 +58,7 @@ fun RankScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },
@@ -71,7 +71,7 @@ fun RankScreen(
                             painter = painterResource(R.mipmap.ic_rule),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

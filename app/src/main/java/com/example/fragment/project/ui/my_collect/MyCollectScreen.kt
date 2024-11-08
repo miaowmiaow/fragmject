@@ -13,12 +13,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.SwipeRefreshBox
@@ -43,7 +41,7 @@ fun MyCollectScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },

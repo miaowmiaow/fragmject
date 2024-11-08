@@ -15,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
@@ -47,8 +46,8 @@ fun FullTextScreen() {
                             "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。"
                         )
                     },
-                    color = colorResource(R.color.text_333),
-                    backgroundColor = colorResource(R.color.background),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
                     maxLines = if (expand1) Int.MAX_VALUE else 2,
                     inlineContent = mapOf(
@@ -90,7 +89,7 @@ fun FullTextScreen() {
                             "I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation."
                         )
                     },
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
                     maxLines = if (expand2) Int.MAX_VALUE else 2,

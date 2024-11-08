@@ -103,7 +103,7 @@ fun MyCoinScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 IconButton(
@@ -116,7 +116,7 @@ fun MyCoinScreen(
                         painter = painterResource(R.mipmap.ic_rank),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Text(
@@ -130,7 +130,7 @@ fun MyCoinScreen(
                         }
                         .align(Alignment.Center),
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
                     text = uiState.userCoinResult.coinCount,
@@ -143,7 +143,7 @@ fun MyCoinScreen(
                         }
                         .align(Alignment.Center),
                     fontSize = 64.sp * targetPercent.value.coerceAtLeast(0.25f),
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
@@ -171,12 +171,12 @@ fun MyCoinScreen(
                     Text(
                         text = item.getTitle(),
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = MaterialTheme.colorScheme.onSecondary,
                     )
                     Text(
                         text = item.getTime(),
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        color = MaterialTheme.colorScheme.onTertiary,
                     )
                 }
                 Text(

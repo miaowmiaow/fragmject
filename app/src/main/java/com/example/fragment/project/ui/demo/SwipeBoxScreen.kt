@@ -49,7 +49,7 @@ fun SwipeBoxScreen() {
                     text = "置顶",
                     modifier = Modifier.align(Alignment.Center),
                     style = TextStyle.Default.copy(
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontSize = 12.sp
                     )
                 )
@@ -76,7 +76,7 @@ fun SwipeBoxScreen() {
                         text = "取消置顶",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 12.sp
                         )
                     )
@@ -99,7 +99,7 @@ fun SwipeBoxScreen() {
                         text = "标为未读",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 12.sp
                         )
                     )
@@ -120,7 +120,7 @@ fun SwipeBoxScreen() {
                         text = "不显示",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 12.sp
                         )
                     )
@@ -148,7 +148,7 @@ fun SwipeBoxScreen() {
                         text = "删除",
                         modifier = Modifier.align(Alignment.Center),
                         style = TextStyle.Default.copy(
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 12.sp
                         )
                     )

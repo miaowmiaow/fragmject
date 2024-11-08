@@ -111,7 +111,7 @@ fun UserScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Image(
@@ -140,7 +140,7 @@ fun UserScreen(
                         }
                         .align(Alignment.Center),
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
                     text = "积分:${uiState.coinResult.coinCount}",
@@ -156,7 +156,7 @@ fun UserScreen(
                         }
                         .align(Alignment.Center),
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }

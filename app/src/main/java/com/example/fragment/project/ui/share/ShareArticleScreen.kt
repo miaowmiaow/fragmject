@@ -80,7 +80,7 @@ fun ShareArticleScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }, actions = {
@@ -99,7 +99,7 @@ fun ShareArticleScreen(
                         painter = painterResource(R.mipmap.ic_browser),
                         contentDescription = null,
                         modifier = Modifier.padding(8.dp),
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             })
@@ -142,8 +142,8 @@ fun ShareArticleScreen(
                             imeAction = ImeAction.Next
                         ),
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = WanTheme.theme,
-                            unfocusedIndicatorColor = WanTheme.theme,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
                         ),
                     )
                     Spacer(Modifier.height(15.dp))
@@ -172,14 +172,14 @@ fun ShareArticleScreen(
                             imeAction = ImeAction.Next
                         ),
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = WanTheme.theme,
-                            unfocusedIndicatorColor = WanTheme.theme,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
                         ),
                     )
                     Spacer(Modifier.height(15.dp))
                     Text(
                         text = "记得点击右上角按钮检查链接哦",
-                        color = WanTheme.orange,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontSize = 12.sp,
                     )
                     Spacer(Modifier.height(20.dp))
@@ -203,10 +203,10 @@ fun ShareArticleScreen(
                             .fillMaxWidth(0.8f)
                             .align(Alignment.CenterHorizontally),
                         shape = RoundedCornerShape(5.dp),
-                        border = BorderStroke(1.dp, WanTheme.theme),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = WanTheme.theme,
-                            contentColor = MaterialTheme.colorScheme.secondary
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
                         contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
                     ) {

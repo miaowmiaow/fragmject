@@ -81,7 +81,7 @@ fun DemoScreen(
                         Icon(
                             Icons.Default.Menu,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },
@@ -90,7 +90,7 @@ fun DemoScreen(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

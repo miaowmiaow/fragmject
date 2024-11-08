@@ -84,7 +84,7 @@ fun SettingScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },
@@ -241,8 +241,8 @@ fun SettingScreen(
                             shape = RoundedCornerShape(5.dp),
                             border = BorderStroke(1.dp, WanTheme.theme),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = WanTheme.theme,
-                                contentColor = MaterialTheme.colorScheme.secondary
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             ),
                             contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
                         ) {

@@ -14,6 +14,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -109,7 +110,15 @@ fun DatePickerScreen() {
                     contentDescription = null,
                     Modifier.size(AssistChipDefaults.IconSize)
                 )
-            }
+            },
+            colors = AssistChipDefaults.assistChipColors(
+                labelColor = MaterialTheme.colorScheme.primaryContainer,
+                leadingIconContentColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            border = AssistChipDefaults.assistChipBorder(
+                true,
+                borderColor = MaterialTheme.colorScheme.primaryContainer
+            )
         )
         AssistChip(
             onClick = {
@@ -123,7 +132,15 @@ fun DatePickerScreen() {
                     contentDescription = null,
                     Modifier.size(AssistChipDefaults.IconSize)
                 )
-            }
+            },
+            colors = AssistChipDefaults.assistChipColors(
+                labelColor = MaterialTheme.colorScheme.primaryContainer,
+                leadingIconContentColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            border = AssistChipDefaults.assistChipBorder(
+                true,
+                borderColor = MaterialTheme.colorScheme.primaryContainer
+            )
         )
     }
 }

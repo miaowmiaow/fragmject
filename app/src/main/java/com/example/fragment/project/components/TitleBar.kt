@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragment.project.WanTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +32,6 @@ fun TitleBar(
             ) {
                 Text(
                     text = title,
-                    color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.align(Alignment.Center),
                     fontSize = 16.sp,
                     maxLines = 1,
@@ -42,14 +40,14 @@ fun TitleBar(
             }
         },
         modifier = modifier
-            .background(WanTheme.theme)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .statusBarsPadding()
             .height(45.dp),
         navigationIcon = navigationIcon,
         actions = actions,
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = WanTheme.theme,
-            titleContentColor = MaterialTheme.colorScheme.onPrimary
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     )
 }

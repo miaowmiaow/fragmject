@@ -19,7 +19,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
-import com.example.fragment.project.WanTheme
 
 @Composable
 fun EmptyContent(
@@ -40,12 +39,12 @@ fun EmptyContent(
                 onClick = onClick,
                 shape = RoundedCornerShape(10),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.background),
-                border = BorderStroke(1.dp, WanTheme.theme),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant),
             ) {
                 Text(
                     text = "重试",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

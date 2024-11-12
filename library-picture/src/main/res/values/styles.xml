@@ -1,0 +1,8 @@
+<resources>
+
+    <style name="Theme.Wan" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#272a36</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowBackground">#f5f5f5</item>
+    </style>
+</resources>

@@ -1,6 +1,10 @@
 package com.example.fragment.project.ui.demo
 
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,14 +21,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fragment.project.WanTheme
-import com.example.miaow.picture.selector.bean.MediaBean
-import com.example.miaow.picture.selector.dialog.PictureSelectorCallback
-import com.example.miaow.picture.selector.dialog.PictureSelectorDialog
+import com.example.miaow.picture.selector.PictureSelectorActivity
 
 @Composable
 fun PictureSelectorScreen() {
     val context = LocalContext.current
-    val activity = context as AppCompatActivity
+    val activity = context as ComponentActivity
+    val startForResult =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent = result.data
+                // Handle the Intent
+            }
+        }
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -32,13 +41,7 @@ fun PictureSelectorScreen() {
     ) {
         AssistChip(
             onClick = {
-                PictureSelectorDialog
-                    .newInstance()
-                    .setPictureSelectorCallback(object : PictureSelectorCallback {
-                        override fun onSelectedData(data: List<MediaBean>) {
-                        }
-                    })
-                    .show(activity.supportFragmentManager)
+                startForResult.launch(Intent(activity, PictureSelectorActivity::class.java))
             },
             label = { Text("打开相册") },
             leadingIcon = {

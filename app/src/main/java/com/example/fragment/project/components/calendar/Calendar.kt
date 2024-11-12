@@ -96,8 +96,8 @@ class CalendarState(
         addSchedule: (String) -> Unit = {},
     ): Nothing = withContext(Dispatchers.Main) {
         calendarEvents.collect { event ->
-            when (event) {
-                is CalendarEvent.Schedule -> addSchedule(event.text)
+            if (event is CalendarEvent.Schedule) {
+                addSchedule(event.text)
             }
         }
     }

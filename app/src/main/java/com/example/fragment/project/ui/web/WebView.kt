@@ -58,9 +58,8 @@ fun WebView(
     BackHandler(true) {
         navigator.navigateBack()
     }
-    webView?.let {
-        LaunchedEffect(it, navigator) {
-            navigator.loadedUrl = it.url
+    LaunchedEffect(webView, navigator) {
+        webView?.let {
             with(navigator) {
                 handleNavigationEvents(
                     onBack = {
@@ -86,8 +85,10 @@ fun WebView(
                     }
                 )
             }
+            navigator.loadedUrl = it.url
         }
     }
+
     val resourceToPermissionMap = mapOf(
         "android.webkit.resource.VIDEO_CAPTURE" to Manifest.permission.CAMERA,
         "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO

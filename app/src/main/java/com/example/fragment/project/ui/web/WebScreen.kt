@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
@@ -90,7 +90,7 @@ fun WebScreen(
     Box(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .systemBarsPadding()
+            .statusBarsPadding()
     ) {
         BottomSheetScaffold(
             sheetContent = {
@@ -100,16 +100,17 @@ fun WebScreen(
                             onClick = {
                                 navigator.navigateBack()
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 30.dp, top = 20.dp, end = 30.dp, bottom = 40.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_back),
@@ -121,16 +122,17 @@ fun WebScreen(
                             onClick = {
                                 navigator.navigateForward()
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 30.dp, top = 20.dp, end = 30.dp, bottom = 40.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_forward),
@@ -143,16 +145,17 @@ fun WebScreen(
                                 navigator.reload()
                                 scope.launch { bottomSheetState.partialExpand() }
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 28.dp, top = 18.dp, end = 28.dp, bottom = 38.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_refresh),
@@ -170,16 +173,17 @@ fun WebScreen(
                                     }
                                 }
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 30.dp, top = 20.dp, end = 30.dp, bottom = 40.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_more),
@@ -205,16 +209,17 @@ fun WebScreen(
                                     Log.e(this.javaClass.name, e.message.toString())
                                 }
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 28.dp, top = 18.dp, end = 28.dp, bottom = 38.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_browse),
@@ -227,16 +232,17 @@ fun WebScreen(
                                 onNavigateToBookmarkHistory()
                                 scope.launch { bottomSheetState.partialExpand() }
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 28.dp, top = 18.dp, end = 28.dp, bottom = 38.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_history),
@@ -257,16 +263,17 @@ fun WebScreen(
                                     }
                                 }
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 28.dp, top = 18.dp, end = 28.dp, bottom = 38.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_bookmark),
@@ -283,16 +290,17 @@ fun WebScreen(
                                 navigator.injectVConsole()
                                 scope.launch { bottomSheetState.partialExpand() }
                             },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .padding(bottom = 20.dp),
                             shape = RoundedCornerShape(0),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(start = 30.dp, top = 20.dp, end = 30.dp, bottom = 40.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
+                            contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
                         ) {
                             Icon(
                                 painter = painterResource(R.mipmap.ic_web_debug),
@@ -308,7 +316,7 @@ fun WebScreen(
                 }
             },
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 50.dp,
+            sheetPeekHeight = 80.dp,
             sheetShape = RoundedCornerShape(0.dp),
             sheetShadowElevation = 10.dp,
             sheetDragHandle = null,

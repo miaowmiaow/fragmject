@@ -52,7 +52,7 @@ fun DemoScreen(
         "全文控件",
         "侧滑控件",
         "申请权限",
-//        "调用相册",
+        "调用相册",
         "滚动示例",
         "拖动示例",
         "多点触控",
@@ -135,7 +135,7 @@ fun DemoScreen(
                         4 -> FullTextScreen()
                         5 -> SwipeBoxScreen()
                         6 -> PermissionScreen()
-//                        7 -> PictureSelectorScreen()
+                        7 -> PictureSelectorScreen()
                         8 -> ScrollableScreen()
                         9 -> DraggableScreen()
                         10 -> TransformableScreen()

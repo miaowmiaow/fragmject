@@ -31,9 +31,6 @@ class WanActivity : ComponentActivity() {
         val lss = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        lss.setKeepOnScreenCondition{
-            true
-        }
         //双击返回键回退桌面
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

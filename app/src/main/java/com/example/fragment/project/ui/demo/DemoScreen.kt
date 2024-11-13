@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 fun DemoScreen(
     onNavigateUp: () -> Unit = {}
 ) {
+    var showTitleBar by remember { mutableStateOf(true) }
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -60,41 +61,44 @@ fun DemoScreen(
         "列表重排",
         "网格重排",
         "网格选择",
+        "视频播放",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
         topBar = {
-            TitleBar(
-                title = "组件Demo",
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) {
-                                    drawerState.open()
-                                } else {
-                                    drawerState.close()
+            if(showTitleBar){
+                TitleBar(
+                    title = "组件Demo",
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    if (drawerState.isClosed) {
+                                        drawerState.open()
+                                    } else {
+                                        drawerState.close()
+                                    }
                                 }
                             }
+                        ) {
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
-                    ) {
-                        Icon(
-                            Icons.Default.Menu,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                    },
+                    actions = {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         ModalNavigationDrawer(
@@ -127,6 +131,7 @@ fun DemoScreen(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    showTitleBar = tabs.indexOf(selectedTab) != 15
                     when (tabs.indexOf(selectedTab)) {
                         0 -> DatePickerScreen()
                         1 -> CalendarScreen()
@@ -143,6 +148,7 @@ fun DemoScreen(
                         12 -> ColumnSortScreen()
                         13 -> GridSortScreen()
                         14 -> GridSelectScreen()
+                        15 -> ExoPlayerScreen()
                     }
                 }
             }

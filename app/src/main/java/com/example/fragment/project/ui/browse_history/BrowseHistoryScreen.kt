@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 fun BrowseHistoryScreen(
     viewModel: BrowseHistoryViewModel = viewModel(),
     onNavigateToWeb: (url: String) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
+    onNavigateUp: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()

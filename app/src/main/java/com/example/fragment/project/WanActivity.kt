@@ -28,7 +28,7 @@ class WanActivity : ComponentActivity() {
     private var exitTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val lss = installSplashScreen()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         //双击返回键回退桌面

@@ -232,7 +232,8 @@ fun WebView(
                 if (URLUtil.isValidUrl(url) && !URLUtil.isValidUrl(this.url)) {
                     this.loadUrl(url)
                 }
-            }.also { webView = it }
+                webView = this
+            }
         },
         modifier = modifier,
         onRelease = {

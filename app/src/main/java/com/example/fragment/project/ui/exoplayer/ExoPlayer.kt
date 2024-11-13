@@ -131,7 +131,7 @@ class ExoPlayerControl(
         data object Next : ControlEvent
     }
 
-    private val controlEventEvents: MutableSharedFlow<ControlEvent> = MutableSharedFlow()
+    private val controlEvents: MutableSharedFlow<ControlEvent> = MutableSharedFlow()
 
     @OptIn(FlowPreview::class)
     internal suspend fun handleControlEvents(
@@ -140,7 +140,7 @@ class ExoPlayerControl(
         onPrevious: () -> Unit = {},
         onNext: () -> Unit = {},
     ) = withContext(Dispatchers.Main) {
-        controlEventEvents.debounce(350).collect { event ->
+        controlEvents.debounce(350).collect { event ->
             when (event) {
                 ControlEvent.Play -> onPlay()
                 ControlEvent.Pause -> onPause()
@@ -151,19 +151,19 @@ class ExoPlayerControl(
     }
 
     fun play() {
-        scope.launch { controlEventEvents.emit(ControlEvent.Play) }
+        scope.launch { controlEvents.emit(ControlEvent.Play) }
     }
 
     fun pause() {
-        scope.launch { controlEventEvents.emit(ControlEvent.Pause) }
+        scope.launch { controlEvents.emit(ControlEvent.Pause) }
     }
 
     fun previous() {
-        scope.launch { controlEventEvents.emit(ControlEvent.Previous) }
+        scope.launch { controlEvents.emit(ControlEvent.Previous) }
     }
 
     fun next() {
-        scope.launch { controlEventEvents.emit(ControlEvent.Next) }
+        scope.launch { controlEvents.emit(ControlEvent.Next) }
     }
 }
 

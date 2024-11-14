@@ -7,12 +7,16 @@ import java.io.File
 
 object CacheUtils {
 
-    fun getDirPath(context: Context, name: String): String {
+    fun getDirFile(context: Context, name: String): File {
         return if (FileUtil.isSDCardAlive()) {
-            File(context.externalCacheDir, name).apply { mkdirs() }.absolutePath
+            File(context.externalCacheDir, name).apply { mkdirs() }
         } else {
-            File(context.cacheDir, name).apply { mkdirs() }.absolutePath
+            File(context.cacheDir, name).apply { mkdirs() }
         }
+    }
+
+    fun getDirPath(context: Context, name: String): String {
+        return getDirFile(context, name).absolutePath
     }
 
     suspend fun getTotalSize(context: Context): String {

@@ -4,6 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +19,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,8 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.fragment.project.components.StandardDialog
 import com.example.miaow.base.utils.injectVConsoleJs
+import com.example.miaow.base.utils.saveImagesToAlbum
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -55,6 +62,37 @@ fun WebView(
     var webView by remember { mutableStateOf<WebView?>(null) }
     var fullScreenLayer by remember { mutableStateOf<View?>(null) }
     var injectState by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var extra by remember { mutableStateOf<String?>(null) }
+    if (showDialog) {
+        val context = LocalContext.current
+        StandardDialog(
+            title = "提示",
+            text = "你希望保存该图片吗？",
+            confirmButton = {
+                extra?.let {
+                    if (URLUtil.isValidUrl(it)) {
+                        context.saveImagesToAlbum(it) { _, _ ->
+                            Toast.makeText(context, "保存图片成功", Toast.LENGTH_SHORT).show()
+                            showDialog = false
+                        }
+                    } else {
+                        var str = it
+                        if (str.contains(",")) {
+                            str = str.split(",")[1]
+                        }
+                        val array = Base64.decode(str, Base64.NO_WRAP)
+                        val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
+                        context.saveImagesToAlbum(bitmap) { _, _ ->
+                            Toast.makeText(context, "保存图片成功", Toast.LENGTH_SHORT).show()
+                            showDialog = false
+                        }
+                    }
+                }
+            },
+            dismissButton = { showDialog = false },
+        )
+    }
     BackHandler(true) {
         navigator.navigateBack()
     }
@@ -88,7 +126,6 @@ fun WebView(
             navigator.loadedUrl = it.url
         }
     }
-
     val resourceToPermissionMap = mapOf(
         "android.webkit.resource.VIDEO_CAPTURE" to Manifest.permission.CAMERA,
         "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO
@@ -124,8 +161,27 @@ fun WebView(
             val activity = context as ComponentActivity
             val windowManager = activity.windowManager
             WebViewManager.obtain(context, url).apply {
-                setDownloadListener()
-                setOnLongClickListener()
+                setDownloadListener { url, _, _, _, _ ->
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e(this.javaClass.name, e.message.toString())
+                    }
+                }
+                setOnLongClickListener {
+                    val result = hitTestResult
+                    when (result.type) {
+                        WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                            extra = result.extra
+                            showDialog = true
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
                 this.layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT

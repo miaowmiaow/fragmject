@@ -56,21 +56,16 @@ fun PermissionScreen() {
             }
             showDialog = !isGranted
         }
-    if (showDialog) {
-        StandardDialog(
-            title = "申请存储空间权限",
-            text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用",
-            confirmButton = {
-                requestPermissions.launch(storagePermissions)
-            },
-            dismissButton = {
-                showDialog = false
-            }
-        )
-    }
     val snackState = remember { SnackbarHostState() }
     val snackScope = rememberCoroutineScope()
     SnackbarHost(hostState = snackState, Modifier)
+    StandardDialog(
+        show = showDialog,
+        title = "申请存储空间权限",
+        text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用",
+        onConfirm = { requestPermissions.launch(storagePermissions) },
+        onDismiss = { showDialog = false }
+    )
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

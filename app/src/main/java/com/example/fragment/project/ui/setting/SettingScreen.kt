@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +54,6 @@ import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
 import com.example.fragment.project.components.StandardDialog
 import com.example.fragment.project.components.TitleBar
-import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.CacheUtils.getTotalSize
 import com.example.miaow.base.utils.FileUtil
@@ -69,7 +69,6 @@ fun SettingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-//    var screenCaptureState by rememberSaveable { mutableStateOf(false) }
     var cacheSize by rememberSaveable { mutableStateOf("0KB") }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -77,22 +76,26 @@ fun SettingScreen(
         cacheSize = getTotalSize(context)
     }
     var showDialog by remember { mutableStateOf(false) }
-    if (showDialog) {
-        StandardDialog(
-            title = "提示",
-            text = "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。",
-            confirmButton = {
+    var showType by remember { mutableIntStateOf(0) }
+    StandardDialog(
+        show = showDialog,
+        title = "提示",
+        text = if (showType == 0) "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。" else "确定要清除缓存吗？",
+        onConfirm = {
+            if (showType == 0) {
                 FileUtil.writeDirtyRead(
-                    File(
-                        CacheUtils.getDirPath(context, "org"),
-                        "DirtyRead"
-                    )
+                    File(CacheUtils.getDirPath(context, "org"), "DirtyRead")
                 )
-                showDialog
-            },
-            dismissButton = { showDialog = false },
-        )
-    }
+            } else {
+                scope.launch {
+                    CacheUtils.clearAllCache(context)
+                    cacheSize = getTotalSize(context)
+                }
+            }
+            showDialog = false
+        },
+        onDismiss = { showDialog = false },
+    )
     Scaffold(
         topBar = {
             TitleBar(
@@ -142,76 +145,21 @@ fun SettingScreen(
                             Spacer(Modifier.width(5.dp))
                         }
                     }
-//                    HorizontalDivider()
-//                    Row(
-//                        modifier = Modifier
-//                            .background(MaterialTheme.colorScheme.surfaceContainer)
-//                            .fillMaxWidth()
-//                            .height(45.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text(
-//                            text = "屏幕录制",
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(start = 25.dp, end = 25.dp),
-//                            fontSize = 13.sp,
-//                        )
-//                        Switch(
-//                            checked = screenCaptureState,
-//                            onCheckedChange = {
-//                                screenCaptureState = it
-//                                if (screenCaptureState) {
-//                                    (context as AppCompatActivity).startScreenCapture(object :
-//                                        ScreenCaptureCallback {
-//                                        override fun onActivityResult(
-//                                            resultCode: Int,
-//                                            message: String
-//                                        ) {
-//                                            if (resultCode != Activity.RESULT_OK) {
-//                                                screenCaptureState = false
-//                                            }
-//                                            scope.launch {
-//                                                snackbarHostState.showSnackbar(
-//                                                    message, "确定"
-//                                                )
-//                                            }
-//                                        }
-//                                    })
-//                                } else {
-//                                    (context as AppCompatActivity).stopScreenCapture()
-//                                }
-//                            },
-//                        )
-//                        Spacer(Modifier.width(5.dp))
-//                    }
-//                    HorizontalDivider()
-//                    ArrowRightItem("跳过广告", "(仅支持部分APP的倒计时广告)") {
-//                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-//                    }
-//                    HorizontalDivider()
-//                    ArrowRightItem("电池优化", "(跳过广告与我配合效果更佳哦~)") {
-//                        context.requestIgnoreBatteryOptimizations()
-//                    }
                     HorizontalDivider()
                     ArrowRightItem("隐私政策") { onNavigateToWeb("file:///android_asset/privacy_policy.html") }
                     HorizontalDivider()
                     ArrowRightItem("问题反馈") { onNavigateToWeb("https://github.com/miaowmiaow/fragmject/issues") }
                     HorizontalDivider()
-                    ArrowRightItem("抹除数据") { showDialog = true }
+                    ArrowRightItem("抹除数据") {
+                        showType = 0
+                        showDialog = true
+                    }
                     HorizontalDivider()
                     Row(
                         modifier = Modifier
                             .clickable {
-                                context.showStandardDialog(
-                                    content = "确定要清除缓存吗？",
-                                    confirm = {
-                                        scope.launch {
-                                            CacheUtils.clearAllCache(context)
-                                            cacheSize = getTotalSize(context)
-                                        }
-                                    }
-                                )
+                                showType = 1
+                                showDialog = true
                             }
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                             .fillMaxWidth()

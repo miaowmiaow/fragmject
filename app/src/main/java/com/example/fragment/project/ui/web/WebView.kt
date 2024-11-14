@@ -64,35 +64,6 @@ fun WebView(
     var injectState by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var extra by remember { mutableStateOf<String?>(null) }
-    if (showDialog) {
-        val context = LocalContext.current
-        StandardDialog(
-            title = "提示",
-            text = "你希望保存该图片吗？",
-            confirmButton = {
-                extra?.let {
-                    if (URLUtil.isValidUrl(it)) {
-                        context.saveImagesToAlbum(it) { _, _ ->
-                            Toast.makeText(context, "保存图片成功", Toast.LENGTH_SHORT).show()
-                            showDialog = false
-                        }
-                    } else {
-                        var str = it
-                        if (str.contains(",")) {
-                            str = str.split(",")[1]
-                        }
-                        val array = Base64.decode(str, Base64.NO_WRAP)
-                        val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
-                        context.saveImagesToAlbum(bitmap) { _, _ ->
-                            Toast.makeText(context, "保存图片成功", Toast.LENGTH_SHORT).show()
-                            showDialog = false
-                        }
-                    }
-                }
-            },
-            dismissButton = { showDialog = false },
-        )
-    }
     BackHandler(true) {
         navigator.navigateBack()
     }
@@ -295,6 +266,34 @@ fun WebView(
         onRelease = {
             WebViewManager.recycle(it)
         }
+    )
+    val context = LocalContext.current
+    StandardDialog(
+        show = showDialog,
+        title = "提示",
+        text = "你希望保存该图片吗？",
+        onConfirm = {
+            extra?.let {
+                if (URLUtil.isValidUrl(it)) {
+                    context.saveImagesToAlbum(it) { _, _ ->
+                        Toast.makeText(context, "保存图片成功", Toast.LENGTH_SHORT).show()
+                        showDialog = false
+                    }
+                } else {
+                    var str = it
+                    if (str.contains(",")) {
+                        str = str.split(",")[1]
+                    }
+                    val array = Base64.decode(str, Base64.NO_WRAP)
+                    val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
+                    context.saveImagesToAlbum(bitmap) { _, _ ->
+                        Toast.makeText(context, "保存图片成功", Toast.LENGTH_SHORT).show()
+                        showDialog = false
+                    }
+                }
+            }
+        },
+        onDismiss = { showDialog = false },
     )
 }
 

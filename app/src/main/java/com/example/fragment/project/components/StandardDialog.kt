@@ -8,29 +8,32 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun StandardDialog(
+    show: Boolean,
     title: String,
     text: String,
-    confirmButton: () -> Unit,
-    dismissButton: () -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = dismissButton,
-        title = { Text(text = title) },
-        text = { Text(text = text) },
-        confirmButton = {
-            TextButton(onClick = {
-                confirmButton()
-            }) {
-                Text("确定", color = MaterialTheme.colorScheme.onPrimary)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = dismissButton) {
-                Text("取消", color = MaterialTheme.colorScheme.onPrimary)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        titleContentColor = MaterialTheme.colorScheme.onPrimary,
-        textContentColor = MaterialTheme.colorScheme.onPrimary,
-    )
+    if (show) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(text = title) },
+            text = { Text(text = text) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onConfirm()
+                }) {
+                    Text("确定", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("取消", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            textContentColor = MaterialTheme.colorScheme.onPrimary,
+        )
+    }
 }

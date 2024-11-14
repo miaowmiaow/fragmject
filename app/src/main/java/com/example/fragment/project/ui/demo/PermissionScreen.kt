@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
@@ -19,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.components.StandardDialog
 import kotlinx.coroutines.launch
 
 @Composable
@@ -47,7 +46,7 @@ fun PermissionScreen() {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
-    var storageDialog by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
     val requestPermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
             var isGranted = true
@@ -55,18 +54,17 @@ fun PermissionScreen() {
                 if (it.key in storagePermissions && !it.value)
                     isGranted = false
             }
-            storageDialog = !isGranted
+            showDialog = !isGranted
         }
-    if (storageDialog) {
-        AlertDialog(
-            onDismissRequest = { storageDialog = false },
-            title = { Text(text = "申请存储空间权限") },
-            text = { Text(text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用") },
+    if (showDialog) {
+        StandardDialog(
+            title = "申请存储空间权限",
+            text = "玩Android需要使用存储空间，我们想要将文章内容缓存到本地，从而加快打开速度和减少用户流量使用",
             confirmButton = {
-                TextButton(onClick = { requestPermissions.launch(storagePermissions) }) { Text("确定") }
+                requestPermissions.launch(storagePermissions)
             },
             dismissButton = {
-                TextButton(onClick = { storageDialog = false }) { Text("取消") }
+                showDialog = false
             }
         )
     }
@@ -80,12 +78,12 @@ fun PermissionScreen() {
     ) {
         AssistChip(
             onClick = {
-                storageDialog = !storagePermissions.all {
+                showDialog = !storagePermissions.all {
                     ContextCompat.checkSelfPermission(
                         context, it
                     ) == PackageManager.PERMISSION_GRANTED
                 }
-                if (!storageDialog) {
+                if (!showDialog) {
                     snackScope.launch {
                         snackState.showSnackbar(
                             "存储权限已经获取"

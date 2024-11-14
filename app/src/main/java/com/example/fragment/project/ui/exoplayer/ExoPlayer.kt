@@ -8,8 +8,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,8 +21,15 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
+import com.example.miaow.base.utils.CacheUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -43,9 +48,6 @@ fun ExoPlayer(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var playerView by remember { mutableStateOf<PlayerView?>(null) }
-    var playWhenReady by remember { mutableStateOf(true) }
-    var currentMediaItemIndex by remember { mutableIntStateOf(0) }
-    var playbackPosition by remember { mutableLongStateOf(0L) }
     LaunchedEffect(playerView, control) {
         playerView?.let {
             with(control) {
@@ -88,14 +90,21 @@ fun ExoPlayer(
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 setShowShuffleButton(true)
-                setFullscreenButtonClickListener {  }
-                player = ExoPlayer.Builder(context).build().also {
+                setFullscreenButtonClickListener { }
+                val cacheDir = CacheUtils.getDirFile(context, "exoplayer_cache")
+                val evictor = LeastRecentlyUsedCacheEvictor(500 * 1024 * 1024)
+                val databaseProvider = StandaloneDatabaseProvider(context)
+                val cache = SimpleCache(cacheDir, evictor, databaseProvider)
+                val cacheDataSourceFactory = CacheDataSource.Factory().setCache(cache)
+                    .setUpstreamDataSourceFactory(DefaultDataSource.Factory(context))
+                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+                player = ExoPlayer.Builder(context).setMediaSourceFactory(
+                    DefaultMediaSourceFactory(context).setDataSourceFactory(cacheDataSourceFactory)
+                ).build().also {
                     it.trackSelectionParameters =
                         it.trackSelectionParameters.buildUpon().setMaxVideoSizeSd().build()
                     it.addListener(playListener)
                     it.setMediaItems(mediaItems)
-                    it.playWhenReady = playWhenReady
-                    it.seekTo(currentMediaItemIndex, playbackPosition)
                     it.prepare()
                 }
                 playerView = this
@@ -108,9 +117,6 @@ fun ExoPlayer(
             },
         onRelease = {
             it.player?.run {
-                playbackPosition = this.currentPosition
-                currentMediaItemIndex = this.currentMediaItemIndex
-                playWhenReady = this.playWhenReady
                 removeListener(playListener)
                 release()
             }

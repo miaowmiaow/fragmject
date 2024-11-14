@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,7 +51,15 @@ fun PictureSelectorScreen() {
                     contentDescription = null,
                     Modifier.size(AssistChipDefaults.IconSize)
                 )
-            }
+            },
+            colors = AssistChipDefaults.assistChipColors(
+                labelColor = MaterialTheme.colorScheme.primaryContainer,
+                leadingIconContentColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            border = AssistChipDefaults.assistChipBorder(
+                true,
+                borderColor = MaterialTheme.colorScheme.primaryContainer
+            )
         )
     }
 }

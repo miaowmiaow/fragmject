@@ -31,18 +31,6 @@ class WanActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        //双击返回键回退桌面
-        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (System.currentTimeMillis() - exitTime > 2000) {
-                    exitTime = System.currentTimeMillis()
-                    val msg = getString(R.string.one_more_press_2_back)
-                    Toast.makeText(this@WanActivity, msg, Toast.LENGTH_SHORT).show()
-                } else {
-                    moveTaskToBack(true)
-                }
-            }
-        })
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 WanHelper.getUser().collect {
@@ -60,6 +48,24 @@ class WanActivity : ComponentActivity() {
                 WanNavGraph(parseScheme(data ?: intent.data), user)
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //WebView预创建
+        WebViewManager.prepare(applicationContext)
+        //双击返回键回退桌面
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (System.currentTimeMillis() - exitTime > 2000) {
+                    exitTime = System.currentTimeMillis()
+                    val msg = getString(R.string.one_more_press_2_back)
+                    Toast.makeText(this@WanActivity, msg, Toast.LENGTH_SHORT).show()
+                } else {
+                    moveTaskToBack(true)
+                }
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent) {

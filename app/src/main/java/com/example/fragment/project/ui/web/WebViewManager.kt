@@ -2,27 +2,19 @@ package com.example.fragment.project.ui.web
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.MutableContextWrapper
-import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.net.Uri
 import android.os.Looper
-import android.util.Base64
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.MimeTypeMap
-import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.widget.Toast
-import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.http.download
 import com.example.miaow.base.utils.CacheUtils
-import com.example.miaow.base.utils.saveImagesToAlbum
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
@@ -201,58 +193,6 @@ class WebViewManager private constructor() {
         clear()
     }
 
-}
-
-fun WebView.setDownloadListener() {
-    setDownloadListener { url, _, _, _, _ ->
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            intent.addCategory(Intent.CATEGORY_BROWSABLE)
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-        }
-    }
-}
-
-fun WebView.setOnLongClickListener() {
-    setOnLongClickListener {
-        val result = hitTestResult
-        when (result.type) {
-            WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                result.extra?.let { extra ->
-                    val contextWrapper = context as MutableContextWrapper
-                    contextWrapper.baseContext.saveImageDialog(extra)
-                }
-                true
-            }
-
-            else -> false
-        }
-    }
-}
-
-private fun Context.saveImageDialog(data: String) {
-    showStandardDialog(
-        content = "你希望保存该图片吗？",
-        confirm = {
-            if (URLUtil.isValidUrl(data)) {
-                saveImagesToAlbum(data) { _, _ ->
-                    Toast.makeText(this, "保存图片成功", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                var str = data
-                if (str.contains(",")) {
-                    str = str.split(",")[1]
-                }
-                val array = Base64.decode(str, Base64.NO_WRAP)
-                val bitmap = BitmapFactory.decodeByteArray(array, 0, array.size)
-                saveImagesToAlbum(bitmap) { _, _ ->
-                    Toast.makeText(this, "保存图片成功", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    )
 }
 
 fun WebResourceRequest.isAssetsResource(): Boolean {

@@ -12,6 +12,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.net.Uri
+import android.os.Build
 import android.os.Looper
 import android.util.Base64
 import android.util.Log
@@ -23,6 +24,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.annotation.RequiresApi
 import com.example.miaow.base.dialog.StandardDialog
 import com.example.miaow.base.http.download
 import kotlinx.coroutines.runBlocking
@@ -264,6 +266,7 @@ class WebViewManager private constructor() {
             instance().prepare(context)
         }
 
+        @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
         fun obtain(context: Context): WebView {
             return instance().obtain(context)
         }
@@ -306,6 +309,7 @@ class WebViewManager private constructor() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun obtain(context: Context): WebView {
         if (webViewCache.isEmpty()) {
             webViewCache.add(create(MutableContextWrapper(context)))

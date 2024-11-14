@@ -51,6 +51,7 @@ import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
+import com.example.fragment.project.components.StandardDialog
 import com.example.fragment.project.components.TitleBar
 import com.example.miaow.base.dialog.showStandardDialog
 import com.example.miaow.base.utils.CacheUtils
@@ -74,6 +75,23 @@ fun SettingScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         cacheSize = getTotalSize(context)
+    }
+    var showDialog by remember { mutableStateOf(false) }
+    if (showDialog) {
+        StandardDialog(
+            title = "提示",
+            text = "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。",
+            confirmButton = {
+                FileUtil.writeDirtyRead(
+                    File(
+                        CacheUtils.getDirPath(context, "org"),
+                        "DirtyRead"
+                    )
+                )
+                showDialog
+            },
+            dismissButton = { showDialog = false },
+        )
     }
     Scaffold(
         topBar = {
@@ -180,19 +198,7 @@ fun SettingScreen(
                     HorizontalDivider()
                     ArrowRightItem("问题反馈") { onNavigateToWeb("https://github.com/miaowmiaow/fragmject/issues") }
                     HorizontalDivider()
-                    ArrowRightItem("抹除数据") {
-                        context.showStandardDialog(
-                            content = "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。",
-                            confirm = {
-                                FileUtil.writeDirtyRead(
-                                    File(
-                                        CacheUtils.getDirPath(context, "org"),
-                                        "DirtyRead"
-                                    )
-                                )
-                            }
-                        )
-                    }
+                    ArrowRightItem("抹除数据") { showDialog = true }
                     HorizontalDivider()
                     Row(
                         modifier = Modifier

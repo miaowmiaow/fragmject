@@ -18,10 +18,8 @@ class PictureSelectorActivity : AppCompatActivity() {
                     setResult(RESULT_OK, Intent().apply {
                         putExtra("array", data.toTypedArray())
                     })
-                    finish()
                 }
             })
             .show(supportFragmentManager)
     }
-
 }

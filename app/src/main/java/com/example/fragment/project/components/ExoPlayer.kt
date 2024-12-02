@@ -1,4 +1,4 @@
-package com.example.fragment.project.ui.exoplayer
+package com.example.fragment.project.components
 
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -42,7 +42,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ExoPlayer(
     mediaItems: List<MediaItem>,
-    control: ExoPlayerControl,
+    control: ExoPlayerControl = rememberExoPlayerControl(),
     playListener: Player.Listener = object : Player.Listener {},
     modifier: Modifier = Modifier,
 ) {

@@ -1,11 +1,13 @@
 package com.example.miaow.picture.selector.dialog
 
+import android.app.Dialog
 import android.content.ContentValues
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,7 +43,7 @@ class PictureSelectorDialog : FullDialog() {
     private var _binding: PictureSelectorDialogBinding? = null
     private val binding get() = _binding!!
     private val selectorAdapter = PictureSelectorAdapter()
-    private var _callback: PictureSelectorCallback? = null
+    private var _pictureSelectorCallback: PictureSelectorCallback? = null
     private var _pictureAlbumPopupWindow: PictureAlbumPopupWindow? = null
     private val pictureAlbumPopupWindow get() = _pictureAlbumPopupWindow!!
 
@@ -54,6 +56,18 @@ class PictureSelectorDialog : FullDialog() {
                 viewModel.updateMediaMap(bean)
             }
         }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                activity?.finish()
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
+        return dialog
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,15 +91,15 @@ class PictureSelectorDialog : FullDialog() {
         binding.list.adapter = null
         pictureAlbumPopupWindow.onDestroy()
         _pictureAlbumPopupWindow = null
-        _callback = null
+        _pictureSelectorCallback = null
         _binding = null
     }
 
     private fun initView() {
-        binding.back.setOnClickListener { dismiss() }
+        binding.back.setOnClickListener { activity?.finish() }
         binding.config.setOnClickListener {
-            _callback?.onSelectedData(selectorAdapter.getSelectPositionData())
-            dismiss()
+            _pictureSelectorCallback?.onSelectedData(selectorAdapter.getSelectPositionData())
+            activity?.finish()
         }
         binding.album.setOnClickListener {
             val isAlbum = binding.albumBox.isSelected
@@ -173,7 +187,7 @@ class PictureSelectorDialog : FullDialog() {
     }
 
     fun setPictureSelectorCallback(callback: PictureSelectorCallback): PictureSelectorDialog {
-        _callback = callback
+        _pictureSelectorCallback = callback
         return this
     }
 

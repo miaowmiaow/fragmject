@@ -9,8 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
-import com.example.fragment.project.ui.exoplayer.ExoPlayer
-import com.example.fragment.project.ui.exoplayer.rememberExoPlayerControl
+import com.example.fragment.project.components.ExoPlayer
 
 @Composable
 fun ExoPlayerScreen() {
@@ -34,7 +33,6 @@ fun ExoPlayerScreen() {
             MediaItem.fromUri("https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/hls/xgplayer-demo.m3u8"),
             MediaItem.fromUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4")
         ),
-        control = rememberExoPlayerControl(),
         modifier = Modifier.fillMaxSize()
     )
 }

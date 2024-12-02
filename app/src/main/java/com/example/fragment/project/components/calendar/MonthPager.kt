@@ -105,6 +105,15 @@ internal fun MonthPager(
             val weekModeHeight = with(density) { WeekHeight.toPx() }
             val monthModeHeight = with(density) { WeekHeight.toPx() * month.weeksInMonth() }
             val monthFillModeHeight = with(density) { (height - TipArrowHeight).toPx() }
+            var enabled by remember { mutableStateOf(true) }
+            val listState = rememberLazyListState()
+            LaunchedEffect(listState) {
+                snapshotFlow { listState.isScrollInProgress }.collectLatest {
+                    if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 && !listState.canScrollForward) {
+                        enabled = false
+                    }
+                }
+            }
             val anchoredDraggableState = remember(monthModeHeight, monthFillModeHeight) {
                 AnchoredDraggableState(
                     initialValue = mode,
@@ -117,6 +126,18 @@ internal fun MonthPager(
                     velocityThreshold = { with(density) { 100.dp.toPx() } },
                     snapAnimationSpec = TweenSpec(durationMillis = 350),
                     decayAnimationSpec = exponentialDecay(10f),
+                    confirmValueChange = { newValue->
+                        if (newValue == CalendarMode.Week) {
+                            enabled = true
+                        } else {
+                            scope.launch {
+                                listState.animateScrollToItem(0)
+                            }
+                            enabled = false
+                        }
+                        onCalendarStateChange(newValue)
+                        true
+                    }
                 )
             }
             //展开日历
@@ -124,27 +145,6 @@ internal fun MonthPager(
                 if (model.firstStartup) {
                     anchoredDraggableState.animateTo(CalendarMode.Month)
                     model.firstStartup = false
-                }
-            }
-            //日历和日程联动
-            var enabled by remember { mutableStateOf(true) }
-            val listState = rememberLazyListState()
-            LaunchedEffect(listState) {
-                snapshotFlow { listState.isScrollInProgress }.collectLatest {
-                    if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 && !listState.canScrollForward) {
-                        enabled = false
-                    }
-                }
-            }
-            LaunchedEffect(anchoredDraggableState) {
-                snapshotFlow { anchoredDraggableState.currentValue }.collectLatest {
-                    if (it == CalendarMode.Week) {
-                        enabled = true
-                    } else {
-                        listState.animateScrollToItem(0)
-                        enabled = false
-                    }
-                    onCalendarStateChange(it)
                 }
             }
             Box(
@@ -176,7 +176,7 @@ internal fun MonthPager(
                         }
                         onSelectedDateChange(date.year, date.month, date.day)
                         selectedWeek = date.week
-                        if (mode == CalendarMode.Week) {
+                        if (anchoredDraggableState.currentValue == CalendarMode.Week) {
                             return@DayContent
                         }
                         val index = model.weekModeIndexByDate(date.year, date.month, date.week)

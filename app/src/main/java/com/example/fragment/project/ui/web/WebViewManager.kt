@@ -203,6 +203,12 @@ fun WebResourceRequest.isAssetsResource(): Boolean {
 fun WebResourceRequest.isCacheResource(): Boolean {
     val url = url.toString()
     val extension = url.getExtensionFromUrl()
+    if (extension.isBlank()) {
+        val accept = requestHeaders["Accept"] ?: return false
+        if (accept.contains("image/avif,image/webp,image/apng,image/svg xml,image/*,*/*;q=0.8")) {
+            return true
+        }
+    }
     return extension == "ico" || extension == "bmp" || extension == "gif"
             || extension == "jpeg" || extension == "jpg" || extension == "png"
             || extension == "svg" || extension == "webp" || extension == "css"

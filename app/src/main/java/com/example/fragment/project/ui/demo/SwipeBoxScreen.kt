@@ -25,11 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.SwipeBox
+import com.example.fragment.project.components.SwipeBoxControl
+import com.example.fragment.project.components.rememberSwipeBoxControl
 
 @Composable
 fun SwipeBoxScreen() {
     val context = LocalContext.current
+    val control: SwipeBoxControl = rememberSwipeBoxControl()
     SwipeBox(
+        control = control,
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(),
@@ -40,6 +44,7 @@ fun SwipeBoxScreen() {
                     .background(WanTheme.green)
                     .fillMaxSize()
                     .clickable {
+                        control.center()
                         Toast
                             .makeText(context, "置顶", Toast.LENGTH_SHORT)
                             .show()
@@ -61,6 +66,7 @@ fun SwipeBoxScreen() {
                     .background(WanTheme.pink)
                     .fillMaxSize()
                     .clickable {
+                        control.center()
                         Toast
                             .makeText(context, "取消置顶", Toast.LENGTH_SHORT)
                             .show()
@@ -90,6 +96,7 @@ fun SwipeBoxScreen() {
                         .background(WanTheme.blue)
                         .fillMaxSize()
                         .clickable {
+                            control.center()
                             Toast
                                 .makeText(context, "标为未读", Toast.LENGTH_SHORT)
                                 .show()
@@ -111,6 +118,7 @@ fun SwipeBoxScreen() {
                         .background(WanTheme.yellow)
                         .fillMaxSize()
                         .clickable {
+                            control.center()
                             Toast
                                 .makeText(context, "不显示", Toast.LENGTH_SHORT)
                                 .show()
@@ -133,6 +141,7 @@ fun SwipeBoxScreen() {
                     .background(WanTheme.red)
                     .fillMaxSize()
                     .clickable {
+                        control.center()
                         Toast
                             .makeText(context, "删除", Toast.LENGTH_SHORT)
                             .show()

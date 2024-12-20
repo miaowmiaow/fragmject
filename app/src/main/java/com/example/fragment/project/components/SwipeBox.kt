@@ -7,15 +7,19 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,11 +29,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeBox(
+    control: SwipeBoxControl = rememberSwipeBoxControl(),
     modifier: Modifier = Modifier,
     actionWidth: Dp,
     startAction: List<@Composable BoxScope.() -> Unit> = listOf(),
@@ -38,6 +50,7 @@ fun SwipeBox(
     endFillAction: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val actionWidthPx = with(density) {
         actionWidth.toPx()
@@ -76,7 +89,37 @@ fun SwipeBox(
             decayAnimationSpec = exponentialDecay(10f),
         )
     }
-
+    LaunchedEffect(control, state) {
+        with(control) {
+            handleControlEvents(
+                onStart = {
+                    scope.launch {
+                        state.animateTo(DragAnchors.Start)
+                    }
+                },
+                onStartFill = {
+                    scope.launch {
+                        state.animateTo(DragAnchors.StartFill)
+                    }
+                },
+                onCenter = {
+                    scope.launch {
+                        state.animateTo(DragAnchors.Center)
+                    }
+                },
+                onEnd = {
+                    scope.launch {
+                        state.animateTo(DragAnchors.End)
+                    }
+                },
+                onEndFill = {
+                    scope.launch {
+                        state.animateTo(DragAnchors.EndFill)
+                    }
+                }
+            )
+        }
+    }
     Box(
         modifier = modifier
             .anchoredDraggable(
@@ -188,6 +231,65 @@ fun SwipeBox(
         }
     }
 }
+
+@Stable
+class SwipeBoxControl(
+    private val scope: CoroutineScope
+) {
+    private sealed interface ControlEvent {
+        data object Start : ControlEvent
+        data object StartFill : ControlEvent
+        data object Center : ControlEvent
+        data object End : ControlEvent
+        data object EndFill : ControlEvent
+    }
+
+    private val controlEvents: MutableSharedFlow<ControlEvent> = MutableSharedFlow()
+
+    @OptIn(FlowPreview::class)
+    internal suspend fun handleControlEvents(
+        onStart: () -> Unit = {},
+        onStartFill: () -> Unit = {},
+        onCenter: () -> Unit = {},
+        onEnd: () -> Unit = {},
+        onEndFill: () -> Unit = {},
+    ) = withContext(Dispatchers.Main) {
+        controlEvents.debounce(350).collect { event ->
+            when (event) {
+                ControlEvent.Start -> onStart()
+                ControlEvent.StartFill -> onStartFill()
+                ControlEvent.Center -> onCenter()
+                ControlEvent.End -> onEnd()
+                ControlEvent.EndFill -> onEndFill()
+            }
+        }
+    }
+
+    fun start() {
+        scope.launch { controlEvents.emit(ControlEvent.Start) }
+    }
+
+    fun startFill() {
+        scope.launch { controlEvents.emit(ControlEvent.Start) }
+    }
+
+    fun center() {
+        scope.launch { controlEvents.emit(ControlEvent.Center) }
+    }
+
+    fun end() {
+        scope.launch { controlEvents.emit(ControlEvent.End) }
+    }
+
+    fun endFill() {
+        scope.launch { controlEvents.emit(ControlEvent.EndFill) }
+    }
+}
+
+@Composable
+fun rememberSwipeBoxControl(
+    coroutineScope: CoroutineScope = rememberCoroutineScope()
+): SwipeBoxControl = remember(coroutineScope) { SwipeBoxControl(coroutineScope) }
 
 enum class DragAnchors {
     Start,

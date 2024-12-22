@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,6 +50,7 @@ import com.example.fragment.project.WanTheme
 import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.LoopVerticalPager
 import com.example.fragment.project.data.HotKey
+import com.example.fragment.project.data.NavigationItem
 import com.example.fragment.project.ui.main.home.HomeScreen
 import com.example.fragment.project.ui.main.my.MyScreen
 import com.example.fragment.project.ui.main.nav.NavScreen
@@ -255,13 +255,6 @@ fun BottomNavigation(
         }
     }
 }
-
-data class NavigationItem(
-    val label: String,
-    val resId: Int,
-    val selectedColor: Color = WanTheme.orange,
-    val unselectedColor: Color = WanTheme.theme
-)
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable

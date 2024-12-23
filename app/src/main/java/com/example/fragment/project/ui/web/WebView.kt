@@ -10,7 +10,6 @@ import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.webkit.PermissionRequest
 import android.webkit.URLUtil
 import android.webkit.WebChromeClient
@@ -20,7 +19,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -57,10 +55,10 @@ fun WebView(
     goForward: (url: String) -> Unit = {},
     navigateUp: () -> Unit = {},
     onReceivedTitle: (url: String?, title: String?) -> Unit = { _, _ -> },
+    onCustomView: (view: View?) -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
-    var fullScreenLayer by remember { mutableStateOf<View?>(null) }
     var injectState by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var extra by remember { mutableStateOf<String?>(null) }
@@ -129,8 +127,6 @@ fun WebView(
     }
     AndroidView(
         factory = { context ->
-            val activity = context as ComponentActivity
-            val windowManager = activity.windowManager
             WebViewManager.obtain(context, url).apply {
                 setDownloadListener { url, _, _, _, _ ->
                     try {
@@ -179,19 +175,12 @@ fun WebView(
 
                     override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
                         super.onShowCustomView(view, callback)
-                        windowManager.addView(
-                            view,
-                            WindowManager.LayoutParams(WindowManager.LayoutParams.TYPE_APPLICATION)
-                        )
-                        fullScreenLayer = view
+                        onCustomView(view)
                     }
 
                     override fun onHideCustomView() {
                         super.onHideCustomView()
-                        fullScreenLayer?.let {
-                            windowManager.removeViewImmediate(fullScreenLayer)
-                            fullScreenLayer = null
-                        }
+                        onCustomView(null)
                     }
 
                     override fun onPermissionRequest(request: PermissionRequest?) {

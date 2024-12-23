@@ -72,45 +72,45 @@ fun ShareArticleScreen(
     }
     Scaffold(
         topBar = {
-            TitleBar(title = "分享文章", navigationIcon = {
-                IconButton(
-                    modifier = Modifier.height(45.dp),
-                    onClick = onNavigateUp
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }, actions = {
-                IconButton(
-                    onClick = {
-                        if (linkText.isBlank()) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("文章链接不能为空")
-                            }
-                            return@IconButton
-                        }
-                        onNavigateToWeb(linkText)
+            TitleBar(
+                title = "分享文章",
+                navigationIcon = {
+                    IconButton(
+                        modifier = Modifier.height(45.dp),
+                        onClick = onNavigateUp
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(R.mipmap.ic_browser),
-                        contentDescription = null,
-                        modifier = Modifier.padding(8.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            })
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (linkText.isBlank()) {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("文章链接不能为空")
+                                }
+                                return@IconButton
+                            }
+                            onNavigateToWeb(linkText)
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_browser),
+                            contentDescription = null,
+                            modifier = Modifier.padding(8.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
     ) { innerPadding ->
         LoadingContent(uiState.isLoading) {
-            Box(
-                modifier = Modifier
-                    .padding(innerPadding),
-            ) {
+            Box(modifier = Modifier.padding(innerPadding)) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

@@ -34,7 +34,8 @@ fun MyShareScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
-            TitleBar(title = "我分享的文章",
+            TitleBar(
+                title = "我分享的文章",
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(

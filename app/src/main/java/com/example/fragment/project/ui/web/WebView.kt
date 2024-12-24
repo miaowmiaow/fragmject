@@ -65,6 +65,9 @@ fun WebView(
     BackHandler(true) {
         navigator.navigateBack()
     }
+    LaunchedEffect(url) {
+        navigator.loadedUrl = url
+    }
     LaunchedEffect(webView, navigator) {
         webView?.let {
             with(navigator) {
@@ -92,7 +95,6 @@ fun WebView(
                     }
                 )
             }
-            navigator.loadedUrl = it.url
         }
     }
     val resourceToPermissionMap = mapOf(
@@ -236,7 +238,6 @@ fun WebView(
 
                     override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
                         super.onPageStarted(view, url, favicon)
-                        navigator.loadedUrl = url
                         injectState = false
                     }
 

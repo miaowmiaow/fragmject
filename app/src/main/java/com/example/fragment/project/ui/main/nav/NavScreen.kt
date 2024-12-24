@@ -111,9 +111,10 @@ fun NavLinkContent(
             if (scrollState.isScrollInProgress) {
                 scrollValue = scrollState.value
             } else {
-                if (velocity < -3000 && scrollState.value == 0) { //顶部上拉切换上一项
+                if ((velocity < -3000 && scrollState.value == 0) || scrollState.canScrollForward) { //顶部上拉切换上一项
                     pagerState.scrollToPage((pagerState.currentPage - 1))
-                } else if (velocity > 3000 && scrollState.value == scrollValue) { //底部上拉切换下一项
+                }
+                if ((velocity > 3000 && scrollState.value == scrollValue) || scrollState.canScrollBackward) { //底部上拉切换下一项
                     pagerState.scrollToPage(pagerState.currentPage + 1)
                 }
             }
@@ -152,13 +153,14 @@ fun NavLinkContent(
                 FlowRow(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(state = scrollState, flingBehavior = object :
-                            FlingBehavior {
-                            override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-                                velocity = initialVelocity
-                                return initialVelocity
-                            }
-                        })
+                        .verticalScroll(
+                            state = scrollState,
+                            flingBehavior = object : FlingBehavior {
+                                override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+                                    velocity = initialVelocity
+                                    return initialVelocity
+                                }
+                            })
                 ) {
                     uiState.navigationResult.getOrNull(page)?.articles?.forEach {
                         Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {

@@ -86,16 +86,6 @@ class WebViewManager private constructor() {
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
     private val lruCache: LRUCache<String, File> = LRUCache(500)
 
-    private fun getWebView(context: Context): WebView {
-        val webView = if (webViewQueue.isEmpty()) {
-            create(MutableContextWrapper(context))
-        } else {
-            webViewQueue.removeFirst()
-        }
-        prepare(MutableContextWrapper(context.applicationContext))
-        return webView
-    }
-
     private fun create(context: Context): WebView {
         val webView = WebView(context)
         webView.setBackgroundColor(Color.TRANSPARENT)
@@ -116,19 +106,30 @@ class WebViewManager private constructor() {
         return webView
     }
 
-    private fun prepare(context: Context) {
+    private fun getWebView(context: Context): WebView {
+        val webView = if (webViewQueue.isEmpty()) {
+            create(MutableContextWrapper(context))
+        } else {
+            webViewQueue.removeFirst()
+        }
+        prepare(MutableContextWrapper(context.applicationContext))
+        return webView
+    }
+
+    private fun addQueue(context: Context) {
         if (webViewQueue.isEmpty()) {
-            Looper.myQueue().addIdleHandler {
-                webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
-                val cachePath = CacheUtils.getDirPath(context, "web_cache")
-                val file = File(cachePath)
-                if (file.isDirectory) {
-                    file.listFiles()?.forEach {
-                        lruCache.put(it.absolutePath, it)
-                    }
-                }
-                false
+            webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
+        }
+    }
+
+    private fun prepare(context: Context) {
+        Looper.myQueue().addIdleHandler {
+            addQueue(context)
+            val cachePath = CacheUtils.getDirPath(context, "web_cache")
+            File(cachePath).takeIf { it.isDirectory }?.listFiles()?.forEach {
+                lruCache.put(it.absolutePath, it)
             }
+            false
         }
     }
 
@@ -189,7 +190,7 @@ class WebViewManager private constructor() {
             } else {
                 destroy()
                 //重新缓存一个webView
-                prepare(webView.context)
+                addQueue(webView.context)
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -247,14 +248,12 @@ class WebViewManager private constructor() {
     fun assetsResourceRequest(context: Context, request: WebResourceRequest): WebResourceResponse? {
         try {
             val url = request.url.toString()
-            val filenameIndex = url.lastIndexOf("/") + 1
-            val filename = url.substring(filenameIndex)
-            val suffixIndex = url.lastIndexOf(".")
-            val suffix = url.substring(suffixIndex + 1)
+            val filename = url.substringAfterLast("/")
+            val suffix = url.substringAfterLast(".")
             val webResourceResponse = WebResourceResponse(
                 url.getMimeTypeFromUrl(),
                 null,
-                context.assets.open("$suffix/$filename")
+                context.assets.open(suffix + File.separator + filename)
             )
             webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
             return webResourceResponse

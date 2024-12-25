@@ -12,11 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
@@ -35,7 +33,6 @@ fun Calendar(
     modifier: Modifier = Modifier,
     onSelectedDateChange: (year: Int, month: Int, day: Int) -> Unit,
 ) {
-    var mode by remember { mutableStateOf(CalendarMode.Week) }
 
     val defaultLocale = LocalConfiguration.current.locales[0]
     val model = remember(defaultLocale) { CalendarModel(defaultLocale) }
@@ -50,7 +47,7 @@ fun Calendar(
 
     Column(modifier = modifier) {
         YearPicker(
-            mode = mode,
+            mode = state.mode,
             model = model,
             weekModePagerState = weekModePagerState,
             monthModePagerState = monthModePagerState,
@@ -72,11 +69,9 @@ fun Calendar(
         }
         MonthPager(
             state = state,
-            mode = mode,
             model = model,
             monthModePagerState = monthModePagerState,
             weekModePagerState = weekModePagerState,
-            onCalendarStateChange = { mode = it },
             onSelectedDateChange = onSelectedDateChange,
         )
     }
@@ -86,6 +81,8 @@ fun Calendar(
 class CalendarState(
     private val scope: CoroutineScope
 ) {
+    var mode = CalendarMode.Week
+
     private sealed interface CalendarEvent {
         data class Schedule(val text: String) : CalendarEvent
     }

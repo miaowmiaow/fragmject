@@ -84,7 +84,7 @@ class WebViewManager private constructor() {
     private val backStack: ArrayDeque<String> = ArrayDeque()
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
-    private val lruCache: LRUCache<String, File> = LRUCache(200)
+    private val lruCache: LRUCache<String, File> = LRUCache(500)
 
     private fun getWebView(context: Context): WebView {
         val webView = if (webViewQueue.isEmpty()) {

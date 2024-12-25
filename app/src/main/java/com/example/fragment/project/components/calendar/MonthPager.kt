@@ -36,15 +36,14 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun MonthPager(
     state: CalendarState,
-    mode: CalendarMode,
     model: CalendarModel,
     monthModePagerState: PagerState,
     weekModePagerState: PagerState,
-    onCalendarStateChange: (mode: CalendarMode) -> Unit,
     onSelectedDateChange: (year: Int, month: Int, day: Int) -> Unit,
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
+    var mode by remember { mutableStateOf(state.mode) }
     val isWeekMode = mode == CalendarMode.Week
     var selectedWeek by remember { mutableIntStateOf(0) }
     var selectedDate by remember { mutableStateOf(model.localCalendarDate()) }
@@ -135,10 +134,15 @@ internal fun MonthPager(
                             }
                             enabled = false
                         }
-                        onCalendarStateChange(newValue)
                         true
                     }
                 )
+            }
+            LaunchedEffect(anchoredDraggableState) {
+                snapshotFlow { !anchoredDraggableState.isAnimationRunning }.collectLatest {
+                    state.mode = anchoredDraggableState.currentValue
+                    mode = state.mode
+                }
             }
             //展开日历
             LaunchedEffect(model) {

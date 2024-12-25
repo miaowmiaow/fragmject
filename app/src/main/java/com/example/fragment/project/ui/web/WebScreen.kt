@@ -52,7 +52,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.TitleBar
-import com.example.fragment.project.database.history.History
+import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.launch
 

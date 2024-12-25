@@ -16,7 +16,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.fragment.project.database.user.User
+import com.example.fragment.project.data.User
 import com.example.fragment.project.ui.web.WebViewManager
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.launch

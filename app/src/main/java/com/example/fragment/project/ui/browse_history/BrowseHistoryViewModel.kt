@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.browse_history
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.database.history.History
+import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

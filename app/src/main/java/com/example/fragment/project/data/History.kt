@@ -1,4 +1,4 @@
-package com.example.fragment.project.database.history
+package com.example.fragment.project.data
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

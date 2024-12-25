@@ -1,4 +1,4 @@
-package com.example.fragment.project.database.history
+package com.example.fragment.project.database
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.example.fragment.project.data.History
 import kotlinx.coroutines.flow.Flow
 
 @Dao

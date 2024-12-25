@@ -1,10 +1,11 @@
-package com.example.fragment.project.database.user
+package com.example.fragment.project.database
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.fragment.project.data.User
 import kotlinx.coroutines.flow.Flow
 
 @Dao

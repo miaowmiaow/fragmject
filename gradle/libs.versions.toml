@@ -5,7 +5,7 @@ androidxComposeBom = "2024.12.01"
 androidxConstraintlayout = "2.2.0"
 androidxCoreKtx = "1.15.0"
 androidxCoreSplashscreen = "1.0.1"
-androidxMedia3 = "1.5.0"
+androidxMedia3 = "1.5.1"
 androidxFragmentKtx = "1.8.5"
 androidxLifecycle = "2.8.7"
 androidxNavigationCompose = "2.8.5"
@@ -86,3 +86,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "room" }

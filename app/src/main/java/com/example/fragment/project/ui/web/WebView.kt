@@ -197,12 +197,18 @@ fun WebView(
                     ): WebResourceResponse? {
                         if (view != null && request != null) {
                             when {
-                                request.isAssetsResource() -> {
-                                    return request.assetsResourceRequest(view.context)
+                                WebViewManager.isAssetsResource(request) -> {
+                                    return WebViewManager.assetsResourceRequest(
+                                        view.context,
+                                        request
+                                    )
                                 }
 
-                                request.isCacheResource() -> {
-                                    return request.cacheResourceRequest(view.context)
+                                WebViewManager.isCacheResource(request) -> {
+                                    return WebViewManager.cacheResourceRequest(
+                                        view.context,
+                                        request
+                                    )
                                 }
                             }
                         }

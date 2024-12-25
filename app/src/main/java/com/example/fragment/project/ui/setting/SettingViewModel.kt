@@ -1,7 +1,7 @@
 package com.example.fragment.project.ui.setting
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.database.user.User
+import com.example.fragment.project.data.User
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.get

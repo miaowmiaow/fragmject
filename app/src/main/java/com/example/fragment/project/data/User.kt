@@ -1,4 +1,4 @@
-package com.example.fragment.project.database.user
+package com.example.fragment.project.data
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo

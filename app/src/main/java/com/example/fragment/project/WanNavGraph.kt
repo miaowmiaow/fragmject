@@ -10,7 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.fragment.project.database.user.User
+import com.example.fragment.project.data.User
 import com.example.fragment.project.ui.browse_history.BrowseHistoryScreen
 import com.example.fragment.project.ui.demo.DemoScreen
 import com.example.fragment.project.ui.login.LoginScreen

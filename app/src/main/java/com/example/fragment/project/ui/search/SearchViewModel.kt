@@ -3,7 +3,7 @@ package com.example.fragment.project.ui.search
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
 import com.example.fragment.project.data.ArticleList
-import com.example.fragment.project.database.history.History
+import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel

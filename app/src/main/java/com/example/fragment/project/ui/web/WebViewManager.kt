@@ -112,7 +112,7 @@ class WebViewManager private constructor() {
         } else {
             webViewQueue.removeFirst()
         }
-        prepare(MutableContextWrapper(context.applicationContext))
+        addQueue(MutableContextWrapper(context.applicationContext))
         return webView
     }
 

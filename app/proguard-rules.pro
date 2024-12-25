@@ -197,13 +197,6 @@
 -keepclassmembers,allowobfuscation class * {
   @com.google.gson.annotations.SerializedName <fields>;
 }
-# 保留通过Gson序列化/反序列化的应用程序类不被混淆
-# 将下面替换成自己的实体类
--keep class **bean.** {*;}
--keep interface **bean.** {*;}
--keep class **data.** {*;}
--keep interface **data.** {*;}
--keep public class * extends com.example.miaow.base.http.HttpResponse
 #----------------------------- okhttp ---------------------------------
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
@@ -265,3 +258,11 @@
 
 # With R8 full mode generic signatures are stripped for classes that are not kept.
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
+
+# 保留通过Gson序列化/反序列化的应用程序类不被混淆
+# 将下面替换成自己的实体类
+-keep class **bean.** {*;}
+-keep interface **bean.** {*;}
+-keep class **data.** {*;}
+-keep interface **data.** {*;}
+-keep public class * extends com.example.miaow.base.http.HttpResponse

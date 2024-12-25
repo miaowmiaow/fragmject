@@ -13,6 +13,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import com.example.fragment.project.utils.LRUCache
 import com.example.miaow.base.http.download
 import com.example.miaow.base.utils.CacheUtils
 import kotlinx.coroutines.runBlocking
@@ -55,6 +56,27 @@ class WebViewManager private constructor() {
             getInstance().recycle(webView)
         }
 
+        fun isAssetsResource(request: WebResourceRequest): Boolean {
+            return getInstance().isAssetsResource(request)
+        }
+
+        fun isCacheResource(request: WebResourceRequest): Boolean {
+            return getInstance().isCacheResource(request)
+        }
+
+        fun assetsResourceRequest(
+            context: Context,
+            request: WebResourceRequest
+        ): WebResourceResponse? {
+            return getInstance().assetsResourceRequest(context, request)
+        }
+
+        fun cacheResourceRequest(
+            context: Context,
+            request: WebResourceRequest
+        ): WebResourceResponse? {
+            return getInstance().cacheResourceRequest(context, request)
+        }
     }
 
     private val webViewMap = mutableMapOf<String, WebView>()
@@ -62,6 +84,7 @@ class WebViewManager private constructor() {
     private val backStack: ArrayDeque<String> = ArrayDeque()
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
+    private val lruCache: LRUCache<String, File> = LRUCache(200)
 
     private fun getWebView(context: Context): WebView {
         val webView = if (webViewQueue.isEmpty()) {
@@ -97,6 +120,13 @@ class WebViewManager private constructor() {
         if (webViewQueue.isEmpty()) {
             Looper.myQueue().addIdleHandler {
                 webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
+                val cachePath = CacheUtils.getDirPath(context, "web_cache")
+                val file = File(cachePath)
+                if (file.isDirectory) {
+                    file.listFiles()?.forEach {
+                        lruCache.put(it.absolutePath, it)
+                    }
+                }
                 false
             }
         }
@@ -193,100 +223,102 @@ class WebViewManager private constructor() {
         clear()
     }
 
-}
-
-fun WebResourceRequest.isAssetsResource(): Boolean {
-    val url = url.toString()
-    return url.startsWith("file:///android_asset/")
-}
-
-fun WebResourceRequest.isCacheResource(): Boolean {
-    val url = url.toString()
-    val extension = url.getExtensionFromUrl()
-    if (extension.isBlank()) {
-        val accept = requestHeaders["Accept"] ?: return false
-        if (accept.contains("image/avif,image/webp,image/apng,image/svg xml,image/*,*/*;q=0.8")) {
-            return true
-        }
+    fun isAssetsResource(request: WebResourceRequest): Boolean {
+        val url = request.url.toString()
+        return url.startsWith("file:///android_asset/")
     }
-    return extension == "ico" || extension == "bmp" || extension == "gif"
-            || extension == "jpeg" || extension == "jpg" || extension == "png"
-            || extension == "svg" || extension == "webp" || extension == "css"
-            || extension == "js" || extension == "json" || extension == "eot"
-            || extension == "otf" || extension == "ttf" || extension == "woff"
-}
 
-fun WebResourceRequest.assetsResourceRequest(context: Context): WebResourceResponse? {
-    try {
-        val url = url.toString()
-        val filenameIndex = url.lastIndexOf("/") + 1
-        val filename = url.substring(filenameIndex)
-        val suffixIndex = url.lastIndexOf(".")
-        val suffix = url.substring(suffixIndex + 1)
-        val webResourceResponse = WebResourceResponse(
-            url.getMimeTypeFromUrl(),
-            null,
-            context.assets.open("$suffix/$filename")
-        )
-        webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
-        return webResourceResponse
-    } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
-    }
-    return null
-}
-
-fun WebResourceRequest.cacheResourceRequest(context: Context): WebResourceResponse? {
-    try {
-        val url = url.toString()
-        val savePath = CacheUtils.getDirPath(context, "web_cache")
-        val fileName = url.encodeUtf8().md5().hex()
-        val file = File(savePath, fileName)
-        if (!file.exists() || !file.isFile) {
-            runBlocking {
-                download(savePath, fileName) {
-                    setUrl(url)
-                    putHeader(requestHeaders)
-                }
+    fun isCacheResource(request: WebResourceRequest): Boolean {
+        val url = request.url.toString()
+        val extension = url.getExtensionFromUrl()
+        if (extension.isBlank()) {
+            val accept = request.requestHeaders["Accept"] ?: return false
+            if (accept.contains("image/avif,image/webp,image/apng,image/svg xml,image/*,*/*;q=0.8")) {
+                return true
             }
         }
-        if (file.exists() && file.isFile) {
+        return extension == "ico" || extension == "bmp" || extension == "gif"
+                || extension == "jpeg" || extension == "jpg" || extension == "png"
+                || extension == "svg" || extension == "webp" || extension == "css"
+                || extension == "js" || extension == "json" || extension == "eot"
+                || extension == "otf" || extension == "ttf" || extension == "woff"
+    }
+
+    fun assetsResourceRequest(context: Context, request: WebResourceRequest): WebResourceResponse? {
+        try {
+            val url = request.url.toString()
+            val filenameIndex = url.lastIndexOf("/") + 1
+            val filename = url.substring(filenameIndex)
+            val suffixIndex = url.lastIndexOf(".")
+            val suffix = url.substring(suffixIndex + 1)
             val webResourceResponse = WebResourceResponse(
                 url.getMimeTypeFromUrl(),
                 null,
-                file.inputStream()
+                context.assets.open("$suffix/$filename")
             )
             webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
             return webResourceResponse
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
         }
-    } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        return null
     }
-    return null
-}
 
-private fun String.getExtensionFromUrl(): String {
-    try {
-        if (isNotBlank() && this != "null") {
-            return MimeTypeMap.getFileExtensionFromUrl(this)
-        }
-    } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
-    }
-    return ""
-}
-
-private fun String.getMimeTypeFromUrl(): String {
-    try {
-        val extension = this.getExtensionFromUrl()
-        if (extension.isNotBlank() && extension != "null") {
-            if (extension == "json") {
-                return "application/json"
+    fun cacheResourceRequest(context: Context, request: WebResourceRequest): WebResourceResponse? {
+        try {
+            val url = request.url.toString()
+            val cachePath = CacheUtils.getDirPath(context, "web_cache")
+            val fileName = url.encodeUtf8().md5().hex()
+            val key = cachePath + File.separator + fileName
+            var file = lruCache.get(key)
+            if (file == null || !file.exists() || !file.isFile) {
+                runBlocking {
+                    download(cachePath, fileName) {
+                        setUrl(url)
+                        putHeader(request.requestHeaders)
+                    }
+                }
+                file = File(key)
+                lruCache.put(key, file)?.delete()
             }
-            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
+            if (file.exists() && file.isFile) {
+                val webResourceResponse = WebResourceResponse(
+                    url.getMimeTypeFromUrl(),
+                    null,
+                    file.inputStream()
+                )
+                webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
+                return webResourceResponse
+            }
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
         }
-    } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        return null
     }
-    return "*/*"
+
+    private fun String.getExtensionFromUrl(): String {
+        try {
+            if (isNotBlank() && this != "null") {
+                return MimeTypeMap.getFileExtensionFromUrl(this)
+            }
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+        }
+        return ""
+    }
+
+    private fun String.getMimeTypeFromUrl(): String {
+        try {
+            val extension = this.getExtensionFromUrl()
+            if (extension.isNotBlank() && extension != "null") {
+                if (extension == "json") {
+                    return "application/json"
+                }
+                return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
+            }
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+        }
+        return "*/*"
+    }
 }

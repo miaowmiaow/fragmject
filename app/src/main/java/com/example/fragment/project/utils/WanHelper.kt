@@ -2,8 +2,8 @@ package com.example.fragment.project.utils
 
 import android.util.Log
 import com.example.fragment.project.database.AppDatabase
-import com.example.fragment.project.database.history.History
-import com.example.fragment.project.database.user.User
+import com.example.fragment.project.data.History
+import com.example.fragment.project.data.User
 import com.example.miaow.base.database.KVDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

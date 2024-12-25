@@ -6,10 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.fragment.project.database.history.History
-import com.example.fragment.project.database.history.HistoryDao
-import com.example.fragment.project.database.user.User
-import com.example.fragment.project.database.user.UserDao
+import com.example.fragment.project.data.History
+import com.example.fragment.project.data.User
 import com.example.miaow.base.provider.BaseContentProvider
 
 @Database(entities = [History::class, User::class], version = 3, exportSchema = false)

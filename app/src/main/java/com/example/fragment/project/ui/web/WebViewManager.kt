@@ -84,7 +84,7 @@ class WebViewManager private constructor() {
     private val backStack: ArrayDeque<String> = ArrayDeque()
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
-    private val lruCache: LRUCache<String, File> = LRUCache(500)
+    private val lruCache: LRUCache<String, String> = LRUCache(500)
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -118,16 +118,24 @@ class WebViewManager private constructor() {
 
     private fun addQueue(context: Context) {
         if (webViewQueue.isEmpty()) {
-            webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
+            Looper.myQueue().addIdleHandler {
+                webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
+                false
+            }
         }
     }
 
     private fun prepare(context: Context) {
+        addQueue(context)
         Looper.myQueue().addIdleHandler {
-            addQueue(context)
             val cachePath = CacheUtils.getDirPath(context, "web_cache")
             File(cachePath).takeIf { it.isDirectory }?.listFiles()?.forEach {
-                lruCache.put(it.absolutePath, it)
+                val absolutePath = it.absolutePath
+                //put会返回被被淘汰的元素
+                lruCache.put(absolutePath, absolutePath)?.let { path ->
+                    //删除被淘汰的文件
+                    File(path).delete()
+                }
             }
             false
         }
@@ -269,16 +277,19 @@ class WebViewManager private constructor() {
             val cachePath = CacheUtils.getDirPath(context, "web_cache")
             val fileName = url.encodeUtf8().md5().hex()
             val key = cachePath + File.separator + fileName
-            var file = lruCache.get(key)
-            if (file == null || !file.exists() || !file.isFile) {
+            val file = File(key)
+            if (!file.exists() || !file.isFile) {
                 runBlocking {
                     download(cachePath, fileName) {
                         setUrl(url)
                         putHeader(request.requestHeaders)
                     }
+                    //put会返回被被淘汰的元素
+                    lruCache.put(key, key)?.let { path ->
+                        //删除被淘汰的文件
+                        File(path).delete()
+                    }
                 }
-                file = File(key)
-                lruCache.put(key, file)?.delete()
             }
             if (file.exists() && file.isFile) {
                 val webResourceResponse = WebResourceResponse(

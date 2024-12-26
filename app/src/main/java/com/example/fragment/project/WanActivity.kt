@@ -48,10 +48,6 @@ class WanActivity : ComponentActivity() {
                 WanNavGraph(parseScheme(data ?: intent.data), user)
             }
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
         //WebView预创建
         WebViewManager.prepare(applicationContext)
         //双击返回键回退桌面

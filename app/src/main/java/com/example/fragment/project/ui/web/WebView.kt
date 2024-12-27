@@ -197,15 +197,15 @@ fun WebView(
                     ): WebResourceResponse? {
                         if (view != null && request != null) {
                             when {
-                                WebViewManager.isAssetsResource(request) -> {
-                                    return WebViewManager.assetsResourceRequest(
+                                WebViewManager.isCacheResource(request) -> {
+                                    return WebViewManager.cacheResourceRequest(
                                         view.context,
                                         request
                                     )
                                 }
 
-                                WebViewManager.isCacheResource(request) -> {
-                                    return WebViewManager.cacheResourceRequest(
+                                WebViewManager.isAssetsResource(request) -> {
+                                    return WebViewManager.assetsResourceRequest(
                                         view.context,
                                         request
                                     )
@@ -305,7 +305,7 @@ class WebViewNavigator(
 
     private val navigationEvents: MutableSharedFlow<NavigationEvent> = MutableSharedFlow()
 
-    var title: String? by mutableStateOf(null)
+    var title: String? by mutableStateOf("正在加载...")
         internal set
     var loadedUrl: String? by mutableStateOf(null)
         internal set

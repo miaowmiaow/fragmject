@@ -30,8 +30,128 @@ import com.example.miaow.base.http.download
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 
-object WebViewHelper {
+@SuppressLint("SetJavaScriptEnabled")
+class WebViewManager private constructor() {
+
+    companion object {
+        @Volatile
+        private var INSTANCE: WebViewManager? = null
+
+        private fun instance() = INSTANCE ?: synchronized(this) {
+            INSTANCE ?: WebViewManager().also { INSTANCE = it }
+        }
+
+        fun prepare(context: Context) {
+            instance().prepare(context)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        fun obtain(context: Context): WebView {
+            return instance().obtain(context)
+        }
+
+        fun recycle(webView: WebView) {
+            instance().recycle(webView)
+        }
+
+        fun destroy() {
+            instance().destroy()
+        }
+    }
+
+    private val webViewCache: MutableList<WebView> = ArrayList(1)
+    private val lruCache: LRUCache<String, String> = LRUCache(500)
+
+    private fun create(context: Context): WebView {
+        val webView = WebView(context)
+        webView.setBackgroundColor(Color.TRANSPARENT)
+        webView.overScrollMode = WebView.OVER_SCROLL_NEVER
+        val webSettings = webView.settings
+        webSettings.allowFileAccess = true
+        webSettings.cacheMode = WebSettings.LOAD_DEFAULT
+        webSettings.domStorageEnabled = true
+        webSettings.javaScriptEnabled = true
+        webSettings.loadWithOverviewMode = true
+        webSettings.setSupportZoom(true)
+        webSettings.displayZoomControls = false
+        webSettings.useWideViewPort = true
+        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+        return webView
+    }
+
+    fun prepare(context: Context) {
+        Looper.myQueue().addIdleHandler {
+            if (webViewCache.isEmpty()) {
+                webViewCache.add(create(MutableContextWrapper(context.applicationContext)))
+            }
+            val cachePath = CacheUtils.getDirPath(context, "web_cache")
+            File(cachePath).takeIf { it.isDirectory }?.listFiles()?.sortedWith(compareByDescending {
+                //文件创建时间越久说明使用频率越高
+                //通过时间倒序排序防止高频文件初始化时位于队首易被淘汰
+                val attrs = Files.readAttributes(it.toPath(), BasicFileAttributes::class.java)
+                attrs.creationTime().toMillis()
+            })?.forEach {
+                val absolutePath = it.absolutePath
+                //put会返回被被淘汰的元素
+                lruCache.put(absolutePath, absolutePath)?.let { path ->
+                    //删除被淘汰的文件
+                    File(path).delete()
+                }
+            }
+            false
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    fun obtain(context: Context): WebView {
+        if (webViewCache.isEmpty()) {
+            webViewCache.add(create(MutableContextWrapper(context)))
+        }
+        val webView = webViewCache.removeFirst()
+        val contextWrapper = webView.context as MutableContextWrapper
+        contextWrapper.baseContext = context
+        webView.clearHistory()
+        webView.resumeTimers()
+        prepare(context.applicationContext)
+        return webView
+    }
+
+    fun recycle(webView: WebView) {
+        try {
+            webView.stopLoading()
+            webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
+            webView.clearHistory()
+            webView.pauseTimers()
+            val parent = webView.parent
+            if (parent != null) {
+                (parent as ViewGroup).removeView(webView)
+            }
+            val contextWrapper = webView.context as MutableContextWrapper
+            contextWrapper.baseContext = webView.context.applicationContext
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+        } finally {
+            if (!webViewCache.contains(webView)) {
+                webViewCache.add(webView)
+            }
+        }
+    }
+
+    fun destroy() {
+        try {
+            webViewCache.forEach {
+                it.removeAllViews()
+                it.destroy()
+                webViewCache.remove(it)
+            }
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
+        }
+    }
 
     fun setDownloadListener(webView: WebView) {
         webView.setDownloadListener { url, _, _, _, _ ->
@@ -161,6 +281,20 @@ object WebViewHelper {
     fun isCacheResource(webRequest: WebResourceRequest): Boolean {
         val url = webRequest.url.toString()
         val extension = getExtensionFromUrl(url)
+        if (extension.isBlank()) {
+            val method = webRequest.method
+            val accept = webRequest.requestHeaders["Accept"] ?: return false
+            if (method.contains(
+                    "GET",
+                    true
+                ) && (accept.contains(
+                    "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                    true
+                ))
+            ) {
+                return true
+            }
+        }
         return extension == "ico" || extension == "bmp" || extension == "gif"
                 || extension == "jpeg" || extension == "jpg" || extension == "png"
                 || extension == "svg" || extension == "webp" || extension == "css"
@@ -197,15 +331,21 @@ object WebViewHelper {
     ): WebResourceResponse? {
         try {
             val url = webRequest.url.toString()
-            val savePath = CacheUtils.getDirPath(context, "web_cache")
+            val cachePath = CacheUtils.getDirPath(context, "web_cache")
             val fileName = url.encodeUtf8().md5().hex()
-            val file = File(savePath, fileName)
+            val key = cachePath + File.separator + fileName
+            val file = File(key)
             if (!file.exists() || !file.isFile) {
                 runBlocking {
-                    download(savePath, fileName) {
+                    download(cachePath, fileName) {
                         setUrl(url)
                         putHeader(webRequest.requestHeaders)
                     }
+                }
+                //put会返回被被淘汰的元素
+                lruCache.put(key, key)?.let { path ->
+                    //删除被淘汰的文件
+                    File(path).delete()
                 }
             }
             if (file.exists() && file.isFile) {
@@ -248,112 +388,4 @@ object WebViewHelper {
         }
         return "*/*"
     }
-
-}
-
-@SuppressLint("SetJavaScriptEnabled")
-class WebViewManager private constructor() {
-
-    companion object {
-        @Volatile
-        private var INSTANCE: WebViewManager? = null
-
-        private fun instance() = INSTANCE ?: synchronized(this) {
-            INSTANCE ?: WebViewManager().also { INSTANCE = it }
-        }
-
-        fun prepare(context: Context) {
-            instance().prepare(context)
-        }
-
-        @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-        fun obtain(context: Context): WebView {
-            return instance().obtain(context)
-        }
-
-        fun recycle(webView: WebView) {
-            instance().recycle(webView)
-        }
-
-        fun destroy() {
-            instance().destroy()
-        }
-    }
-
-    private val webViewCache: MutableList<WebView> = ArrayList(1)
-
-    private fun create(context: Context): WebView {
-        val webView = WebView(context)
-        webView.setBackgroundColor(Color.TRANSPARENT)
-        webView.overScrollMode = WebView.OVER_SCROLL_NEVER
-        val webSettings = webView.settings
-        webSettings.allowFileAccess = true
-        webSettings.cacheMode = WebSettings.LOAD_DEFAULT
-        webSettings.domStorageEnabled = true
-        webSettings.javaScriptEnabled = true
-        webSettings.loadWithOverviewMode = true
-        webSettings.setSupportZoom(true)
-        webSettings.displayZoomControls = false
-        webSettings.useWideViewPort = true
-        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
-        return webView
-    }
-
-    fun prepare(context: Context) {
-        if (webViewCache.isEmpty()) {
-            Looper.myQueue().addIdleHandler {
-                webViewCache.add(create(MutableContextWrapper(context.applicationContext)))
-                false
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-    fun obtain(context: Context): WebView {
-        if (webViewCache.isEmpty()) {
-            webViewCache.add(create(MutableContextWrapper(context)))
-        }
-        val webView = webViewCache.removeFirst()
-        val contextWrapper = webView.context as MutableContextWrapper
-        contextWrapper.baseContext = context
-        webView.clearHistory()
-        webView.resumeTimers()
-        prepare(context.applicationContext)
-        return webView
-    }
-
-    fun recycle(webView: WebView) {
-        try {
-            webView.stopLoading()
-            webView.loadDataWithBaseURL("about:blank", "", "text/html", "utf-8", null)
-            webView.clearHistory()
-            webView.pauseTimers()
-            val parent = webView.parent
-            if (parent != null) {
-                (parent as ViewGroup).removeView(webView)
-            }
-            val contextWrapper = webView.context as MutableContextWrapper
-            contextWrapper.baseContext = webView.context.applicationContext
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-        } finally {
-            if (!webViewCache.contains(webView)) {
-                webViewCache.add(webView)
-            }
-        }
-    }
-
-    fun destroy() {
-        try {
-            webViewCache.forEach {
-                it.removeAllViews()
-                it.destroy()
-                webViewCache.remove(it)
-            }
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-        }
-    }
-
 }

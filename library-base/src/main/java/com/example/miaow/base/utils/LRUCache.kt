@@ -1,4 +1,4 @@
-package com.example.fragment.project.utils
+package com.example.miaow.base.utils
 
 class LRUCache<K, V>(private val capacity: Int) {
 

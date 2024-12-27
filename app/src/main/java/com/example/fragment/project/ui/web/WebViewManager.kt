@@ -20,6 +20,8 @@ import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 import java.lang.ref.WeakReference
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebViewManager private constructor() {
@@ -129,7 +131,12 @@ class WebViewManager private constructor() {
         addQueue(context)
         Looper.myQueue().addIdleHandler {
             val cachePath = CacheUtils.getDirPath(context, "web_cache")
-            File(cachePath).takeIf { it.isDirectory }?.listFiles()?.forEach {
+            File(cachePath).takeIf { it.isDirectory }?.listFiles()?.sortedWith(compareByDescending {
+                //文件创建时间越久说明使用频率越高
+                //通过时间倒序排序防止高频文件初始化时位于队首易被淘汰
+                val attrs = Files.readAttributes(it.toPath(), BasicFileAttributes::class.java)
+                attrs.creationTime().toMillis()
+            })?.forEach {
                 val absolutePath = it.absolutePath
                 //put会返回被被淘汰的元素
                 lruCache.put(absolutePath, absolutePath)?.let { path ->

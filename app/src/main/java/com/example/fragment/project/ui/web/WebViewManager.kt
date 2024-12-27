@@ -13,7 +13,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.example.fragment.project.utils.LRUCache
+import com.example.miaow.base.utils.LRUCache
 import com.example.miaow.base.http.download
 import com.example.miaow.base.utils.CacheUtils
 import kotlinx.coroutines.runBlocking
@@ -248,8 +248,16 @@ class WebViewManager private constructor() {
         val url = request.url.toString()
         val extension = url.getExtensionFromUrl()
         if (extension.isBlank()) {
+            val method = request.method
             val accept = request.requestHeaders["Accept"] ?: return false
-            if (accept.contains("image/avif,image/webp,image/apng,image/svg xml,image/*,*/*;q=0.8")) {
+            if (method.contains(
+                    "GET",
+                    true
+                ) && (accept.contains(
+                    "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                    true
+                ))
+            ) {
                 return true
             }
         }

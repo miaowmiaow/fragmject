@@ -62,6 +62,7 @@ fun DemoScreen(
         "网格重排",
         "网格选择",
         "视频播放",
+        "嵌套滚动",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
@@ -149,6 +150,7 @@ fun DemoScreen(
                         13 -> GridSortScreen()
                         14 -> GridSelectScreen()
                         15 -> ExoPlayerScreen()
+                        16 -> NestedScrollScreen()
                     }
                 }
             }

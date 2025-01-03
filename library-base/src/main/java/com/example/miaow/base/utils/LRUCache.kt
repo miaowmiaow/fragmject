@@ -1,6 +1,6 @@
 package com.example.miaow.base.utils
 
-class LRUCache<K, V>(private val capacity: Int) {
+class LRUCache<K, V>(private val capacity: Int = Int.MAX_VALUE) {
 
     private val cache = LinkedHashMap<K, V?>()
 

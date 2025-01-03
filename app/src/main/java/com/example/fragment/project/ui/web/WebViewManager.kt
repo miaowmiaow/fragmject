@@ -13,9 +13,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.example.miaow.base.utils.LRUCache
 import com.example.miaow.base.http.download
 import com.example.miaow.base.utils.CacheUtils
+import com.example.miaow.base.utils.LRUCache
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
@@ -86,7 +86,7 @@ class WebViewManager private constructor() {
     private val backStack: ArrayDeque<String> = ArrayDeque()
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
-    private val lruCache: LRUCache<String, String> = LRUCache(500)
+    private val lruCache: LRUCache<String, String> = LRUCache(2000)
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -178,6 +178,7 @@ class WebViewManager private constructor() {
             forwardStack.add(webView.originalUrl.toString())
             backLastUrl
         } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
             lastBackWebView = WeakReference(webView)
             ""
         }

@@ -130,6 +130,10 @@ fun WebView(
     AndroidView(
         factory = { context ->
             WebViewManager.obtain(context, url).apply {
+                this.layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
                 setDownloadListener { url, _, _, _, _ ->
                     try {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
@@ -151,10 +155,6 @@ fun WebView(
                         else -> false
                     }
                 }
-                this.layoutParams = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
                 webChromeClient = object : WebChromeClient() {
 
                     override fun onProgressChanged(view: WebView, newProgress: Int) {

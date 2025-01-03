@@ -152,7 +152,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 30.dp,
+                                    vertical = 20.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_back),
@@ -173,7 +176,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 30.dp,
+                                    vertical = 20.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_forward),
@@ -195,7 +201,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 28.dp,
+                                    vertical = 18.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_refresh),
@@ -222,7 +231,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 30.dp,
+                                    vertical = 20.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_more),
@@ -253,7 +265,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 28.dp,
+                                    vertical = 18.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_browse),
@@ -275,7 +290,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 28.dp,
+                                    vertical = 18.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_history),
@@ -305,7 +323,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 28.dp, vertical = 18.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 28.dp,
+                                    vertical = 18.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_bookmark),
@@ -331,7 +352,10 @@ fun WebScreen(
                                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(horizontal = 30.dp, vertical = 20.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 30.dp,
+                                    vertical = 20.dp
+                                ),
                             ) {
                                 Icon(
                                     painter = painterResource(R.mipmap.ic_web_debug),

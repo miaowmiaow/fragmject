@@ -250,24 +250,37 @@ class WebViewManager private constructor() {
 
     fun isCacheResource(request: WebResourceRequest): Boolean {
         val url = request.url.toString()
-        if (url.contains("hm.baidu.com/hm.gif")) { //忽略掉百度统计
-            return false
-        }
-        val extension = url.getExtensionFromUrl()
+        //忽略掉百度统计
+        if (url.contains("hm.baidu.com/hm.gif")) return false
+        val extension = request.getExtensionFromUrl()
+        if (extension == "text/html") return true
         if (extension.isBlank()) {
             val accept = request.requestHeaders["Accept"] ?: return false
-            val method = request.method
-            if ((accept.contains(acceptImage, true) || accept.contains(acceptHtml, true))
-                && method.contains("GET", true)
+            if ((accept == acceptImage || accept == acceptHtml) && request.method.equals(
+                    "GET",
+                    true
+                )
             ) {
                 return true
             }
         }
-        return extension == "ico" || extension == "bmp" || extension == "gif"
-                || extension == "jpeg" || extension == "jpg" || extension == "png"
-                || extension == "svg" || extension == "webp" || extension == "css"
-                || extension == "js" || extension == "json" || extension == "eot"
-                || extension == "otf" || extension == "ttf" || extension == "woff"
+        return extension in listOf(
+            "ico",
+            "bmp",
+            "gif",
+            "jpeg",
+            "jpg",
+            "png",
+            "svg",
+            "webp",
+            "css",
+            "js",
+            "json",
+            "eot",
+            "otf",
+            "ttf",
+            "woff"
+        )
     }
 
     fun assetsResourceRequest(context: Context, request: WebResourceRequest): WebResourceResponse? {
@@ -323,34 +336,27 @@ class WebViewManager private constructor() {
         return null
     }
 
-    private fun String.getExtensionFromUrl(): String {
-        try {
-            if (isNotBlank() && this != "null") {
-                return MimeTypeMap.getFileExtensionFromUrl(this)
-            }
+    private fun WebResourceRequest.getExtensionFromUrl(): String {
+        return try {
+            val accept = requestHeaders["Accept"] ?: "*/*"
+            if (accept == acceptHtml) "text/html" else MimeTypeMap.getFileExtensionFromUrl(url.toString())
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
+            "*/*"
         }
-        return ""
     }
 
     private fun WebResourceRequest.getMimeTypeFromUrl(): String {
-        try {
-            val accept = requestHeaders["Accept"] ?: "*/*"
-            if (accept.contains(acceptHtml)) {
-                return "text/html"
-            }
-            val url = url.toString()
-            val extension = url.getExtensionFromUrl()
-            if (extension.isNotBlank() && extension != "null") {
-                if (extension == "json") {
-                    return "application/json"
-                }
-                return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
+        return try {
+            when (val extension = getExtensionFromUrl()) {
+                "", "*/*" -> "*/*"
+                "json" -> "application/json"
+                "text/html" -> extension
+                else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
+            "*/*"
         }
-        return "*/*"
     }
 }

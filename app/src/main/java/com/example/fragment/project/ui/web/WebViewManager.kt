@@ -87,6 +87,9 @@ class WebViewManager private constructor() {
     private val forwardStack: ArrayDeque<String> = ArrayDeque()
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
     private val lruCache: LRUCache<String, String> = LRUCache(2000)
+    private val acceptImage = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+    private val acceptHtml =
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -247,17 +250,15 @@ class WebViewManager private constructor() {
 
     fun isCacheResource(request: WebResourceRequest): Boolean {
         val url = request.url.toString()
+        if (url.contains("hm.baidu.com/hm.gif")) { //忽略掉百度统计
+            return false
+        }
         val extension = url.getExtensionFromUrl()
         if (extension.isBlank()) {
-            val method = request.method
             val accept = request.requestHeaders["Accept"] ?: return false
-            if (method.contains(
-                    "GET",
-                    true
-                ) && (accept.contains(
-                    "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                    true
-                ))
+            val method = request.method
+            if ((accept.contains(acceptImage, true) || accept.contains(acceptHtml, true))
+                && method.contains("GET", true)
             ) {
                 return true
             }
@@ -275,7 +276,7 @@ class WebViewManager private constructor() {
             val filename = url.substringAfterLast("/")
             val suffix = url.substringAfterLast(".")
             val webResourceResponse = WebResourceResponse(
-                url.getMimeTypeFromUrl(),
+                request.getMimeTypeFromUrl(),
                 null,
                 context.assets.open(suffix + File.separator + filename)
             )
@@ -309,7 +310,7 @@ class WebViewManager private constructor() {
             }
             if (file.exists() && file.isFile) {
                 val webResourceResponse = WebResourceResponse(
-                    url.getMimeTypeFromUrl(),
+                    request.getMimeTypeFromUrl(),
                     null,
                     file.inputStream()
                 )
@@ -333,9 +334,14 @@ class WebViewManager private constructor() {
         return ""
     }
 
-    private fun String.getMimeTypeFromUrl(): String {
+    private fun WebResourceRequest.getMimeTypeFromUrl(): String {
         try {
-            val extension = this.getExtensionFromUrl()
+            val accept = requestHeaders["Accept"] ?: "*/*"
+            if (accept.contains(acceptHtml)) {
+                return "text/html"
+            }
+            val url = url.toString()
+            val extension = url.getExtensionFromUrl()
             if (extension.isNotBlank() && extension != "null") {
                 if (extension == "json") {
                     return "application/json"

@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.*
 import java.io.File
@@ -118,8 +119,9 @@ class CoroutineHttp private constructor() {
     ): T {
         val request = HttpRequest().apply(init)
         return try {
-            val responseBody = getService().get(request.getUrl(baseUrl), request.getHeader())
-            getConverter().converter(responseBody, type).apply { setRequestTime(request.time) }
+            getService().get(request.getUrl(baseUrl), request.getHeader()).body()?.let { body ->
+                getConverter().converter(body, type).apply { setRequestTime(request.time) }
+            } ?: buildResponse("-1", "response body is null", type)
         } catch (e: Exception) {
             //网络异常时读取预置数据（仅支持部分接口）
             val jsonName = request.getUrl(baseUrl).replace("/", "-").replace("?", "_")
@@ -138,12 +140,13 @@ class CoroutineHttp private constructor() {
     ): T {
         val request = HttpRequest().apply(init)
         return try {
-            val responseBody = getService().post(
+            getService().post(
                 request.getUrl(baseUrl),
                 request.getHeader(),
                 request.getParam()
-            )
-            getConverter().converter(responseBody, type).apply { setRequestTime(request.time) }
+            ).body()?.let { body ->
+                getConverter().converter(body, type).apply { setRequestTime(request.time) }
+            } ?: buildResponse("-1", "response body is null", type)
         } catch (e: Exception) {
             //网络异常时读取预置数据（仅支持部分接口）
             val jsonName = request.getUrl(baseUrl).replace("/", "-").replace("?", "_")
@@ -161,16 +164,14 @@ class CoroutineHttp private constructor() {
         type: Class<T>,
     ): T {
         return try {
-            val request = HttpRequest()
-            request.init()
-            val responseBody = getService().form(
+            val request = HttpRequest().apply(init)
+            getService().form(
                 request.getUrl(baseUrl),
                 request.getHeader(),
                 request.getMultipartBody()
-            )
-            getConverter().converter(responseBody, type).apply {
-                setRequestTime(request.time)
-            }
+            ).body()?.let { body ->
+                getConverter().converter(body, type).apply { setRequestTime(request.time) }
+            } ?: buildResponse("-1", "response body is null", type)
         } catch (e: Exception) {
             buildResponse("-1", e.message.toString(), type)
         }
@@ -182,11 +183,11 @@ class CoroutineHttp private constructor() {
         init: HttpRequest.() -> Unit
     ): HttpResponse {
         return try {
-            val request = HttpRequest()
-            request.init()
-            getService().get(request.getUrl(), request.getHeader()).use {
+            val request = HttpRequest().apply(init)
+            val response = getService().get(request.getUrl(), request.getHeader())
+            if (response.isSuccessful) {
                 val file = File(savePath, fileName)
-                it.byteStream().use { inputStream ->
+                response.body()?.byteStream()?.use { inputStream ->
                     file.writeBytes(inputStream.readBytes())
                 }
             }
@@ -200,12 +201,11 @@ class CoroutineHttp private constructor() {
         init: HttpRequest.() -> Unit,
     ): String {
         return try {
-            val request = HttpRequest()
-            request.init()
+            val request = HttpRequest().apply(init)
             getService().get(
                 request.getUrl(baseUrl),
                 request.getHeader()
-            ).string()
+            ).body()!!.string()
         } catch (e: Exception) {
             e.message.toString()
         }
@@ -237,7 +237,7 @@ interface ApiService {
         @Url url: String = "",
         @HeaderMap header: Map<String, String>,
         @Body body: MultipartBody
-    ): ResponseBody
+    ): Response<ResponseBody>
 
     @FormUrlEncoded
     @POST
@@ -245,12 +245,12 @@ interface ApiService {
         @Url url: String = "",
         @HeaderMap header: Map<String, String>,
         @FieldMap params: Map<String, String>
-    ): ResponseBody
+    ): Response<ResponseBody>
 
     @GET
     suspend fun get(
         @Url url: String = "",
         @HeaderMap header: Map<String, String>
-    ): ResponseBody
+    ): Response<ResponseBody>
 }
 

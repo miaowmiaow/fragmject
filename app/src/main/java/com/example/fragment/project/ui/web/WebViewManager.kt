@@ -88,8 +88,6 @@ class WebViewManager private constructor() {
     private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
     private val lruCache: LRUCache<String, String> = LRUCache(2000)
     private val acceptImage = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
-    private val acceptHtml =
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
 
     private fun create(context: Context): WebView {
         val webView = WebView(context)
@@ -253,14 +251,9 @@ class WebViewManager private constructor() {
         //忽略掉百度统计
         if (url.contains("hm.baidu.com/hm.gif")) return false
         val extension = request.getExtensionFromUrl()
-        if (extension == "text/html") return true
         if (extension.isBlank()) {
             val accept = request.requestHeaders["Accept"] ?: return false
-            if ((accept == acceptImage || accept == acceptHtml) && request.method.equals(
-                    "GET",
-                    true
-                )
-            ) {
+            if (accept == acceptImage && request.method.equals("GET", true)) {
                 return true
             }
         }
@@ -288,13 +281,11 @@ class WebViewManager private constructor() {
             val url = request.url.toString()
             val filename = url.substringAfterLast("/")
             val suffix = url.substringAfterLast(".")
-            val webResourceResponse = WebResourceResponse(
-                request.getMimeTypeFromUrl(),
-                null,
-                context.assets.open(suffix + File.separator + filename)
-            )
-            webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
-            return webResourceResponse
+            val mimeType = request.getMimeTypeFromUrl()
+            val encoding = context.assets.open(suffix + File.separator + filename)
+            return WebResourceResponse(mimeType, null, encoding).apply {
+                responseHeaders["access-control-allow-origin"] = "*"
+            }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
         }
@@ -314,21 +305,17 @@ class WebViewManager private constructor() {
                         setUrl(url)
                         putHeader(request.requestHeaders)
                     }
-                    //put会返回被被淘汰的元素
                     lruCache.put(key, key)?.let { path ->
-                        //删除被淘汰的文件
                         File(path).delete()
                     }
                 }
             }
             if (file.exists() && file.isFile) {
-                val webResourceResponse = WebResourceResponse(
-                    request.getMimeTypeFromUrl(),
-                    null,
-                    file.inputStream()
-                )
-                webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
-                return webResourceResponse
+                val mimeType  = request.getMimeTypeFromUrl()
+                val data = file.inputStream()
+                return WebResourceResponse(mimeType, null, data).apply {
+                    responseHeaders["access-control-allow-origin"] = "*"
+                }
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -338,8 +325,7 @@ class WebViewManager private constructor() {
 
     private fun WebResourceRequest.getExtensionFromUrl(): String {
         return try {
-            val accept = requestHeaders["Accept"] ?: "*/*"
-            if (accept == acceptHtml) "text/html" else MimeTypeMap.getFileExtensionFromUrl(url.toString())
+            MimeTypeMap.getFileExtensionFromUrl(url.toString())
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
             "*/*"
@@ -349,9 +335,8 @@ class WebViewManager private constructor() {
     private fun WebResourceRequest.getMimeTypeFromUrl(): String {
         return try {
             when (val extension = getExtensionFromUrl()) {
-                "", "*/*" -> "*/*"
+                "", "null", "*/*" -> "*/*"
                 "json" -> "application/json"
-                "text/html" -> extension
                 else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {

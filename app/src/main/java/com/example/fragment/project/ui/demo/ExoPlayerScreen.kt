@@ -1,11 +1,10 @@
 package com.example.fragment.project.ui.demo
 
-import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
@@ -13,7 +12,7 @@ import com.example.fragment.project.components.ExoPlayer
 
 @Composable
 fun ExoPlayerScreen() {
-    val window = (LocalContext.current as ComponentActivity).window
+    val window = LocalActivity.current?.window ?: return
     DisposableEffect(Unit) {
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())

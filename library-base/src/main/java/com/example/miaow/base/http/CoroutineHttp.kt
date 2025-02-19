@@ -1,6 +1,6 @@
 package com.example.miaow.base.http
 
-import android.content.ContextWrapper
+import android.content.Context
 import com.example.miaow.base.utils.FileUtil
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
@@ -61,11 +61,11 @@ suspend inline fun CoroutineScope.download(
     return CoroutineHttp.getInstance().download(savePath, fileName, init)
 }
 
-fun ContextWrapper.setBaseUrl(baseUrl: String) {
+fun Context.setBaseUrl(baseUrl: String) {
     CoroutineHttp.getInstance().setBaseUrl(baseUrl)
 }
 
-fun ContextWrapper.setHttpClient(client: OkHttpClient) {
+fun Context.setHttpClient(client: OkHttpClient) {
     CoroutineHttp.getInstance().setHttpClient(client)
 }
 

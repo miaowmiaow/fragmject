@@ -1,6 +1,5 @@
 package com.example.fragment.project.components
 
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
@@ -110,7 +110,7 @@ fun ArticleCard(
                     OutlinedButton(
                         onClick = {
                             val uriString = "https://www.wanandroid.com${tags[0].url}"
-                            val uri = Uri.parse(uriString)
+                            val uri = uriString.toUri()
                             var cid = uri.getQueryParameter("cid")
                             if (cid.isNullOrBlank()) {
                                 val paths = uri.pathSegments

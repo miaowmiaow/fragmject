@@ -41,9 +41,9 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeBox(
-    control: SwipeBoxControl = rememberSwipeBoxControl(),
-    modifier: Modifier = Modifier,
     actionWidth: Dp,
+    modifier: Modifier = Modifier,
+    control: SwipeBoxControl = rememberSwipeBoxControl(),
     startAction: List<@Composable BoxScope.() -> Unit> = listOf(),
     startFillAction: (@Composable BoxScope.() -> Unit)? = null,
     endAction: List<@Composable BoxScope.() -> Unit> = listOf(),

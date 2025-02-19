@@ -42,9 +42,9 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ExoPlayer(
     mediaItems: List<MediaItem>,
+    modifier: Modifier = Modifier,
     control: ExoPlayerControl = rememberExoPlayerControl(),
     playListener: Player.Listener = object : Player.Listener {},
-    modifier: Modifier = Modifier,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var playerView by remember { mutableStateOf<PlayerView?>(null) }

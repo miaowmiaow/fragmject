@@ -52,6 +52,7 @@ import com.example.fragment.project.components.TitleBar
 import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -247,7 +248,7 @@ fun WebScreen(
                             Button(
                                 onClick = {
                                     try {
-                                        val uri = Uri.parse(navigator.loadedUrl)
+                                        val uri = navigator.loadedUrl?.toUri()
                                         val intent = Intent(Intent.ACTION_VIEW, uri)
                                         intent.addCategory(Intent.CATEGORY_BROWSABLE)
                                         context.startActivity(intent)

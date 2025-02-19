@@ -11,7 +11,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
-import android.net.Uri
 import android.os.Build
 import android.os.Looper
 import android.util.Base64
@@ -25,6 +24,8 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.createBitmap
+import androidx.core.net.toUri
 import com.example.miaow.base.dialog.StandardDialog
 import com.example.miaow.base.http.download
 import kotlinx.coroutines.runBlocking
@@ -156,7 +157,7 @@ class WebViewManager private constructor() {
     fun setDownloadListener(webView: WebView) {
         webView.setDownloadListener { url, _, _, _, _ ->
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                 webView.context.startActivity(intent)
             } catch (e: Exception) {
@@ -215,7 +216,7 @@ class WebViewManager private constructor() {
         val currentIndex = backForwardList.currentIndex
         if (currentIndex == 0) {
             val currentUrl = backForwardList.currentItem?.url
-            val currentHost = Uri.parse(currentUrl).host
+            val currentHost = currentUrl?.toUri()?.host
             //栈底不是链接则直接返回
             if (currentHost.isNullOrBlank()) return false
             //栈底链接不是原始链接则直接返回
@@ -238,9 +239,9 @@ class WebViewManager private constructor() {
                 contentHeight = measuredHeight
             }
             val saveBitmap =
-                Bitmap.createBitmap(webView.width, contentHeight, Bitmap.Config.ARGB_8888)
+                createBitmap(webView.width, contentHeight)
             val tempBitmap =
-                Bitmap.createBitmap(webView.width, webView.height, Bitmap.Config.ARGB_8888)
+                createBitmap(webView.width, webView.height)
             val canvas = Canvas()
             val paint = Paint()
             val src = Rect()//代表图片矩形范围

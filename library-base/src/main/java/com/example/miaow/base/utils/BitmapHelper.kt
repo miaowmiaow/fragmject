@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.util.Log
 import java.io.IOException
 import kotlin.math.sqrt
+import androidx.core.net.toUri
 
 //java.lang.RuntimeException: Canvas: trying to draw too large(xxx bytes) bitmap.
 //该异常由 android.graphics.RecordingCanvas.java 或 android.view.DisplayListCanvas.java （SDK版本差异）的 throwIfCannotDraw(Bitmap bitmap) 抛出。
@@ -83,7 +84,7 @@ fun Context.getBitmapPathFromUri(uri: Uri): String {
             imagePath = contentResolverQueryPath(contentUri, selection)
         } else if ("com.android.providers.downloads.documents" == uri.authority) {
             val uriString = "content://downloads/public_downloads"
-            val contentUri = ContentUris.withAppendedId(Uri.parse(uriString), docId.toLong())
+            val contentUri = ContentUris.withAppendedId(uriString.toUri(), docId.toLong())
             imagePath = contentResolverQueryPath(contentUri)
         }
     } else if ("content".equals(uri.scheme, ignoreCase = true)) {

@@ -175,7 +175,7 @@ fun IntSize.toOffset() = IntOffset(width, height).toOffset()
 fun IntOffset.toOffset() = Offset(x.toFloat(), y.toFloat())
 
 fun LazyGridLayoutInfo.firstOrNull(hitPoint: Offset): LazyGridItemInfo? =
-    visibleItemsInfo.firstOrNull() { item ->
+    visibleItemsInfo.firstOrNull { item ->
         hitPoint.x.toInt() in item.offset.x..item.offset.x + item.size.width &&
                 hitPoint.y.toInt() in item.offset.y..item.offset.y + item.size.height
     }

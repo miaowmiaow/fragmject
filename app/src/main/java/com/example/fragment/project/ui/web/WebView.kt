@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.net.toUri
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -136,7 +137,7 @@ fun WebView(
                 )
                 setDownloadListener { url, _, _, _, _ ->
                     try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                         intent.addCategory(Intent.CATEGORY_BROWSABLE)
                         context.startActivity(intent)
                     } catch (e: Exception) {

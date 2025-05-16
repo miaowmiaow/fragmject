@@ -11,7 +11,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -64,7 +63,6 @@ import kotlin.random.Random
  * 基于此封装成 NightSwitchButton 方便使用
  * 文章地址：https://juejin.cn/post/7225454746949615673
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NightSwitchButton(
     checked: Boolean,

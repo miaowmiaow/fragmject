@@ -1,12 +1,10 @@
 package com.example.fragment.project.ui.web
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -44,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fragment.project.R
@@ -52,7 +51,6 @@ import com.example.fragment.project.components.TitleBar
 import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,6 +90,11 @@ fun WebScreen(
         }
         onDispose {
             insetsController.show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            WebViewManager.destroy()
         }
     }
     Box {
@@ -138,236 +141,125 @@ fun WebScreen(
         ) { innerPadding ->
             BottomSheetScaffold(
                 sheetContent = {
-                    Column {
-                        Row(modifier = Modifier.height(64.dp)) {
-                            Button(
-                                onClick = {
-                                    navigator.navigateBack()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 30.dp,
-                                    vertical = 20.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_back),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    navigator.navigateForward()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 30.dp,
-                                    vertical = 20.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_forward),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    navigator.reload()
-                                    scope.launch { bottomSheetState.partialExpand() }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 28.dp,
-                                    vertical = 18.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_refresh),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        if (sheetValue == SheetValue.PartiallyExpanded) {
-                                            bottomSheetState.expand()
-                                        } else {
-                                            bottomSheetState.partialExpand()
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 30.dp,
-                                    vertical = 20.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_more),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                    Row(modifier = Modifier.height(64.dp)) {
+                        Button(
+                            onClick = {
+                                navigator.reload()
+                                scope.launch { bottomSheetState.partialExpand() }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            shape = RoundedCornerShape(0),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = 28.dp,
+                                vertical = 18.dp
+                            ),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.mipmap.ic_web_refresh),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                        Row(modifier = Modifier.height(64.dp)) {
-                            Button(
-                                onClick = {
-                                    try {
-                                        val uri = navigator.loadedUrl?.toUri()
-                                        val intent = Intent(Intent.ACTION_VIEW, uri)
-                                        intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                                        context.startActivity(intent)
-                                        scope.launch { bottomSheetState.partialExpand() }
-                                    } catch (e: Exception) {
-                                        Log.e(this.javaClass.name, e.message.toString())
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 28.dp,
-                                    vertical = 18.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_browse),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    onNavigateToBookmarkHistory()
+                        Button(
+                            onClick = {
+                                try {
+                                    val uri = navigator.loadedUrl?.toUri()
+                                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                                    intent.addCategory(Intent.CATEGORY_BROWSABLE)
+                                    context.startActivity(intent)
                                     scope.launch { bottomSheetState.partialExpand() }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 28.dp,
-                                    vertical = 18.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_history),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        if (bookmark != null) {
-                                            WanHelper.deleteHistory(bookmark!!)
-                                        } else {
-                                            WanHelper.setBookmark(
-                                                navigator.title.toString(),
-                                                navigator.loadedUrl.toString()
-                                            )
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 28.dp,
-                                    vertical = 18.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_bookmark),
-                                    contentDescription = null,
-                                    tint = if (bookmark != null) {
-                                        MaterialTheme.colorScheme.onSurface
+                                } catch (e: Exception) {
+                                    Log.e(this.javaClass.name, e.message.toString())
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            shape = RoundedCornerShape(0),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = 28.dp,
+                                vertical = 18.dp
+                            ),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.mipmap.ic_web_browse),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                onNavigateToBookmarkHistory()
+                                scope.launch { bottomSheetState.partialExpand() }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            shape = RoundedCornerShape(0),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = 28.dp,
+                                vertical = 18.dp
+                            ),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.mipmap.ic_web_history),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    if (bookmark != null) {
+                                        WanHelper.deleteHistory(bookmark!!)
                                     } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                        WanHelper.setBookmark(
+                                            navigator.title.toString(),
+                                            navigator.loadedUrl.toString()
+                                        )
                                     }
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    navigator.injectVConsole()
-                                    scope.launch { bottomSheetState.partialExpand() }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                shape = RoundedCornerShape(0),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 30.dp,
-                                    vertical = 20.dp
-                                ),
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_debug),
-                                    contentDescription = null,
-                                    tint = if (navigator.injectVConsole) {
-                                        MaterialTheme.colorScheme.onSurface
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                            }
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            shape = RoundedCornerShape(0),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = 28.dp,
+                                vertical = 18.dp
+                            ),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.mipmap.ic_web_bookmark),
+                                contentDescription = null,
+                                tint = if (bookmark != null) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
                         }
                     }
                 },

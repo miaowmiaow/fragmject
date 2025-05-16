@@ -58,7 +58,7 @@ fun WebViewNavGraph(
     ) {
         composable("${WebViewDestinations.WEB_VIEW_ROUTE}/{url}") { backStackEntry ->
             WebView(
-                url = backStackEntry.arguments?.getString("url") ?: url,
+                url = backStackEntry.arguments?.getString("url") ?: "",
                 navigator = navigator,
                 goBack = {
                     if (navActions.canBack()) {

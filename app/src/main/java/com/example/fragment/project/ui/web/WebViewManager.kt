@@ -179,8 +179,8 @@ class WebViewManager private constructor() {
             forwardStack.add(webView.originalUrl.toString())
             backLastUrl
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
             lastBackWebView = WeakReference(webView)
+            Log.e(this.javaClass.name, e.message.toString())
             ""
         }
     }
@@ -251,6 +251,7 @@ class WebViewManager private constructor() {
         //忽略掉百度统计
         if (url.contains("hm.baidu.com/hm.gif")) return false
         val extension = request.getExtensionFromUrl()
+        if (extension == "text/html") return true
         if (extension.isBlank()) {
             val accept = request.requestHeaders["Accept"] ?: return false
             if (accept == acceptImage && request.method.equals("GET", true)) {
@@ -284,7 +285,7 @@ class WebViewManager private constructor() {
             val mimeType = request.getMimeTypeFromUrl()
             val encoding = context.assets.open(suffix + File.separator + filename)
             return WebResourceResponse(mimeType, null, encoding).apply {
-                responseHeaders["access-control-allow-origin"] = "*"
+                responseHeaders = mapOf("access-control-allow-origin" to "*")
             }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
@@ -312,9 +313,8 @@ class WebViewManager private constructor() {
             }
             if (file.exists() && file.isFile) {
                 val mimeType  = request.getMimeTypeFromUrl()
-                val data = file.inputStream()
-                return WebResourceResponse(mimeType, null, data).apply {
-                    responseHeaders["access-control-allow-origin"] = "*"
+                return WebResourceResponse(mimeType, null, file.inputStream()).apply {
+                    responseHeaders = mapOf("access-control-allow-origin" to "*")
                 }
             }
         } catch (e: Exception) {
@@ -337,6 +337,7 @@ class WebViewManager private constructor() {
             when (val extension = getExtensionFromUrl()) {
                 "", "null", "*/*" -> "*/*"
                 "json" -> "application/json"
+                "text/html" -> extension
                 else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {

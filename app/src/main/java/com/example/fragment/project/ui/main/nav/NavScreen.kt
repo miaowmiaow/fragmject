@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.main.nav
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.FlingBehavior
@@ -187,7 +186,6 @@ fun NavLinkContent(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun NavSystemContent(
     systemData: List<Tree>,
@@ -201,10 +199,10 @@ fun NavSystemContent(
             modifier = Modifier.fillMaxSize(),
             state = listState
         ) {
-            systemData.forEach {
+            systemData.forEach { data ->
                 stickyHeader {
                     Text(
-                        text = it.name,
+                        text = data.name,
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.background)
                             .fillMaxWidth()
@@ -218,7 +216,7 @@ fun NavSystemContent(
                             .background(MaterialTheme.colorScheme.background)
                             .fillMaxWidth()
                     ) {
-                        it.children?.forEach { children ->
+                        data.children?.forEach { children ->
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
                                     onClick = { onNavigateToSystem(children.id) },

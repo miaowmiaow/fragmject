@@ -3,9 +3,7 @@ package com.example.fragment.project
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
@@ -25,7 +23,6 @@ class WanActivity : ComponentActivity() {
 
     private var data by mutableStateOf<Uri?>(null)
     private var user by mutableStateOf<User?>(null)
-    private var exitTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -50,18 +47,6 @@ class WanActivity : ComponentActivity() {
         }
         //WebView预创建
         WebViewManager.prepare(applicationContext)
-        //双击返回键回退桌面
-        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (System.currentTimeMillis() - exitTime > 2000) {
-                    exitTime = System.currentTimeMillis()
-                    val msg = getString(R.string.one_more_press_2_back)
-                    Toast.makeText(this@WanActivity, msg, Toast.LENGTH_SHORT).show()
-                } else {
-                    moveTaskToBack(true)
-                }
-            }
-        })
     }
 
     override fun onNewIntent(intent: Intent) {

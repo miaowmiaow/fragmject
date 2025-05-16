@@ -1,8 +1,5 @@
 package com.example.fragment.project.components
 
-import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.core.exponentialDecay
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -28,7 +25,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -38,7 +34,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipeBox(
     actionWidth: Dp,
@@ -58,11 +53,9 @@ fun SwipeBox(
     val startWidth = actionWidthPx * startAction.size
     val startActionSize =
         if (startFillAction == null) startAction.size else startAction.size + 1 // startAction + startFillAction
-    val startFillWidth = actionWidthPx * startActionSize
     val endWidth = actionWidthPx * endAction.size
     val endActionSize =
         if (endFillAction == null) endAction.size else endAction.size + 1 // endAction + endFillAction
-    val endFillWidth = actionWidthPx * endActionSize
     var contentWidth by remember { mutableFloatStateOf(0f) }
     var contentHeight by remember { mutableFloatStateOf(0f) }
     val state = remember(startWidth, endWidth, contentWidth) {
@@ -75,18 +68,6 @@ fun SwipeBox(
                 DragAnchors.End at (if (endFillAction != null) -actionWidthPx else 0f) - endWidth
                 DragAnchors.EndFill at (if (endFillAction != null) -contentWidth else 0f) - endWidth
             },
-            positionalThreshold = { distance ->
-                if (startFillAction != null && distance > startFillWidth) {
-                    startWidth
-                } else if (endFillAction != null && distance > endFillWidth) {
-                    endWidth
-                } else {
-                    distance
-                } * 0.5f
-            },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
-            snapAnimationSpec = TweenSpec(durationMillis = 350),
-            decayAnimationSpec = exponentialDecay(10f),
         )
     }
     LaunchedEffect(control, state) {

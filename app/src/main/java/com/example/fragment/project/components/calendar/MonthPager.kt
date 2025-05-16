@@ -1,8 +1,5 @@
 package com.example.fragment.project.components.calendar
 
-import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.core.exponentialDecay
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -28,11 +25,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun MonthPager(
     state: CalendarState,
@@ -104,15 +99,7 @@ internal fun MonthPager(
             val weekModeHeight = with(density) { WeekHeight.toPx() }
             val monthModeHeight = with(density) { WeekHeight.toPx() * month.weeksInMonth() }
             val monthFillModeHeight = with(density) { (height - TipArrowHeight).toPx() }
-            var enabled by remember { mutableStateOf(true) }
             val listState = rememberLazyListState()
-            LaunchedEffect(listState) {
-                snapshotFlow { listState.isScrollInProgress }.collectLatest {
-                    if (listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 && !listState.canScrollForward) {
-                        enabled = false
-                    }
-                }
-            }
             val anchoredDraggableState = remember(monthModeHeight, monthFillModeHeight) {
                 AnchoredDraggableState(
                     initialValue = mode,
@@ -121,25 +108,10 @@ internal fun MonthPager(
                         CalendarMode.Month at monthModeHeight
                         CalendarMode.MonthFill at monthFillModeHeight
                     },
-                    positionalThreshold = { distance -> distance * 0.5f },
-                    velocityThreshold = { with(density) { 100.dp.toPx() } },
-                    snapAnimationSpec = TweenSpec(durationMillis = 350),
-                    decayAnimationSpec = exponentialDecay(10f),
-                    confirmValueChange = { newValue->
-                        if (newValue == CalendarMode.Week) {
-                            enabled = true
-                        } else {
-                            scope.launch {
-                                listState.animateScrollToItem(0)
-                            }
-                            enabled = false
-                        }
-                        true
-                    }
                 )
             }
             LaunchedEffect(anchoredDraggableState) {
-                snapshotFlow { !anchoredDraggableState.isAnimationRunning }.collectLatest {
+                snapshotFlow { anchoredDraggableState.settledValue }.collectLatest {
                     state.mode = anchoredDraggableState.currentValue
                     mode = state.mode
                 }
@@ -196,7 +168,7 @@ internal fun MonthPager(
                     mode = mode,
                     height = height,
                     listState = listState,
-                    userScrollEnabled = enabled,
+                    userScrollEnabled = { mode == CalendarMode.Week },
                     offsetProvider = { anchoredDraggableOffset.toInt() },
                 )
             }

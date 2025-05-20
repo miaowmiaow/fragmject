@@ -184,6 +184,7 @@ fun WanNavGraph(
                 url = backStackEntry.arguments?.getString("url") ?: "",
                 onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
                 onNavigateUp = { wanNavActions.navigateUp() },
+                shouldOverrideUrl = { wanNavActions.navigateToWeb(it) },
             )
         }
     }

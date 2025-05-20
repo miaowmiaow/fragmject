@@ -58,6 +58,7 @@ fun WebScreen(
     url: String,
     onNavigateToBookmarkHistory: () -> Unit = {},
     onNavigateUp: () -> Unit = {},
+    shouldOverrideUrl: (url: String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -73,11 +74,12 @@ fun WebScreen(
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     val navigator = rememberWebViewNavigator()
+    var title by remember { mutableStateOf<String?>("") }
     var bookmark by remember { mutableStateOf<History?>(null) }
-    LaunchedEffect(navigator.loadedUrl) {
+    LaunchedEffect(url) {
         WanHelper.getBookmark().collect {
             WanHelper.getBookmark().collect { bk ->
-                bookmark = bk.firstOrNull { it.url == navigator.loadedUrl }
+                bookmark = bk.firstOrNull { it.url == url }
             }
         }
     }
@@ -92,20 +94,15 @@ fun WebScreen(
             insetsController.show(WindowInsetsCompat.Type.systemBars())
         }
     }
-    DisposableEffect(Unit) {
-        onDispose {
-            WebViewManager.destroy()
-        }
-    }
     Box {
         Scaffold(
             topBar = {
                 TitleBar(
-                    title = navigator.title ?: "",
+                    title = title.toString(),
                     navigationIcon = {
                         IconButton(
                             onClick = {
-                                scope.launch { navigator.navigateBack() }
+                                onNavigateUp()
                             },
                             modifier = Modifier.height(45.dp)
                         ) {
@@ -170,7 +167,7 @@ fun WebScreen(
                         Button(
                             onClick = {
                                 try {
-                                    val uri = navigator.loadedUrl?.toUri()
+                                    val uri = url.toUri()
                                     val intent = Intent(Intent.ACTION_VIEW, uri)
                                     intent.addCategory(Intent.CATEGORY_BROWSABLE)
                                     context.startActivity(intent)
@@ -230,11 +227,9 @@ fun WebScreen(
                                     if (bookmark != null) {
                                         WanHelper.deleteHistory(bookmark!!)
                                     } else {
-                                        WanHelper.setBookmark(
-                                            navigator.title.toString(),
-                                            navigator.loadedUrl.toString()
-                                        )
+                                        WanHelper.setBookmark(title.toString(), url)
                                     }
+                                    bottomSheetState.partialExpand()
                                 }
                             },
                             modifier = Modifier
@@ -271,19 +266,20 @@ fun WebScreen(
                 sheetDragHandle = null,
                 sheetSwipeEnabled = false
             ) { padding ->
-                WebViewNavGraph(
+                WebView(
                     url = url,
+                    navigator = navigator,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
-                    onCustomView = { customView = it },
-                    onReceivedTitle = { url, title ->
+                    onReceivedTitle = {
+                        title = it
                         scope.launch {
-                            WanHelper.setBrowseHistory(title.toString(), url.toString())
+                            WanHelper.setBrowseHistory(it.toString(), url)
                         }
                     },
-                    navigator = navigator,
-                    navigateUp = onNavigateUp,
+                    onCustomView = { customView = it },
+                    shouldOverrideUrl = shouldOverrideUrl,
                 )
             }
         }

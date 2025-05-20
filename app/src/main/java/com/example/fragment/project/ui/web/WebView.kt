@@ -50,10 +50,7 @@ fun WebView(
     url: String,
     navigator: WebViewNavigator,
     modifier: Modifier = Modifier,
-    goBack: (url: String) -> Unit = {},
-    goForward: (url: String) -> Unit = {},
-    navigateUp: () -> Unit = {},
-    onReceivedTitle: (url: String?, title: String?) -> Unit = { _, _ -> },
+    onReceivedTitle: (title: String?) -> Unit = {},
     onCustomView: (view: View?) -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
 ) {
@@ -61,34 +58,11 @@ fun WebView(
     var injectState by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var extra by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(url) {
-        navigator.loadedUrl = url
-    }
     LaunchedEffect(webView, navigator) {
         webView?.let {
             with(navigator) {
                 handleNavigationEvents(
-                    onBack = {
-                        if (it.canGoBack()) {
-                            it.goBack()
-                        } else {
-                            val backUrl = WebViewManager.back(it)
-                            if (backUrl.isNotBlank()) {
-                                goBack(backUrl)
-                            } else {
-                                navigateUp()
-                            }
-                        }
-                    },
-                    onForward = {
-                        val forwardUrl = WebViewManager.forward(it)
-                        if (forwardUrl.isNotBlank()) {
-                            goForward(forwardUrl)
-                        }
-                    },
-                    reload = {
-                        it.reload()
-                    }
+                    reload = { it.reload() }
                 )
             }
         }
@@ -98,20 +72,20 @@ fun WebView(
         "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO
     )
     var permissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
-    val requestPermissions =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-            permissionRequest?.apply {
-                var isGranted = true
-                result.entries.forEach { entry ->
-                    if (!entry.value) {
-                        isGranted = false
-                    }
-                }
-                if (isGranted) {
-                    grant(resources)
+    val contract = ActivityResultContracts.RequestMultiplePermissions()
+    val requestPermissions = rememberLauncherForActivityResult(contract) { result ->
+        permissionRequest?.apply {
+            var isGranted = true
+            result.entries.forEach { entry ->
+                if (!entry.value) {
+                    isGranted = false
                 }
             }
+            if (isGranted) {
+                grant(resources)
+            }
         }
+    }
     LaunchedEffect(permissionRequest) {
         val permissions = mutableListOf<String>()
         permissionRequest?.resources?.forEach { resource ->
@@ -157,18 +131,15 @@ fun WebView(
                         super.onProgressChanged(view, newProgress)
                         navigator.progress = (newProgress / 100f).coerceIn(0f, 1f)
                         if (newProgress > 80 && navigator.injectVConsole && !injectState) {
-                            view.apply { evaluateJavascript(context.injectVConsoleJs()) {} }
+                            evaluateJavascript(context.injectVConsoleJs()) {}
                             injectState = true
                         }
                     }
 
                     override fun onReceivedTitle(view: WebView?, title: String?) {
                         super.onReceivedTitle(view, title)
-                        if (view == null) {
-                            return
-                        }
-                        navigator.title = title
-                        onReceivedTitle(view.url, title)
+                        onReceivedTitle(title)
+                        view?.tag = title
                     }
 
                     override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
@@ -194,17 +165,11 @@ fun WebView(
                         if (view != null && request != null) {
                             when {
                                 WebViewManager.isCacheResource(request) -> {
-                                    return WebViewManager.cacheResourceRequest(
-                                        view.context,
-                                        request
-                                    )
+                                    return WebViewManager.cacheResourceRequest(context, request)
                                 }
 
                                 WebViewManager.isAssetsResource(request) -> {
-                                    return WebViewManager.assetsResourceRequest(
-                                        view.context,
-                                        request
-                                    )
+                                    return WebViewManager.assetsResourceRequest(context, request)
                                 }
                             }
                         }
@@ -251,6 +216,9 @@ fun WebView(
                 if (URLUtil.isValidUrl(url) && !URLUtil.isValidUrl(this.url)) {
                     this.loadUrl(url)
                 }
+                tag?.let { title ->
+                    onReceivedTitle(title.toString())
+                }
                 webView = this
             }
         },
@@ -290,21 +258,13 @@ fun WebView(
 }
 
 @Stable
-class WebViewNavigator(
-    private val scope: CoroutineScope
-) {
+class WebViewNavigator(private val scope: CoroutineScope) {
     private sealed interface NavigationEvent {
-        data object Back : NavigationEvent
-        data object Forward : NavigationEvent
         data object Reload : NavigationEvent
     }
 
     private val navigationEvents: MutableSharedFlow<NavigationEvent> = MutableSharedFlow()
 
-    var title: String? by mutableStateOf("正在加载...")
-        internal set
-    var loadedUrl: String? by mutableStateOf(null)
-        internal set
     var injectVConsole: Boolean by mutableStateOf(false)
         internal set
     var progress: Float by mutableFloatStateOf(0f)
@@ -312,35 +272,17 @@ class WebViewNavigator(
 
     @OptIn(FlowPreview::class)
     internal suspend fun handleNavigationEvents(
-        onBack: () -> Unit = {},
-        onForward: () -> Unit = {},
         reload: () -> Unit = {},
     ) = withContext(Dispatchers.Main) {
         navigationEvents.debounce(350).collect { event ->
             when (event) {
-                NavigationEvent.Back -> onBack()
-                NavigationEvent.Forward -> onForward()
                 NavigationEvent.Reload -> reload()
             }
         }
     }
 
-    fun navigateBack() {
-        scope.launch { navigationEvents.emit(NavigationEvent.Back) }
-    }
-
-    fun navigateForward() {
-        scope.launch { navigationEvents.emit(NavigationEvent.Forward) }
-    }
-
     fun reload() {
         scope.launch { navigationEvents.emit(NavigationEvent.Reload) }
-    }
-
-    fun injectVConsole(): Boolean {
-        injectVConsole = !injectVConsole
-        reload()
-        return injectVConsole
     }
 
 }

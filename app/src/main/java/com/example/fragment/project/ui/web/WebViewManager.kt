@@ -19,7 +19,6 @@ import com.example.miaow.base.utils.LRUCache
 import kotlinx.coroutines.runBlocking
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
-import java.lang.ref.WeakReference
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 
@@ -44,14 +43,6 @@ class WebViewManager private constructor() {
 
         fun obtain(context: Context, url: String): WebView {
             return getInstance().obtain(context, url)
-        }
-
-        fun back(webView: WebView): String {
-            return getInstance().back(webView)
-        }
-
-        fun forward(webView: WebView): String {
-            return getInstance().forward(webView)
         }
 
         fun recycle(webView: WebView) {
@@ -82,11 +73,8 @@ class WebViewManager private constructor() {
     }
 
     private val webViewMap = mutableMapOf<String, WebView>()
-    private val webViewQueue: ArrayDeque<WebView> = ArrayDeque()
     private val backStack: ArrayDeque<String> = ArrayDeque()
-    private val forwardStack: ArrayDeque<String> = ArrayDeque()
-    private var lastBackWebView: WeakReference<WebView?> = WeakReference(null)
-    private val lruCache: LRUCache<String, String> = LRUCache(2000)
+    private val lruCache: LRUCache<String, String> = LRUCache(5000)
     private val acceptImage = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
 
     private fun create(context: Context): WebView {
@@ -109,27 +97,7 @@ class WebViewManager private constructor() {
         return webView
     }
 
-    private fun getWebView(context: Context): WebView {
-        val webView = if (webViewQueue.isEmpty()) {
-            create(MutableContextWrapper(context))
-        } else {
-            webViewQueue.removeFirst()
-        }
-        addQueue(MutableContextWrapper(context.applicationContext))
-        return webView
-    }
-
-    private fun addQueue(context: Context) {
-        if (webViewQueue.isEmpty()) {
-            Looper.myQueue().addIdleHandler {
-                webViewQueue.add(create(MutableContextWrapper(context.applicationContext)))
-                false
-            }
-        }
-    }
-
     private fun prepare(context: Context) {
-        addQueue(context)
         Looper.myQueue().addIdleHandler {
             val cachePath = CacheUtils.getDirPath(context, "web_cache")
             File(cachePath).takeIf { it.isDirectory }?.listFiles()?.sortedWith(compareByDescending {
@@ -149,87 +117,42 @@ class WebViewManager private constructor() {
         }
     }
 
-    private fun destroy() {
-        try {
-            backStack.clear()
-            forwardStack.clear()
-            lastBackWebView.clear()
-            webViewMap.destroyWebView()
-            webViewQueue.destroyWebView()
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-        }
-    }
-
     private fun obtain(context: Context, url: String): WebView {
         val webView = webViewMap.getOrPut(url) {
-            getWebView(MutableContextWrapper(context))
+            backStack.add(url)
+            create(context)
         }
         if (webView.parent != null) {
             (webView.parent as ViewGroup).removeView(webView)
         }
-        val contextWrapper = webView.context as MutableContextWrapper
-        contextWrapper.baseContext = context
+        if (webViewMap.size > 50) {
+            try {
+                webViewMap.remove(backStack.removeFirst())?.let {
+                    it.removeParentView()
+                    it.removeAllViews()
+                    it.destroy()
+                }
+            } catch (e: Exception) {
+                Log.e(this.javaClass.name, e.message.toString())
+            }
+        }
         return webView
-    }
-
-    private fun back(webView: WebView): String {
-        return try {
-            val backLastUrl = backStack.removeLast()//通过NoSuchElementException判断是否处在第一页
-            forwardStack.add(webView.originalUrl.toString())
-            backLastUrl
-        } catch (e: Exception) {
-            lastBackWebView = WeakReference(webView)
-            Log.e(this.javaClass.name, e.message.toString())
-            ""
-        }
-    }
-
-    private fun forward(webView: WebView): String {
-        return try {
-            val forwardLastUrl = forwardStack.removeLast()
-            backStack.add(webView.originalUrl.toString())
-            forwardLastUrl
-        } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
-            ""
-        }
     }
 
     private fun recycle(webView: WebView) {
         try {
             webView.removeParentView()
-            val originalUrl = webView.originalUrl.toString()
-            if (lastBackWebView.get() != webView) {
-                if (!forwardStack.contains(originalUrl)) {
-                    backStack.add(originalUrl)
-                }
-            } else {
-                destroy()
-                //重新缓存一个webView
-                addQueue(webView.context)
-            }
         } catch (e: Exception) {
             Log.e(this.javaClass.name, e.message.toString())
         }
     }
 
-    private fun WebView.removeParentView(): WebView {
-        if (parent != null) {
-            (parent as ViewGroup).removeView(this)
+    private fun destroy() {
+        try {
+            webViewMap.destroyWebView()
+        } catch (e: Exception) {
+            Log.e(this.javaClass.name, e.message.toString())
         }
-        val contextWrapper = context as MutableContextWrapper
-        contextWrapper.baseContext = context.applicationContext
-        return this
-    }
-
-    private fun MutableList<WebView>.destroyWebView() {
-        forEach {
-            it.removeParentView()
-            it.removeAllViews()
-            it.destroy()
-        }
-        clear()
     }
 
     private fun MutableMap<String, WebView>.destroyWebView() {
@@ -239,6 +162,15 @@ class WebViewManager private constructor() {
             it.destroy()
         }
         clear()
+    }
+
+    private fun WebView.removeParentView(): WebView {
+        if (parent != null) {
+            (parent as ViewGroup).removeView(this)
+        }
+        val contextWrapper = context as MutableContextWrapper
+        contextWrapper.baseContext = context.applicationContext
+        return this
     }
 
     fun isAssetsResource(request: WebResourceRequest): Boolean {
@@ -312,7 +244,7 @@ class WebViewManager private constructor() {
                 }
             }
             if (file.exists() && file.isFile) {
-                val mimeType  = request.getMimeTypeFromUrl()
+                val mimeType = request.getMimeTypeFromUrl()
                 return WebResourceResponse(mimeType, null, file.inputStream()).apply {
                     responseHeaders = mapOf("access-control-allow-origin" to "*")
                 }

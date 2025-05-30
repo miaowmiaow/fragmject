@@ -45,8 +45,10 @@ class WanActivity : ComponentActivity() {
                 WanNavGraph(parseScheme(data ?: intent.data), user)
             }
         }
-        //WebView预创建
+        // WebView 预创建
         WebViewManager.prepare(applicationContext)
+        //启用 WebView 调试
+//        WebView.setWebContentsDebuggingEnabled(true)
     }
 
     override fun onNewIntent(intent: Intent) {

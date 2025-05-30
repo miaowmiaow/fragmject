@@ -35,6 +35,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import com.example.fragment.project.components.StandardDialog
 import com.example.miaow.base.utils.injectVConsoleJs
+import com.example.miaow.base.utils.injectVideoJs
 import com.example.miaow.base.utils.saveImagesToAlbum
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -130,7 +131,8 @@ fun WebView(
                     override fun onProgressChanged(view: WebView, newProgress: Int) {
                         super.onProgressChanged(view, newProgress)
                         navigator.progress = (newProgress / 100f).coerceIn(0f, 1f)
-                        if (newProgress > 80 && navigator.injectVConsole && !injectState) {
+                        if (newProgress > 80 && navigator.injectState && !injectState) {
+                            evaluateJavascript(context.injectVideoJs()) {}
                             evaluateJavascript(context.injectVConsoleJs()) {}
                             injectState = true
                         }
@@ -265,7 +267,7 @@ class WebViewNavigator(private val scope: CoroutineScope) {
 
     private val navigationEvents: MutableSharedFlow<NavigationEvent> = MutableSharedFlow()
 
-    var injectVConsole: Boolean by mutableStateOf(false)
+    var injectState: Boolean by mutableStateOf(false)
         internal set
     var progress: Float by mutableFloatStateOf(0f)
         internal set
@@ -285,6 +287,11 @@ class WebViewNavigator(private val scope: CoroutineScope) {
         scope.launch { navigationEvents.emit(NavigationEvent.Reload) }
     }
 
+    fun inject(): Boolean {
+        injectState = !injectState
+        reload()
+        return injectState
+    }
 }
 
 @Composable

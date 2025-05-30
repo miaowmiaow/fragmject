@@ -49,23 +49,25 @@ fun ExoPlayer(
     val lifecycleOwner = LocalLifecycleOwner.current
     var playerView by remember { mutableStateOf<PlayerView?>(null) }
     LaunchedEffect(playerView, control) {
-        playerView?.let {
-            with(control) {
-                handleControlEvents(
-                    onPlay = {
-                        it.player?.play()
-                    },
-                    onPause = {
-                        it.player?.pause()
-                    },
-                    onPrevious = {
-                        it.player?.seekToPrevious()
-                    },
-                    onNext = {
-                        it.player?.seekToNext()
-                    }
-                )
-            }
+        val player = playerView?.player ?: return@LaunchedEffect
+        with(control) {
+            handleControlEvents(
+                onPlay = {
+                    player.play()
+                },
+                onPause = {
+                    player.pause()
+                },
+                onPrevious = {
+                    player.seekToPrevious()
+                },
+                onNext = {
+                    player.seekToNext()
+                },
+                onSeekTo = {
+                    player.seekTo(it)
+                }
+            )
         }
     }
     DisposableEffect(lifecycleOwner) {
@@ -135,6 +137,7 @@ class ExoPlayerControl(
         data object Pause : ControlEvent
         data object Previous : ControlEvent
         data object Next : ControlEvent
+        data class SeekTo(val positionMs: Long) : ControlEvent
     }
 
     private val controlEvents: MutableSharedFlow<ControlEvent> = MutableSharedFlow()
@@ -145,6 +148,7 @@ class ExoPlayerControl(
         onPause: () -> Unit = {},
         onPrevious: () -> Unit = {},
         onNext: () -> Unit = {},
+        onSeekTo: (positionMs: Long) -> Unit = {},
     ) = withContext(Dispatchers.Main) {
         controlEvents.debounce(350).collect { event ->
             when (event) {
@@ -152,6 +156,7 @@ class ExoPlayerControl(
                 ControlEvent.Pause -> onPause()
                 ControlEvent.Previous -> onPrevious()
                 ControlEvent.Next -> onNext()
+                is ControlEvent.SeekTo -> onSeekTo(event.positionMs)
             }
         }
     }
@@ -170,6 +175,10 @@ class ExoPlayerControl(
 
     fun next() {
         scope.launch { controlEvents.emit(ControlEvent.Next) }
+    }
+
+    fun seekTo(positionMs: Long) {
+        scope.launch { controlEvents.emit(ControlEvent.SeekTo(positionMs)) }
     }
 }
 

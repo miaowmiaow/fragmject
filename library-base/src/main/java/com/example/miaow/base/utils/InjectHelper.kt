@@ -17,3 +17,16 @@ fun Context.injectVConsoleJs(): String {
         ""
     }
 }
+
+fun Context.injectVideoJs(): String {
+    return try {
+        val videoJs = resources.assets.open("js/video.js").use {
+            val buffer = ByteArray(it.available())
+            it.read(buffer)
+            String(buffer)
+        }
+        videoJs.trimIndent()
+    } catch (e: Exception) {
+        ""
+    }
+}

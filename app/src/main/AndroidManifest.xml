@@ -13,6 +13,17 @@
         android:theme="@style/Theme.Nia.Splash"
         tools:ignore="DataExtractionRules"
         tools:targetApi="33">
+        <receiver
+            android:name=".appwidgets.MyAppWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/my_app_widget_info" />
+        </receiver>
 
         <meta-data
             android:name="app_channel"
@@ -41,6 +52,17 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".appwidgets.MyAppWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/my_app_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

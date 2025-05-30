@@ -1,15 +1,15 @@
 package com.example.fragment.project.ui.web
 
-import android.content.Intent
-import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -22,6 +22,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
@@ -38,11 +39,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fragment.project.R
@@ -166,38 +167,6 @@ fun WebScreen(
                         }
                         Button(
                             onClick = {
-                                try {
-                                    val uri = url.toUri()
-                                    val intent = Intent(Intent.ACTION_VIEW, uri)
-                                    intent.addCategory(Intent.CATEGORY_BROWSABLE)
-                                    context.startActivity(intent)
-                                    scope.launch { bottomSheetState.partialExpand() }
-                                } catch (e: Exception) {
-                                    Log.e(this.javaClass.name, e.message.toString())
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                            shape = RoundedCornerShape(0),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(
-                                horizontal = 28.dp,
-                                vertical = 18.dp
-                            ),
-                        ) {
-                            Icon(
-                                painter = painterResource(R.mipmap.ic_web_browse),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Button(
-                            onClick = {
                                 onNavigateToBookmarkHistory()
                                 scope.launch { bottomSheetState.partialExpand() }
                             },
@@ -256,6 +225,35 @@ fun WebScreen(
                                 }
                             )
                         }
+                        Button(
+                            onClick = {
+                                navigator.inject()
+                                scope.launch { bottomSheetState.partialExpand() }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            shape = RoundedCornerShape(0),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = 30.dp,
+                                vertical = 20.dp
+                            ),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.mipmap.ic_web_debug),
+                                contentDescription = null,
+                                tint = if (navigator.injectState) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.padding(innerPadding),
@@ -266,6 +264,14 @@ fun WebScreen(
                 sheetDragHandle = null,
                 sheetSwipeEnabled = false
             ) { padding ->
+                AnimatedVisibility(visible = (navigator.progress > 0f && navigator.progress < 1f)) {
+                    LinearProgressIndicator(
+                        progress = { navigator.progress },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = colorResource(R.color.theme_orange),
+                        trackColor = colorResource(R.color.white)
+                    )
+                }
                 WebView(
                     url = url,
                     navigator = navigator,

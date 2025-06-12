@@ -168,7 +168,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)

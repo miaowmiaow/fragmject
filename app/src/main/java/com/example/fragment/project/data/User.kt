@@ -4,27 +4,27 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
+import androidx.room.PrimaryKey
 import com.example.fragment.project.R
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlin.math.abs
 
-@Entity(primaryKeys = ["unique_id"])
+@Entity
 @Parcelize
 data class User @JvmOverloads constructor(
-    @ColumnInfo(name = "unique_id") var uniqueId: Long = 0,
-    @ColumnInfo(name = "id") val id: String,
-    @ColumnInfo(name = "username") val username: String,
-    @ColumnInfo(name = "nickname") val nickname: String,
+    @PrimaryKey val id: Long,
+    @ColumnInfo(name = "username") var username: String = "",
+    @ColumnInfo(name = "nickname") var nickname: String = "",
     @ColumnInfo(name = "dark_theme") var darkTheme: Boolean,
-    @Ignore val token: String = "",
-    @Ignore val password: String = "",
-    @Ignore val admin: String = "",
-    @Ignore val email: String = "",
-    @Ignore val icon: String = "",
-    @Ignore val type: String = "",
-    @Ignore val publicName: String = "",
-    @Ignore val coinCount: String = "",
+    @Ignore val token: String? = null,
+    @Ignore val password: String? = null,
+    @Ignore val admin: String? = null,
+    @Ignore val email: String? = null,
+    @Ignore val icon: String? = null,
+    @Ignore val type: String? = null,
+    @Ignore val publicName: String? = null,
+    @Ignore val coinCount: String? = null,
     @Ignore val collectIds: List<Int>? = null,
 ) : Parcelable {
 

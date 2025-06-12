@@ -25,7 +25,7 @@ object WanHelper {
         if (history != null) {
             historyDao.delete(history)
         }
-        historyDao.insertWithLimitCheck(History(key = BOOKMARK, value = value, url = url))
+        historyDao.insertWithLimitCheck(History(id = 0, key = BOOKMARK, value = value, url = url))
     }
 
     fun getBookmark(): Flow<List<History>> {
@@ -38,7 +38,7 @@ object WanHelper {
         if (history != null) {
             historyDao.delete(history)
         }
-        historyDao.insertWithLimitCheck(History(key = BROWSE_HISTORY, value = value, url = url))
+        historyDao.insertWithLimitCheck(History(id = 0, key = BROWSE_HISTORY, value = value, url = url))
     }
 
     fun getBrowseHistory(): Flow<List<History>> {
@@ -54,7 +54,7 @@ object WanHelper {
         if (history != null) {
             historyDao.delete(history)
         }
-        historyDao.insertWithLimitCheck(History(key = SEARCH_HISTORY, value = value))
+        historyDao.insertWithLimitCheck(History(id = 0, key = SEARCH_HISTORY, value = value))
     }
 
     /**

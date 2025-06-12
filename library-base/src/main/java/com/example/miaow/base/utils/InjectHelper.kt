@@ -18,14 +18,14 @@ fun Context.injectVConsoleJs(): String {
     }
 }
 
-fun Context.injectVideoJs(): String {
+fun Context.injectQuickVideoJs(): String {
     return try {
-        val videoJs = resources.assets.open("js/video.js").use {
+        val quickVideoJs = resources.assets.open("js/quick-video.js").use {
             val buffer = ByteArray(it.available())
             it.read(buffer)
             String(buffer)
         }
-        videoJs.trimIndent()
+        quickVideoJs.trimIndent()
     } catch (e: Exception) {
         ""
     }

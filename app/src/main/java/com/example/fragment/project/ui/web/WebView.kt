@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.PermissionRequest
 import android.webkit.URLUtil
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -34,8 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import com.example.fragment.project.components.StandardDialog
+import com.example.miaow.base.utils.injectQuickVideoJs
 import com.example.miaow.base.utils.injectVConsoleJs
-import com.example.miaow.base.utils.injectVideoJs
 import com.example.miaow.base.utils.saveImagesToAlbum
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun WebView(
     url: String,
-    navigator: WebViewNavigator,
+    control: WebViewControl,
     modifier: Modifier = Modifier,
     onReceivedTitle: (title: String?) -> Unit = {},
     onCustomView: (view: View?) -> Unit = {},
@@ -59,11 +60,16 @@ fun WebView(
     var injectState by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var extra by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(webView, navigator) {
+    LaunchedEffect(webView, control) {
         webView?.let {
-            with(navigator) {
-                handleNavigationEvents(
-                    reload = { it.reload() }
+            with(control) {
+                handleControlEvents(
+                    reload = { it.reload() },
+                    evaluateJavascript = { script, resultCallback ->
+                        it.evaluateJavascript(script) { value ->
+                            resultCallback?.onReceiveValue(value ?: "")
+                        }
+                    }
                 )
             }
         }
@@ -130,10 +136,12 @@ fun WebView(
 
                     override fun onProgressChanged(view: WebView, newProgress: Int) {
                         super.onProgressChanged(view, newProgress)
-                        navigator.progress = (newProgress / 100f).coerceIn(0f, 1f)
-                        if (newProgress > 80 && navigator.injectState && !injectState) {
-                            evaluateJavascript(context.injectVideoJs()) {}
-                            evaluateJavascript(context.injectVConsoleJs()) {}
+                        control.progress = (newProgress / 100f).coerceIn(0f, 1f)
+                        if (newProgress > 80) {
+                            if (control.injectState && !injectState) {
+                                evaluateJavascript(context.injectVConsoleJs()) {}
+                            }
+                            evaluateJavascript(context.injectQuickVideoJs()) {}
                             injectState = true
                         }
                     }
@@ -260,12 +268,16 @@ fun WebView(
 }
 
 @Stable
-class WebViewNavigator(private val scope: CoroutineScope) {
-    private sealed interface NavigationEvent {
-        data object Reload : NavigationEvent
+class WebViewControl(private val scope: CoroutineScope) {
+    private sealed interface WebViewEvent {
+        data object Reload : WebViewEvent
+        data class EvaluateJavascript(
+            val script: String,
+            val resultCallback: ValueCallback<String>?
+        ) : WebViewEvent
     }
 
-    private val navigationEvents: MutableSharedFlow<NavigationEvent> = MutableSharedFlow()
+    private val webViewEvents: MutableSharedFlow<WebViewEvent> = MutableSharedFlow()
 
     var injectState: Boolean by mutableStateOf(false)
         internal set
@@ -273,18 +285,23 @@ class WebViewNavigator(private val scope: CoroutineScope) {
         internal set
 
     @OptIn(FlowPreview::class)
-    internal suspend fun handleNavigationEvents(
+    internal suspend fun handleControlEvents(
         reload: () -> Unit = {},
+        evaluateJavascript: (script: String, resultCallback: ValueCallback<String>?) -> Unit = { _, _ -> },
     ) = withContext(Dispatchers.Main) {
-        navigationEvents.debounce(350).collect { event ->
+        webViewEvents.debounce(350).collect { event ->
             when (event) {
-                NavigationEvent.Reload -> reload()
+                WebViewEvent.Reload -> reload()
+                is WebViewEvent.EvaluateJavascript -> evaluateJavascript(
+                    event.script,
+                    event.resultCallback
+                )
             }
         }
     }
 
     fun reload() {
-        scope.launch { navigationEvents.emit(NavigationEvent.Reload) }
+        scope.launch { webViewEvents.emit(WebViewEvent.Reload) }
     }
 
     fun inject(): Boolean {
@@ -292,9 +309,13 @@ class WebViewNavigator(private val scope: CoroutineScope) {
         reload()
         return injectState
     }
+
+    fun evaluateJavascript(script: String, resultCallback: ValueCallback<String>? = null) {
+        scope.launch { webViewEvents.emit(WebViewEvent.EvaluateJavascript(script, resultCallback)) }
+    }
 }
 
 @Composable
-fun rememberWebViewNavigator(
+fun rememberWebViewControl(
     coroutineScope: CoroutineScope = rememberCoroutineScope()
-): WebViewNavigator = remember(coroutineScope) { WebViewNavigator(coroutineScope) }
+): WebViewControl = remember(coroutineScope) { WebViewControl(coroutineScope) }

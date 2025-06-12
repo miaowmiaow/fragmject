@@ -1,28 +1,28 @@
 [versions]
-agp = "8.10.1"
+agp = "8.11.0-rc01"
 activity = "1.10.1"
-androidxComposeBom = "2025.05.01"
+androidxComposeBom = "2025.06.00"
 androidxConstraintlayout = "2.2.1"
 androidxCoreKtx = "1.16.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxMedia3 = "1.7.1"
-androidxFragmentKtx = "1.8.7"
-androidxLifecycle = "2.9.0"
+androidxFragmentKtx = "1.8.8"
+androidxLifecycle = "2.9.1"
 androidxNavigationCompose = "2.9.0"
-androidxWebkit = "1.13.0"
-asm = "9.7.1"
+androidxWebkit = "1.14.0"
+asm = "9.8"
 coil = "2.7.0"
 glance = "1.1.1"
-gson = "2.12.1"
+gson = "2.13.1"
 junit = "4.13.2"
-kotlin = "2.1.10"
-kotlinxCoroutines = "1.10.1"
-ksp = "2.0.20-1.0.25"
+kotlin = "2.0.20-RC"
+kotlinxCoroutines = "1.10.2"
+ksp = "2.0.20-RC-1.0.24"
 leakcanary = "2.14"
 material = "1.12.0"
-miaowPlugin = "1.0.0"
-okhttp = "5.0.0-alpha.14"
-retrofit = "2.11.0"
+#miaowPlugin = "1.0.0"
+okhttp = "5.0.0-alpha.16"
+retrofit = "3.0.0"
 room = "2.6.1"
 testEspressoCore = '3.6.1'
 testExtJunit = '1.2.1'
@@ -77,7 +77,7 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-miaow-plugin = { module = "com.example.miaow:plugin", version.ref = "miaowPlugin" }
+#miaow-plugin = { module = "com.example.miaow:plugin", version.ref = "miaowPlugin" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

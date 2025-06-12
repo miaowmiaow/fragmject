@@ -18,17 +18,14 @@ android {
 
     defaultConfig {
         minSdk = configProperties.getProperty("minSdkVersion").toInt()
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters += "arm64-v8a"
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += mapOf(
-                    "room.schemaLocation" to "$projectDir/schemas",
-                    "room.incremental" to "true"
-                )
-            }
+        vectorDrawables {
+            useSupportLibrary = true
         }
     }
 

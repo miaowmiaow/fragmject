@@ -64,7 +64,7 @@ abstract class KVDatabase : RoomDatabase() {
         return try {
             var kv = kvDao().findByKey(key)
             if (kv == null) {
-                kv = KV(key = key, value = value)
+                kv = KV(id = 0, key = key, value = value)
                 val id = kvDao().insert(kv) //返回 主键值 > -1 表示 insert 成功
                 id > -1
             } else {
@@ -111,7 +111,7 @@ interface KVDao {
 
 @Entity(tableName = "kv_table")
 data class KV(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long,
     @ColumnInfo(name = "first") val key: String,
     @ColumnInfo(name = "second") var value: String?
 )

@@ -289,5 +289,5 @@ private fun requiredLoginRoute(route: String, user: User?): Boolean {
     return (route.startsWith(WanDestinations.MY_COIN_ROUTE)
             || route.startsWith(WanDestinations.MY_COLLECT_ROUTE)
             || route.startsWith(WanDestinations.MY_SHARE_ROUTE))
-            && (user == null || user.id.isBlank())
+            && (user == null || user.id <= 0)
 }

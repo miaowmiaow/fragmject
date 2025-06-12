@@ -53,8 +53,8 @@ fun MyScreen(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
                 .clickable {
-                    if (uiState.user.id.isNotBlank()) {
-                        onNavigateToUser(uiState.user.id)
+                    if (uiState.user.id > 0) {
+                        onNavigateToUser(uiState.user.id.toString())
                     } else {
                         onNavigateToLogin()
                     }
@@ -66,8 +66,8 @@ fun MyScreen(
             modifier = Modifier
                 .clickable(
                     onClick = {
-                        if (uiState.user.id.isNotBlank()) {
-                            onNavigateToUser(uiState.user.id)
+                        if (uiState.user.id > 0) {
+                            onNavigateToUser(uiState.user.id.toString())
                         } else {
                             onNavigateToLogin()
                         }

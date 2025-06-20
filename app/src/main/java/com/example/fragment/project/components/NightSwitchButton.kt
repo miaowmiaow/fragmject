@@ -4,9 +4,7 @@ import android.animation.ValueAnimator
 import android.view.animation.DecelerateInterpolator
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -16,14 +14,12 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,7 +29,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -49,13 +44,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 /**
@@ -70,7 +63,6 @@ fun NightSwitchButton(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier) {
-        val coroutineScope = rememberCoroutineScope()
         val canvasWidth = maxWidth
         val canvasHeight = maxHeight
         val canvasRadius = canvasHeight / 2f
@@ -84,10 +76,6 @@ fun NightSwitchButton(
                     false at minBound
                     true at maxBound
                 },
-                positionalThreshold = { distance -> distance * 0.5f },
-                velocityThreshold = { maxBound },
-                snapAnimationSpec = TweenSpec(durationMillis = 350),
-                decayAnimationSpec = exponentialDecay(10f),
             )
         }
         val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
@@ -108,18 +96,6 @@ fun NightSwitchButton(
         }
         Box(
             modifier = Modifier
-                .toggleable(
-                    value = checked,
-                    onValueChange = {
-                        coroutineScope.launch {
-                            anchoredDraggableState.animateTo(it)
-                            onCheckedChange?.invoke(it)
-                        }
-                    },
-                    role = Role.Switch,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                )
                 .anchoredDraggable(
                     state = anchoredDraggableState,
                     orientation = Orientation.Horizontal,

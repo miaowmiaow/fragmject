@@ -1,7 +1,7 @@
 [versions]
-agp = "8.11.0-rc01"
+agp = "8.11.0-rc02"
 activity = "1.10.1"
-androidxComposeBom = "2025.06.00"
+androidxComposeBom = "2025.06.01"
 androidxConstraintlayout = "2.2.1"
 androidxCoreKtx = "1.16.0"
 androidxCoreSplashscreen = "1.0.1"
@@ -15,15 +15,15 @@ coil = "2.7.0"
 glance = "1.1.1"
 gson = "2.13.1"
 junit = "4.13.2"
-kotlin = "2.0.20-RC"
+kotlin = "2.1.21"
 kotlinxCoroutines = "1.10.2"
-ksp = "2.0.20-RC-1.0.24"
+ksp = "2.1.21-2.0.1"
 leakcanary = "2.14"
 material = "1.12.0"
 #miaowPlugin = "1.0.0"
 okhttp = "5.0.0-alpha.16"
 retrofit = "3.0.0"
-room = "2.6.1"
+room = "2.7.2"
 testEspressoCore = '3.6.1'
 testExtJunit = '1.2.1'
 

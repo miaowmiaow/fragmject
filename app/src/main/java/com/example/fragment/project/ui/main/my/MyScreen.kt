@@ -62,7 +62,7 @@ fun MyScreen(
                 .size(90.dp)
         )
         Text(
-            text = uiState.user.username.ifBlank { "去登录" },
+            text = uiState.user.username.toString().ifBlank { "去登录" },
             modifier = Modifier
                 .clickable(
                     onClick = {

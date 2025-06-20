@@ -136,7 +136,7 @@ fun SettingScreen(
                                 fontSize = 13.sp,
                             )
                             NightSwitchButton(
-                                checked = uiState.user?.darkTheme ?: false,
+                                checked = uiState.user?.darkTheme.toBoolean(),
                                 onCheckedChange = {
                                     viewModel.updateDarkTheme(it)
                                 },

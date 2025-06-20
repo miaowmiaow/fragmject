@@ -36,7 +36,7 @@ class SettingViewModel : BaseViewModel() {
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch {
             _uiState.value.user?.let { user ->
-                user.darkTheme = darkTheme
+                user.darkTheme = darkTheme.toString()
                 WanHelper.setUser(user)
             }
         }

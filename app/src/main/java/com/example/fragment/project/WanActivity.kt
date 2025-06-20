@@ -3,6 +3,7 @@ package com.example.fragment.project
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -36,7 +37,7 @@ class WanActivity : ComponentActivity() {
             }
         }
         setContent {
-            val darkTheme = user?.darkTheme ?: false
+            val darkTheme = user?.darkTheme.toBoolean()
             // 设置状态栏为亮色模式，字体变为深色
             val insetsController = WindowCompat.getInsetsController(window, window.decorView)
             insetsController.isAppearanceLightStatusBars = false
@@ -48,7 +49,7 @@ class WanActivity : ComponentActivity() {
         // WebView 预创建
         WebViewManager.prepare(applicationContext)
         //启用 WebView 调试
-//        WebView.setWebContentsDebuggingEnabled(true)
+        WebView.setWebContentsDebuggingEnabled(true)
     }
 
     override fun onNewIntent(intent: Intent) {

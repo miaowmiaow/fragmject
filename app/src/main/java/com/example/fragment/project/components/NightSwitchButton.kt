@@ -1,6 +1,7 @@
 package com.example.fragment.project.components
 
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.view.animation.DecelerateInterpolator
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -56,6 +57,7 @@ import kotlin.random.Random
  * 基于此封装成 NightSwitchButton 方便使用
  * 文章地址：https://juejin.cn/post/7225454746949615673
  */
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun NightSwitchButton(
     checked: Boolean,

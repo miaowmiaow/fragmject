@@ -1,5 +1,6 @@
 package com.example.fragment.project.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun <T> WheelPicker(
     data: List<T>,

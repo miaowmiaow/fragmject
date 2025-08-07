@@ -1,5 +1,6 @@
 package com.example.fragment.project.components.calendar
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -28,6 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 internal fun MonthPager(
     state: CalendarState,

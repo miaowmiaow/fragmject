@@ -10,6 +10,7 @@ import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.ORIENTATION_HORIZONTAL
 import kotlin.math.absoluteValue
 import kotlin.math.sign
+import androidx.core.view.isNotEmpty
 
 /**
  * Layout to wrap a scrollable component inside a ViewPager2. Provided as a solution to the problem
@@ -35,7 +36,7 @@ class NestedScrollableHost : FrameLayout {
             return v as? ViewPager2
         }
 
-    private val child: View? get() = if (childCount > 0) getChildAt(0) else null
+    private val child: View? get() = if (isNotEmpty()) getChildAt(0) else null
 
     init {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop

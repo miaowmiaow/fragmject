@@ -6,6 +6,7 @@ import android.view.View
 import com.example.miaow.picture.editor.bean.PaintPath
 import java.util.*
 import kotlin.math.abs
+import androidx.core.graphics.createBitmap
 
 class MosaicLayer(private val parent: View) : ILayer {
 
@@ -112,7 +113,7 @@ class MosaicLayer(private val parent: View) : ILayer {
         bitmapHeight: Int
     ) {
         rectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
-        mosaicBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
+        mosaicBitmap = createBitmap(bitmapWidth, bitmapHeight)
         mosaicCanvas.setBitmap(mosaicBitmap)
         parentBitmap?.let {
             mosaicCanvas.drawBitmap(it, null, rectF, null)

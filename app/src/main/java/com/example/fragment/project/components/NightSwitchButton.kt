@@ -57,7 +57,7 @@ import kotlin.random.Random
  * 基于此封装成 NightSwitchButton 方便使用
  * 文章地址：https://juejin.cn/post/7225454746949615673
  */
-@SuppressLint("UnusedBoxWithConstraintsScope")
+@SuppressLint("UnusedBoxWithConstraintsScope", "FrequentlyChangingValue")
 @Composable
 fun NightSwitchButton(
     checked: Boolean,
@@ -373,7 +373,7 @@ fun Stars(
             }
             valueAnimator.start()
         }
-        // an simple path to draw a little star
+        // a simple path to draw a little star
         Box(modifier = Modifier.clip(RoundedCornerShape(canvasRadius))) {
             Canvas(
                 modifier = Modifier

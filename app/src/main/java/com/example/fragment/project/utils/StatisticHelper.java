@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -19,6 +20,8 @@ import androidx.annotation.Keep;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.example.miaow.base.adapter.BaseAdapter;
+
+import java.util.Objects;
 
 public class StatisticHelper {
 
@@ -77,37 +80,28 @@ public class StatisticHelper {
         }
 
         CharSequence viewText = null;
-        if (view instanceof CheckBox) { // CheckBox
-            CheckBox checkBox = (CheckBox) view;
+        if (view instanceof CheckBox checkBox) { // CheckBox
             viewText = checkBox.getText();
-        } else if (view instanceof SwitchCompat) {
-            SwitchCompat switchCompat = (SwitchCompat) view;
+        } else if (view instanceof SwitchCompat switchCompat) {
             viewText = switchCompat.getTextOn();
-        } else if (view instanceof RadioButton) { // RadioButton
-            RadioButton radioButton = (RadioButton) view;
+        } else if (view instanceof RadioButton radioButton) { // RadioButton
             viewText = radioButton.getText();
-        } else if (view instanceof ToggleButton) { // ToggleButton
-            ToggleButton toggleButton = (ToggleButton) view;
+        } else if (view instanceof ToggleButton toggleButton) { // ToggleButton
             boolean isChecked = toggleButton.isChecked();
             if (isChecked) {
                 viewText = toggleButton.getTextOn();
             } else {
                 viewText = toggleButton.getTextOff();
             }
-        } else if (view instanceof Button) { // Button
-            Button button = (Button) view;
+        } else if (view instanceof Button button) { // Button
             viewText = button.getText();
-        } else if (view instanceof CheckedTextView) { // CheckedTextView
-            CheckedTextView textView = (CheckedTextView) view;
+        } else if (view instanceof CheckedTextView textView) { // CheckedTextView
             viewText = textView.getText();
-        } else if (view instanceof TextView) { // TextView
-            TextView textView = (TextView) view;
+        } else if (view instanceof TextView textView) { // TextView
             viewText = textView.getText();
-        } else if (view instanceof SeekBar) {
-            SeekBar seekBar = (SeekBar) view;
+        } else if (view instanceof SeekBar seekBar) {
             viewText = String.valueOf(seekBar.getProgress());
-        } else if (view instanceof RatingBar) {
-            RatingBar ratingBar = (RatingBar) view;
+        } else if (view instanceof RatingBar ratingBar) {
             viewText = String.valueOf(ratingBar.getRating());
         }
         if (viewText != null) {
@@ -143,7 +137,7 @@ public class StatisticHelper {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.i("getActivityFromView", Objects.requireNonNull(e.getMessage()));
         }
         return activity;
     }
@@ -160,7 +154,7 @@ public class StatisticHelper {
         try {
             androidID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.i("getAndroidID", Objects.requireNonNull(e.getMessage()));
         }
         return androidID;
     }

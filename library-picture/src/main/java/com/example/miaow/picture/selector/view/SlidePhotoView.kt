@@ -54,7 +54,6 @@ class SlidePhotoView @JvmOverloads constructor(
         return super.onInterceptTouchEvent(event)
     }
 
-
     @Override
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
@@ -79,8 +78,14 @@ class SlidePhotoView @JvmOverloads constructor(
                     scrollOrigin()
                     isFinish = false
                 }
+                performClick()
             }
         }
+        return true
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
         return true
     }
 

@@ -261,8 +261,8 @@
 
 # 保留通过Gson序列化/反序列化的应用程序类不被混淆
 # 将下面替换成自己的实体类
--keep class **bean.** {*;}
--keep interface **bean.** {*;}
--keep class **data.** {*;}
--keep interface **data.** {*;}
+-keep class com.example.miaow.**.bean.** {*;}
+-keep interface com.example.miaow.**.bean.** {*;}
+-keep class com.example.miaow.**.data.** {*;}
+-keep interface com.example.miaow.**.data.** {*;}
 -keep public class * extends com.example.miaow.base.http.HttpResponse

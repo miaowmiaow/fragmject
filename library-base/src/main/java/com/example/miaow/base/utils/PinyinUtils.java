@@ -18,8 +18,6 @@ public class PinyinUtils {
     /**
      * 获取拼音的首字母（大写）
      *
-     * @param pinyin
-     * @return
      */
     public static String getFirstLetter(final String pinyin) {
         if (TextUtils.isEmpty(pinyin)) return "搜索";

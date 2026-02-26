@@ -9,6 +9,7 @@ import com.example.miaow.picture.editor.bean.PaintPath
 import com.example.miaow.picture.editor.view.PictureEditorView
 import java.util.*
 import kotlin.math.abs
+import androidx.core.graphics.createBitmap
 
 class GraffitiLayer(private val parent: View) : ILayer {
 
@@ -121,7 +122,7 @@ class GraffitiLayer(private val parent: View) : ILayer {
         bitmapWidth: Int,
         bitmapHeight: Int
     ) {
-        graffitiBitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
+        graffitiBitmap = createBitmap(bitmapWidth, bitmapHeight)
         graffitiCanvas.setBitmap(graffitiBitmap)
         if (paintPaths.isNotEmpty()) {
             graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)

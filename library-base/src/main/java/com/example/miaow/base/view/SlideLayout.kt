@@ -74,9 +74,14 @@ open class SlideLayout @JvmOverloads constructor(
                     scrollOrigin()
                     isFinish = false
                 }
+                performClick()
             }
         }
         return true
+    }
+
+    override fun performClick(): Boolean {
+        return super.performClick()
     }
 
     @Override

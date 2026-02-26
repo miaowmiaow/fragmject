@@ -1,12 +1,9 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
@@ -20,7 +17,9 @@ keystoreProperties.load(FileInputStream(rootProject.file("keystore.properties"))
 
 android {
     namespace = "com.example.fragment.project"
-    compileSdk = configProperties.getProperty("compileSdkVersion").toInt()
+    compileSdk {
+        version = release(36)
+    }
 
     defaultConfig {
         applicationId = configProperties.getProperty("applicationId")
@@ -34,11 +33,10 @@ android {
         }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables.useSupportLibrary = true
     }
 
+    //noinspection WrongGradleMethod
     room {
         schemaDirectory("$projectDir/schemas")
     }
@@ -46,14 +44,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-
-    kotlin {
-        jvmToolchain(21)
     }
 
     buildFeatures {
@@ -118,22 +108,6 @@ android {
         }
     }
 
-    applicationVariants.all {
-        outputs.all {
-            if (this is BaseVariantOutputImpl) {
-                val name = "wan-${buildType.name}-${versionName}-${productFlavors.first().name}.apk"
-                outputFileName = name
-            }
-        }
-    }
-}
-
-composeCompiler {
-    featureFlags = setOf(
-        ComposeFeatureFlag.IntrinsicRemember.disabled(),
-        ComposeFeatureFlag.OptimizeNonSkippingGroups,
-        ComposeFeatureFlag.StrongSkipping.disabled()
-    )
 }
 
 dependencies {
@@ -145,6 +119,9 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material.icon.core)
+    implementation(libs.androidx.compose.material.icon.extended)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.window.size)
     implementation(libs.androidx.glance.appwidget)

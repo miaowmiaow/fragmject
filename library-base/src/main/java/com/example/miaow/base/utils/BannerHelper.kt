@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 @SuppressLint("ClickableViewAccessibility")
 class BannerHelper(
     val recyclerView: RecyclerView,
-    @RecyclerView.Orientation
     val orientation: Int,
     lifecycle: Lifecycle? = null
 ) : DefaultLifecycleObserver {

@@ -14,6 +14,7 @@ import com.example.miaow.base.dialog.FullDialog
 import com.example.miaow.picture.databinding.PictureTextDialogBinding
 import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.utils.ColorUtils
+import androidx.core.graphics.createBitmap
 
 class PictureTextDialog : FullDialog() {
 
@@ -120,11 +121,7 @@ class PictureTextDialog : FullDialog() {
     }
 
     private fun saveBitmap(): Bitmap {
-        val bitmap = Bitmap.createBitmap(
-            binding.editText.width,
-            binding.editText.height,
-            Bitmap.Config.ARGB_8888
-        )
+        val bitmap = createBitmap(binding.editText.width, binding.editText.height)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
         binding.editText.draw(canvas)

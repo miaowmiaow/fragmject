@@ -72,6 +72,7 @@ class RefreshDrawable(private val parentView: PullRefreshLayout) : Drawable(), A
     override fun setColorFilter(colorFilter: ColorFilter?) {
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getOpacity(): Int {
         return PixelFormat.TRANSLUCENT
     }

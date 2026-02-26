@@ -8,9 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,16 +31,16 @@ fun <T> TabBar(
 ) {
     Box(modifier = modifier) {
         if (!data.isNullOrEmpty()) {
-            ScrollableTabRow(
+            SecondaryScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = modifier,
                 containerColor = backgroundColor,
                 edgePadding = 0.dp,
-                indicator = { tabPositions ->
+                indicator = {
                     Box(
                         Modifier
                             .fillMaxWidth()
-                            .tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                            .tabIndicatorOffset(pagerState.currentPage),
                         contentAlignment = Alignment.Center
                     ) {
                         Spacer(

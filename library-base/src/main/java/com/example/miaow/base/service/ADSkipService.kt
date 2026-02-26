@@ -1,6 +1,7 @@
 package com.example.miaow.base.service
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
@@ -9,6 +10,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.app.NotificationCompat
 import com.example.miaow.base.R
 
+@SuppressLint("AccessibilityPolicy")
 class ADSkipService : AccessibilityService() {
 
     companion object {

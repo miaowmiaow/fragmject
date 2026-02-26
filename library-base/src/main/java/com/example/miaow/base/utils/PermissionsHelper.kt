@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import androidx.core.net.toUri
 
 /**
  * 忽略电池优化,保持后台常驻
@@ -29,7 +30,7 @@ fun Context.requestIgnoreBatteryOptimizations() {
             return
         }
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-        intent.data = Uri.parse("package:${packageName}")
+        intent.data = "package:${packageName}".toUri()
         startActivity(intent)
     } catch (e: Exception) {
         Log.e(this.javaClass.name, e.message.toString())

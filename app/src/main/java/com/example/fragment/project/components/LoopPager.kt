@@ -1,5 +1,6 @@
 package com.example.fragment.project.components
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,7 @@ import java.util.Timer
 import java.util.TimerTask
 import kotlin.math.absoluteValue
 
+@SuppressLint("FrequentlyChangingValue")
 @Composable
 fun <T> LoopHorizontalPager(
     data: List<T>?,

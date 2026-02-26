@@ -49,7 +49,7 @@ abstract class BaseAdapter<T>(newData: List<T>? = null) :
             if (position != INVALID_POSITION && currentPosition != position) {
                 _onItemSelectedListener?.onItemSelected(holder.itemView, position)
                 _onItemSelectedListener?.onItemUnselected(holder.itemView, currentPosition)
-                currentPosition = holder.adapterPosition
+                currentPosition = holder.bindingAdapterPosition
             }
         }
         _onItemChildClickListener?.let { listener ->

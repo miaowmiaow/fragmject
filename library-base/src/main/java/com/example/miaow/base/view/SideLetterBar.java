@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 public class SideLetterBar extends View {
     private static final String[] b = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
     private int choose = -1;
@@ -32,15 +34,13 @@ public class SideLetterBar extends View {
     /**
      * 设置悬浮的textview
      *
-     * @param overlay
      */
     public void setOverlay(TextView overlay) {
         this.overlay = overlay;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
         if (showBg) {
             canvas.drawColor(Color.TRANSPARENT);
@@ -57,7 +57,7 @@ public class SideLetterBar extends View {
                 paint.setColor(Color.parseColor("#5c5c5c"));
                 paint.setFakeBoldText(true);  //加粗
             }
-            float xPos = width / 2 - paint.measureText(b[i]) / 2;
+            float xPos = (float) width / 2 - paint.measureText(b[i]) / 2;
             float yPos = singleHeight * i + singleHeight;
             canvas.drawText(b[i], xPos, yPos, paint);
             paint.reset();
@@ -112,11 +112,6 @@ public class SideLetterBar extends View {
                 break;
         }
         return true;
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return super.onTouchEvent(event);
     }
 
     public void setOnLetterChangedListener(OnLetterChangedListener onLetterChangedListener) {

@@ -3,7 +3,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
 }
 
@@ -12,7 +11,9 @@ configProperties.load(FileInputStream(rootProject.file("config.properties")))
 
 android {
     namespace = "com.example.miaow.picture"
-    compileSdk = configProperties.getProperty("compileSdkVersion").toInt()
+    compileSdk {
+        version = release(configProperties.getProperty("compileSdkVersion").toInt())
+    }
 
     defaultConfig {
         minSdk = configProperties.getProperty("minSdkVersion").toInt()
@@ -33,14 +34,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-
-    kotlin {
-        jvmToolchain(21)
     }
 
     buildFeatures {

@@ -10,6 +10,9 @@ import android.view.View
 import androidx.core.graphics.values
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withSave
+import androidx.core.graphics.toColorInt
 
 class PictureClipView @JvmOverloads constructor(
     context: Context,
@@ -124,7 +127,7 @@ class PictureClipView @JvmOverloads constructor(
         paint.isFilterBitmap = true
         val width = clipRectF.width().toInt()
         val height = clipRectF.height().toInt()
-        val clipBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val clipBitmap = createBitmap(width, height)
         val canvas = Canvas(clipBitmap)
         val left = -clipRectF.left
         val top = -clipRectF.top
@@ -222,9 +225,9 @@ class PictureClipView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.save()
-        canvas.drawBitmap(bitmap, null, bitmapRectF, null)
-        canvas.restore()
+        canvas.withSave {
+            drawBitmap(bitmap, null, bitmapRectF, null)
+        }
         val w = viewWidth.toFloat()
         val h = viewHeight.toFloat()
         val l = clipRectF.left
@@ -232,7 +235,7 @@ class PictureClipView @JvmOverloads constructor(
         val r = clipRectF.right
         val b = clipRectF.bottom
         //绘制模糊区域
-        paint.color = Color.parseColor("#60000000")
+        paint.color = "#60000000".toColorInt()
         canvas.drawRect(0f, 0f, w, t, paint)
         canvas.drawRect(0f, t, l, b, paint)
         canvas.drawRect(r, t, w, b, paint)

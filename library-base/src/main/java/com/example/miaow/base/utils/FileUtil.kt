@@ -661,12 +661,10 @@ object FileUtil {
         if (mimeType != null) {
             return mimeType
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                mimeType = Files.probeContentType(file.toPath())
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+        try {
+            mimeType = Files.probeContentType(file.toPath())
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
         if (mimeType != null) {
             return mimeType

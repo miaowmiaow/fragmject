@@ -14,6 +14,7 @@ import android.text.style.DynamicDrawableSpan.ALIGN_BASELINE
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import androidx.core.graphics.withTranslation
 
 
 //为 TextView 创建扩展函数，其参数为接口的扩展函数
@@ -119,10 +120,9 @@ class VerticalAlignImageSpan(drawable: Drawable, verticalAlignment: Int) :
         val boundBottom = drawable.bounds.bottom
         val boundTop = drawable.bounds.top
         val transY = ((y + ascent + y + descent) / 2 - (boundBottom + boundTop) / 2)
-        canvas.save()
-        canvas.translate(x, transY)
-        drawable.draw(canvas)
-        canvas.restore()
+        canvas.withTranslation(x, transY) {
+            drawable.draw(this)
+        }
     }
 }
 

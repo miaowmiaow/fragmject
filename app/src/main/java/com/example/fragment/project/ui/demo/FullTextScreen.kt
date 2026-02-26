@@ -49,7 +49,7 @@ fun FullTextScreen() {
                     color = MaterialTheme.colorScheme.onPrimary,
                     backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
-                    maxLines = if (expand1) Int.MAX_VALUE else 2,
+                    maxLines = if (expand1) Int.MAX_VALUE else 1,
                     inlineContent = mapOf(
                         Pair(
                             "icon",
@@ -92,7 +92,7 @@ fun FullTextScreen() {
                     color = MaterialTheme.colorScheme.onPrimary,
                     backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
-                    maxLines = if (expand2) Int.MAX_VALUE else 2,
+                    maxLines = if (expand2) Int.MAX_VALUE else 1,
                     onTextLayout = {
                         ellipsis2 = it.isLineEllipsized(it.lineCount - 1)
                     },

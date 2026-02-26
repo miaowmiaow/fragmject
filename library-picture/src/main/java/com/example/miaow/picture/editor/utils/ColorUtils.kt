@@ -1,17 +1,17 @@
 package com.example.miaow.picture.editor.utils
 
-import android.graphics.Color
+import androidx.core.graphics.toColorInt
 
 object ColorUtils {
 
     var colorful = arrayListOf(
-        Color.parseColor("#ffffff"),
-        Color.parseColor("#000000"),
-        Color.parseColor("#ff0000"),
-        Color.parseColor("#ffb636"),
-        Color.parseColor("#00FF00"),
-        Color.parseColor("#508cee"),
-        Color.parseColor("#7B68EE"),
+        "#ffffff".toColorInt(),
+        "#000000".toColorInt(),
+        "#ff0000".toColorInt(),
+        "#ffb636".toColorInt(),
+        "#00FF00".toColorInt(),
+        "#508cee".toColorInt(),
+        "#7B68EE".toColorInt(),
     )
 
 }

@@ -23,6 +23,8 @@ import com.example.miaow.picture.editor.view.layer.StickerLayer
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 class PictureEditorView @JvmOverloads constructor(
     context: Context,
@@ -225,7 +227,7 @@ class PictureEditorView @JvmOverloads constructor(
         bitmapMatrix.reset()
         val width = max(bitmapRectF.width().toInt(), 1)
         val height = max(bitmapRectF.height().toInt(), 1)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(width, height)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
         draw(canvas)
@@ -436,7 +438,7 @@ class PictureEditorView @JvmOverloads constructor(
         }
         val mosaicWidth = bitmap.width / MOSAIC_COEFFICIENT
         val mosaicHeight = bitmap.height / MOSAIC_COEFFICIENT
-        mosaicBitmap = Bitmap.createScaledBitmap(bitmap, mosaicWidth, mosaicHeight, false)
+        mosaicBitmap = bitmap.scale(mosaicWidth, mosaicHeight, false)
         mosaicLayer.setParentBitmap(bitmap)
         mosaicLayer.onSizeChanged(w, h, bitmap.width, bitmap.height)
         graffitiLayer.onSizeChanged(w, h, bitmap.width, bitmap.height)

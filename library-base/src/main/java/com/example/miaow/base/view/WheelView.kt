@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.core.graphics.toColorInt
 
 class WheelView @JvmOverloads constructor(
     context: Context,
@@ -77,9 +78,9 @@ class WheelView @JvmOverloads constructor(
         mCamera.setLocation(0f, 0f, -24f)
         LinearSnapHelper().attachToRecyclerView(this)
         mDividerPaint.isAntiAlias = true
-        mDividerPaint.color = Color.parseColor("#1b000000")
+        mDividerPaint.color = "#1b000000".toColorInt()
         mShadePaint.isAntiAlias = true
-        mShadePaint.color = Color.parseColor("#bbffffff")
+        mShadePaint.color = "#bbffffff".toColorInt()
         addOnScrollListener(object : OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)

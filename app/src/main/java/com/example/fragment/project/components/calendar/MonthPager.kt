@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@SuppressLint("UnusedBoxWithConstraintsScope")
+@SuppressLint("UnusedBoxWithConstraintsScope", "FrequentlyChangingValue")
 @Composable
 internal fun MonthPager(
     state: CalendarState,

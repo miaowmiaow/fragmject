@@ -8,6 +8,7 @@ import androidx.core.graphics.values
 import com.example.miaow.picture.editor.bean.StickerAttrs
 import com.example.miaow.picture.editor.utils.Vector2D
 import kotlin.math.min
+import androidx.core.graphics.withRotation
 
 class StickerLayer(
     private val parent: View,
@@ -197,13 +198,12 @@ class StickerLayer(
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.save()
-        canvas.rotate(currRotation, borderRectF.centerX(), borderRectF.centerY())
-        if (inBorder) {
-            canvas.drawRect(borderRectF, borderPaint)
+        canvas.withRotation(currRotation, borderRectF.centerX(), borderRectF.centerY()) {
+            if (inBorder) {
+                drawRect(borderRectF, borderPaint)
+            }
+            drawBitmap(attrs.bitmap, null, stickerRectF, null)
         }
-        canvas.drawBitmap(attrs.bitmap, null, stickerRectF, null)
-        canvas.restore()
     }
 
     private fun measureBitmap() {

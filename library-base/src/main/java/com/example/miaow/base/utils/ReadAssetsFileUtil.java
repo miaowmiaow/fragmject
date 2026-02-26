@@ -18,9 +18,7 @@ public class ReadAssetsFileUtil {
     /**
      * 读取assets下的txt文件，返回utf-8 String
      *
-     * @param context
      * @param fileName 不包括后缀
-     * @return
      */
     public static String readAssetsTxt(Context context, String fileName) {
         try {
@@ -29,7 +27,7 @@ public class ReadAssetsFileUtil {
             int size = is.available();
             // Read the entire asset into a local byte buffer.
             byte[] buffer = new byte[size];
-            is.read(buffer);
+            int i = is.read(buffer);
             is.close();
             // Convert the buffer into a string.
             // Finally stick the string into the text view.

@@ -16,11 +16,19 @@
 
 package com.example.fragment.project
 
+import android.view.Window
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
+import com.example.fragment.project.utils.WanHelper
 
 object WanTheme {
     internal val theme = Color(0xFF272A36)
@@ -91,7 +99,22 @@ val appLightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun WanTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
+fun WanTheme(window: Window? = null, content: @Composable () -> Unit) {
+
+    var darkTheme by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        WanHelper.getUser().collect {
+            darkTheme = it?.darkTheme.toBoolean()
+            window?.let {
+                // 设置状态栏为亮色模式，字体变为深色
+                val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                insetsController.isAppearanceLightStatusBars = false
+                insetsController.isAppearanceLightNavigationBars = !darkTheme //设置导航栏亮起
+            }
+        }
+    }
+
     val appColorScheme = if (darkTheme) {
         appDarkColorScheme
     } else {

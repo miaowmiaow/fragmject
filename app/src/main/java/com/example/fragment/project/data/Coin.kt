@@ -31,6 +31,7 @@ data class MyCoinData(
     val total: String = ""
 )
 
+@Parcelize
 data class MyCoin(
     val date: String = "",
     val desc: String = "",

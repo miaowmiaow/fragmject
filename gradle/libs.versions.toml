@@ -1,8 +1,8 @@
 [versions]
 agp = "9.1.0-rc01"
 activity = "1.12.4"
-androidxComposeBom = "2026.02.00"
-androidxComposeMaterial = "1.10.3"
+androidxComposeBom = "2026.02.01"
+androidxComposeMaterial = "1.10.4"
 androidxComposeMaterialIcon = "1.7.8"
 androidxComposeMaterial3 = "1.4.0"
 androidxConstraintlayout = "2.2.1"
@@ -95,3 +95,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

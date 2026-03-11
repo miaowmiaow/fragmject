@@ -1,15 +1,20 @@
 package com.example.fragment.project
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
+import androidx.navigation.toRoute
 import com.example.fragment.project.data.User
 import com.example.fragment.project.ui.browse_history.BrowseHistoryScreen
 import com.example.fragment.project.ui.demo.DemoScreen
@@ -26,22 +31,44 @@ import com.example.fragment.project.ui.share.ShareArticleScreen
 import com.example.fragment.project.ui.system.SystemScreen
 import com.example.fragment.project.ui.user.UserScreen
 import com.example.fragment.project.ui.web.WebScreen
+import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.vm.TRANSITION_TIME
+import kotlinx.serialization.Serializable
 
 /**
  * 导航图
  */
 @Composable
 fun WanNavGraph(
-    route: String?,
-    user: User?,
     modifier: Modifier = Modifier,
 ) {
+    var user by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(Unit) {
+        WanHelper.getUser().collect {
+            user = it
+        }
+    }
     val navController = rememberNavController()
     val wanNavActions = WanNavActions(navController, user)
+    /**
+     * 支持深层链接，详情参考 WanNavGraph:
+     * wan://com.fragment.project/rank
+     * wan://com.fragment.project/search/$key
+     * wan://com.fragment.project/web/${Uri.encode(url)}
+     * 示例代码如下：
+     * val deepLinkIntent = Intent(
+     *     Intent.ACTION_VIEW,
+     *     "wan://com.fragment.project/web/${Uri.encode("http://www.baidu.com")}".toUri(),
+     * )
+     * val deepLinkPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+     *     addNextIntentWithParentStack(deepLinkIntent)
+     *     getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+     * }
+     * deepLinkPendingIntent?.send()
+     */
     NavHost(
         navController = navController,
-        startDestination = WanDestinations.MAIN_ROUTE,
+        startDestination = MainRoute,
         modifier = modifier,
         enterTransition = {
             slideIntoContainer(
@@ -68,226 +95,221 @@ fun WanNavGraph(
             )
         },
     ) {
-        composable(WanDestinations.BROWSE_HISTORY_ROUTE) {
+        composable<BrowseHistoryRoute> {
             BrowseHistoryScreen(
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.DEMO_ROUTE) {
+        composable<DemoRoute> {
             DemoScreen(onNavigateUp = { wanNavActions.navigateUp() })
         }
-        composable(WanDestinations.LOGIN_ROUTE) {
+        composable<LoginRoute> {
             LoginScreen(
-                onNavigateToRegister = { wanNavActions.navigateToRegister() },
+                onNavigateToRegister = { wanNavActions.navigate(RegisterRoute) },
                 onNavigateUp = { wanNavActions.navigateUp() },
-                onPopBackStackToMain = { wanNavActions.popBackStack(WanDestinations.MAIN_ROUTE) }
+                onPopBackStackToMain = { wanNavActions.popBackStack(MainRoute) }
             )
         }
-        composable(WanDestinations.MAIN_ROUTE) {
+        composable<MainRoute> {
             MainScreen(
-                onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
-                onNavigateToDemo = { wanNavActions.navigateToDemo() },
-                onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                onNavigateToMyCoin = { wanNavActions.navigateToMyCoin() },
-                onNavigateToMyCollect = { wanNavActions.navigateToMyCollect() },
-                onNavigateToMyShare = { wanNavActions.navigateToMyShare() },
-                onNavigateToSearch = { wanNavActions.navigateToSearch(it) },
-                onNavigateToSetting = { wanNavActions.navigateToSetting() },
-                onNavigateToShareArticle = { wanNavActions.navigateToShareArticle() },
-                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) }
+                onNavigateToBookmarkHistory = { wanNavActions.navigate(BrowseHistoryRoute) },
+                onNavigateToDemo = { wanNavActions.navigate(DemoRoute) },
+                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
+                onNavigateToMyCoin = { wanNavActions.navigate(MyCoinRoute) },
+                onNavigateToMyCollect = { wanNavActions.navigate(MyCollectRoute) },
+                onNavigateToMyShare = { wanNavActions.navigate(MyShareRoute) },
+                onNavigateToSearch = { wanNavActions.navigate(SearchRoute(it)) },
+                onNavigateToSetting = { wanNavActions.navigate(SettingRoute) },
+                onNavigateToShareArticle = { wanNavActions.navigate(ShareArticleRoute) },
+                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
+                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) }
             )
         }
-        composable(WanDestinations.MY_COIN_ROUTE) {
+        composable<MyCoinRoute> {
             MyCoinScreen(
-                onNavigateToRank = { wanNavActions.navigateToRank() },
+                onNavigateToRank = { wanNavActions.navigate(RankRoute) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.MY_COLLECT_ROUTE) {
+        composable<MyCollectRoute> {
             MyCollectScreen(
-                onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
+                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
+                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.MY_SHARE_ROUTE) {
+        composable<MyShareRoute> {
             MyShareScreen(
-                onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
+                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
+                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.RANK_ROUTE) {
+        composable<RankRoute>(
+            deepLinks = listOf(
+                navDeepLink<RankRoute>(
+                    basePath = "$fragmentUri/rank",
+                )
+            )
+        ) {
             RankScreen(
-                onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.REGISTER_ROUTE) {
+        composable<RegisterRoute> {
             RegisterScreen(
                 onNavigateUp = { wanNavActions.navigateUp() },
-                onPopBackStackToMain = { wanNavActions.popBackStack(WanDestinations.MAIN_ROUTE) }
+                onPopBackStackToMain = { wanNavActions.popBackStack(MainRoute) }
             )
         }
-        composable("${WanDestinations.SEARCH_ROUTE}/{key}") { backStackEntry ->
+        composable<SearchRoute>(
+            deepLinks = listOf(
+                navDeepLink<SearchRoute>(
+                    basePath = "$fragmentUri/search",
+                )
+            )
+        ) { backStackEntry ->
             SearchScreen(
-                key = backStackEntry.arguments?.getString("key") ?: "",
-                onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                key = backStackEntry.toRoute<SearchRoute>().key,
+                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
+                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
+                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.SETTING_ROUTE) {
+        composable<SettingRoute> {
             SettingScreen(
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable(WanDestinations.SHARE_ARTICLE_ROUTE) {
+        composable<ShareArticleRoute> {
             ShareArticleScreen(
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable("${WanDestinations.SYSTEM_ROUTE}/{cid}") { backStackEntry ->
-            val cid = backStackEntry.arguments?.getString("cid").toString()
+        composable<SystemRoute> { backStackEntry ->
             SystemScreen(
-                cid = cid,
-                onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                onNavigateToUser = { wanNavActions.navigateToUser(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                cid = backStackEntry.toRoute<SystemRoute>().cid,
+                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
+                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
+                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable("${WanDestinations.USER_ROUTE}/{userId}") { backStackEntry ->
+        composable<UserRoute> { backStackEntry ->
             UserScreen(
-                userId = backStackEntry.arguments?.getString("userId") ?: "",
-                onNavigateToLogin = { wanNavActions.navigateToLogin() },
-                onNavigateToSystem = { wanNavActions.navigateToSystem(it) },
-                onNavigateToWeb = { wanNavActions.navigateToWeb(it) },
+                userId = backStackEntry.toRoute<UserRoute>().userId,
+                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
+                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
+                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
-        composable("${WanDestinations.WEB_ROUTE}/{url}") { backStackEntry ->
-            WebScreen(
-                url = backStackEntry.arguments?.getString("url") ?: "",
-                onNavigateToBookmarkHistory = { wanNavActions.navigateToBookmarkHistory() },
-                onNavigateUp = { wanNavActions.navigateUp() },
-                shouldOverrideUrl = { wanNavActions.navigateToWeb(it) },
+        composable<WebRoute>(
+            deepLinks = listOf(
+                navDeepLink<WebRoute>(
+                    basePath = "$fragmentUri/web",
+                )
             )
-        }
-    }
-    LaunchedEffect(route) {
-        if (!route.isNullOrBlank()) {
-            val webRoute = "${WanDestinations.WEB_ROUTE}/"
-            wanNavActions.navigate(
-                if (route.startsWith(webRoute)) {
-                    webRoute + Uri.encode(route.substring(webRoute.length))
-                } else {
-                    route
-                }
+        ) { backStackEntry ->
+            WebScreen(
+                url = backStackEntry.toRoute<WebRoute>().url,
+                onNavigateToBookmarkHistory = { wanNavActions.navigate(BrowseHistoryRoute) },
+                onNavigateUp = { wanNavActions.navigateUp() },
+                shouldOverrideUrl = { wanNavActions.navigate(WebRoute(it)) },
             )
         }
     }
 }
+
+const val fragmentUri = "wan://com.fragment.project"
 
 class WanNavActions(
     private val navController: NavHostController,
     private val user: User?,
 ) {
-    val navigateToBookmarkHistory: () -> Unit = {
-        navigate(WanDestinations.BROWSE_HISTORY_ROUTE)
-    }
-    val navigateToDemo: () -> Unit = {
-        navigate(WanDestinations.DEMO_ROUTE)
-    }
-    val navigateToLogin: () -> Unit = {
-        navigate(WanDestinations.LOGIN_ROUTE)
-    }
-    val navigateToMyCoin: () -> Unit = {
-        navigate(WanDestinations.MY_COIN_ROUTE)
-    }
-    val navigateToMyCollect: () -> Unit = {
-        navigate(WanDestinations.MY_COLLECT_ROUTE)
-    }
-    val navigateToMyShare: () -> Unit = {
-        navigate(WanDestinations.MY_SHARE_ROUTE)
-    }
-    val navigateToRank: () -> Unit = {
-        navigate(WanDestinations.RANK_ROUTE)
-    }
-    val navigateToRegister: () -> Unit = {
-        navigate(WanDestinations.REGISTER_ROUTE)
-    }
-    val navigateToSearch: (key: String) -> Unit = {
-        navigate(WanDestinations.SEARCH_ROUTE + "/$it")
-    }
-    val navigateToSetting: () -> Unit = {
-        navigate(WanDestinations.SETTING_ROUTE)
-    }
-    val navigateToShareArticle: () -> Unit = {
-        navigate(WanDestinations.SHARE_ARTICLE_ROUTE)
-    }
-    val navigateToSystem: (cid: String) -> Unit = {
-        navigate(WanDestinations.SYSTEM_ROUTE + "/$it")
-    }
-    val navigateToUser: (userId: String) -> Unit = {
-        navigate(WanDestinations.USER_ROUTE + "/$it")
-    }
-    val navigateToWeb: (url: String) -> Unit = {
-        navigate(WanDestinations.WEB_ROUTE + "/${Uri.encode(it)}")
-    }
-    val navigateUp: () -> Unit = {
-        if (!navController.navigateUp()) {
-            navigate(WanDestinations.MAIN_ROUTE)
-        }
-    }
-    val popBackStack: (route: String) -> Unit = {
-        navController.popBackStack(it, false)
-    }
 
-    fun navigate(route: String) {
+    fun <T : Any> navigate(route: T) {
         navController.graph.findNode(route) ?: return
         if (requiredLoginRoute(route, user)) {
-            navController.navigate(WanDestinations.LOGIN_ROUTE)
+            navController.navigate(LoginRoute)
         } else {
             navController.navigate(route)
         }
     }
+
+    fun navigateUp() {
+        if (!navController.navigateUp()) {
+            navigate(MainRoute)
+        }
+    }
+
+    fun <T : Any> popBackStack(route: T) {
+        navController.popBackStack(route, false)
+    }
 }
 
-object WanDestinations {
-    const val BROWSE_HISTORY_ROUTE = "browse_history_route"
-    const val DEMO_ROUTE = "demo_route"
-    const val LOGIN_ROUTE = "login_route"
-    const val MAIN_ROUTE = "main_route"
-    const val MY_COIN_ROUTE = "my_coin_route"
-    const val MY_COLLECT_ROUTE = "my_collect_route"
-    const val MY_SHARE_ROUTE = "my_share_route"
-    const val RANK_ROUTE = "rank_route"
-    const val REGISTER_ROUTE = "register_route"
-    const val SEARCH_ROUTE = "search_route"
-    const val SETTING_ROUTE = "setting_route"
-    const val SHARE_ARTICLE_ROUTE = "share_article_route"
-    const val SYSTEM_ROUTE = "system_route"
-    const val USER_ROUTE = "user_route"
-    const val WEB_ROUTE = "web_route"
-}
+@Serializable
+object BrowseHistoryRoute
 
-private fun requiredLoginRoute(route: String, user: User?): Boolean {
-    return (route.startsWith(WanDestinations.MY_COIN_ROUTE)
-            || route.startsWith(WanDestinations.MY_COLLECT_ROUTE)
-            || route.startsWith(WanDestinations.MY_SHARE_ROUTE))
+@Serializable
+object DemoRoute
+
+@Serializable
+object LoginRoute
+
+@Serializable
+object MainRoute
+
+@Serializable
+object MyCoinRoute
+
+@Serializable
+object MyCollectRoute
+
+@Serializable
+object MyShareRoute
+
+@Serializable
+object RankRoute
+
+@Serializable
+object RegisterRoute
+
+@Serializable
+data class SearchRoute(val key: String)
+
+@Serializable
+object SettingRoute
+
+@Serializable
+object ShareArticleRoute
+
+@Serializable
+data class SystemRoute(val cid: String)
+
+@Serializable
+data class UserRoute(val userId: String)
+
+
+@Serializable
+data class WebRoute(val url: String)
+
+private fun <T : Any> requiredLoginRoute(route: T, user: User?): Boolean {
+    return (route is MyCoinRoute
+            || route is MyCollectRoute
+            || route is MyShareRoute)
             && (user == null || user.id <= 0)
 }

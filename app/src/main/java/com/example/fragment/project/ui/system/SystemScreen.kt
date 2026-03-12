@@ -44,10 +44,7 @@ fun SystemScreen(
     wanViewModel: WanViewModel = viewModel(),
     systemViewModel: SystemViewModel = viewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -115,10 +112,7 @@ fun SystemScreen(
                     ) { _, item ->
                         ArticleCard(
                             data = item,
-                            onNavigateToLogin = onNavigateToLogin,
-                            onNavigateToUser = onNavigateToUser,
-                            onNavigateToSystem = onNavigateToSystem,
-                            onNavigateToWeb = onNavigateToWeb
+                            onNavigate = onNavigate,
                         )
                     }
                 }

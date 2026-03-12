@@ -25,20 +25,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.fragment.project.BrowseHistoryRoute
+import com.example.fragment.project.DemoRoute
+import com.example.fragment.project.LoginRoute
+import com.example.fragment.project.MyCoinRoute
+import com.example.fragment.project.MyCollectRoute
+import com.example.fragment.project.MyShareRoute
+import com.example.fragment.project.SettingRoute
+import com.example.fragment.project.UserRoute
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArrowRightItem
 
 @Composable
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
-    onNavigateToBookmarkHistory: () -> Unit = {},
-    onNavigateToDemo: () -> Unit = {},
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToMyCoin: () -> Unit = {},
-    onNavigateToMyCollect: () -> Unit = {},
-    onNavigateToMyShare: () -> Unit = {},
-    onNavigateToSetting: () -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
@@ -54,9 +55,9 @@ fun MyScreen(
                 .clip(RoundedCornerShape(50))
                 .clickable {
                     if (uiState.user.id > 0) {
-                        onNavigateToUser(uiState.user.id.toString())
+                        onNavigate(UserRoute(uiState.user.id.toString()))
                     } else {
-                        onNavigateToLogin()
+                        onNavigate(LoginRoute)
                     }
                 }
                 .size(90.dp)
@@ -67,9 +68,9 @@ fun MyScreen(
                 .clickable(
                     onClick = {
                         if (uiState.user.id > 0) {
-                            onNavigateToUser(uiState.user.id.toString())
+                            onNavigate(UserRoute(uiState.user.id.toString()))
                         } else {
-                            onNavigateToLogin()
+                            onNavigate(LoginRoute)
                         }
                     },
                     indication = null,
@@ -81,17 +82,17 @@ fun MyScreen(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(45.dp))
-        ArrowRightItem("组件Demo") { onNavigateToDemo() }
+        ArrowRightItem("组件Demo") { onNavigate(DemoRoute) }
         HorizontalDivider()
-        ArrowRightItem("我的积分") { onNavigateToMyCoin() }
+        ArrowRightItem("我的积分") { onNavigate(MyCoinRoute) }
         HorizontalDivider()
-        ArrowRightItem("我的收藏") { onNavigateToMyCollect() }
+        ArrowRightItem("我的收藏") { onNavigate(MyCollectRoute) }
         HorizontalDivider()
-        ArrowRightItem("我的分享") { onNavigateToMyShare() }
+        ArrowRightItem("我的分享") { onNavigate(MyShareRoute) }
         HorizontalDivider()
-        ArrowRightItem("浏览历史") { onNavigateToBookmarkHistory() }
+        ArrowRightItem("浏览历史") { onNavigate(BrowseHistoryRoute) }
         HorizontalDivider()
-        ArrowRightItem("系统设置") { onNavigateToSetting() }
+        ArrowRightItem("系统设置") { onNavigate(SettingRoute) }
     }
 }
 

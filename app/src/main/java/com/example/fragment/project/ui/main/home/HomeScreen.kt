@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.BannerPager
 import com.example.fragment.project.components.SwipeRefreshBox
@@ -22,10 +23,7 @@ import com.example.fragment.project.components.SwipeRefreshBox
 fun HomeScreen(
     listState: LazyListState,
     viewModel: HomeViewModel = viewModel(),
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     SwipeRefreshBox(
@@ -45,16 +43,13 @@ fun HomeScreen(
             BannerPager(
                 data = item.banners,
                 pathMapping = { it.imagePath },
-                onClick = { _, banner -> onNavigateToWeb(banner.url) }
+                onClick = { _, banner -> onNavigate(WebRoute(banner.url)) }
             )
         } else {
             ArticleCard(
                 data = item,
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToUser = onNavigateToUser,
-                onNavigateToSystem = onNavigateToSystem,
-                onNavigateToWeb = onNavigateToWeb
+                onNavigate = onNavigate,
             )
         }
     }

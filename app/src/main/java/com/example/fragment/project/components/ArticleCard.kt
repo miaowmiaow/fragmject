@@ -41,8 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import com.example.fragment.project.LoginRoute
 import com.example.fragment.project.R
+import com.example.fragment.project.SystemRoute
+import com.example.fragment.project.UserRoute
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.data.Article
 import com.example.miaow.base.http.HttpResponse
 import com.example.miaow.base.http.post
@@ -52,10 +56,7 @@ import kotlinx.coroutines.launch
 fun ArticleCard(
     data: Article,
     modifier: Modifier = Modifier,
-    onNavigateToLogin: () -> Unit,
-    onNavigateToSystem: (cid: String) -> Unit,
-    onNavigateToUser: (userId: String) -> Unit,
-    onNavigateToWeb: (url: String) -> Unit,
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     var collectResId by remember(data.collect) { mutableIntStateOf(getCollectResId(data.collect)) }
@@ -63,7 +64,7 @@ fun ArticleCard(
         modifier = modifier
             .clip(RoundedCornerShape(5.dp))
             .clipToBounds()
-            .clickable { onNavigateToWeb(data.link) }
+            .clickable { onNavigate(WebRoute(data.link)) }
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .fillMaxWidth()
     ) {
@@ -76,7 +77,7 @@ fun ArticleCard(
                 contentDescription = null,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .clickable { onNavigateToUser(data.userId) }
+                    .clickable { onNavigate(UserRoute(data.userId)) }
                     .size(30.dp),
                 contentScale = ContentScale.Crop
             )
@@ -118,7 +119,7 @@ fun ArticleCard(
                                     cid = paths[2]
                                 }
                             }
-                            onNavigateToSystem(cid ?: "0")
+                            onNavigate(SystemRoute(cid ?: "0"))
                         },
                         modifier = Modifier.height(20.dp),
                         shape = RoundedCornerShape(3.dp),
@@ -199,7 +200,7 @@ fun ArticleCard(
                 if (data.fresh) {
                     Text(
                         text = "新  ",
-                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                        modifier = footModifier.clickable { onNavigate(SystemRoute(data.chapterId)) },
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
@@ -209,7 +210,7 @@ fun ArticleCard(
                 if (data.top) {
                     Text(
                         text = "置顶  ",
-                        modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                        modifier = footModifier.clickable { onNavigate(SystemRoute(data.chapterId)) },
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
@@ -218,7 +219,7 @@ fun ArticleCard(
                 }
                 Text(
                     text = data.chapterNameHtml,
-                    modifier = footModifier.clickable { onNavigateToSystem(data.chapterId) },
+                    modifier = footModifier.clickable { onNavigate(SystemRoute(data.chapterId)) },
                     color = MaterialTheme.colorScheme.onTertiary,
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
@@ -249,7 +250,7 @@ fun ArticleCard(
                                     collectResId = getCollectResId(data.collect)
                                 }
 
-                                "-1001" -> onNavigateToLogin()
+                                "-1001" -> onNavigate(LoginRoute)
                             }
                         }
                     })
@@ -278,10 +279,7 @@ fun ArticleCardPreview() {
                 superChapterName = "我是测试内容我是测试内容我是测试我是测试内容我是测试内容我容我是测试内容我是测试内容我是测试内容我",
                 chapterName = "官方"
             ),
-            onNavigateToLogin = {},
-            onNavigateToSystem = {},
-            onNavigateToUser = {},
-            onNavigateToWeb = {},
+            onNavigate = {},
         )
     }
 }

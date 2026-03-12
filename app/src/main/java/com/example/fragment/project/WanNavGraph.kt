@@ -97,7 +97,7 @@ fun WanNavGraph(
     ) {
         composable<BrowseHistoryRoute> {
             BrowseHistoryScreen(
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
@@ -106,48 +106,31 @@ fun WanNavGraph(
         }
         composable<LoginRoute> {
             LoginScreen(
-                onNavigateToRegister = { wanNavActions.navigate(RegisterRoute) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() },
-                onPopBackStackToMain = { wanNavActions.popBackStack(MainRoute) }
+                onPopBackStack = { wanNavActions.popBackStack(it) }
             )
         }
         composable<MainRoute> {
             MainScreen(
-                onNavigateToBookmarkHistory = { wanNavActions.navigate(BrowseHistoryRoute) },
-                onNavigateToDemo = { wanNavActions.navigate(DemoRoute) },
-                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
-                onNavigateToMyCoin = { wanNavActions.navigate(MyCoinRoute) },
-                onNavigateToMyCollect = { wanNavActions.navigate(MyCollectRoute) },
-                onNavigateToMyShare = { wanNavActions.navigate(MyShareRoute) },
-                onNavigateToSearch = { wanNavActions.navigate(SearchRoute(it)) },
-                onNavigateToSetting = { wanNavActions.navigate(SettingRoute) },
-                onNavigateToShareArticle = { wanNavActions.navigate(ShareArticleRoute) },
-                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
-                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) }
+                onNavigate = { wanNavActions.navigate(it) },
             )
         }
         composable<MyCoinRoute> {
             MyCoinScreen(
-                onNavigateToRank = { wanNavActions.navigate(RankRoute) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<MyCollectRoute> {
             MyCollectScreen(
-                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
-                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
-                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<MyShareRoute> {
             MyShareScreen(
-                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
-                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
-                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
@@ -159,15 +142,14 @@ fun WanNavGraph(
             )
         ) {
             RankScreen(
-                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<RegisterRoute> {
             RegisterScreen(
                 onNavigateUp = { wanNavActions.navigateUp() },
-                onPopBackStackToMain = { wanNavActions.popBackStack(MainRoute) }
+                onPopBackStack = { wanNavActions.popBackStack(it) }
             )
         }
         composable<SearchRoute>(
@@ -179,41 +161,33 @@ fun WanNavGraph(
         ) { backStackEntry ->
             SearchScreen(
                 key = backStackEntry.toRoute<SearchRoute>().key,
-                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
-                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
-                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<SettingRoute> {
             SettingScreen(
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<ShareArticleRoute> {
             ShareArticleScreen(
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<SystemRoute> { backStackEntry ->
             SystemScreen(
                 cid = backStackEntry.toRoute<SystemRoute>().cid,
-                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
-                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
-                onNavigateToUser = { wanNavActions.navigate(UserRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
         composable<UserRoute> { backStackEntry ->
             UserScreen(
                 userId = backStackEntry.toRoute<UserRoute>().userId,
-                onNavigateToLogin = { wanNavActions.navigate(LoginRoute) },
-                onNavigateToSystem = { wanNavActions.navigate(SystemRoute(it)) },
-                onNavigateToWeb = { wanNavActions.navigate(WebRoute(it)) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() }
             )
         }
@@ -226,9 +200,8 @@ fun WanNavGraph(
         ) { backStackEntry ->
             WebScreen(
                 url = backStackEntry.toRoute<WebRoute>().url,
-                onNavigateToBookmarkHistory = { wanNavActions.navigate(BrowseHistoryRoute) },
+                onNavigate = { wanNavActions.navigate(it) },
                 onNavigateUp = { wanNavActions.navigateUp() },
-                shouldOverrideUrl = { wanNavActions.navigate(WebRoute(it)) },
             )
         }
     }

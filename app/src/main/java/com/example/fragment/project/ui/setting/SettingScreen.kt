@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
@@ -64,7 +65,7 @@ import java.io.File
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -146,9 +147,9 @@ fun SettingScreen(
                         }
                     }
                     HorizontalDivider()
-                    ArrowRightItem("隐私政策") { onNavigateToWeb("file:///android_asset/privacy_policy.html") }
+                    ArrowRightItem("隐私政策") { onNavigate(WebRoute("file:///android_asset/privacy_policy.html")) }
                     HorizontalDivider()
-                    ArrowRightItem("问题反馈") { onNavigateToWeb("https://github.com/miaowmiaow/fragmject/issues") }
+                    ArrowRightItem("问题反馈") { onNavigate(WebRoute("https://github.com/miaowmiaow/fragmject/issues")) }
                     HorizontalDivider()
                     ArrowRightItem("抹除数据") {
                         showType = 0
@@ -184,7 +185,7 @@ fun SettingScreen(
                         )
                     }
                     HorizontalDivider()
-                    ArrowRightItem("关于玩Android") { onNavigateToWeb("https://wanandroid.com") }
+                    ArrowRightItem("关于玩Android") { onNavigate(WebRoute("https://wanandroid.com")) }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.user != null) {
                         Button(

@@ -45,7 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragment.project.SystemRoute
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.data.Tree
@@ -55,8 +57,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun NavScreen(
     systemData: List<Tree>,
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val tabs = listOf("导航", "体系")
     val scope = rememberCoroutineScope()
@@ -73,11 +74,11 @@ fun NavScreen(
         )
         HorizontalPager(state = pagerState) { page ->
             if (page == 0) {
-                NavLinkContent(onNavigateToWeb = onNavigateToWeb)
+                NavLinkContent(onNavigate = onNavigate)
             } else if (page == 1) {
                 NavSystemContent(
                     systemData = systemData,
-                    onNavigateToSystem = onNavigateToSystem
+                    onNavigate = onNavigate
                 )
             }
         }
@@ -88,7 +89,7 @@ fun NavScreen(
 @Composable
 fun NavLinkContent(
     viewModel: NavViewModel = viewModel(),
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -164,7 +165,7 @@ fun NavLinkContent(
                     uiState.navigationResult.getOrNull(page)?.articles?.forEach {
                         Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
                             Button(
-                                onClick = { onNavigateToWeb(it.link) },
+                                onClick = { onNavigate(WebRoute(it.link)) },
                                 shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -189,7 +190,7 @@ fun NavLinkContent(
 @Composable
 fun NavSystemContent(
     systemData: List<Tree>,
-    onNavigateToSystem: (cid: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     LoadingContent(
@@ -219,7 +220,7 @@ fun NavSystemContent(
                         data.children?.forEach { children ->
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
-                                    onClick = { onNavigateToSystem(children.id) },
+                                    onClick = { onNavigate(SystemRoute(children.id)) },
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,

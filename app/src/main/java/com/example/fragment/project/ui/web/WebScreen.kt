@@ -49,8 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.fragment.project.BrowseHistoryRoute
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.components.TitleBar
 import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
@@ -60,9 +62,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebScreen(
     url: String,
-    onNavigateToBookmarkHistory: () -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
-    shouldOverrideUrl: (url: String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -174,7 +175,7 @@ fun WebScreen(
                                 }
                                 Button(
                                     onClick = {
-                                        onNavigateToBookmarkHistory()
+                                        onNavigate(BrowseHistoryRoute)
                                         scope.launch { bottomSheetState.partialExpand() }
                                     },
                                     modifier = Modifier
@@ -397,7 +398,7 @@ fun WebScreen(
                         }
                     },
                     onCustomView = { customView = it },
-                    shouldOverrideUrl = shouldOverrideUrl,
+                    shouldOverrideUrl = { onNavigate(WebRoute(it)) },
                 )
             }
         }

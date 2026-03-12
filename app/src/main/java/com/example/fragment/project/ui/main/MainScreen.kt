@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.SearchRoute
+import com.example.fragment.project.ShareArticleRoute
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.LoopVerticalPager
@@ -60,18 +62,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     viewModel: WanViewModel = viewModel(),
-    onNavigateToBookmarkHistory: () -> Unit = {},
-    onNavigateToDemo: () -> Unit = {},
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToMyCoin: () -> Unit = {},
-    onNavigateToMyCollect: () -> Unit = {},
-    onNavigateToMyShare: () -> Unit = {},
-    onNavigateToSearch: (key: String) -> Unit = {},
-    onNavigateToShareArticle: () -> Unit = {},
-    onNavigateToSetting: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -87,8 +78,7 @@ fun MainScreen(
         topBar = {
             SearchBar(
                 data = uiState.hotKeyResult,
-                onNavigateToSearch = onNavigateToSearch,
-                onNavigateToShareArticle = onNavigateToShareArticle
+                onNavigate = onNavigate,
             )
         },
         bottomBar = {
@@ -113,40 +103,26 @@ fun MainScreen(
                 0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
                     HomeScreen(
                         listState = homeListState,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUser = onNavigateToUser,
-                        onNavigateToWeb = onNavigateToWeb,
+                        onNavigate = onNavigate,
                     )
                 }
 
                 1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
                     NavScreen(
                         systemData = uiState.treeResult,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToWeb = onNavigateToWeb,
+                        onNavigate = onNavigate,
                     )
                 }
 
                 2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
                     ProjectScreen(
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUser = onNavigateToUser,
-                        onNavigateToWeb = onNavigateToWeb
+                        onNavigate = onNavigate,
                     )
                 }
 
                 3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
                     MyScreen(
-                        onNavigateToBookmarkHistory = onNavigateToBookmarkHistory,
-                        onNavigateToDemo = onNavigateToDemo,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToMyCoin = onNavigateToMyCoin,
-                        onNavigateToMyCollect = onNavigateToMyCollect,
-                        onNavigateToMyShare = onNavigateToMyShare,
-                        onNavigateToSetting = onNavigateToSetting,
-                        onNavigateToUser = onNavigateToUser,
+                        onNavigate = onNavigate,
                     )
                 }
             }
@@ -157,8 +133,7 @@ fun MainScreen(
 @Composable
 fun SearchBar(
     data: List<HotKey>?,
-    onNavigateToSearch: (key: String) -> Unit = {},
-    onNavigateToShareArticle: () -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -188,7 +163,7 @@ fun SearchBar(
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
                     modifier = Modifier
-                        .clickable { onNavigateToSearch(item.name) }
+                        .clickable { onNavigate(SearchRoute(item.name)) }
                         .fillMaxSize(),
                     contentAlignment = Alignment.CenterStart
                 ) {
@@ -203,7 +178,7 @@ fun SearchBar(
         }
         IconButton(
             modifier = Modifier.height(45.dp),
-            onClick = onNavigateToShareArticle
+            onClick = { onNavigate(ShareArticleRoute) }
         ) {
             Icon(
                 Icons.Filled.Add,

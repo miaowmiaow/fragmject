@@ -34,10 +34,7 @@ fun ProjectScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     projectTreeViewModel: ProjectTreeViewModel = viewModel(),
     projectViewModel: ProjectViewModel = viewModel(),
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -82,10 +79,7 @@ fun ProjectScreen(
                 ) { _, item ->
                     ArticleCard(
                         data = item,
-                        onNavigateToLogin = onNavigateToLogin,
-                        onNavigateToSystem = onNavigateToSystem,
-                        onNavigateToUser = onNavigateToUser,
-                        onNavigateToWeb = onNavigateToWeb
+                        onNavigate = onNavigate,
                     )
                 }
             }

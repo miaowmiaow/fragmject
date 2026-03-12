@@ -25,10 +25,7 @@ import com.example.fragment.project.components.TitleBar
 @Composable
 fun MyCollectScreen(
     viewModel: MyCollectViewModel = viewModel(),
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,10 +61,7 @@ fun MyCollectScreen(
         ) { _, item ->
             ArticleCard(
                 data = item,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToUser = onNavigateToUser,
-                onNavigateToSystem = onNavigateToSystem,
-                onNavigateToWeb = onNavigateToWeb
+                onNavigate = onNavigate,
             )
         }
     }

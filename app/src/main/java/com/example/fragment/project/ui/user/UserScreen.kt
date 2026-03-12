@@ -57,9 +57,7 @@ fun UserScreen(
     viewModel: UserViewModel = viewModel(
         factory = UserViewModel.provideFactory(userId)
     ),
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -177,10 +175,7 @@ fun UserScreen(
         ) { _, item ->
             ArticleCard(
                 data = item,
-                onNavigateToLogin = onNavigateToLogin,
-                onNavigateToSystem = onNavigateToSystem,
-                onNavigateToUser = {},
-                onNavigateToWeb = onNavigateToWeb,
+                onNavigate = onNavigate,
             )
         }
     }

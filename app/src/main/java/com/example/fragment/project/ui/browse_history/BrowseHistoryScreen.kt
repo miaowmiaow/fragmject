@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.components.SwipeBox
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.components.TitleBar
@@ -52,7 +53,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BrowseHistoryScreen(
     viewModel: BrowseHistoryViewModel = viewModel(),
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -105,7 +106,7 @@ fun BrowseHistoryScreen(
                                     if (page == 0) {
                                         viewModel.setBrowseHistory(item.value, item.url)
                                     }
-                                    onNavigateToWeb(item.url)
+                                    onNavigate(WebRoute(item.url))
                                 }
                                 .background(MaterialTheme.colorScheme.surfaceContainer)
                                 .wrapContentHeight(),
@@ -175,7 +176,11 @@ fun BrowseHistoryScreen(
                                     }
                                 }
                             ) {
-                                Column(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp, horizontal = 15.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 10.dp, horizontal = 15.dp)
+                                ) {
                                     Text(
                                         text = item.value,
                                         color = MaterialTheme.colorScheme.onSecondary,

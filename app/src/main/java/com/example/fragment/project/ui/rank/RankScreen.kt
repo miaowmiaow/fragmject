@@ -34,15 +34,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.UserRoute
 import com.example.fragment.project.WanTheme
+import com.example.fragment.project.WebRoute
 import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.fragment.project.components.TitleBar
 
 @Composable
 fun RankScreen(
     viewModel: RankViewModel = viewModel(),
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -65,7 +66,7 @@ fun RankScreen(
                 actions = {
                     IconButton(
                         modifier = Modifier.height(45.dp),
-                        onClick = { onNavigateToWeb("https://www.wanandroid.com/blog/show/2653") }
+                        onClick = { onNavigate(WebRoute("https://www.wanandroid.com/blog/show/2653")) }
                     ) {
                         Icon(
                             painter = painterResource(R.mipmap.ic_rule),
@@ -104,7 +105,7 @@ fun RankScreen(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable { onNavigateToUser(item.userId) }
+                            .clickable { onNavigate(UserRoute(item.userId)) }
                             .size(30.dp)
                     )
                     Spacer(Modifier.width(10.dp))

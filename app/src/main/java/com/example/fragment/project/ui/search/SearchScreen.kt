@@ -68,10 +68,7 @@ fun SearchScreen(
     key: String,
     wanViewModel: WanViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToSystem: (cid: String) -> Unit = {},
-    onNavigateToUser: (userId: String) -> Unit = {},
-    onNavigateToWeb: (url: String) -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
@@ -257,10 +254,7 @@ fun SearchScreen(
                     ) { _, item ->
                         ArticleCard(
                             data = item,
-                            onNavigateToLogin = onNavigateToLogin,
-                            onNavigateToSystem = onNavigateToSystem,
-                            onNavigateToUser = onNavigateToUser,
-                            onNavigateToWeb = onNavigateToWeb,
+                            onNavigate = onNavigate,
                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                         )
                     }

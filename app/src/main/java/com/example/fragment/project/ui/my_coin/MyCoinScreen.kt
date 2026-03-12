@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
+import com.example.fragment.project.RankRoute
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.miaow.base.utils.getScreenWidth
@@ -51,7 +52,7 @@ import kotlin.math.abs
 @Composable
 fun MyCoinScreen(
     viewModel: MyCoinViewModel = viewModel(),
-    onNavigateToRank: () -> Unit = {},
+    onNavigate: (route: Any) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -110,7 +111,7 @@ fun MyCoinScreen(
                     modifier = Modifier
                         .height(45.dp)
                         .align(Alignment.TopEnd),
-                    onClick = onNavigateToRank
+                    onClick = { onNavigate(RankRoute) }
                 ) {
                     Icon(
                         painter = painterResource(R.mipmap.ic_rank),

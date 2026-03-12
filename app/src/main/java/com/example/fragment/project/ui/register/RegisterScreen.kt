@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragment.project.MainRoute
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.LoadingContent
@@ -63,7 +64,7 @@ import com.example.fragment.project.components.WhiteTextField
 fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(),
     onNavigateUp: () -> Unit = {},
-    onPopBackStackToMain: () -> Unit = {},
+    onPopBackStack: (route: Any) -> Unit = {},
 ) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -72,7 +73,7 @@ fun RegisterScreen(
     val scrollState = rememberScrollState()
     LaunchedEffect(uiState.isLogin, uiState.message, snackbarHostState) {
         if (uiState.isLogin) {
-            onPopBackStackToMain()
+            onPopBackStack(MainRoute)
         }
         if (uiState.message.isNotBlank()) {
             snackbarHostState.showSnackbar(uiState.message)

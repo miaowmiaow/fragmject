@@ -2,10 +2,12 @@ package com.example.fragment.project.ui.demo
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -63,44 +65,47 @@ fun DemoScreen(
         "网格选择",
         "视频播放",
         "嵌套滚动",
+        "扫码示例",
     )
     var selectedTab by remember { mutableStateOf(tabs[0]) }
     Scaffold(
         topBar = {
-            if(showTitleBar){
-                TitleBar(
-                    title = "组件Demo",
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    if (drawerState.isClosed) {
-                                        drawerState.open()
-                                    } else {
-                                        drawerState.close()
-                                    }
+            if(!showTitleBar){
+                return@Scaffold
+            }
+            TitleBar(
+                title = selectedTab,
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                if (drawerState.isClosed) {
+                                    drawerState.open()
+                                } else {
+                                    drawerState.close()
                                 }
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
                         }
-                    },
-                    actions = {
-                        IconButton(onClick = onNavigateUp) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
+                    ) {
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
-                )
-            }
-        }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            )
+        },
+        contentWindowInsets = WindowInsets.statusBars
     ) { innerPadding ->
         ModalNavigationDrawer(
             drawerContent = {
@@ -117,6 +122,7 @@ fun DemoScreen(
                             onClick = {
                                 scope.launch { drawerState.close() }
                                 selectedTab = tab
+                                showTitleBar = tabs.indexOf(selectedTab) != 15
                             },
                             modifier = Modifier
                                 .width(200.dp)
@@ -132,7 +138,6 @@ fun DemoScreen(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    showTitleBar = tabs.indexOf(selectedTab) != 15
                     when (tabs.indexOf(selectedTab)) {
                         0 -> DatePickerScreen()
                         1 -> CalendarScreen()
@@ -151,6 +156,7 @@ fun DemoScreen(
                         14 -> GridSelectScreen()
                         15 -> ExoPlayerScreen()
                         16 -> NestedScrollScreen()
+                        17 -> BarcodeScanningScreen()
                     }
                 }
             }

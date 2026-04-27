@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
+    alias(libs.plugins.room3)
 }
 
 val configProperties = Properties()
@@ -28,7 +28,7 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
-    room {
+    room3 {
         schemaDirectory("$projectDir/schemas")
     }
 
@@ -59,9 +59,8 @@ dependencies {
     api(libs.kotlin.stdlib)
     api(libs.kotlinx.coroutines)
     api(libs.material)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room3.runtime)
+    ksp(libs.androidx.room3.compiler)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit)

@@ -1,11 +1,9 @@
 package com.example.fragment.project.database
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
 import com.example.fragment.project.data.History
 import com.example.fragment.project.data.User
 import com.example.miaow.base.provider.BaseContentProvider
@@ -29,38 +27,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context = BaseContentProvider.context()): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
-                .addMigrations(object : Migration(1, 2) {
-                    override fun migrate(db: SupportSQLiteDatabase) {
-                        db.execSQL("ALTER TABLE History ADD COLUMN url TEXT NOT NULL DEFAULT ''")
-                        db.execSQL("UPDATE History SET url = value")
-                    }
-                })
-                .addMigrations(object : Migration(2, 3) {
-                    override fun migrate(db: SupportSQLiteDatabase) {
-                        db.execSQL("ALTER TABLE User ADD COLUMN dark_theme INTEGER NOT NULL DEFAULT 0")
-                    }
-                })
-                .addMigrations(object : Migration(3, 4) {
-                    override fun migrate(db: SupportSQLiteDatabase) {
-                        db.execSQL(
-                            """
-                            CREATE TABLE IF NOT EXISTS User_new (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                                username TEXT,
-                                nickname TEXT,
-                                dark_theme TEXT
-                            )""".trimIndent()
-                        )
-                        db.execSQL(
-                            """
-                            INSERT INTO User_new (id, username, nickname, dark_theme)
-                            SELECT id, username, nickname, CAST(dark_theme AS TEXT) FROM User
-                            """.trimIndent()
-                        )
-                        db.execSQL("DROP TABLE User")
-                        db.execSQL("ALTER TABLE User_new RENAME TO User")
-                    }
-                })
                 .build()
         }
 

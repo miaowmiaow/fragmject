@@ -37,7 +37,7 @@ import kotlin.math.abs
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun NestedScrollScreen() {
+fun NestedScroll1Screen() {
     val density = LocalDensity.current
     var boxHeight by remember { mutableIntStateOf(0) }
     val boxHeightDp = with(density) { boxHeight.toDp() }

@@ -2,10 +2,9 @@ package com.example.fragment.project.ui.main.nav
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Navigation
-import com.example.fragment.project.data.NavigationList
 import com.example.fragment.project.data.Tree
-import com.example.fragment.project.data.TreeList
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.CommonRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,12 +14,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class NavUiState(
-    var isLoading: Boolean = false,
-    var navigationResult: MutableList<Navigation> = ArrayList(),
-    var systemTreeResult: MutableList<Tree> = ArrayList(),
+    val isLoading: Boolean = false,
+    val navigationResult: List<Navigation> = emptyList(),
+    val systemTreeResult: List<Tree> = emptyList(),
 )
 
-class NavViewModel : BaseViewModel() {
+class NavViewModel(
+    private val commonRepo: CommonRepository = WanRepositoryProvider.common,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(NavUiState())
 
@@ -36,26 +37,17 @@ class NavViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             //获取导航数据
-            val navi = async {
-                get<NavigationList> {
-                    setUrl("navi/json")
-                }
-            }
-            val tree = async {
-                get<TreeList> {
-                    setUrl("tree/json")
-                }
-            }
+            val navi = async { commonRepo.getNavigation() }
+            val tree = async { commonRepo.getSystemTree() }
+            val naviData = navi.await().data
+            val treeData = tree.await().data
             _uiState.update { state ->
-                navi.await().data?.let { data ->
-                    state.navigationResult = data
-                }
-                tree.await().data?.let { data ->
-                    state.systemTreeResult = data
-                }
-                state.copy(isLoading = false)
+                state.copy(
+                    isLoading = false,
+                    navigationResult = naviData ?: state.navigationResult,
+                    systemTreeResult = treeData ?: state.systemTreeResult,
+                )
             }
-
         }
     }
 }

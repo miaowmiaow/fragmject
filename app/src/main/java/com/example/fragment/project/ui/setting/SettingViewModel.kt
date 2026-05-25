@@ -2,9 +2,9 @@ package com.example.fragment.project.ui.setting
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.User
+import com.example.fragment.project.data.repository.UserRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.HttpResponse
-import com.example.miaow.base.http.get
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,11 +13,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SettingUiState(
-    var isLoading: Boolean = false,
-    var user: User? = null,
+    val isLoading: Boolean = false,
+    val user: User? = null,
 )
 
-class SettingViewModel : BaseViewModel() {
+class SettingViewModel(
+    private val userRepo: UserRepository = WanRepositoryProvider.user,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(SettingUiState())
 
@@ -35,9 +37,10 @@ class SettingViewModel : BaseViewModel() {
 
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch {
-            _uiState.value.user?.let { user ->
-                user.darkTheme = darkTheme.toString()
-                WanHelper.setUser(user)
+            // 使用 copy 生成新实例，避免直接突变 data class 字段，
+            // 这样 StateFlow 的订阅方也能感知到变化。
+            _uiState.value.user?.copy(darkTheme = darkTheme.toString())?.let { updated ->
+                WanHelper.setUser(updated)
             }
         }
     }
@@ -50,9 +53,7 @@ class SettingViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = get<HttpResponse> {
-                setUrl("user/logout/json")
-            }
+            val response = userRepo.logout()
             _uiState.update { state ->
                 if (response.errorCode == "0") {
                     state.user?.let { user ->

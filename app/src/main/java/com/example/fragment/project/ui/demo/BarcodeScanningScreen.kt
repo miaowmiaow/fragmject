@@ -108,8 +108,8 @@ fun BarcodeScanningScreen() {
                             InputImage.fromFilePath(context, imageUri)
                         )?.addOnSuccessListener { barcodes ->
                             for (barcode in barcodes) {
-                                val qrContent = if(barcode.valueType == Barcode.TYPE_URL) {
-                                    barcode.url!!.url!!
+                                val qrContent = if (barcode.valueType == Barcode.TYPE_URL) {
+                                    barcode.url?.url ?: barcode.rawValue ?: ""
                                 } else {
                                     barcode.rawValue ?: ""
                                 }
@@ -151,12 +151,12 @@ fun BarcodeScanningScreen() {
                                 }
 
                                 val barcode = barcodeResults[0]
-                                val qrContent = if(barcode.valueType == Barcode.TYPE_URL) {
-                                    barcode.url!!.url!!
+                                val qrContent = if (barcode.valueType == Barcode.TYPE_URL) {
+                                    barcode.url?.url ?: barcode.rawValue ?: ""
                                 } else {
                                     barcode.rawValue ?: ""
                                 }
-                                val boundingRect = barcode.boundingBox!!
+                                val boundingRect = barcode.boundingBox ?: return@MlKitAnalyzer
                                 val qrCodeDrawable =
                                     QrCodeDrawable(qrContent, boundingRect)
                                 previewView.overlay.clear()

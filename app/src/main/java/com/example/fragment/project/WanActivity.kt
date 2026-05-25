@@ -7,7 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.fragment.project.ui.web.WebViewManager
-import com.example.fragment.project.utils.WanHelper
+import com.example.miaow.base.debug.DebugBridge
 
 class WanActivity : ComponentActivity() {
 
@@ -22,13 +22,15 @@ class WanActivity : ComponentActivity() {
         }
         // WebView 预创建
         WebViewManager.prepare(applicationContext)
-        //启用 WebView 调试
-        WebView.setWebContentsDebuggingEnabled(true)
+        // 仅在 Debug 构建中启用 WebView 调试，避免在 Release 包暴露调试接口
+        if (DebugBridge.allowWebContentsDebugging) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        WanHelper.close()
+        // 数据库随进程生命周期管理，无需在 Activity 销毁时关闭
         WebViewManager.destroy()
     }
 }

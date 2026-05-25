@@ -1,9 +1,9 @@
 package com.example.fragment.project.ui.register
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.data.Register
+import com.example.fragment.project.data.repository.UserRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class RegisterUiState(
-    var isLoading: Boolean = false,
-    var isLogin: Boolean = false,
-    var message: String = "",
+    val isLoading: Boolean = false,
+    val isLogin: Boolean = false,
+    val message: String = "",
 )
 
-class RegisterViewModel : BaseViewModel() {
+class RegisterViewModel(
+    private val userRepo: UserRepository = WanRepositoryProvider.user,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
 
@@ -58,12 +60,7 @@ class RegisterViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = post<Register> {
-                setUrl("user/register")
-                putParam("username", username)
-                putParam("password", password)
-                putParam("repassword", repassword)
-            }
+            val response = userRepo.register(username, password, repassword)
             _uiState.update {
                 response.data?.let { user ->
                     WanHelper.setUser(user)

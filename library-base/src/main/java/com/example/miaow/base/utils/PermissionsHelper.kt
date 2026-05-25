@@ -33,7 +33,7 @@ fun Context.requestIgnoreBatteryOptimizations() {
         intent.data = "package:${packageName}".toUri()
         startActivity(intent)
     } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("PermissionsHelper", "requestIgnoreBatteryOptimizations failed", e)
     }
 }
 
@@ -178,14 +178,7 @@ fun FragmentActivity.requestStorage(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestStorage(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        arrayOf(
-            Manifest.permission.READ_MEDIA_AUDIO,
-            Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.READ_MEDIA_VIDEO,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-        )
-    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_AUDIO,
             Manifest.permission.READ_MEDIA_IMAGES,
@@ -204,19 +197,13 @@ fun FragmentActivity.requestMediaImages(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestMediaImages(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        arrayOf(
-            Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-        )
-    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_IMAGES,
         )
     else
         arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
     requestPermissions(permissions, callback)
 }
@@ -226,19 +213,13 @@ fun FragmentActivity.requestMediaVideo(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestMediaVideo(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        arrayOf(
-            Manifest.permission.READ_MEDIA_VIDEO,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-        )
-    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_VIDEO,
         )
     else
         arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
     requestPermissions(permissions, callback)
 }
@@ -248,19 +229,13 @@ fun FragmentActivity.requestMediaAudio(callback: PermissionsCallback) {
 }
 
 fun FragmentManager.requestMediaAudio(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        arrayOf(
-            Manifest.permission.READ_MEDIA_AUDIO,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-        )
-    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_AUDIO,
         )
     else
         arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
     requestPermissions(permissions, callback)
 }
@@ -295,11 +270,7 @@ class PermissionsFragment : Fragment() {
     private var permissions: MutableList<String> = arrayListOf()
     private val launcher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
-            var isGranted = true
-            ps.entries.forEach {
-                if (it.key in permissions && !it.value)
-                    isGranted = false
-            }
+            val isGranted = ps.entries.all { (key, value) -> key !in permissions || value }
             if (!isGranted) {
                 callback?.deny()
             } else {

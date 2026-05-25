@@ -9,12 +9,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class ZipHelper {
+
+    private static final String TAG = "ZipHelper";
 
     /**
      * 压缩文件
@@ -23,22 +25,15 @@ public class ZipHelper {
      * @param zipFilePath 被压缩后存放的路径
      */
     public static File zipFiles(File file, String zipFilePath) {
-        ZipOutputStream zos = null;
-        try {
-            zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFilePath)));
+        // 使用 try-with-resources 保证 zos 一定被关闭
+        try (ZipOutputStream zos = new ZipOutputStream(
+                new BufferedOutputStream(new FileOutputStream(zipFilePath)))) {
             recursionZip(zos, file);
             zos.flush();
         } catch (Exception e) {
-            Log.e(ZipHelper.class.getName(), Objects.requireNonNull(e.getMessage()));
-        } finally {
-            try {
-                if (zos != null) {
-                    zos.closeEntry();
-                    zos.close();
-                }
-            } catch (IOException e1) {
-                Log.e(ZipHelper.class.getName(), Objects.requireNonNull(e1.getMessage()));
-            }
+            // 之前用 Objects.requireNonNull(e.getMessage()) 当 message 为 null 时会再抛 NPE，
+            // 把"日志记录"代码变成"崩溃源"，这里改为安全打印。
+            Log.e(TAG, "zipFiles failed: " + zipFilePath, e);
         }
         return new File(zipFilePath);
     }
@@ -49,21 +44,22 @@ public class ZipHelper {
             if (files == null) {
                 return;
             }
-            for (File file1 : files) {
-                if (file1 == null) {
+            for (File child : files) {
+                if (child == null) {
                     continue;
                 }
-                recursionZip(zipOut, file1);
+                recursionZip(zipOut, child);
             }
         } else {
-            byte[] buf = new byte[1024];
-            InputStream input = new BufferedInputStream(new FileInputStream(file));
-            zipOut.putNextEntry(new ZipEntry(file.getPath() + File.separator + file.getName()));
-            int len;
-            while ((len = input.read(buf)) != -1) {
-                zipOut.write(buf, 0, len);
+            // 之前 input 流仅在末尾 close()，write 抛异常时会泄漏；改为 try-with-resources。
+            try (InputStream input = new BufferedInputStream(new FileInputStream(file))) {
+                zipOut.putNextEntry(new ZipEntry(file.getPath() + File.separator + file.getName()));
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = input.read(buf)) != -1) {
+                    zipOut.write(buf, 0, len);
+                }
             }
-            input.close();
         }
     }
 
@@ -74,16 +70,14 @@ public class ZipHelper {
      * @param unZipPath 解压后的目录
      */
     public static void unZipFile(String zipPath, String unZipPath) {
-        BufferedOutputStream bos = null;
-        ZipInputStream zis = null;
-        try {
-            String filename;
-            zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipPath)));
-            ZipEntry ze;
+        // 之前 bos 在 while 循环里反复赋值并放在外部 finally 中关闭，
+        // 异常时存在错配关闭风险。改为每个 entry 自带 try-with-resources。
+        try (ZipInputStream zis = new ZipInputStream(
+                new BufferedInputStream(new FileInputStream(zipPath)))) {
             byte[] buffer = new byte[1024];
-            int count;
+            ZipEntry ze;
             while ((ze = zis.getNextEntry()) != null) {
-                filename = ze.getName();
+                String filename = ze.getName();
                 createSubFolders(filename, unZipPath);
                 if (ze.isDirectory()) {
                     File fmd = new File(unZipPath + filename);
@@ -91,27 +85,17 @@ public class ZipHelper {
                     fmd.mkdirs();
                     continue;
                 }
-                bos = new BufferedOutputStream(new FileOutputStream(unZipPath + filename));
-                while ((count = zis.read(buffer)) != -1) {
-                    bos.write(buffer, 0, count);
+                try (OutputStream bos = new BufferedOutputStream(
+                        new FileOutputStream(unZipPath + filename))) {
+                    int count;
+                    while ((count = zis.read(buffer)) != -1) {
+                        bos.write(buffer, 0, count);
+                    }
+                    bos.flush();
                 }
-                bos.flush();
-                bos.close();
             }
         } catch (IOException e) {
-            Log.e(ZipHelper.class.getName(), Objects.requireNonNull(e.getMessage()));
-        } finally {
-            try {
-                if (zis != null) {
-                    zis.closeEntry();
-                    zis.close();
-                }
-                if (bos != null) {
-                    bos.close();
-                }
-            } catch (IOException e) {
-                Log.e(ZipHelper.class.getName(), Objects.requireNonNull(e.getMessage()));
-            }
+            Log.e(TAG, "unZipFile failed: " + zipPath, e);
         }
     }
 
@@ -120,10 +104,10 @@ public class ZipHelper {
         if (subFolders.length <= 1) {
             return;
         }
-        String pathNow = path;
+        StringBuilder pathNow = new StringBuilder(path);
         for (int i = 0; i < subFolders.length - 1; ++i) {
-            pathNow = pathNow + subFolders[i] + "/";
-            File fmd = new File(pathNow);
+            pathNow.append(subFolders[i]).append("/");
+            File fmd = new File(pathNow.toString());
             if (fmd.exists()) {
                 continue;
             }

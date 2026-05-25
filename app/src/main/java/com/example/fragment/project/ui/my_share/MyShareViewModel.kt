@@ -2,8 +2,8 @@ package com.example.fragment.project.ui.my_share
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
-import com.example.fragment.project.data.ShareArticleList
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.MyRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,13 +12,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MyShareUiState(
-    var isRefreshing: Boolean = false,
-    var isLoading: Boolean = false,
-    var isFinishing: Boolean = false,
-    var result: MutableList<Article> = ArrayList(),
+    val isRefreshing: Boolean = false,
+    val isLoading: Boolean = false,
+    val isFinishing: Boolean = false,
+    val result: List<Article> = emptyList(),
 )
 
-class MyShareViewModel : BaseViewModel() {
+class MyShareViewModel(
+    private val myRepo: MyRepository = WanRepositoryProvider.my,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(MyShareUiState())
 
@@ -49,22 +51,16 @@ class MyShareViewModel : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            val response = get<ShareArticleList> {
-                setUrl("user/lg/private_articles/{page}/json")
-                putPath("page", page.toString())
-            }
+            val response = myRepo.getMyShareList(page)
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.shareArticles?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.result.clear()
-                    }
-                    state.result.addAll(datas)
-                }
+                val datas = response.data?.shareArticles?.datas.orEmpty()
+                val merged = if (isHomePage()) datas else state.result + datas
                 state.copy(
                     isRefreshing = false,
                     isLoading = hasNextPage(),
-                    isFinishing = !hasNextPage()
+                    isFinishing = !hasNextPage(),
+                    result = merged
                 )
             }
         }

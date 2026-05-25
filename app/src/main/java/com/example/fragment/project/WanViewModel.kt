@@ -2,23 +2,25 @@ package com.example.fragment.project
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.HotKey
-import com.example.fragment.project.data.HotKeyList
 import com.example.fragment.project.data.Tree
-import com.example.fragment.project.data.TreeList
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.CommonRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * 不可变 UiState：所有字段使用 val + 不可变集合，
+ * 避免直接突变 data class 字段导致 StateFlow 订阅方收不到变化。
+ */
 data class WanUiState(
-    var hotKeyResult: List<HotKey> = ArrayList(),
-    var treeResult: List<Tree> = ArrayList(),
-    var isLoading: Boolean = false,
+    val hotKeyResult: List<HotKey> = emptyList(),
+    val treeResult: List<Tree> = emptyList(),
+    val isLoading: Boolean = false,
 ) {
 
     fun getTree(cid: String): Triple<Int, String, List<Tree>> {
@@ -33,7 +35,9 @@ data class WanUiState(
     }
 }
 
-class WanViewModel : BaseViewModel() {
+class WanViewModel(
+    private val commonRepo: CommonRepository = WanRepositoryProvider.common,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(WanUiState())
 
@@ -44,38 +48,16 @@ class WanViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val hotKeyList = async { getHotKeyList() }
-            val treeList = async { getTreeList() }
+            val hotKeyList = async { commonRepo.getHotKey() }
+            val treeList = async { commonRepo.getSystemTree() }
+            val hotKeyData = hotKeyList.await().data
+            val treeData = treeList.await().data
             _uiState.update { state ->
-                hotKeyList.await().data?.let { data ->
-                    state.hotKeyResult = data
-                }
-                treeList.await().data?.let { data ->
-                    state.treeResult = data
-                }
-                state.copy(isLoading = false)
-            }
-        }
-    }
-
-    /**
-     * 获取搜索热词
-     */
-    private suspend fun getHotKeyList(): HotKeyList {
-        return coroutineScope {
-            get {
-                setUrl("hotkey/json")
-            }
-        }
-    }
-
-    /**
-     * 获取项目分类
-     */
-    private suspend fun getTreeList(): TreeList {
-        return coroutineScope {
-            get {
-                setUrl("tree/json")
+                state.copy(
+                    isLoading = false,
+                    hotKeyResult = hotKeyData ?: state.hotKeyResult,
+                    treeResult = treeData ?: state.treeResult,
+                )
             }
         }
     }

@@ -23,7 +23,7 @@ object FragmentHelper {
             try {
                 fragment = clazz.newInstance()
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("FragmentHelper", "replace: newInstance failed: ${clazz.name}", e)
             }
         }
         if (fragment != null) {
@@ -73,7 +73,7 @@ object FragmentHelper {
                 transaction.add(resId, switchFragment, tag)
                 transaction.setMaxLifecycle(switchFragment, Lifecycle.State.RESUMED)
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("FragmentHelper", "switcher: newInstance failed: ${switchClazz.name}", e)
             }
         } else {
             transaction.show(switchFragment)

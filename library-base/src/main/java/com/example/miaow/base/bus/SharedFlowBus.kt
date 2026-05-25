@@ -5,35 +5,35 @@ import androidx.lifecycle.asLiveData
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.set
 
 /**
  * SharedFlowBus 只会将更新通知给活跃的观察者，
  */
 object SharedFlowBus {
 
-    private var events = ConcurrentHashMap<Any, MutableSharedFlow<Any>>()
-    private var stickyEvents = ConcurrentHashMap<Any, MutableSharedFlow<Any>>()
+    private val events = ConcurrentHashMap<Class<*>, MutableSharedFlow<Any>>()
+    private val stickyEvents = ConcurrentHashMap<Class<*>, MutableSharedFlow<Any>>()
 
-    fun <T> with(key: Class<T>): MutableSharedFlow<T> {
-        if (!events.containsKey(key)) {
-            events[key] = MutableSharedFlow(0, 1, BufferOverflow.DROP_OLDEST)
-        }
-        return events[key] as MutableSharedFlow<T>
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> with(key: Class<T>): MutableSharedFlow<T> {
+        // 使用 getOrPut 保证 containsKey + put 的原子语义，避免高并发下重复创建 / 丢事件
+        return events.getOrPut(key) {
+            MutableSharedFlow(0, 1, BufferOverflow.DROP_OLDEST)
+        } as MutableSharedFlow<T>
     }
 
-    fun <T> withSticky(key: Class<T>): MutableSharedFlow<T> {
-        if (!stickyEvents.containsKey(key)) {
-            stickyEvents[key] = MutableSharedFlow(1, 1, BufferOverflow.DROP_OLDEST)
-        }
-        return stickyEvents[key] as MutableSharedFlow<T>
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> withSticky(key: Class<T>): MutableSharedFlow<T> {
+        return stickyEvents.getOrPut(key) {
+            MutableSharedFlow(1, 1, BufferOverflow.DROP_OLDEST)
+        } as MutableSharedFlow<T>
     }
 
-    fun <T> on(key: Class<T>): LiveData<T> {
+    fun <T : Any> on(key: Class<T>): LiveData<T> {
         return with(key).asLiveData()
     }
 
-    fun <T> onSticky(key: Class<T>): LiveData<T> {
+    fun <T : Any> onSticky(key: Class<T>): LiveData<T> {
         return withSticky(key).asLiveData()
     }
 

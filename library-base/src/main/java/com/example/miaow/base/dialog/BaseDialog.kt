@@ -20,7 +20,7 @@ open class BaseDialog : DialogFragment() {
         try {
             super.dismiss()
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("BaseDialog", "dismiss failed", e)
         }
     }
 
@@ -29,7 +29,7 @@ open class BaseDialog : DialogFragment() {
             try {
                 super.show(manager, tag)
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("BaseDialog", "show failed: tag=$tag", e)
             }
         }
     }
@@ -39,7 +39,7 @@ open class BaseDialog : DialogFragment() {
             try {
                 super.showNow(manager, tag)
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("BaseDialog", "showNow failed: tag=$tag", e)
             }
         }
     }

@@ -49,6 +49,8 @@ android {
 
     buildFeatures {
         compose = true
+        // 显式开启 BuildConfig，便于在运行时区分 Debug / Release（如日志、WebView 调试）
+        buildConfig = true
     }
 
     packaging {
@@ -82,12 +84,8 @@ android {
         }
         debug {
             isDebuggable = true
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            // Debug 包不开启混淆/资源压缩：避免显著拖慢构建并丢失堆栈信息
+            isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("config")
             //noinspection ChromeOsAbiSupport
             ndk.abiFilters += "x86"
@@ -153,6 +151,7 @@ dependencies {
     implementation(libs.androidx.room3.runtime)
     ksp(libs.androidx.room3.compiler)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
     debugImplementation(libs.leakcanary.android)

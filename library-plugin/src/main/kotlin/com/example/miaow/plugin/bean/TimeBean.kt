@@ -13,7 +13,7 @@ class TimeBean(
         return try {
             super.clone() as TimeBean
         } catch (e: CloneNotSupportedException) {
-            e.printStackTrace()
+            System.err.println("TimeBean clone failed: ${e.message}")
             TimeBean()
         }
     }

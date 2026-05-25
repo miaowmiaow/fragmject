@@ -4,12 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+
+private const val TAG_NOTIFICATION = "Notification"
 
 fun Context.areNotificationsEnabled(): Boolean {
     return NotificationManagerCompat.from(this).areNotificationsEnabled().also { enable ->
-        println(
-            if (enable) {
+        if (enable) {
+            Log.i(
+                TAG_NOTIFICATION,
                 """
                     通知权限已经被打开
                     手机型号:${Build.MODEL}
@@ -17,10 +21,10 @@ fun Context.areNotificationsEnabled(): Boolean {
                     系统版本:${Build.VERSION.RELEASE}
                     软件包名:${packageName}
                 """.trimIndent()
-            } else {
-                "通知权限未开启"
-            }
-        )
+            )
+        } else {
+            Log.i(TAG_NOTIFICATION, "通知权限未开启")
+        }
     }
 }
 

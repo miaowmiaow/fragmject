@@ -2,8 +2,7 @@ package com.example.fragment.project.components.calendar
 
 import androidx.compose.material3.CalendarLocale
 import com.example.fragment.project.utils.WanHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.example.miaow.base.utils.AppScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -223,7 +222,7 @@ data class CalendarDate(
 
     private fun lunar(): LunarDate {
         return lunarDate ?: getLunarDate(year, month, day).also {
-            CoroutineScope(Dispatchers.IO).launch {
+            AppScope.launch {
                 //保证日程只从数据库取一次
                 schedule.emit(WanHelper.getSchedule(year, month, day))
             }

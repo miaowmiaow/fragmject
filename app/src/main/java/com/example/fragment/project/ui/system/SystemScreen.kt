@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -52,7 +53,16 @@ fun SystemScreen(
     val scope = rememberCoroutineScope()
     val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
     val treeData = wanUiState.getTree(cid)
-    val pagerState = rememberPagerState(treeData.first) { treeData.third.size }
+    // pageCount 用 lambda 读取，确保 treeData 异步加载完成后 PagerState 能感知到新的 size；
+    // 由于 rememberPagerState 的 initialPage 仅在首次创建时生效，treeData 加载完后
+    // 需要通过下面的 LaunchedEffect 主动 scrollToPage 才能正确高亮 / 翻到目标 index。
+    val pagerState = rememberPagerState(initialPage = treeData.first) { treeData.third.size }
+    LaunchedEffect(treeData.first, treeData.third.size) {
+        val targetPage = treeData.first
+        if (treeData.third.isNotEmpty() && pagerState.currentPage != targetPage) {
+            pagerState.scrollToPage(targetPage)
+        }
+    }
     Scaffold(
         topBar = {
             TitleBar(

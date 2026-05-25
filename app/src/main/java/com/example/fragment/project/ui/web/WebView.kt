@@ -117,7 +117,7 @@ fun WebView(
                         intent.addCategory(Intent.CATEGORY_BROWSABLE)
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        Log.e(this.javaClass.name, e.message.toString())
+                        Log.e("WebView", "setOnDownloadListener: open url failed: $url", e)
                     }
                 }
                 setOnLongClickListener {
@@ -206,7 +206,7 @@ fun WebView(
                             try {
                                 view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
                             } catch (e: Exception) {
-                                Log.e(this.javaClass.name, e.message.toString())
+                                Log.e("WebView", "shouldOverrideUrlLoading failed: ${request.url}", e)
                             }
                             return true
                         }

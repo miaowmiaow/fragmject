@@ -22,7 +22,7 @@ fun Context.getMetaData(key: String): String {
             }
         }
     } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("SystemHelper", "getMetaData failed: key=$key", e)
     }
     return metaData
 }
@@ -37,7 +37,7 @@ fun Context.getAppName(): String {
             name = resources.getString(it.applicationInfo!!.labelRes)
         }
     } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("SystemHelper", "getAppName failed", e)
     }
     return name
 }
@@ -52,7 +52,7 @@ fun Context.getVersionName(): String {
             name = it.versionName.toString()
         }
     } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("SystemHelper", "getVersionName failed", e)
     }
     return name
 }
@@ -71,7 +71,7 @@ fun Context.getVersionCode(): Long {
             }
         }
     } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("SystemHelper", "getVersionCode failed", e)
     }
     return code
 }

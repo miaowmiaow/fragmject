@@ -1,6 +1,5 @@
 package com.example.miaow.base.http
 
-import android.text.TextUtils
 import android.util.Log
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
@@ -35,7 +34,9 @@ open class HttpRequest @JvmOverloads constructor(
     }
 
     fun getUrl(baseUrl: String? = null): String {
-        val matcher = Pattern.compile("\\{([a-zA-Z][a-zA-Z0-9_-]*)\\}").matcher(url)
+        // 仅在局部变量上做替换，避免反复调用 getUrl 时改写成员变量造成的累计副作用
+        var resolvedUrl = url
+        val matcher = Pattern.compile("\\{([a-zA-Z][a-zA-Z0-9_-]*)\\}").matcher(resolvedUrl)
         val patterns: MutableSet<String> = LinkedHashSet()
         while (matcher.find()) {
             matcher.group(1)?.let {
@@ -44,14 +45,14 @@ open class HttpRequest @JvmOverloads constructor(
         }
         patterns.forEach {
             if (path.contains(it)) {
-                url = url.replace("{$it}", path[it].toString())
+                resolvedUrl = resolvedUrl.replace("{$it}", path[it].toString())
             }
         }
-        val relativeUrl = StringBuilder(url)
+        val relativeUrl = StringBuilder(resolvedUrl)
         if (query.isNotEmpty()) {
             val absoluteUrl = StringBuilder()
             baseUrl?.apply { absoluteUrl.append(this) }
-            absoluteUrl.append(url)
+            absoluteUrl.append(resolvedUrl)
             if (!absoluteUrl.contains("?")) {
                 relativeUrl.append("?")
             }
@@ -67,7 +68,7 @@ open class HttpRequest @JvmOverloads constructor(
     }
 
     fun putPath(key: String, value: String): HttpRequest {
-        if (!TextUtils.isEmpty(value)) {
+        if (value.isNotEmpty()) {
             this.path[key] = value
         }
         return this
@@ -79,7 +80,7 @@ open class HttpRequest @JvmOverloads constructor(
     }
 
     fun putQuery(key: String, value: String): HttpRequest {
-        if (!TextUtils.isEmpty(value)) {
+        if (value.isNotEmpty()) {
             this.query[key] = value
         }
         return this
@@ -154,13 +155,13 @@ open class HttpRequest @JvmOverloads constructor(
         val fileNameMap = URLConnection.getFileNameMap()
         var contentTypeFor = "application/octet-stream"
         try {
-            fileNameMap.getContentTypeFor(URLEncoder.encode(path, "UTF-8")).also {
-                if (it.isBlank()) {
-                    contentTypeFor = it
-                }
+            val guessed = fileNameMap.getContentTypeFor(URLEncoder.encode(path, "UTF-8"))
+            // 之前的判断写反了：仅当 guessed 非空时才覆盖默认值
+            if (!guessed.isNullOrBlank()) {
+                contentTypeFor = guessed
             }
         } catch (e: UnsupportedEncodingException) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e(this.javaClass.name, "guessMimeType failed for $path", e)
         }
         return contentTypeFor.toMediaType()
     }

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
 import com.example.fragment.project.data.Coin
-import com.example.fragment.project.data.ShareArticleList
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.UserRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,14 +15,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class UserUiState(
-    var isRefreshing: Boolean = false,
-    var isLoading: Boolean = false,
-    var isFinishing: Boolean = false,
-    var coinResult: Coin = Coin(),
-    var articleResult: MutableList<Article> = ArrayList(),
+    val isRefreshing: Boolean = false,
+    val isLoading: Boolean = false,
+    val isFinishing: Boolean = false,
+    val coinResult: Coin = Coin(),
+    val articleResult: List<Article> = emptyList(),
 )
 
-class UserViewModel(private val id: String) : BaseViewModel() {
+class UserViewModel(
+    private val id: String,
+    private val userRepo: UserRepository = WanRepositoryProvider.user,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(UserUiState())
 
@@ -52,26 +55,18 @@ class UserViewModel(private val id: String) : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            val response = get<ShareArticleList> {
-                setUrl("user/{id}/share_articles/{page}/json")
-                putPath("id", id)
-                putPath("page", page.toString())
-            }
+            val response = userRepo.getUserShareArticles(id, page)
             updatePageCont(response.data?.shareArticles?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.coinInfo?.let { coin ->
-                    state.coinResult = coin
-                }
-                response.data?.shareArticles?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.articleResult.clear()
-                    }
-                    state.articleResult.addAll(datas)
-                }
+                val coin = response.data?.coinInfo
+                val datas = response.data?.shareArticles?.datas.orEmpty()
+                val merged = if (isHomePage()) datas else state.articleResult + datas
                 state.copy(
                     isRefreshing = false,
                     isLoading = hasNextPage(),
-                    isFinishing = !hasNextPage()
+                    isFinishing = !hasNextPage(),
+                    coinResult = coin ?: state.coinResult,
+                    articleResult = merged,
                 )
             }
         }

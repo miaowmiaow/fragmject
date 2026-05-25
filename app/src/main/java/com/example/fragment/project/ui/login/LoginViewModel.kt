@@ -1,9 +1,9 @@
 package com.example.fragment.project.ui.login
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragment.project.data.Login
+import com.example.fragment.project.data.repository.UserRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
-    var isLoading: Boolean = false,
-    var isLogin: Boolean = false,
-    var message: String = "",
+    val isLoading: Boolean = false,
+    val isLogin: Boolean = false,
+    val message: String = "",
 )
 
-class LoginViewModel : BaseViewModel() {
+class LoginViewModel(
+    private val userRepo: UserRepository = WanRepositoryProvider.user,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
 
@@ -46,16 +48,12 @@ class LoginViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = post<Login> {
-                setUrl("user/login")
-                putParam("username", username)
-                putParam("password", password)
-            }
-            _uiState.update {
+            val response = userRepo.login(username, password)
+            _uiState.update { state ->
                 response.data?.let { user ->
                     WanHelper.setUser(user)
                 }
-                it.copy(
+                state.copy(
                     isLoading = false,
                     isLogin = response.errorCode == "0",
                     message = response.errorMsg

@@ -36,7 +36,7 @@ class MediaBean(
         return try {
             super.clone() as MediaBean
         } catch (e: CloneNotSupportedException) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("MediaBean", "clone failed: $name", e)
             MediaBean("EMPTY", Uri.EMPTY)
         }
     }

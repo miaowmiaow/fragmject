@@ -65,8 +65,13 @@ fun DatePickerScreen() {
                                 if (dateType.intValue == 0) {
                                     "Selected date timestamp: ${datePickerState.selectedDateMillis}"
                                 } else {
-                                    "Saved range (timestamps): " +
-                                            "${dateRangePickerState.selectedStartDateMillis!!..dateRangePickerState.selectedEndDateMillis!!}"
+                                    val start = dateRangePickerState.selectedStartDateMillis
+                                    val end = dateRangePickerState.selectedEndDateMillis
+                                    if (start != null && end != null) {
+                                        "Saved range (timestamps): ${start..end}"
+                                    } else {
+                                        "Saved range (timestamps): 未选择完整日期范围"
+                                    }
                                 }
                             )
                         }

@@ -2,10 +2,10 @@ package com.example.fragment.project.ui.search
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
-import com.example.fragment.project.data.ArticleList
 import com.example.fragment.project.data.History
+import com.example.fragment.project.data.repository.ArticleRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.http.post
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,15 +14,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SearchUiState(
-    var isSearch: Boolean = false,
-    var isRefreshing: Boolean = false,
-    var isLoading: Boolean = false,
-    var isFinishing: Boolean = false,
-    var searchHistoryResult: List<History> = ArrayList(),
-    var articlesResult: MutableList<Article> = ArrayList(),
+    val isSearch: Boolean = false,
+    val isRefreshing: Boolean = false,
+    val isLoading: Boolean = false,
+    val isFinishing: Boolean = false,
+    val searchHistoryResult: List<History> = emptyList(),
+    val articlesResult: List<Article> = emptyList(),
 )
 
-class SearchViewModel : BaseViewModel() {
+class SearchViewModel(
+    private val articleRepo: ArticleRepository = WanRepositoryProvider.article,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
 
@@ -46,7 +48,7 @@ class SearchViewModel : BaseViewModel() {
 
     fun clearArticles() {
         _uiState.update {
-            it.copy(isSearch = false, articlesResult = ArrayList())
+            it.copy(isSearch = false, articlesResult = emptyList())
         }
     }
 
@@ -74,23 +76,16 @@ class SearchViewModel : BaseViewModel() {
      */
     private fun getList(key: String, page: Int) {
         viewModelScope.launch {
-            val response = post<ArticleList> {
-                setUrl("article/query/{page}/json")
-                putParam("k", key)
-                putPath("page", page.toString())
-            }
+            val response = articleRepo.searchArticles(key, page)
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.articlesResult.clear()
-                    }
-                    state.articlesResult.addAll(datas)
-                }
+                val datas = response.data?.datas.orEmpty()
+                val merged = if (isHomePage()) datas else state.articlesResult + datas
                 state.copy(
                     isRefreshing = false,
                     isLoading = hasNextPage(),
-                    isFinishing = !hasNextPage()
+                    isFinishing = !hasNextPage(),
+                    articlesResult = merged
                 )
             }
         }

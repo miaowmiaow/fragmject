@@ -169,7 +169,7 @@ class ScreenCaptureFragment : Fragment() {
             mediaProjection?.stop()
             requireActivity().saveVideoToAlbum(File(savePath)) { _, _ -> }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("ScreenCaptureHelper", "stopRecord failed: $savePath", e)
         } finally {
             mediaRecorder = null
             virtualDisplay = null

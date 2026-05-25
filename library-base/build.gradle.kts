@@ -39,6 +39,8 @@ android {
 
     buildFeatures {
         viewBinding = true
+        // 启用 BuildConfig，便于在网络层等基础组件中区分 Debug / Release
+        buildConfig = true
     }
 }
 

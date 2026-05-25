@@ -2,8 +2,8 @@
 agp = "9.2.1"
 activity = "1.13.0"
 androidxCamera = "1.6.1"
-androidxComposeBom = "2026.05.00"
-androidxComposeMaterial = "1.11.1"
+androidxComposeBom = "2026.05.01"
+androidxComposeMaterial = "1.11.2"
 androidxComposeMaterialIcon = "1.7.8"
 androidxComposeMaterial3 = "1.4.0"
 androidxConstraintlayout = "2.2.1"
@@ -14,7 +14,7 @@ androidxFragmentKtx = "1.8.9"
 androidxLifecycle = "2.10.0"
 androidxNavigationCompose = "2.9.8"
 androidxWebkit = "1.16.0"
-asm = "9.9.1"
+asm = "9.10.1"
 barcodeScanning = "17.3.0"
 coil = "2.7.0"
 glance = "1.1.1"
@@ -24,11 +24,11 @@ kotlin = "2.3.21"
 kotlinxCoroutines = "1.11.0"
 ksp = "2.3.2"
 leakcanary = "2.14"
-material = "1.13.0"
+material = "1.14.0"
 #miaowPlugin = "1.0.0"
 okhttp = "5.3.2"
 retrofit = "3.0.0"
-room3 = "3.0.0-alpha04"
+room3 = "3.0.0-alpha05"
 testEspressoCore = '3.7.0'
 testExtJunit = '1.3.0'
 
@@ -88,6 +88,7 @@ gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "ag
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 #miaow-plugin = { module = "com.example.miaow:plugin", version.ref = "miaowPlugin" }

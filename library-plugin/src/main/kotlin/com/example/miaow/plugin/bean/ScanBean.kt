@@ -16,7 +16,7 @@ class ScanBean(
         return try {
             super.clone() as ScanBean
         } catch (e: CloneNotSupportedException) {
-            e.printStackTrace()
+            System.err.println("ScanBean clone failed: ${e.message}")
             ScanBean()
         }
     }

@@ -38,7 +38,7 @@ fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
         }
         return BitmapFactory.decodeFile(path, bitmapOptions)
     } catch (e: Exception) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("BitmapHelper", "getBitmapFromPath failed: $path", e)
     }
     return null
 }
@@ -68,7 +68,7 @@ fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap? {
             decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
         }
     } catch (e: IOException) {
-        Log.e(this.javaClass.name, e.message.toString())
+        Log.e("BitmapHelper", "getBitmapFromUri failed: $uri", e)
         null
     }
 }

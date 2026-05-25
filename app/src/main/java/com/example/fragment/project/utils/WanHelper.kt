@@ -14,10 +14,15 @@ import kotlinx.coroutines.flow.Flow
  */
 object WanHelper {
 
+    private const val TAG = "WanHelper"
     private const val BOOKMARK = "bookmark"
     private const val BROWSE_HISTORY = "browse_history"
     private const val SCHEDULE = "schedule"
     private const val SEARCH_HISTORY = "search_history"
+
+    // Gson 线程安全，复用单例避免每次反复创建实例
+    private val gson = Gson()
+    private val scheduleListType = object : TypeToken<List<String>>() {}.type
 
     suspend fun setBookmark(value: String, url: String) {
         val historyDao = AppDatabase.getHistoryDao()
@@ -90,25 +95,20 @@ object WanHelper {
     }
 
     suspend fun setSchedule(year: Int, month: Int, day: Int, list: MutableList<String>) {
-        KVDatabase.set("${SCHEDULE}_${year}_${month}_${day}", Gson().toJson(list))
+        KVDatabase.set("${SCHEDULE}_${year}_${month}_${day}", gson.toJson(list))
     }
 
     suspend fun getSchedule(year: Int, month: Int, day: Int): MutableList<String> {
         return try {
             val json = KVDatabase.get("${SCHEDULE}_${year}_${month}_${day}")
-            Gson().fromJson(json, object : TypeToken<List<String>>() {}.type) ?: ArrayList()
+            // Gson 反序列化得到的可能是不可变 List（如 Arrays$ArrayList），
+            // 这里始终拷贝到 ArrayList 以保证调用方对返回值可安全 add/remove。
+            val parsed: List<String>? = gson.fromJson(json, scheduleListType)
+            parsed?.let { ArrayList(it) } ?: ArrayList()
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e(TAG, "getSchedule failed", e)
             ArrayList()
         }
-    }
-
-    /**
-     * 关闭数据库
-     */
-    fun close() {
-        AppDatabase.closeDB()
-        KVDatabase.closeDB()
     }
 
 }

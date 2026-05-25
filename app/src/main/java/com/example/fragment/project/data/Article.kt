@@ -96,7 +96,7 @@ data class Article(
         try {
             avatarList[abs(userId.toInt()) % 6]
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("Article", "compute avatarId failed: userId=$userId", e)
             1
         }
     }

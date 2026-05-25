@@ -113,8 +113,8 @@ fun CalendarScreen() {
         Calendar(
             state = calendarState,
             modifier = Modifier.padding(vertical = 15.dp),
-            onSelectedDateChange = { y, m, d ->
-                println("CalendarScreen: $y - $m - $d")
+            onSelectedDateChange = { _, _, _ ->
+                // no-op：日期选中事件占位回调
             }
         )
         Button(

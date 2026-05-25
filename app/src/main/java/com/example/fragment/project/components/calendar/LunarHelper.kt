@@ -233,11 +233,12 @@ class LunarHelper private constructor() {
             baseDate = CHINESE_DATE_FORMAT.parse(bY.toString() + "年" + bM + "月" + bD + "日")
             nowaday = CHINESE_DATE_FORMAT.parse(nY.toString() + "年" + nM + "月" + nD + "日")
         } catch (e: ParseException) {
-            e.printStackTrace()
+            android.util.Log.e("LunarHelper", "getDaysOfTwoDate parse failed", e)
         }
-        // 求出相差的天数
-        val offset = ((nowaday!!.time - baseDate!!.time) / 86400000L).toInt()
-        return offset
+        // 求出相差的天数；任一日期解析失败则返回 0，避免 NPE
+        val base = baseDate ?: return 0
+        val now = nowaday ?: return 0
+        return ((now.time - base.time) / 86400000L).toInt()
     }
 
     /* 农历lunYear年lunMonth月lunDay日

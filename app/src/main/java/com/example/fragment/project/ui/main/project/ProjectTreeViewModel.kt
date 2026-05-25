@@ -2,24 +2,27 @@ package com.example.fragment.project.ui.main.project
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.ProjectTree
-import com.example.fragment.project.data.ProjectTreeList
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.ProjectRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ProjectTreeUiState(
-    var isLoading: Boolean = false,
-    var result: List<ProjectTree> = ArrayList(),
+    val isLoading: Boolean = false,
+    val result: List<ProjectTree> = emptyList(),
 )
 
-class ProjectTreeViewModel : BaseViewModel() {
+class ProjectTreeViewModel(
+    private val projectRepo: ProjectRepository = WanRepositoryProvider.project,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(ProjectTreeUiState())
 
-    val uiState: StateFlow<ProjectTreeUiState> = _uiState
+    val uiState: StateFlow<ProjectTreeUiState> = _uiState.asStateFlow()
 
     init {
         getProjectTree()
@@ -33,14 +36,12 @@ class ProjectTreeViewModel : BaseViewModel() {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = get<ProjectTreeList> {
-                setUrl("project/tree/json")
-            }
+            val response = projectRepo.getProjectTree()
             _uiState.update { state ->
-                response.data?.let { data ->
-                    state.result = data
-                }
-                state.copy(isLoading = false)
+                state.copy(
+                    isLoading = false,
+                    result = response.data ?: state.result,
+                )
             }
         }
     }

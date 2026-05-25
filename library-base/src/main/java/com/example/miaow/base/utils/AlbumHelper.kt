@@ -14,8 +14,6 @@ import android.provider.MediaStore.MediaColumns.MIME_TYPE
 import android.provider.MediaStore.MediaColumns.RELATIVE_PATH
 import android.util.Log
 import com.example.miaow.base.http.download
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
@@ -23,10 +21,12 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.OutputStream
 
+private const val TAG_ALBUM = "AlbumHelper"
+
 fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
     val savePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
     val fileName = url.encodeUtf8().md5().hex()
-    CoroutineScope(Dispatchers.IO).launch {
+    AppScope.launch {
         download(savePath, fileName) {
             setUrl(url)
         }
@@ -44,12 +44,13 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
                     val uri = contentResolver.insert(
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                         values
-                    ) ?: Uri.EMPTY
+                    ) ?: return@launch
                     out = contentResolver.openOutputStream(uri) ?: return@launch
                     fis = FileInputStream(file)
                     FileUtils.copy(fis, out)
                     MainThreadExecutor.get().execute {
-                        onFinish.invoke(getBitmapPathFromUri(uri), uri ?: Uri.EMPTY)
+                        // uri 在前面已通过 ?: return@launch 保证非空，无需再次回退
+                        onFinish.invoke(getBitmapPathFromUri(uri), uri)
                     }
                 } else {
                     val paths = arrayOf(file.absolutePath)
@@ -66,23 +67,25 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
                 }
                 file.delete()
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e(TAG_ALBUM, "saveImagesToAlbum(url) failed: $url", e)
             } finally {
-                fis?.close()
-                out?.close()
+                // close 自身可能抛异常，使用 quickClose 避免影响后续 close
+                quickCloseInternal(fis)
+                quickCloseInternal(out)
             }
         }
     }
 }
 
 fun Context.saveImagesToAlbum(bitmap: Bitmap, onFinish: (String, Uri) -> Unit) {
-    Thread {
+    // 之前直接 Thread {}.start() 没有任何生命周期管控，统一改用 AppScope
+    AppScope.launch {
         var fos: FileOutputStream? = null
         var out: OutputStream? = null
         var fis: FileInputStream? = null
         try {
             val pictureName = "${System.currentTimeMillis()}.png"
-            val cachePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
+            val cachePath = CacheUtils.getDirPath(this@saveImagesToAlbum, Environment.DIRECTORY_PICTURES)
             val file = File(cachePath, pictureName)
             fos = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
@@ -95,8 +98,8 @@ fun Context.saveImagesToAlbum(bitmap: Bitmap, onFinish: (String, Uri) -> Unit) {
                 values.put(RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                 val uri =
                     contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                        ?: Uri.EMPTY
-                out = contentResolver.openOutputStream(uri) ?: return@Thread
+                        ?: return@launch
+                out = contentResolver.openOutputStream(uri) ?: return@launch
                 fis = FileInputStream(file)
                 FileUtils.copy(fis, out)
                 MainThreadExecutor.get().execute {
@@ -105,25 +108,25 @@ fun Context.saveImagesToAlbum(bitmap: Bitmap, onFinish: (String, Uri) -> Unit) {
             } else {
                 val paths = arrayOf(file.absolutePath)
                 val mimeTypes = arrayOf(mimeType)
-                MediaScannerConnection.scanFile(this, paths, mimeTypes) { path, uri ->
+                MediaScannerConnection.scanFile(this@saveImagesToAlbum, paths, mimeTypes) { path, uri ->
                     MainThreadExecutor.get().execute {
-                        onFinish.invoke(path, uri)
+                        onFinish.invoke(path ?: "", uri ?: Uri.EMPTY)
                     }
                 }
             }
             file.delete()
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e(TAG_ALBUM, "saveImagesToAlbum(bitmap) failed", e)
         } finally {
-            fos?.close()
-            fis?.close()
-            out?.close()
+            quickCloseInternal(fos)
+            quickCloseInternal(fis)
+            quickCloseInternal(out)
         }
-    }.start()
+    }
 }
 
 fun Context.saveVideoToAlbum(file: File, onFinish: (String, Uri) -> Unit) {
-    Thread {
+    AppScope.launch {
         var out: OutputStream? = null
         var fis: FileInputStream? = null
         try {
@@ -134,8 +137,8 @@ fun Context.saveVideoToAlbum(file: File, onFinish: (String, Uri) -> Unit) {
                 values.put(MIME_TYPE, mimeType)
                 values.put(RELATIVE_PATH, Environment.DIRECTORY_MOVIES)
                 val url = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                val uri = contentResolver.insert(url, values) ?: return@Thread
-                out = contentResolver.openOutputStream(uri) ?: return@Thread
+                val uri = contentResolver.insert(url, values) ?: return@launch
+                out = contentResolver.openOutputStream(uri) ?: return@launch
                 fis = FileInputStream(file)
                 FileUtils.copy(fis, out)
                 MainThreadExecutor.get().execute {
@@ -144,18 +147,18 @@ fun Context.saveVideoToAlbum(file: File, onFinish: (String, Uri) -> Unit) {
             } else {
                 val paths = arrayOf(file.absolutePath)
                 val mimeTypes = arrayOf(mimeType)
-                MediaScannerConnection.scanFile(this, paths, mimeTypes) { path, uri ->
+                MediaScannerConnection.scanFile(this@saveVideoToAlbum, paths, mimeTypes) { path, uri ->
                     MainThreadExecutor.get().execute {
-                        onFinish.invoke(path, uri)
+                        onFinish.invoke(path ?: "", uri ?: Uri.EMPTY)
                     }
                 }
             }
             file.delete()
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e(TAG_ALBUM, "saveVideoToAlbum failed: ${file.absolutePath}", e)
         } finally {
-            fis?.close()
-            out?.close()
+            quickCloseInternal(fis)
+            quickCloseInternal(out)
         }
-    }.start()
+    }
 }

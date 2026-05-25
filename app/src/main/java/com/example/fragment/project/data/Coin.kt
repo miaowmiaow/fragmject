@@ -92,7 +92,7 @@ open class Coin @JvmOverloads constructor(
         try {
             avatarList[abs(userId.toInt()) % 6]
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("Coin", "compute avatarId failed: userId=$userId", e)
             1
         }
     }

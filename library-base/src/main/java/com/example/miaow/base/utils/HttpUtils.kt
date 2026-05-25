@@ -28,7 +28,7 @@ object HttpUtils {
                     onResponse.invoke(contentType)
                 }
             } catch (e: IOException) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("HttpUtils", "getContentType failed: $url", e)
                 MainThreadExecutor.get().execute {
                     onResponse.invoke(null)
                 }

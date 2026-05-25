@@ -100,7 +100,7 @@ class PictureViewModel : BaseViewModel() {
                 albumResult.postValue(albumData)
                 currAlbumResult.postValue(mediaMap[albumData[0].name])
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("PictureViewModel", "loadAlbum failed", e)
             }
         }
     }

@@ -3,9 +3,8 @@ package com.example.fragment.project.ui.main.home
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
 import com.example.fragment.project.data.ArticleList
-import com.example.fragment.project.data.BannerList
-import com.example.fragment.project.data.TopArticle
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.ArticleRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -15,14 +14,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * 不可变 UiState：所有字段均为 val，list 通过 copy 时生成新引用，
+ * 这样 StateFlow 的 distinctUntilChanged 才能正确触发 Compose 重组。
+ */
 data class HomeUiState(
-    var isRefreshing: Boolean = false,
-    var isLoading: Boolean = false,
-    var isFinishing: Boolean = false,
-    var result: MutableList<Article> = ArrayList(),
+    val isRefreshing: Boolean = false,
+    val isLoading: Boolean = false,
+    val isFinishing: Boolean = false,
+    val result: List<Article> = emptyList(),
 )
 
-class HomeViewModel : BaseViewModel() {
+class HomeViewModel(
+    // 通过默认参数注入 Repository，单测时可传入替身实现
+    private val articleRepo: ArticleRepository = WanRepositoryProvider.article,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
 
@@ -38,9 +44,9 @@ class HomeViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             //通过async获取首页需要展示的数据
-            val banner = async { getBanner() }
-            val articleTop = async { getArticleTop() }
-            val articleList = async { getArticleList(getHomePage()) }
+            val banner = async { articleRepo.getBanner() }
+            val articleTop = async { articleRepo.getArticleTop() }
+            val articleList = async { fetchArticleList(getHomePage()) }
             val articleData: MutableList<Article> = arrayListOf()
             banner.await().data?.let { articleData.add(Article(banners = it, viewType = 0)) }
             articleTop.await().data?.onEach { it.top = true }?.let { articleData.addAll(it) }
@@ -50,7 +56,7 @@ class HomeViewModel : BaseViewModel() {
                     isRefreshing = false,
                     isLoading = hasNextPage(),
                     isFinishing = !hasNextPage(),
-                    result = articleData
+                    result = articleData.toList()
                 )
             }
         }
@@ -61,56 +67,27 @@ class HomeViewModel : BaseViewModel() {
             it.copy(isRefreshing = false, isLoading = false, isFinishing = false)
         }
         viewModelScope.launch {
-            val response = getArticleList(getNextPage())
+            val response = fetchArticleList(getNextPage())
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    state.result.addAll(datas)
-                }
+                val appended = response.data?.datas
                 state.copy(
                     isRefreshing = false,
                     isLoading = hasNextPage(),
-                    isFinishing = !hasNextPage()
+                    isFinishing = !hasNextPage(),
+                    // 始终生成新 List 引用，确保订阅方能感知列表变化
+                    result = if (appended.isNullOrEmpty()) state.result else state.result + appended
                 )
             }
         }
     }
 
     /**
-     * 获取banner
+     * 拉取首页文章列表并同步分页元信息（page 从 0 开始）。
      */
-    private suspend fun getBanner(): BannerList {
-        return coroutineScope {
-            get {
-                setUrl("banner/json")
-            }
-        }
-    }
-
-    /**
-     * 获取置顶文章
-     */
-    private suspend fun getArticleTop(): TopArticle {
-        return coroutineScope {
-            get {
-                setUrl("article/top/json")
-            }
-        }
-    }
-
-    /**
-     * 获取首页文章列表
-     * page 0开始
-     */
-    private suspend fun getArticleList(page: Int): ArticleList {
-        val response = coroutineScope {
-            get<ArticleList> {
-                setUrl("article/list/{page}/json")
-                putPath("page", page.toString())
-            }
-        }
+    private suspend fun fetchArticleList(page: Int): ArticleList = coroutineScope {
+        val response = articleRepo.getArticleList(page)
         updatePageCont(response.data?.pageCount?.toInt())
-        return response
+        response
     }
-
 }

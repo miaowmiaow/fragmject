@@ -133,7 +133,7 @@ class WebViewManager private constructor() {
                     it.destroy()
                 }
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("WebViewManager", "obtain: destroy oldest webView failed", e)
             }
         }
         return webView
@@ -143,7 +143,7 @@ class WebViewManager private constructor() {
         try {
             webView.removeParentView()
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewManager", "recycle: removeParentView failed", e)
         }
     }
 
@@ -151,7 +151,7 @@ class WebViewManager private constructor() {
         try {
             webViewMap.destroyWebView()
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewManager", "destroy: destroyWebView failed", e)
         }
     }
 
@@ -220,7 +220,7 @@ class WebViewManager private constructor() {
                 responseHeaders = mapOf("access-control-allow-origin" to "*")
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewManager", "assetsResourceRequest failed: ${request.url}", e)
         }
         return null
     }
@@ -233,6 +233,8 @@ class WebViewManager private constructor() {
             val key = cachePath + File.separator + fileName
             val file = File(key)
             if (!file.exists() || !file.isFile) {
+                // shouldInterceptRequest 的回调位于 WebView 内部 IO 线程（非主线程），
+                // 此处必须同步返回 WebResourceResponse，runBlocking 在这里是合规的桥接。
                 runBlocking {
                     download(cachePath, fileName) {
                         setUrl(url)
@@ -250,7 +252,7 @@ class WebViewManager private constructor() {
                 }
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewManager", "cacheResourceRequest failed: ${request.url}", e)
         }
         return null
     }
@@ -259,7 +261,7 @@ class WebViewManager private constructor() {
         return try {
             MimeTypeMap.getFileExtensionFromUrl(url.toString())
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewManager", "getExtensionFromUrl failed: $url", e)
             "*/*"
         }
     }
@@ -273,7 +275,7 @@ class WebViewManager private constructor() {
                 else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewManager", "getMimeTypeFromUrl failed: $url", e)
             "*/*"
         }
     }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
 
 //转场动画时间
 const val TRANSITION_TIME = 350
@@ -16,14 +17,15 @@ abstract class BaseViewModel : ViewModel() {
     }
 
     /**
-     *  通过 Map 来存储数据，方便 ViewModel 使用
+     *  通过 ConcurrentHashMap 来存储分页状态，避免多协程并发更新时的不一致问题
      */
-    private val homePage: MutableMap<String, Int> = HashMap()
-    private val currPage: MutableMap<String, Int> = HashMap()
-    private val pageCont: MutableMap<String, Int> = HashMap()
+    private val homePage: MutableMap<String, Int> = ConcurrentHashMap()
+    private val currPage: MutableMap<String, Int> = ConcurrentHashMap()
+    private val pageCont: MutableMap<String, Int> = ConcurrentHashMap()
 
     /**
-     * 获取首页
+     * 初始化分页：将 home/curr 置为 page，pageCont 暂置为 page+1
+     * 命名上 "getHomePage" 略有歧义，但为避免破坏既有调用方暂保留。
      * page：首页初始值
      */
     fun getHomePage(page: Int = DEFAULT_VALUE, key: String = DEFAULT_KEY): Int {

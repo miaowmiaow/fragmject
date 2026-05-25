@@ -5,10 +5,10 @@ import com.example.fragment.project.data.Coin
 import com.example.fragment.project.data.MyCoin
 import com.example.fragment.project.data.MyCoinList
 import com.example.fragment.project.data.UserCoin
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.MyRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,14 +16,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MyCoinUiState(
-    var isRefreshing: Boolean = false,
-    var isLoading: Boolean = false,
-    var isFinishing: Boolean = false,
-    var userCoinResult: Coin = Coin(),
-    var myCoinResult: MutableList<MyCoin> = ArrayList(),
+    val isRefreshing: Boolean = false,
+    val isLoading: Boolean = false,
+    val isFinishing: Boolean = false,
+    val userCoinResult: Coin = Coin(),
+    val myCoinResult: List<MyCoin> = emptyList(),
 )
 
-class MyCoinViewModel : BaseViewModel() {
+class MyCoinViewModel(
+    private val myRepo: MyRepository = WanRepositoryProvider.my,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(MyCoinUiState())
 
@@ -39,17 +41,15 @@ class MyCoinViewModel : BaseViewModel() {
         }
         viewModelScope.launch {
             //通过async获取需要展示的数据
-            val userCoin = async { getUserCoin() }.await()
-            val myCoinList = async { getMyCoinList(getHomePage(1)) }.await()
+            val userCoin: UserCoin = async { myRepo.getUserCoin() }.await()
+            val myCoinList: MyCoinList = async { myRepo.getMyCoinList(getHomePage(1)) }.await()
             _uiState.update { state ->
-                userCoin.data?.let { data ->
-                    state.userCoinResult = data
-                }
-                myCoinList.data?.datas?.let { data ->
-                    state.myCoinResult.clear()
-                    state.myCoinResult.addAll(data)
-                }
-                state.copy(isRefreshing = false, isLoading = hasNextPage())
+                state.copy(
+                    isRefreshing = false,
+                    isLoading = hasNextPage(),
+                    userCoinResult = userCoin.data ?: state.userCoinResult,
+                    myCoinResult = myCoinList.data?.datas?.toList() ?: emptyList(),
+                )
             }
         }
     }
@@ -59,42 +59,16 @@ class MyCoinViewModel : BaseViewModel() {
             it.copy(isRefreshing = false, isLoading = false, isFinishing = false)
         }
         viewModelScope.launch {
-            val response = getMyCoinList(getNextPage())
+            val response = myRepo.getMyCoinList(getNextPage())
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.datas?.let { data ->
-                    state.myCoinResult.addAll(data)
-                }
+                val datas = response.data?.datas.orEmpty()
                 state.copy(
                     isRefreshing = false,
                     isLoading = hasNextPage(),
-                    isFinishing = !hasNextPage()
+                    isFinishing = !hasNextPage(),
+                    myCoinResult = if (datas.isEmpty()) state.myCoinResult else state.myCoinResult + datas
                 )
-            }
-        }
-    }
-
-    /**
-     * 获取个人积分获取列表
-     * page 1开始
-     */
-    private suspend fun getMyCoinList(page: Int): MyCoinList {
-        val response = coroutineScope {
-            get<MyCoinList> {
-                setUrl("lg/coin/list/{page}/json")
-                putPath("page", page.toString())
-            }
-        }
-        return response
-    }
-
-    /**
-     * 获取个人积分
-     */
-    private suspend fun getUserCoin(): UserCoin {
-        return coroutineScope {
-            get {
-                setUrl("lg/coin/userinfo/json")
             }
         }
     }

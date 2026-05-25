@@ -60,8 +60,7 @@ fun ColumnSortScreen(
 }
 
 data class ColumnUiState(
-    var result: MutableList<Photo> = ArrayList(),
-    val updateTime: Long = 0
+    val result: List<Photo> = emptyList(),
 )
 
 class ColumnViewModel : BaseViewModel() {
@@ -71,17 +70,17 @@ class ColumnViewModel : BaseViewModel() {
 
     init {
         _uiState.update { state ->
-            List(50) {
-                state.result.add(Photo(it))
-            }
-            state.copy(updateTime = System.nanoTime())
+            state.copy(result = List(50) { Photo(it) })
         }
     }
 
     fun move(from: Int, to: Int) {
         _uiState.update { state ->
-            state.result.add(to, state.result.removeAt(from))
-            state.copy(updateTime = System.nanoTime())
+            // 通过 toMutableList 拷贝出新引用，再修改后赋值，确保 StateFlow 能感知变化
+            val mutated = state.result.toMutableList().apply {
+                add(to, removeAt(from))
+            }
+            state.copy(result = mutated)
         }
     }
 }

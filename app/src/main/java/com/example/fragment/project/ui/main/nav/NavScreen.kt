@@ -112,10 +112,14 @@ fun NavLinkContent(
                 scrollValue = scrollState.value
             } else {
                 if ((velocity < -3000 && scrollState.value == 0) || scrollState.canScrollForward) { //顶部上拉切换上一项
-                    pagerState.scrollToPage((pagerState.currentPage - 1))
+                    if (pagerState.currentPage > 0) {
+                        pagerState.scrollToPage(pagerState.currentPage - 1)
+                    }
                 }
                 if ((velocity > 3000 && scrollState.value == scrollValue) || scrollState.canScrollBackward) { //底部上拉切换下一项
-                    pagerState.scrollToPage(pagerState.currentPage + 1)
+                    if (pagerState.currentPage < pagerState.pageCount - 1) {
+                        pagerState.scrollToPage(pagerState.currentPage + 1)
+                    }
                 }
             }
         }

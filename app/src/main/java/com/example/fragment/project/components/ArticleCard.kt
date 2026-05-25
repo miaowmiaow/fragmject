@@ -48,8 +48,7 @@ import com.example.fragment.project.UserRoute
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.WebRoute
 import com.example.fragment.project.data.Article
-import com.example.miaow.base.http.HttpResponse
-import com.example.miaow.base.http.post
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import kotlinx.coroutines.launch
 
 @Composable
@@ -234,15 +233,11 @@ fun ArticleCard(
                     .height(20.dp)
                     .clickable {
                         scope.launch {
-                            val response = post<HttpResponse> {
-                                setUrl(
-                                    if (data.collect) {
-                                        "lg/collect/{id}/json"
-                                    } else {
-                                        "lg/uncollect_originId/{id}/json"
-                                    }
-                                )
-                                putPath("id", data.id)
+                            val myRepo = WanRepositoryProvider.my
+                            val response = if (data.collect) {
+                                myRepo.collectArticle(data.id)
+                            } else {
+                                myRepo.uncollectArticle(data.id)
                             }
                             when (response.errorCode) {
                                 "0" -> {

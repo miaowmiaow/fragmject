@@ -53,7 +53,7 @@ class TraceBean(
         return try {
             super.clone() as TraceBean
         } catch (e: CloneNotSupportedException) {
-            e.printStackTrace()
+            System.err.println("TraceBean clone failed: ${e.message}")
             TraceBean()
         }
     }

@@ -77,7 +77,7 @@ class Photo(
                 index = id % 6
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("GridSelectScreen", "getAvatarRes: id=$id failed", e)
         }
         return avatarList[index]
     }

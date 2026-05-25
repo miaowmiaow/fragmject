@@ -2,8 +2,8 @@ package com.example.fragment.project.ui.my_collect
 
 import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
-import com.example.fragment.project.data.ArticleList
-import com.example.miaow.base.http.get
+import com.example.fragment.project.data.repository.ArticleRepository
+import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,13 +12,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MyCollectUiState(
-    var isRefreshing: Boolean = false,
-    var isLoading: Boolean = false,
-    var isFinishing: Boolean = false,
-    var result: MutableList<Article> = ArrayList(),
+    val isRefreshing: Boolean = false,
+    val isLoading: Boolean = false,
+    val isFinishing: Boolean = false,
+    val result: List<Article> = emptyList(),
 )
 
-class MyCollectViewModel : BaseViewModel() {
+class MyCollectViewModel(
+    private val articleRepo: ArticleRepository = WanRepositoryProvider.article,
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(MyCollectUiState())
 
@@ -49,22 +51,16 @@ class MyCollectViewModel : BaseViewModel() {
      */
     private fun getList(page: Int) {
         viewModelScope.launch {
-            val response = get<ArticleList> {
-                setUrl("lg/collect/list/{page}/json")
-                putPath("page", page.toString())
-            }
+            val response = articleRepo.getCollectList(page)
             updatePageCont(response.data?.pageCount?.toInt())
             _uiState.update { state ->
-                response.data?.datas?.let { datas ->
-                    if (isHomePage()) {
-                        state.result.clear()
-                    }
-                    state.result.addAll(datas)
-                }
+                val datas = response.data?.datas.orEmpty()
+                val merged = if (isHomePage()) datas else state.result + datas
                 state.copy(
                     isRefreshing = false,
                     isLoading = hasNextPage(),
-                    isFinishing = !hasNextPage()
+                    isFinishing = !hasNextPage(),
+                    result = merged
                 )
             }
         }

@@ -73,7 +73,7 @@ abstract class KVDatabase : RoomDatabase() {
                 up > 0
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("KVDatabase", "setValue failed: key=$key", e)
             false
         }
     }
@@ -82,7 +82,7 @@ abstract class KVDatabase : RoomDatabase() {
         return try {
             kvDao().findByKey(key)?.value ?: ""
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("KVDatabase", "getValue failed: key=$key", e)
             ""
         }
     }

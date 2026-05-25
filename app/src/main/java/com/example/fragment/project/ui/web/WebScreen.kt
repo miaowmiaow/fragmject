@@ -82,10 +82,10 @@ fun WebScreen(
     var title by remember { mutableStateOf<String?>("") }
     var bookmark by remember { mutableStateOf<History?>(null) }
     LaunchedEffect(url) {
-        WanHelper.getBookmark().collect {
-            WanHelper.getBookmark().collect { bk ->
-                bookmark = bk.firstOrNull { it.url == url }
-            }
+        // 之前在外层 collect 内嵌套了第二层 collect，外层永不结束、内层永远不会执行，
+        // 导致 bookmark 字段始终拿不到值。改为直接对单层流收集即可。
+        WanHelper.getBookmark().collect { bookmarks ->
+            bookmark = bookmarks.firstOrNull { it.url == url }
         }
     }
     DisposableEffect(customView) {

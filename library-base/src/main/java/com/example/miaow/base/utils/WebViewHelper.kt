@@ -134,7 +134,7 @@ class WebViewManager private constructor() {
             val contextWrapper = webView.context as MutableContextWrapper
             contextWrapper.baseContext = webView.context.applicationContext
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewHelper", "recycle failed", e)
         } finally {
             if (!webViewCache.contains(webView)) {
                 webViewCache.add(webView)
@@ -150,7 +150,7 @@ class WebViewManager private constructor() {
                 webViewCache.remove(it)
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewHelper", "destroy failed", e)
         }
     }
 
@@ -161,7 +161,7 @@ class WebViewManager private constructor() {
                 intent.addCategory(Intent.CATEGORY_BROWSABLE)
                 webView.context.startActivity(intent)
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("WebViewHelper", "setDownloadListener failed: $url", e)
             }
         }
     }
@@ -230,7 +230,7 @@ class WebViewManager private constructor() {
             try {
                 webView.isVerticalScrollBarEnabled = false
             } catch (e: Exception) {
-                Log.e(this.javaClass.name, e.message.toString())
+                Log.e("WebViewHelper", "snapshotVisible: disable scrollbar failed", e)
             }
             var contentHeight = webView.contentHeight
             webView.measure(0, 0)
@@ -321,7 +321,7 @@ class WebViewManager private constructor() {
             webResourceResponse.responseHeaders = mapOf("access-control-allow-origin" to "*")
             return webResourceResponse
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewHelper", "assetsResourceRequest failed: ${webRequest.url}", e)
         }
         return null
     }
@@ -337,6 +337,8 @@ class WebViewManager private constructor() {
             val key = cachePath + File.separator + fileName
             val file = File(key)
             if (!file.exists() || !file.isFile) {
+                // shouldInterceptRequest 的回调位于 WebView 内部 IO 线程（非主线程），
+                // 此处必须同步返回 WebResourceResponse，runBlocking 在这里是合规的桥接。
                 runBlocking {
                     download(cachePath, fileName) {
                         setUrl(url)
@@ -359,7 +361,7 @@ class WebViewManager private constructor() {
                 return webResourceResponse
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewHelper", "cacheResourceRequest failed: ${webRequest.url}", e)
         }
         return null
     }
@@ -370,7 +372,7 @@ class WebViewManager private constructor() {
                 return MimeTypeMap.getFileExtensionFromUrl(url)
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewHelper", "getExtensionFromUrl failed: $url", e)
         }
         return ""
     }
@@ -385,7 +387,7 @@ class WebViewManager private constructor() {
                 return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
             }
         } catch (e: Exception) {
-            Log.e(this.javaClass.name, e.message.toString())
+            Log.e("WebViewHelper", "getMimeTypeFromUrl failed: $url", e)
         }
         return "*/*"
     }

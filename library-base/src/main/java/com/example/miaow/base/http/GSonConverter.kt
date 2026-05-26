@@ -1,6 +1,6 @@
 package com.example.miaow.base.http
 
-import com.google.gson.Gson
+import com.example.miaow.base.utils.GSonUtils
 import okhttp3.ResponseBody
 
 class GSonConverter : CoroutineHttp.Converter {
@@ -11,7 +11,7 @@ class GSonConverter : CoroutineHttp.Converter {
         }
     }
 
-    private val gSon = Gson()
+    private val gSon = GSonUtils.gson
 
     override fun <T> converter(responseBody: ResponseBody, type: Class<T>): T {
         val jsonReader = gSon.newJsonReader(responseBody.charStream())

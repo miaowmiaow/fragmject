@@ -13,6 +13,7 @@
 
     <style name="Theme.Nia.Splash" parent="NightAdjusted.Theme.Splash">
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_bg</item>
+        <item name="windowSplashScreenAnimationDuration">750</item>
         <item name="postSplashScreenTheme">@style/Theme.Nia</item>
     </style>
 </resources>

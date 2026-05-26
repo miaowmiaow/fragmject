@@ -115,6 +115,9 @@ dependencies {
     implementation(project(":library-picture"))
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.ktx)
+    // app 自身使用 androidx.core.splashscreen.installSplashScreen，
+    // 而 library-base 已将其降级为 implementation（仅内部使用），需在 app 显式声明。
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)

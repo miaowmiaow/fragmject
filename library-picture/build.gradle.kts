@@ -43,6 +43,10 @@ android {
 
 dependencies {
     implementation(project(":library-base"))
+    // library-picture 自身直接 import 了 androidx.fragment.app.* 与 com.google.android.material.tabs.*，
+    // 显式声明这两个依赖，避免长期依赖 library-base 的 api 传递；library-base 因此可进一步收口为 implementation。
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.test.ext.junit)

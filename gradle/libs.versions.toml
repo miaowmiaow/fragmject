@@ -13,6 +13,7 @@ androidxMedia3 = "1.10.1"
 androidxFragmentKtx = "1.8.9"
 androidxLifecycle = "2.10.0"
 androidxNavigationCompose = "2.9.8"
+androidxRecyclerview = "1.4.0"
 androidxWebkit = "1.16.0"
 asm = "9.10.1"
 barcodeScanning = "17.3.0"
@@ -67,6 +68,7 @@ androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecy
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigationCompose" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidxRecyclerview" }
 androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3" }
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "testEspressoCore" }

@@ -24,7 +24,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -58,7 +58,9 @@ fun ArticleCard(
     onNavigate: (route: Any) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
-    var collectResId by remember(data.collect) { mutableIntStateOf(getCollectResId(data.collect)) }
+    // 收藏状态外提到 Compose 状态层：Article 不再可变，避免污染 stable 数据类
+    var collected by remember(data.id) { mutableStateOf(data.collect) }
+    val collectResId = getCollectResId(collected)
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(5.dp))
@@ -234,17 +236,15 @@ fun ArticleCard(
                     .clickable {
                         scope.launch {
                             val myRepo = WanRepositoryProvider.my
-                            val response = if (data.collect) {
-                                myRepo.collectArticle(data.id)
-                            } else {
+                            // 注意：调用前的状态语义 = 当前 collected；
+                            // collect=true 表示"已收藏"，点击代表取消收藏，所以调 uncollect。
+                            val response = if (collected) {
                                 myRepo.uncollectArticle(data.id)
+                            } else {
+                                myRepo.collectArticle(data.id)
                             }
                             when (response.errorCode) {
-                                "0" -> {
-                                    data.collect = !data.collect
-                                    collectResId = getCollectResId(data.collect)
-                                }
-
+                                "0" -> collected = !collected
                                 "-1001" -> onNavigate(LoginRoute)
                             }
                         }

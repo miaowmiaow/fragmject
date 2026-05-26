@@ -75,6 +75,14 @@ fun Context.setHttpClient(client: OkHttpClient) {
 }
 
 /**
+ * 懒加载版本的 setHttpClient：provider 仅在首次发起请求时被调用，
+ * 避免在 Application.onCreate 阶段在主线程同步创建 OkHttpClient，减少冷启动耗时。
+ */
+fun Context.setHttpClientLazy(provider: () -> OkHttpClient) {
+    CoroutineHttp.getInstance().setClientProvider(provider)
+}
+
+/**
  * retrofit + coroutines 封装的Http工具类
  */
 class CoroutineHttp private constructor() {
@@ -91,7 +99,8 @@ class CoroutineHttp private constructor() {
     }
 
     private lateinit var baseUrl: String
-    private lateinit var client: OkHttpClient
+    private var client: OkHttpClient? = null
+    private var clientProvider: (() -> OkHttpClient)? = null
     private var retrofit: Retrofit? = null
     private var service: ApiService? = null
     private var converter: Converter? = null
@@ -102,10 +111,34 @@ class CoroutineHttp private constructor() {
 
     fun setHttpClient(client: OkHttpClient) {
         this.client = client
+        // 显式设置后丢弃之前可能存在的 provider，避免两者同时生效造成誓言不一致。
+        this.clientProvider = null
+        // baseUrl / client 变更后，原有 retrofit 已失效，重置以保证下次调用重建
+        retrofit = null
+        service = null
+    }
+
+    /**
+     * 与 [setHttpClient] 二选一。provider 仅在第一次需要 OkHttpClient 时调用，
+     * 让冷启动阶段不再同步构造 OkHttpClient（OkHttp + Cache + 拦截器 几十毫秒级的耗时）。
+     */
+    fun setClientProvider(provider: () -> OkHttpClient) {
+        this.clientProvider = provider
+    }
+
+    /**
+     * 获取当前 OkHttpClient：优先读显式设置的实例，其次从 provider 需要时创建并缓存。
+     */
+    @Synchronized
+    private fun obtainClient(): OkHttpClient {
+        client?.let { return it }
+        val provider = clientProvider
+            ?: error("OkHttpClient not configured: call setHttpClient or setHttpClientLazy first")
+        return provider().also { client = it }
     }
 
     private fun getRetrofit(): Retrofit {
-        return retrofit ?: Retrofit.Builder().baseUrl(baseUrl).client(client).build().also {
+        return retrofit ?: Retrofit.Builder().baseUrl(baseUrl).client(obtainClient()).build().also {
             retrofit = it
         }
     }
@@ -121,8 +154,17 @@ class CoroutineHttp private constructor() {
     suspend fun <T : HttpResponse> get(
         init: HttpRequest.() -> Unit,
         type: Class<T>,
+    ): T = get(HttpRequest().apply(init), type)
+
+    /**
+     * 接收已构造好的 [HttpRequest] 的重载，便于上层（如 SWR 缓存算子）先从 request 派生
+     * cacheKey、再用同一个 request 发起网络请求，避免对 `init: HttpRequest.() -> Unit`
+     * 反复 apply 造成的重复构造与 [HttpRequest.time] 漂移。
+     */
+    suspend fun <T : HttpResponse> get(
+        request: HttpRequest,
+        type: Class<T>,
     ): T {
-        val request = HttpRequest().apply(init)
         return try {
             getService().get(request.getUrl(baseUrl), request.getHeader()).body()?.let { body ->
                 getConverter().converter(body, type).apply { setRequestTime(request.time) }
@@ -136,8 +178,13 @@ class CoroutineHttp private constructor() {
     suspend fun <T : HttpResponse> post(
         init: HttpRequest.() -> Unit,
         type: Class<T>,
+    ): T = post(HttpRequest().apply(init), type)
+
+    /** 与 [get] 同名重载语义一致：复用上层已构造的 request，避免双 apply。 */
+    suspend fun <T : HttpResponse> post(
+        request: HttpRequest,
+        type: Class<T>,
     ): T {
-        val request = HttpRequest().apply(init)
         return try {
             getService().post(
                 request.getUrl(baseUrl),

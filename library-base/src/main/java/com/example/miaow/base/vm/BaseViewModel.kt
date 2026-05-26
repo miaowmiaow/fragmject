@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.milliseconds
 
 //转场动画时间
 const val TRANSITION_TIME = 350
@@ -72,7 +73,7 @@ abstract class BaseViewModel : ViewModel() {
             //如果请求结束时间小于转场动画时间则等待转场动画结束后返回数据
             val delayMillis = TRANSITION_TIME - time
             if (delayMillis > 0) {
-                delay(delayMillis)
+                delay(delayMillis.milliseconds)
             }
         }
     }

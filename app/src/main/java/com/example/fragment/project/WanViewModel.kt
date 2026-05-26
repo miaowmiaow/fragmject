@@ -6,7 +6,6 @@ import com.example.fragment.project.data.Tree
 import com.example.fragment.project.data.repository.CommonRepository
 import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,17 +46,25 @@ class WanViewModel(
         _uiState.update {
             it.copy(isLoading = true)
         }
+        // 接入 SWR：两个接口分别独立读盘 + 拉网络，渐进刷新各自的字段
         viewModelScope.launch {
-            val hotKeyList = async { commonRepo.getHotKey() }
-            val treeList = async { commonRepo.getSystemTree() }
-            val hotKeyData = hotKeyList.await().data
-            val treeData = treeList.await().data
-            _uiState.update { state ->
-                state.copy(
-                    isLoading = false,
-                    hotKeyResult = hotKeyData ?: state.hotKeyResult,
-                    treeResult = treeData ?: state.treeResult,
-                )
+            commonRepo.getHotKeyFlow().collect { result ->
+                val response = result.value
+                _uiState.update { state ->
+                    state.copy(hotKeyResult = response.data ?: state.hotKeyResult)
+                }
+            }
+        }
+        viewModelScope.launch {
+            commonRepo.getSystemTreeFlow().collect { result ->
+                val response = result.value
+                _uiState.update { state ->
+                    state.copy(
+                        // 仅在网络阶段关闭 loading
+                        isLoading = if (result.fromCache) state.isLoading else false,
+                        treeResult = response.data ?: state.treeResult,
+                    )
+                }
             }
         }
     }

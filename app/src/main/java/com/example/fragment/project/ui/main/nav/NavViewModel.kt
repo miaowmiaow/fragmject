@@ -6,7 +6,6 @@ import com.example.fragment.project.data.Tree
 import com.example.fragment.project.data.repository.CommonRepository
 import com.example.fragment.project.data.repository.WanRepositoryProvider
 import com.example.miaow.base.vm.BaseViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,22 +30,38 @@ class NavViewModel(
         getHome()
     }
 
+    /**
+     * 拉取导航与体系树。两个接口独立走 SWR：缓存命中先上屏，再被网络结果刷新。
+     *
+     * 关于 isLoading：UI 上的转圈仅服务于"导航"页签首屏（NavLinkContent），
+     * 体系页签自身用 systemData.isEmpty() 判空，无需依赖此字段。
+     * 因此只要 navigation 任一阶段（缓存或网络）有数据上屏，就立即关闭 loading，
+     * 避免出现"已经渲染数据却仍挂着转圈"的割裂体验。
+     */
     private fun getHome() {
         _uiState.update {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            //获取导航数据
-            val navi = async { commonRepo.getNavigation() }
-            val tree = async { commonRepo.getSystemTree() }
-            val naviData = navi.await().data
-            val treeData = tree.await().data
-            _uiState.update { state ->
-                state.copy(
-                    isLoading = false,
-                    navigationResult = naviData ?: state.navigationResult,
-                    systemTreeResult = treeData ?: state.systemTreeResult,
-                )
+            commonRepo.getNavigationFlow().collect { result ->
+                val response = result.value
+                _uiState.update { state ->
+                    state.copy(
+                        // 数据上屏即关闭 loading（缓存命中也算）
+                        isLoading = if (response.data != null) false else state.isLoading,
+                        navigationResult = response.data ?: state.navigationResult,
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            commonRepo.getSystemTreeFlow().collect { result ->
+                val response = result.value
+                _uiState.update { state ->
+                    state.copy(
+                        systemTreeResult = response.data ?: state.systemTreeResult,
+                    )
+                }
             }
         }
     }

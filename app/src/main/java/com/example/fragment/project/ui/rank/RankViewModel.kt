@@ -34,7 +34,29 @@ class RankViewModel(
         _uiState.update {
             it.copy(isRefreshing = true, isLoading = false, isFinishing = false)
         }
-        getCoinRank(getHomePage(1))
+        val firstPage = getHomePage(1)
+        // 首页接入 SWR：缓存命中先上屏，再被网络结果覆盖
+        viewModelScope.launch {
+            commonRepo.getCoinRankFlow(firstPage).collect { result ->
+                val response = result.value
+                val networkArrived = !result.fromCache
+                if (networkArrived) {
+                    // 仅在网络阶段更新分页元数据
+                    updatePageCont(response.data?.pageCount?.toInt())
+                }
+                _uiState.update { state ->
+                    val datas = response.data?.datas.orEmpty()
+                    state.copy(
+                        // 缓存阶段不依赖未更新的分页元数据来判定 loading / finishing
+                        isRefreshing = if (networkArrived) false else state.isRefreshing,
+                        isLoading = if (networkArrived) hasNextPage() else state.isLoading,
+                        isFinishing = if (networkArrived) !hasNextPage() else state.isFinishing,
+                        // getHome 永远从第一页开始，直接覆盖，不需要 merge
+                        result = datas
+                    )
+                }
+            }
+        }
     }
 
     fun getNext() {
@@ -45,7 +67,7 @@ class RankViewModel(
     }
 
     /**
-     * 获取积分排行榜
+     * 获取积分排行榜（增量分页，不接入缓存）
      * page 1开始
      */
     private fun getCoinRank(page: Int) {

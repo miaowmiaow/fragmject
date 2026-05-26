@@ -4,7 +4,9 @@ import android.content.Context
 import com.example.miaow.base.debug.DebugBridge
 import com.example.miaow.base.utils.CacheUtils
 import okhttp3.Cache
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
@@ -17,6 +19,10 @@ object OkHelper {
 
     // 网络超时：连接/读/写均放宽到 15s，对弱网更友好
     private const val TIMEOUT_SECONDS: Long = 15L
+
+    // 连接池：默认 5 条对首屏并发偏紧，提升到 8 让 banner/top/list/hotkey/tree 同源接口更易复用 TLS 连接
+    private const val MAX_IDLE_CONNECTIONS: Int = 8
+    private const val KEEP_ALIVE_MINUTES: Long = 5L
 
     private var httpClient: OkHttpClient? = null
 
@@ -35,6 +41,10 @@ object OkHelper {
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            // 显式声明 HTTP/2 优先，明确连接复用预期；服务端不支持时 OkHttp 会自动降级到 HTTP/1.1
+            .protocols(listOf(Protocol.HTTP_2, Protocol.HTTP_1_1))
+            .connectionPool(ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_MINUTES, TimeUnit.MINUTES))
+            .retryOnConnectionFailure(true)
             .cookieJar(CookieJar())
             .cache(Cache(CacheUtils.getDirFile(context, "okhttp"), CACHE_SIZE_BYTES))
 

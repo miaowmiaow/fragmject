@@ -49,7 +49,9 @@ fun WanNavGraph(
         }
     }
     val navController = rememberNavController()
-    val wanNavActions = WanNavActions(navController, user)
+    // 用 remember 缓存 WanNavActions，避免外层 user 之外的重组反复重建闭包，
+    // 同时 user 变化时（登录/登出）才刷新一次，使权限校验跟随最新登录态。
+    val wanNavActions = remember(navController, user) { WanNavActions(navController, user) }
     /**
      * 支持深层链接，详情参考 WanNavGraph:
      * wan://com.fragment.project/rank

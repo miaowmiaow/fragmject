@@ -31,11 +31,14 @@ fun HomeScreen(
         isRefreshing = uiState.isRefreshing,
         isLoading = uiState.isLoading,
         isFinishing = uiState.isFinishing,
-        onRefresh = { viewModel.getHome() },
+        onRefresh = { viewModel.getHome(userTriggered = true) },
         onLoad = { viewModel.getNext() },
         modifier = Modifier.fillMaxSize(),
         listState = listState,
         contentPadding = PaddingValues(top = 10.dp),
+        // banner 行用固定字符串作为 key；其余文章用业务 id。
+        // 这样增量更新时 LazyColumn 能复用已上屏的 item 状态，避免不必要的重创建。
+        key = { _, item -> if (item.viewType == 0) "banner" else item.id },
         contentType = { _, item -> item.viewType },
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) { _, item ->

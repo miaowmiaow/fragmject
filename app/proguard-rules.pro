@@ -19,23 +19,21 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--optimizationpasses 5                                                           # 代码混淆的压缩比例，值介于0-7，默认5
--verbose                                                                        # 混淆时记录日志
--dontshrink                                                                     # 关闭压缩
--dontpreverify                                                                  # 关闭预校验(作用于Java平台，Android不需要，去掉可加快混淆)
--dontoptimize                                                                   # 关闭代码优化
-#-dontobfuscate                                                                  # 关闭混淆
--ignorewarnings                                                                 # 忽略警告
--dontusemixedcaseclassnames                                                     # 混淆后类型都为小写
--dontskipnonpubliclibraryclasses                                                # 不跳过非公共的库的类
--printmapping mapping.txt                                                       # 生成原类名与混淆后类名的映射文件mapping.txt
--useuniqueclassmembernames                                                      # 把混淆类中的方法名也混淆
--allowaccessmodification                                                        # 优化时允许访问并修改有修饰符的类及类的成员
--renamesourcefileattribute SourceFile                                           # 将源码中有意义的类名转换成SourceFile，用于混淆具体崩溃代码
--optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 指定混淆时采用的算法
--keepattributes *Annotation*d,InnerClasses                                      # 保留注解、内部类
--keepattributes Signature                                                       # 保留泛型
--keepattributes SourceFile,LineNumberTable                                      # 抛出异常时保留代码行号，在异常分析中可以方便定位
+# ========================== 全局选项 ==========================
+# 注：R8 会忽略 -optimizationpasses / -dontpreverify / -dontskipnonpubliclibraryclasses /
+#     -useuniqueclassmembernames / -printconfiguration（无参形式）。仅保留对 R8 有效的项。
+-verbose                                                                        # 输出详细日志，便于定位 R8 报错
+-ignorewarnings                                                                 # 忽略 dontwarn 之外的零散警告
+-dontusemixedcaseclassnames                                                     # 混淆后类名只用小写，避免在大小写不敏感文件系统上冲突
+-printmapping mapping.txt                                                       # 输出符号映射文件，便于线上崩溃还原
+-allowaccessmodification                                                        # 允许 R8 调整访问修饰符以支持更激进的内联/合并
+-renamesourcefileattribute SourceFile                                           # 将源文件名替换为 SourceFile，配合 LineNumberTable 还原崩溃栈
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 关闭过激算法：保留字段名/算术化简、避免类合并影响反射
+# 必要的属性：注解（含运行时注解）、内部类签名、泛型签名、行号、异常表
+-keepattributes *Annotation*,InnerClasses,EnclosingMethod
+-keepattributes Signature
+-keepattributes SourceFile,LineNumberTable
+-keepattributes Exceptions
 
 # 指定外部模糊字典
 -obfuscationdictionary ./dictionary
@@ -78,7 +76,6 @@
 -keep class androidx.** {*;}
 -keep public class * extends androidx.**
 -keep interface androidx.** {*;}
--printconfiguration
 -keep,allowobfuscation @interface androidx.annotation.Keep
 -keep @androidx.annotation.Keep class *
 -keepclassmembers class * { @androidx.annotation.Keep *; }
@@ -259,10 +256,51 @@
 # With R8 full mode generic signatures are stripped for classes that are not kept.
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 
-# 保留通过Gson序列化/反序列化的应用程序类不被混淆
-# 将下面替换成自己的实体类
--keep class com.example.miaow.**.bean.** {*;}
--keep interface com.example.miaow.**.bean.** {*;}
--keep class com.example.miaow.**.data.** {*;}
--keep interface com.example.miaow.**.data.** {*;}
--keep public class * extends com.example.miaow.base.http.HttpResponse
+# ============================== 业务数据模型保护 ==============================
+# 历史遗留：旧规则写的是 com.example.miaow.**.bean/data，但本仓库实际业务包名是
+# com.example.fragment.project.**，导致 release 包混淆后 Gson 反射拿不到字段、
+# 反序列化结果整体为 null（首页/项目/导航全部空数据 → "重试"页）。
+
+# 1) Gson 反序列化目标：data 包下所有 Bean（Article / Banner / User / Tree / HotKey ...）
+-keep class com.example.fragment.project.data.** { *; }
+-keep interface com.example.fragment.project.data.** { *; }
+# 1.1) 嵌套类（如 Article$Tag、Coin$CoinInfoBean）在 R8 fullMode 下也需要保留
+-keepclassmembers class com.example.fragment.project.data.** { *; }
+
+# 2) Room 实体 / DAO / Database：注解处理器生成代码会反射访问字段名
+-keep class com.example.fragment.project.database.** { *; }
+-keep interface com.example.fragment.project.database.** { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao class * { *; }
+-keep @androidx.room.Database class * { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }
+
+# 3) HttpResponse 框架：基类与所有子类（带泛型 data 字段）
+-keep public class com.example.miaow.base.http.HttpResponse { *; }
+-keep public class * extends com.example.miaow.base.http.HttpResponse { *; }
+
+# ============================== kotlinx.serialization ==============================
+# WanNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。
+# R8 fullMode 下若不 keep Companion 与 $$serializer，release 包路由解析会抛 SerializationException。
+-keepattributes RuntimeVisibleAnnotations,AnnotationDefault
+# 保留所有 @Serializable 类的 Companion 与 serializer()
+-if @kotlinx.serialization.Serializable class **
+-keepclassmembers class <1> {
+    static <1>$Companion Companion;
+}
+-if @kotlinx.serialization.Serializable class ** {
+    static **$Companion Companion;
+}
+-keepclassmembers class <2>$Companion {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+# 保留生成的 $$serializer 内部类
+-if @kotlinx.serialization.Serializable class **
+-keepclassmembers class <1>$$serializer {
+    *;
+}
+# kotlinx.serialization 运行时入口
+-keep,includedescriptorclasses class kotlinx.serialization.** { *; }
+-keepclassmembers class kotlinx.serialization.json.** { *; }
+-keepclassmembers class kotlinx.serialization.internal.** { *; }
+-dontwarn kotlinx.serialization.**

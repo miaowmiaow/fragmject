@@ -12,3 +12,15 @@
 /library-plugin/build/
 /repo/
 /.kotlin/
+
+# 各模块构建产物
+/app/build/
+/library-base/build/
+/library-picture/build/
+/library-base/.cxx/
+/library-picture/.cxx/
+
+# 签名相关（已在仓库中的需要先 git rm --cached 才会真正生效，参考 README）
+keystore.key
+keystore.properties
+*.jks

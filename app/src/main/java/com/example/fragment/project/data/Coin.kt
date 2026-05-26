@@ -4,7 +4,7 @@ import android.os.Parcelable
 import android.util.Log
 import com.example.fragment.project.R
 import com.example.miaow.base.http.HttpResponse
-import com.google.gson.Gson
+import com.example.miaow.base.utils.GSonUtils
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlin.math.abs
@@ -98,7 +98,7 @@ open class Coin @JvmOverloads constructor(
     }
 
     fun toJson(): String {
-        return Gson().toJson(this)
+        return GSonUtils.gson.toJson(this)
     }
 
 }

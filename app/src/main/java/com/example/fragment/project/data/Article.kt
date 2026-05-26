@@ -49,12 +49,12 @@ data class Article(
     val canEdit: Boolean = false,
     val chapterId: String = "",
     val chapterName: String = "",
-    var collect: Boolean = false,
+    val collect: Boolean = false,
     val courseId: String = "",
     val desc: String = "",
     val descMd: String = "",
     val envelopePic: String = "",
-    var top: Boolean = false,
+    val top: Boolean = false,
     val fresh: Boolean = false,
     val host: String = "",
     val id: String = "0",
@@ -78,7 +78,7 @@ data class Article(
     val visible: String = "",
     val zan: String = "",
     val banners: List<Banner>? = null,
-    var viewType: Int = 1
+    val viewType: Int = 1
 ) : Parcelable {
 
     @IgnoredOnParcel

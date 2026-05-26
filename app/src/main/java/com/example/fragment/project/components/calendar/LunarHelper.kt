@@ -291,7 +291,6 @@ class LunarHelper private constructor() {
         //month = 3;
         //day =3;
         var offset = getDaysOfTwoDate(1900, 1, 31, year, month, day)
-        //Log.i("--ss--","公历:"+year+"-"+month+"-"+day+":"+offset);
         // 用offset减去每农历年的天数
         // 计算当天是农历第几天
         // i最终结果是农历的年份
@@ -306,7 +305,6 @@ class LunarHelper private constructor() {
         if (offset < 0) {
             offset += daysOfYear
             iYear--
-            //Log.i("--ss--","农历:"+iYear+":"+daysOfYear+"/"+offset);
         }
         // 农历年份
         lYear = iYear
@@ -347,11 +345,9 @@ class LunarHelper private constructor() {
         if (offset < 0) {
             offset += daysOfMonth
             --iMonth
-            //Log.i("--ss--","农历:"+iYear+"-"+iMonth+":"+daysOfMonth+"/"+offset);
         }
         lMonth = iMonth
         lDay = offset + 1
-        //Log.i("--ss--","农历:"+LYear+"-"+LMonth+"-"+LDay);
         return lYear * 10000 + lMonth * 100 + lDay
     }
 
@@ -625,14 +621,12 @@ class LunarHelper private constructor() {
         //1900/1/1与 1970/1/1 相差25567日, 1900/1/1 日柱为甲戌日(60进制10)
         for (i in 0 until days_of_month) {
             if (mLDay > mLun_x) {
-                //Log.i("","mLDay > mLun_x "+mLDay+":"+mLun_x);
                 val `var` = getLunarDateInt(year, month, i + 1)
                 val mLYear = `var` / 10000
                 mLMonth = (`var` % 10000) / 100
                 mLDay = (`var` - mLYear * 10000 - mLMonth * 100)
                 mLun_x =
                     if ((leapMonth(mLYear) != 0)) leapDays(mLYear) else monthDays(mLYear, mLMonth)
-                //Log.i("","mLDay > mLun_x ?"+mLDay+":"+mLun_x);
             }
             //依节气调整二月分的年柱, 以立春为界
             if (month == 2 && (i + 1) == term2) {
@@ -649,7 +643,6 @@ class LunarHelper private constructor() {
             num_d = (getDaysOfTwoDate(1900, 1, 1, year, month, 1) + 10) + i
 
             mLDay++
-            //Log.i("","---num_y:"+num_y+","+num_m+","+num_d+",n_m:"+mLMonth+",n_d:"+mLDay+",mLun_x:"+mLun_x);
             var str = calConv2(
                 num_y % 12,
                 num_m % 12,
@@ -662,9 +655,7 @@ class LunarHelper private constructor() {
             if (str == null) {
                 val `var` = JC[num_m % 12][num_d % 12]
                 str = jcrt(`var`)
-                //Log.i("","---"+month+"-"+(i+1)+","+var+":"+str);
             }
-            //Log.i("","---"+year+"-"+month+"-"+(i+1)+","+str);
             yiji.add(str)
         }
 
@@ -708,14 +699,11 @@ class LunarHelper private constructor() {
         mLDay = (`var` - mLYear * 10000 - mLMonth * 100)
 
 
-        //Log.i("","---num_y:"+num_y+","+num_m+","+num_d+",n_m:"+mLMonth+",n_d:"+mLDay+",mLun_x:"+mLun_x);
         var str =
             calConv2(num_y % 12, num_m % 12, num_d % 12, num_y % 10, num_d % 10, mLMonth, mLDay)
         if (str == null) {
             str = jcrt(JC[num_m % 12][num_d % 12])
-            //Log.i("","---"+month+"-"+(i+1)+","+var+":"+str);
         }
-        //Log.i("","---"+year+"-"+month+"-"+(i+1)+","+str);
         return str
     }
 

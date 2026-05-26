@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragment.project.data.Article
 import com.example.fragment.project.data.repository.ProjectRepository
 import com.example.fragment.project.data.repository.WanRepositoryProvider
+import com.example.fragment.project.data.repository.collectCached
 import com.example.miaow.base.vm.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ data class ProjectUiState(
     val result: Map<String, List<Article>> = emptyMap(),
 ) {
     fun getRefreshing(cid: String): Boolean {
-        return isRefreshing[cid] ?: true
+        return isRefreshing[cid] ?: false
     }
 
     fun getLoading(cid: String): Boolean {
@@ -53,15 +54,21 @@ class ProjectViewModel(
         }
     }
 
-    fun getHome(cid: String) {
+    /**
+     * @param userTriggered 是否由用户主动触发（下拉刷新）。
+     *  - true：保留 isRefreshing 直到网络返回，给出明确的"刷新中"反馈；
+     *  - false（默认）：自动加载场景。缓存命中后立即把页面当作"已就绪"，
+     *    避免出现"缓存数据已渲染、顶部却仍挂着下拉刷新动画"的体验割裂。
+     */
+    fun getHome(cid: String, userTriggered: Boolean = false) {
         _uiState.update { state ->
             state.copy(
-                isRefreshing = state.isRefreshing + (cid to true),
+                isRefreshing = state.isRefreshing + (cid to userTriggered),
                 isLoading = state.isLoading + (cid to false),
                 isFinishing = state.isFinishing + (cid to false),
             )
         }
-        getList(cid, getHomePage(1, cid))
+        getFirstPageWithCache(cid, getHomePage(1, cid))
     }
 
     fun getNext(cid: String) {
@@ -76,7 +83,37 @@ class ProjectViewModel(
     }
 
     /**
-     * 获取项目列表
+     * 首页（page=1）接入 SWR：先缓存上屏，再被网络结果覆盖。
+     * 通过 [collectCached] 算子统一缓存阶段 / 网络阶段的副作用边界。
+     */
+    private fun getFirstPageWithCache(cid: String, page: Int) {
+        viewModelScope.launch {
+            projectRepo.getProjectListFlow(cid, page).collectCached(
+                onCache = { response ->
+                    val datas = response.data?.datas.orEmpty()
+                    _uiState.update { state ->
+                        // 缓存阶段：仅替换数据，不动分页 / 刷新标志，避免基于过期 pageCount 误判
+                        state.copy(result = state.result + (cid to datas))
+                    }
+                },
+                onNetwork = { response ->
+                    updatePageCont(response.data?.pageCount?.toInt(), cid)
+                    val datas = response.data?.datas.orEmpty()
+                    _uiState.update { state ->
+                        state.copy(
+                            isRefreshing = state.isRefreshing + (cid to false),
+                            isLoading = state.isLoading + (cid to hasNextPage(cid)),
+                            isFinishing = state.isFinishing + (cid to !hasNextPage(cid)),
+                            result = state.result + (cid to datas),
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    /**
+     * 获取项目列表（仅用于分页，不接入缓存）
      * cid 分类id
      * page 1开始
      */

@@ -38,28 +38,39 @@ private suspend inline fun <reified T : HttpResponse> httpPost(
  * 这里是 ViewModel 与底层 HTTP 工具之间唯一的胶水层；
  * 所有 URL、Path、Query、Param 拼装都收敛在此文件，便于：
  *   1. 接口路径变更时只改一处；
- *   2. 后续接入 Mock 或缓存策略时无需改 ViewModel。
+ *   2. 后续接入 Mock 或缓存策略时无需改 ViewModel；
+ *   3. SWR 缓存版（xxxFlow）与 suspend 版共用同一份 DSL（spec），
+ *      参数变更不会出现"改了请求但忘改 cacheKey"的问题。
  */
 internal class ArticleRepositoryImpl : ArticleRepository {
 
-    override suspend fun getBanner(): BannerList = httpGet {
+    // ===== 请求 spec：suspend 版与 Flow 版共用，URL/参数变更只改这里 =====
+
+    private fun bannerSpec(): HttpRequest.() -> Unit = {
         setUrl("banner/json")
     }
 
-    override suspend fun getArticleTop(): TopArticle = httpGet {
+    private fun articleTopSpec(): HttpRequest.() -> Unit = {
         setUrl("article/top/json")
     }
 
-    override suspend fun getArticleList(page: Int): ArticleList = httpGet {
+    private fun articleListSpec(page: Int): HttpRequest.() -> Unit = {
         setUrl("article/list/{page}/json")
         putPath("page", page.toString())
     }
 
-    override suspend fun getArticleListByCid(cid: String, page: Int): ArticleList = httpGet {
+    private fun articleListByCidSpec(cid: String, page: Int): HttpRequest.() -> Unit = {
         setUrl("article/list/{page}/json")
         putPath("page", page.toString())
         putQuery("cid", cid)
     }
+
+    // ===== suspend 版 =====
+
+    override suspend fun getArticleList(page: Int): ArticleList = httpGet(articleListSpec(page))
+
+    override suspend fun getArticleListByCid(cid: String, page: Int): ArticleList =
+        httpGet(articleListByCidSpec(cid, page))
 
     override suspend fun searchArticles(key: String, page: Int): ArticleList = httpPost {
         setUrl("article/query/{page}/json")
@@ -71,19 +82,39 @@ internal class ArticleRepositoryImpl : ArticleRepository {
         setUrl("lg/collect/list/{page}/json")
         putPath("page", page.toString())
     }
+
+    // ===== Flow 版（带 SWR 缓存） =====
+
+    override fun getBannerFlow() = cachedHttpGet<BannerList>(bannerSpec())
+
+    override fun getArticleTopFlow() = cachedHttpGet<TopArticle>(articleTopSpec())
+
+    override fun getArticleListFlow(page: Int) =
+        cachedHttpGet<ArticleList>(articleListSpec(page))
+
+    override fun getArticleListByCidFlow(cid: String, page: Int) =
+        cachedHttpGet<ArticleList>(articleListByCidSpec(cid, page))
 }
 
 internal class ProjectRepositoryImpl : ProjectRepository {
 
-    override suspend fun getProjectList(cid: String, page: Int): ArticleList = httpGet {
+    private fun projectListSpec(cid: String, page: Int): HttpRequest.() -> Unit = {
         setUrl("project/list/{page}/json")
         putPath("page", page.toString())
         putQuery("cid", cid)
     }
 
-    override suspend fun getProjectTree(): ProjectTreeList = httpGet {
+    private fun projectTreeSpec(): HttpRequest.() -> Unit = {
         setUrl("project/tree/json")
     }
+
+    override suspend fun getProjectList(cid: String, page: Int): ArticleList =
+        httpGet(projectListSpec(cid, page))
+
+    override fun getProjectListFlow(cid: String, page: Int) =
+        cachedHttpGet<ArticleList>(projectListSpec(cid, page))
+
+    override fun getProjectTreeFlow() = cachedHttpGet<ProjectTreeList>(projectTreeSpec())
 }
 
 internal class UserRepositoryImpl : UserRepository {
@@ -151,20 +182,30 @@ internal class MyRepositoryImpl : MyRepository {
 
 internal class CommonRepositoryImpl : CommonRepository {
 
-    override suspend fun getNavigation(): NavigationList = httpGet {
+    private fun navigationSpec(): HttpRequest.() -> Unit = {
         setUrl("navi/json")
     }
 
-    override suspend fun getSystemTree(): TreeList = httpGet {
+    private fun systemTreeSpec(): HttpRequest.() -> Unit = {
         setUrl("tree/json")
     }
 
-    override suspend fun getHotKey(): HotKeyList = httpGet {
+    private fun hotKeySpec(): HttpRequest.() -> Unit = {
         setUrl("hotkey/json")
     }
 
-    override suspend fun getCoinRank(page: Int): CoinRank = httpGet {
+    private fun coinRankSpec(page: Int): HttpRequest.() -> Unit = {
         setUrl("coin/rank/{page}/json")
         putPath("page", page.toString())
     }
+
+    override suspend fun getCoinRank(page: Int): CoinRank = httpGet(coinRankSpec(page))
+
+    override fun getNavigationFlow() = cachedHttpGet<NavigationList>(navigationSpec())
+
+    override fun getSystemTreeFlow() = cachedHttpGet<TreeList>(systemTreeSpec())
+
+    override fun getHotKeyFlow() = cachedHttpGet<HotKeyList>(hotKeySpec())
+
+    override fun getCoinRankFlow(page: Int) = cachedHttpGet<CoinRank>(coinRankSpec(page))
 }

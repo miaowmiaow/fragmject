@@ -19,6 +19,7 @@ import android.widget.ToggleButton;
 import androidx.annotation.Keep;
 import androidx.appcompat.widget.SwitchCompat;
 
+import com.example.fragment.project.BuildConfig;
 import com.example.miaow.base.adapter.BaseAdapter;
 
 import java.util.Objects;
@@ -29,26 +30,31 @@ public class StatisticHelper {
 
     @Keep
     public static void viewOnClick(View view) {
+        if (!BuildConfig.DEBUG) return;
         Log.d(TAG, "自动埋点 --> ViewId:" + getViewId(view) + " ViewText:" + getElementContent(view));
     }
 
     @Keep
     public static void viewOnPageSelected(int position) {
+        if (!BuildConfig.DEBUG) return;
         Log.d(TAG, "自动埋点 --> OnPageSelected:" + position);
     }
 
     @Keep
     public static void testAnnotation(Object object, int code, String message) {
+        if (!BuildConfig.DEBUG) return;
         Log.d(TAG, "自动埋点:注解 --> " + message + ":" + code + ":" + object.getClass().getSimpleName());
     }
 
     @Keep
     public static void viewOnItemClick(BaseAdapter.ViewBindHolder holder, int position) {
+        if (!BuildConfig.DEBUG) return;
         Log.d(TAG, "自动埋点 --> onItemChildClick:" + " holderViewId:" + getViewId(holder.itemView) + " holderViewText:" + getElementContent(holder.itemView) + "position:" + position);
     }
 
     @Keep
     public static void viewOnItemChildClick(View view, BaseAdapter.ViewBindHolder holder, int position) {
+        if (!BuildConfig.DEBUG) return;
         Log.d(TAG, "自动埋点 --> onItemChildClick:" + " ViewId:" + getViewId(view) + " ViewText:" + getElementContent(view) + " holderViewId:" + getViewId(holder.itemView) + " holderViewText:" + getElementContent(holder.itemView) + "position:" + position);
     }
 
@@ -139,7 +145,9 @@ public class StatisticHelper {
                 }
             }
         } catch (Exception e) {
-            Log.i("getActivityFromView", Objects.requireNonNull(e.getMessage()));
+            if (BuildConfig.DEBUG) {
+                Log.i("getActivityFromView", Objects.requireNonNull(e.getMessage()));
+            }
         }
         return activity;
     }
@@ -156,7 +164,9 @@ public class StatisticHelper {
         try {
             androidID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         } catch (Exception e) {
-            Log.i("getAndroidID", Objects.requireNonNull(e.getMessage()));
+            if (BuildConfig.DEBUG) {
+                Log.i("getAndroidID", Objects.requireNonNull(e.getMessage()));
+            }
         }
         return androidID;
     }

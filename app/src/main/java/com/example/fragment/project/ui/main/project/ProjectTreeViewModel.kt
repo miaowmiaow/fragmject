@@ -29,19 +29,22 @@ class ProjectTreeViewModel(
     }
 
     /**
-     * 获取项目分类
+     * 获取项目分类。接入 SWR：缓存命中先上屏，网络回来后再覆盖。
+     * 数据上屏即关闭 loading（缓存命中也算），避免"已渲染数据仍挂转圈"。
      */
     private fun getProjectTree() {
         _uiState.update {
             it.copy(isLoading = true)
         }
         viewModelScope.launch {
-            val response = projectRepo.getProjectTree()
-            _uiState.update { state ->
-                state.copy(
-                    isLoading = false,
-                    result = response.data ?: state.result,
-                )
+            projectRepo.getProjectTreeFlow().collect { result ->
+                val response = result.value
+                _uiState.update { state ->
+                    state.copy(
+                        isLoading = if (response.data != null) false else state.isLoading,
+                        result = response.data ?: state.result,
+                    )
+                }
             }
         }
     }

@@ -5,7 +5,7 @@ import com.example.fragment.project.database.AppDatabase
 import com.example.fragment.project.data.History
 import com.example.fragment.project.data.User
 import com.example.miaow.base.database.KVDatabase
-import com.google.gson.Gson
+import com.example.miaow.base.utils.GSonUtils
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 
@@ -20,8 +20,8 @@ object WanHelper {
     private const val SCHEDULE = "schedule"
     private const val SEARCH_HISTORY = "search_history"
 
-    // Gson 线程安全，复用单例避免每次反复创建实例
-    private val gson = Gson()
+    // Gson 线程安全，复用全局单例避免重复创建。
+    private val gson get() = GSonUtils.gson
     private val scheduleListType = object : TypeToken<List<String>>() {}.type
 
     suspend fun setBookmark(value: String, url: String) {

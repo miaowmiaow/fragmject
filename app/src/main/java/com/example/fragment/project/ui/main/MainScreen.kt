@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -68,12 +69,15 @@ fun MainScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeListState = rememberLazyListState()
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
-    val navItems = listOf(
-        NavigationItem("首页", R.mipmap.ic_bottom_bar_home),
-        NavigationItem("导航", R.mipmap.ic_bottom_bar_navigation),
-        NavigationItem("项目", R.mipmap.ic_bottom_bar_project),
-        NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
-    )
+    // navItems 内容稳定（label + mipmap id），用 remember 避免每次重组重建对象图。
+    val navItems = remember {
+        listOf(
+            NavigationItem("首页", R.mipmap.ic_bottom_bar_home),
+            NavigationItem("导航", R.mipmap.ic_bottom_bar_navigation),
+            NavigationItem("项目", R.mipmap.ic_bottom_bar_project),
+            NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
+        )
+    }
     Scaffold(
         topBar = {
             SearchBar(
@@ -83,7 +87,8 @@ fun MainScreen(
         },
         bottomBar = {
             BottomNavigation(
-                items = navItems
+                items = navItems,
+                selectedIndex = navIndex,
             ) {
                 //首页双击返回顶部
                 if ((it == 0) && (navIndex == 0) && homeListState.canScrollBackward) {
@@ -192,17 +197,15 @@ fun SearchBar(
 @Composable
 fun BottomNavigation(
     items: List<NavigationItem> = listOf(),
+    selectedIndex: Int = 0,
     onClick: (index: Int) -> Unit
 ) {
-    var currItem by rememberSaveable { mutableIntStateOf(0) }
+    // 选中态完全由调用方驱动，避免内外双份 state 在配置变化（如旋屏）时短暂不一致。
     NavigationBar(modifier = Modifier.shadow(5.dp)) {
         items.forEachIndexed { index, item ->
             NavigationBarItem(
-                selected = currItem == index,
-                onClick = {
-                    currItem = index
-                    onClick(index)
-                },
+                selected = selectedIndex == index,
+                onClick = { onClick(index) },
                 icon = {
                     BadgedBox(
                         badge = {
@@ -252,5 +255,5 @@ fun WanBottomNavigationPreview() {
         NavigationItem("项目", R.mipmap.ic_bottom_bar_project),
         NavigationItem("我的", R.mipmap.ic_bottom_bar_user),
     )
-    WanTheme { BottomNavigation(items = navItems, onClick = { _ -> }) }
+    WanTheme { BottomNavigation(items = navItems, selectedIndex = 0, onClick = { _ -> }) }
 }

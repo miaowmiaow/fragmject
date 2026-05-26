@@ -70,7 +70,7 @@ fun ProjectScreen(
                     isRefreshing = projectUiState.getRefreshing(pageCid),
                     isLoading = projectUiState.getLoading(pageCid),
                     isFinishing = projectUiState.getFinishing(pageCid),
-                    onRefresh = { projectViewModel.getHome(pageCid) },
+                    onRefresh = { projectViewModel.getHome(pageCid, userTriggered = true) },
                     onLoad = { projectViewModel.getNext(pageCid) },
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,

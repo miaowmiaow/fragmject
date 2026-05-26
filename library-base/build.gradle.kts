@@ -46,13 +46,16 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    api(libs.androidx.constraintlayout)
+    // 以下为被上层模块（app / library-picture）直接 import 的依赖，保留 api 以传递依赖；
+    // 其余仅 library-base 内部使用的项下面走 implementation，避免编译 classpath 过度污染、提升增量编译速度。
     api(libs.androidx.core.ktx)
-    api(libs.androidx.core.splashscreen)
+    // BaseDialog/PermissionsHelper 等公开类签名中暴露了 Fragment/FragmentManager，
+    // 调用方必须能看见这些类型，因此 fragment.ktx 保留 api 传递。
     api(libs.androidx.fragment.ktx)
-    api(libs.androidx.lifecycle.livedata.ktx)
     api(libs.androidx.lifecycle.viewmodel.ktx)
-    api(libs.androidx.webkit)
+    // BaseAdapter 继承 RecyclerView.Adapter、ViewBindHolder 继承 RecyclerView.ViewHolder，
+    // 上层（app）使用 holder.itemView 等成员时，编译器需要看到 RecyclerView 字节码，必须以 api 传递。
+    api(libs.androidx.recyclerview)
     api(libs.coil)
     api(libs.coil.gif)
     api(libs.coil.svg)
@@ -60,7 +63,13 @@ dependencies {
     api(libs.gson)
     api(libs.kotlin.stdlib)
     api(libs.kotlinx.coroutines)
-    api(libs.material)
+    // 仅 library-base 内部使用，不需要传递给上层：
+    // material：library-base 自身不依赖 com.google.android.material；library-picture 已自行显式声明。
+    implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.webkit)
     implementation(libs.androidx.room3.runtime)
     ksp(libs.androidx.room3.compiler)
     implementation(libs.okhttp)

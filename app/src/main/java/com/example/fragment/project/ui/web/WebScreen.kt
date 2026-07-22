@@ -13,13 +13,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -111,48 +109,49 @@ fun WebScreen(
             insetsController.show(WindowInsetsCompat.Type.systemBars())
         }
     }
-    Box {
-        Scaffold(
-            topBar = {
-                TitleBar(
-                    title = title.toString(),
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                onNavigateUp()
-                            },
-                            modifier = Modifier.height(45.dp)
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    if (sheetValue == SheetValue.PartiallyExpanded) {
-                                        bottomSheetState.expand()
-                                    } else {
-                                        bottomSheetState.partialExpand()
-                                    }
+    Scaffold(
+        topBar = {
+            TitleBar(
+                title = title.toString(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            onNavigateUp()
+                        },
+                        modifier = Modifier.height(45.dp)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                if (sheetValue == SheetValue.PartiallyExpanded) {
+                                    bottomSheetState.expand()
+                                } else {
+                                    bottomSheetState.partialExpand()
                                 }
                             }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.mipmap.ic_more_v),
-                                contentDescription = null,
-                                modifier = Modifier.padding(8.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
                         }
-                    })
-            },
-            contentWindowInsets = WindowInsets.statusBars
-        ) { innerPadding ->
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_more_v),
+                            contentDescription = null,
+                            modifier = Modifier.padding(8.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                })
+        },
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier.padding(innerPadding)
+        ) {
             BottomSheetScaffold(
                 sheetContent = {
                     HorizontalPager(
@@ -381,11 +380,17 @@ fun WebScreen(
                         }
                     }
                 },
-                modifier = Modifier.padding(innerPadding),
                 scaffoldState = scaffoldState,
                 sheetPeekHeight = 0.dp,
                 sheetShape = RoundedCornerShape(0.dp),
-                sheetShadowElevation = 10.dp,
+                sheetShadowElevation = if (
+                    bottomSheetState.currentValue == SheetValue.Expanded ||
+                    bottomSheetState.targetValue == SheetValue.Expanded
+                ) {
+                    10.dp
+                } else {
+                    0.dp
+                },
                 sheetDragHandle = null,
                 sheetSwipeEnabled = false
             ) { padding ->
@@ -473,9 +478,9 @@ fun WebScreen(
                     shouldOverrideUrl = { onNavigate(WebRoute(it)) },
                 )
             }
-        }
-        customView?.let {
-            AndroidView(factory = { _ -> it })
+            customView?.let {
+                AndroidView(factory = { _ -> it })
+            }
         }
     }
 }

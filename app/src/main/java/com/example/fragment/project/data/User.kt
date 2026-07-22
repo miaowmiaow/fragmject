@@ -28,9 +28,10 @@ data class User @JvmOverloads constructor(
     @Ignore val collectIds: List<Int>? = null,
 ) : Parcelable {
 
+    @get:Ignore
     @IgnoredOnParcel
-    val avatar by lazy {
-        try {
+    val avatar: Int
+        get() = try {
             listOf(
                 R.mipmap.avatar_1_raster,
                 R.mipmap.avatar_2_raster,
@@ -42,6 +43,5 @@ data class User @JvmOverloads constructor(
         } catch (e: Exception) {
             R.mipmap.ic_launcher
         }
-    }
 
 }

@@ -8,7 +8,7 @@ import com.example.fragment.project.data.History
 import com.example.fragment.project.data.User
 import com.example.miaow.base.provider.BaseContentProvider
 
-@Database(entities = [History::class, User::class], version = 4, exportSchema = false)
+@Database(entities = [History::class, User::class], version = 4, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun historyDao(): HistoryDao
@@ -38,11 +38,6 @@ abstract class AppDatabase : RoomDatabase() {
         @JvmStatic
         fun getUserDao(): UserDao {
             return getDatabase().userDao()
-        }
-
-        @JvmStatic
-        fun closeDB() {
-            getDatabase().close()
         }
 
     }

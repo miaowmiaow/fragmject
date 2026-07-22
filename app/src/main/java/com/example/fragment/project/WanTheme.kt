@@ -23,11 +23,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragment.project.utils.WanHelper
 
 object WanTheme {
@@ -101,17 +99,14 @@ val appLightColorScheme = lightColorScheme(
 @Composable
 fun WanTheme(window: Window? = null, content: @Composable () -> Unit) {
 
-    var darkTheme by remember { mutableStateOf(false) }
+    val user by WanHelper.getUser().collectAsStateWithLifecycle(initialValue = null)
+    val darkTheme = user?.darkTheme.toBoolean()
 
-    LaunchedEffect(Unit) {
-        WanHelper.getUser().collect {
-            darkTheme = it?.darkTheme.toBoolean()
-            window?.let {
-                // 设置状态栏为亮色模式，字体变为深色
-                val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-                insetsController.isAppearanceLightStatusBars = false
-                insetsController.isAppearanceLightNavigationBars = !darkTheme //设置导航栏亮起
-            }
+    LaunchedEffect(window, darkTheme) {
+        window?.let {
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+            insetsController.isAppearanceLightStatusBars = false
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 

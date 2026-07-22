@@ -12,6 +12,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HistoryDao {
 
+    companion object {
+        private const val HISTORY_LIMIT = 10000
+        private const val TRIM_CHECK_INTERVAL = 50L
+    }
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(history: History): Long
 
@@ -30,16 +35,17 @@ interface HistoryDao {
     @Query("DELETE FROM History WHERE id IN (SELECT id FROM History ORDER BY id ASC LIMIT :count)")
     suspend fun deleteOldest(count: Int)
 
+    @Query("DELETE FROM History WHERE id NOT IN (SELECT id FROM History ORDER BY id DESC LIMIT :limit)")
+    suspend fun trimToLimit(limit: Int): Int
+
     @Delete
     suspend fun delete(history: History): Int
 
     @Transaction
     suspend fun insertWithLimitCheck(history: History) {
-        insert(history)
-        val count = getCount()
-        if (count > 10000) {
-            val excessCount = count - 10000
-            deleteOldest(excessCount)
+        val insertedId = insert(history)
+        if (insertedId % TRIM_CHECK_INTERVAL == 0L) {
+            trimToLimit(HISTORY_LIMIT)
         }
     }
 }

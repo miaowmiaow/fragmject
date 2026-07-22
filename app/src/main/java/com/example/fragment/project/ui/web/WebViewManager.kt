@@ -16,14 +16,19 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.example.miaow.base.http.download
+import com.example.miaow.base.utils.AppScope
 import com.example.miaow.base.utils.CacheUtils
 import com.example.miaow.base.utils.LRUCache
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.FutureTask
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -48,7 +53,7 @@ class WebViewManager private constructor() {
          * 取 4 是经验权衡：单个 WebView 内存占用约 30-80MB，4 个足以覆盖常见的两到三层导航深度，
          * 同时不会显著增加 OOM 风险。
          */
-        private const val KEEP_ALIVE_CAPACITY = 4
+        private const val KEEP_ALIVE_CAPACITY = 10
         private const val ACCEPT_IMAGE =
             "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
 
@@ -135,6 +140,9 @@ class WebViewManager private constructor() {
     /** 本地资源磁盘 LRU 索引。 */
     private val lruCache: LRUCache<String, String> = LRUCache(WEB_CACHE_LRU_CAPACITY)
 
+    /** 正在下载中的缓存任务，按缓存 key 去重，避免并发重复下载同一资源。 */
+    private val inFlightDownloads: ConcurrentHashMap<String, FutureTask<Boolean>> = ConcurrentHashMap()
+
     private fun create(context: Context): WebView {
         // 始终以 MutableContextWrapper 作为 baseContext，便于在 Activity 间切换而不持有 Activity 引用
         val wrapper = MutableContextWrapper(context)
@@ -165,7 +173,9 @@ class WebViewManager private constructor() {
     private fun prepare(context: Context) {
         val appContext = context.applicationContext
         Looper.myQueue().addIdleHandler {
-            warmupCacheIndex(appContext)
+            AppScope.launch {
+                warmupCacheIndex(appContext)
+            }
             warmupSpareWebView(appContext)
             false
         }
@@ -392,21 +402,8 @@ class WebViewManager private constructor() {
             val fileName = url.encodeUtf8().md5().hex()
             val key = cachePath + File.separator + fileName
             val file = File(key)
-            if (!file.exists() || !file.isFile) {
-                // shouldInterceptRequest 在 WebView 内部 IO 线程执行（非主线程），必须同步返回结果，
-                // 因此用 runBlocking 桥接协程下载；同时加超时与失败回退，避免长时间阻塞页面渲染。
-                val ok = runBlocking {
-                    withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
-                        download(cachePath, fileName) {
-                            setUrl(url)
-                            putHeader(request.requestHeaders)
-                        }
-                        true
-                    }
-                } ?: false
-                if (!ok) {
-                    // 超时或异常：删掉可能产生的空文件，让 WebView 走默认网络逻辑
-                    if (file.exists() && file.length() == 0L) file.delete()
+            if (!file.exists() || !file.isFile || file.length() == 0L) {
+                if (!downloadWithDedup(key, file, cachePath, fileName, url, request)) {
                     return null
                 }
                 lruCache.put(key, key)?.let { evicted -> File(evicted).delete() }
@@ -422,6 +419,53 @@ class WebViewManager private constructor() {
         } catch (e: Exception) {
             Log.e(TAG, "cacheResourceRequest failed: ${request.url}", e)
             null
+        }
+    }
+
+    private fun downloadWithDedup(
+        key: String,
+        file: File,
+        cachePath: String,
+        fileName: String,
+        url: String,
+        request: WebResourceRequest,
+    ): Boolean {
+        if (file.exists() && file.isFile && file.length() > 0L) return true
+
+        val candidate = FutureTask {
+            runBlocking {
+                withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
+                    download(cachePath, fileName) {
+                        setUrl(url)
+                        putHeader(request.requestHeaders)
+                    }
+                    true
+                }
+            } ?: false
+        }
+
+        val task = inFlightDownloads.putIfAbsent(key, candidate) ?: candidate.also { it.run() }
+        return try {
+            val ok = task.get()
+            if (!ok) {
+                if (file.exists() && file.length() == 0L) file.delete()
+                false
+            } else {
+                file.exists() && file.isFile && file.length() > 0L
+            }
+        } catch (e: ExecutionException) {
+            if (file.exists() && file.length() == 0L) file.delete()
+            Log.e(TAG, "downloadWithDedup failed: $url", e)
+            false
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            if (file.exists() && file.length() == 0L) file.delete()
+            Log.e(TAG, "downloadWithDedup interrupted: $url", e)
+            false
+        } finally {
+            if (task === candidate) {
+                inFlightDownloads.remove(key, candidate)
+            }
         }
     }
 

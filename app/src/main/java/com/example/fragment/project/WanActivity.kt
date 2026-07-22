@@ -2,6 +2,7 @@ package com.example.fragment.project
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.ComponentCallbacks2
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
@@ -46,10 +47,19 @@ class WanActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // 数据库随进程生命周期管理，无需在 Activity 销毁时关闭
-        WebViewManager.destroy()
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        when {
+            level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
+                WebViewManager.releaseAll()
+            }
+
+            level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ||
+                    level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ||
+                    level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> {
+                WebViewManager.trimToSpare()
+            }
+        }
     }
 }
 

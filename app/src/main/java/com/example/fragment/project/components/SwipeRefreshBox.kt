@@ -29,7 +29,11 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -106,6 +110,20 @@ fun <T> SwipeRefreshBox(
                     .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
             ) {
+                val shouldLoadMore by remember(listState, items.size, isLoading, isFinishing) {
+                    derivedStateOf {
+                        if (!isLoading || isFinishing || items.isEmpty()) return@derivedStateOf false
+                        val lastVisibleIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+                        lastVisibleIndex >= items.lastIndex - 3
+                    }
+                }
+                var lastLoadTriggeredSize by remember { mutableIntStateOf(-1) }
+                LaunchedEffect(shouldLoadMore, items.size) {
+                    if (shouldLoadMore && lastLoadTriggeredSize != items.size) {
+                        lastLoadTriggeredSize = items.size
+                        onLoad()
+                    }
+                }
                 LazyColumn(
                     state = listState,
                     contentPadding = contentPadding,
@@ -117,9 +135,6 @@ fun <T> SwipeRefreshBox(
                         contentType = contentType
                     ) { index, item ->
                         itemContent(index, item)
-                        if (isLoading && items.size - index < 5) {
-                            LaunchedEffect(items.size) { onLoad() }
-                        }
                     }
                     item {
                         MoreIndicator(isFinishing)

@@ -77,7 +77,9 @@ object WanHelper {
      * 设置用户信息
      */
     suspend fun setUser(user: User) {
-        AppDatabase.getUserDao().insert(user)
+        val userDao = AppDatabase.getUserDao()
+        userDao.clear()
+        userDao.insert(user)
     }
 
     /**

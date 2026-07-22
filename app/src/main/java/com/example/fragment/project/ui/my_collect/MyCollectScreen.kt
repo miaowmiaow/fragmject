@@ -2,10 +2,8 @@ package com.example.fragment.project.ui.my_collect
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -46,7 +44,6 @@ fun MyCollectScreen(
                 },
             )
         },
-        contentWindowInsets = WindowInsets.statusBars
     ) { innerPadding ->
         SwipeRefreshBox(
             items = uiState.result,

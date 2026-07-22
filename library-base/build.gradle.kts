@@ -45,7 +45,7 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation(files("libs/pinyin4j-2.5.0.jar"))
     // 以下为被上层模块（app / library-picture）直接 import 的依赖，保留 api 以传递依赖；
     // 其余仅 library-base 内部使用的项下面走 implementation，避免编译 classpath 过度污染、提升增量编译速度。
     api(libs.androidx.core.ktx)

@@ -19,7 +19,7 @@ import com.example.miaow.base.provider.BaseContentProvider
  * 对RoomDatabase进行封装
  * 详细使用方法参考WanHelper.kt
  */
-@Database(entities = [KV::class], version = 1, exportSchema = false)
+@Database(entities = [KV::class], version = 1, exportSchema = true)
 abstract class KVDatabase : RoomDatabase() {
 
     abstract fun kvDao(): KVDao
@@ -51,11 +51,6 @@ abstract class KVDatabase : RoomDatabase() {
         @JvmStatic
         suspend fun get(key: String): String {
             return getDatabase().getValue(key)
-        }
-
-        @JvmStatic
-        fun closeDB() {
-            getDatabase().close()
         }
 
     }

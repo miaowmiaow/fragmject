@@ -115,7 +115,7 @@ fun ShareArticleScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(15.dp)
+                        .padding(horizontal = 15.dp)
                         .verticalScroll(scrollState),
                 ) {
                     Text(

@@ -17,12 +17,17 @@ abstract class BaseViewModel : ViewModel() {
         const val DEFAULT_VALUE = 0
     }
 
+    private data class PageState(
+        val homePage: Int = DEFAULT_VALUE,
+        val currPage: Int = DEFAULT_VALUE,
+        val pageCont: Int = DEFAULT_VALUE
+    )
+
     /**
-     *  通过 ConcurrentHashMap 来存储分页状态，避免多协程并发更新时的不一致问题
+     * 以 key 维度存储分页状态，并使用 ConcurrentHashMap.compute 做原子更新，
+     * 避免跨多个 Map 读-改-写导致的竞态条件。
      */
-    private val homePage: MutableMap<String, Int> = ConcurrentHashMap()
-    private val currPage: MutableMap<String, Int> = ConcurrentHashMap()
-    private val pageCont: MutableMap<String, Int> = ConcurrentHashMap()
+    private val pageStateMap = ConcurrentHashMap<String, PageState>()
 
     /**
      * 初始化分页：将 home/curr 置为 page，pageCont 暂置为 page+1
@@ -30,39 +35,43 @@ abstract class BaseViewModel : ViewModel() {
      * page：首页初始值
      */
     fun getHomePage(page: Int = DEFAULT_VALUE, key: String = DEFAULT_KEY): Int {
-        this.homePage[key] = page
-        this.currPage[key] = page
-        this.pageCont[key] = page + 1
+        pageStateMap.compute(key) { _, _ ->
+            PageState(homePage = page, currPage = page, pageCont = page + 1)
+        }
         return page
     }
 
     fun isHomePage(key: String = DEFAULT_KEY): Boolean {
-        val homePage = this.homePage[key] ?: DEFAULT_VALUE
-        val currPage = this.currPage[key] ?: DEFAULT_VALUE
-        return homePage == currPage
+        val state = pageStateMap[key] ?: PageState()
+        return state.homePage == state.currPage
     }
 
     /**
      * 获取下一页
      */
     fun getNextPage(key: String = DEFAULT_KEY): Int {
-        val currPage = this.currPage[key] ?: DEFAULT_VALUE
-        val nextPage = if (hasNextPage(key)) currPage + 1 else currPage
-        this.currPage[key] = nextPage
+        var nextPage = DEFAULT_VALUE
+        pageStateMap.compute(key) { _, old ->
+            val state = old ?: PageState()
+            nextPage = if (state.currPage < state.pageCont) state.currPage + 1 else state.currPage
+            state.copy(currPage = nextPage)
+        }
         return nextPage
     }
 
     fun hasNextPage(key: String = DEFAULT_KEY): Boolean {
-        val currPage = this.currPage[key] ?: DEFAULT_VALUE
-        val pageCont = this.pageCont[key] ?: DEFAULT_VALUE
-        return currPage < pageCont
+        val state = pageStateMap[key] ?: PageState()
+        return state.currPage < state.pageCont
     }
 
     /**
      * 更新总页码
      */
     fun updatePageCont(pageCont: Int?, key: String = DEFAULT_KEY) {
-        this.pageCont[key] = pageCont ?: DEFAULT_VALUE
+        pageStateMap.compute(key) { _, old ->
+            val state = old ?: PageState()
+            state.copy(pageCont = pageCont ?: DEFAULT_VALUE)
+        }
     }
 
     /**

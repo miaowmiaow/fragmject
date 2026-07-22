@@ -19,7 +19,7 @@ keystoreProperties.load(FileInputStream(rootProject.file("keystore.properties"))
 android {
     namespace = "com.example.fragment.project"
     compileSdk {
-        version = release(36)
+        version = release(configProperties.getProperty("compileSdkVersion").toInt())
     }
 
     defaultConfig {
@@ -110,7 +110,6 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":library-base"))
     implementation(project(":library-picture"))
     implementation(libs.androidx.activity)

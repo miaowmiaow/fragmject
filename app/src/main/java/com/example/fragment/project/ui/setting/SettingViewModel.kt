@@ -37,10 +37,12 @@ class SettingViewModel(
 
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch {
-            // 使用 copy 生成新实例，避免直接突变 data class 字段，
-            // 这样 StateFlow 的订阅方也能感知到变化。
-            _uiState.value.user?.copy(darkTheme = darkTheme.toString())?.let { updated ->
-                WanHelper.setUser(updated)
+            _uiState.update { state ->
+                state.user?.copy(darkTheme = darkTheme.toString())?.also { updated ->
+                    WanHelper.setUser(updated)
+                }?.let { updated ->
+                    state.copy(user = updated)
+                } ?: state
             }
         }
     }

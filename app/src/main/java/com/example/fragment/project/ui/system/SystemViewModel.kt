@@ -18,7 +18,7 @@ data class SystemUiState(
     val result: Map<String, List<Article>> = emptyMap(),
 ) {
     fun getRefreshing(cid: String): Boolean {
-        return isRefreshing[cid] ?: true
+        return isRefreshing[cid] ?: false
     }
 
     fun getLoading(cid: String): Boolean {

@@ -435,11 +435,11 @@ class WebViewManager private constructor() {
         val candidate = FutureTask {
             runBlocking {
                 withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
-                    download(cachePath, fileName) {
+                    val response = download(cachePath, fileName) {
                         setUrl(url)
                         putHeader(request.requestHeaders)
                     }
-                    true
+                    response.errorCode == "0"
                 }
             } ?: false
         }

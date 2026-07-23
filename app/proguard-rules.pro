@@ -42,7 +42,7 @@
 # 指定package模糊字典
 -packageobfuscationdictionary ./dictionary
 
-# 保留指定类不被混淆
+# 保留四大组件不被混淆
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
@@ -52,30 +52,13 @@
 -keep public class * extends android.preference.Preference
 -keep public class * extends android.view.View
 
-#保留四大组件相关
--keep public class * extends android.app.Activity
--keep public class * extends android.app.Application
--keep public class * extends android.app.Service
--keep public class * extends android.content.BroadcastReceiver
--keep public class * extends android.content.ContentProvider
--keep public class * extends android.app.backup.BackupAgentHelper
--keep public class * extends android.preference.Preference
--keep public class * extends android.view.View
-
-# 保留support下的所有类及其内部类
--dontwarn android.support.**
--keep class android.support.* {*;}
-
-# 保留support下的类的继承类及其内部类
--keep public class * extends android.support.v4.*
--keep public class * extends android.support.v7.*
--keep public class * extends android.support.annotation.*
-
-# 保留androidx相关
+# 保留androidx关键包（避免全量 keep 导致包体积膨胀，R8 会自动处理其余类的优化）
 -dontwarn androidx.**
--keep class androidx.** {*;}
--keep public class * extends androidx.**
--keep interface androidx.** {*;}
+-keep public class * extends androidx.activity.ComponentActivity
+-keep public class * extends androidx.lifecycle.ViewModel
+-keep public class * extends androidx.room3.RoomDatabase
+-keep class androidx.compose.** { *; }
+-keep class androidx.navigation.** { *; }
 -keep,allowobfuscation @interface androidx.annotation.Keep
 -keep @androidx.annotation.Keep class *
 -keepclassmembers class * { @androidx.annotation.Keep *; }
@@ -179,9 +162,6 @@
 -dontwarn java.lang.instrument.Instrumentation
 -dontwarn sun.misc.Signal
 ##----------------------------------------- 第三方依赖库 --------------------------------------------
-#----------------------------- pinyin4j ---------------------------------
--keep class com.hp.hpl.sparta.* {*;}
--keep class net.sourceforge.pinyin4j.* {*;}
 #----------------------------- gson ---------------------------------
 # Gson specific classes
 -dontwarn sun.misc.**
@@ -207,10 +187,6 @@
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
 #---------------------------- retrofit --------------------------------
-# Retrofit does reflection on generic parameters. InnerClasses is required to use Signature and
-# EnclosingMethod is required to use InnerClasses.
--keepattributes Signature, InnerClasses, EnclosingMethod
-
 # Retrofit does reflection on method and parameter annotations.
 -keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
 
@@ -282,7 +258,6 @@
 # ============================== kotlinx.serialization ==============================
 # WanNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。
 # R8 fullMode 下若不 keep Companion 与 $$serializer，release 包路由解析会抛 SerializationException。
--keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 # 保留所有 @Serializable 类的 Companion 与 serializer()
 -if @kotlinx.serialization.Serializable class **
 -keepclassmembers class <1> {

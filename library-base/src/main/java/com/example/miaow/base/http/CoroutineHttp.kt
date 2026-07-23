@@ -226,11 +226,18 @@ class CoroutineHttp private constructor() {
         val request = HttpRequest().apply(init)
         return try {
             val response = getService().get(request.getUrl(), request.getHeader())
-            if (response.isSuccessful) {
-                val file = File(savePath, fileName)
-                response.body()?.byteStream()?.use { inputStream ->
-                    file.writeBytes(inputStream.readBytes())
-                }
+            if (!response.isSuccessful) {
+                return buildResponse(
+                    "-1",
+                    "http ${response.code()} ${response.message().ifBlank { "request failed" }}",
+                    HttpResponse::class.java
+                )
+            }
+            val body = response.body()
+                ?: return buildResponse("-1", "response body is null", HttpResponse::class.java)
+            val file = File(savePath, fileName)
+            body.byteStream().use { inputStream ->
+                file.writeBytes(inputStream.readBytes())
             }
             buildResponse("0", "success", HttpResponse::class.java)
         } catch (e: Exception) {
@@ -250,7 +257,7 @@ class CoroutineHttp private constructor() {
             ).body()?.string().orEmpty()
         } catch (e: Exception) {
             Log.e(TAG, "STRING ${request.getUrl(baseUrl)} failed", e)
-            ""
+            "__HTTP_ERROR__:${e.message ?: e.javaClass.simpleName}"
         }
     }
 
@@ -318,4 +325,3 @@ interface ApiService {
         @HeaderMap header: Map<String, String>
     ): Response<ResponseBody>
 }
-

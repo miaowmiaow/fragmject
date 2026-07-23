@@ -1,6 +1,5 @@
 package com.example.fragment.project.ui.setting
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,7 +60,6 @@ import com.example.miaow.base.utils.FileUtil
 import kotlinx.coroutines.launch
 import java.io.File
 
-@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),

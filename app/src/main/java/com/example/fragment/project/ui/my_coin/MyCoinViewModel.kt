@@ -40,9 +40,11 @@ class MyCoinViewModel(
             it.copy(isRefreshing = true, isLoading = false, isFinishing = false)
         }
         viewModelScope.launch {
-            //通过async获取需要展示的数据
-            val userCoin: UserCoin = async { myRepo.getUserCoin() }.await()
-            val myCoinList: MyCoinList = async { myRepo.getMyCoinList(getHomePage(1)) }.await()
+            // 两个请求互不依赖，并发发起以缩短 getHome() 耗时
+            val userCoinDeferred = async { myRepo.getUserCoin() }
+            val myCoinListDeferred = async { myRepo.getMyCoinList(getHomePage(1)) }
+            val userCoin = userCoinDeferred.await()
+            val myCoinList = myCoinListDeferred.await()
             _uiState.update { state ->
                 state.copy(
                     isRefreshing = false,

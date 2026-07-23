@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.room3.Database
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
 import com.example.fragment.project.data.History
 import com.example.fragment.project.data.User
 import com.example.miaow.base.provider.BaseContentProvider
 
-@Database(entities = [History::class, User::class], version = 4, exportSchema = true)
+@Database(entities = [History::class, User::class], version = 5, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun historyDao(): HistoryDao
@@ -19,6 +21,21 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                executeSql(connection, "CREATE INDEX IF NOT EXISTS `index_History_key_id` ON `History` (`key`, `id`)")
+                executeSql(connection, "CREATE INDEX IF NOT EXISTS `index_History_key_value_id` ON `History` (`key`, `value`, `id`)")
+                executeSql(connection, "CREATE INDEX IF NOT EXISTS `index_History_key_url_id` ON `History` (`key`, `url`, `id`)")
+            }
+        }
+
+        private fun executeSql(connection: SQLiteConnection, sql: String) {
+            val statement = connection.prepare(sql)
+            statement.use { statement ->
+                statement.step()
+            }
+        }
+
         private fun getDatabase() = INSTANCE ?: synchronized(AppDatabase::class.java) {
             INSTANCE ?: buildDatabase().also {
                 INSTANCE = it
@@ -27,6 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context = BaseContentProvider.context()): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
+                .addMigrations(MIGRATION_4_5)
                 .build()
         }
 

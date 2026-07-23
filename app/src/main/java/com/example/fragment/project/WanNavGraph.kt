@@ -3,12 +3,10 @@ package com.example.fragment.project
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,12 +40,7 @@ import kotlinx.serialization.Serializable
 fun WanNavGraph(
     modifier: Modifier = Modifier,
 ) {
-    var user by remember { mutableStateOf<User?>(null) }
-    LaunchedEffect(Unit) {
-        WanHelper.getUser().collect {
-            user = it
-        }
-    }
+    val user by WanHelper.getUser().collectAsStateWithLifecycle(initialValue = null)
     val navController = rememberNavController()
     // 用 remember 缓存 WanNavActions，避免外层 user 之外的重组反复重建闭包，
     // 同时 user 变化时（登录/登出）才刷新一次，使权限校验跟随最新登录态。
@@ -237,7 +230,7 @@ class WanNavActions(
 }
 
 @Serializable
-object BrowseHistoryRoute
+object BrowseHistoryRoute : RequiresAuth
 
 @Serializable
 object DemoRoute
@@ -249,13 +242,13 @@ object LoginRoute
 object MainRoute
 
 @Serializable
-object MyCoinRoute
+object MyCoinRoute : RequiresAuth
 
 @Serializable
-object MyCollectRoute
+object MyCollectRoute : RequiresAuth
 
 @Serializable
-object MyShareRoute
+object MyShareRoute : RequiresAuth
 
 @Serializable
 object RankRoute
@@ -270,7 +263,7 @@ data class SearchRoute(val key: String)
 object SettingRoute
 
 @Serializable
-object ShareArticleRoute
+object ShareArticleRoute : RequiresAuth
 
 @Serializable
 data class SystemRoute(val cid: String)
@@ -278,13 +271,19 @@ data class SystemRoute(val cid: String)
 @Serializable
 data class UserRoute(val userId: String)
 
-
 @Serializable
 data class WebRoute(val url: String)
 
+/**
+ * 标记接口：实现此接口的路由需要登录态才能访问。
+ * 新增需登录页面时，只需让路由对象/数据类实现本接口即可，无需修改 requiredLoginRoute 白名单。
+ */
+interface RequiresAuth
+
+/**
+ * 判定指定路由是否需要登录态。
+ * 改为声明式：依赖 [RequiresAuth] 标记接口自动识别，不再依赖手动白名单。
+ */
 private fun <T : Any> requiredLoginRoute(route: T, user: User?): Boolean {
-    return (route is MyCoinRoute
-            || route is MyCollectRoute
-            || route is MyShareRoute)
-            && (user == null || user.id <= 0)
+    return route is RequiresAuth && (user == null || user.id <= 0)
 }

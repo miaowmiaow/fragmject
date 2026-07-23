@@ -50,13 +50,13 @@ class WanActivity : ComponentActivity() {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         when {
-            level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
+            level >= TRIM_MEMORY_COMPLETE -> {
                 WebViewManager.releaseAll()
             }
 
-            level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ||
-                    level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ||
-                    level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> {
+            level >= TRIM_MEMORY_BACKGROUND ||
+                    level == TRIM_MEMORY_RUNNING_LOW ||
+                    level == TRIM_MEMORY_RUNNING_CRITICAL -> {
                 WebViewManager.trimToSpare()
             }
         }

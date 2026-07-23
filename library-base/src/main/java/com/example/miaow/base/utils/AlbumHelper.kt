@@ -27,8 +27,12 @@ fun Context.saveImagesToAlbum(url: String, onFinish: (String, Uri) -> Unit) {
     val savePath = CacheUtils.getDirPath(this, Environment.DIRECTORY_PICTURES)
     val fileName = url.encodeUtf8().md5().hex()
     AppScope.launch {
-        download(savePath, fileName) {
+        val response = download(savePath, fileName) {
             setUrl(url)
+        }
+        if (response.errorCode != "0") {
+            Log.w(TAG_ALBUM, "download image failed: $url, msg=${response.errorMsg}")
+            return@launch
         }
         val file = File(savePath, fileName)
         if (file.exists() && file.isFile) {

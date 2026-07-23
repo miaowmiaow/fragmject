@@ -1,5 +1,6 @@
 package com.example.fragment.project.data.repository
 
+import android.util.Log
 import com.example.miaow.base.http.CoroutineHttp
 import com.example.miaow.base.http.HttpRequest
 import com.example.miaow.base.http.HttpResponse
@@ -7,6 +8,8 @@ import com.example.miaow.base.http.ResponseCache
 import com.example.miaow.base.utils.GSonUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+
+private const val TAG = "CachedFetch"
 
 /**
  * SWR（Stale-While-Revalidate）算子：先盘读、再走网络。
@@ -85,8 +88,8 @@ internal fun <T : HttpResponse> cachedFlow(
         if (fresh.errorCode == "0") {
             try {
                 ResponseCache.writeAsync(cacheKey, GSonUtils.lazyAwareGson.toJson(fresh))
-            } catch (_: Exception) {
-                // 序列化异常不应影响主流程
+            } catch (e: Exception) {
+                Log.e(TAG, "Write cache failed: $cacheKey", e)
             }
         }
     } else if (!hasCacheEmitted) {

@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.setting
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,7 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.components.ArrowRightItem
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.NightSwitchButton
@@ -63,7 +64,7 @@ import java.io.File
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -119,35 +120,33 @@ fun SettingScreen(
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (uiState.user != null) {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .fillMaxWidth()
+                            .height(45.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "深色模式",
                             modifier = Modifier
-                                .background(MaterialTheme.colorScheme.surfaceContainer)
-                                .fillMaxWidth()
-                                .height(45.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "深色模式",
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 25.dp, end = 25.dp),
-                                fontSize = 13.sp,
-                            )
-                            NightSwitchButton(
-                                checked = uiState.user?.darkTheme.toBoolean(),
-                                onCheckedChange = {
-                                    viewModel.updateDarkTheme(it)
-                                },
-                                modifier = Modifier.size(52.dp, 32.dp)
-                            )
-                            Spacer(Modifier.width(5.dp))
-                        }
+                                .weight(1f)
+                                .padding(start = 25.dp, end = 25.dp),
+                            fontSize = 13.sp,
+                        )
+                        NightSwitchButton(
+                            checked = uiState.darkTheme,
+                            onCheckedChange = {
+                                viewModel.updateDarkTheme(it)
+                            },
+                            modifier = Modifier.size(52.dp, 32.dp)
+                        )
+                        Spacer(Modifier.width(5.dp))
                     }
                     HorizontalDivider()
-                    ArrowRightItem("隐私政策") { onNavigate(WebRoute("file:///android_asset/privacy_policy.html")) }
+                    ArrowRightItem("隐私政策") { onNavigate(WebNavKey("file:///android_asset/privacy_policy.html")) }
                     HorizontalDivider()
-                    ArrowRightItem("问题反馈") { onNavigate(WebRoute("https://github.com/miaowmiaow/fragmject/issues")) }
+                    ArrowRightItem("问题反馈") { onNavigate(WebNavKey("https://github.com/miaowmiaow/fragmject/issues")) }
                     HorizontalDivider()
                     ArrowRightItem("抹除数据") {
                         showType = 0
@@ -183,7 +182,7 @@ fun SettingScreen(
                         )
                     }
                     HorizontalDivider()
-                    ArrowRightItem("关于玩Android") { onNavigate(WebRoute("https://wanandroid.com")) }
+                    ArrowRightItem("关于玩Android") { onNavigate(WebNavKey("https://wanandroid.com")) }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.user != null) {
                         Button(

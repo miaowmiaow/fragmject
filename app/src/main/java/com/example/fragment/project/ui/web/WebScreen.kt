@@ -2,6 +2,7 @@ package com.example.fragment.project.ui.web
 
 import android.view.View
 import androidx.activity.ComponentActivity
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -61,10 +62,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.fragment.project.BrowseHistoryRoute
+import com.example.fragment.project.BrowseHistoryNavKey
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.components.TitleBar
 import com.example.fragment.project.data.History
 import com.example.fragment.project.utils.WanHelper
@@ -74,7 +75,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebScreen(
     url: String,
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -191,7 +192,7 @@ fun WebScreen(
                                 }
                                 Button(
                                     onClick = {
-                                        onNavigate(BrowseHistoryRoute)
+                                        onNavigate(BrowseHistoryNavKey)
                                         scope.launch { bottomSheetState.partialExpand() }
                                     },
                                     modifier = Modifier
@@ -480,7 +481,7 @@ fun WebScreen(
                         }
                     },
                     onCustomView = { customView = it },
-                    shouldOverrideUrl = { onNavigate(WebRoute(it)) },
+                    shouldOverrideUrl = { onNavigate(WebNavKey(it)) },
                 )
             }
             customView?.let {

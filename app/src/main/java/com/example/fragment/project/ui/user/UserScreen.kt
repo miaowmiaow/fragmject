@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.user
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -57,7 +58,7 @@ fun UserScreen(
     viewModel: UserViewModel = viewModel(
         factory = UserViewModel.provideFactory(userId)
     ),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.register
 
+import androidx.navigation3.runtime.NavKey
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -54,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.MainRoute
+import com.example.fragment.project.MainNavKey
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.LoadingContent
@@ -64,7 +65,7 @@ import com.example.fragment.project.components.WhiteTextField
 fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(),
     onNavigateUp: () -> Unit = {},
-    onPopBackStack: (route: Any) -> Unit = {},
+    onPopBackStack: (key: NavKey) -> Unit = {},
 ) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -73,7 +74,7 @@ fun RegisterScreen(
     val scrollState = rememberScrollState()
     LaunchedEffect(uiState.isLogin, uiState.message, snackbarHostState) {
         if (uiState.isLogin) {
-            onPopBackStack(MainRoute)
+            onPopBackStack(MainNavKey)
         }
         if (uiState.message.isNotBlank()) {
             snackbarHostState.showSnackbar(uiState.message)

@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.share
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.components.ClearTextField
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TitleBar
@@ -56,7 +57,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ShareArticleScreen(
     viewModel: ShareArticleViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -96,7 +97,7 @@ fun ShareArticleScreen(
                                 }
                                 return@IconButton
                             }
-                            onNavigate(WebRoute(linkText))
+                            onNavigate(WebNavKey(linkText))
                         }
                     ) {
                         Icon(

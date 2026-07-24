@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.rank
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,16 +35,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.R
-import com.example.fragment.project.UserRoute
+import com.example.fragment.project.UserNavKey
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.fragment.project.components.TitleBar
 
 @Composable
 fun RankScreen(
     viewModel: RankViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -66,7 +67,7 @@ fun RankScreen(
                 actions = {
                     IconButton(
                         modifier = Modifier.height(45.dp),
-                        onClick = { onNavigate(WebRoute("https://www.wanandroid.com/blog/show/2653")) }
+                        onClick = { onNavigate(WebNavKey("https://www.wanandroid.com/blog/show/2653")) }
                     ) {
                         Icon(
                             painter = painterResource(R.mipmap.ic_rule),
@@ -105,7 +106,7 @@ fun RankScreen(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable { onNavigate(UserRoute(item.userId)) }
+                            .clickable { onNavigate(UserNavKey(item.userId)) }
                             .size(30.dp)
                     )
                     Spacer(Modifier.width(10.dp))

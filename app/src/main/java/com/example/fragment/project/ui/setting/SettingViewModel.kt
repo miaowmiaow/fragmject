@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class SettingUiState(
     val isLoading: Boolean = false,
     val user: User? = null,
+    val darkTheme: Boolean = WanHelper.darkTheme.value,
 )
 
 class SettingViewModel(
@@ -33,17 +34,18 @@ class SettingViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            WanHelper.darkTheme.collect { dark ->
+                _uiState.update { state ->
+                    state.copy(darkTheme = dark)
+                }
+            }
+        }
     }
 
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch {
-            _uiState.update { state ->
-                state.user?.copy(darkTheme = darkTheme.toString())?.also { updated ->
-                    WanHelper.setUser(updated)
-                }?.let { updated ->
-                    state.copy(user = updated)
-                } ?: state
-            }
+            WanHelper.setDarkTheme(darkTheme)
         }
     }
 

@@ -16,7 +16,6 @@ data class User @JvmOverloads constructor(
     @PrimaryKey val id: Long,
     @ColumnInfo(name = "username") var username: String? = null,
     @ColumnInfo(name = "nickname") var nickname: String? = null,
-    @ColumnInfo(name = "dark_theme") var darkTheme: String? = null,
     @Ignore val token: String? = null,
     @Ignore val password: String? = null,
     @Ignore val admin: String? = null,

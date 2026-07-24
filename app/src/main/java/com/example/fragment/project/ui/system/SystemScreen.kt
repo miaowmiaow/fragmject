@@ -30,6 +30,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavKey
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.ArticleCard
@@ -45,7 +46,7 @@ fun SystemScreen(
     wanViewModel: WanViewModel = viewModel(),
     systemViewModel: SystemViewModel = viewModel(),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()

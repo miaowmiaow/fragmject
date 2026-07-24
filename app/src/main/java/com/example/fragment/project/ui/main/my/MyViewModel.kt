@@ -14,7 +14,7 @@ sealed interface MyUiState {
     val user: User
 
     data class NoUser(
-        override val user: User = User(id = 0, username = "", nickname = "", darkTheme = "false"),
+        override val user: User = User(id = 0, username = "", nickname = ""),
     ) : MyUiState
 }
 

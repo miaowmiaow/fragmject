@@ -49,9 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavKey
 import com.example.fragment.project.R
-import com.example.fragment.project.SearchRoute
-import com.example.fragment.project.ShareArticleRoute
+import com.example.fragment.project.SearchNavKey
+import com.example.fragment.project.ShareArticleNavKey
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.WanViewModel
 import com.example.fragment.project.components.LoopVerticalPager
@@ -66,7 +67,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     viewModel: WanViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -141,7 +142,7 @@ fun MainScreen(
 @Composable
 fun SearchBar(
     data: List<HotKey>?,
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -171,7 +172,7 @@ fun SearchBar(
             LoopVerticalPager(data = data) { _, _, item ->
                 Box(
                     modifier = Modifier
-                        .clickable { onNavigate(SearchRoute(item.name)) }
+                        .clickable { onNavigate(SearchNavKey(item.name)) }
                         .fillMaxSize(),
                     contentAlignment = Alignment.CenterStart
                 ) {
@@ -186,7 +187,7 @@ fun SearchBar(
         }
         IconButton(
             modifier = Modifier.height(45.dp),
-            onClick = { onNavigate(ShareArticleRoute) }
+            onClick = { onNavigate(ShareArticleNavKey) }
         ) {
             Icon(
                 Icons.Filled.Add,

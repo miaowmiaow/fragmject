@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.search
 
+import androidx.navigation3.runtime.NavKey
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -69,7 +70,7 @@ fun SearchScreen(
     key: String,
     wanViewModel: WanViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()

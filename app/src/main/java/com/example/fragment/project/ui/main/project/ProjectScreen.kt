@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.main.project
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,7 +35,7 @@ fun ProjectScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     projectTreeViewModel: ProjectTreeViewModel = viewModel(),
     projectViewModel: ProjectViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()

@@ -8,6 +8,7 @@ import com.example.miaow.base.database.KVDatabase
 import com.example.miaow.base.utils.GSonUtils
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * 数据持久化辅助类
@@ -19,10 +20,29 @@ object WanHelper {
     private const val BROWSE_HISTORY = "browse_history"
     private const val SCHEDULE = "schedule"
     private const val SEARCH_HISTORY = "search_history"
+    private const val DARK_THEME = "dark_theme"
 
     // Gson 线程安全，复用全局单例避免重复创建。
     private val gson get() = GSonUtils.gson
     private val scheduleListType = object : TypeToken<List<String>>() {}.type
+
+    val darkTheme = MutableStateFlow(false)
+
+    /**
+     * 深色模式开关（独立存储，不耦合到 User）。
+     */
+    suspend fun setDarkTheme(dark: Boolean) {
+        KVDatabase.set(DARK_THEME, dark.toString())
+        darkTheme.value = dark
+    }
+
+    /**
+     * 从持久化存储恢复深色模式状态，应在应用启动时调用一次。
+     */
+    suspend fun restoreDarkTheme() {
+        val value = KVDatabase.get(DARK_THEME)
+        darkTheme.value = value.toBoolean()
+    }
 
     suspend fun setBookmark(value: String, url: String) {
         val historyDao = AppDatabase.getHistoryDao()

@@ -10,7 +10,7 @@ import com.example.fragment.project.data.History
 import com.example.fragment.project.data.User
 import com.example.miaow.base.provider.BaseContentProvider
 
-@Database(entities = [History::class, User::class], version = 5, exportSchema = true)
+@Database(entities = [History::class, User::class], version = 6, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun historyDao(): HistoryDao
@@ -29,6 +29,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                executeSql(connection, "ALTER TABLE `User` DROP COLUMN `dark_theme`")
+            }
+        }
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -44,7 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context = BaseContentProvider.context()): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
-                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                 .build()
         }
 

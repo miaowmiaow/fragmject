@@ -52,19 +52,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.MainRoute
+import com.example.fragment.project.MainNavKey
 import com.example.fragment.project.R
-import com.example.fragment.project.RegisterRoute
+import com.example.fragment.project.RegisterNavKey
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.WhiteTextField
 
+import androidx.navigation3.runtime.NavKey
+
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
-    onPopBackStack: (route: Any) -> Unit = {},
+    onPopBackStack: (key: NavKey) -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,7 +74,7 @@ fun LoginScreen(
     val scrollState = rememberScrollState()
     LaunchedEffect(uiState.isLogin, uiState.message, snackbarHostState) {
         if (uiState.isLogin) {
-            onPopBackStack(MainRoute)
+            onPopBackStack(MainNavKey)
         }
         if (uiState.message.isNotBlank()) {
             snackbarHostState.showSnackbar(uiState.message)
@@ -188,7 +190,7 @@ fun LoginScreen(
                     Text(
                         text = "去注册",
                         modifier = Modifier
-                            .clickable { onNavigate(RegisterRoute) }
+                            .clickable { onNavigate(RegisterNavKey) }
                             .padding(horizontal = 25.dp),
                         textDecoration = TextDecoration.Underline,
                         fontSize = 12.sp,

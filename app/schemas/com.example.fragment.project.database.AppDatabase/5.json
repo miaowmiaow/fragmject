@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "ffe6cbea558353e856e672ce807ae47a",
+    "identityHash": "3484a99bf7dc5089625d29d204e523fa",
     "entities": [
       {
         "tableName": "History",
@@ -76,7 +76,7 @@
       },
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `username` TEXT, `nickname` TEXT, `dark_theme` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `username` TEXT, `nickname` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -93,11 +93,6 @@
             "fieldPath": "nickname",
             "columnName": "nickname",
             "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "darkTheme",
-            "columnName": "dark_theme",
-            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -110,7 +105,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ffe6cbea558353e856e672ce807ae47a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3484a99bf7dc5089625d29d204e523fa')"
     ]
   }
 }

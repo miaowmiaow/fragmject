@@ -24,22 +24,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavKey
 import coil.compose.AsyncImage
-import com.example.fragment.project.BrowseHistoryRoute
-import com.example.fragment.project.DemoRoute
-import com.example.fragment.project.LoginRoute
-import com.example.fragment.project.MyCoinRoute
-import com.example.fragment.project.MyCollectRoute
-import com.example.fragment.project.MyShareRoute
-import com.example.fragment.project.SettingRoute
-import com.example.fragment.project.UserRoute
+import com.example.fragment.project.BrowseHistoryNavKey
+import com.example.fragment.project.DemoNavKey
+import com.example.fragment.project.LoginNavKey
+import com.example.fragment.project.MyCoinNavKey
+import com.example.fragment.project.MyCollectNavKey
+import com.example.fragment.project.MyShareNavKey
+import com.example.fragment.project.SettingNavKey
+import com.example.fragment.project.UserNavKey
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.components.ArrowRightItem
 
 @Composable
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
@@ -55,9 +56,9 @@ fun MyScreen(
                 .clip(RoundedCornerShape(50))
                 .clickable {
                     if (uiState.user.id > 0) {
-                        onNavigate(UserRoute(uiState.user.id.toString()))
+                        onNavigate(UserNavKey(uiState.user.id.toString()))
                     } else {
-                        onNavigate(LoginRoute)
+                        onNavigate(LoginNavKey)
                     }
                 }
                 .size(90.dp)
@@ -68,9 +69,9 @@ fun MyScreen(
                 .clickable(
                     onClick = {
                         if (uiState.user.id > 0) {
-                            onNavigate(UserRoute(uiState.user.id.toString()))
+                            onNavigate(UserNavKey(uiState.user.id.toString()))
                         } else {
-                            onNavigate(LoginRoute)
+                            onNavigate(LoginNavKey)
                         }
                     },
                     indication = null,
@@ -82,17 +83,17 @@ fun MyScreen(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(45.dp))
-        ArrowRightItem("组件Demo") { onNavigate(DemoRoute) }
+        ArrowRightItem("组件Demo") { onNavigate(DemoNavKey) }
         HorizontalDivider()
-        ArrowRightItem("我的积分") { onNavigate(MyCoinRoute) }
+        ArrowRightItem("我的积分") { onNavigate(MyCoinNavKey) }
         HorizontalDivider()
-        ArrowRightItem("我的收藏") { onNavigate(MyCollectRoute) }
+        ArrowRightItem("我的收藏") { onNavigate(MyCollectNavKey) }
         HorizontalDivider()
-        ArrowRightItem("我的分享") { onNavigate(MyShareRoute) }
+        ArrowRightItem("我的分享") { onNavigate(MyShareNavKey) }
         HorizontalDivider()
-        ArrowRightItem("浏览历史") { onNavigate(BrowseHistoryRoute) }
+        ArrowRightItem("浏览历史") { onNavigate(BrowseHistoryNavKey) }
         HorizontalDivider()
-        ArrowRightItem("系统设置") { onNavigate(SettingRoute) }
+        ArrowRightItem("系统设置") { onNavigate(SettingNavKey) }
     }
 }
 

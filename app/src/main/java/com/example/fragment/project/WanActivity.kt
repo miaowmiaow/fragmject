@@ -2,7 +2,6 @@ package com.example.fragment.project
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.content.ComponentCallbacks2
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
@@ -11,12 +10,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.example.fragment.project.ui.web.WebViewManager
+import com.example.fragment.project.utils.WanHelper
 import com.example.miaow.base.debug.DebugBridge
+import kotlinx.coroutines.launch
 
 class WanActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 启动时从持久化存储恢复深色模式状态
+        lifecycleScope.launch { WanHelper.restoreDarkTheme() }
         val splashScreen = installSplashScreen()
         // 自定义退出过渡：150ms alpha + 轻微缩放，避免 splash 与首页之间的"硬切"
         splashScreen.setOnExitAnimationListener { provider ->

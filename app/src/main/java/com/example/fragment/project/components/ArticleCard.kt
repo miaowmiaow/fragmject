@@ -1,5 +1,6 @@
 package com.example.fragment.project.components
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,12 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
-import com.example.fragment.project.LoginRoute
+import com.example.fragment.project.LoginNavKey
 import com.example.fragment.project.R
-import com.example.fragment.project.SystemRoute
-import com.example.fragment.project.UserRoute
+import com.example.fragment.project.SystemNavKey
+import com.example.fragment.project.UserNavKey
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.data.Article
 import com.example.fragment.project.data.repository.WanRepositoryProvider
 import kotlinx.coroutines.launch
@@ -55,7 +56,7 @@ import kotlinx.coroutines.launch
 fun ArticleCard(
     data: Article,
     modifier: Modifier = Modifier,
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     // 收藏状态外提到 Compose 状态层：Article 不再可变，避免污染 stable 数据类
@@ -65,7 +66,7 @@ fun ArticleCard(
         modifier = modifier
             .clip(RoundedCornerShape(5.dp))
             .clipToBounds()
-            .clickable { onNavigate(WebRoute(data.link)) }
+            .clickable { onNavigate(WebNavKey(data.link)) }
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .fillMaxWidth()
     ) {
@@ -78,7 +79,7 @@ fun ArticleCard(
                 contentDescription = null,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .clickable { onNavigate(UserRoute(data.userId)) }
+                    .clickable { onNavigate(UserNavKey(data.userId)) }
                     .size(30.dp),
                 contentScale = ContentScale.Crop
             )
@@ -120,7 +121,7 @@ fun ArticleCard(
                                     cid = paths[2]
                                 }
                             }
-                            onNavigate(SystemRoute(cid ?: "0"))
+                            onNavigate(SystemNavKey(cid ?: "0"))
                         },
                         modifier = Modifier.height(20.dp),
                         shape = RoundedCornerShape(3.dp),
@@ -201,7 +202,7 @@ fun ArticleCard(
                 if (data.fresh) {
                     Text(
                         text = "新  ",
-                        modifier = footModifier.clickable { onNavigate(SystemRoute(data.chapterId)) },
+                        modifier = footModifier.clickable { onNavigate(SystemNavKey(data.chapterId)) },
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
@@ -211,7 +212,7 @@ fun ArticleCard(
                 if (data.top) {
                     Text(
                         text = "置顶  ",
-                        modifier = footModifier.clickable { onNavigate(SystemRoute(data.chapterId)) },
+                        modifier = footModifier.clickable { onNavigate(SystemNavKey(data.chapterId)) },
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
@@ -220,7 +221,7 @@ fun ArticleCard(
                 }
                 Text(
                     text = data.chapterNameHtml,
-                    modifier = footModifier.clickable { onNavigate(SystemRoute(data.chapterId)) },
+                    modifier = footModifier.clickable { onNavigate(SystemNavKey(data.chapterId)) },
                     color = MaterialTheme.colorScheme.onTertiary,
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
@@ -245,7 +246,7 @@ fun ArticleCard(
                             }
                             when (response.errorCode) {
                                 "0" -> collected = !collected
-                                "-1001" -> onNavigate(LoginRoute)
+                                "-1001" -> onNavigate(LoginNavKey)
                             }
                         }
                     })

@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.main.nav
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.FlingBehavior
@@ -45,9 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragment.project.SystemRoute
+import com.example.fragment.project.SystemNavKey
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.components.LoadingContent
 import com.example.fragment.project.components.TabBar
 import com.example.fragment.project.data.Tree
@@ -57,7 +58,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun NavScreen(
     systemData: List<Tree>,
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val tabs = listOf("导航", "体系")
     val scope = rememberCoroutineScope()
@@ -89,7 +90,7 @@ fun NavScreen(
 @Composable
 fun NavLinkContent(
     viewModel: NavViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -169,7 +170,7 @@ fun NavLinkContent(
                     uiState.navigationResult.getOrNull(page)?.articles?.forEach {
                         Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
                             Button(
-                                onClick = { onNavigate(WebRoute(it.link)) },
+                                onClick = { onNavigate(WebNavKey(it.link)) },
                                 shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -194,7 +195,7 @@ fun NavLinkContent(
 @Composable
 fun NavSystemContent(
     systemData: List<Tree>,
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     LoadingContent(
@@ -224,7 +225,7 @@ fun NavSystemContent(
                         data.children?.forEach { children ->
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
-                                    onClick = { onNavigate(SystemRoute(children.id)) },
+                                    onClick = { onNavigate(SystemNavKey(children.id)) },
                                     shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,

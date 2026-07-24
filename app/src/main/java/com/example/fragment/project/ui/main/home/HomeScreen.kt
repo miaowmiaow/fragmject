@@ -1,5 +1,6 @@
 package com.example.fragment.project.ui.main.home
 
+import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.WanTheme
-import com.example.fragment.project.WebRoute
+import com.example.fragment.project.WebNavKey
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.BannerPager
 import com.example.fragment.project.components.SwipeRefreshBox
@@ -23,7 +24,7 @@ import com.example.fragment.project.components.SwipeRefreshBox
 fun HomeScreen(
     listState: LazyListState,
     viewModel: HomeViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     SwipeRefreshBox(
@@ -46,7 +47,7 @@ fun HomeScreen(
             BannerPager(
                 data = item.banners,
                 pathMapping = { it.imagePath },
-                onClick = { _, banner -> onNavigate(WebRoute(banner.url)) }
+                onClick = { _, banner -> onNavigate(WebNavKey(banner.url)) }
             )
         } else {
             ArticleCard(

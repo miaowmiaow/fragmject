@@ -99,8 +99,7 @@ val appLightColorScheme = lightColorScheme(
 @Composable
 fun WanTheme(window: Window? = null, content: @Composable () -> Unit) {
 
-    val user by WanHelper.getUser().collectAsStateWithLifecycle(initialValue = null)
-    val darkTheme = user?.darkTheme.toBoolean()
+    val darkTheme by WanHelper.darkTheme.collectAsStateWithLifecycle(initialValue = false)
 
     LaunchedEffect(window, darkTheme) {
         window?.let {

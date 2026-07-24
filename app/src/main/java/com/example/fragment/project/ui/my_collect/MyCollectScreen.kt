@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragment.project.WanTheme
+import androidx.navigation3.runtime.NavKey
 import com.example.fragment.project.components.ArticleCard
 import com.example.fragment.project.components.SwipeRefreshBox
 import com.example.fragment.project.components.TitleBar
@@ -25,7 +26,7 @@ import com.example.fragment.project.components.TitleBar
 @Composable
 fun MyCollectScreen(
     viewModel: MyCollectViewModel = viewModel(),
-    onNavigate: (route: Any) -> Unit = {},
+    onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

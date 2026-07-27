@@ -91,6 +91,7 @@ fun WebScreen(
         skipHiddenState = false
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
+    val sheetPagerState = rememberPagerState(0) { 2 }
     val control = rememberWebViewControl()
     var title by remember { mutableStateOf<String?>("") }
     var bookmark by remember { mutableStateOf<History?>(null) }
@@ -161,7 +162,7 @@ fun WebScreen(
             BottomSheetScaffold(
                 sheetContent = {
                     HorizontalPager(
-                        state = rememberPagerState(0) { 2 },
+                        state = sheetPagerState,
                     ) { page ->
                         if (page == 0) {
                             Row(modifier = Modifier.height(64.dp)) {

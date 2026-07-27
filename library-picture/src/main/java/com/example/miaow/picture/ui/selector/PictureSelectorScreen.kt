@@ -47,10 +47,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -80,9 +81,10 @@ fun PictureSelectorScreen(
     viewModel: PictureViewModel = viewModel(),
 ) {
     val context = LocalContext.current
-    val albumResult by viewModel.albumResult.collectAsState()
-    val currAlbumResult by viewModel.currAlbumResult.collectAsState()
+    val albumResult by viewModel.albumResult.collectAsStateWithLifecycle()
+    val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
     val selectPosition = remember { mutableStateListOf<Int>() }
+    val selectPositionSet = remember { mutableStateMapOf<Int, Unit>() }
     var currAlbumName by remember { mutableStateOf("") }
     val selectPositionMap by remember {
         derivedStateOf {
@@ -311,7 +313,7 @@ fun PictureSelectorScreen(
                     // 图片列表
                     itemsIndexed(currAlbumResult, key = { _, item -> item.uri }) { index, media ->
                         val realIndex = index // 真实索引（不含相机）
-                        val isSelected = selectPosition.contains(realIndex)
+                        val isSelected = selectPositionSet.containsKey(realIndex)
                         val selectNum = selectPositionMap[realIndex] ?: 0
 
                         Box(
@@ -321,8 +323,10 @@ fun PictureSelectorScreen(
                                 .clickable {
                                     if (isSelected) {
                                         selectPosition.remove(realIndex)
+                                        selectPositionSet.remove(realIndex)
                                     } else if (selectPosition.size < 9) {
                                         selectPosition.add(realIndex)
+                                        selectPositionSet[realIndex] = Unit
                                     }
                                 }
                         ) {

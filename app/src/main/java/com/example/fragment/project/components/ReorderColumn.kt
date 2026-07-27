@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -61,6 +62,7 @@ fun <T> ReorderLazyColumn(
     var draggingItemIndex by remember { mutableIntStateOf(-1) }
     val draggingItemDelta by remember { mutableStateOf(Animatable(0f)) }
     val autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
+    var dragJob by remember { mutableStateOf<Job?>(null) }
 
     LazyColumn(
         modifier = modifier.pointerInput(Unit) {
@@ -69,6 +71,23 @@ fun <T> ReorderLazyColumn(
                     draggingItemIndex = layoutInfo.firstOrNull(offset)?.index ?: -1
                 },
                 onDragEnd = {
+                    dragJob?.cancel()
+                    scope.launch {
+                        draggingItemDelta.animateTo(
+                            targetValue = 0f,
+                            animationSpec = spring(
+                                stiffness = Spring.StiffnessMediumLow,
+                                visibilityThreshold = 1f
+                            )
+                        ) {
+                            if (value == targetValue) {
+                                draggingItemIndex = -1
+                            }
+                        }
+                    }
+                },
+                onDragCancel = {
+                    dragJob?.cancel()
                     scope.launch {
                         draggingItemDelta.animateTo(
                             targetValue = 0f,
@@ -85,10 +104,12 @@ fun <T> ReorderLazyColumn(
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()
-                    val targetItem = layoutInfo.firstOrNull(change.position)
-                        ?: return@detectDragGesturesAfterLongPress
-                    val targetItemIndex = targetItem.index
-                    scope.launch {
+                    dragJob?.cancel()
+                    dragJob = scope.launch {
+                        val targetItem = layoutInfo.firstOrNull(change.position)
+                            ?: return@launch
+                        val targetItemIndex = targetItem.index
+
                         draggingItemDelta.snapTo(draggingItemDelta.value + dragAmount.y)
 
                         val distFromTop = change.position.y

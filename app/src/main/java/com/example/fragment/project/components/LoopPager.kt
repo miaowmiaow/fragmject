@@ -159,6 +159,7 @@ fun <T> LoopVerticalPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     indicator: Boolean = false,
+    userScrollEnabled: Boolean = true,
     content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
     if (data.isNullOrEmpty()) {
@@ -176,6 +177,7 @@ fun <T> LoopVerticalPager(
         VerticalPager(
             state = pagerState,
             contentPadding = contentPadding,
+            userScrollEnabled = userScrollEnabled,
             modifier = Modifier
                 .fillMaxSize()
                 .clipToBounds(),

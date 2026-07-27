@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
@@ -39,10 +38,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,12 +54,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.miaow.picture.data.MediaBean
 import kotlinx.coroutines.launch
-import kotlin.collections.getOrElse
-import kotlin.collections.toList
 
 enum class PreviewMode { NORM, SELECT }
 
@@ -74,15 +72,18 @@ fun PicturePreviewScreen(
     onOpenEditor: (Uri) -> Unit = {},
     viewModel: PictureViewModel = viewModel(),
 ) {
-    val currAlbumResult by viewModel.currAlbumResult.collectAsState()
+    val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
     val currSelectPosition = remember { mutableStateListOf<Int>() }
+    val currSelectPositionSet = remember { mutableStateMapOf<Int, Unit>() }
     val scope = rememberCoroutineScope()
     var showTitleBar by remember { mutableStateOf(true) }
     var showNavBar by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         currSelectPosition.clear()
+        currSelectPositionSet.clear()
         currSelectPosition.addAll(origSelectPosition)
+        origSelectPosition.forEach { currSelectPositionSet[it] = Unit }
     }
 
     val data = remember(currAlbumResult, origSelectPosition, mode) {
@@ -269,7 +270,7 @@ fun PicturePreviewScreen(
                         ) {
                             itemsIndexed(data, key = { _, item -> item.uri }) { index, media ->
                                 val realPosition = origSelectPosition.getOrElse(index) { index }
-                                val isSelected = currSelectPosition.contains(realPosition)
+                                val isSelected = currSelectPositionSet.containsKey(realPosition)
                                 Box(
                                     modifier = Modifier
                                         .size(48.dp)
@@ -322,16 +323,18 @@ fun PicturePreviewScreen(
                                 origSelectPosition.getOrElse(pagerState.currentPage) { pagerState.currentPage }
                             } else pagerState.currentPage
 
-                            if (currSelectPosition.contains(realPosition)) {
+                            if (currSelectPositionSet.containsKey(realPosition)) {
                                 currSelectPosition.remove(realPosition)
+                                currSelectPositionSet.remove(realPosition)
                             } else if (currSelectPosition.size < 9) {
                                 currSelectPosition.add(realPosition)
+                                currSelectPositionSet[realPosition] = Unit
                             }
                         }) {
                             val realPosition = if (mode == PreviewMode.SELECT) {
                                 origSelectPosition.getOrElse(pagerState.currentPage) { pagerState.currentPage }
                             } else pagerState.currentPage
-                            val isSelected = currSelectPosition.contains(realPosition)
+                            val isSelected = currSelectPositionSet.containsKey(realPosition)
 
                             Box(
                                 modifier = Modifier

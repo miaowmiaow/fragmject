@@ -169,7 +169,10 @@ fun SearchBar(
                 modifier = Modifier.padding(10.dp, 5.dp, 0.dp, 5.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            LoopVerticalPager(data = data) { _, _, item ->
+            LoopVerticalPager(
+                data = data,
+                userScrollEnabled = false,
+            ) { _, _, item ->
                 Box(
                     modifier = Modifier
                         .clickable { onNavigate(SearchNavKey(item.name)) }

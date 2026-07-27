@@ -72,7 +72,7 @@ fun SettingScreen(
     var cacheSize by rememberSaveable { mutableStateOf("0KB") }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(context) {
         cacheSize = getTotalSize(context)
     }
     var showDialog by remember { mutableStateOf(false) }

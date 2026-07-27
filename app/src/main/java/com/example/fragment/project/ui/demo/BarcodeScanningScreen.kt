@@ -71,7 +71,7 @@ fun BarcodeScanningScreen() {
         }
     val snackState = remember { SnackbarHostState() }
     val snackScope = rememberCoroutineScope()
-    LaunchedEffect(Unit) {
+    LaunchedEffect(context, cameraPermissions.joinToString()) {
         showDialog = !cameraPermissions.all {
             ContextCompat.checkSelfPermission(
                 context, it

@@ -13,7 +13,7 @@ import com.example.fragment.project.components.ExoPlayer
 @Composable
 fun ExoPlayerScreen() {
     val window = LocalActivity.current?.window ?: return
-    DisposableEffect(Unit) {
+    DisposableEffect(window) {
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior =

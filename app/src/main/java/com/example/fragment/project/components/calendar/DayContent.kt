@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -33,6 +34,18 @@ internal fun DayContent(
 ) {
     val schedule by date.schedule.collectAsStateWithLifecycle()
     val selectedDay by date.selectedDay.collectAsStateWithLifecycle()
+    val festivals = remember(date) { date.getFestival() }
+    val hasFestival = remember(date) { date.isFestival() }
+    val dayLabel = remember(date, isMonthFillMode) {
+        if (isMonthFillMode) {
+            date.lunarDay()
+        } else {
+            date.getFirstFestival()
+        }
+    }
+    val schedulePreview = remember(schedule) { schedule.take(2) }
+    val festivalPreview = remember(festivals) { festivals.take(2) }
+
     Column {
         Column(modifier = Modifier
             .padding(1.dp)
@@ -47,7 +60,7 @@ internal fun DayContent(
                 if (date.currMonth && selectedDay) {
                     Modifier
                         .background(
-                            if (date.isFestival()) {
+                            if (hasFestival) {
                                 Color.Transparent
                             } else {
                                 MaterialTheme.colorScheme.onSecondaryContainer
@@ -69,7 +82,7 @@ internal fun DayContent(
                     .fillMaxWidth()
                     .clipToBounds(),
                 color = if (date.currMonth) {
-                    if (selectedDay && !date.isFestival()) {
+                    if (selectedDay && !hasFestival) {
                         MaterialTheme.colorScheme.secondaryContainer
                     } else {
                         MaterialTheme.colorScheme.onPrimary
@@ -82,25 +95,19 @@ internal fun DayContent(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "  ${
-                    if (isMonthFillMode) {
-                        date.lunarDay()
-                    } else {
-                        date.getFirstFestival()
-                    }
-                }  ",
+                text = "  $dayLabel  ",
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
                 color = if (date.currMonth && selectedDay) {
-                    if (date.isFestival()) {
+                    if (hasFestival) {
                         MaterialTheme.colorScheme.onSecondaryContainer
                     } else {
                         MaterialTheme.colorScheme.secondaryContainer
                     }
-                } else if (date.currMonth && date.isFestival() && !isMonthFillMode) {
+                } else if (date.currMonth && hasFestival && !isMonthFillMode) {
                     MaterialTheme.colorScheme.onSecondaryContainer
-                } else if (!date.currMonth && date.isFestival() && !isMonthFillMode) {
+                } else if (!date.currMonth && hasFestival && !isMonthFillMode) {
                     WanTheme.alphaOrange
                 } else {
                     MaterialTheme.colorScheme.onTertiary
@@ -111,7 +118,7 @@ internal fun DayContent(
                 maxLines = 1,
             )
         }
-        schedule.forEach {
+        schedulePreview.forEach {
             Text(
                 text = it,
                 modifier = Modifier
@@ -130,7 +137,7 @@ internal fun DayContent(
             )
         }
         if (isMonthFillMode) {
-            date.getFestival().forEach {
+            festivalPreview.forEach {
                 Text(
                     text = it,
                     modifier = Modifier

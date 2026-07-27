@@ -17,17 +17,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
@@ -45,12 +40,12 @@ fun SystemScreen(
     cid: String,
     wanViewModel: WanViewModel = viewModel(),
     systemViewModel: SystemViewModel = viewModel(),
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val wanUiState by wanViewModel.uiState.collectAsStateWithLifecycle()
+    val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
     val treeData = wanUiState.getTree(cid)
     // pageCount 用 lambda 读取，确保 treeData 异步加载完成后 PagerState 能感知到新的 size；
     // 由于 rememberPagerState 的 initialPage 仅在首次创建时生效，treeData 加载完后
@@ -61,6 +56,11 @@ fun SystemScreen(
         if (treeData.third.isNotEmpty() && pagerState.currentPage != targetPage) {
             pagerState.scrollToPage(targetPage)
         }
+    }
+    LaunchedEffect(pagerState.currentPage, treeData.third.size) {
+        if (treeData.third.isEmpty()) return@LaunchedEffect
+        val currentCid = treeData.third[pagerState.currentPage].id
+        systemViewModel.init(currentCid)
     }
     Scaffold(
         topBar = {
@@ -95,18 +95,6 @@ fun SystemScreen(
             LoadingContent(isLoading = wanUiState.isLoading) {
                 HorizontalPager(state = pagerState) { page ->
                     val pageCid = treeData.third[page].id
-                    DisposableEffect(lifecycleOwner) {
-                        val observer = LifecycleEventObserver { _, event ->
-                            if (event == Lifecycle.Event.ON_START) {
-                                systemViewModel.init(pageCid)
-                            }
-                        }
-                        lifecycleOwner.lifecycle.addObserver(observer)
-                        onDispose {
-                            lifecycleOwner.lifecycle.removeObserver(observer)
-                        }
-                    }
-                    val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
                     val listState = rememberLazyListState()
                     SwipeRefreshBox(
                         items = systemUiState.getResult(pageCid),

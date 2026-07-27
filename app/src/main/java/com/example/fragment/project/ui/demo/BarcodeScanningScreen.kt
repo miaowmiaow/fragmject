@@ -44,8 +44,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.fragment.project.components.StandardDialog
-import com.example.miaow.picture.selector.PictureSelectorActivity
-import com.example.miaow.picture.selector.bean.MediaBean
+import com.example.miaow.picture.PictureSelectorActivity
+import com.example.miaow.picture.data.MediaBean
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning

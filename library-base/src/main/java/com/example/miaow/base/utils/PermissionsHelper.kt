@@ -5,23 +5,22 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
-import androidx.core.net.toUri
 
 /**
  * 忽略电池优化,保持后台常驻
  */
 @SuppressLint("BatteryLife")
-fun Context.requestIgnoreBatteryOptimizations() {
+fun FragmentActivity.requestIgnoreBatteryOptimizations() {
     //申请加入白名单
     try {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -42,10 +41,6 @@ fun Context.requestIgnoreBatteryOptimizations() {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestCalendar(callback: PermissionsCallback) {
-    supportFragmentManager.requestCalendar(callback)
-}
-
 fun FragmentManager.requestCalendar(callback: PermissionsCallback) {
     val permissions = arrayOf(
         Manifest.permission.READ_CALENDAR,
@@ -59,10 +54,6 @@ fun FragmentManager.requestCalendar(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestCamera(callback: PermissionsCallback) {
-    supportFragmentManager.requestCamera(callback)
-}
-
 fun FragmentManager.requestCamera(callback: PermissionsCallback) {
     val permissions = arrayOf(Manifest.permission.CAMERA)
     requestPermissions(permissions, callback)
@@ -73,10 +64,6 @@ fun FragmentManager.requestCamera(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestContacts(callback: PermissionsCallback) {
-    supportFragmentManager.requestContacts(callback)
-}
-
 fun FragmentManager.requestContacts(callback: PermissionsCallback) {
     val permissions = arrayOf(
         Manifest.permission.GET_ACCOUNTS,
@@ -91,10 +78,6 @@ fun FragmentManager.requestContacts(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestLocation(callback: PermissionsCallback) {
-    supportFragmentManager.requestLocation(callback)
-}
-
 fun FragmentManager.requestLocation(callback: PermissionsCallback) {
     val permissions = arrayOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -108,10 +91,6 @@ fun FragmentManager.requestLocation(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestPhone(callback: PermissionsCallback) {
-    supportFragmentManager.requestPhone(callback)
-}
-
 fun FragmentManager.requestPhone(callback: PermissionsCallback) {
     val permissions = arrayOf(
         Manifest.permission.CALL_PHONE,
@@ -126,10 +105,6 @@ fun FragmentManager.requestPhone(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestRecordAudio(callback: PermissionsCallback) {
-    supportFragmentManager.requestRecordAudio(callback)
-}
-
 fun FragmentManager.requestRecordAudio(callback: PermissionsCallback) {
     val permissions = arrayOf(Manifest.permission.RECORD_AUDIO)
     requestPermissions(permissions, callback)
@@ -140,10 +115,6 @@ fun FragmentManager.requestRecordAudio(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestSensors(callback: PermissionsCallback) {
-    supportFragmentManager.requestSensors(callback)
-}
-
 fun FragmentManager.requestSensors(callback: PermissionsCallback) {
     val permissions = arrayOf(Manifest.permission.BODY_SENSORS)
     requestPermissions(permissions, callback)
@@ -154,10 +125,6 @@ fun FragmentManager.requestSensors(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestSMS(callback: PermissionsCallback) {
-    supportFragmentManager.requestSMS(callback)
-}
-
 fun FragmentManager.requestSMS(callback: PermissionsCallback) {
     val permissions = arrayOf(
         Manifest.permission.READ_SMS,
@@ -173,11 +140,7 @@ fun FragmentManager.requestSMS(callback: PermissionsCallback) {
  *
  * @param callback 回调
  */
-fun FragmentActivity.requestStorage(callback: PermissionsCallback) {
-    supportFragmentManager.requestStorage(callback)
-}
-
-fun FragmentManager.requestStorage(callback: PermissionsCallback) {
+fun FragmentManager.requestStorage(callback: PermissionsCallback, requireAllPermissions: Boolean = true) {
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_AUDIO,
@@ -189,15 +152,16 @@ fun FragmentManager.requestStorage(callback: PermissionsCallback) {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
-    requestPermissions(permissions, callback)
-}
-
-fun FragmentActivity.requestMediaImages(callback: PermissionsCallback) {
-    supportFragmentManager.requestMediaImages(callback)
+    requestPermissions(permissions, callback, requireAllPermissions)
 }
 
 fun FragmentManager.requestMediaImages(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+            Manifest.permission.READ_MEDIA_IMAGES,
+        )
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_IMAGES,
         )
@@ -205,15 +169,16 @@ fun FragmentManager.requestMediaImages(callback: PermissionsCallback) {
         arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
         )
-    requestPermissions(permissions, callback)
-}
-
-fun FragmentActivity.requestMediaVideo(callback: PermissionsCallback) {
-    supportFragmentManager.requestMediaVideo(callback)
+    requestPermissions(permissions, callback, requireAllPermissions = false)
 }
 
 fun FragmentManager.requestMediaVideo(callback: PermissionsCallback) {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+        arrayOf(
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+            Manifest.permission.READ_MEDIA_VIDEO,
+        )
+    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         arrayOf(
             Manifest.permission.READ_MEDIA_VIDEO,
         )
@@ -221,11 +186,7 @@ fun FragmentManager.requestMediaVideo(callback: PermissionsCallback) {
         arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
         )
-    requestPermissions(permissions, callback)
-}
-
-fun FragmentActivity.requestMediaAudio(callback: PermissionsCallback) {
-    supportFragmentManager.requestMediaAudio(callback)
+    requestPermissions(permissions, callback, requireAllPermissions = false)
 }
 
 fun FragmentManager.requestMediaAudio(callback: PermissionsCallback) {
@@ -240,11 +201,11 @@ fun FragmentManager.requestMediaAudio(callback: PermissionsCallback) {
     requestPermissions(permissions, callback)
 }
 
-fun FragmentActivity.requestPermissions(permissions: Array<String>, callback: PermissionsCallback) {
-    supportFragmentManager.requestPermissions(permissions, callback)
-}
-
-fun FragmentManager.requestPermissions(permissions: Array<String>, callback: PermissionsCallback) {
+fun FragmentManager.requestPermissions(
+    permissions: Array<String>,
+    callback: PermissionsCallback,
+    requireAllPermissions: Boolean = true
+) {
     val tag = PermissionsFragment::class.java.simpleName
     var fragment = findFragmentByTag(tag)
     if (fragment == null) {
@@ -255,11 +216,12 @@ fun FragmentManager.requestPermissions(permissions: Array<String>, callback: Per
         executePendingTransactions()
     }
     if (fragment is PermissionsFragment) {
-        fragment.requestPermissions(permissions, callback)
+        fragment.requestPermissions(permissions, callback, requireAllPermissions)
     }
 }
 
 interface PermissionsCallback {
+    fun check()
     fun allow()
     fun deny()
 }
@@ -268,9 +230,26 @@ class PermissionsFragment : Fragment() {
 
     private var callback: PermissionsCallback? = null
     private var permissions: MutableList<String> = arrayListOf()
+    private var requireAllPermissions: Boolean = true
     private val launcher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ps ->
-            val isGranted = ps.entries.all { (key, value) -> key !in permissions || value }
+            val isGranted = if (requireAllPermissions) {
+                permissions.all { permission ->
+                    ps[permission] == true ||
+                            ContextCompat.checkSelfPermission(
+                                requireContext(),
+                                permission
+                            ) == PackageManager.PERMISSION_GRANTED
+                }
+            } else {
+                permissions.any { permission ->
+                    ps[permission] == true ||
+                            ContextCompat.checkSelfPermission(
+                                requireContext(),
+                                permission
+                            ) == PackageManager.PERMISSION_GRANTED
+                }
+            }
             if (!isGranted) {
                 callback?.deny()
             } else {
@@ -285,20 +264,31 @@ class PermissionsFragment : Fragment() {
 
     fun requestPermissions(
         permissions: Array<String>,
-        callback: PermissionsCallback
+        callback: PermissionsCallback,
+        requireAllPermissions: Boolean = true
     ) {
         this.permissions.clear()
         this.permissions.addAll(permissions)
         this.callback = callback
-        if (!hasPermissions(requireContext())) {
+        this.requireAllPermissions = requireAllPermissions
+        if (!hasPermissions(requireContext(), requireAllPermissions)) {
             launcher.launch(permissions)
+            this.callback?.check()
         } else {
             this.callback?.allow()
         }
     }
 
-    private fun hasPermissions(context: Context) = permissions.all {
-        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    private fun hasPermissions(context: Context, requireAllPermissions: Boolean): Boolean {
+        return if (requireAllPermissions) {
+            permissions.all {
+                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            }
+        } else {
+            permissions.any {
+                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            }
+        }
     }
 
     companion object {

@@ -47,6 +47,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragment.project.R
 
+private val RefreshingResIds = listOf(
+    R.mipmap.refreshing_1,
+    R.mipmap.refreshing_2,
+    R.mipmap.refreshing_3,
+    R.mipmap.refreshing_4,
+    R.mipmap.refreshing_5,
+    R.mipmap.refreshing_6,
+    R.mipmap.refreshing_7,
+    R.mipmap.refreshing_8,
+    R.mipmap.refreshing_9,
+    R.mipmap.refreshing_10,
+    R.mipmap.refreshing_11,
+    R.mipmap.refreshing_12,
+    R.mipmap.refreshing_13,
+    R.mipmap.refreshing_14,
+    R.mipmap.refreshing_15,
+    R.mipmap.refreshing_16,
+    R.mipmap.refreshing_17,
+    R.mipmap.refreshing_18,
+    R.mipmap.refreshing_19,
+    R.mipmap.refreshing_20,
+    R.mipmap.refreshing_21,
+    R.mipmap.refreshing_22,
+    R.mipmap.refreshing_23,
+    R.mipmap.refreshing_24,
+    R.mipmap.refreshing_25,
+    R.mipmap.refreshing_26,
+    R.mipmap.refreshing_27,
+    R.mipmap.refreshing_28,
+    R.mipmap.refreshing_29,
+    R.mipmap.refreshing_30,
+    R.mipmap.refreshing_31,
+    R.mipmap.refreshing_32,
+    R.mipmap.refreshing_33,
+    R.mipmap.refreshing_34,
+    R.mipmap.refreshing_35,
+    R.mipmap.refreshing_36,
+    R.mipmap.refreshing_37,
+)
+
 /**
  * 自定义下拉刷新&加载更多
  * @param items         列表数据
@@ -170,52 +210,13 @@ fun RefreshIndicator(
     threshold: Dp = PullToRefreshDefaults.PositionalThreshold,
     distanceFraction: () -> Float
 ) {
-    val refreshingResId = listOf(
-        R.mipmap.refreshing_1,
-        R.mipmap.refreshing_2,
-        R.mipmap.refreshing_3,
-        R.mipmap.refreshing_4,
-        R.mipmap.refreshing_5,
-        R.mipmap.refreshing_6,
-        R.mipmap.refreshing_7,
-        R.mipmap.refreshing_8,
-        R.mipmap.refreshing_9,
-        R.mipmap.refreshing_10,
-        R.mipmap.refreshing_11,
-        R.mipmap.refreshing_12,
-        R.mipmap.refreshing_13,
-        R.mipmap.refreshing_14,
-        R.mipmap.refreshing_15,
-        R.mipmap.refreshing_16,
-        R.mipmap.refreshing_17,
-        R.mipmap.refreshing_18,
-        R.mipmap.refreshing_19,
-        R.mipmap.refreshing_20,
-        R.mipmap.refreshing_21,
-        R.mipmap.refreshing_22,
-        R.mipmap.refreshing_23,
-        R.mipmap.refreshing_24,
-        R.mipmap.refreshing_25,
-        R.mipmap.refreshing_26,
-        R.mipmap.refreshing_27,
-        R.mipmap.refreshing_28,
-        R.mipmap.refreshing_29,
-        R.mipmap.refreshing_30,
-        R.mipmap.refreshing_31,
-        R.mipmap.refreshing_32,
-        R.mipmap.refreshing_33,
-        R.mipmap.refreshing_34,
-        R.mipmap.refreshing_35,
-        R.mipmap.refreshing_36,
-        R.mipmap.refreshing_37,
-    )
     val loadingHeightPx = with(LocalDensity.current) {
         threshold.toPx()
     }
     val infiniteTransition = rememberInfiniteTransition(label = "SwipeRefresh")
     val loadingAnimate by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = refreshingResId.size.toFloat(),
+        targetValue = RefreshingResIds.size.toFloat(),
         animationSpec = infiniteRepeatable(
             animation = tween(1500, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -224,9 +225,9 @@ fun RefreshIndicator(
     )
     val position = distanceFraction() * loadingHeightPx
     val id =
-        (if (isRefreshing) loadingAnimate else position * 0.5f) % refreshingResId.size
+        (if (isRefreshing) loadingAnimate else position * 0.5f) % RefreshingResIds.size
     Image(
-        painter = painterResource(refreshingResId[id.toInt()]),
+        painter = painterResource(RefreshingResIds[id.toInt()]),
         contentDescription = null,
         modifier = Modifier
             .graphicsLayer {

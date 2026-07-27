@@ -50,21 +50,6 @@ class WanActivity : ComponentActivity() {
             WebView.setWebContentsDebuggingEnabled(true)
         }
     }
-
-    override fun onTrimMemory(level: Int) {
-        super.onTrimMemory(level)
-        when {
-            level >= TRIM_MEMORY_COMPLETE -> {
-                WebViewManager.releaseAll()
-            }
-
-            level >= TRIM_MEMORY_BACKGROUND ||
-                    level == TRIM_MEMORY_RUNNING_LOW ||
-                    level == TRIM_MEMORY_RUNNING_CRITICAL -> {
-                WebViewManager.trimToSpare()
-            }
-        }
-    }
 }
 
 /**

@@ -62,7 +62,6 @@ fun BrowseHistoryScreen(
     val scope = rememberCoroutineScope()
     val tabs = listOf("书签", "历史")
     val pagerState = rememberPagerState { tabs.size }
-    val control = rememberSwipeBoxControl()
     Scaffold(
         topBar = {
             TitleBar(
@@ -100,7 +99,11 @@ fun BrowseHistoryScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                 ) {
-                    itemsIndexed(if (page == 0) uiState.bookmarkResult else uiState.historyResult) { _, item ->
+                    itemsIndexed(
+                        if (page == 0) uiState.bookmarkResult else uiState.historyResult,
+                        key = { _, item -> item.id }
+                    ) { _, item ->
+                        val control = rememberSwipeBoxControl()
                         Row(
                             modifier = Modifier
                                 .clickable {

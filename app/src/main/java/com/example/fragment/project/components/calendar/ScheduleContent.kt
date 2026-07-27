@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ internal fun ScheduleContent(
     if (date == null) return
     val scope = rememberCoroutineScope()
     val schedule by date.schedule.collectAsStateWithLifecycle()
+    val festivals = remember(date) { date.getFestival() }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -85,7 +87,7 @@ internal fun ScheduleContent(
                 .height(LunarHeight)
                 .padding(10.dp)
         )
-        if (schedule.isEmpty() && date.getFestival().isEmpty()) {
+        if (schedule.isEmpty() && festivals.isEmpty()) {
             val density = LocalDensity.current
             Column(
                 modifier = Modifier
@@ -116,6 +118,7 @@ internal fun ScheduleContent(
             ) {
                 itemsIndexed(
                     items = schedule,
+                    key = { _, item -> item }
                 ) { _, item ->
                     Column(
                         modifier = Modifier
@@ -135,7 +138,8 @@ internal fun ScheduleContent(
                     }
                 }
                 itemsIndexed(
-                    items = date.getFestival(),
+                    items = festivals,
+                    key = { _, item -> item }
                 ) { _, item ->
                     Column(
                         modifier = Modifier

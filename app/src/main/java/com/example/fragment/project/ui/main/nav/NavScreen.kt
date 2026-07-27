@@ -1,14 +1,13 @@
 package com.example.fragment.project.ui.main.nav
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,14 +17,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavKey
 import com.example.fragment.project.SystemNavKey
 import com.example.fragment.project.WanTheme
 import com.example.fragment.project.WebNavKey
@@ -86,7 +88,6 @@ fun NavScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NavLinkContent(
     viewModel: NavViewModel = viewModel(),
@@ -96,33 +97,13 @@ fun NavLinkContent(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val pagerState = rememberPagerState { uiState.navigationResult.size }
-    val scrollState = rememberScrollState()
     var velocity by remember { mutableFloatStateOf(0f) }
+
     LaunchedEffect(listState) {
         snapshotFlow { pagerState.currentPage }.collectLatest {
             val halfVisibleItemSize = listState.layoutInfo.visibleItemsInfo.size / 2 - 1
             val index = (pagerState.currentPage - halfVisibleItemSize).coerceAtLeast(0)
             listState.animateScrollToItem(index)
-            scrollState.scrollTo(0)
-        }
-    }
-    LaunchedEffect(scrollState) {
-        var scrollValue = 0
-        snapshotFlow { scrollState.isScrollInProgress }.collectLatest {
-            if (scrollState.isScrollInProgress) {
-                scrollValue = scrollState.value
-            } else {
-                if ((velocity < -3000 && scrollState.value == 0) || scrollState.canScrollForward) { //顶部上拉切换上一项
-                    if (pagerState.currentPage > 0) {
-                        pagerState.scrollToPage(pagerState.currentPage - 1)
-                    }
-                }
-                if ((velocity > 3000 && scrollState.value == scrollValue) || scrollState.canScrollBackward) { //底部上拉切换下一项
-                    if (pagerState.currentPage < pagerState.pageCount - 1) {
-                        pagerState.scrollToPage(pagerState.currentPage + 1)
-                    }
-                }
-            }
         }
     }
     LoadingContent(uiState.isLoading) {
@@ -132,7 +113,10 @@ fun NavLinkContent(
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
-                itemsIndexed(uiState.navigationResult) { index, item ->
+                itemsIndexed(
+                    items = uiState.navigationResult,
+                    key = { _, item -> item.cid }
+                ) { index, item ->
                     Box(
                         modifier = Modifier
                             .clickable {
@@ -155,35 +139,51 @@ fun NavLinkContent(
                 }
             }
             VerticalPager(state = pagerState, userScrollEnabled = false) { page ->
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(
-                            state = scrollState,
-                            flingBehavior = object : FlingBehavior {
-                                override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-                                    velocity = initialVelocity
-                                    return initialVelocity
-                                }
-                            })
-                ) {
-                    uiState.navigationResult.getOrNull(page)?.articles?.forEach {
-                        Box(modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 0.dp)) {
-                            Button(
-                                onClick = { onNavigate(WebNavKey(it.link)) },
-                                shape = RoundedCornerShape(50),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                contentPadding = PaddingValues(10.dp, 0.dp, 10.dp, 0.dp)
-                            ) {
-                                Text(
-                                    text = it.title,
-                                    fontSize = 14.sp
-                                )
+                val gridState = remember(page) { LazyGridState() }
+                val articles = uiState.navigationResult.getOrNull(page)?.articles.orEmpty()
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 120.dp),
+                    modifier = Modifier.fillMaxSize(),
+                    state = gridState,
+                    flingBehavior = object : FlingBehavior {
+                        private val defaultFlingBehavior = ScrollableDefaults.flingBehavior()
+                        override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+                            velocity = initialVelocity
+                            if (initialVelocity < -3000 && !gridState.canScrollBackward && pagerState.currentPage > 0) {
+                                pagerState.scrollToPage(pagerState.currentPage - 1)
+                                return initialVelocity
                             }
+                            if (initialVelocity > 3000 && !gridState.canScrollForward && pagerState.currentPage < pagerState.pageCount - 1) {
+                                pagerState.scrollToPage(pagerState.currentPage + 1)
+                                return initialVelocity
+                            }
+                            return with(defaultFlingBehavior) { performFling(initialVelocity) }
+                        }
+                    },
+                    contentPadding = PaddingValues(horizontal = 5.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(
+                        items = articles,
+                        key = { item -> item.link }
+                    ) { item ->
+                        Button(
+                            onClick = { onNavigate(WebNavKey(item.link)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(50),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                        ) {
+                            Text(
+                                text = item.title,
+                                fontSize = 14.sp,
+                                maxLines = 1
+                            )
                         }
                     }
                 }

@@ -41,9 +41,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun <T> ReorderLazyVerticalGrid(
@@ -69,6 +71,7 @@ fun <T> ReorderLazyVerticalGrid(
         mutableStateOf(Animatable(Offset.Zero, Offset.VectorConverter))
     }
     val autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
+    var dragJob by remember { mutableStateOf<Job?>(null) }
 
     LazyVerticalGrid(
         columns = columns,
@@ -78,6 +81,23 @@ fun <T> ReorderLazyVerticalGrid(
                     draggingItemIndex = layoutInfo.firstOrNull(offset)?.index ?: -1
                 },
                 onDragEnd = {
+                    dragJob?.cancel()
+                    scope.launch {
+                        draggingItemDelta.animateTo(
+                            targetValue = Offset.Zero,
+                            animationSpec = spring(
+                                stiffness = Spring.StiffnessMediumLow,
+                                visibilityThreshold = Offset.VisibilityThreshold
+                            )
+                        ) {
+                            if (value == targetValue) {
+                                draggingItemIndex = -1
+                            }
+                        }
+                    }
+                },
+                onDragCancel = {
+                    dragJob?.cancel()
                     scope.launch {
                         draggingItemDelta.animateTo(
                             targetValue = Offset.Zero,
@@ -94,10 +114,12 @@ fun <T> ReorderLazyVerticalGrid(
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()
-                    val targetItem = layoutInfo.firstOrNull(change.position)
-                        ?: return@detectDragGesturesAfterLongPress
-                    val targetItemIndex = targetItem.index
-                    scope.launch {
+                    dragJob?.cancel()
+                    dragJob = scope.launch {
+                        val targetItem = layoutInfo.firstOrNull(change.position)
+                            ?: return@launch
+                        val targetItemIndex = targetItem.index
+
                         draggingItemDelta.snapTo(draggingItemDelta.value + dragAmount)
 
                         val distFromTop = change.position.y
@@ -109,7 +131,7 @@ fun <T> ReorderLazyVerticalGrid(
                         }?.let {
                             if (state.scrollBy(it) != 0f) {
                                 draggingItemDelta.snapTo(draggingItemDelta.value + Offset(0f, it))
-                                delay(10)
+                                delay(10.milliseconds)
                             }
                         }
 

@@ -32,6 +32,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -88,11 +89,19 @@ fun GridSelectScreen(
     photos: List<Photo> = List(100) { Photo(it) },
     selectedIds: MutableState<Set<Int>> = rememberSaveable { mutableStateOf(emptySet()) }
 ) {
-    val data = remember {
+    val data = remember(photos) {
         mutableListOf<Photo>().also {
             it.addAll(photos)
         }
     }
+    val selectedIdMap = remember { mutableStateMapOf<Int, Unit>() }
+    LaunchedEffect(selectedIds.value) {
+        val latest = selectedIds.value
+        val toRemove = selectedIdMap.keys.filter { it !in latest }
+        toRemove.forEach { selectedIdMap.remove(it) }
+        latest.forEach { selectedIdMap[it] = Unit }
+    }
+
     val state = rememberLazyGridState()
     val autoScrollSpeed = remember { mutableFloatStateOf(0f) }
     LaunchedEffect(autoScrollSpeed.floatValue) {
@@ -113,12 +122,13 @@ fun GridSelectScreen(
             state = state,
             haptics = LocalHapticFeedback.current,
             selectedIds = selectedIds,
+            selectedIdMap = selectedIdMap,
             autoScrollSpeed = autoScrollSpeed,
             autoScrollThreshold = with(LocalDensity.current) { 40.dp.toPx() }
         )
     ) {
         items(data, key = { it.id }) { photo ->
-            val selected by remember { derivedStateOf { selectedIds.value.contains(photo.id) } }
+            val selected by remember { derivedStateOf { selectedIdMap.containsKey(photo.id) } }
             ImageItem(photo, selected, Modifier)
         }
     }
@@ -128,6 +138,7 @@ fun Modifier.photoGridDragHandler(
     state: LazyGridState,
     haptics: HapticFeedback,
     selectedIds: MutableState<Set<Int>>,
+    selectedIdMap: MutableMap<Int, Unit>,
     autoScrollSpeed: MutableState<Float>,
     autoScrollThreshold: Float
 ) = this.then(Modifier.pointerInput(Unit) {
@@ -136,17 +147,23 @@ fun Modifier.photoGridDragHandler(
             itemInfo.size.toIntRect().contains(hitPoint.round() - itemInfo.offset)
         }?.key as? Int
 
+    fun toggleKey(key: Int) {
+        if (!selectedIdMap.containsKey(key)) {
+            selectedIdMap[key] = Unit
+            selectedIds.value += key
+        } else {
+            selectedIdMap.remove(key)
+            selectedIds.value -= key
+        }
+    }
+
     var currentKey = -1
     detectDragGesturesAfterLongPress(
         onDragStart = { offset ->
             state.gridItemKeyAtPosition(offset)?.let { key ->
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 currentKey = key
-                if (!selectedIds.value.contains(key)) {
-                    selectedIds.value += key
-                } else {
-                    selectedIds.value -= key
-                }
+                toggleKey(key)
             }
         },
         onDragCancel = { autoScrollSpeed.value = 0f },
@@ -168,11 +185,7 @@ fun Modifier.photoGridDragHandler(
                         key until currentKey
                     }
                     range.forEach { i ->
-                        if (i !in selectedIds.value) {
-                            selectedIds.value += i
-                        } else {
-                            selectedIds.value -= i
-                        }
+                        toggleKey(i)
                     }
                     currentKey = key
                 }

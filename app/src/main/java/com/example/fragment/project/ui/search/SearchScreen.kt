@@ -83,7 +83,8 @@ fun SearchScreen(
         searchText = ""
         searchViewModel.clearArticles()
     }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(searchText, keyboardController) {
+        if (searchText.isNotBlank()) return@LaunchedEffect
         delay(350.milliseconds)
         if (searchText.isBlank()) {
             focusRequester.requestFocus()
@@ -209,7 +210,10 @@ fun SearchScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(1.dp),
                         ) {
-                            itemsIndexed(searchUiState.searchHistoryResult) { _, item ->
+                            itemsIndexed(
+                                searchUiState.searchHistoryResult,
+                                key = { _, item -> item.id }
+                            ) { _, item ->
                                 Row(
                                     modifier = Modifier
                                         .clickable {

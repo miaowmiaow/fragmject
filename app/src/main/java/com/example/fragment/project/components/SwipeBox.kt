@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun SwipeBox(
@@ -235,7 +236,7 @@ class SwipeBoxControl(
         onEnd: () -> Unit = {},
         onEndFill: () -> Unit = {},
     ) = withContext(Dispatchers.Main) {
-        controlEvents.debounce(350).collect { event ->
+        controlEvents.debounce(350.milliseconds).collect { event ->
             when (event) {
                 ControlEvent.Start -> onStart()
                 ControlEvent.StartFill -> onStartFill()
@@ -251,7 +252,7 @@ class SwipeBoxControl(
     }
 
     fun startFill() {
-        scope.launch { controlEvents.emit(ControlEvent.Start) }
+        scope.launch { controlEvents.emit(ControlEvent.StartFill) }
     }
 
     fun center() {

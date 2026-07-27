@@ -147,6 +147,9 @@ class ScreenCaptureFragment : Fragment() {
                 Manifest.permission.RECORD_AUDIO
             )
         childFragmentManager.requestPermissions(permissions, object : PermissionsCallback {
+            override fun check() {
+            }
+
             override fun allow() {
                 requestMediaProjectionLauncher.launch(mediaProjectionManager?.createScreenCaptureIntent())
             }

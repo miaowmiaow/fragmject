@@ -3,7 +3,7 @@
 
     <application android:requestLegacyExternalStorage="true">
         <activity
-            android:name=".selector.PictureSelectorActivity"
+            android:name=".PictureSelectorActivity"
             android:exported="true"
             android:theme="@style/Theme.Wan" />
     </application>

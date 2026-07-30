@@ -252,8 +252,8 @@
 -keep class * extends androidx.room.RoomDatabase { *; }
 
 # 3) HttpResponse 框架：基类与所有子类（带泛型 data 字段）
--keep public class com.example.miaow.base.http.HttpResponse { *; }
--keep public class * extends com.example.miaow.base.http.HttpResponse { *; }
+-keep public class com.example.fragment.network.http.HttpResponse { *; }
+-keep public class * extends com.example.fragment.network.http.HttpResponse { *; }
 
 # ============================== kotlinx.serialization ==============================
 # WanNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。

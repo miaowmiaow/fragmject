@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Allows us to override night specific attributes in the
+     values-night folder. -->
+    <style name="NightAdjusted.Theme.Nia" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- The final theme we use -->
+    <style name="Theme.Nia" parent="NightAdjusted.Theme.Nia" />
+
+    <style name="NightAdjusted.Theme.Splash" parent="Theme.SplashScreen">
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
+
+    <style name="Theme.Nia.Splash" parent="NightAdjusted.Theme.Splash">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_bg</item>
+        <item name="windowSplashScreenAnimationDuration">750</item>
+        <item name="postSplashScreenTheme">@style/Theme.Nia</item>
+    </style>
+</resources>

@@ -6,33 +6,63 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.fragmject.core.designsystem.LocalWindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.example.fragment.project.data.User
-import com.example.fragment.project.ui.browse_history.BrowseHistoryScreen
-import com.example.fragment.project.ui.demo.DemoScreen
-import com.example.fragment.project.ui.login.LoginScreen
-import com.example.fragment.project.ui.main.MainScreen
-import com.example.fragment.project.ui.my_coin.MyCoinScreen
-import com.example.fragment.project.ui.my_collect.MyCollectScreen
-import com.example.fragment.project.ui.my_share.MyShareScreen
-import com.example.fragment.project.ui.rank.RankScreen
-import com.example.fragment.project.ui.register.RegisterScreen
-import com.example.fragment.project.ui.search.SearchScreen
-import com.example.fragment.project.ui.setting.SettingScreen
-import com.example.fragment.project.ui.share.ShareArticleScreen
-import com.example.fragment.project.ui.system.SystemScreen
-import com.example.fragment.project.ui.user.UserScreen
-import com.example.fragment.project.ui.web.WebScreen
-import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.vm.TRANSITION_TIME
-import kotlinx.serialization.Serializable
+import com.example.fragmject.core.common.RequiresAuth
+import com.example.fragmject.core.database.store.UserStore
+import com.example.fragmject.core.database.model.UserEntity
+import com.example.fragmject.feature.picture.PictureEditorNavKey
+import com.example.fragmject.feature.picture.PicturePreviewNavKey
+import com.example.fragmject.feature.picture.PictureSelectorNavKey
+import com.example.fragmject.feature.picture.ui.editor.PictureEditorScreen
+import com.example.fragmject.feature.picture.ui.selector.PicturePreviewScreen
+import com.example.fragmject.feature.picture.ui.selector.PictureSelectorScreen
+import com.example.fragmject.feature.picture.ui.selector.PictureViewModel
+import com.example.fragmject.feature.picture.ui.selector.PreviewMode
+import com.example.fragmject.feature.wan.BrowseHistoryNavKey
+import com.example.fragmject.feature.wan.DemoNavKey
+import com.example.fragmject.feature.wan.LoginNavKey
+import com.example.fragmject.feature.wan.MainNavKey
+import com.example.fragmject.feature.wan.MyCoinNavKey
+import com.example.fragmject.feature.wan.MyCollectNavKey
+import com.example.fragmject.feature.wan.MyShareNavKey
+import com.example.fragmject.feature.wan.RankNavKey
+import com.example.fragmject.feature.wan.RegisterNavKey
+import com.example.fragmject.feature.wan.SearchNavKey
+import com.example.fragmject.feature.wan.SettingNavKey
+import com.example.fragmject.feature.wan.ShareArticleNavKey
+import com.example.fragmject.feature.wan.SystemNavKey
+import com.example.fragmject.feature.wan.UserNavKey
+import com.example.fragmject.feature.wan.WebNavKey
+import com.example.fragmject.feature.wan.browse_history.BrowseHistoryScreen
+import com.example.fragmject.feature.wan.demo.DemoScreen
+import com.example.fragmject.feature.wan.login.LoginScreen
+import com.example.fragmject.feature.wan.main.MainScreen
+import com.example.fragmject.feature.wan.my_coin.MyCoinScreen
+import com.example.fragmject.feature.wan.my_collect.MyCollectScreen
+import com.example.fragmject.feature.wan.my_share.MyShareScreen
+import com.example.fragmject.feature.wan.rank.RankScreen
+import com.example.fragmject.feature.wan.register.RegisterScreen
+import com.example.fragmject.feature.wan.search.SearchScreen
+import com.example.fragmject.feature.wan.setting.SettingScreen
+import com.example.fragmject.feature.wan.share.ShareArticleScreen
+import com.example.fragmject.feature.wan.system.SystemScreen
+import com.example.fragmject.feature.wan.user.UserScreen
+import com.example.fragmject.feature.wan.web.WebScreen
+import com.example.fragmject.core.common.TransitionGuard
 
 /**
  * 导航图。
@@ -45,17 +75,35 @@ import kotlinx.serialization.Serializable
 fun WanNavGraph(
     modifier: Modifier = Modifier
 ) {
-    val user by WanHelper.getUser().collectAsStateWithLifecycle(initialValue = null)
+    val user by UserStore.getUser().collectAsStateWithLifecycle(initialValue = null)
     val backStack = rememberNavBackStack(MainNavKey)
 
+    // Picture 模块的共享 ViewModel，跨 Selector/Preview/Editor 三个页面
+    val pictureViewModel: PictureViewModel = viewModel()
+
+    // ---- Expanded 列表-详情同屏状态 ----
+    // 仅在 Expanded 模式下使用：点击文章时不走 backStack，而是由 MainScreen 右侧面板渲染
+    val windowSizeClass = LocalWindowSizeClass.current
+    val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+    var selectedDetailKey by remember { mutableStateOf<NavKey?>(null) }
+
     // ---- 导航动作（直接操作 backStack） ----
-    val navigate: (NavKey) -> Unit = remember(user) {{
-        if (requiredLoginNavKey(it, user)) {
-            backStack.add(LoginNavKey)
-        } else {
-            backStack.add(it)
+    // 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen
+    // 不会被重组，因此 navigate lambda 必须保持稳定引用，内部通过
+    // rememberUpdatedState 读取最新的 user，避免闭包捕获过期状态。
+    val currentUser by rememberUpdatedState(user)
+    val currentIsExpanded by rememberUpdatedState(isExpanded)
+    val navigate: (NavKey) -> Unit = remember {
+        { key ->
+            if (requiredLoginNavKey(key, currentUser)) {
+                backStack.add(LoginNavKey)
+            } else if (currentIsExpanded && isDetailPaneKey(key)) {
+                selectedDetailKey = key
+            } else {
+                backStack.add(key)
+            }
         }
-    }}
+    }
     val navigateUp: () -> Unit = remember {
         { if (backStack.size > 1) backStack.removeLastOrNull() else backStack.add(MainNavKey) }
     }
@@ -63,7 +111,7 @@ fun WanNavGraph(
         val targetClass = it::class
         val index = backStack.indexOfLast { entry -> entry::class == targetClass }
         if (index >= 0) {
-            repeat(backStack.size - index) { backStack.removeLastOrNull() }
+            repeat(backStack.size - index - 1) { backStack.removeLastOrNull() }
         }
     }}
 
@@ -72,12 +120,12 @@ fun WanNavGraph(
         onBack = { backStack.removeLastOrNull() },
         modifier = modifier,
         transitionSpec = {
-            slideInHorizontally(tween(TRANSITION_TIME)) { it } togetherWith
-                    slideOutHorizontally(tween(TRANSITION_TIME)) { -it }
+            slideInHorizontally(tween(TransitionGuard.DURATION_MS.toInt())) { it } togetherWith
+                    slideOutHorizontally(tween(TransitionGuard.DURATION_MS.toInt())) { -it }
         },
         popTransitionSpec = {
-            slideInHorizontally(tween(TRANSITION_TIME)) { -it } togetherWith
-                    slideOutHorizontally(tween(TRANSITION_TIME)) { it }
+            slideInHorizontally(tween(TransitionGuard.DURATION_MS.toInt())) { -it } togetherWith
+                    slideOutHorizontally(tween(TransitionGuard.DURATION_MS.toInt())) { it }
         },
         entryProvider = entryProvider {
             entry<BrowseHistoryNavKey> {
@@ -87,7 +135,10 @@ fun WanNavGraph(
                 )
             }
             entry<DemoNavKey> {
-                DemoScreen(onNavigateUp = navigateUp)
+                DemoScreen(
+                    onNavigate = navigate,
+                    onNavigateUp = navigateUp
+                )
             }
             entry<LoginNavKey> {
                 LoginScreen(
@@ -97,7 +148,11 @@ fun WanNavGraph(
                 )
             }
             entry<MainNavKey> {
-                MainScreen(onNavigate = navigate)
+                MainScreen(
+                    onNavigate = navigate,
+                    selectedDetailKey = selectedDetailKey,
+                    onClearDetail = { selectedDetailKey = null },
+                )
             }
             entry<MyCoinNavKey> {
                 MyCoinScreen(
@@ -169,6 +224,38 @@ fun WanNavGraph(
                     onNavigateUp = navigateUp,
                 )
             }
+            // ── Picture ──
+            entry<PictureSelectorNavKey> {
+                PictureSelectorScreen(
+                    onFinish = { navigateUp() },
+                    onDismiss = { navigateUp() },
+                    onPreview = { positions ->
+                        navigate(PicturePreviewNavKey(positions))
+                    },
+                    viewModel = pictureViewModel,
+                )
+            }
+            entry<PicturePreviewNavKey> { route ->
+                PicturePreviewScreen(
+                    mode = PreviewMode.NORM,
+                    origSelectPosition = route.positions,
+                    previewPosition = 0,
+                    onFinish = { navigateUp() },
+                    onDismiss = { navigateUp() },
+                    onOpenEditor = { uri ->
+                        navigate(PictureEditorNavKey(uri.toString()))
+                    },
+                    viewModel = pictureViewModel,
+                )
+            }
+            entry<PictureEditorNavKey> { route ->
+                val oldUri = route.oldUriString.toUri()
+                PictureEditorScreen(
+                    bitmapUri = oldUri,
+                    onFinish = { _, _ -> navigateUp() },
+                    onDismiss = { navigateUp() },
+                )
+            }
         }
     )
 }
@@ -189,66 +276,22 @@ fun WanNavGraph(
  * }
  * deepLinkPendingIntent?.send()
  */
-const val fragmentUri = "wan://com.fragment.project"
+// const val fragmentUri = "wan://com.fragment.project"
 
-// ---- 路由定义 —— 所有路由实现 NavKey ----
-
-@Serializable
-object BrowseHistoryNavKey : RequiresAuth
-
-@Serializable
-object DemoNavKey : NavKey
-
-@Serializable
-object LoginNavKey : NavKey
-
-@Serializable
-object MainNavKey : NavKey
-
-@Serializable
-object MyCoinNavKey : RequiresAuth
-
-@Serializable
-object MyCollectNavKey : RequiresAuth
-
-@Serializable
-object MyShareNavKey : RequiresAuth
-
-@Serializable
-object RankNavKey : NavKey
-
-@Serializable
-object RegisterNavKey : NavKey
-
-@Serializable
-data class SearchNavKey(val key: String) : NavKey
-
-@Serializable
-object SettingNavKey : NavKey
-
-@Serializable
-object ShareArticleNavKey : RequiresAuth
-
-@Serializable
-data class SystemNavKey(val cid: String) : NavKey
-
-@Serializable
-data class UserNavKey(val userId: String) : NavKey
-
-@Serializable
-data class WebNavKey(val url: String) : NavKey
-
-// ---- 接口定义 ----
-
-/**
- * 标记接口：实现此接口的路由需要登录态才能访问，同时继承 [NavKey] 以兼容 Navigation 3。
- * 新增需登录页面时，只需让路由对象/数据类实现本接口即可。
- */
-interface RequiresAuth : NavKey
+// ---- 辅助函数 ----
 
 /**
  * 判定指定路由是否需要登录态。依赖 [RequiresAuth] 标记接口自动识别。
  */
-private fun requiredLoginNavKey(key: NavKey, user: User?): Boolean {
+private fun requiredLoginNavKey(key: NavKey, user: UserEntity?): Boolean {
     return key is RequiresAuth && (user == null || user.id <= 0)
+}
+
+/**
+ * 判定指定路由在 Expanded 模式下是否应由右侧 DetailPane 渲染（而非全屏 backStack 推入）。
+ */
+private fun isDetailPaneKey(key: NavKey): Boolean {
+    return key is WebNavKey || key is UserNavKey || key is SystemNavKey ||
+        key is SettingNavKey || key is MyCoinNavKey || key is MyCollectNavKey ||
+        key is MyShareNavKey || key is RankNavKey || key is BrowseHistoryNavKey
 }

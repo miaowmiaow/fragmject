@@ -1,0 +1,85 @@
+package com.example.fragmject.core.database
+
+import android.content.Context
+import android.util.Log
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import com.example.fragmject.core.database.dao.KVDao
+import com.example.fragmject.core.database.model.KVEntity
+import com.example.fragmject.core.common.provider.BaseContentProvider
+
+/**
+ * 对RoomDatabase进行封装
+ * 详细使用方法参考WanHelper.kt
+ */
+@Database(entities = [KVEntity::class], version = 1, exportSchema = true)
+abstract class KVDatabase : RoomDatabase() {
+
+    abstract fun kvDao(): KVDao
+
+    companion object {
+
+        @Volatile
+        private var INSTANCE: KVDatabase? = null
+
+        private fun getDatabase() = INSTANCE ?: synchronized(KVDatabase::class.java) {
+            INSTANCE ?: buildDatabase().also {
+                INSTANCE = it
+            }
+        }
+
+        private fun buildDatabase(context: Context = BaseContentProvider.context()): KVDatabase {
+            return Room.databaseBuilder(
+                context,
+                KVDatabase::class.java,
+                "kv_database"
+            ).build()
+        }
+
+        @JvmStatic
+        suspend fun set(key: String, value: String): Boolean {
+            return getDatabase().setValue(key, value)
+        }
+
+        @JvmStatic
+        suspend fun get(key: String): String {
+            return getDatabase().getValue(key)
+        }
+
+    }
+
+    suspend fun setValue(key: String, value: String): Boolean {
+        return try {
+            var kv = kvDao().findByKey(key)
+            if (kv == null) {
+                kv = KVEntity(id = 0, key = key, value = value)
+                val id = kvDao().insert(kv) //返回 主键值 > -1 表示 insert 成功
+                id > -1
+            } else {
+                kv.value = value
+                val up = kvDao().update(kv) //返回 更新数 > 0表示 update 成功
+                up > 0
+            }
+        } catch (e: Exception) {
+            Log.e("KVDatabase", "setValue failed: key=$key", e)
+            false
+        }
+    }
+
+    suspend fun getValue(key: String): String {
+        return try {
+            kvDao().findByKey(key)?.value ?: ""
+        } catch (e: Exception) {
+            Log.e("KVDatabase", "getValue failed: key=$key", e)
+            ""
+        }
+    }
+
+    override fun close() {
+        super.close()
+        //数据库关闭后把instance置空
+        INSTANCE = null
+    }
+
+}

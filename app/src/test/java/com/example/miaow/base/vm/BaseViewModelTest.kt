@@ -1,12 +1,13 @@
 package com.example.miaow.base.vm
 
+import com.example.fragmject.core.common.viewmodel.BaseViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * [BaseViewModel] 分页状态机的纯 JVM 单测。
+ * [com.example.fragmject.core.common.viewmodel.BaseViewModel] 分页状态机的纯 JVM 单测。
  *
  * 无 Android Framework / 协程依赖，运行成本最低。覆盖：
  * 1. 初始化分页（getHomePage）

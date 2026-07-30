@@ -1,0 +1,758 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 11,
+    "identityHash": "c443e5533b38e0713ee0ef96f4d36deb",
+    "entities": [
+      {
+        "tableName": "History",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, `url` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_History_key_id",
+            "unique": false,
+            "columnNames": [
+              "key",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_History_key_id` ON `${TABLE_NAME}` (`key`, `id`)"
+          },
+          {
+            "name": "index_History_key_value_id",
+            "unique": false,
+            "columnNames": [
+              "key",
+              "value",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_History_key_value_id` ON `${TABLE_NAME}` (`key`, `value`, `id`)"
+          },
+          {
+            "name": "index_History_key_url_id",
+            "unique": false,
+            "columnNames": [
+              "key",
+              "url",
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_History_key_url_id` ON `${TABLE_NAME}` (`key`, `url`, `id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "user",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `username` TEXT, `nickname` TEXT, `icon` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "icon",
+            "columnName": "icon",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "article",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `articleId` TEXT NOT NULL, `cache_key` TEXT NOT NULL, `sort_order` INTEGER NOT NULL, `title` TEXT NOT NULL, `author` TEXT NOT NULL, `link` TEXT NOT NULL, `chapter_name` TEXT NOT NULL, `super_chapter_name` TEXT NOT NULL, `nice_date` TEXT NOT NULL, `envelope_pic` TEXT NOT NULL, `desc` TEXT NOT NULL, `collect` INTEGER NOT NULL, `fresh` INTEGER NOT NULL, `top` INTEGER NOT NULL, `chapter_id` TEXT NOT NULL, `super_chapter_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `share_user` TEXT NOT NULL, `zan` TEXT NOT NULL, `tags_json` TEXT NOT NULL, `banners_json` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "articleId",
+            "columnName": "articleId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cache_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "link",
+            "columnName": "link",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chapterName",
+            "columnName": "chapter_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "superChapterName",
+            "columnName": "super_chapter_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "niceDate",
+            "columnName": "nice_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopePic",
+            "columnName": "envelope_pic",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "desc",
+            "columnName": "desc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "collect",
+            "columnName": "collect",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fresh",
+            "columnName": "fresh",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "top",
+            "columnName": "top",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chapterId",
+            "columnName": "chapter_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "superChapterId",
+            "columnName": "super_chapter_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shareUser",
+            "columnName": "share_user",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zan",
+            "columnName": "zan",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tagsJson",
+            "columnName": "tags_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bannersJson",
+            "columnName": "banners_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_article_cache_key_articleId",
+            "unique": true,
+            "columnNames": [
+              "cache_key",
+              "articleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_article_cache_key_articleId` ON `${TABLE_NAME}` (`cache_key`, `articleId`)"
+          },
+          {
+            "name": "index_article_cache_key_sort_order",
+            "unique": false,
+            "columnNames": [
+              "cache_key",
+              "sort_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_article_cache_key_sort_order` ON `${TABLE_NAME}` (`cache_key`, `sort_order`)"
+          }
+        ]
+      },
+      {
+        "tableName": "tree",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `treeId` TEXT NOT NULL, `cache_key` TEXT NOT NULL, `sort_order` INTEGER NOT NULL, `name` TEXT NOT NULL, `course_id` TEXT NOT NULL, `order` TEXT NOT NULL, `parent_chapter_id` TEXT NOT NULL, `user_control_set_top` TEXT NOT NULL, `visible` TEXT NOT NULL, `children_json` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "treeId",
+            "columnName": "treeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cache_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "courseId",
+            "columnName": "course_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "order",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentChapterId",
+            "columnName": "parent_chapter_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userControlSetTop",
+            "columnName": "user_control_set_top",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "visible",
+            "columnName": "visible",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "childrenJson",
+            "columnName": "children_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tree_cache_key_treeId",
+            "unique": true,
+            "columnNames": [
+              "cache_key",
+              "treeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_tree_cache_key_treeId` ON `${TABLE_NAME}` (`cache_key`, `treeId`)"
+          },
+          {
+            "name": "index_tree_cache_key_sort_order",
+            "unique": false,
+            "columnNames": [
+              "cache_key",
+              "sort_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tree_cache_key_sort_order` ON `${TABLE_NAME}` (`cache_key`, `sort_order`)"
+          }
+        ]
+      },
+      {
+        "tableName": "navigation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `navId` TEXT NOT NULL, `cache_key` TEXT NOT NULL, `sort_order` INTEGER NOT NULL, `cid` TEXT NOT NULL, `name` TEXT NOT NULL, `articles_json` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "navId",
+            "columnName": "navId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cache_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cid",
+            "columnName": "cid",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "articlesJson",
+            "columnName": "articles_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_navigation_cache_key_navId",
+            "unique": true,
+            "columnNames": [
+              "cache_key",
+              "navId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_navigation_cache_key_navId` ON `${TABLE_NAME}` (`cache_key`, `navId`)"
+          },
+          {
+            "name": "index_navigation_cache_key_sort_order",
+            "unique": false,
+            "columnNames": [
+              "cache_key",
+              "sort_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_navigation_cache_key_sort_order` ON `${TABLE_NAME}` (`cache_key`, `sort_order`)"
+          }
+        ]
+      },
+      {
+        "tableName": "hot_key",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `hotKeyId` TEXT NOT NULL, `cache_key` TEXT NOT NULL, `sort_order` INTEGER NOT NULL, `name` TEXT NOT NULL, `link` TEXT NOT NULL, `order` TEXT NOT NULL, `visible` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hotKeyId",
+            "columnName": "hotKeyId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cache_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "link",
+            "columnName": "link",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "order",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "visible",
+            "columnName": "visible",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_hot_key_cache_key_hotKeyId",
+            "unique": true,
+            "columnNames": [
+              "cache_key",
+              "hotKeyId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_hot_key_cache_key_hotKeyId` ON `${TABLE_NAME}` (`cache_key`, `hotKeyId`)"
+          },
+          {
+            "name": "index_hot_key_cache_key_sort_order",
+            "unique": false,
+            "columnNames": [
+              "cache_key",
+              "sort_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_hot_key_cache_key_sort_order` ON `${TABLE_NAME}` (`cache_key`, `sort_order`)"
+          }
+        ]
+      },
+      {
+        "tableName": "project_tree",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `projectId` TEXT NOT NULL, `cache_key` TEXT NOT NULL, `sort_order` INTEGER NOT NULL, `name` TEXT NOT NULL, `course_id` TEXT NOT NULL, `order` TEXT NOT NULL, `parent_chapter_id` TEXT NOT NULL, `user_control_set_top` TEXT NOT NULL, `visible` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cache_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "courseId",
+            "columnName": "course_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "order",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentChapterId",
+            "columnName": "parent_chapter_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userControlSetTop",
+            "columnName": "user_control_set_top",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "visible",
+            "columnName": "visible",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_project_tree_cache_key_projectId",
+            "unique": true,
+            "columnNames": [
+              "cache_key",
+              "projectId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_project_tree_cache_key_projectId` ON `${TABLE_NAME}` (`cache_key`, `projectId`)"
+          },
+          {
+            "name": "index_project_tree_cache_key_sort_order",
+            "unique": false,
+            "columnNames": [
+              "cache_key",
+              "sort_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_project_tree_cache_key_sort_order` ON `${TABLE_NAME}` (`cache_key`, `sort_order`)"
+          }
+        ]
+      },
+      {
+        "tableName": "coin_rank",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` TEXT NOT NULL, `cache_key` TEXT NOT NULL, `sort_order` INTEGER NOT NULL, `username` TEXT NOT NULL, `nickname` TEXT NOT NULL, `coin_count` TEXT NOT NULL, `level` TEXT NOT NULL, `rank` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cache_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nickname",
+            "columnName": "nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coinCount",
+            "columnName": "coin_count",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rank",
+            "columnName": "rank",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_coin_rank_cache_key_userId",
+            "unique": true,
+            "columnNames": [
+              "cache_key",
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_coin_rank_cache_key_userId` ON `${TABLE_NAME}` (`cache_key`, `userId`)"
+          },
+          {
+            "name": "index_coin_rank_cache_key_sort_order",
+            "unique": false,
+            "columnNames": [
+              "cache_key",
+              "sort_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_coin_rank_cache_key_sort_order` ON `${TABLE_NAME}` (`cache_key`, `sort_order`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c443e5533b38e0713ee0ef96f4d36deb')"
+    ]
+  }
+}

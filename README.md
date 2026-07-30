@@ -11,12 +11,23 @@
 `fragmject` 没有复杂的业务和多余的封装， 完全依照 [Android Developer](https://developer.android.google.cn/) 官方的写法。   
 代码简单，内容全面，快速上手，对理解其他项目设计思想和封装技巧也很有帮助。
 
+### 技术栈
+- **语言**：Kotlin 2.4.x + Compose
+- **架构**：MVVM / MVI 混合，多模块（`core` + `feature` + `app`）
+- **导航**：Navigation 3（`NavBackStack` + `NavDisplay`）
+- **UI**：Material 3 + WindowSizeClass 大屏自适应
+- **DI**：Hilt
+- **数据库**：Room 3
+- **网络**：Retrofit + OkHttp
+- **构建**：Gradle Kotlin DSL + Version Catalog + Convention Plugins
+
 学习本项目你将有如下收获：
-- Kotlin
-- Compose
+- Kotlin + Compose 声明式 UI
+- Navigation 3（类型安全导航 + List-Detail 同屏）
+- WindowSizeClass 大屏/折叠屏自适应
 - MVVM、MVI
-- 常用控件封装(图片选择器、图片编辑器、日历控件、滚轮控件、全面屏沉浸、屏幕录制...)
-- 字节码插桩(ASM...)
+- 常用控件封装（图片选择器、图片编辑器、日历控件、滚轮控件、全面屏沉浸、屏幕录制...）
+- 字节码插桩（ASM...）
 
 ## 开发环境
 为了您能正常运行本项目，请先更新你的 `Android Studio` (可能需要梯子)。   
@@ -49,68 +60,108 @@
 
 ## 项目目录结构
 ```
-├── app                                         app
-|  └── src 
-|     └── main 
+├── app                                         app 壳工程
+|  └── src
+|     └── main
+|     |   ├── assets                            assets 目录（HTML/JS/JSON 测试数据）
 |     |   └── java                              源码目录
-|     |   |  ├── bean                           bean目录
-|     |   |  ├── components                     自定义组件目录
-|     |   |  ├── ui                             ui目录
-|     |   |  |  └── main                        mian目录
-|     |   |  |     └── home                     home目录
-|     |   |  |     |  ├── HomeScreen      
-|     |   |  |     |  └── HomeViewModel   
-|     |   |  |     └── MainScreen          
-|     |   |  ├── utils                          工具类目录
-|     |   |  ├── WanActivity                    唯一Activity
-|     |   |  ├── WanApplication                 Application
-|     |   |  ├── WanTheme                       Theme
-|     |   |  ├── WanNavGraph                    导航图
-|     |   |  └── WanViewModel                   ViewModel
-|     |   |
-|     |   └── res                               资源目录
-|     |   └── AndroidManifest.xml               配置文件
+|     |      ├── WanActivity.kt                 唯一 Activity
+|     |      ├── WanApplication.kt              Application（Hilt 入口）
+|     |      └── WanNavGraph.kt                 导航图（Navigation 3 + WindowSizeClass 自适应）
 |     |
-|     ├── build.gradle                          模块构建配置
+|     ├── build.gradle.kts                      模块构建配置
 |     ├── dictionary                            自定义混淆字典
 |     └── proguard-rules.pro                    代码混淆配置文件
 | 
-├── library-base                                基础library（library开头为公共库，任何项目都可使用）
-|  └── src 
-|     └── main 
-|     |   ├── assets                            assets目录
-|     |   └── java                              源码目录
-|     |      ├── activity                       Activity目录
-|     |      ├── adapter                        Adapter目录
-|     |      ├── bus                            消息总线目录
-|     |      ├── db                             Database目录
-|     |      ├── dialog                         Dialog目录
-|     |      ├── http                           网络请求目录
-|     |      ├── provider                       ContentProvider目录
-|     |      ├── service                        Service目录
-|     |      ├── utils                          工具类目录
-|     |      └── view                           自定义view目录
-|     | 
-|     └── build.gradle                          模块构建配置
+├── core                                        核心层（基础能力，不依赖业务）
+|  ├── common                                   公共工具（TransitionGuard 等）
+|  ├── data                                     数据层（Repository）
+|  ├── database                                 数据库（Room 3）
+|  ├── designsystem                             设计系统（WanTheme / WindowSizeClass / 组件）
+|  ├── domain                                   领域层
+|  ├── model                                    数据模型
+|  ├── network                                  网络层（Retrofit + OkHttp）
+|  └── ui                                       UI 组件库（ArticleCard / BannerPager / SwipeRefreshBox 等）
 | 
-├── library-picture                             图片模块（目录同app，不再展开）
+├── feature                                    功能模块层
+|  ├── picture                                  图片模块（选择器 / 预览 / 编辑器）
+|  |  ├── api                                   API 层（NavKey 定义）
+|  |  └── impl                                  实现层（Screen / ViewModel）
+|  └── wan                                      wan 主业务模块
+|     ├── api                                    API 层（NavKey 统一路由表）
+|     └── impl                                   实现层
+|        ├── main                               首页（Home / Nav / Project / My）
+|        ├── login                              登录 / 注册
+|        ├── search                             搜索
+|        ├── system                             知识体系
+|        ├── user                               用户主页
+|        ├── web                                WebView 文章详情
+|        ├── setting                            系统设置
+|        ├── my_coin                            我的积分
+|        ├── my_collect                         我的收藏
+|        ├── my_share                           我的分享
+|        ├── rank                               积分排行榜
+|        ├── browse_history                     浏览历史
+|        ├── share                              新建分享
+|        └── demo                               组件 Demo
 | 
-├── library-plugin                              插件模块
-|  └── src 
-|     └── main 
-|        ├── kotlin                             源码目录
-|        └── resources                          配置目录
-|           └── statistic.properties            插件配置
-| 
-├── repos                                       插件生成目录
+├── build-logic                                 构建逻辑（Gradle Convention 插件）
+|  └── convention
+|     └── src/main/kotlin
+|        ├── FragmjectAndroidApplicationPlugin   application 约定插件
+|        ├── FragmjectAndroidComposePlugin       compose 约定插件
+|        ├── FragmjectAndroidFeaturePlugin       feature 约定插件
+|        ├── FragmjectAndroidHiltPlugin          Hilt 约定插件
+|        ├── FragmjectAndroidLibraryPlugin       library 约定插件
+|        └── FragmjectAndroidRoomPlugin          Room 约定插件
 |
-├── build.gradle                                项目构建配置
+├── gradle
+|  └── libs.versions.toml                       版本目录（统一依赖管理）
+|
+├── build.gradle.kts                            项目构建配置
 ├── config.properties                           项目配置
-├── gradle.properties                           gradle配置
-└── settings.gradle                             项目依赖配置
+├── gradle.properties                           gradle 配置
+└── settings.gradle.kts                         项目模块依赖配置
 ```
 ## 下载体验
 - [![](https://img.shields.io/badge/Download-apk-green.svg)](https://github.com/miaowmiaow/fragmject/blob/master/app/free/release/wan-release-1.6.0-free.apk)
+
+## 大屏自适应（WindowSizeClass）
+项目基于 `material3-window-size-class` 实现了完整的大屏/折叠屏自适应布局。
+
+### 布局策略
+| 窗口尺寸 | 宽度 | 导航组件 | 详情展示 |
+|---------|------|---------|---------|
+| **Compact** | < 600dp | `NavigationBar`（底部导航栏） | 全屏推入 |
+| **Medium** | 600–840dp | `NavigationDrawerItem` + `Surface`（左侧导航） | 全屏推入 |
+| **Expanded** | ≥ 840dp | `PermanentNavigationDrawer`（常驻侧栏） | 右侧面板同屏 |
+
+### 列表-详情同屏（List-Detail）
+Expanded 模式下（平板横屏/桌面），点击文章、用户主页、系统设置等页面不再全屏跳转，而是在右侧面板渲染：
+
+```mermaid
+graph LR
+    A["列表 (50%)"] --> B["DetailPane (50%)"]
+    B --> C["WebScreen"]
+    B --> D["UserScreen"]
+    B --> E["SettingScreen"]
+    B --> F["..."]
+```
+
+### 涉及文件
+- [LocalWindowSizeClass.kt](core/designsystem/src/main/java/com/example/fragmject/core/designsystem/LocalWindowSizeClass.kt) — `CompositionLocal` 注入 + 便捷扩展
+- [WanNavGraph.kt](app/src/main/java/com/example/fragment/project/WanNavGraph.kt) — Expanded 模式拦截 `NavKey`，传递给 `DetailPane`
+- [MainScreen.kt](feature/wan/impl/src/main/java/com/example/fragmject/feature/wan/main/MainScreen.kt) — 三态布局分发 + `DetailPane` 路由
+
+### 使用方式
+```kotlin
+val windowSizeClass = LocalWindowSizeClass.current
+when (windowSizeClass.widthSizeClass) {
+    WindowWidthSizeClass.Compact -> CompactLayout()
+    WindowWidthSizeClass.Medium  -> MediumLayout()
+    WindowWidthSizeClass.Expanded -> ExpandedLayout()
+}
+```
 
 ## Jetpack Compose
 如果你暂时不需要 `Compose` ，可以切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0) 。
@@ -246,7 +297,7 @@ plugins {
 }
 ```
 
-## 图片编辑器（library-picture）
+## 图片编辑器（feature/picture）
 [自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
 
 ### 截图展示
@@ -254,8 +305,11 @@ plugins {
 |-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
 #### 源码位置
-```                                    
-└── library-picture                                          
+```
+└── feature
+    └── picture
+       ├── api      API 层
+       └── impl     实现层
 ```
 
 #### 快速使用
@@ -338,17 +392,11 @@ if (context is AppCompatActivity) {
 
 #### 源码位置
 ```
-└── app                                         
-   └── src
-      └── main
-          └── java                                                  
-             ├── components         
-             |  └── calendar                             
-             |     └── Calendar                  
-             └── ui                             
-                └── demo                        
-                   └── CalendarScreen                     
-```
+└── feature
+    └── wan
+       └── impl
+          └── demo
+             └── CalendarScreen.kt
 
 #### 快速使用
 ```
@@ -374,9 +422,7 @@ Calendar(
 - [fragmject](https://gitee.com/zhao.git/FragmentProject.git)
 
 ## About me
-- QQ : 237934622
 - QQ群 : 389499839
-- Email : <237934622@qq.com>
 - JueJin：[miaowmiaow](https://juejin.cn/user/3342971112791422/posts)
 
 ## Thanks

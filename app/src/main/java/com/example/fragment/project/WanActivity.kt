@@ -11,16 +11,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.example.fragment.project.ui.web.WebViewManager
-import com.example.fragment.project.utils.WanHelper
-import com.example.miaow.base.debug.DebugBridge
+import com.example.fragmject.feature.wan.web.WebViewManager
+import com.example.fragmject.core.database.store.ThemeStore
+import com.example.fragmject.core.designsystem.rememberWindowSizeClass
+import com.example.fragmject.core.designsystem.WanTheme
+import com.example.fragmject.core.network.debug.DebugBridge
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class WanActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // 启动时从持久化存储恢复深色模式状态
-        lifecycleScope.launch { WanHelper.restoreDarkTheme() }
+        lifecycleScope.launch { ThemeStore.restoreDarkTheme() }
         val splashScreen = installSplashScreen()
         // 自定义退出过渡：150ms alpha + 轻微缩放，避免 splash 与首页之间的"硬切"
         splashScreen.setOnExitAnimationListener { provider ->
@@ -40,7 +44,9 @@ class WanActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WanTheme(window) {
-                WanNavGraph()
+                rememberWindowSizeClass {
+                    WanNavGraph()
+                }
             }
         }
         // WebView 预创建（内部已在主线程 IdleHandler 中执行，不阻塞首帧）

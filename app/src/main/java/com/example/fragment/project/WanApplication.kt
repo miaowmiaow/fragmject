@@ -1,7 +1,6 @@
 package com.example.fragment.project
 
 import android.app.Application
-import android.content.ComponentCallbacks2
 import android.os.Build
 import coil.ComponentRegistry
 import coil.ImageLoader
@@ -10,11 +9,13 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
-import com.example.fragment.project.ui.web.WebViewManager
-import com.example.miaow.base.http.OkHelper
-import com.example.miaow.base.http.setBaseUrl
-import com.example.miaow.base.http.setHttpClientLazy
+import com.example.fragmject.feature.wan.web.WebViewManager
+import com.example.fragmject.core.network.http.OkHelper
+import com.example.fragmject.core.network.http.setBaseUrl
+import com.example.fragmject.core.network.http.setHttpClientLazy
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class WanApplication : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
@@ -56,15 +57,15 @@ class WanApplication : Application(), ImageLoaderFactory {
         super.onTrimMemory(level)
         when (level) {
             // UI 完全隐藏：用户切到后台/锁屏；保留 spare，清空 keep-alive。
-            ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> WebViewManager.trimToSpare()
+            TRIM_MEMORY_UI_HIDDEN -> WebViewManager.trimToSpare()
             // 进程仍在前台，但系统内存紧张：先做温和回收。
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> WebViewManager.trimToSpare()
+            TRIM_MEMORY_RUNNING_MODERATE,
+            TRIM_MEMORY_RUNNING_LOW -> WebViewManager.trimToSpare()
             // 进程已进入后台 LRU，且系统内存严重不足：彻底释放，争取不被 kill。
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
-            ComponentCallbacks2.TRIM_MEMORY_BACKGROUND,
-            ComponentCallbacks2.TRIM_MEMORY_MODERATE,
-            ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> WebViewManager.releaseAll()
+            TRIM_MEMORY_RUNNING_CRITICAL,
+            TRIM_MEMORY_BACKGROUND,
+            TRIM_MEMORY_MODERATE,
+            TRIM_MEMORY_COMPLETE -> WebViewManager.releaseAll()
             else -> Unit
         }
     }

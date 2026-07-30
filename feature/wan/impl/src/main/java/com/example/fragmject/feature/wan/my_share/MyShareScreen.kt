@@ -1,0 +1,81 @@
+package com.example.fragmject.feature.wan.my_share
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fragmject.core.designsystem.WanTheme
+import androidx.navigation3.runtime.NavKey
+import com.example.fragmject.core.ui.components.ArticleCard
+import com.example.fragmject.core.ui.components.toArticleCardUiState
+import com.example.fragmject.core.ui.components.SwipeRefreshBox
+import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.feature.wan.*
+import com.example.fragmject.core.data.collect.rememberCollectAction
+
+@Composable
+fun MyShareScreen(
+    viewModel: MyShareViewModel = viewModel(),
+    onNavigate: (key: NavKey) -> Unit = {},
+    onNavigateUp: () -> Unit = {},
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    Scaffold(
+        topBar = {
+            TitleBar(
+                title = "我的分享",
+                navigationIcon = {
+                    IconButton(onClick = onNavigateUp) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                })
+        },
+    ) { innerPadding ->
+        SwipeRefreshBox(
+            items = uiState.result,
+            isRefreshing = uiState.isRefreshing,
+            isLoading = uiState.isLoading,
+            isFinishing = uiState.isFinishing,
+            onRefresh = { viewModel.getHome() },
+            onLoad = { viewModel.getNext() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentPadding = PaddingValues(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            key = { _, item -> item.id },
+        ) { _, item ->
+            ArticleCard(
+                data = item.toArticleCardUiState(),
+                onArticleClick = { onNavigate(WebNavKey(it)) },
+                onUserClick = { onNavigate(UserNavKey(it)) },
+                onChapterClick = { onNavigate(SystemNavKey(it)) },
+                onTagClick = { onNavigate(SystemNavKey(it)) },
+                onCollectClick = rememberCollectAction(),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
+@Composable
+fun MyShareScreenPreview() {
+    WanTheme { MyShareScreen() }
+}

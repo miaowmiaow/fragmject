@@ -31,7 +31,7 @@ import kotlinx.coroutines.isActive
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.milliseconds
 
-private const val LOOP_VIRTUAL_PAGE_COUNT = 10000
+private const val LOOP_VIRTUAL_PAGE_COUNT = 1000
 private const val LOOP_AUTO_SCROLL_INTERVAL_MS = 5000L
 private const val LOOP_AUTO_SCROLL_ANIMATION_MS = 1000
 

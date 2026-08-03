@@ -38,13 +38,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil.compose.AsyncImage
-import com.example.fragmject.core.ui.R
-import com.example.fragmject.core.designsystem.WanSpacing
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.ArticleTag
+import com.example.fragmject.core.model.extractCid
 import com.example.fragmject.core.ui.AvatarHelper
+import com.example.fragmject.core.ui.R
+import com.example.fragmject.core.designsystem.WanSpacing
 import kotlinx.coroutines.launch
 
 /**
@@ -169,18 +169,7 @@ fun ArticleCard(
             data.tags?.let { tags ->
                 if (tags.isNotEmpty()) {
                     OutlinedButton(
-                        onClick = {
-                            val uriString = "https://www.wanandroid.com${tags[0].url}"
-                            val uri = uriString.toUri()
-                            var cid = uri.getQueryParameter("cid")
-                            if (cid.isNullOrBlank()) {
-                                val paths = uri.pathSegments
-                                if (paths != null && paths.size >= 3) {
-                                    cid = paths[2]
-                                }
-                            }
-                            onTagClick(cid ?: "0")
-                        },
+                        onClick = { onTagClick(tags[0].extractCid()) },
                         modifier = Modifier.height(WanSpacing.buttonSmallHeight),
                         shape = RoundedCornerShape(WanSpacing.tagCornerRadius),
                         colors = ButtonDefaults.buttonColors(

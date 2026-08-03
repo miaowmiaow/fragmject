@@ -19,11 +19,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -35,13 +38,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
-import com.example.fragmject.core.designsystem.WanTheme
+import com.example.fragmject.core.designsystem.WanColors
 import com.example.fragmject.core.ui.components.SwipeRefreshBox
 import com.example.fragmject.core.ui.components.TabBar
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import com.example.fragmject.core.designsystem.WanColors
-import com.example.fragmject.feature.wan.*
 
 @OptIn(UnstableApi::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -67,6 +68,8 @@ fun NestedScroll2Screen() {
 
     val targetPercent = remember { Animatable(1f) }
 
+    var scrollPercent by remember { mutableFloatStateOf(1f) }
+
     val tabs = listOf("tab1", "tab2")
     val pagerState = rememberPagerState { tabs.size }
 
@@ -80,15 +83,17 @@ fun NestedScroll2Screen() {
                 dyConsumed += delta
                 dyConsumed = dyConsumed.coerceAtMost(0f)
                 val percent = dyConsumed / topBarHeightPx
-                scope.launch {
-                    targetPercent.animateTo(1 - abs(percent.coerceIn(-1f, 0f)))
-                }
+                scrollPercent = 1 - abs(percent.coerceIn(-1f, 0f))
                 if (percent > -1 && percent < 0) {
                     return Offset(0f, delta)
                 }
                 return Offset.Zero
             }
         }
+    }
+    LaunchedEffect(Unit) {
+        snapshotFlow { scrollPercent }
+            .collect { targetPercent.animateTo(it) }
     }
     Box(
         modifier = Modifier

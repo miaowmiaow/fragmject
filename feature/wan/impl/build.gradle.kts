@@ -19,8 +19,8 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:network"))
 
-    // Feature: Picture (for demo integration)
-    implementation(project(":feature:picture:impl"))
+    // Feature APIs (NavKeys for cross-feature navigation)
+    implementation(project(":feature:picture:api"))
 
     // Compose (extra over convention plugin baseline)
     implementation(libs.androidx.activity.compose)

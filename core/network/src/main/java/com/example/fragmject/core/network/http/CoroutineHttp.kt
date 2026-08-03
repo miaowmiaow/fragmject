@@ -1,6 +1,5 @@
 package com.example.fragmject.core.network.http
 
-import android.content.Context
 import android.util.Log
 import com.example.fragmject.core.network.debug.DebugBridge
 import com.example.fragmject.core.network.utils.FileUtil
@@ -66,11 +65,11 @@ suspend inline fun CoroutineScope.download(
     return CoroutineHttp.getInstance().download(savePath, fileName, init)
 }
 
-fun Context.setBaseUrl(baseUrl: String) {
+fun setBaseUrl(baseUrl: String) {
     CoroutineHttp.getInstance().setBaseUrl(baseUrl)
 }
 
-fun Context.setHttpClient(client: OkHttpClient) {
+fun setHttpClient(client: OkHttpClient) {
     CoroutineHttp.getInstance().setHttpClient(client)
 }
 
@@ -78,7 +77,7 @@ fun Context.setHttpClient(client: OkHttpClient) {
  * 懒加载版本的 setHttpClient：provider 仅在首次发起请求时被调用，
  * 避免在 Application.onCreate 阶段在主线程同步创建 OkHttpClient，减少冷启动耗时。
  */
-fun Context.setHttpClientLazy(provider: () -> OkHttpClient) {
+fun setHttpClientLazy(provider: () -> OkHttpClient) {
     CoroutineHttp.getInstance().setClientProvider(provider)
 }
 
@@ -237,7 +236,9 @@ class CoroutineHttp private constructor() {
                 ?: return buildResponse("-1", "response body is null", HttpResponse::class.java)
             val file = File(savePath, fileName)
             body.byteStream().use { inputStream ->
-                file.writeBytes(inputStream.readBytes())
+                file.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream, bufferSize = 64 * 1024)
+                }
             }
             buildResponse("0", "success", HttpResponse::class.java)
         } catch (e: Exception) {

@@ -9,7 +9,6 @@ import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL
@@ -40,15 +39,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.example.fragmject.feature.picture.PictureSelectorNavKey
 import androidx.navigation3.runtime.NavKey
+import com.example.fragmject.feature.picture.PictureSelectorNavKey
+import com.example.fragmject.feature.wan.*
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.launch
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun BarcodeScanningScreen(onNavigate: (NavKey) -> Unit = {}) {

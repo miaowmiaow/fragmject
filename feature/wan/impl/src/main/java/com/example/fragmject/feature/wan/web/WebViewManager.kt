@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.MutableContextWrapper
 import android.graphics.Color
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
@@ -18,24 +19,22 @@ import android.webkit.WebViewClient
 import com.example.fragmject.core.network.http.download
 import com.example.fragmject.core.common.utils.AppScope
 import com.example.fragmject.core.network.utils.CacheUtils
-import com.example.fragmject.core.common.utils.LRUCache
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import okio.ByteString.Companion.encodeUtf8
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.attribute.BasicFileAttributes
+import java.net.InetAddress
+import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.FutureTask
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * WebView 管理器：
  * - 维护一个空闲 WebView 实例做热身复用，使用 [MutableContextWrapper] 在 Activity 之间安全切换 baseContext，
  *   不再以 url 为 key 持有多个实例，避免内存堆积与回调闭包泄漏。
- * - 维护本地静态资源（图片/样式/脚本/字体）的磁盘 LRU。
+ * - 维护本地静态资源（图片/样式/脚本/字体）的磁盘缓存，按文件 mtime 淘汰，冷启动零开销。
  */
 @SuppressLint("SetJavaScriptEnabled")
 class WebViewManager private constructor() {
@@ -44,16 +43,20 @@ class WebViewManager private constructor() {
         private const val TAG = "WebViewManager"
         private const val DOWNLOAD_TIMEOUT_MS = 8_000L
         private const val WEB_CACHE_DIR = "web_cache"
-        private const val WEB_CACHE_LRU_CAPACITY = 5000
+
+        /** 本地缓存文件数上限。超过时按 mtime 淘汰最旧文件，mtime 在每次命中时被 touch。 */
+        private const val WEB_CACHE_MAX_FILES = 5000
 
         /**
          * keep-alive 池上限：保留最近使用的若干个 WebView 实例（含其内部状态：滚动位置/表单/JS
          * 上下文等），用户从详情页返回上一级时直接复用，避免重新加载页面与丢失操作。
          *
-         * 取 4 是经验权衡：单个 WebView 内存占用约 30-80MB，4 个足以覆盖常见的两到三层导航深度，
-         * 同时不会显著增加 OOM 风险。
+         * 取 8 是经验权衡：单个 WebView 内存占用约 30~80MB，8 个（约 240~640MB）仅在
+         * 内存充裕的前台状态才会占满；一旦触发 onTrimMemory（切后台/系统内存紧张），
+         * WanApplication 会立即调用 trimToSpare() 清空 keep-alive 池，仅保留 1 个 spare。
+         * 8 个足以覆盖一次典型阅读会话（5~10 篇文章），避免频繁的 WebView 销毁与重建。
          */
-        private const val KEEP_ALIVE_CAPACITY = 10
+        private const val KEEP_ALIVE_CAPACITY = 8
         private const val ACCEPT_IMAGE =
             "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
 
@@ -113,6 +116,8 @@ class WebViewManager private constructor() {
             context: Context,
             request: WebResourceRequest
         ): WebResourceResponse? = getInstance().cacheResourceRequest(context, request)
+
+        fun prefetchDns(url: String) = getInstance().prefetchDns(url)
     }
 
     /**
@@ -137,12 +142,8 @@ class WebViewManager private constructor() {
     private val keepAlivePool: LinkedHashMap<String, WebView> =
         LinkedHashMap(KEEP_ALIVE_CAPACITY, 0.75f, true)
 
-    /** 本地资源磁盘 LRU 索引。 */
-    private val lruCache: LRUCache<String, String> = LRUCache(WEB_CACHE_LRU_CAPACITY)
-
     /** 正在下载中的缓存任务，按缓存 key 去重，避免并发重复下载同一资源。 */
-    private val inFlightDownloads: ConcurrentHashMap<String, FutureTask<Boolean>> =
-        ConcurrentHashMap()
+    private val inFlightDownloads: ConcurrentHashMap<String, Job> = ConcurrentHashMap()
 
     private fun create(context: Context): WebView {
         // 始终以 MutableContextWrapper 作为 baseContext，便于在 Activity 间切换而不持有 Activity 引用
@@ -153,7 +154,7 @@ class WebViewManager private constructor() {
         webView.isVerticalScrollBarEnabled = false
         val webSettings = webView.settings
         webSettings.setSupportZoom(true)
-        webSettings.allowFileAccess = true
+        webSettings.allowFileAccess = false
         webSettings.cacheMode = WebSettings.LOAD_DEFAULT
         webSettings.domStorageEnabled = true
         webSettings.javaScriptEnabled = true
@@ -161,45 +162,25 @@ class WebViewManager private constructor() {
         webSettings.displayZoomControls = false
         webSettings.useWideViewPort = true
         webSettings.mediaPlaybackRequiresUserGesture = true
-        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+        webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null)
+        webView.setRendererPriorityPolicy(
+            WebView.RENDERER_PRIORITY_BOUND,
+            true
+        )
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         return webView
     }
 
     /**
      * 应用启动后调用：
-     * 1. 在主线程空闲时构建本地资源 LRU 索引（按创建时间排序，避免常用文件被先淘汰）。
-     * 2. 用 ApplicationContext 预创建一个空闲 WebView，下次 obtain 直接复用，省掉首屏 WebView 初始化耗时。
+     * 用 ApplicationContext 预创建一个空闲 WebView，下次 obtain 直接复用，省掉首屏 WebView 初始化耗时。
      */
     private fun prepare(context: Context) {
         val appContext = context.applicationContext
-        Looper.myQueue().addIdleHandler {
-            AppScope.launch {
-                warmupCacheIndex(appContext)
-            }
+        Handler(appContext.mainLooper).postDelayed({
             warmupSpareWebView(appContext)
-            false
-        }
-    }
-
-    private fun warmupCacheIndex(context: Context) {
-        try {
-            val cachePath = CacheUtils.getDirPath(context, WEB_CACHE_DIR)
-            File(cachePath).takeIf { it.isDirectory }?.listFiles()
-                ?.sortedWith(compareByDescending {
-                    // 文件创建时间越久说明使用频率越高，倒序排序避免高频文件初始化时位于队首被先淘汰
-                    val attrs = Files.readAttributes(it.toPath(), BasicFileAttributes::class.java)
-                    attrs.creationTime().toMillis()
-                })
-                ?.forEach {
-                    val absolutePath = it.absolutePath
-                    lruCache.put(absolutePath, absolutePath)?.let { evicted ->
-                        File(evicted).delete()
-                    }
-                }
-        } catch (e: Exception) {
-            Log.e(TAG, "warmupCacheIndex failed", e)
-        }
+        }, 500L)
     }
 
     private fun warmupSpareWebView(appContext: Context) {
@@ -228,7 +209,20 @@ class WebViewManager private constructor() {
             webView = cached
             reuseFromKeepAlive = true
         } else {
-            webView = spareWebView?.also { spareWebView = null } ?: create(context)
+            webView = spareWebView?.also {
+                spareWebView = null
+                // 取走后异步补充一个新的热身实例，保证下次 obtain 仍能秒开
+                val appCtx = it.context.applicationContext
+                AppScope.launch(Dispatchers.Main) {
+                    if (spareWebView == null) {
+                        try {
+                            spareWebView = create(appCtx)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "autoFillSpare failed", e)
+                        }
+                    }
+                }
+            } ?: create(context)
             reuseFromKeepAlive = false
         }
         (webView.context as? MutableContextWrapper)?.baseContext = context
@@ -403,18 +397,16 @@ class WebViewManager private constructor() {
             val fileName = url.encodeUtf8().md5().hex()
             val key = cachePath + File.separator + fileName
             val file = File(key)
-            if (!file.exists() || !file.isFile || file.length() == 0L) {
-                if (!downloadWithDedup(key, file, cachePath, fileName, url, request)) {
-                    return null
-                }
-                lruCache.put(key, key)?.let { evicted -> File(evicted).delete() }
-            }
             if (file.exists() && file.isFile && file.length() > 0L) {
+                // 命中：touch mtime 作为"最近访问"标记，直接返回文件流
+                file.setLastModified(System.currentTimeMillis())
                 val mimeType = request.getMimeTypeFromUrl()
                 WebResourceResponse(mimeType, null, file.inputStream()).apply {
                     responseHeaders = mapOf("Access-Control-Allow-Origin" to "*")
                 }
             } else {
+                // 未命中：return null 让 WebView 走自带 HTTP 缓存，同时后台异步下载填充 web_cache
+                scheduleAsyncDownload(key, file, cachePath, fileName, url, request)
                 null
             }
         } catch (e: Exception) {
@@ -423,50 +415,91 @@ class WebViewManager private constructor() {
         }
     }
 
-    private fun downloadWithDedup(
+    fun prefetchDns(url: String) {
+        try {
+            val host = URI(url).host ?: return
+            AppScope.launch(Dispatchers.IO) {
+                try {
+                    InetAddress.getByName(host)
+                } catch (_: Exception) {
+                }
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    /**
+     * 后台异步下载资源到本地磁盘缓存。
+     *
+     * 设计要点：
+     * - 不阻塞 [shouldInterceptRequest] 的调用线程，立即返回；
+     * - 通过 [inFlightDownloads] 按 key 去重，同一个资源只下载一次；
+     * - 下载在 [Dispatchers.IO] 上执行，不占用主线程；
+     * - 下载成功后 touch 文件 mtime 并检查是否触发按 mtime 淘汰。
+     */
+    private fun scheduleAsyncDownload(
         key: String,
         file: File,
         cachePath: String,
         fileName: String,
         url: String,
         request: WebResourceRequest,
-    ): Boolean {
-        if (file.exists() && file.isFile && file.length() > 0L) return true
-
-        val candidate = FutureTask {
-            runBlocking {
-                withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
-                    val response = download(cachePath, fileName) {
+    ) {
+        val job = AppScope.launch(Dispatchers.IO) {
+            try {
+                val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
+                    download(cachePath, fileName) {
                         setUrl(url)
                         putHeader(request.requestHeaders)
                     }
-                    response.errorCode == "0"
                 }
-            } ?: false
+                if (result != null && result.errorCode == "0") {
+                    if (file.exists() && file.isFile && file.length() > 0L) {
+                        file.setLastModified(System.currentTimeMillis())
+                        evictByMtimeIfNeeded(cachePath)
+                    }
+                } else {
+                    // 下载失败，清理零字节残留
+                    if (file.exists() && file.length() == 0L) {
+                        file.delete()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Async download failed: $url", e)
+                if (file.exists() && file.length() == 0L) {
+                    file.delete()
+                }
+            } finally {
+                inFlightDownloads.remove(key)
+            }
         }
+        // putIfAbsent 保证并发安全：如果已有协程在下载同一资源，取消刚创建的
+        val existing = inFlightDownloads.putIfAbsent(key, job)
+        if (existing != null) {
+            job.cancel()
+        }
+    }
 
-        val task = inFlightDownloads.putIfAbsent(key, candidate) ?: candidate.also { it.run() }
-        return try {
-            val ok = task.get()
-            if (!ok) {
-                if (file.exists() && file.length() == 0L) file.delete()
-                false
-            } else {
-                file.exists() && file.isFile && file.length() > 0L
-            }
-        } catch (e: ExecutionException) {
-            if (file.exists() && file.length() == 0L) file.delete()
-            Log.e(TAG, "downloadWithDedup failed: $url", e)
-            false
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            if (file.exists() && file.length() == 0L) file.delete()
-            Log.e(TAG, "downloadWithDedup interrupted: $url", e)
-            false
-        } finally {
-            if (task === candidate) {
-                inFlightDownloads.remove(key, candidate)
-            }
+    /**
+     * 当 `web_cache` 目录下文件数超过 [WEB_CACHE_MAX_FILES] 时，按文件最后修改时间（mtime）
+     * 升序删除最旧的一批文件，释放磁盘空间。
+     *
+     * mtime 在每次缓存命中（[cacheResourceRequest]）和下载完成（[scheduleAsyncDownload]）
+     * 时被 touch 为当前时间，因此越久未用的文件 mtime 越早，天然等价于 LRU 语义。
+     * 只在溢出时才执行文件系统遍历和排序，冷启动零开销。
+     */
+    private fun evictByMtimeIfNeeded(cachePath: String) {
+        try {
+            val dir = File(cachePath)
+            val files = dir.listFiles() ?: return
+            if (files.size <= WEB_CACHE_MAX_FILES) return
+
+            // 按 mtime 升序（最旧的在前），删除超出上限的文件
+            files.sortedBy { it.lastModified() }
+                .take(files.size - WEB_CACHE_MAX_FILES)
+                .forEach { it.delete() }
+        } catch (e: Exception) {
+            Log.e(TAG, "evictByMtime failed", e)
         }
     }
 

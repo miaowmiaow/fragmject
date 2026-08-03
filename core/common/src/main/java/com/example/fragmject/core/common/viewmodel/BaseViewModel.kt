@@ -1,6 +1,5 @@
 package com.example.fragmject.core.common.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import java.util.concurrent.ConcurrentHashMap
 
@@ -32,7 +31,6 @@ abstract class BaseViewModel : ViewModel() {
         pageStateMap.compute(key) { _, _ ->
             PageState(homePage = page, currPage = page, pageCont = page + 1)
         }
-        Log.d("BaseVM", "getHomePage key=$key page=$page → home=$page curr=$page cont=${page+1}")
         return page
     }
 
@@ -51,15 +49,12 @@ abstract class BaseViewModel : ViewModel() {
             nextPage = if (state.currPage < state.pageCont) state.currPage + 1 else state.currPage
             state.copy(currPage = nextPage)
         }
-        Log.d("BaseVM", "getNextPage key=$key → $nextPage")
         return nextPage
     }
 
     fun hasNextPage(key: String = DEFAULT_KEY): Boolean {
         val state = pageStateMap[key] ?: PageState()
-        val result = state.currPage < state.pageCont
-        Log.d("BaseVM", "hasNextPage key=$key curr=${state.currPage} cont=${state.pageCont} → $result")
-        return result
+        return state.currPage < state.pageCont
     }
 
     /**
@@ -70,6 +65,5 @@ abstract class BaseViewModel : ViewModel() {
             val state = old ?: PageState()
             state.copy(pageCont = pageCont ?: DEFAULT_VALUE)
         }
-        Log.d("BaseVM", "updatePageCont key=$key pageCont=$pageCont")
     }
 }

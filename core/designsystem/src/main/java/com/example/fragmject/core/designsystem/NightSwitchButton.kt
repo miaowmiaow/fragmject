@@ -1,8 +1,8 @@
 package com.example.fragmject.core.designsystem
 
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.view.animation.DecelerateInterpolator
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -47,8 +47,6 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnEnd
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.random.Random
 
@@ -105,10 +103,11 @@ fun NightSwitchButton(
                 )
         ) {
             val progress = anchoredDraggableState.offset / maxBound
-            Sky(progress, canvasWidth, canvasHeight, canvasRadius)
-            Cloud(progress, canvasWidth, canvasHeight, canvasRadius)
+            val sharedTransition = rememberInfiniteTransition()
+            Sky(progress, canvasWidth, canvasHeight, canvasRadius, sharedTransition)
+            Cloud(progress, canvasWidth, canvasHeight, canvasRadius, sharedTransition)
             Stars(progress, canvasWidth, canvasHeight, canvasRadius)
-            SunAndMoon(progress, canvasWidth, canvasHeight, canvasRadius)
+            SunAndMoon(progress, canvasWidth, canvasHeight, canvasRadius, sharedTransition)
         }
     }
 }
@@ -119,8 +118,8 @@ fun Sky(
     canvasWidth: Dp,
     canvasHeight: Dp,
     canvasRadius: Dp,
+    infiniteTransition: InfiniteTransition,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "Sky")
     val offset1 by infiniteTransition.animateFloat(
         initialValue = 0.95f,
         targetValue = 1.05f,
@@ -227,6 +226,7 @@ fun Cloud(
     canvasWidth: Dp,
     canvasHeight: Dp,
     canvasRadius: Dp,
+    infiniteTransition: InfiniteTransition,
 ) {
     val cloudRadius = canvasRadius - canvasHeight / 10f
     val cloudOffsetX = (canvasWidth - cloudRadius * 1.1f) / 7f
@@ -241,7 +241,6 @@ fun Cloud(
     val offsetX = listOf(0, 2, 4, 6, 7, 8, 8)
     val shadowOffsetY = listOf(1f, 2f, 2f, 2f, 1f, 1f, 1f)
     val shadowOffsetX = listOf(0f, 0f, 0f, 0f, 0f, 0f, -0.8f)
-    val infiniteTransition = rememberInfiniteTransition(label = "Cloud")
     val animationOffsetX by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
@@ -353,25 +352,25 @@ fun Stars(
         // if NightStar is not lighting, then start lighting animation
         if (nightStar.status.value == NightStarStatus.Start) {
             nightStar.status.value = NightStarStatus.Lighting
-            val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
-            valueAnimator.duration = getRandom(3000f, 6000f).toLong()
-            valueAnimator.repeatMode = ValueAnimator.REVERSE
-            valueAnimator.repeatCount = 2
-            valueAnimator.interpolator = DecelerateInterpolator()
-            valueAnimator.addUpdateListener {
-                val value = it.animatedValue as Float
-                nightStar.alpha.floatValue = value
-            }
-            valueAnimator.addListener {
-                it.doOnEnd {
-                    nightStar.status.value = NightStarStatus.End
-                    nightStars.remove(nightStar)
-                    if (nightStars.size < 10) {
-                        nightStars.add(getRandomStart())
-                    }
+        }
+        LaunchedEffect(nightStar) {
+            if (nightStar.status.value == NightStarStatus.Lighting) {
+                val durationMs = getRandom(3000f, 6000f).toLong()
+                val halfCycleMs = (durationMs / 4).coerceAtLeast(16) // 每半周期
+                val animatable = Animatable(0f)
+                // 脉冲闪烁：0→1→0→1→0（4个半周期 = 2次完整闪烁）
+                repeat(4) { i ->
+                    val target = if (i % 2 == 0) 1f else 0f
+                    animatable.animateTo(target, tween(halfCycleMs.toInt(), easing = LinearEasing))
+                    nightStar.alpha.floatValue = animatable.value
+                }
+                nightStar.alpha.floatValue = 0f
+                nightStar.status.value = NightStarStatus.End
+                nightStars.remove(nightStar)
+                if (nightStars.size < 10) {
+                    nightStars.add(getRandomStart())
                 }
             }
-            valueAnimator.start()
         }
         // a simple path to draw a little star
         Box(modifier = Modifier.clip(RoundedCornerShape(canvasRadius))) {
@@ -419,6 +418,7 @@ fun SunAndMoon(
     canvasWidth: Dp,
     canvasHeight: Dp,
     canvasRadius: Dp,
+    infiniteTransition: InfiniteTransition,
 ) {
     var initProgress by remember { mutableFloatStateOf(0f) }
     if (progress <= 0f) {
@@ -433,7 +433,7 @@ fun SunAndMoon(
         modifier = Modifier.size(starDiameter),
     ) {
         if (progress >= initProgress) {
-            Sun(progress, false, canvasHeight, canvasRadius, starRadius, moveDistance)
+            Sun(progress, false, canvasHeight, canvasRadius, starRadius, moveDistance, infiniteTransition)
         }
         Moon(
             progress,
@@ -441,10 +441,11 @@ fun SunAndMoon(
             canvasHeight,
             canvasRadius,
             starRadius,
-            moveDistance
+            moveDistance,
+            infiniteTransition,
         )
         if (progress < initProgress) {
-            Sun(progress, true, canvasHeight, canvasRadius, starRadius, moveDistance)
+            Sun(progress, true, canvasHeight, canvasRadius, starRadius, moveDistance, infiniteTransition)
         }
     }
 }
@@ -463,9 +464,9 @@ fun Sun(
     canvasHeight: Dp,
     canvasRadius: Dp,
     starRadius: Dp,
-    moveDistance: Dp
+    moveDistance: Dp,
+    infiniteTransition: InfiniteTransition,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "Sun")
     val offset by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
@@ -586,9 +587,9 @@ fun Moon(
     canvasHeight: Dp,
     canvasRadius: Dp,
     starRadius: Dp,
-    moveDistance: Dp
+    moveDistance: Dp,
+    infiniteTransition: InfiniteTransition,
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "Moon")
     val offset by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,

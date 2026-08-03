@@ -25,7 +25,7 @@
 -verbose                                                                        # 输出详细日志，便于定位 R8 报错
 -ignorewarnings                                                                 # 忽略 dontwarn 之外的零散警告
 -dontusemixedcaseclassnames                                                     # 混淆后类名只用小写，避免在大小写不敏感文件系统上冲突
--printmapping mapping.txt                                                       # 输出符号映射文件，便于线上崩溃还原
+-printmapping app/mapping.txt                                                  # 输出符号映射文件，便于线上崩溃还原
 -allowaccessmodification                                                        # 允许 R8 调整访问修饰符以支持更激进的内联/合并
 -renamesourcefileattribute SourceFile                                           # 将源文件名替换为 SourceFile，配合 LineNumberTable 还原崩溃栈
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 关闭过激算法：保留字段名/算术化简、避免类合并影响反射
@@ -237,23 +237,24 @@
 # com.example.fragment.project.**，导致 release 包混淆后 Gson 反射拿不到字段、
 # 反序列化结果整体为 null（首页/项目/导航全部空数据 → "重试"页）。
 
-# 1) Gson 反序列化目标：data 包下所有 Bean（Article / Banner / User / Tree / HotKey ...）
--keep class com.example.fragment.project.data.** { *; }
--keep interface com.example.fragment.project.data.** { *; }
+# 1) Gson 反序列化目标：core:model 下所有 Bean（Article / Banner / User / Tree / HotKey ...）
+#    注：旧规则使用的 com.example.fragment.project.data.** 是错误的历史包名，会导致 Release 包反序列化全为 null。
+-keep class com.example.fragmject.core.model.** { *; }
+-keep interface com.example.fragmject.core.model.** { *; }
 # 1.1) 嵌套类（如 Article$Tag、Coin$CoinInfoBean）在 R8 fullMode 下也需要保留
--keepclassmembers class com.example.fragment.project.data.** { *; }
+-keepclassmembers class com.example.fragmject.core.model.** { *; }
 
 # 2) Room 实体 / DAO / Database：注解处理器生成代码会反射访问字段名
--keep class com.example.fragment.project.database.** { *; }
--keep interface com.example.fragment.project.database.** { *; }
+-keep class com.example.fragmject.core.database.** { *; }
+-keep interface com.example.fragmject.core.database.** { *; }
 -keep @androidx.room.Entity class * { *; }
 -keep @androidx.room.Dao class * { *; }
 -keep @androidx.room.Database class * { *; }
 -keep class * extends androidx.room.RoomDatabase { *; }
 
 # 3) HttpResponse 框架：基类与所有子类（带泛型 data 字段）
--keep public class com.example.fragment.network.http.HttpResponse { *; }
--keep public class * extends com.example.fragment.network.http.HttpResponse { *; }
+-keep public class com.example.fragmject.core.network.http.HttpResponse { *; }
+-keep public class * extends com.example.fragmject.core.network.http.HttpResponse { *; }
 
 # ============================== kotlinx.serialization ==============================
 # WanNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。

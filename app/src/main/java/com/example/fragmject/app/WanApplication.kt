@@ -1,4 +1,4 @@
-package com.example.fragment.project
+package com.example.fragmject.app
 
 import android.app.Application
 import android.os.Build
@@ -50,8 +50,8 @@ class WanApplication : Application(), ImageLoaderFactory {
      * - 应用进程已被放进 LRU 后台名单且系统资源紧张：彻底释放，避免被系统直接 kill。
      * - 前台运行但系统内存紧张：同上，按等级降级保活策略。
      *
-     * WebView 单实例约 30~80MB，4 个 keep-alive 在低端机上明显是 OOM 隐患来源；
-     * 主动响应 onTrimMemory 比被动等待 GC/被 kill 友好得多。
+     * WebView 单实例约 30~80MB，keep-alive 池上限为 8 个，在低端机上前台峰值可达数百 MB。
+     * 主动响应 onTrimMemory 可在系统承压前释放资源，比被动等待 GC/被 kill 友好得多。
      */
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)

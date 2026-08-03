@@ -121,11 +121,11 @@ private class PooledWebViewClient(
         if (view != null && request != null) {
             val context = view.context
             when {
-                WebViewManager.isCacheResource(request) ->
-                    return WebViewManager.cacheResourceRequest(context, request)
-
                 WebViewManager.isAssetsResource(request) ->
                     return WebViewManager.assetsResourceRequest(context, request)
+
+                WebViewManager.isCacheResource(request) ->
+                    return WebViewManager.cacheResourceRequest(context, request)
             }
         }
         return super.shouldInterceptRequest(view, request)
@@ -178,7 +178,8 @@ fun WebView(
     val context = LocalContext.current
 
     // 用 SharedFlow 而不是 mutableState 承接权限请求，避免相同实例引用导致 LaunchedEffect 不再触发
-    val permissionRequests = remember { MutableSharedFlow<PermissionRequest>(extraBufferCapacity = 1) }
+    val permissionRequests =
+        remember { MutableSharedFlow<PermissionRequest>(extraBufferCapacity = 1) }
     var pendingPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
     val resourceToPermissionMap = remember {
         mapOf(
@@ -268,6 +269,7 @@ fun WebView(
                 webChromeClient = chromeClient
                 webViewClient = PooledWebViewClient(callbacks) { chromeClient.resetInjection() }
                 if (URLUtil.isValidUrl(url) && this.url != url) {
+                    WebViewManager.prefetchDns(url)
                     this.loadUrl(url)
                 }
                 tag?.let { title -> onReceivedTitle(title.toString()) }
@@ -277,6 +279,7 @@ fun WebView(
         update = { wv ->
             // url 变化时主动 loadUrl，避免复用同一个 WebView 时新地址不生效
             if (URLUtil.isValidUrl(url) && wv.url != url) {
+                WebViewManager.prefetchDns(url)
                 wv.loadUrl(url)
             }
         },
@@ -332,7 +335,8 @@ class WebViewControl(private val scope: CoroutineScope) {
      * - evaluateJavascript 不防抖，否则连续点击的脚本注入会被丢弃。
      */
     private val reloadEvents: MutableSharedFlow<Unit> = MutableSharedFlow(extraBufferCapacity = 1)
-    private val evalEvents: MutableSharedFlow<EvalEvent> = MutableSharedFlow(extraBufferCapacity = 8)
+    private val evalEvents: MutableSharedFlow<EvalEvent> =
+        MutableSharedFlow(extraBufferCapacity = 8)
 
     private data class EvalEvent(
         val script: String,

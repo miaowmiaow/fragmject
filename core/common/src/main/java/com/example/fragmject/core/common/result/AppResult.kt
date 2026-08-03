@@ -104,11 +104,7 @@ fun <T> Flow<T>.asAppResult(): Flow<AppResult<T>> = this
 suspend inline fun <T> runAppResult(crossinline block: suspend () -> T): AppResult<T> {
     return runCatching { block() }
         .fold(
-            onSuccess = { AppResult.Success(it) },
-            onFailure = { AppResult.Failure(it.toAppError()) },
-        )
+        onSuccess = { AppResult.Success(it) },
+        onFailure = { AppResult.Failure(it.toAppError()) },
+    )
 }
-
-fun <T> AppResult<T>.getOrNull(): T? = (this as? AppResult.Success<T>)?.data
-
-fun <T> AppResult<T>.errorOrNull(): AppError? = (this as? AppResult.Failure)?.error

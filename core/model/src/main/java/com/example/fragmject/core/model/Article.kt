@@ -5,6 +5,7 @@ import android.text.Html
 import com.example.fragmject.core.network.http.HttpResponse
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import androidx.core.net.toUri
 
 @Parcelize
 data class ShareArticleList(
@@ -127,3 +128,22 @@ data class ArticleTag(
     val name: String = "",
     val url: String = ""
 ) : Parcelable
+
+/**
+ * 从 [ArticleTag.url] 中提取文章分类 cid。
+ *
+ * URL 格式通常为 `https://www.wanandroid.com/project/list/1?cid=294`，
+ * 优先通过 query 参数 "cid" 获取，其次从 pathSegments 提取。
+ */
+fun ArticleTag.extractCid(): String {
+    val uriString = "https://www.wanandroid.com$url"
+    val uri = uriString.toUri()
+    var cid = uri.getQueryParameter("cid")
+    if (cid.isNullOrBlank()) {
+        val paths = uri.pathSegments
+        if (paths != null && paths.size >= 3) {
+            cid = paths[2]
+        }
+    }
+    return cid ?: "0"
+}

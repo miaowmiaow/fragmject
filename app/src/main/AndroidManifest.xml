@@ -24,7 +24,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name=".WanApplication"
+        android:name="com.example.fragmject.app.WanApplication"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
@@ -40,7 +40,7 @@
             android:value="${app_channel_value}" />
 
         <activity
-            android:name=".WanActivity"
+            android:name="com.example.fragmject.app.WanActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation"
             android:exported="true"
             android:launchMode="singleTask"

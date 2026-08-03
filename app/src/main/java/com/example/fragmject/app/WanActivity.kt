@@ -1,4 +1,4 @@
-package com.example.fragment.project
+package com.example.fragmject.app
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator

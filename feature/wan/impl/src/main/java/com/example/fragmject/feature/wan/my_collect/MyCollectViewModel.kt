@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface MyCollectUiState {
@@ -52,7 +54,7 @@ class MyCollectViewModel @Inject constructor(
         // 观察 Room 中第 0 页
         viewModelScope.launch {
             repo.observeMyCollect().collect { page0 ->
-                page0.onEach { it.preloadForDisplay() }
+                withContext(Dispatchers.Default) { page0.onEach { it.preloadForDisplay() } }
                 _uiState.updateData {
                     it.copy(isRefreshing = false, result = page0 + extraPages)
                 }
@@ -90,7 +92,7 @@ class MyCollectViewModel @Inject constructor(
             }
             updatePageCont(result.pageCount)
             val hasNext = hasNextPage()
-            result.articles.onEach { it.preloadForDisplay() }
+            withContext(Dispatchers.Default) { result.articles.onEach { it.preloadForDisplay() } }
             extraPages.addAll(result.articles)
             _uiState.updateData {
                 it.copy(

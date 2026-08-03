@@ -153,7 +153,7 @@ fun MyCoinScreen(
         SwipeRefreshBox(
             items = uiState.myCoinResult,
             isRefreshing = uiState.isRefreshing,
-            isLoading = uiState.isLoading,
+            hasMore = uiState.isLoading,
             isFinishing = uiState.isFinishing,
             onRefresh = { viewModel.getHome() },
             onLoad = { viewModel.getNext() },

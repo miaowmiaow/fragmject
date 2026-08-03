@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.common.result.AppResult
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.database.model.HistoryEntity
-import com.example.fragmject.core.data.repository.SearchRepository
 import com.example.fragmject.core.domain.usecase.SearchArticlesUseCase
 import com.example.fragmject.core.database.store.HistoryStore
 import com.example.fragmject.core.common.viewmodel.BaseViewModel
@@ -13,7 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface SearchUiState {
@@ -42,7 +43,6 @@ private inline fun MutableStateFlow<SearchUiState>.updateData(
 }
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchRepo: SearchRepository,
     private val searchArticles: SearchArticlesUseCase,
 ) : BaseViewModel() {
 
@@ -97,7 +97,7 @@ class SearchViewModel @Inject constructor(
                 is AppResult.Success -> {
                     val response = result.data
                     val datas = response.data?.datas.orEmpty()
-                    datas.onEach { it.preloadForDisplay() }
+                    withContext(Dispatchers.Default) { datas.onEach { it.preloadForDisplay() } }
                     updatePageCont(response.data?.pageCount?.toInt())
                     _uiState.updateData { state ->
                         val merged = if (isHomePage()) datas else state.articlesResult + datas

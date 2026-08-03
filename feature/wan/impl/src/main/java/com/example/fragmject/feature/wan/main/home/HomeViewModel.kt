@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface HomeUiState {
@@ -68,7 +70,7 @@ class HomeViewModel @Inject constructor(
         // 观察 Room（仅 banner + top + page 0）
         viewModelScope.launch {
             homeRepo.observeHomeArticles().collect { roomArticles ->
-                roomArticles.onEach { it.preloadForDisplay() }
+                withContext(Dispatchers.Default) { roomArticles.onEach { it.preloadForDisplay() } }
                 roomArticleCount = roomArticles.size
                 val extras = resultList.drop(roomArticleCount).toList()
                 resultList.clear()
@@ -117,7 +119,7 @@ class HomeViewModel @Inject constructor(
             }
             updatePageCont(result.pageCount)
             // 原地追加：不创建新 List，Compose 自动追踪增量变更
-            result.articles.onEach { it.preloadForDisplay() }
+            withContext(Dispatchers.Default) { result.articles.onEach { it.preloadForDisplay() } }
             resultList.addAll(result.articles)
             _uiState.updateData {
                 it.copy(

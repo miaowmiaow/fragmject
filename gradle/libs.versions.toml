@@ -1,7 +1,7 @@
 [versions]
 androidGradlePlugin = "9.3.1"
 activity = "1.13.0"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 androidxCamera = "1.6.1"
 androidxComposeBom = "2026.06.01"
 androidxComposeMaterial = "1.11.4"
@@ -12,7 +12,7 @@ androidxCoreSplashscreen = "1.2.0"
 androidxMedia3 = "1.10.1"
 androidxFragmentKtx = "1.8.9"
 androidxLifecycle = "2.11.0"
-androidxNavigation3 = "1.1.4"
+androidxNavigation3 = "1.1.5"
 androidxRecyclerview = "1.4.0"
 androidxViewpager2 = "1.1.0"
 androidxWebkit = "1.16.0"
@@ -30,7 +30,7 @@ material = "1.14.0"
 #miaowPlugin = "1.0.0"
 okhttp = "5.4.0"
 retrofit = "3.0.0"
-room3 = "3.0.0"
+room3 = "3.0.1"
 
 [libraries]
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }

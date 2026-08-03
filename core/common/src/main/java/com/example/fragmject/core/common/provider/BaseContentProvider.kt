@@ -12,7 +12,10 @@ class BaseContentProvider : ContentProvider() {
         private lateinit var contentProvider: ContentProvider
 
         @JvmStatic
-        fun context() = contentProvider.context!!
+        fun context(): android.content.Context =
+            contentProvider.context ?: error(
+                "BaseContentProvider not initialized — ensure <provider> is registered in AndroidManifest"
+            )
 
     }
 

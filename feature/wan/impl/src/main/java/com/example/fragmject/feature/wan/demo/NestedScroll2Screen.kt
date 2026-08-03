@@ -150,7 +150,7 @@ fun NestedScroll2Screen() {
             SwipeRefreshBox(
                 items = data,
                 isRefreshing = false,
-                isLoading = false,
+                hasMore = false,
                 isFinishing = true,
                 onRefresh = {},
                 onLoad = {},

@@ -6,7 +6,6 @@ import android.content.ContextWrapper
 import android.content.MutableContextWrapper
 import android.graphics.Color
 import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -16,11 +15,15 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.example.fragmject.core.network.http.download
 import com.example.fragmject.core.common.utils.AppScope
+import com.example.fragmject.core.network.http.download
 import com.example.fragmject.core.network.utils.CacheUtils
-import kotlinx.coroutines.Job
+import com.example.fragmject.feature.wan.web.WebViewManager.Companion.KEEP_ALIVE_CAPACITY
+import com.example.fragmject.feature.wan.web.WebViewManager.Companion.WEB_CACHE_MAX_FILES
+import com.example.fragmject.feature.wan.web.WebViewManager.Companion.destroy
+import com.example.fragmject.feature.wan.web.WebViewManager.Companion.recycle
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import okio.ByteString.Companion.encodeUtf8
@@ -202,6 +205,14 @@ class WebViewManager private constructor() {
      * 3. 全新创建。
      */
     private fun obtain(context: Context, url: String): WebView {
+        // 进入 WebView 页面时异步检查缓存是否超出软上限，避免主线程文件 I/O
+        AppScope.launch(Dispatchers.IO) {
+            try {
+                evictByMtimeIfNeeded(CacheUtils.getDirPath(context.applicationContext, WEB_CACHE_DIR))
+            } catch (_: Exception) {
+            }
+        }
+
         val cached = keepAlivePool.remove(url)
         val webView: WebView
         val reuseFromKeepAlive: Boolean
@@ -456,7 +467,6 @@ class WebViewManager private constructor() {
                 if (result != null && result.errorCode == "0") {
                     if (file.exists() && file.isFile && file.length() > 0L) {
                         file.setLastModified(System.currentTimeMillis())
-                        evictByMtimeIfNeeded(cachePath)
                     }
                 } else {
                     // 下载失败，清理零字节残留

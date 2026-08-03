@@ -33,7 +33,7 @@ fun HomeScreen(
     SwipeRefreshBox(
         items = uiState.result,
         isRefreshing = uiState.isRefreshing,
-        isLoading = uiState.isLoading,
+        hasMore = uiState.isLoading,
         isFinishing = uiState.isFinishing,
         onRefresh = { viewModel.getHome(userTriggered = true) },
         onLoad = { viewModel.getNext() },

@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface UserUiState {
@@ -88,7 +90,7 @@ class UserViewModel @Inject constructor(
             TransitionGuard.await(t)
             updatePageCont(result.pageCount)
             val datas = result.articles
-            datas.onEach { it.preloadForDisplay() }
+            withContext(Dispatchers.Default) { datas.onEach { it.preloadForDisplay() } }
             // 数据为空 → 已到最后一页
             if (datas.isEmpty() && !isHomePage()) {
                 _uiState.updateData { it.copy(isLoading = false, isFinishing = true) }

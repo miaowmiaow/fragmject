@@ -1,18 +1,19 @@
 package com.example.fragmject.feature.wan.my_share
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.model.Article
-import com.example.fragmject.core.data.repository.MyRepository
-import com.example.fragmject.core.domain.usecase.RefreshMyShareUseCase
-import com.example.fragmject.core.domain.usecase.LoadNextMySharePageUseCase
 import com.example.fragmject.core.common.TransitionGuard
 import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import com.example.fragmject.core.domain.usecase.LoadNextMySharePageUseCase
+import com.example.fragmject.core.domain.usecase.RefreshMyShareUseCase
+import com.example.fragmject.core.model.Article
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface MyShareUiState {
@@ -55,7 +56,7 @@ class MyShareViewModel @Inject constructor(
             _uiState.updateData { it.copy(isRefreshing = true, isLoading = false, isFinishing = false) }
             val t = TransitionGuard.now()
             val result = refreshMyShare(page)
-            result.articles.onEach { it.preloadForDisplay() }
+            withContext(Dispatchers.Default) { result.articles.onEach { it.preloadForDisplay() } }
             TransitionGuard.await(t)
             updatePageCont(result.pageCount)
             _uiState.updateData { state ->
@@ -74,7 +75,7 @@ class MyShareViewModel @Inject constructor(
         val page = getNextPage()
         viewModelScope.launch {
             val result = loadNextMySharePage(page)
-            result.articles.onEach { it.preloadForDisplay() }
+            withContext(Dispatchers.Default) { result.articles.onEach { it.preloadForDisplay() } }
             updatePageCont(result.pageCount)
             _uiState.updateData { state ->
                 val merged = if (isHomePage()) result.articles else state.result + result.articles

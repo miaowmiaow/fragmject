@@ -72,6 +72,8 @@ class OfflineFirstArticleRepository(
 
     /** 刷新首页：写入 Room → Room Flow 自动推送 UI。返回总页数。 */
     suspend fun refreshHome(): Int? {
+        cleanExpiredIfNeeded()
+
         val bannerResult = runCatching { articleRepo.fetchBannerList() }
         val topResult = runCatching { articleRepo.fetchArticleTop() }
         val listResult = runCatching { articleRepo.getArticleList(0) }
@@ -124,5 +126,13 @@ class OfflineFirstArticleRepository(
             }
         )
         return articleList.data?.pageCount?.toIntOrNull()
+    }
+
+    // ===== 缓存清理 =====
+
+    /** 每次刷新首页时清理超过 7 天的旧文章缓存，防止 Room 文件无限增长。 */
+    private suspend fun cleanExpiredIfNeeded() {
+        val threshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+        articleDao.cleanExpired(threshold)
     }
 }

@@ -90,7 +90,7 @@ fun SystemScreen(
                     SwipeRefreshBox(
                         items = systemUiState.getResult(pageCid),
                         isRefreshing = systemUiState.getRefreshing(pageCid),
-                        isLoading = systemUiState.getLoading(pageCid),
+                        hasMore = systemUiState.getLoading(pageCid),
                         isFinishing = systemUiState.getFinishing(pageCid),
                         onRefresh = { systemViewModel.getHome(pageCid) },
                         onLoad = { systemViewModel.getNext(pageCid) },

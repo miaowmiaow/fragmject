@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -92,7 +91,7 @@ private val RefreshingResIds by lazy {
  * 自定义下拉刷新&加载更多
  * @param items         列表数据
  * @param isRefreshing  设置下拉刷新
- * @param isLoading     设置加载更多
+ * @param hasMore       设置加载更多
  * @param isFinishing   结束加载更多
  * @param onRefresh     下拉刷新回调
  * @param onLoad        加载更多回调
@@ -102,7 +101,7 @@ private val RefreshingResIds by lazy {
 fun <T> SwipeRefreshBox(
     items: List<T>?,
     isRefreshing: Boolean,
-    isLoading: Boolean,
+    hasMore: Boolean,
     isFinishing: Boolean,
     onRefresh: () -> Unit,
     onLoad: () -> Unit,
@@ -141,11 +140,13 @@ fun <T> SwipeRefreshBox(
                     .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
             ) {
-                val shouldLoadMore by remember(listState, items.size, isLoading, isFinishing) {
+                val shouldLoadMore by remember(listState, items.size, hasMore, isFinishing) {
                     derivedStateOf {
-                        if (!isLoading || isFinishing || items.isEmpty()) return@derivedStateOf false
+                        if (!hasMore || isFinishing || items.isEmpty()) return@derivedStateOf false
                         val lastVisibleIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-                        lastVisibleIndex >= items.lastIndex - 3
+                        // 要求"最后一项必须已上屏"，防止列表不足一屏时 MoreIndicator 被立即看到而触发连续翻页
+                        val totalCount = listState.layoutInfo.totalItemsCount
+                        lastVisibleIndex >= items.lastIndex - 3 && totalCount >= items.size + 1
                     }
                 }
                 LaunchedEffect(shouldLoadMore) {

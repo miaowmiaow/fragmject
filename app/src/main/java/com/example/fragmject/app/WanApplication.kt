@@ -3,6 +3,9 @@ package com.example.fragmject.app
 import android.app.Application
 import android.os.Build
 import coil.ComponentRegistry
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
+import coil.request.CachePolicy
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
@@ -29,6 +32,21 @@ class WanApplication : Application(), ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(applicationContext)
             .crossfade(true)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .memoryCache {
+                MemoryCache.Builder(applicationContext)
+                    .maxSizePercent(0.10)
+                    .build()
+            }
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(com.example.fragmject.core.network.utils.CacheUtils.getDirFile(
+                        applicationContext, "coil"
+                    ))
+                    .maxSizeBytes(50L * 1024 * 1024)
+                    .build()
+            }
             .okHttpClient { OkHelper.httpClient(applicationContext) }
             .components(fun ComponentRegistry.Builder.() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

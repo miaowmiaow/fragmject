@@ -39,11 +39,14 @@ fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap? {
         if (targetWidth != 0) {
             option.inJustDecodeBounds = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                ImageDecoder.createSource(contentResolver, uri)
-                val imageDecoder = ImageDecoder.decodeBitmap(
+                // ImageDecoder 支持直接按目标宽采样，比 inSampleSize 更精确
+                return ImageDecoder.decodeBitmap(
                     ImageDecoder.createSource(contentResolver, uri)
-                ) { decoder, _, _ -> decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE }
-                return imageDecoder
+                ) { decoder, _, _ ->
+                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                    // 按 targetWidth 等比缩放，避免加载全尺寸原图
+                    decoder.setTargetSize(targetWidth, targetWidth)
+                }
             } else {
                 @Suppress("DEPRECATION")
                 BitmapFactory.decodeStream(contentResolver.openInputStream(uri), null, option)

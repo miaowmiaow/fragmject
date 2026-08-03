@@ -60,9 +60,12 @@ class WanViewModel @Inject constructor(
         }
         viewModelScope.launch {
             offlineFirst.observeSystemTree().collect { trees ->
-                _uiState.updateData { it.copy(isLoading = false, treeResult = trees) }
+                _uiState.updateData { it.copy(treeResult = trees) }
             }
         }
-        viewModelScope.launch { offlineFirst.refreshAll() }
+        viewModelScope.launch {
+            offlineFirst.refreshAll()
+            _uiState.updateData { it.copy(isLoading = false) }
+        }
     }
 }

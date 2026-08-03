@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
@@ -62,7 +64,7 @@ class SystemViewModel @Inject constructor(
             // 观察 Room 中第 0 页（system_{cid}_0）
             viewModelScope.launch {
                 repo.observeSystemArticles(cid).collect { page0 ->
-                    page0.onEach { it.preloadForDisplay() }
+                    withContext(Dispatchers.Default) { page0.onEach { it.preloadForDisplay() } }
                     _uiState.updateData { state ->
                         val extras = extraPages[cid].orEmpty()
                         state.copy(
@@ -118,7 +120,7 @@ class SystemViewModel @Inject constructor(
             }
             updatePageCont(result.pageCount, cid)
             val hasNext = hasNextPage(cid)
-            result.articles.onEach { it.preloadForDisplay() }
+            withContext(Dispatchers.Default) { result.articles.onEach { it.preloadForDisplay() } }
             extraPages.getOrPut(cid) { mutableListOf() }.addAll(result.articles)
             _uiState.updateData { state ->
                 state.copy(

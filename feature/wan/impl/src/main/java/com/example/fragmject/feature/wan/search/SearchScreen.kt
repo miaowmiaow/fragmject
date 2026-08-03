@@ -253,7 +253,7 @@ fun SearchScreen(
                     SwipeRefreshBox(
                         items = searchUiState.articlesResult,
                         isRefreshing = searchUiState.isRefreshing,
-                        isLoading = searchUiState.isLoading,
+                        hasMore = searchUiState.isLoading,
                         isFinishing = searchUiState.isFinishing,
                         onRefresh = { searchViewModel.getHome(searchText) },
                         onLoad = { searchViewModel.getNext(searchText) },

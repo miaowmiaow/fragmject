@@ -2,6 +2,7 @@ package com.example.fragmject.core.common.provider
 
 import android.content.ContentProvider
 import android.content.ContentValues
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 
@@ -12,7 +13,7 @@ class BaseContentProvider : ContentProvider() {
         private lateinit var contentProvider: ContentProvider
 
         @JvmStatic
-        fun context(): android.content.Context =
+        fun context(): Context =
             contentProvider.context ?: error(
                 "BaseContentProvider not initialized — ensure <provider> is registered in AndroidManifest"
             )

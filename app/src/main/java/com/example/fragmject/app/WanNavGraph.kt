@@ -47,6 +47,7 @@ import com.example.fragmject.feature.wan.ShareArticleNavKey
 import com.example.fragmject.feature.wan.SystemNavKey
 import com.example.fragmject.feature.wan.UserNavKey
 import com.example.fragmject.feature.wan.WebNavKey
+import com.example.fragmject.feature.wan.VideoDownloadNavKey
 import com.example.fragmject.feature.wan.browse_history.BrowseHistoryScreen
 import com.example.fragmject.feature.wan.demo.DemoScreen
 import com.example.fragmject.feature.wan.login.LoginScreen
@@ -61,6 +62,8 @@ import com.example.fragmject.feature.wan.setting.SettingScreen
 import com.example.fragmject.feature.wan.share.ShareArticleScreen
 import com.example.fragmject.feature.wan.system.SystemScreen
 import com.example.fragmject.feature.wan.user.UserScreen
+import com.example.fragmject.feature.wan.web.VideoDownloadScreen
+import com.example.fragmject.feature.wan.web.VideoPlayerScreen
 import com.example.fragmject.feature.wan.web.WebScreen
 import com.example.fragmject.core.common.TransitionGuard
 
@@ -224,6 +227,20 @@ fun WanNavGraph(
                     onNavigateUp = navigateUp,
                 )
             }
+            entry<VideoDownloadNavKey> {
+                var currentFilePath by remember { mutableStateOf<String?>(null) }
+                if (currentFilePath != null) {
+                    VideoPlayerScreen(
+                        filePath = currentFilePath!!,
+                        onNavigateUp = { currentFilePath = null }
+                    )
+                } else {
+                    VideoDownloadScreen(
+                        onNavigateUp = navigateUp,
+                        onPlayVideo = { currentFilePath = it },
+                    )
+                }
+            }
             // ── Picture ──
             entry<PictureSelectorNavKey> {
                 PictureSelectorScreen(
@@ -293,5 +310,6 @@ private fun requiredLoginNavKey(key: NavKey, user: UserEntity?): Boolean {
 private fun isDetailPaneKey(key: NavKey): Boolean {
     return key is WebNavKey || key is UserNavKey || key is SystemNavKey ||
         key is SettingNavKey || key is MyCoinNavKey || key is MyCollectNavKey ||
-        key is MyShareNavKey || key is RankNavKey || key is BrowseHistoryNavKey
+        key is MyShareNavKey || key is RankNavKey || key is BrowseHistoryNavKey ||
+        key is VideoDownloadNavKey
 }

@@ -39,6 +39,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -74,6 +77,8 @@ import com.example.fragmject.feature.wan.main.my.MyScreen
 import com.example.fragmject.feature.wan.main.nav.NavScreen
 import com.example.fragmject.feature.wan.main.home.HomeScreen
 import com.example.fragmject.feature.wan.main.project.ProjectScreen
+import com.example.fragmject.feature.wan.web.VideoDownloadScreen
+import com.example.fragmject.feature.wan.web.VideoPlayerScreen
 import com.example.fragmject.feature.wan.web.WebScreen
 import com.example.fragmject.feature.wan.browse_history.BrowseHistoryScreen
 import com.example.fragmject.feature.wan.my_coin.MyCoinScreen
@@ -84,6 +89,8 @@ import com.example.fragmject.feature.wan.setting.SettingScreen
 import com.example.fragmject.feature.wan.system.SystemScreen
 import com.example.fragmject.feature.wan.user.UserScreen
 import com.example.fragmject.core.designsystem.LocalWindowSizeClass
+import com.example.fragmject.feature.wan.web.VideoDownloadManager
+import com.example.fragmject.feature.wan.web.downloadVideo
 
 // =====================================================================
 // 公共：渲染 Tab 内容
@@ -134,6 +141,16 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeListState = rememberLazyListState()
+
+    // 初始化视频下载管理器持久化，并传入断点续传回调
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        VideoDownloadManager.init(context.applicationContext) { task ->
+            downloadVideo(
+                context.applicationContext, task.url, task.title, task.id
+            )
+        }
+    }
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = remember {
         listOf(
@@ -419,6 +436,20 @@ private fun DetailPane(
         }
         is BrowseHistoryNavKey -> {
             BrowseHistoryScreen(onNavigate = onNavigate, onNavigateUp = onClose)
+        }
+        is VideoDownloadNavKey -> {
+            var currentFilePath by remember { mutableStateOf<String?>(null) }
+            if (currentFilePath != null) {
+                VideoPlayerScreen(
+                    filePath = currentFilePath!!,
+                    onNavigateUp = { currentFilePath = null }
+                )
+            } else {
+                VideoDownloadScreen(
+                    onNavigateUp = onClose,
+                    onPlayVideo = { currentFilePath = it },
+                )
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ import com.example.fragmject.feature.wan.web.WebViewManager
 import com.example.fragmject.core.network.http.OkHelper
 import com.example.fragmject.core.network.http.setBaseUrl
 import com.example.fragmject.core.network.http.setHttpClientLazy
+import com.example.fragmject.core.network.utils.CacheUtils
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -41,7 +42,8 @@ class WanApplication : Application(), ImageLoaderFactory {
             .diskCachePolicy(CachePolicy.ENABLED)
             .diskCache {
                 DiskCache.Builder()
-                    .directory(com.example.fragmject.core.network.utils.CacheUtils.getDirFile(
+                    .directory(
+                        CacheUtils.getDirFile(
                         applicationContext, "coil"
                     ))
                     .maxSizeBytes(50L * 1024 * 1024)

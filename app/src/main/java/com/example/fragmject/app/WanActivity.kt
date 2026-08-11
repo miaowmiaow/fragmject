@@ -1,5 +1,7 @@
 package com.example.fragmject.app
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.os.Bundle
@@ -62,8 +64,8 @@ class WanActivity : ComponentActivity() {
  * AnimatorSet 没有 KTX 的 doOnEnd，简单适配一下，避免引入额外依赖。
  */
 private inline fun AnimatorSet.doOnEndCompat(crossinline action: () -> Unit) {
-    addListener(object : android.animation.AnimatorListenerAdapter() {
-        override fun onAnimationEnd(animation: android.animation.Animator) {
+    addListener(object : AnimatorListenerAdapter() {
+        override fun onAnimationEnd(animation: Animator) {
             action()
         }
     })

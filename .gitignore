@@ -8,6 +8,7 @@
 .cxx
 /.idea/
 /app/mapping.txt
+/app/app/mapping.txt
 /repo/
 
 # Build 产物（所有模块）

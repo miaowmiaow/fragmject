@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.fragmject.core.network.debug.DebugBridge
 import com.example.fragmject.core.network.utils.FileUtil
 import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -13,6 +14,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.*
 import java.io.File
+import java.lang.reflect.Type
 
 private const val TAG = "CoroutineHttp"
 
@@ -20,10 +22,10 @@ private const val TAG = "CoroutineHttp"
  * get请求
  * @param init  http请求体
  */
-suspend inline fun <reified T : HttpResponse> CoroutineScope.get(
+suspend inline fun <reified T> CoroutineScope.get(
     noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.getInstance().get(init, T::class.java)
+    return CoroutineHttp.getInstance().get(init, object : TypeToken<T>() {}.type)
 }
 
 suspend inline fun CoroutineScope.string(
@@ -36,20 +38,20 @@ suspend inline fun CoroutineScope.string(
  * post请求
  * @param init  http请求体
  */
-suspend inline fun <reified T : HttpResponse> CoroutineScope.post(
+suspend inline fun <reified T> CoroutineScope.post(
     noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.getInstance().post(init, T::class.java)
+    return CoroutineHttp.getInstance().post(init, object : TypeToken<T>() {}.type)
 }
 
 /**
  * form请求
  * @param init  http请求体
  */
-suspend inline fun <reified T : HttpResponse> CoroutineScope.form(
+suspend inline fun <reified T> CoroutineScope.form(
     noinline init: HttpRequest.() -> Unit
 ): T {
-    return CoroutineHttp.getInstance().form(init, T::class.java)
+    return CoroutineHttp.getInstance().form(init, object : TypeToken<T>() {}.type)
 }
 
 /**
@@ -151,39 +153,43 @@ class CoroutineHttp private constructor() {
         return converter ?: GSonConverter.create().also { converter = it }
     }
 
-    suspend fun <T : HttpResponse> get(
+    suspend fun <T> get(
         init: HttpRequest.() -> Unit,
-        type: Class<T>,
-    ): T = get(HttpRequest().apply(init), type)
+        typeOfT: Type,
+    ): T = get(HttpRequest().apply(init), typeOfT)
 
     /**
      * 接收已构造好的 [HttpRequest] 的重载，便于上层（如 SWR 缓存算子）先从 request 派生
      * cacheKey、再用同一个 request 发起网络请求，避免对 `init: HttpRequest.() -> Unit`
      * 反复 apply 造成的重复构造与 [HttpRequest.time] 漂移。
      */
-    suspend fun <T : HttpResponse> get(
+    suspend fun <T> get(
         request: HttpRequest,
-        type: Class<T>,
+        typeOfT: Type,
     ): T {
         return try {
             getService().get(request.getUrl(baseUrl), request.getHeader()).body()?.let { body ->
-                getConverter().converter(body, type).apply { setRequestTime(request.time) }
-            } ?: buildResponse("-1", "response body is null", type)
+                getConverter().converter<T>(body, typeOfT).apply {
+                    if(this is HttpResponse){
+                        setRequestTime(request.time)
+                    }
+                }
+            } ?: buildResponse<T>("-1", "response body is null", typeOfT)
         } catch (e: Exception) {
             Log.e(TAG, "GET ${request.getUrl(baseUrl)} failed", e)
-            fallbackResponse(request, type, e)
+            fallbackResponse(request, typeOfT, e)
         }
     }
 
-    suspend fun <T : HttpResponse> post(
+    suspend fun <T> post(
         init: HttpRequest.() -> Unit,
-        type: Class<T>,
-    ): T = post(HttpRequest().apply(init), type)
+        typeOfT: Type,
+    ): T = post(HttpRequest().apply(init), typeOfT)
 
     /** 与 [get] 同名重载语义一致：复用上层已构造的 request，避免双 apply。 */
-    suspend fun <T : HttpResponse> post(
+    suspend fun <T> post(
         request: HttpRequest,
-        type: Class<T>,
+        typeOfT: Type,
     ): T {
         return try {
             getService().post(
@@ -191,17 +197,21 @@ class CoroutineHttp private constructor() {
                 request.getHeader(),
                 request.getParam()
             ).body()?.let { body ->
-                getConverter().converter(body, type).apply { setRequestTime(request.time) }
-            } ?: buildResponse("-1", "response body is null", type)
+                getConverter().converter<T>(body, typeOfT).apply {
+                    if(this is HttpResponse){
+                        setRequestTime(request.time)
+                    }
+                }
+            } ?: buildResponse<T>("-1", "response body is null", typeOfT)
         } catch (e: Exception) {
             Log.e(TAG, "POST ${request.getUrl(baseUrl)} failed", e)
-            fallbackResponse(request, type, e)
+            fallbackResponse(request, typeOfT, e)
         }
     }
 
-    suspend fun <T : HttpResponse> form(
+    suspend fun <T> form(
         init: HttpRequest.() -> Unit,
-        type: Class<T>,
+        typeOfT: Type,
     ): T {
         val request = HttpRequest().apply(init)
         return try {
@@ -210,11 +220,15 @@ class CoroutineHttp private constructor() {
                 request.getHeader(),
                 request.getMultipartBody()
             ).body()?.let { body ->
-                getConverter().converter(body, type).apply { setRequestTime(request.time) }
-            } ?: buildResponse("-1", "response body is null", type)
+                getConverter().converter<T>(body, typeOfT).apply {
+                    if(this is HttpResponse){
+                        setRequestTime(request.time)
+                    }
+                }
+            } ?: buildResponse<T>("-1", "response body is null", typeOfT)
         } catch (e: Exception) {
             Log.e(TAG, "FORM ${request.getUrl(baseUrl)} failed", e)
-            buildResponse("-1", e.message ?: e.javaClass.simpleName, type)
+            buildResponse<T>("-1", e.message ?: e.javaClass.simpleName, typeOfT)
         }
     }
 
@@ -284,38 +298,38 @@ class CoroutineHttp private constructor() {
      * - Debug 包尝试读取 assets/json/ 下的预置数据，方便离线调试与示例运行；
      * - Release 包不再读取本地 assets，直接返回错误响应，避免线上隐式行为。
      */
-    private fun <T : HttpResponse> fallbackResponse(
+    private fun <T> fallbackResponse(
         request: HttpRequest,
-        type: Class<T>,
+        typeOfT: Type,
         e: Exception
     ): T {
         if (DebugBridge.allowAssetsFallback) {
             val jsonName = request.getUrl(baseUrl).replace("/", "-").replace("?", "_")
             val json = FileUtil.readAssetString("json/${jsonName}.json")
             if (json.isNotBlank()) {
-                return getConverter().fromJson(json, type)
+                return getConverter().fromJson<T>(json, typeOfT)
             }
         }
-        return buildResponse("-1", e.message ?: e.javaClass.simpleName, type)
+        return buildResponse<T>("-1", e.message ?: e.javaClass.simpleName, typeOfT)
     }
 
     /**
      * 通过 JsonObject 构建错误响应，避免使用字符串拼接造成的 JSON 注入 / 非法 JSON 风险
      * （之前的实现仅替换双引号，遗漏了反斜杠、换行等其他特殊字符）。
      */
-    private fun <T : HttpResponse> buildResponse(code: String, msg: String, type: Class<T>): T {
+    private fun <T> buildResponse(code: String, msg: String, typeOfT: Type,): T {
         val obj = JsonObject().apply {
             addProperty("errorCode", code)
             addProperty("errorMsg", msg)
         }
-        return getConverter().fromJson(obj.toString(), type)
+        return getConverter().fromJson<T>(obj.toString(), typeOfT)
     }
 
     interface Converter {
-        fun <T> converter(responseBody: ResponseBody, type: Class<T>): T
+        fun <T> converter(responseBody: ResponseBody, typeOfT: Type): T
 
         @Throws(Exception::class)
-        fun <T> fromJson(json: String, classOfT: Class<T>): T
+        fun <T> fromJson(json: String, typeOfT: Type): T
     }
 
 }

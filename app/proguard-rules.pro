@@ -25,7 +25,7 @@
 -verbose                                                                        # 输出详细日志，便于定位 R8 报错
 -ignorewarnings                                                                 # 忽略 dontwarn 之外的零散警告
 -dontusemixedcaseclassnames                                                     # 混淆后类名只用小写，避免在大小写不敏感文件系统上冲突
--printmapping app/mapping.txt                                                  # 输出符号映射文件，便于线上崩溃还原
+-printmapping build/outputs/mapping.txt                                           # 输出符号映射文件，便于线上崩溃还原
 -allowaccessmodification                                                        # 允许 R8 调整访问修饰符以支持更激进的内联/合并
 -renamesourcefileattribute SourceFile                                           # 将源文件名替换为 SourceFile，配合 LineNumberTable 还原崩溃栈
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 关闭过激算法：保留字段名/算术化简、避免类合并影响反射

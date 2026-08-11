@@ -2,7 +2,6 @@ package com.example.fragmject.feature.wan.web
 
 import android.view.View
 import androidx.activity.ComponentActivity
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -26,6 +25,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowCircleDown
+import androidx.compose.material.icons.filled.SdCard
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,7 +36,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
@@ -62,14 +62,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.fragmject.feature.wan.BrowseHistoryNavKey
-import com.example.fragmject.core.ui.R
-import com.example.fragmject.core.designsystem.WanTheme
-import com.example.fragmject.feature.wan.WebNavKey
+import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.database.model.HistoryEntity
 import com.example.fragmject.core.database.store.HistoryStore
-import kotlinx.coroutines.launch
 import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.designsystem.WanTheme
+import com.example.fragmject.core.ui.R
+import com.example.fragmject.core.ui.utils.videoScanJs
+import com.example.fragmject.feature.wan.BrowseHistoryNavKey
+import com.example.fragmject.feature.wan.VideoDownloadNavKey
+import com.example.fragmject.feature.wan.WebNavKey
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -282,10 +285,12 @@ fun WebScreen(
                                 }
                             }
                         } else {
+                            // 视频增强
                             Row(modifier = Modifier.height(64.dp)) {
                                 Button(
                                     onClick = {
-                                        control.evaluateJavascript("javascript:quickBack5()")
+                                        control.evaluateJavascript(videoScanJs())
+                                        scope.launch { bottomSheetState.partialExpand() }
                                     },
                                     modifier = Modifier
                                         .weight(1f)
@@ -302,11 +307,34 @@ fun WebScreen(
                                     ),
                                 ) {
                                     Icon(
-                                        painter = painterResource(R.mipmap.ic_quick_back),
+                                        imageVector = Icons.Default.ArrowCircleDown,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
-                                    Text(text = "5")
+                                }
+                                Button(
+                                    onClick = {
+                                        onNavigate(VideoDownloadNavKey)
+                                    },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    shape = RoundedCornerShape(0),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 18.dp,
+                                        vertical = 18.dp
+                                    ),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.SdCard,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                                 Button(
                                     onClick = {
@@ -331,32 +359,6 @@ fun WebScreen(
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
-                                    Text(text = "10")
-                                }
-                                Button(
-                                    onClick = {
-                                        control.evaluateJavascript("javascript:quickForward5()")
-                                    },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
-                                    shape = RoundedCornerShape(0),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                    ),
-                                    elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                                    contentPadding = PaddingValues(
-                                        horizontal = 18.dp,
-                                        vertical = 18.dp
-                                    ),
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.mipmap.ic_quick_forward),
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(text = "5")
                                 }
                                 Button(
                                     onClick = {
@@ -381,7 +383,6 @@ fun WebScreen(
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
-                                    Text(text = "10")
                                 }
                             }
                         }
@@ -470,11 +471,12 @@ fun WebScreen(
                     }
                 }
                 WebView(
-                    url = url,
-                    control = control,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
+                    url = url,
+                    control = control,
+                    title = title,
                     onReceivedTitle = {
                         title = it
                         scope.launch {

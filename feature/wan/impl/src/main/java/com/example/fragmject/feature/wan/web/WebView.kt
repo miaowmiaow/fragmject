@@ -1,3 +1,5 @@
+@file:SuppressLint("JavascriptInterface")
+
 package com.example.fragmject.feature.wan.web
 
 import android.Manifest
@@ -15,6 +17,7 @@ import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceError
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -34,11 +37,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.core.net.toUri
 import com.example.fragmject.core.ui.components.StandardDialog
-import com.example.fragmject.core.ui.utils.injectQuickVideoJs
-import com.example.fragmject.core.ui.utils.injectVConsoleJs
+import com.example.fragmject.core.network.http.download
+import com.example.fragmject.core.network.utils.CacheUtils
 import com.example.fragmject.core.network.utils.saveImagesToAlbum
+import android.os.Environment
+import android.media.MediaScannerConnection
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import com.example.fragmject.core.ui.utils.JsInjectCache
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -46,8 +66,32 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * JS → Native 视频保存桥接。
+ *
+ * 注册到 [WebView.addJavascriptInterface] 中供 H5 的 `VideoSaveBridge.onVideoLongPress(src)` 调用。
+ * 所有业务逻辑（空 URL / 单视频 / 多视频分发）由 [onResult] lambda 委托给 Composable 层处理，
+ * 本类只负责解析 `|` 分隔的 URL 列表并回调。
+ */
+@SuppressLint("JavascriptInterface")
+private class VideoSaveBridge(
+    private val onResult: (urls: List<String>) -> Unit,
+) {
+    @android.webkit.JavascriptInterface
+    fun onVideoLongPress(videoUrl: String) {
+        if (videoUrl.isEmpty()) {
+            onResult(emptyList())
+            return
+        }
+        onResult(videoUrl.split("|").filter { it.isNotBlank() })
+    }
+}
 
 /**
  * WebView 内部用到的回调集合。WebChromeClient/WebViewClient 提为顶层类，避免在 Composable 工厂里
@@ -63,6 +107,7 @@ private class WebViewCallbacks(
     var shouldOverrideUrl: (String) -> Unit = {},
     var injectScript: (String) -> Unit = {},
     var injectVConsole: () -> Boolean = { false },
+    var onReceivedError: (errorCode: Int, description: String, failingUrl: String?) -> Unit = { _, _, _ -> },
 )
 
 private class PooledWebChromeClient(
@@ -84,6 +129,7 @@ private class PooledWebChromeClient(
                 callbacks.injectScript("vconsole")
             }
             callbacks.injectScript("quickVideo")
+            callbacks.injectScript("videoSave")
             injectedForUrl = view.url
         }
     }
@@ -160,14 +206,39 @@ private class PooledWebViewClient(
         super.onPageStarted(view, url, favicon)
         onReset()
     }
+
+    @Suppress("DEPRECATION")
+    override fun onReceivedError(
+        view: WebView?,
+        errorCode: Int,
+        description: String?,
+        failingUrl: String?,
+    ) {
+        callbacks.onReceivedError(errorCode, description ?: "未知错误", failingUrl)
+    }
+
+    override fun onReceivedError(
+        view: WebView?,
+        request: WebResourceRequest?,
+        error: WebResourceError?,
+    ) {
+        if (request?.isForMainFrame == true && error != null) {
+            callbacks.onReceivedError(
+                error.errorCode,
+                error.description?.toString() ?: "未知错误",
+                request.url?.toString(),
+            )
+        }
+    }
 }
 
-@SuppressLint("SetJavaScriptEnabled")
+@SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
 @Composable
 fun WebView(
+    modifier: Modifier = Modifier,
     url: String,
     control: WebViewControl,
-    modifier: Modifier = Modifier,
+    title: String? = null,
     onReceivedTitle: (title: String?) -> Unit = {},
     onCustomView: (view: View?) -> Unit = {},
     shouldOverrideUrl: (url: String) -> Unit = {},
@@ -175,7 +246,30 @@ fun WebView(
     var webView by remember { mutableStateOf<WebView?>(null) }
     var showDialog by remember { mutableStateOf(false) }
     var extra by remember { mutableStateOf<String?>(null) }
+    var showVideoDialog by remember { mutableStateOf(false) }
+    var videoSaveUrl by remember { mutableStateOf<String?>(null) }
+    var noVideoFound by remember { mutableStateOf(false) }
+    var videoUrlList by remember { mutableStateOf<List<String>>(emptyList()) }
+    var showVideoSelectDialog by remember { mutableStateOf(false) }
+    var webViewError by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+
+    // JS 桥接：与 WebView 生命周期绑定的命名对象，比匿名内部类更清晰
+    val videoBridge = remember {
+        VideoSaveBridge { urls ->
+            when {
+                urls.isEmpty() -> noVideoFound = true
+                urls.size == 1 -> {
+                    videoSaveUrl = urls[0]
+                    showVideoDialog = true
+                }
+                else -> {
+                    videoUrlList = urls
+                    showVideoSelectDialog = true
+                }
+            }
+        }
+    }
 
     // 用 SharedFlow 而不是 mutableState 承接权限请求，避免相同实例引用导致 LaunchedEffect 不再触发
     val permissionRequests =
@@ -210,7 +304,7 @@ fun WebView(
         WebViewCallbacks(url = url)
     }
     callbacks.url = url
-    callbacks.onProgress = { control.progress = it }
+    callbacks.onProgress = { control.progress = it; if (it > 0f) webViewError = null }
     callbacks.onTitle = onReceivedTitle
     callbacks.onCustomView = onCustomView
     callbacks.onPermissionRequest = { req -> req?.let { permissionRequests.tryEmit(it) } }
@@ -219,11 +313,19 @@ fun WebView(
     callbacks.injectScript = { tag ->
         webView?.let { wv ->
             val script = when (tag) {
-                "vconsole" -> wv.context.injectVConsoleJs()
-                "quickVideo" -> wv.context.injectQuickVideoJs()
+                "vconsole" -> JsInjectCache.vConsoleJs(wv.context)
+                "quickVideo" -> JsInjectCache.quickVideoJs(wv.context)
+                "videoSave" -> JsInjectCache.videoSaveJs()
                 else -> return@let
             }
             wv.evaluateJavascript(script) {}
+        }
+    }
+    callbacks.onReceivedError = { errorCode, description, failingUrl ->
+        webViewError = when (errorCode) {
+            WebViewClient.ERROR_HOST_LOOKUP, WebViewClient.ERROR_CONNECT,
+            WebViewClient.ERROR_TIMEOUT -> "网络连接失败，请检查网络后重试"
+            else -> "加载失败（$errorCode）：$description"
         }
     }
 
@@ -252,6 +354,7 @@ fun WebView(
                 setDownloadListener { downloadUrl, _, _, _, _ ->
                     handleDownload(ctx, downloadUrl)
                 }
+                addJavascriptInterface(videoBridge, "VideoSaveBridge")
                 setOnLongClickListener {
                     val result = hitTestResult
                     when (result.type) {
@@ -287,6 +390,31 @@ fun WebView(
         onRelease = { WebViewManager.recycle(it) }
     )
 
+    // 网络错误覆盖层：ERR_CONNECTION_REFUSED 等 WebView 不可达错误在此展示
+    if (webViewError != null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(
+                    text = webViewError!!,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = {
+                    webViewError = null
+                    webView?.reload()
+                }) {
+                    Text("点击重试")
+                }
+            }
+        }
+    }
+
     StandardDialog(
         show = showDialog,
         title = "提示",
@@ -314,6 +442,82 @@ fun WebView(
         },
         onDismiss = { showDialog = false },
     )
+
+    // 视频保存确认对话框
+    StandardDialog(
+        show = showVideoDialog,
+        title = "提示",
+        text = videoSaveUrl?.let { url ->
+            val ext = url.substringAfterLast(".").substringBefore("?").lowercase()
+            if (ext == "m3u8") "检测到 m3u8 流媒体视频，下载后合并为 .ts 文件（可在大部分播放器播放）。是否继续？"
+            else "你希望保存该视频吗？"
+        } ?: "你希望保存该视频吗？",
+        onConfirm = {
+            val url = videoSaveUrl ?: return@StandardDialog
+            showVideoDialog = false
+            VideoDownloadManager.register(
+                title = title ?: url.substringAfterLast("/").substringBefore("?"),
+                url = url,
+            ) { taskId ->
+                val saved = downloadVideo(context, url, title, taskId)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        if (saved) "保存视频成功" else "保存视频失败",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        },
+        onDismiss = { showVideoDialog = false },
+    )
+
+    // 未检测到视频 Toast 提示
+    LaunchedEffect(noVideoFound) {
+        if (noVideoFound) {
+            Toast.makeText(context, "页面中未检测到视频", Toast.LENGTH_SHORT).show()
+            noVideoFound = false
+        }
+    }
+
+    // 多视频选择对话框
+    if (showVideoSelectDialog) {
+        AlertDialog(
+            onDismissRequest = { showVideoSelectDialog = false },
+            title = { Text("选择要下载的视频") },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
+                    videoUrlList.forEachIndexed { index, url ->
+                        TextButton(
+                            onClick = {
+                                videoSaveUrl = url
+                                showVideoSelectDialog = false
+                                showVideoDialog = true
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "${index + 1}. ${url.substringAfterLast("/").substringBefore("?")}",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showVideoSelectDialog = false }) {
+                    Text("取消", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            textContentColor = MaterialTheme.colorScheme.onPrimary,
+        )
+    }
 }
 
 private fun handleDownload(context: Context, url: String) {
@@ -324,6 +528,167 @@ private fun handleDownload(context: Context, url: String) {
     } catch (e: Exception) {
         Log.e("WebView", "setOnDownloadListener: open url failed: $url", e)
     }
+}
+
+/**
+ * 下载视频到 Movies 目录并通知 MediaStore 扫描。
+ *
+ * 策略：
+ * 1. 先从 URL path 末段提取合法扩展名（仅 2-5 位字母数字）；
+ * 2. 下载到临时文件，检测前 20 字节是否含 #EXTM3U（m3u8 特征码）；
+ * 3. 是 m3u8 → 删除临时文件，委托 M3u8Downloader 重新下载+合并；
+ * 4. 不是 m3u8 → 重命名为正式文件名。
+ *
+ * @return true 表示下载成功
+ */
+internal suspend fun downloadVideo(
+    context: Context, videoUrl: String, title: String?, taskId: String,
+): Boolean {
+    try {
+        val baseDir = CacheUtils.getDirPath(context, Environment.DIRECTORY_MOVIES)
+        val safeTitle = title?.take(40)?.replace(Regex("[/\\\\:*?\"<>|]"), "_") ?: "video"
+        val saveDir = File(baseDir, safeTitle).also { it.mkdirs() }.absolutePath
+
+        val pathExt = videoUrl
+            .substringBefore("?")
+            .substringAfterLast("/")
+            .substringAfterLast(".", "")
+            .lowercase()
+        val ext = if (pathExt.length in 2..5 && pathExt.all { it in 'a'..'z' || it in '0'..'9' })
+            pathExt else ""
+
+        // ── m3u8 断点续传检测 ──
+        val task = VideoDownloadManager.tasks.value.find { it.id == taskId }
+        val resumePlaylist = task?.playlistPath?.let { File(it) }?.takeIf { it.exists() }
+        val resumeSegDir = task?.segTmpDir?.let { File(it) }?.takeIf { it.isDirectory }
+
+        if (ext == "m3u8" || resumePlaylist != null) {
+            val merged: File? = if (resumePlaylist != null && resumeSegDir != null) {
+                // 断点续传：跳过已下载的分片
+                M3u8Downloader.downloadResumable(videoUrl, saveDir, resumePlaylist, resumeSegDir) { p ->
+                    VideoDownloadManager.onProgress(taskId, p * 0.95f)
+                }
+            } else {
+                // 首次下载 m3u8
+                val mergedFile = M3u8Downloader.download(videoUrl, saveDir) { p ->
+                    VideoDownloadManager.onProgress(taskId, 0.05f + p * 0.9f)
+                }
+                // 下载过程中保存 playlist 和 seg 目录路径到 Task，供断点续传
+                if (mergedFile != null) {
+                    saveM3u8ResumePaths(videoUrl, taskId, saveDir)
+                }
+                mergedFile
+            }
+            if (merged != null) {
+                // Successful resume also cleans up paths
+                VideoDownloadManager.onM3u8Cleanup(taskId)
+                MediaScannerConnection.scanFile(
+                    context, arrayOf(merged.absolutePath), arrayOf("video/mp4")
+                ) { _, _ -> }
+                VideoDownloadManager.onComplete(taskId, merged.absolutePath)
+                return true
+            }
+            VideoDownloadManager.onFailed(taskId)
+            return false
+        }
+
+        VideoDownloadManager.onProgress(taskId, 0.1f)
+        val tmpName = "video_tmp_${System.currentTimeMillis()}"
+
+        // 全量下载（兜底）：每次尝试带 2 分钟超时，最多重试 3 次
+        // 重试间隔向 UI 反馈进度（10%~15%），避免用户以为卡死
+        val mp4RetryDelays = longArrayOf(500, 1000, 2000)
+        val mp4AttemptTimeout = 120L
+        var result: com.example.fragmject.core.network.http.HttpResponse? = null
+        for (attempt in 0..mp4RetryDelays.size) {
+            VideoDownloadManager.onProgress(taskId, 0.10f + 0.01f * attempt)
+            val tmpFileAttempt = File(saveDir, tmpName + "_" + attempt)
+            result = try {
+                withTimeoutOrNull(mp4AttemptTimeout.seconds) {
+                    withContext(Dispatchers.IO) {
+                        download(saveDir, tmpFileAttempt.name) { setUrl(videoUrl) }
+                    }
+                }
+            } catch (_: Exception) {
+                null
+            }
+            if (result != null && result.errorCode == "0") {
+                tmpFileAttempt.renameTo(File(saveDir, tmpName))
+                break
+            }
+            if (tmpFileAttempt.exists()) tmpFileAttempt.delete()
+            if (attempt < mp4RetryDelays.size) {
+                Log.w("WebView", "MP4 download attempt ${attempt + 1} failed, retrying in ${mp4RetryDelays[attempt]}ms: $videoUrl")
+                delay(mp4RetryDelays[attempt])
+            } else {
+                Log.e("WebView", "MP4 download failed after ${mp4RetryDelays.size + 1} attempts: $videoUrl")
+            }
+        }
+        if (result == null || result.errorCode != "0") {
+            VideoDownloadManager.onFailed(taskId); return false
+        }
+
+        val tmpFile = File(saveDir, tmpName)
+        if (!tmpFile.exists() || tmpFile.length() == 0L) {
+            tmpFile.delete(); VideoDownloadManager.onFailed(taskId); return false
+        }
+        VideoDownloadManager.onProgress(taskId, 0.8f)
+
+        val isM3u8Content = tmpFile.length() < 2 * 1024 * 1024 && try {
+            val header = ByteArray(20).also { tmpFile.inputStream().use { s -> s.read(it) } }
+            String(header, Charsets.UTF_8).contains("#EXTM3U")
+        } catch (_: Exception) { false }
+
+        if (isM3u8Content) {
+            tmpFile.delete()
+            val merged = M3u8Downloader.download(videoUrl, saveDir) { p ->
+                VideoDownloadManager.onProgress(taskId, 0.8f + p * 0.15f)
+            }
+            if (merged != null) {
+                VideoDownloadManager.onM3u8Cleanup(taskId)
+                MediaScannerConnection.scanFile(
+                    context, arrayOf(merged.absolutePath), arrayOf("video/mp4")
+                ) { _, _ -> }
+                VideoDownloadManager.onComplete(taskId, merged.absolutePath)
+                return true
+            }
+            VideoDownloadManager.onFailed(taskId)
+            return false
+        }
+
+        val finalExt = ext.ifBlank { "mp4" }
+        val outputFile = File(saveDir, "video_${System.currentTimeMillis()}.$finalExt")
+        tmpFile.renameTo(outputFile)
+
+        MediaScannerConnection.scanFile(
+            context, arrayOf(outputFile.absolutePath), arrayOf("video/$finalExt")
+        ) { _, _ -> }
+        VideoDownloadManager.onComplete(taskId, outputFile.absolutePath)
+        return true
+    } catch (e: Exception) {
+        Log.e("WebView", "downloadVideo failed: $videoUrl", e)
+        VideoDownloadManager.onFailed(taskId)
+        return false
+    }
+}
+
+/** 扫描 saveDir 中最新生成的 playlist 和 seg_tmp 目录，保存到 Task 供断点续传。 */
+private fun saveM3u8ResumePaths(m3u8Url: String, taskId: String, saveDir: String) {
+    try {
+        val dir = File(saveDir)
+        val playlist = dir.listFiles()?.filter {
+            it.name.startsWith("playlist_") && it.name.endsWith(".m3u8")
+        }?.maxByOrNull { it.lastModified() }
+        val segDir = dir.listFiles()?.filter {
+            it.isDirectory && it.name.startsWith("seg_tmp_")
+        }?.maxByOrNull { it.lastModified() }
+        if (playlist != null && segDir != null) {
+            VideoDownloadManager.onM3u8Progress(
+                taskId, saveDir,
+                playlist.absolutePath, segDir.absolutePath
+            )
+        }
+    } catch (_: Exception) { }
 }
 
 @Stable

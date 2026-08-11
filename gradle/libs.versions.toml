@@ -27,7 +27,6 @@ kotlin = "2.4.10"
 kotlinxCoroutines = "1.11.0"
 ksp = "2.3.6"
 material = "1.14.0"
-#miaowPlugin = "1.0.0"
 okhttp = "5.4.0"
 retrofit = "3.0.0"
 room3 = "3.0.1"
@@ -93,7 +92,6 @@ kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-p
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-#miaow-plugin = { module = "com.example.miaow:plugin", version.ref = "miaowPlugin" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

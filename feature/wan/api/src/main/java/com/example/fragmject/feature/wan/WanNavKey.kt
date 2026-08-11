@@ -72,10 +72,13 @@ object MyCollectNavKey : RequiresAuth
 object MyShareNavKey : RequiresAuth
 
 @Serializable
-object ShareArticleNavKey : RequiresAuth
+object ShareArticleNavKey : NavKey
 
 @Serializable
-object BrowseHistoryNavKey : RequiresAuth
+object BrowseHistoryNavKey : NavKey
 
 @Serializable
 object RankNavKey : NavKey
+
+@Serializable
+object VideoDownloadNavKey : NavKey

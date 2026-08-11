@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.*
@@ -224,23 +225,39 @@ class CoroutineHttp private constructor() {
     ): HttpResponse {
         val request = HttpRequest().apply(init)
         return try {
-            val response = getService().get(request.getUrl(), request.getHeader())
-            if (!response.isSuccessful) {
-                return buildResponse(
-                    "-1",
-                    "http ${response.code()} ${response.message().ifBlank { "request failed" }}",
-                    HttpResponse::class.java
+            // 下载专用 OkHttpClient：克隆现有 client、清除 BODY 日志拦截器、禁用缓存，
+            // 避免大文件下载时 CacheInterceptor 写缓存 + HttpLoggingInterceptor 读 body 导致 SocketException
+            val downloadClient = obtainClient().newBuilder().apply {
+                networkInterceptors().removeAll { it is HttpLoggingInterceptor }
+                addNetworkInterceptor(
+                    HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS)
                 )
-            }
-            val body = response.body()
-                ?: return buildResponse("-1", "response body is null", HttpResponse::class.java)
-            val file = File(savePath, fileName)
-            body.byteStream().use { inputStream ->
-                file.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream, bufferSize = 64 * 1024)
+                cache(null)
+            }.build()
+
+            val okRequest = okhttp3.Request.Builder()
+                .url(request.getUrl())
+                .apply { request.getHeader().forEach { (k, v) -> addHeader(k, v) } }
+                .build()
+
+            val response = downloadClient.newCall(okRequest).execute()
+            response.use { res ->
+                if (!res.isSuccessful) {
+                    return buildResponse(
+                        "-1",
+                        "http ${res.code} ${res.message.ifBlank { "request failed" }}",
+                        HttpResponse::class.java
+                    )
                 }
+                val body = res.body
+                val file = File(savePath, fileName)
+                body.byteStream().use { inputStream ->
+                    file.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream, bufferSize = 64 * 1024)
+                    }
+                }
+                buildResponse("0", "success", HttpResponse::class.java)
             }
-            buildResponse("0", "success", HttpResponse::class.java)
         } catch (e: Exception) {
             Log.e(TAG, "DOWNLOAD ${request.getUrl()} failed", e)
             buildResponse("-1", e.message ?: e.javaClass.simpleName, HttpResponse::class.java)

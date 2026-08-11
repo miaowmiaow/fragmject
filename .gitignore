@@ -25,3 +25,4 @@ keystore.key
 keystore.properties
 *.jks
 /.claude/
+/app/free/

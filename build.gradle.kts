@@ -1,9 +1,3 @@
-buildscript {
-    dependencies {
-//        classpath(libs.miaow.plugin)
-    }
-}
-
 // Top-level build file. Convention plugins (build-logic) handle most subproject configuration.
 // These apply-false declarations are required for the version catalog to resolve plugin versions.
 plugins {

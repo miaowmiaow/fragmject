@@ -1,21 +1,18 @@
 [versions]
 androidGradlePlugin = "9.3.1"
 activity = "1.13.0"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
 androidxCamera = "1.6.1"
-androidxComposeBom = "2026.06.01"
-androidxComposeMaterial = "1.11.4"
-androidxComposeMaterialIcon = "1.7.8"
-androidxComposeMaterial3 = "1.4.0"
+androidxComposeBom = "2026.08.00"
 androidxCoreKtx = "1.19.0"
 androidxCoreSplashscreen = "1.2.0"
 androidxMedia3 = "1.11.0"
-androidxFragmentKtx = "1.8.9"
+androidxFragmentKtx = "1.9.0"
 androidxLifecycle = "2.11.0"
-androidxNavigation3 = "1.1.5"
+androidxNavigation3 = "1.1.6"
 androidxRecyclerview = "1.4.0"
 androidxViewpager2 = "1.1.0"
-androidxWebkit = "1.16.0"
+androidxWebkit = "1.17.0"
 asm = "9.10.1"
 barcodeScanning = "17.3.0"
 coil = "2.7.0"
@@ -27,7 +24,7 @@ kotlin = "2.4.10"
 kotlinxCoroutines = "1.11.0"
 ksp = "2.3.6"
 material = "1.14.0"
-okhttp = "5.4.0"
+okhttp = "5.5.0"
 retrofit = "3.0.0"
 room3 = "3.0.1"
 
@@ -43,15 +40,13 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 androidx-camera-mlkit = { group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "androidxCamera" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "androidxComposeMaterial" }
-androidx-compose-material-icon-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "androidxComposeMaterialIcon" }
-androidx-compose-material-icon-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "androidxComposeMaterialIcon" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidxComposeMaterial3" }
-androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "androidxComposeMaterial3" }
+androidx-compose-material = { group = "androidx.compose.material", name = "material" }
+androidx-compose-material-icon-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-compose-material-icon-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "androidxMedia3" }

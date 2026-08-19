@@ -10,7 +10,6 @@ dependencies {
     api(project(":core:database"))
     api(project(":core:model"))
     implementation(project(":core:network"))
-    implementation(libs.androidx.activity.compose)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
     testImplementation(libs.junit)

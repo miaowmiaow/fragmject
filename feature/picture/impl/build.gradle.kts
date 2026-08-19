@@ -13,10 +13,6 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
 
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.compose.material.icon.core)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)

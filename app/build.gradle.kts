@@ -91,12 +91,9 @@ dependencies {
     implementation(project(":feature:picture:impl"))
 
     implementation(libs.androidx.activity)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.core.splashscreen)
-
-    implementation(libs.androidx.compose.animation)
-
-    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
@@ -107,9 +104,6 @@ dependencies {
     implementation(libs.coil.video)
 
     implementation(libs.hilt.navigation.compose)
-
-    // 启动时预编译 baseline profile 中的关键代码路径，降低首帧延迟
-    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 
     testImplementation(libs.junit)
 }

@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":core:common"))
+    implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
     testImplementation(libs.junit)
 }

@@ -62,13 +62,12 @@ fun NestedScroll2Screen() {
 
     var boxHeightDp by remember { mutableStateOf(0.dp) }
     val topBarHeightDp = 100.dp
-    val topBarHeightPx = with(density) { topBarHeightDp.roundToPx() }
+    val topBarHeightPx = with(density) { topBarHeightDp.toPx() }
     val tabBarHeightDp = 45.dp
-    val tabBarHeightPx = with(density) { tabBarHeightDp.roundToPx() }
+    val tabBarHeightPx = with(density) { tabBarHeightDp.toPx() }
 
     val targetPercent = remember { Animatable(1f) }
-
-    var scrollPercent by remember { mutableFloatStateOf(1f) }
+    var headerFullyExpanded by remember { mutableStateOf(true) }
 
     val tabs = listOf("tab1", "tab2")
     val pagerState = rememberPagerState { tabs.size }
@@ -78,23 +77,43 @@ fun NestedScroll2Screen() {
 
             var dyConsumed = 0f
 
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                val delta = available.y
-                dyConsumed += delta
-                dyConsumed = dyConsumed.coerceAtMost(0f)
+            private fun consume(delta: Float): Offset {
+                val newDy = (dyConsumed + delta).coerceIn(-topBarHeightPx, 0f)
+                val actualConsumed = newDy - dyConsumed
+                dyConsumed = newDy
+                headerFullyExpanded = newDy == 0f
                 val percent = dyConsumed / topBarHeightPx
-                scrollPercent = 1 - abs(percent.coerceIn(-1f, 0f))
-                if (percent > -1 && percent < 0) {
-                    return Offset(0f, delta)
+                scope.launch {
+                    val targetValue = 1 - abs(percent.coerceIn(-1f, 0f))
+                    if (targetValue != targetPercent.value) {
+                        targetPercent.animateTo(targetValue)
+                    }
+                }
+                return Offset(0f, actualConsumed)
+            }
+
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                // 上滑（delta < 0）：先折叠头部，折叠完成后列表才开始滚动
+                if (available.y < 0) {
+                    return consume(available.y)
+                }
+                return Offset.Zero
+            }
+
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                // 下滑（delta > 0）：列表滚到顶后，剩余的下拉量用于展开头部
+                if (available.y > 0) {
+                    return consume(available.y)
                 }
                 return Offset.Zero
             }
         }
     }
-    LaunchedEffect(Unit) {
-        snapshotFlow { scrollPercent }
-            .collect { targetPercent.animateTo(it) }
-    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -154,6 +173,7 @@ fun NestedScroll2Screen() {
                 isFinishing = true,
                 onRefresh = {},
                 onLoad = {},
+                enablePullRefresh = headerFullyExpanded,
                 key = { _, item -> item },
             ) { _, item ->
                 Row(

@@ -86,7 +86,6 @@ fun SystemScreen(
                 HorizontalPager(state = pagerState) { page ->
                     val pageCid = treeData.third[page].id
                     val listState = rememberLazyListState()
-                    val s = systemUiState as? SystemUiState.Success
                     SwipeRefreshBox(
                         items = systemUiState.getResult(pageCid),
                         isRefreshing = systemUiState.getRefreshing(pageCid),

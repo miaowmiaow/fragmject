@@ -22,7 +22,6 @@ sealed interface NavUiState {
 
 // Screen accessors
 val NavUiState.navigationResult get() = (this as? NavUiState.Success)?.navigationResult ?: emptyList()
-val NavUiState.systemTreeResult get() = (this as? NavUiState.Success)?.systemTreeResult ?: emptyList()
 val NavUiState.isLoading get() = this is NavUiState.Loading
 
 private inline fun MutableStateFlow<NavUiState>.updateData(

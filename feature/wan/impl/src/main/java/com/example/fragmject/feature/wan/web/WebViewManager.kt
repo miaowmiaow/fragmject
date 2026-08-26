@@ -20,8 +20,6 @@ import com.example.fragmject.core.network.http.download
 import com.example.fragmject.core.network.utils.CacheUtils
 import com.example.fragmject.feature.wan.web.WebViewManager.Companion.KEEP_ALIVE_CAPACITY
 import com.example.fragmject.feature.wan.web.WebViewManager.Companion.WEB_CACHE_MAX_FILES
-import com.example.fragmject.feature.wan.web.WebViewManager.Companion.destroy
-import com.example.fragmject.feature.wan.web.WebViewManager.Companion.recycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

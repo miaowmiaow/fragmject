@@ -89,7 +89,10 @@ fun UserScreen(
                 dyConsumed = dyConsumed.coerceAtMost(0f)
                 val percent = dyConsumed / targetHeightPx
                 scope.launch {
-                    targetPercent.animateTo(1 - abs(percent.coerceIn(-1f, 0f)))
+                    val targetValue = 1 - abs(percent.coerceIn(-1f, 0f))
+                    if (targetValue != targetPercent.value) {
+                        targetPercent.animateTo(targetValue)
+                    }
                 }
                 if (percent > -1 && percent < 0) {
                     return Offset(0f, delta)

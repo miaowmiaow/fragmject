@@ -15,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fragmject.core.designsystem.WanTheme
-import com.example.fragmject.feature.wan.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

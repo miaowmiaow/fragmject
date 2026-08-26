@@ -80,7 +80,7 @@ class OfflineFirstArticleRepository(
 
         writeBanners(bannerResult.getOrNull())
         writeTopArticles(topResult.getOrNull())
-        return writeArticleList(listResult.getOrNull(), page = 0)
+        return writeArticleList(listResult.getOrNull())
     }
 
     /** 加载下一页：仅网络请求，不写 Room。返回文章列表 + 总页数。 */
@@ -116,7 +116,7 @@ class OfflineFirstArticleRepository(
         )
     }
 
-    private suspend fun writeArticleList(articleList: ArticleList?, page: Int): Int? {
+    private suspend fun writeArticleList(articleList: ArticleList?): Int? {
         val datas = articleList?.data?.datas
         if (datas.isNullOrEmpty()) return null
         val cacheKey = CACHE_KEY_PAGE_0

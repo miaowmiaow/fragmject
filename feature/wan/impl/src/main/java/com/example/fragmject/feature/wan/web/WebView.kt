@@ -207,16 +207,6 @@ private class PooledWebViewClient(
         onReset()
     }
 
-    @Suppress("DEPRECATION")
-    override fun onReceivedError(
-        view: WebView?,
-        errorCode: Int,
-        description: String?,
-        failingUrl: String?,
-    ) {
-        callbacks.onReceivedError(errorCode, description ?: "未知错误", failingUrl)
-    }
-
     override fun onReceivedError(
         view: WebView?,
         request: WebResourceRequest?,
@@ -575,7 +565,7 @@ internal suspend fun downloadVideo(
                 }
                 // 下载过程中保存 playlist 和 seg 目录路径到 Task，供断点续传
                 if (mergedFile != null) {
-                    saveM3u8ResumePaths(videoUrl, taskId, saveDir)
+                    saveM3u8ResumePaths(taskId, saveDir)
                 }
                 mergedFile
             }
@@ -619,7 +609,7 @@ internal suspend fun downloadVideo(
             if (tmpFileAttempt.exists()) tmpFileAttempt.delete()
             if (attempt < mp4RetryDelays.size) {
                 Log.w("WebView", "MP4 download attempt ${attempt + 1} failed, retrying in ${mp4RetryDelays[attempt]}ms: $videoUrl")
-                delay(mp4RetryDelays[attempt])
+                delay(mp4RetryDelays[attempt].milliseconds)
             } else {
                 Log.e("WebView", "MP4 download failed after ${mp4RetryDelays.size + 1} attempts: $videoUrl")
             }
@@ -673,7 +663,7 @@ internal suspend fun downloadVideo(
 }
 
 /** 扫描 saveDir 中最新生成的 playlist 和 seg_tmp 目录，保存到 Task 供断点续传。 */
-private fun saveM3u8ResumePaths(m3u8Url: String, taskId: String, saveDir: String) {
+private fun saveM3u8ResumePaths(taskId: String, saveDir: String) {
     try {
         val dir = File(saveDir)
         val playlist = dir.listFiles()?.filter {

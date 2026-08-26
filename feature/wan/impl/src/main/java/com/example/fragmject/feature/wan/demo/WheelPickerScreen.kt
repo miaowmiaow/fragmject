@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.sp
 import com.example.fragmject.core.designsystem.WanTheme
 import com.example.fragmject.core.ui.components.WheelPicker
 import kotlinx.coroutines.launch
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun WheelPickerScreen() {

@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -96,7 +95,6 @@ private val RefreshingResIds by lazy {
  * @param onRefresh     下拉刷新回调
  * @param onLoad        加载更多回调
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> SwipeRefreshBox(
     items: List<T>?,
@@ -107,6 +105,7 @@ fun <T> SwipeRefreshBox(
     onLoad: () -> Unit,
     modifier: Modifier = Modifier,
     threshold: Dp = 100.dp,
+    enablePullRefresh: Boolean = true,
     listState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
@@ -124,7 +123,12 @@ fun <T> SwipeRefreshBox(
         val state = rememberPullToRefreshState()
         Box(
             modifier = modifier
-                .pullToRefresh(state = state, isRefreshing = isRefreshing, onRefresh = onRefresh)
+                .pullToRefresh(
+                    state = state,
+                    isRefreshing = isRefreshing,
+                    onRefresh = onRefresh,
+                    enabled = enablePullRefresh,
+                )
                 .clipToBounds()
                 .background(Color(0xFF010101))
                 .graphicsLayer {
@@ -143,7 +147,8 @@ fun <T> SwipeRefreshBox(
                 val shouldLoadMore by remember(listState, items.size, hasMore, isFinishing) {
                     derivedStateOf {
                         if (!hasMore || isFinishing || items.isEmpty()) return@derivedStateOf false
-                        val lastVisibleIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+                        val lastVisibleIndex =
+                            listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
                         // 要求"最后一项必须已上屏"，防止列表不足一屏时 MoreIndicator 被立即看到而触发连续翻页
                         val totalCount = listState.layoutInfo.totalItemsCount
                         lastVisibleIndex >= items.lastIndex - 3 && totalCount >= items.size + 1
@@ -193,7 +198,6 @@ fun MoreIndicator(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RefreshIndicator(
     isRefreshing: Boolean,

@@ -11,6 +11,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -295,7 +296,7 @@ object M3u8Downloader {
             if (ok) return true
             if (attempt < delaysMs.size) {
                 if (outFile.exists()) outFile.delete()
-                kotlinx.coroutines.delay(delaysMs[attempt])
+                kotlinx.coroutines.delay(delaysMs[attempt].milliseconds)
             } else {
                 Log.w(TAG, "Segment failed after ${delaysMs.size + 1} attempts: $url")
             }

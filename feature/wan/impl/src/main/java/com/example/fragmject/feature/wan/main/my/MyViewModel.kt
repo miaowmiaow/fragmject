@@ -29,9 +29,7 @@ class MyViewModel @Inject constructor() : BaseViewModel() {
         viewModelScope.launch {
             UserStore.getUser().collect { user ->
                 _uiState.update {
-                    when (it) {
-                        is MyUiState.NoUser -> it.copy(user = user ?: UserEntity(id = 0, username = "", nickname = ""))
-                    }
+                    it.copy(user = user ?: UserEntity(id = 0, username = "", nickname = ""))
                 }
             }
         }

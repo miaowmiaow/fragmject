@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.fragmject.core.designsystem.WanTheme
 import kotlin.math.roundToInt
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun DraggableScreen() {

@@ -1,7 +1,6 @@
 package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.data.repository.HomeRepository
-import com.example.fragmject.core.data.repository.PageData
 import com.example.fragmject.core.model.Article
 import javax.inject.Inject
 

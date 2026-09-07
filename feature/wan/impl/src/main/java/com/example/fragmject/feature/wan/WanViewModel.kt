@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.model.Tree
 import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import com.example.fragmject.core.data.repository.OfflineFirstCommonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,7 +47,7 @@ private inline fun MutableStateFlow<WanUiState>.updateData(
 
 @HiltViewModel
 class WanViewModel @Inject constructor(
-    private val offlineFirst: com.example.fragmject.core.data.repository.OfflineFirstCommonRepository,
+    private val offlineFirst: OfflineFirstCommonRepository,
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow<WanUiState>(WanUiState.Success(isLoading = true))

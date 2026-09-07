@@ -33,10 +33,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.WanTheme
+import com.example.fragmject.core.ui.R
 import kotlin.math.roundToInt
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun AnimatedContentScreen() {

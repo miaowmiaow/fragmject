@@ -1,13 +1,12 @@
 package com.example.fragmject.feature.wan.setting
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.database.model.UserEntity
 import com.example.fragmject.core.common.DarkThemeState
+import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import com.example.fragmject.core.database.model.UserEntity
 import com.example.fragmject.core.database.store.ThemeStore
 import com.example.fragmject.core.database.store.UserStore
-import com.example.fragmject.core.data.repository.UserRepository
 import com.example.fragmject.core.domain.usecase.LogoutUseCase
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

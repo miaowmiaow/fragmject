@@ -14,7 +14,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
-import com.example.fragmject.core.ui.components.LoopHorizontalPager
 
 @Composable
 fun <T> BannerPager(

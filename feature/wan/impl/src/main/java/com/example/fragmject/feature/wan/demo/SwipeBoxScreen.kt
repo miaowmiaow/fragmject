@@ -23,12 +23,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fragmject.core.designsystem.WanColors
 import com.example.fragmject.core.designsystem.WanTheme
 import com.example.fragmject.core.ui.components.SwipeBox
 import com.example.fragmject.core.ui.components.SwipeBoxControl
 import com.example.fragmject.core.ui.components.rememberSwipeBoxControl
-import com.example.fragmject.core.designsystem.WanColors
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun SwipeBoxScreen() {

@@ -1,15 +1,15 @@
 [versions]
-androidGradlePlugin = "9.3.2"
+androidGradlePlugin = "9.4.0"
 activity = "1.13.0"
 appcompat = "1.8.0"
-androidxCamera = "1.6.1"
+androidxCamera = "1.6.2"
 androidxComposeBom = "2026.08.00"
 androidxCoreKtx = "1.19.0"
 androidxCoreSplashscreen = "1.2.0"
 androidxMedia3 = "1.11.0"
 androidxFragmentKtx = "1.9.0"
 androidxLifecycle = "2.11.0"
-androidxNavigation3 = "1.1.6"
+androidxNavigation3 = "1.1.7"
 androidxRecyclerview = "1.4.0"
 androidxViewpager2 = "1.1.0"
 androidxWebkit = "1.17.0"
@@ -26,7 +26,7 @@ ksp = "2.3.6"
 material = "1.14.0"
 okhttp = "5.5.0"
 retrofit = "3.0.0"
-room3 = "3.0.1"
+room3 = "3.0.2"
 
 [libraries]
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }

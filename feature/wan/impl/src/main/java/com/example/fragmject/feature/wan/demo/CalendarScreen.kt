@@ -34,13 +34,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.fragmject.core.ui.R
+import com.example.fragmject.core.designsystem.WanColors
 import com.example.fragmject.core.designsystem.WanTheme
+import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.core.ui.components.calendar.Calendar
 import com.example.fragmject.core.ui.components.calendar.rememberCalendarState
-import com.example.fragmject.core.designsystem.WanColors
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun CalendarScreen() {

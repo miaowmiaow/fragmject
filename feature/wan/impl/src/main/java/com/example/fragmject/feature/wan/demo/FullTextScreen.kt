@@ -23,10 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.WanTheme
+import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.components.EllipsisText
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun FullTextScreen() {

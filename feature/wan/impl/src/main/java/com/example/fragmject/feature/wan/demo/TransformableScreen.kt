@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.fragmject.core.designsystem.WanTheme
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun TransformableScreen() {

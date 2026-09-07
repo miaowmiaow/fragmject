@@ -9,7 +9,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
 import com.example.fragmject.core.ui.components.ExoPlayer
-import com.example.fragmject.feature.wan.*
 
 @Composable
 fun ExoPlayerScreen() {

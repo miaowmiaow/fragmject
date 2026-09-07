@@ -1,7 +1,6 @@
 package com.example.fragmject.core.database.model
 
 import com.example.fragmject.core.model.HotKey
-import com.google.gson.Gson
 
 fun HotKey.toEntity(cacheKey: String, sortOrder: Int): HotKeyEntity = HotKeyEntity(
     hotKeyId = id,

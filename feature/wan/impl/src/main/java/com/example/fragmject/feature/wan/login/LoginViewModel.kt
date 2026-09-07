@@ -1,11 +1,9 @@
 package com.example.fragmject.feature.wan.login
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.data.repository.UserRepository
+import com.example.fragmject.core.common.viewmodel.BaseViewModel
 import com.example.fragmject.core.domain.usecase.LoginResult
 import com.example.fragmject.core.domain.usecase.LoginUseCase
-import com.example.fragmject.core.database.store.UserStore
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

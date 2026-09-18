@@ -40,8 +40,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -65,30 +63,30 @@ enum class PreviewMode { NORM, SELECT }
 @Composable
 fun PicturePreviewScreen(
     mode: PreviewMode = PreviewMode.NORM,
-    origSelectPosition: List<Int> = emptyList(),
+    origSelectUris: List<String> = emptyList(),
     previewPosition: Int = 0,
-    onFinish: (List<Int>) -> Unit,
+    onFinish: (List<String>) -> Unit,
     onDismiss: () -> Unit,
     onOpenEditor: (Uri) -> Unit = {},
     viewModel: PictureViewModel = viewModel(),
 ) {
     val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
-    val currSelectPosition = remember { mutableStateListOf<Int>() }
-    val currSelectPositionSet = remember { mutableStateMapOf<Int, Unit>() }
+    val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
+    val selectedUriSet by viewModel.selectedUriSet.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var showTitleBar by remember { mutableStateOf(true) }
     var showNavBar by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        currSelectPosition.clear()
-        currSelectPositionSet.clear()
-        currSelectPosition.addAll(origSelectPosition)
-        origSelectPosition.forEach { currSelectPositionSet[it] = Unit }
+        viewModel.initSelection(origSelectUris)
     }
 
-    val data = remember(currAlbumResult, origSelectPosition, mode) {
+    val data = remember(currAlbumResult, origSelectUris, mode) {
         if (mode == PreviewMode.SELECT) {
-            origSelectPosition.map { currAlbumResult.getOrElse(it) { MediaBean("", Uri.EMPTY) } }
+            origSelectUris.map { uriStr ->
+                currAlbumResult.find { it.uri.toString() == uriStr }
+                    ?: MediaBean("", Uri.EMPTY)
+            }
         } else {
             currAlbumResult.toList()
         }
@@ -239,7 +237,7 @@ fun PicturePreviewScreen(
                         fontSize = 16.sp
                     )
                     TextButton(onClick = {
-                        onFinish(currSelectPosition.toList())
+                        onFinish(selectedUris)
                         onDismiss()
                     }) {
                         Text("完成", color = Color.White, fontSize = 16.sp)
@@ -269,8 +267,8 @@ fun PicturePreviewScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             itemsIndexed(data, key = { _, item -> item.uri }) { index, media ->
-                                val realPosition = origSelectPosition.getOrElse(index) { index }
-                                val isSelected = currSelectPositionSet.containsKey(realPosition)
+                                val uriStr = media.uri.toString()
+                                val isSelected = uriStr in selectedUriSet
                                 Box(
                                     modifier = Modifier
                                         .size(48.dp)
@@ -319,22 +317,13 @@ fun PicturePreviewScreen(
 
                         // 选择框
                         TextButton(onClick = {
-                            val realPosition = if (mode == PreviewMode.SELECT) {
-                                origSelectPosition.getOrElse(pagerState.currentPage) { pagerState.currentPage }
-                            } else pagerState.currentPage
-
-                            if (currSelectPositionSet.containsKey(realPosition)) {
-                                currSelectPosition.remove(realPosition)
-                                currSelectPositionSet.remove(realPosition)
-                            } else if (currSelectPosition.size < 9) {
-                                currSelectPosition.add(realPosition)
-                                currSelectPositionSet[realPosition] = Unit
-                            }
+                            val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
+                                ?: return@TextButton
+                            viewModel.toggleSelection(uriStr)
                         }) {
-                            val realPosition = if (mode == PreviewMode.SELECT) {
-                                origSelectPosition.getOrElse(pagerState.currentPage) { pagerState.currentPage }
-                            } else pagerState.currentPage
-                            val isSelected = currSelectPositionSet.containsKey(realPosition)
+                            val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
+                                ?: ""
+                            val isSelected = uriStr in selectedUriSet
 
                             Box(
                                 modifier = Modifier

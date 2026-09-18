@@ -46,13 +46,9 @@
 - [Room 使用入门 | Android Developer](https://developer.android.google.cn/training/data-storage/room?hl=zh_cn)
 - [Compose 使用入门 | Android Developer](https://developer.android.google.cn/jetpack/compose)
 
-## 为什么很少依赖其他库
-在日常开发中我推荐使用 `Hilt` 、 `Paging` 等库，不仅提高效率也能减少bug。   
-但是初学者过早依赖第三方库，可能会有以下危害：
-- 增加学习负担，第三方库用起来简单但是底层实现往往复杂，阅读源码容易打击学习积极性。
-- 造成基础薄弱，初学者容易把第三方库能力当成自己的能力，脱离第三方库开发能力大大下降。
+## 初学者建议
 
-因此，本项目尽量多去自己实现，可能不是很优雅但一定能让你学习到更多。
+如果你更希望以较少的封装、更直白的代码快速上手，建议切换到 [v1.4.0](https://github.com/miaowmiaow/fragmject/tree/v1.4.0) 标签版本，该版本保留了更简洁的实现，没有复杂的架构分层与封装，更容易理解和学习。
 
 ## 截图展示
 | ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/1.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/2.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/3.png) |
@@ -65,9 +61,9 @@
 |     └── main
 |     |   ├── assets                            assets 目录（HTML/JS/JSON 测试数据）
 |     |   └── java                              源码目录
-|     |      ├── WanActivity.kt                 唯一 Activity
-|     |      ├── WanApplication.kt              Application（Hilt 入口）
-|     |      └── WanNavGraph.kt                 导航图（Navigation 3 + WindowSizeClass 自适应）
+|     |      ├── MainActivity.kt                 唯一 Activity
+|     |      ├── FragmjectApplication.kt        Application（Hilt 入口）
+|     |      └── AppNavGraph.kt                 导航图（Navigation 3 + WindowSizeClass 自适应）
 |     |
 |     ├── build.gradle.kts                      模块构建配置
 |     ├── dictionary                            自定义混淆字典
@@ -77,7 +73,7 @@
 |  ├── common                                   公共工具（TransitionGuard 等）
 |  ├── data                                     数据层（Repository）
 |  ├── database                                 数据库（Room 3）
-|  ├── designsystem                             设计系统（WanTheme / WindowSizeClass / 组件）
+|  ├── designsystem                             设计系统（AppTheme / WindowSizeClass / 组件）
 |  ├── domain                                   领域层
 |  ├── model                                    数据模型
 |  ├── network                                  网络层（Retrofit + OkHttp）
@@ -150,7 +146,7 @@ graph LR
 
 ### 涉及文件
 - [LocalWindowSizeClass.kt](core/designsystem/src/main/java/com/example/fragmject/core/designsystem/LocalWindowSizeClass.kt) — `CompositionLocal` 注入 + 便捷扩展
-- [WanNavGraph.kt](app/src/main/java/com/example/fragment/project/WanNavGraph.kt) — Expanded 模式拦截 `NavKey`，传递给 `DetailPane`
+- [AppNavGraph.kt](app/src/main/java/com/example/fragmject/app/AppNavGraph.kt) — Expanded 模式拦截 `NavKey`，传递给 `DetailPane`
 - [MainScreen.kt](feature/wan/impl/src/main/java/com/example/fragmject/feature/wan/main/MainScreen.kt) — 三态布局分发 + `DetailPane` 路由
 
 ### 使用方式

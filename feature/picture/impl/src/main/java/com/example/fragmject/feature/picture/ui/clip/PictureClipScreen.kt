@@ -27,33 +27,25 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragmject.core.network.utils.saveImagesToAlbum
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.feature.picture.components.PictureClipCanvas
 import com.example.fragmject.feature.picture.components.rememberPictureClipState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.fragmject.feature.picture.ui.editor.PictureEditorViewModel
 
 @Composable
 fun PictureClipScreen(
     bitmap: Bitmap,
+    viewModel: PictureEditorViewModel,
     onFinish: (path: String, uri: Uri) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val state = rememberPictureClipState()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var isSaving by remember { mutableStateOf(false) }
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
 
     LaunchedEffect(bitmap) {
         state.setBitmap(bitmap)
@@ -109,14 +101,9 @@ fun PictureClipScreen(
                 TextButton(
                     onClick = {
                         if (!isSaving) {
-                            isSaving = true
-                            scope.launch {
-                                val result = withContext(Dispatchers.Default) {
-                                    state.saveBitmap()
-                                }
-                                context.saveImagesToAlbum(result) { path, uri ->
-                                    onFinish(path, uri)
-                                }
+                            val result = state.saveBitmap()
+                            viewModel.save(result) { path, uri ->
+                                onFinish(path, uri)
                             }
                         }
                     },

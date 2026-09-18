@@ -1,6 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
-import com.example.fragmject.core.data.repository.MyCollectRepository
+import com.example.fragmject.core.domain.repository.MyCollectRepository
+import com.example.fragmject.core.domain.result.DomainResult
 import javax.inject.Inject
 
 /**
@@ -9,5 +10,5 @@ import javax.inject.Inject
 class RefreshMyCollectUseCase @Inject constructor(
     private val repo: MyCollectRepository,
 ) {
-    suspend operator fun invoke(): Int? = repo.refreshMyCollect()
+    suspend operator fun invoke(): DomainResult<Int> = repo.refreshMyCollect()
 }

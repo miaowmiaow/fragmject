@@ -260,7 +260,7 @@
 -keep public class * extends com.example.fragmject.core.network.http.HttpResponse { *; }
 
 # ============================== kotlinx.serialization ==============================
-# WanNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。
+# AppNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。
 # R8 fullMode 下若不 keep Companion 与 $$serializer，release 包路由解析会抛 SerializationException。
 # 保留所有 @Serializable 类的 Companion 与 serializer()
 -if @kotlinx.serialization.Serializable class **

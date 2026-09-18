@@ -58,7 +58,9 @@ fun ArticleEntity.toDomain(): Article {
         userId = userId,
         shareUser = shareUser,
         zan = zan,
-        tags = tagsJson.takeIf { it.isNotEmpty() }?.let { gson.fromJson(it, Array<ArticleTag>::class.java)?.toList() },
-        banners = bannersJson.takeIf { it.isNotEmpty() }?.let { gson.fromJson(it, Array<Banner>::class.java)?.toList() },
+        tags = tagsJson.takeIf { it.isNotEmpty() }
+            ?.let { gson.fromJson(it, Array<ArticleTag>::class.java)?.toList() },
+        banners = bannersJson.takeIf { it.isNotEmpty() }
+            ?.let { gson.fromJson(it, Array<Banner>::class.java)?.toList() },
     )
 }

@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -22,7 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import com.example.fragmject.core.designsystem.WanColors
+import com.example.fragmject.core.designsystem.AppColors
 
 @Composable
 fun EllipsisText(
@@ -35,7 +36,7 @@ fun EllipsisText(
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     ellipsisText: String = "...全文",
-    ellipsisColor: Color = WanColors.blue,
+    ellipsisColor: Color = AppColors.blue,
     onClick: () -> Unit = {},
     onEllipsisClick: () -> Unit = {},
 ) {
@@ -48,6 +49,7 @@ fun EllipsisText(
         style = style
     )
     val ellipsisWidth = ellipsisLayoutResult.size.width
+    var showEllipsis by remember { mutableStateOf(false) }
     Box(modifier = Modifier.animateContentSize()) {
         Text(
             text = text,
@@ -63,27 +65,31 @@ fun EllipsisText(
             maxLines = maxLines,
             inlineContent = inlineContent,
             onTextLayout = {
-                val offset = if (maxLines == Int.MAX_VALUE) 0 else ellipsisWidth
-                ellipsisBottom = it.getLineBottom(it.lineCount - 1)
-                ellipsisLeft = it.getHorizontalPosition(
-                    it.getOffsetForPosition(
-                        Offset(
-                            it.getLineRight(it.lineCount - 1) - offset,
-                            it.getLineTop(it.lineCount - 1)
-                        )
-                    ), true
-                )
-                if (ellipsisLeft + ellipsisWidth > it.size.width) {
+                // 只有文字真正超出 maxLines 时才显示「...全文」
+                showEllipsis = it.hasVisualOverflow
+                if (showEllipsis) {
+                    val offset = if (maxLines == Int.MAX_VALUE) 0 else ellipsisWidth
+                    ellipsisBottom = it.getLineBottom(it.lineCount - 1)
                     ellipsisLeft = it.getHorizontalPosition(
                         it.getOffsetForPosition(
                             Offset(
-                                (it.size.width - ellipsisWidth).toFloat(),
+                                it.getLineRight(it.lineCount - 1) - offset,
                                 it.getLineTop(it.lineCount - 1)
                             )
                         ), true
                     )
+                    if (ellipsisLeft + ellipsisWidth > it.size.width) {
+                        ellipsisLeft = it.getHorizontalPosition(
+                            it.getOffsetForPosition(
+                                Offset(
+                                    (it.size.width - ellipsisWidth).toFloat(),
+                                    it.getLineTop(it.lineCount - 1)
+                                )
+                            ), true
+                        )
+                    }
+                    onTextLayout(it)
                 }
-                onTextLayout(it)
             },
             style = style
         )

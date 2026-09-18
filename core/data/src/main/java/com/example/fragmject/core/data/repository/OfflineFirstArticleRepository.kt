@@ -1,16 +1,23 @@
 package com.example.fragmject.core.data.repository
 
+import android.util.Log
+import com.example.fragmject.core.network.datasource.ArticleDataSource
 import com.example.fragmject.core.database.dao.ArticleDao
 import com.example.fragmject.core.database.model.toDomain
 import com.example.fragmject.core.database.model.toEntity
+import com.example.fragmject.core.data.util.fetchAsDomainResult
+import com.example.fragmject.core.domain.repository.HomeRepository
+import com.example.fragmject.core.domain.result.DomainResult
+import com.example.fragmject.core.domain.result.PageData
 import com.example.fragmject.core.model.Article
-import com.example.fragmject.core.model.ArticleList
+import com.example.fragmject.core.model.ArticleData
 import com.example.fragmject.core.model.Banner
-import com.example.fragmject.core.model.BannerList
-import com.example.fragmject.core.model.TopArticle
+import com.example.fragmject.core.network.http.DataResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * 只有首页(page 0)进 Room 缓存的 Repository。
@@ -19,21 +26,23 @@ import kotlinx.coroutines.flow.map
  * - 页面 0：网络 → Room → Room Flow → UI（秒开）
  * - 页面 1+：网络 → ViewModel 内存列表（不写 Room，消除竞态）
  */
-class OfflineFirstArticleRepository(
+@Singleton
+class OfflineFirstArticleRepository @Inject constructor(
     private val articleDao: ArticleDao,
-    private val articleRepo: ArticleRepository,
-) {
+    private val articleRepo: ArticleDataSource,
+) : HomeRepository {
 
     companion object {
         const val CACHE_KEY_BANNER = "home_banners"
         const val CACHE_KEY_TOP = "home_top"
         const val CACHE_KEY_PAGE_0 = "home_page_0"
+        private const val TAG = "HomeRepo"
     }
 
     // ===== 观察 Room（仅页面 0） =====
 
     /** 观察首页文章（banner + 置顶 + 第 0 页）。 */
-    fun observeHomeArticles(): Flow<List<Article>> = combine(
+    override fun observeHomeArticles(): Flow<List<Article>> = combine(
         observeHomeBanners(),
         observeTopArticles(),
         observePage0(),
@@ -47,7 +56,7 @@ class OfflineFirstArticleRepository(
         list
     }
 
-    fun observeHomeBanners(): Flow<List<Banner>> =
+    override fun observeHomeBanners(): Flow<List<Banner>> =
         articleDao.getByCacheKey(CACHE_KEY_BANNER).map { entities ->
             entities.flatMap { entity ->
                 val banners = entity.bannersJson
@@ -70,33 +79,41 @@ class OfflineFirstArticleRepository(
 
     // ===== 网络 → Room 写入 / 直接返回 =====
 
-    /** 刷新首页：写入 Room → Room Flow 自动推送 UI。返回总页数。 */
-    suspend fun refreshHome(): Int? {
+    /** 刷新首页：写入 Room → Room Flow 自动推送 UI。返回 DomainResult 携带总页数。 */
+    override suspend fun refreshHome(): DomainResult<Int> {
         cleanExpiredIfNeeded()
 
-        val bannerResult = runCatching { articleRepo.fetchBannerList() }
-        val topResult = runCatching { articleRepo.fetchArticleTop() }
-        val listResult = runCatching { articleRepo.getArticleList(0) }
+        // banner / top 为尽力而为：失败仅记录日志，不影响主列表。
+        runCatching { articleRepo.fetchBannerList() }
+            .onSuccess { writeBanners(it) }
+            .onFailure { Log.e(TAG, "fetchBannerList failed", it) }
+        runCatching { articleRepo.fetchArticleTop() }
+            .onSuccess { writeTopArticles(it) }
+            .onFailure { Log.e(TAG, "fetchArticleTop failed", it) }
 
-        writeBanners(bannerResult.getOrNull())
-        writeTopArticles(topResult.getOrNull())
-        return writeArticleList(listResult.getOrNull())
+        return fetchAsDomainResult(
+            call = { articleRepo.getArticleList(0) },
+        ) { resp ->
+            writeArticleList(resp)
+        }
     }
 
     /** 加载下一页：仅网络请求，不写 Room。返回文章列表 + 总页数。 */
-    suspend fun loadNextPage(page: Int): PageData? {
-        val result = runCatching { articleRepo.getArticleList(page) }
-        val articleList = result.getOrNull() ?: return null
-        val datas = articleList.data?.datas ?: return null
-        if (datas.isEmpty()) return null
-        val pageCount = articleList.data?.pageCount?.toIntOrNull()
-        return PageData(articles = datas, pageCount = pageCount)
+    override suspend fun loadNextPage(page: Int): DomainResult<PageData> {
+        return fetchAsDomainResult(
+            call = { articleRepo.getArticleList(page) },
+        ) { resp ->
+            PageData(
+                articles = resp.data?.datas.orEmpty(),
+                pageCount = resp.data?.pageCount?.toIntOrNull(),
+            )
+        }
     }
 
     // ===== 内部写库方法 =====
 
-    private suspend fun writeBanners(bannerList: BannerList?) {
-        val banners = bannerList?.data ?: return
+    private suspend fun writeBanners(bannerList: DataResponse<List<Banner>>) {
+        val banners = bannerList.data ?: return
         if (banners.isEmpty()) return
         val entity = Article(
             id = "0",
@@ -106,26 +123,28 @@ class OfflineFirstArticleRepository(
         articleDao.replaceAll(CACHE_KEY_BANNER, listOf(entity))
     }
 
-    private suspend fun writeTopArticles(topArticle: TopArticle?) {
-        val articles = topArticle?.data ?: return
+    private suspend fun writeTopArticles(topArticle: DataResponse<List<Article>>) {
+        val articles = topArticle.data ?: return
         if (articles.isEmpty()) return
-        articleDao.replaceAll(CACHE_KEY_TOP,
+        articleDao.replaceAll(
+            CACHE_KEY_TOP,
             articles.mapIndexed { i, article ->
                 article.copy(top = true).toEntity(CACHE_KEY_TOP, i)
             }
         )
     }
 
-    private suspend fun writeArticleList(articleList: ArticleList?): Int? {
-        val datas = articleList?.data?.datas
-        if (datas.isNullOrEmpty()) return null
-        val cacheKey = CACHE_KEY_PAGE_0
-        articleDao.replaceAll(cacheKey,
-            datas.mapIndexed { i, article ->
-                article.toEntity(cacheKey, i)
-            }
-        )
-        return articleList.data?.pageCount?.toIntOrNull()
+    private suspend fun writeArticleList(articleList: DataResponse<ArticleData>): Int {
+        val datas = articleList.data?.datas.orEmpty()
+        if (datas.isNotEmpty()) {
+            articleDao.replaceAll(
+                CACHE_KEY_PAGE_0,
+                datas.mapIndexed { i, article ->
+                    article.toEntity(CACHE_KEY_PAGE_0, i)
+                }
+            )
+        }
+        return articleList.data?.pageCount?.toIntOrNull() ?: 0
     }
 
     // ===== 缓存清理 =====

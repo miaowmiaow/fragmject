@@ -12,15 +12,9 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    implementation(project(":core:database"))
     api(project(":core:designsystem"))
     api(project(":core:model"))
-    implementation(project(":core:network"))
 
-    implementation(libs.androidx.media3.exoplayer)
-    implementation(libs.androidx.media3.exoplayer.dash)
-    implementation(libs.androidx.media3.exoplayer.hls)
-    implementation(libs.androidx.media3.ui)
     implementation(libs.coil.compose)
 
     testImplementation(libs.junit)

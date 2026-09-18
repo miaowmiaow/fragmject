@@ -49,5 +49,9 @@ gradlePlugin {
             id = libs.plugins.fragmject.android.room.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectAndroidRoomPlugin"
         }
+        register("stabilityCheck") {
+            id = libs.plugins.fragmject.android.stability.check.get().pluginId
+            implementationClass = "com.example.fragmject.convention.FragmjectAndroidStabilityCheckPlugin"
+        }
     }
 }

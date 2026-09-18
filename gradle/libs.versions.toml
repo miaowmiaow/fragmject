@@ -3,10 +3,10 @@ androidGradlePlugin = "9.4.0"
 activity = "1.13.0"
 appcompat = "1.8.0"
 androidxCamera = "1.6.2"
-androidxComposeBom = "2026.08.00"
+androidxComposeBom = "2026.09.00"
 androidxCoreKtx = "1.19.0"
 androidxCoreSplashscreen = "1.2.0"
-androidxMedia3 = "1.11.0"
+androidxMedia3 = "1.11.1"
 androidxFragmentKtx = "1.9.0"
 androidxLifecycle = "2.11.0"
 androidxNavigation3 = "1.1.7"
@@ -20,13 +20,13 @@ gson = "2.14.0"
 hilt = "2.60.1"
 hiltNavigationCompose = "1.4.0"
 junit = "4.13.2"
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 kotlinxCoroutines = "1.11.0"
 ksp = "2.3.6"
 material = "1.14.0"
 okhttp = "5.5.0"
 retrofit = "3.0.0"
-room3 = "3.0.2"
+room3 = "3.0.3"
 
 [libraries]
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
@@ -40,6 +40,7 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 androidx-camera-mlkit = { group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "androidxCamera" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 androidx-compose-material-icon-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-compose-material-icon-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
@@ -86,10 +87,12 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
@@ -108,3 +111,4 @@ fragmject-android-feature = { id = "fragmject.android.feature" }
 fragmject-android-hilt = { id = "fragmject.android.hilt" }
 fragmject-android-library = { id = "fragmject.android.library" }
 fragmject-android-room = { id = "fragmject.android.room" }
+fragmject-android-stability-check = { id = "fragmject.android.stability-check" }

@@ -16,7 +16,9 @@
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
@@ -24,7 +26,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name="com.example.fragmject.app.WanApplication"
+        android:name="com.example.fragmject.app.FragmjectApplication"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
@@ -40,7 +42,7 @@
             android:value="${app_channel_value}" />
 
         <activity
-            android:name="com.example.fragmject.app.WanActivity"
+            android:name="com.example.fragmject.app.MainActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation"
             android:exported="true"
             android:launchMode="singleTask"
@@ -58,7 +60,7 @@
 
                 <data
                     android:host="com.fragment.project"
-                    android:scheme="wan" />
+                    android:scheme="fragmject" />
             </intent-filter>
         </activity>
     </application>

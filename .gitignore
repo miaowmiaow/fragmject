@@ -27,3 +27,7 @@ keystore.properties
 *.jks
 /.claude/
 /app/free/
+
+# IDE 本地对话历史（体积极大，不应入库）
+.idea/CopilotChatHistory.xml
+.idea/CopilotChatTabs.xml

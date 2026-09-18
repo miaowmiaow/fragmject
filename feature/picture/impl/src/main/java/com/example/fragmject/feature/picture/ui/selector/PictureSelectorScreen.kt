@@ -1,12 +1,9 @@
 package com.example.fragmject.feature.picture.ui.selector
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -47,14 +44,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,34 +56,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.fragmject.core.network.utils.CacheUtils
 import com.example.fragmject.feature.picture.model.MediaBean
-import java.io.File
 
 @Composable
 fun PictureSelectorScreen(
     modifier: Modifier = Modifier,
     onFinish: (List<MediaBean>) -> Unit,
     onDismiss: () -> Unit,
-    onPreview: (List<Int>) -> Unit = {},
+    onPreview: (List<String>) -> Unit = {},
     viewModel: PictureViewModel = viewModel(),
 ) {
     val context = LocalContext.current
     val albumResult by viewModel.albumResult.collectAsStateWithLifecycle()
     val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
-    val selectPosition = remember { mutableStateListOf<Int>() }
-    val selectPositionSet = remember { mutableStateMapOf<Int, Unit>() }
-    var currAlbumName by remember { mutableStateOf("") }
-    val selectPositionMap by remember {
-        derivedStateOf {
-            selectPosition.withIndex().associate { (num, pos) -> pos to (num + 1) }
-        }
+    val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
+    val selectedUriSet by viewModel.selectedUriSet.collectAsStateWithLifecycle()
+    val currAlbumName by viewModel.currAlbumName.collectAsStateWithLifecycle()
+    val expanded by viewModel.albumMenuExpanded.collectAsStateWithLifecycle()
+    val hasPermission by viewModel.hasPermission.collectAsStateWithLifecycle()
+    val queryAttempted by viewModel.queryAttempted.collectAsStateWithLifecycle()
+
+    val selectPositionMap = remember(selectedUris) {
+        selectedUris.withIndex().associate { (num, uri) -> uri to (num + 1) }
     }
-    var expanded by remember { mutableStateOf(false) }
-    var takePictureUri by remember { mutableStateOf<Uri?>(null) }
 
     // 存储权限
     val storagePermissions = remember {
@@ -102,32 +91,25 @@ fun PictureSelectorScreen(
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
     }
-    var hasPermission by remember {
-        mutableStateOf(
-            storagePermissions.all {
-                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-            }
-        )
-    }
-    var queryAttempted by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
-        hasPermission = storagePermissions.all { results[it] == true }
+        viewModel.setHasPermission(storagePermissions.all { results[it] == true })
         // 权限回调后重新查询（无论结果如何，都尝试查询）
-        viewModel.queryAlbum(context)
+        viewModel.queryAlbum()
     }
 
-    // 始终尝试查询，不依赖权限状态
+    // 初始权限检查：有权限直接查询，无权限则自动弹出系统授权对话框
     LaunchedEffect(Unit) {
-        viewModel.queryAlbum(context)
-        queryAttempted = true
-    }
-
-    LaunchedEffect(albumResult) {
-        if (albumResult.isNotEmpty() && currAlbumName.isEmpty()) {
-            currAlbumName = albumResult[0].name
+        val granted = storagePermissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+        viewModel.setHasPermission(granted)
+        if (granted) {
+            viewModel.queryAlbum()
+        } else {
+            permissionLauncher.launch(storagePermissions)
         }
     }
 
@@ -136,27 +118,35 @@ fun PictureSelectorScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            val uri = takePictureUri ?: return@rememberLauncherForActivityResult
-            viewModel.updateMediaMap(MediaBean("拍照", uri))
+            // 清除 pending 状态，让真实照片对系统相册与查询可见
+            viewModel.finishTakePictureUri()
+            // 重新查询相册，获取相机写入后的真实数据并按最新修改时间排序到头部
+            viewModel.queryAlbum()
+        } else {
+            // 拍照失败或用户取消：删除预创建但未写入数据的记录，避免相册残留透明图
+            viewModel.deleteTakePictureUri()
         }
     }
 
-    fun createTakePictureUri(): Uri {
-        val pictureName = "${System.currentTimeMillis()}.png"
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, pictureName)
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-            }
-            context.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
-            ) ?: Uri.EMPTY
+    // 启动相机：预创建 Uri 后拉起系统相机
+    fun launchCamera() {
+        val uri = viewModel.createTakePictureUri()
+        if (uri != null) {
+            takePictureLauncher.launch(uri)
         } else {
-            val cachePath = CacheUtils.getDirPath(context, Environment.DIRECTORY_PICTURES)
-            val imageFile = File(cachePath, pictureName)
-            val authority = "${context.packageName}.FileProvider"
-            FileProvider.getUriForFile(context, authority, imageFile)
-        }.also { takePictureUri = it }
+            Toast.makeText(context, "无法创建照片文件", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 相机权限申请：授权成功后自动继续拍照
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
+        } else {
+            Toast.makeText(context, "需要相机权限才能拍照", Toast.LENGTH_SHORT).show()
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -221,7 +211,7 @@ fun PictureSelectorScreen(
                     // 相册选择（始终居中）
                     Box(modifier = Modifier.align(Alignment.Center)) {
                         Row(
-                            modifier = Modifier.clickable { expanded = true },
+                            modifier = Modifier.clickable { viewModel.setAlbumMenuExpanded(true) },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -239,7 +229,7 @@ fun PictureSelectorScreen(
                         }
                         DropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false },
+                            onDismissRequest = { viewModel.setAlbumMenuExpanded(false) },
                             containerColor = Color(0xFF2B2B2B),
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -255,9 +245,8 @@ fun PictureSelectorScreen(
                                         )
                                     },
                                     onClick = {
-                                        currAlbumName = album.name
                                         viewModel.updateCurrAlbum(album.name)
-                                        expanded = false
+                                        viewModel.setAlbumMenuExpanded(false)
                                     }
                                 )
                             }
@@ -266,15 +255,17 @@ fun PictureSelectorScreen(
 
                     TextButton(
                         onClick = {
-                            val data = selectPosition.map { currAlbumResult[it] }
+                            val data = selectedUris.mapNotNull { uriStr ->
+                                currAlbumResult.find { it.uri.toString() == uriStr }
+                            }
                             onFinish(data)
                         },
-                        enabled = selectPosition.isNotEmpty(),
+                        enabled = selectedUris.isNotEmpty(),
                         modifier = Modifier.align(Alignment.CenterEnd)
                     ) {
                         Text(
-                            if (selectPosition.isEmpty()) "确定" else "确定(${selectPosition.size})",
-                            color = if (selectPosition.isNotEmpty()) Color(0xFF508CEE) else Color.Gray,
+                            if (selectedUris.isEmpty()) "确定" else "确定(${selectedUris.size})",
+                            color = if (selectedUris.isNotEmpty()) Color(0xFF508CEE) else Color.Gray,
                             fontSize = 16.sp
                         )
                     }
@@ -296,8 +287,16 @@ fun PictureSelectorScreen(
                                 .aspectRatio(1f)
                                 .background(Color(0xFF333333))
                                 .clickable {
-                                    val uri = createTakePictureUri()
-                                    takePictureLauncher.launch(uri)
+                                    if (
+                                        ContextCompat.checkSelfPermission(
+                                            context,
+                                            Manifest.permission.CAMERA,
+                                        ) == PackageManager.PERMISSION_GRANTED
+                                    ) {
+                                        launchCamera()
+                                    } else {
+                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -311,23 +310,17 @@ fun PictureSelectorScreen(
                     }
 
                     // 图片列表
-                    itemsIndexed(currAlbumResult, key = { _, item -> item.uri }) { index, media ->
-                        val realIndex = index // 真实索引（不含相机）
-                        val isSelected = selectPositionSet.containsKey(realIndex)
-                        val selectNum = selectPositionMap[realIndex] ?: 0
+                    itemsIndexed(currAlbumResult, key = { _, item -> item.uri }) { _, media ->
+                        val uriStr = media.uri.toString()
+                        val isSelected = uriStr in selectedUriSet
+                        val selectNum = selectPositionMap[uriStr] ?: 0
 
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
                                 .clickable {
-                                    if (isSelected) {
-                                        selectPosition.remove(realIndex)
-                                        selectPositionSet.remove(realIndex)
-                                    } else if (selectPosition.size < 9) {
-                                        selectPosition.add(realIndex)
-                                        selectPositionSet[realIndex] = Unit
-                                    }
+                                    viewModel.toggleSelection(uriStr)
                                 }
                         ) {
                             AsyncImage(
@@ -395,9 +388,9 @@ fun PictureSelectorScreen(
         }
 
         // 预览按钮
-        if (selectPosition.isNotEmpty()) {
+        if (selectedUris.isNotEmpty()) {
             TextButton(
-                onClick = { onPreview(selectPosition.toList()) },
+                onClick = { onPreview(selectedUris) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.Black.copy(alpha = 0.6f))

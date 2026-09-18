@@ -1,128 +1,120 @@
 package com.example.fragmject.core.data.di
 
-import com.example.fragmject.core.database.AppDatabase
-import com.example.fragmject.core.data.repository.ArticleRepository
-import com.example.fragmject.core.data.repository.ArticleRepositoryImpl
-import com.example.fragmject.core.data.repository.CommonRepository
-import com.example.fragmject.core.data.repository.CommonRepositoryImpl
-import com.example.fragmject.core.data.repository.HomeRepository
-import com.example.fragmject.core.data.repository.HomeRepositoryImpl
-import com.example.fragmject.core.data.repository.MyCollectRepository
-import com.example.fragmject.core.data.repository.MyCollectRepositoryImpl
-import com.example.fragmject.core.data.repository.MyRepository
+import com.example.fragmject.core.data.repository.AlbumRepositoryImpl
+import com.example.fragmject.core.data.repository.DownloadRepositoryImpl
+import com.example.fragmject.core.data.repository.HistoryRepositoryImpl
+import com.example.fragmject.core.data.repository.MediaRepositoryImpl
 import com.example.fragmject.core.data.repository.MyRepositoryImpl
 import com.example.fragmject.core.data.repository.OfflineFirstArticleRepository
 import com.example.fragmject.core.data.repository.OfflineFirstCoinRankRepository
-import com.example.fragmject.core.data.repository.OfflineFirstCommonRepository
 import com.example.fragmject.core.data.repository.OfflineFirstMyCollectRepository
+import com.example.fragmject.core.data.repository.OfflineFirstNavigationRepository
 import com.example.fragmject.core.data.repository.OfflineFirstProjectRepository
 import com.example.fragmject.core.data.repository.OfflineFirstSystemRepository
-import com.example.fragmject.core.data.repository.ProjectRepository
-import com.example.fragmject.core.data.repository.ProjectRepositoryImpl
-import com.example.fragmject.core.data.repository.SearchRepository
+import com.example.fragmject.core.data.repository.ScheduleRepositoryImpl
 import com.example.fragmject.core.data.repository.SearchRepositoryImpl
-import com.example.fragmject.core.data.repository.SystemRepository
-import com.example.fragmject.core.data.repository.SystemRepositoryImpl
-import com.example.fragmject.core.data.repository.UserCenterRepository
+import com.example.fragmject.core.data.repository.ThemeRepositoryImpl
 import com.example.fragmject.core.data.repository.UserCenterRepositoryImpl
-import com.example.fragmject.core.data.repository.UserRepository
 import com.example.fragmject.core.data.repository.UserRepositoryImpl
+import com.example.fragmject.core.data.repository.VideoDownloadRepositoryImpl
+import com.example.fragmject.core.domain.repository.AlbumRepository
+import com.example.fragmject.core.domain.repository.CoinRankRepository
+import com.example.fragmject.core.domain.repository.DownloadRepository
+import com.example.fragmject.core.domain.repository.HistoryRepository
+import com.example.fragmject.core.domain.repository.HomeRepository
+import com.example.fragmject.core.domain.repository.MediaRepository
+import com.example.fragmject.core.domain.repository.MyCollectRepository
+import com.example.fragmject.core.domain.repository.MyRepository
+import com.example.fragmject.core.domain.repository.NavigationRepository
+import com.example.fragmject.core.domain.repository.ProjectRepository
+import com.example.fragmject.core.domain.repository.ScheduleRepository
+import com.example.fragmject.core.domain.repository.SearchRepository
+import com.example.fragmject.core.domain.repository.SystemRepository
+import com.example.fragmject.core.domain.repository.ThemeRepository
+import com.example.fragmject.core.domain.repository.UserCenterRepository
+import com.example.fragmject.core.domain.repository.UserRepository
+import com.example.fragmject.core.domain.repository.VideoDownloadRepository
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * 领域端口 Adapter 绑定。
+ *
+ * 使用 [Binds] 抽象方法在接口与实现之间建立桥接，替代原先的 [dagger.Provides]
+ * 工厂方法，减少 Dagger 生成的 Factory 类数量、加快编译并缩小 dex。
+ */
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
+abstract class RepositoryModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideArticleRepository(): ArticleRepository = ArticleRepositoryImpl()
+    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideProjectRepository(): ProjectRepository = ProjectRepositoryImpl()
+    abstract fun bindMyRepository(impl: MyRepositoryImpl): MyRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideUserRepository(): UserRepository = UserRepositoryImpl()
+    abstract fun bindHistoryRepository(impl: HistoryRepositoryImpl): HistoryRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideMyRepository(): MyRepository = MyRepositoryImpl()
+    abstract fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideCommonRepository(): CommonRepository = CommonRepositoryImpl()
+    abstract fun bindNavigationRepository(impl: OfflineFirstNavigationRepository): NavigationRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOfflineFirstCommonRepository(
-        commonRepository: CommonRepository,
-    ): OfflineFirstCommonRepository = OfflineFirstCommonRepository(commonRepository)
+    abstract fun bindHomeRepository(impl: OfflineFirstArticleRepository): HomeRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOfflineFirstArticleRepository(
-        articleRepository: ArticleRepository,
-    ): OfflineFirstArticleRepository = OfflineFirstArticleRepository(
-        articleDao = AppDatabase.getArticleDao(),
-        articleRepo = articleRepository,
-    )
+    abstract fun bindProjectRepository(impl: OfflineFirstProjectRepository): ProjectRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOfflineFirstProjectRepository(
-        projectRepository: ProjectRepository,
-    ): OfflineFirstProjectRepository = OfflineFirstProjectRepository(projectRepository)
+    abstract fun bindCoinRankRepository(impl: OfflineFirstCoinRankRepository): CoinRankRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOfflineFirstCoinRankRepository(
-        commonRepository: CommonRepository,
-    ): OfflineFirstCoinRankRepository = OfflineFirstCoinRankRepository(commonRepository)
+    abstract fun bindSystemRepository(impl: OfflineFirstSystemRepository): SystemRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOfflineFirstSystemRepository(
-        articleRepository: ArticleRepository,
-    ): OfflineFirstSystemRepository = OfflineFirstSystemRepository(articleRepository)
+    abstract fun bindMyCollectRepository(impl: OfflineFirstMyCollectRepository): MyCollectRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideSystemRepository(
-        offlineFirst: OfflineFirstSystemRepository,
-    ): SystemRepository = SystemRepositoryImpl(offlineFirst)
+    abstract fun bindSearchRepository(impl: SearchRepositoryImpl): SearchRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOfflineFirstMyCollectRepository(
-        articleRepository: ArticleRepository,
-    ): OfflineFirstMyCollectRepository = OfflineFirstMyCollectRepository(articleRepository)
+    abstract fun bindUserCenterRepository(impl: UserCenterRepositoryImpl): UserCenterRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideMyCollectRepository(
-        offlineFirst: OfflineFirstMyCollectRepository,
-    ): MyCollectRepository = MyCollectRepositoryImpl(offlineFirst)
+    abstract fun bindScheduleRepository(impl: ScheduleRepositoryImpl): ScheduleRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideHomeRepository(
-        offlineFirst: OfflineFirstArticleRepository,
-    ): HomeRepository = HomeRepositoryImpl(offlineFirst)
+    abstract fun bindDownloadRepository(impl: DownloadRepositoryImpl): DownloadRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideSearchRepository(
-        articleRepository: ArticleRepository,
-    ): SearchRepository = SearchRepositoryImpl(articleRepository)
+    abstract fun bindMediaRepository(impl: MediaRepositoryImpl): MediaRepository
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideUserCenterRepository(
-        userRepository: UserRepository,
-    ): UserCenterRepository = UserCenterRepositoryImpl(userRepository)
+    abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindVideoDownloadRepository(impl: VideoDownloadRepositoryImpl): VideoDownloadRepository
 }

@@ -1,11 +1,5 @@
 package com.example.fragmject.core.model
 
-import com.example.fragmject.core.network.http.HttpResponse
-
-data class ProjectTreeList(
-    val data: List<ProjectTree>? = null,
-) : HttpResponse()
-
 data class ProjectTree(
     val courseId: String = "",
     val id: String = "",

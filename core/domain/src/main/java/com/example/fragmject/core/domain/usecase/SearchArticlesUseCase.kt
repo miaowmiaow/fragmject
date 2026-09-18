@@ -1,8 +1,8 @@
 package com.example.fragmject.core.domain.usecase
 
-import com.example.fragmject.core.common.result.AppResult
-import com.example.fragmject.core.data.repository.SearchRepository
-import com.example.fragmject.core.model.ArticleList
+import com.example.fragmject.core.domain.repository.SearchRepository
+import com.example.fragmject.core.domain.result.ArticlePageResult
+import com.example.fragmject.core.domain.result.DomainResult
 import javax.inject.Inject
 
 /**
@@ -11,6 +11,6 @@ import javax.inject.Inject
 class SearchArticlesUseCase @Inject constructor(
     private val repo: SearchRepository,
 ) {
-    suspend operator fun invoke(key: String, page: Int): AppResult<ArticleList> =
+    suspend operator fun invoke(key: String, page: Int): DomainResult<ArticlePageResult> =
         repo.searchArticles(key, page)
 }

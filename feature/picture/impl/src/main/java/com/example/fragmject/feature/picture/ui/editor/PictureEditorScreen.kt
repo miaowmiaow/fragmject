@@ -42,7 +42,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,33 +50,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.utils.getBitmapFromUri
-import com.example.fragmject.core.network.utils.saveImagesToAlbum
 import com.example.fragmject.feature.picture.components.EditorMode
 import com.example.fragmject.feature.picture.components.PictureEditorCanvas
 import com.example.fragmject.feature.picture.components.rememberPictureEditorState
 import com.example.fragmject.feature.picture.model.StickerAttrs
 import com.example.fragmject.feature.picture.ui.clip.PictureClipScreen
 import com.example.fragmject.feature.picture.utils.ColorUtils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun PictureEditorScreen(
     bitmapPath: String? = null,
     bitmapUri: Uri? = null,
+    viewModel: PictureEditorViewModel = viewModel(),
     onFinish: (path: String, uri: Uri) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val state = rememberPictureEditorState()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     var selectedColorIndex by remember { mutableIntStateOf(0) }
     var showColorBar by remember { mutableStateOf(false) }
     var showMosaicUndo by remember { mutableStateOf(false) }
     var selectedToolIndex by remember { mutableIntStateOf(-1) }
-    var isSaving by remember { mutableStateOf(false) }
 
     // 子界面状态
     var showTextSheet by remember { mutableStateOf(false) }
@@ -134,13 +131,9 @@ fun PictureEditorScreen(
                 TextButton(
                     onClick = {
                         if (!isSaving) {
-                            isSaving = true
-                            scope.launch {
-                                val result = withContext(Dispatchers.Default) { state.saveBitmap() }
-                                context.saveImagesToAlbum(result) { path, uri ->
-                                    isSaving = false
-                                    onFinish(path, uri)
-                                }
+                            val result = state.saveBitmap()
+                            viewModel.save(result) { path, uri ->
+                                onFinish(path, uri)
                             }
                         }
                     },
@@ -314,6 +307,7 @@ fun PictureEditorScreen(
             if (showClipScreen) {
                 PictureClipScreen(
                     bitmap = bmp,
+                    viewModel = viewModel,
                     onFinish = { path, uri ->
                         state.setBitmapPathOrUri(path, uri)
                         showClipScreen = false

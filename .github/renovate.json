@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "groupName": "Room3 (alpha)",
+      "matchPackagePatterns": ["^androidx\\.room3"],
+      "description": "Room3 目前处于 alpha，API 演进频繁，单列一组便于 review 与回滚。"
+    },
+    {
+      "groupName": "AGP",
+      "matchPackageNames": ["com.android.tools.build:gradle"]
+    },
+    {
+      "groupName": "Kotlin & KSP",
+      "matchPackagePatterns": ["^org\\.jetbrains\\.kotlin", "^com\\.google\\.devtools\\.ksp"]
+    },
+    {
+      "groupName": "Compose BOM",
+      "matchPackageNames": ["androidx.compose:compose-bom"]
+    }
+  ],
+  "schedule": ["before 5am on monday"]
+}

@@ -1,7 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
-import com.example.fragmject.core.model.MyCoin
-import com.example.fragmject.core.data.repository.MyRepository
+import com.example.fragmject.core.domain.repository.MyRepository
+import com.example.fragmject.core.domain.result.MyCoinNextResult
 import javax.inject.Inject
 
 /**
@@ -11,18 +11,6 @@ class LoadNextMyCoinPageUseCase @Inject constructor(
     private val repo: MyRepository,
 ) {
     suspend operator fun invoke(page: Int): MyCoinNextResult {
-        val response = repo.getMyCoinList(page)
-        val datas = response.data?.datas?.toList().orEmpty()
-        return MyCoinNextResult(
-            items = datas,
-            pageCount = response.data?.pageCount?.toInt(),
-            isEmpty = datas.isEmpty(),
-        )
+        return repo.getMyCoinList(page)
     }
 }
-
-data class MyCoinNextResult(
-    val items: List<MyCoin> = emptyList(),
-    val pageCount: Int? = null,
-    val isEmpty: Boolean = true,
-)

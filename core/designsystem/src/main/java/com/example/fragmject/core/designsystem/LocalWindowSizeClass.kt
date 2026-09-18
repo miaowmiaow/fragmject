@@ -33,9 +33,9 @@ val WindowSizeClass.isExpanded get() = widthSizeClass == WindowWidthSizeClass.Ex
  * 用法：
  * ```kotlin
  * setContent {
- *     WanTheme(window) {
+ *     AppTheme(window) {
  *         rememberWindowSizeClass {
- *             WanNavGraph()
+ *             AppNavGraph()
  *         }
  *     }
  * }

@@ -10,8 +10,10 @@ dependencies {
     api(project(":feature:picture:api"))
 
     // Core
-    implementation(project(":core:network"))
+    implementation(project(":core:common"))
+    implementation(project(":core:domain"))
     implementation(project(":core:ui"))
+    implementation(project(":core:navigation"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation3.runtime)

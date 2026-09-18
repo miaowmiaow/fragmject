@@ -433,7 +433,15 @@ fun SunAndMoon(
         modifier = Modifier.size(starDiameter),
     ) {
         if (progress >= initProgress) {
-            Sun(progress, false, canvasHeight, canvasRadius, starRadius, moveDistance, infiniteTransition)
+            Sun(
+                progress,
+                false,
+                canvasHeight,
+                canvasRadius,
+                starRadius,
+                moveDistance,
+                infiniteTransition
+            )
         }
         Moon(
             progress,
@@ -445,7 +453,15 @@ fun SunAndMoon(
             infiniteTransition,
         )
         if (progress < initProgress) {
-            Sun(progress, true, canvasHeight, canvasRadius, starRadius, moveDistance, infiniteTransition)
+            Sun(
+                progress,
+                true,
+                canvasHeight,
+                canvasRadius,
+                starRadius,
+                moveDistance,
+                infiniteTransition
+            )
         }
     }
 }

@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 object PictureSelectorNavKey : NavKey
 
 @Serializable
-data class PicturePreviewNavKey(val positions: List<Int>) : NavKey
+data class PicturePreviewNavKey(val uris: List<String>) : NavKey
 
 @Serializable
 data class PictureEditorNavKey(val oldUriString: String) : NavKey

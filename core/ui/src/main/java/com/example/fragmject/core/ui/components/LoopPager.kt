@@ -19,13 +19,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
-import com.example.fragmject.core.designsystem.WanColors
+import com.example.fragmject.core.designsystem.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.math.absoluteValue
@@ -61,10 +62,15 @@ private data class LoopPagerState(
 private fun rememberLoopPagerState(pageCount: Int): LoopPagerState {
     val virtualSize = pageCount * LOOP_VIRTUAL_PAGE_COUNT
     val startIndex = remember(pageCount) { virtualSize / 2 - (virtualSize / 2) % pageCount }
-    val pagerState = rememberPagerState(
-        initialPage = startIndex,
-        pageCount = { virtualSize },
-    )
+    // 以 pageCount 为 key 强制重建 PagerState：pageCount 变化时（如热词异步返回、
+    // banner 数据刷新），旧的 PagerState 会保留旧 pageCount，导致 currPage 计算错位、
+    // 视觉上出现跳变/撕裂。rememberPagerState 本身不接收 key，故用 key() 包裹。
+    val pagerState = key(pageCount) {
+        rememberPagerState(
+            initialPage = startIndex,
+            pageCount = { virtualSize },
+        )
+    }
     return remember(pagerState, startIndex) { LoopPagerState(pagerState, startIndex) }
 }
 
@@ -137,7 +143,7 @@ fun <T> LoopHorizontalPager(
             ) {
                 repeat(pageCount) { iteration ->
                     val currentPage = (pagerState.currentPage - startIndex).floorMod(pageCount)
-                    val color = if (currentPage == iteration) WanColors.orange else WanColors.theme
+                    val color = if (currentPage == iteration) AppColors.orange else AppColors.theme
                     Box(
                         modifier = Modifier
                             .size(10.dp)
@@ -194,9 +200,9 @@ fun <T> LoopVerticalPager(
                 repeat(pageCount) { iteration ->
                     val currentPage = (pagerState.currentPage - startIndex).floorMod(pageCount)
                     val color = if (currentPage == iteration)
-                        WanColors.orange
+                        AppColors.orange
                     else
-                        WanColors.theme
+                        AppColors.theme
                     Box(
                         modifier = Modifier
                             .background(color)

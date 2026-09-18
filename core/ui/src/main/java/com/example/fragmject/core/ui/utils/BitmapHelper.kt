@@ -16,7 +16,7 @@ const val MAX_BITMAP_SIZE = 64f * 1024 * 1024 // 64 MB
 
 fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
     try {
-        var option = BitmapFactory.Options()
+        val option = BitmapFactory.Options()
         if (targetWidth != 0) {
             option.inJustDecodeBounds = true
             BitmapFactory.decodeFile(path, option)

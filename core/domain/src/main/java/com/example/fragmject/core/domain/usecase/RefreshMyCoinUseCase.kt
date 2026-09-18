@@ -1,8 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
-import com.example.fragmject.core.model.Coin
-import com.example.fragmject.core.model.MyCoin
-import com.example.fragmject.core.data.repository.MyRepository
+import com.example.fragmject.core.domain.repository.MyRepository
+import com.example.fragmject.core.domain.result.MyCoinHomeResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
@@ -19,15 +18,9 @@ class RefreshMyCoinUseCase @Inject constructor(
         val uc = userCoin.await()
         val mcl = myCoinList.await()
         MyCoinHomeResult(
-            coin = uc.data,
-            coinList = mcl.data?.datas?.toList().orEmpty(),
-            pageCount = mcl.data?.pageCount?.toInt(),
+            coin = uc,
+            coinList = mcl.items,
+            pageCount = mcl.pageCount,
         )
     }
 }
-
-data class MyCoinHomeResult(
-    val coin: Coin? = null,
-    val coinList: List<MyCoin> = emptyList(),
-    val pageCount: Int? = null,
-)

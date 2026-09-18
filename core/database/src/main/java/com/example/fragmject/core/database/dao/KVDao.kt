@@ -6,6 +6,7 @@ import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Update
 import com.example.fragmject.core.database.model.KVEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface KVDao {
@@ -18,5 +19,8 @@ interface KVDao {
 
     @Query("SELECT * FROM kv_table WHERE first = :key ORDER BY id DESC LIMIT 1")
     suspend fun findByKey(key: String): KVEntity?
+
+    @Query("SELECT * FROM kv_table WHERE first = :key ORDER BY id DESC LIMIT 1")
+    fun observeByKey(key: String): Flow<KVEntity?>
 
 }

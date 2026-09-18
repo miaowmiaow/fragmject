@@ -38,64 +38,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
-import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.ArticleTag
-import com.example.fragmject.core.model.extractCid
-import com.example.fragmject.core.ui.AvatarHelper
 import com.example.fragmject.core.ui.R
-import com.example.fragmject.core.designsystem.WanSpacing
+import com.example.fragmject.core.designsystem.AppSpacing
 import kotlinx.coroutines.launch
-
-/**
- * ArticleCard 的 UI 层展示模型。
- *
- * 将 [Article]（30+ 字段的网络/持久层领域对象）映射为仅含 UI 所需的 16 个字段的稳定 data class，
- * 避免将网络模型裸传给 Compose 组件。
- *
- * [isCollected] 为收藏状态的初始值，点击收藏后由组件内部的 [remember] 管理乐观更新。
- */
-data class ArticleCardUiState(
-    val id: String,
-    val title: String,
-    val desc: String,
-    val author: String,
-    val shareUser: String,
-    val niceDate: String,
-    val userId: String,
-    val link: String,
-    val chapterId: String,
-    val chapterName: String,
-    val envelopePic: String,
-    val top: Boolean,
-    val fresh: Boolean,
-    val isCollected: Boolean,
-    val tags: List<ArticleTag>?,
-) {
-    val displayName: String get() = "$author$shareUser".ifBlank { "匿名" }
-}
-
-/**
- * 将 [Article] 领域对象映射为 [ArticleCardUiState]。
- * 放在 core:ui 层（而非 core:model）以避免 core:model → core:ui 的循环依赖。
- */
-fun Article.toArticleCardUiState(): ArticleCardUiState = ArticleCardUiState(
-    id = id,
-    title = titleHtml,
-    desc = descHtml,
-    author = author,
-    shareUser = shareUser,
-    niceDate = niceDate,
-    userId = userId,
-    link = link,
-    chapterId = chapterId,
-    chapterName = chapterNameHtml,
-    envelopePic = httpsEnvelopePic,
-    top = top,
-    fresh = fresh,
-    isCollected = collect,
-    tags = tags,
-)
 
 /**
  * 通用文章卡片组件——零 NavKey 依赖，所有导航/交互通过回调外传。
@@ -122,30 +70,30 @@ fun ArticleCard(
     val collectResId = getCollectResId(collected)
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(WanSpacing.cardCornerRadius))
+            .clip(RoundedCornerShape(AppSpacing.cardCornerRadius))
             .clipToBounds()
             .clickable { onArticleClick(data.link) }
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(start = WanSpacing.cardHorizontal, top = WanSpacing.cardHorizontal, end = WanSpacing.cardHorizontal),
+            modifier = Modifier.padding(start = AppSpacing.cardHorizontal, top = AppSpacing.cardHorizontal, end = AppSpacing.cardHorizontal),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(id = AvatarHelper.avatarResId(data.userId)),
+                painter = painterResource(id = data.avatarResId),
                 contentDescription = null,
                 modifier = Modifier
                     .clip(CircleShape)
                     .clickable { onUserClick(data.userId) }
-                    .size(WanSpacing.avatarSize),
+                    .size(AppSpacing.avatarSize),
                 contentScale = ContentScale.Crop
             )
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .wrapContentHeight()
-                    .padding(start = WanSpacing.cardItemGap, end = WanSpacing.cardItemGap),
+                    .padding(start = AppSpacing.cardItemGap, end = AppSpacing.cardItemGap),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -170,8 +118,8 @@ fun ArticleCard(
                 if (tags.isNotEmpty()) {
                     OutlinedButton(
                         onClick = { onTagClick(tags[0].extractCid()) },
-                        modifier = Modifier.height(WanSpacing.buttonSmallHeight),
-                        shape = RoundedCornerShape(WanSpacing.tagCornerRadius),
+                        modifier = Modifier.height(AppSpacing.buttonSmallHeight),
+                        shape = RoundedCornerShape(AppSpacing.tagCornerRadius),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
@@ -189,9 +137,9 @@ fun ArticleCard(
                 }
             }
         }
-        Spacer(Modifier.size(WanSpacing.cardItemGap))
+        Spacer(Modifier.size(AppSpacing.cardItemGap))
         Row(
-            modifier = Modifier.padding(start = WanSpacing.cardHorizontal, end = WanSpacing.cardHorizontal),
+            modifier = Modifier.padding(start = AppSpacing.cardHorizontal, end = AppSpacing.cardHorizontal),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -227,16 +175,16 @@ fun ArticleCard(
                     model = data.envelopePic,
                     contentDescription = null,
                     modifier = Modifier
-                        .width(WanSpacing.thumbnailWidth)
-                        .padding(start = WanSpacing.cardItemGap)
+                        .width(AppSpacing.thumbnailWidth)
+                        .padding(start = AppSpacing.cardItemGap)
                         .aspectRatio(2f / 3f),
                     contentScale = ContentScale.Crop
                 )
             }
         }
-        Spacer(Modifier.size(WanSpacing.cardSmallGap))
+        Spacer(Modifier.size(AppSpacing.cardSmallGap))
         Row(
-            modifier = Modifier.padding(start = WanSpacing.cardHorizontal, end = WanSpacing.cardHorizontal, bottom = WanSpacing.cardHorizontal),
+            modifier = Modifier.padding(start = AppSpacing.cardHorizontal, end = AppSpacing.cardHorizontal, bottom = AppSpacing.cardHorizontal),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -244,7 +192,7 @@ fun ArticleCard(
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = WanSpacing.cardFooterEndPadding)
+                    .padding(end = AppSpacing.cardFooterEndPadding)
             ) {
                 if (data.fresh) {
                     Text(
@@ -280,7 +228,7 @@ fun ArticleCard(
                 painter = painterResource(id = collectResId),
                 contentDescription = "",
                 modifier = footModifier
-                    .height(WanSpacing.buttonSmallHeight)
+                    .height(AppSpacing.buttonSmallHeight)
                     .clickable {
                         scope.launch {
                             onCollectClick(data.id, !collected)
@@ -296,4 +244,23 @@ private fun getCollectResId(collect: Boolean): Int {
         true -> R.mipmap.ic_collect_checked
         false -> R.mipmap.ic_collect_unchecked
     }
+}
+
+/**
+ * 从 [ArticleTag.url] 中提取文章分类 cid。
+ *
+ * URL 格式通常为 `https://www.wanandroid.com/project/list/1?cid=294`，
+ * 优先通过 query 参数 "cid" 获取，其次从 pathSegments 提取。
+ */
+private fun ArticleTag.extractCid(): String {
+    val uriString = "https://www.wanandroid.com$url"
+    val uri = uriString.toUri()
+    var cid = uri.getQueryParameter("cid")
+    if (cid.isNullOrBlank()) {
+        val paths = uri.pathSegments
+        if (paths != null && paths.size >= 3) {
+            cid = paths[2]
+        }
+    }
+    return cid ?: "0"
 }

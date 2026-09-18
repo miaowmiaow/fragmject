@@ -15,7 +15,7 @@ val keystoreProperties = Properties()
 keystoreProperties.load(FileInputStream(rootProject.file("keystore.properties")))
 
 android {
-    namespace = "com.example.fragment.project"
+    namespace = "com.example.fragmject.app"
 
     defaultConfig {
         applicationId = configProperties.getProperty("applicationId")
@@ -85,9 +85,17 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:model"))
+    implementation(project(":core:navigation"))
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
-    implementation(project(":feature:wan:impl"))
+    implementation(project(":feature:article:impl"))
+    implementation(project(":feature:auth:impl"))
+    implementation(project(":feature:collection:impl"))
+    implementation(project(":feature:demo:impl"))
+    implementation(project(":feature:home:impl"))
+    implementation(project(":feature:search:impl"))
+    implementation(project(":feature:user:impl"))
     implementation(project(":feature:picture:impl"))
 
     implementation(libs.androidx.activity)

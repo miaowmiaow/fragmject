@@ -38,14 +38,9 @@ Before diving into this project, here are some basic concepts you might want to 
 - [Room | Android Developer](https://developer.android.google.cn/training/data-storage/room?hl=en)
 - [Compose | Android Developer](https://developer.android.google.cn/jetpack/compose)
 
-## Why rarely rely on other libraries
-Why does this project avoid depending on external libraries as much as possible? There are two main reasons why relying too heavily on third party libraries can be detrimental to a developer’s growth as a programmer:
+## Beginner's Advice
 
-Increased Learning Burden: Using libraries that seem simple on the surface can actually involve complex underlying implementations that require deep reading of source code. This can deter developers from exploring additional libraries and learning new skills independently.
-
-Weakened Foundation: New programmers often treat the capabilities offered by thirdparty libraries as part of their own skillset, limiting their ability to work outside of the scope of those libraries. As a result, they losevaluable practice and expertise in general software engineering.
-
-The goal of this project is to encourage students to build a strong foundation in core programming principles by implementing solutions fromscratch wherever possible. Even though the resultingcode maynot alwaysbe elegantor idiomatic,itwillprovide a deeperunderstandingofhowthingsworkandallowsthe studenttobuildmoretransferableskills.
+If you prefer a codebase with less abstraction and more straightforward code to get started quickly, we recommend switching to the [v1.4.0](https://github.com/miaowmiaow/fragmject/tree/v1.4.0) tag, which keeps a simpler implementation without the complex architectural layering and wrappers, making it easier to understand and learn.
 
 ## Screenshot display
 | ![1.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/1.png) | ![2.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/2.png) | ![3.jpg](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/3.png) |
@@ -58,9 +53,9 @@ The goal of this project is to encourage students to build a strong foundation i
 |     └── main
 |     |   ├── assets                            assets (HTML/JS/JSON mock data)
 |     |   └── java                              source code
-|     |      ├── WanActivity.kt                 single Activity
-|     |      ├── WanApplication.kt              Application (Hilt entry)
-|     |      └── WanNavGraph.kt                 navigation graph (Navigation 3 + WindowSizeClass)
+|     |      ├── MainActivity.kt                 single Activity
+|     |      ├── FragmjectApplication.kt        Application (Hilt entry)
+|     |      └── AppNavGraph.kt                 navigation graph (Navigation 3 + WindowSizeClass)
 |     |
 |     ├── build.gradle.kts                      module build config
 |     ├── dictionary                            custom obfuscation dictionary
@@ -70,7 +65,7 @@ The goal of this project is to encourage students to build a strong foundation i
 |  ├── common                                   shared utilities (TransitionGuard etc.)
 |  ├── data                                     data layer (Repository)
 |  ├── database                                 database (Room 3)
-|  ├── designsystem                             design system (WanTheme / WindowSizeClass / components)
+|  ├── designsystem                             design system (AppTheme / WindowSizeClass / components)
 |  ├── domain                                   domain layer
 |  ├── model                                    data models
 |  ├── network                                  network layer (Retrofit + OkHttp)
@@ -144,7 +139,7 @@ graph LR
 
 ### Key Files
 - [LocalWindowSizeClass.kt](core/designsystem/src/main/java/com/example/fragmject/core/designsystem/LocalWindowSizeClass.kt) — `CompositionLocal` injection + helper extensions
-- [WanNavGraph.kt](app/src/main/java/com/example/fragment/project/WanNavGraph.kt) — intercepts `NavKey` in Expanded mode, forwards to `DetailPane`
+- [AppNavGraph.kt](app/src/main/java/com/example/fragmject/app/AppNavGraph.kt) — intercepts `NavKey` in Expanded mode, forwards to `DetailPane`
 - [MainScreen.kt](feature/wan/impl/src/main/java/com/example/fragmject/feature/wan/main/MainScreen.kt) — three-layout dispatch + `DetailPane` routing
 
 ### Usage

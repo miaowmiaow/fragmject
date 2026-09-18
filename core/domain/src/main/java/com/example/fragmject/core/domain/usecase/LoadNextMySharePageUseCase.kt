@@ -1,6 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
-import com.example.fragmject.core.data.repository.MyRepository
+import com.example.fragmject.core.domain.repository.MyRepository
+import com.example.fragmject.core.domain.result.MyShareResult
 import javax.inject.Inject
 
 /**
@@ -10,13 +11,6 @@ class LoadNextMySharePageUseCase @Inject constructor(
     private val repo: MyRepository,
 ) {
     suspend operator fun invoke(page: Int): MyShareResult {
-        val response = repo.getMyShareList(page)
-        val data = response.data?.shareArticles
-        val datas = data?.datas.orEmpty()
-        return MyShareResult(
-            articles = datas,
-            pageCount = data?.pageCount?.toInt(),
-            hasMore = datas.isNotEmpty(),
-        )
+        return repo.getMyShareList(page)
     }
 }

@@ -7,7 +7,6 @@ plugins {
 
 dependencies {
     api(project(":feature:search:api"))
-    // SearchScreen 绑定 WebNavKey（article/api）、SystemNavKey（home/api）、UserNavKey（user/api）
     implementation(project(":feature:article:api"))
     implementation(project(":feature:home:api"))
     implementation(project(":feature:user:api"))
@@ -25,6 +24,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.runtime)
 
     testImplementation(libs.junit)
 }

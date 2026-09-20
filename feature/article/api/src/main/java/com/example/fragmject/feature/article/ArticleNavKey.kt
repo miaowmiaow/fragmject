@@ -1,6 +1,6 @@
 package com.example.fragmject.feature.article
 
-import com.example.fragmject.core.common.DetailPaneNavKey
+import com.example.fragmject.core.navigation.DetailPaneNavKey
 import kotlinx.serialization.Serializable
 
 /**

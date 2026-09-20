@@ -1,15 +1,14 @@
 package com.example.fragmject.feature.user.ui.setting
 
 import android.content.Context
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.common.utils.CacheUtils
-import com.example.fragmject.core.common.utils.FileUtil
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
-import com.example.fragmject.core.common.viewmodel.updateSuccessFrom
-import com.example.fragmject.core.model.User
+import com.example.fragmject.core.common.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.usecase.LogoutUseCase
+import com.example.fragmject.core.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 sealed interface SettingUiState {
@@ -45,7 +43,7 @@ class SettingViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val userRepo: UserRepository,
     private val themeRepo: ThemeRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SettingUiState>(SettingUiState.Success())
     val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
@@ -79,13 +77,6 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             _cacheSize.value = CacheUtils.getTotalSize(context)
         }
-    }
-
-    /** 抹除数据：写入脏数据干扰隐私窃取（IO 下沉到 ViewModel）。 */
-    fun eraseData() {
-        FileUtil.writeDirtyRead(
-            File(CacheUtils.getDirPath(context, "org"), "DirtyRead")
-        )
     }
 
     /** 清除缓存后刷新缓存大小显示（IO 下沉到 ViewModel）。 */

@@ -4,6 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":core:common"))
+    api(project(":core:navigation"))
     api(libs.androidx.navigation3.runtime)
 }

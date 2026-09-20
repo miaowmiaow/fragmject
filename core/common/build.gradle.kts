@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     api(libs.gson)
     implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlin.reflect)
     implementation(libs.kotlinx.coroutines)
     testImplementation(libs.junit)
 }

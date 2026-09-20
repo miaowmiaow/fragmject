@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.Navigation
 import com.example.fragmject.core.domain.repository.NavigationRepository
 import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
-import com.example.fragmject.core.common.viewmodel.updateSuccessFrom
+import androidx.lifecycle.ViewModel
+import com.example.fragmject.core.common.utils.updateSuccessFrom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +30,7 @@ private const val TAG = "NavVM"
 @HiltViewModel
 class NavViewModel @Inject constructor(
     private val navigationRepository: NavigationRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<NavUiState>(NavUiState.Loading)
     val uiState: StateFlow<NavUiState> = _uiState.asStateFlow()

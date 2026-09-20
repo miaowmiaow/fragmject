@@ -30,11 +30,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.CollapsingHeader
-import com.example.fragmject.core.ui.components.SwipeRefreshBox
+import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.utils.getScreenWidth
 import com.example.fragmject.core.ui.components.ArticleCard
@@ -51,7 +52,8 @@ fun UserScreen(
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val coin by viewModel.coin.collectAsStateWithLifecycle()
+    val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     LaunchedEffect(userId) { viewModel.init(userId) }
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -66,7 +68,7 @@ fun UserScreen(
                 onNavigateUp = onNavigateUp,
             ) {
                 Image(
-                    painter = painterResource(id = AvatarUtils.avatarResId(uiState.coinResult.userId)),
+                    painter = painterResource(id = AvatarUtils.avatarResId(coin.userId)),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -81,7 +83,7 @@ fun UserScreen(
                         .align(Alignment.Center)
                 )
                 Text(
-                    text = uiState.coinResult.nickname,
+                    text = coin.nickname,
                     modifier = Modifier
                         .offset {
                             IntOffset(
@@ -94,7 +96,7 @@ fun UserScreen(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    text = "积分:${uiState.coinResult.coinCount}",
+                    text = "积分:${coin.coinCount}",
                     modifier = Modifier
                         .offset {
                             IntOffset(
@@ -113,20 +115,15 @@ fun UserScreen(
         },
     ) { innerPadding ->
         key(userId) {
-            SwipeRefreshBox(
-                items = uiState.articleResult,
-                isRefreshing = uiState.isRefreshing,
-                hasMore = uiState.isLoading,
-                isFinishing = uiState.isFinishing,
-                onRefresh = { viewModel.getHome() },
-                onLoad = { viewModel.getNext() },
+            PagingSwipeRefreshBox(
+                pagingItems = pagingItems,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
                 contentPadding = PaddingValues(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                key = { _, item -> item.id },
-            ) { _, item ->
+                key = { it.id },
+            ) { item ->
                 ArticleCard(
                     data = remember(item.id) { item.toArticleCardUiState() },
                     onArticleClick = { onNavigate(WebNavKey(it)) },

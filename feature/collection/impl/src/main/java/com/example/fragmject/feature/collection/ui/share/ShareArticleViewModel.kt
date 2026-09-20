@@ -1,8 +1,8 @@
 package com.example.fragmject.feature.collection.ui.share
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
-import com.example.fragmject.core.common.viewmodel.updateSuccessFrom
+import androidx.lifecycle.ViewModel
+import com.example.fragmject.core.common.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.usecase.ShareArticleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ val ShareArticleUiState.link get() = (this as? ShareArticleUiState.Success)?.lin
 @HiltViewModel
 class ShareArticleViewModel @Inject constructor(
     private val shareArticle: ShareArticleUseCase,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ShareArticleUiState>(ShareArticleUiState.Success())
 

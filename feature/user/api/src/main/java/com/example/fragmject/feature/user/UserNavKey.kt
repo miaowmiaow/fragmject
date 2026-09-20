@@ -1,7 +1,7 @@
 package com.example.fragmject.feature.user
 
-import com.example.fragmject.core.common.DetailPaneNavKey
-import com.example.fragmject.core.common.RequiresAuth
+import com.example.fragmject.core.navigation.DetailPaneNavKey
+import com.example.fragmject.core.navigation.RequiresAuth
 import kotlinx.serialization.Serializable
 
 /**

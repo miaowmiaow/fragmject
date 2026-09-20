@@ -4,7 +4,7 @@ import com.example.fragmject.core.model.Tree
 import com.google.gson.reflect.TypeToken
 
 fun Tree.toEntity(cacheKey: String, sortOrder: Int): TreeEntity {
-    val gson = ArticleTypeConverters.gson
+    val gson = JsonConverters.gson
     return TreeEntity(
         treeId = id,
         cacheKey = cacheKey,
@@ -21,7 +21,7 @@ fun Tree.toEntity(cacheKey: String, sortOrder: Int): TreeEntity {
 }
 
 fun TreeEntity.toDomain(): Tree {
-    val gson = ArticleTypeConverters.gson
+    val gson = JsonConverters.gson
     return Tree(
         id = treeId,
         name = name,

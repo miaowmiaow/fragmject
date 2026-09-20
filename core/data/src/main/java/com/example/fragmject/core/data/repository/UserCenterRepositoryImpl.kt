@@ -1,9 +1,14 @@
 package com.example.fragmject.core.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingData
+import com.example.fragmject.core.data.paging.DEFAULT_PAGING_CONFIG
+import com.example.fragmject.core.data.paging.UserSharePagingSource
 import com.example.fragmject.core.domain.repository.UserCenterRepository
-import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.model.ShareArticle
+import com.example.fragmject.core.model.Article
+import com.example.fragmject.core.model.Coin
 import com.example.fragmject.core.network.datasource.UserRemoteDataSource
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,29 +20,15 @@ class UserCenterRepositoryImpl @Inject constructor(
     private val userRemoteDataSource: UserRemoteDataSource,
 ) : UserCenterRepository {
 
-    override suspend fun getUserShareArticles(
-        userId: String,
-        page: Int
-    ): DomainResult<ShareArticle> {
-        return runCatching { userRemoteDataSource.getUserShareArticles(userId, page) }
-            .fold(
-                onSuccess = { resp ->
-                    val shareArticle = resp.data
-                    if (resp.errorCode == "0" && shareArticle != null) {
-                        DomainResult.Success(shareArticle)
-                    } else {
-                        DomainResult.Failure(
-                            code = resp.errorCode.ifBlank { DomainResult.ERROR_UNKNOWN },
-                            message = resp.errorMsg.ifBlank { "请求失败" },
-                        )
-                    }
-                },
-                onFailure = {
-                    DomainResult.Failure(
-                        code = DomainResult.ERROR_UNKNOWN,
-                        message = it.message ?: "请求失败",
-                    )
-                },
-            )
+    override suspend fun getUserCoin(userId: String): Coin? {
+        return runCatching { userRemoteDataSource.getUserShareArticles(userId, 1) }
+            .getOrNull()
+            ?.data
+            ?.coinInfo
     }
+
+    override fun getUserSharePagingData(userId: String): Flow<PagingData<Article>> = Pager(
+        config = DEFAULT_PAGING_CONFIG,
+        pagingSourceFactory = { UserSharePagingSource(userId, userRemoteDataSource) },
+    ).flow
 }

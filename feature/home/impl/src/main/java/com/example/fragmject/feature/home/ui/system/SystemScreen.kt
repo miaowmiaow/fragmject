@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.components.SwipeRefreshBox
+import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.ArticleCard
 import com.example.fragmject.core.ui.components.toArticleCardUiState
 import com.example.fragmject.feature.article.WebNavKey
@@ -41,7 +42,6 @@ fun SystemScreen(
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val systemUiState by systemViewModel.uiState.collectAsStateWithLifecycle()
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
     // getTree 会遍历整个 treeResult 查找 cid；用 remember(cid, treeResult) 缓存，
     // 避免 SystemScreen 因分页加载/翻页等高频重组时重复执行 O(n*m) 遍历。
@@ -55,11 +55,6 @@ fun SystemScreen(
         if (treeData.third.isNotEmpty() && pagerState.currentPage != targetPage) {
             pagerState.scrollToPage(targetPage)
         }
-    }
-    LaunchedEffect(pagerState.currentPage, treeData.third.size) {
-        if (treeData.third.isEmpty()) return@LaunchedEffect
-        val currentCid = treeData.third[pagerState.currentPage].id
-        systemViewModel.init(currentCid)
     }
     Scaffold(
         topBar = {
@@ -81,19 +76,17 @@ fun SystemScreen(
             HorizontalPager(state = pagerState) { page ->
                 val pageCid = treeData.third[page].id
                 val listState = rememberLazyListState()
-                SwipeRefreshBox(
-                    items = systemUiState.getResult(pageCid),
-                    isRefreshing = systemUiState.getRefreshing(pageCid),
-                    hasMore = systemUiState.getLoading(pageCid),
-                    isFinishing = systemUiState.getFinishing(pageCid),
-                    onRefresh = { systemViewModel.getHome(pageCid) },
-                    onLoad = { systemViewModel.getNext(pageCid) },
+                val pagingItems = remember(pageCid) {
+                    systemViewModel.pagingFlow(pageCid)
+                }.collectAsLazyPagingItems()
+                PagingSwipeRefreshBox(
+                    pagingItems = pagingItems,
                     modifier = Modifier.fillMaxSize(),
                     listState = listState,
                     contentPadding = PaddingValues(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    key = { _, item -> item.id },
-                ) { _, item ->
+                    key = { it.id },
+                ) { item ->
                     ArticleCard(
                         data = remember(item.id) { item.toArticleCardUiState() },
                         onArticleClick = { onNavigate(WebNavKey(it)) },

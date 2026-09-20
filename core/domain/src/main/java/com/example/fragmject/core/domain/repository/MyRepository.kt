@@ -1,10 +1,12 @@
 package com.example.fragmject.core.domain.repository
 
+import androidx.paging.PagingData
 import com.example.fragmject.core.domain.result.CollectResult
-import com.example.fragmject.core.domain.result.MyCoinNextResult
-import com.example.fragmject.core.domain.result.MyShareResult
 import com.example.fragmject.core.domain.result.ShareArticleResult
+import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.Coin
+import com.example.fragmject.core.model.MyCoin
+import kotlinx.coroutines.flow.Flow
 
 /**
  * 当前登录用户「我的」领域端口：积分、分享、收藏。
@@ -15,11 +17,11 @@ interface MyRepository {
     /** 我的积分汇总。 */
     suspend fun getUserCoin(): Coin?
 
-    /** 我的积分明细（page 从 1 开始）。 */
-    suspend fun getMyCoinList(page: Int): MyCoinNextResult
+    /** 我的积分明细分页数据流（page 从 1 开始）。 */
+    fun getMyCoinPagingData(): Flow<PagingData<MyCoin>>
 
-    /** 我分享的文章（page 从 1 开始）。 */
-    suspend fun getMyShareList(page: Int): MyShareResult
+    /** 我分享的文章分页数据流（page 从 0 开始）。 */
+    fun getMySharePagingData(): Flow<PagingData<Article>>
 
     /** 新增一篇分享。 */
     suspend fun shareArticle(title: String, link: String): ShareArticleResult

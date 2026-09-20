@@ -1,18 +1,18 @@
 package com.example.fragmject.core.data.di
 
 import com.example.fragmject.core.data.repository.AlbumRepositoryImpl
+import com.example.fragmject.core.data.repository.CoinRankRepositoryImpl
 import com.example.fragmject.core.data.repository.DownloadRepositoryImpl
 import com.example.fragmject.core.data.repository.HistoryRepositoryImpl
+import com.example.fragmject.core.data.repository.HomeRepositoryImpl
 import com.example.fragmject.core.data.repository.MediaRepositoryImpl
+import com.example.fragmject.core.data.repository.MyCollectRepositoryImpl
 import com.example.fragmject.core.data.repository.MyRepositoryImpl
-import com.example.fragmject.core.data.repository.OfflineFirstArticleRepository
-import com.example.fragmject.core.data.repository.OfflineFirstCoinRankRepository
-import com.example.fragmject.core.data.repository.OfflineFirstMyCollectRepository
 import com.example.fragmject.core.data.repository.OfflineFirstNavigationRepository
-import com.example.fragmject.core.data.repository.OfflineFirstProjectRepository
-import com.example.fragmject.core.data.repository.OfflineFirstSystemRepository
+import com.example.fragmject.core.data.repository.ProjectRepositoryImpl
 import com.example.fragmject.core.data.repository.ScheduleRepositoryImpl
 import com.example.fragmject.core.data.repository.SearchRepositoryImpl
+import com.example.fragmject.core.data.repository.SystemRepositoryImpl
 import com.example.fragmject.core.data.repository.ThemeRepositoryImpl
 import com.example.fragmject.core.data.repository.UserCenterRepositoryImpl
 import com.example.fragmject.core.data.repository.UserRepositoryImpl
@@ -72,23 +72,23 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindHomeRepository(impl: OfflineFirstArticleRepository): HomeRepository
+    abstract fun bindHomeRepository(impl: HomeRepositoryImpl): HomeRepository
 
     @Binds
     @Singleton
-    abstract fun bindProjectRepository(impl: OfflineFirstProjectRepository): ProjectRepository
+    abstract fun bindProjectRepository(impl: ProjectRepositoryImpl): ProjectRepository
 
     @Binds
     @Singleton
-    abstract fun bindCoinRankRepository(impl: OfflineFirstCoinRankRepository): CoinRankRepository
+    abstract fun bindCoinRankRepository(impl: CoinRankRepositoryImpl): CoinRankRepository
 
     @Binds
     @Singleton
-    abstract fun bindSystemRepository(impl: OfflineFirstSystemRepository): SystemRepository
+    abstract fun bindSystemRepository(impl: SystemRepositoryImpl): SystemRepository
 
     @Binds
     @Singleton
-    abstract fun bindMyCollectRepository(impl: OfflineFirstMyCollectRepository): MyCollectRepository
+    abstract fun bindMyCollectRepository(impl: MyCollectRepositoryImpl): MyCollectRepository
 
     @Binds
     @Singleton

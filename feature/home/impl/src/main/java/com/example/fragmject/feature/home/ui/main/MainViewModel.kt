@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.model.Tree
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
-import com.example.fragmject.core.common.viewmodel.updateSuccessFrom
+import androidx.lifecycle.ViewModel
+import com.example.fragmject.core.common.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.repository.NavigationRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.result.DomainResult
@@ -39,7 +39,7 @@ private const val TAG = "MainVM"
 class MainViewModel @Inject constructor(
     private val navigationRepository: NavigationRepository,
     private val searchRepository: SearchRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Success(isLoading = true))
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()

@@ -1,7 +1,7 @@
 package com.example.fragmject.feature.auth.ui.login
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import androidx.lifecycle.ViewModel
 import com.example.fragmject.core.domain.result.LoginResult
 import com.example.fragmject.core.domain.usecase.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +25,7 @@ sealed interface LoginUiState {
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
 

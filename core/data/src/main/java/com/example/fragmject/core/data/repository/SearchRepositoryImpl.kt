@@ -1,14 +1,17 @@
 package com.example.fragmject.core.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingData
+import com.example.fragmject.core.data.paging.DEFAULT_PAGING_CONFIG
 import com.example.fragmject.core.database.dao.HotKeyDao
 import com.example.fragmject.core.database.model.toDomain
 import com.example.fragmject.core.database.model.toEntity
+import com.example.fragmject.core.data.paging.SearchPagingSource
 import com.example.fragmject.core.data.util.fetchAsDomainResult
 import com.example.fragmject.core.domain.repository.SearchRepository
-import com.example.fragmject.core.domain.result.ArticlePageResult
 import com.example.fragmject.core.domain.result.DomainResult
+import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
-import com.example.fragmject.core.model.ShareArticle
 import com.example.fragmject.core.network.datasource.ArticleDataSource
 import com.example.fragmject.core.network.datasource.CommonDataSource
 import kotlinx.coroutines.flow.Flow
@@ -45,14 +48,8 @@ class SearchRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchArticles(key: String, page: Int): DomainResult<ArticlePageResult> {
-        return fetchAsDomainResult(
-            call = { articleDataSource.searchArticles(key, page) },
-        ) { resp ->
-            ArticlePageResult(
-                articles = resp.data?.datas.orEmpty(),
-                pageCount = resp.data?.pageCount?.toInt(),
-            )
-        }
-    }
+    override fun getSearchPagingData(key: String): Flow<PagingData<Article>> = Pager(
+        config = DEFAULT_PAGING_CONFIG,
+        pagingSourceFactory = { SearchPagingSource(key, articleDataSource) },
+    ).flow
 }

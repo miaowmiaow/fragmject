@@ -32,7 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,17 +70,12 @@ fun SettingScreen(
         }
     }
     var showDialog by remember { mutableStateOf(false) }
-    var showType by remember { mutableIntStateOf(0) }
     StandardDialog(
         show = showDialog,
         title = "提示",
-        text = if (showType == 0) "确定后将向手机写入脏数据，建议多次操作防止隐私泄露。" else "确定要清除缓存吗？",
+        text = "确定要清除缓存吗？",
         onConfirm = {
-            if (showType == 0) {
-                viewModel.eraseData()
-            } else {
-                viewModel.clearCache()
-            }
+            viewModel.clearCache()
             showDialog = false
         },
         onDismiss = { showDialog = false },
@@ -138,15 +132,9 @@ fun SettingScreen(
                     HorizontalDivider()
                     ArrowRightItem("问题反馈") { onNavigate(WebNavKey("https://github.com/miaowmiaow/fragmject/issues")) }
                     HorizontalDivider()
-                    ArrowRightItem("抹除数据") {
-                        showType = 0
-                        showDialog = true
-                    }
-                    HorizontalDivider()
                     Row(
                         modifier = Modifier
                             .clickable {
-                                showType = 1
                                 showDialog = true
                             }
                             .background(MaterialTheme.colorScheme.surfaceContainer)

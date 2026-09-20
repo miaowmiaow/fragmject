@@ -7,9 +7,7 @@ plugins {
 
 dependencies {
     api(project(":feature:user:api"))
-    // 多页引用 WebNavKey（article/api）
     implementation(project(":feature:article:api"))
-    // UserScreen 绑定 SystemNavKey（home/api）
     implementation(project(":feature:home:api"))
 
     implementation(project(":core:common"))
@@ -25,6 +23,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.runtime)
 
     testImplementation(libs.junit)
 }

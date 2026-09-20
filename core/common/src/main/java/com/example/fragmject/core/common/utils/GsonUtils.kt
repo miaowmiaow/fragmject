@@ -4,8 +4,6 @@ import com.google.gson.ExclusionStrategy
 import com.google.gson.FieldAttributes
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
 
 /**
  * Gson 工具与单例集中管理。
@@ -19,43 +17,33 @@ import java.lang.reflect.Type
 object GsonUtils {
 
     /** 默认 Gson 单例：业务序列化/反序列化均可使用。 */
-    val gson: Gson by lazy { Gson() }
-
-    /**
-     * Lazy-aware Gson：跳过 Kotlin `by lazy` 委托属性合成的 `xxx$delegate` 字段
-     * （类型为接口 `kotlin.Lazy`）。
-     *
-     * 用于接口响应缓存等需要把 DTO 写盘 / 反序列化的场景，避免：
-     *  - 序列化时把派生属性的 lazy 持有对象写入缓存；
-     *  - 反序列化时 Gson 试图 `new` `kotlin.Lazy` 接口而崩溃。
-     */
-    val lazyAwareGson: Gson by lazy {
+    val gson: Gson by lazy {
         GsonBuilder()
-            .addSerializationExclusionStrategy(LazyDelegateExclusion)
-            .addDeserializationExclusionStrategy(LazyDelegateExclusion)
+            .registerTypeAdapterFactory(NullSafeStringTypeAdapterFactory)
             .create()
     }
 
-    fun <T> fromJson(json: String, raw: Class<*>, vararg args: Type): T {
-        val type = object : ParameterizedType {
-            override fun getRawType(): Type = raw
-            override fun getActualTypeArguments(): Array<out Type> = args
-            override fun getOwnerType(): Type? = null
-        }
-        return gson.fromJson(json, type)
+    /**
+     * 实体序列化 Gson：跳过字段名含 `$` 的 Kotlin 合成字段（如 `by lazy` 生成的
+     * `xxx$delegate`、Compose 的 `$stable` 等），避免 Gson 反序列化时尝试实例化
+     * `kotlin.Lazy` 接口而崩溃。
+     *
+     * 用于 Room TypeConverter 等需要把实体 DTO 写盘 / 反序列化的场景。
+     */
+    val entityGson: Gson by lazy {
+        GsonBuilder()
+            .addSerializationExclusionStrategy(SyntheticFieldExclusion)
+            .addDeserializationExclusionStrategy(SyntheticFieldExclusion)
+            .create()
     }
 }
 
 /**
- * 跳过 Kotlin `by lazy` 委托字段的 Gson 排除策略。
- *
- * 命名兜底：合成委托字段统一以 `$delegate` 结尾；
- * 类型兜底：极少数情况下字段名被混淆/重命名时再看类型。
+ * 排除字段名含 `$` 的 Kotlin 合成字段（delegate / 伴生 / Compose stable 等）。
  */
-object LazyDelegateExclusion : ExclusionStrategy {
-    override fun shouldSkipField(f: FieldAttributes): Boolean {
-        return f.name.endsWith($$"$delegate") || kotlin.Lazy::class.java.isAssignableFrom(f.declaredClass)
-    }
+private object SyntheticFieldExclusion : ExclusionStrategy {
+    override fun shouldSkipField(f: FieldAttributes): Boolean =
+        f.name?.contains('$') == true
 
     override fun shouldSkipClass(clazz: Class<*>): Boolean = false
 }

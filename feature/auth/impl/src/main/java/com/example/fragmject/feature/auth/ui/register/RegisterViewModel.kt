@@ -1,7 +1,7 @@
 package com.example.fragmject.feature.auth.ui.register
 
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import androidx.lifecycle.ViewModel
 import com.example.fragmject.core.domain.result.RegisterResult
 import com.example.fragmject.core.domain.usecase.RegisterUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +22,7 @@ sealed interface RegisterUiState {
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<RegisterUiState>(RegisterUiState.Idle)
 

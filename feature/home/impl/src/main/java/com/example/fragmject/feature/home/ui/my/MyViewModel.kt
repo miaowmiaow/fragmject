@@ -3,7 +3,7 @@ package com.example.fragmject.feature.home.ui.my
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.User
 import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +22,7 @@ sealed interface MyUiState {
 @HiltViewModel
 class MyViewModel @Inject constructor(
     private val userRepo: UserRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MyUiState.NoUser())
     val uiState: StateFlow<MyUiState> = _uiState.asStateFlow()

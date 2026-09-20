@@ -6,7 +6,6 @@ import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
-import com.example.fragmject.core.database.dao.ArticleDao
 import com.example.fragmject.core.database.dao.CoinRankDao
 import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.dao.HotKeyDao
@@ -14,7 +13,6 @@ import com.example.fragmject.core.database.dao.NavigationDao
 import com.example.fragmject.core.database.dao.ProjectTreeDao
 import com.example.fragmject.core.database.dao.TreeDao
 import com.example.fragmject.core.database.dao.UserDao
-import com.example.fragmject.core.database.model.ArticleEntity
 import com.example.fragmject.core.database.model.CoinRankEntity
 import com.example.fragmject.core.database.model.HistoryEntity
 import com.example.fragmject.core.database.model.HotKeyEntity
@@ -24,15 +22,14 @@ import com.example.fragmject.core.database.model.TreeEntity
 import com.example.fragmject.core.database.model.UserEntity
 
 @Database(
-    entities = [HistoryEntity::class, UserEntity::class, ArticleEntity::class, TreeEntity::class, NavigationEntity::class, HotKeyEntity::class, ProjectTreeEntity::class, CoinRankEntity::class],
-    version = 11,
+    entities = [HistoryEntity::class, UserEntity::class, TreeEntity::class, NavigationEntity::class, HotKeyEntity::class, ProjectTreeEntity::class, CoinRankEntity::class],
+    version = 12,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun historyDao(): HistoryDao
     abstract fun userDao(): UserDao
-    abstract fun articleDao(): ArticleDao
     abstract fun treeDao(): TreeDao
     abstract fun navigationDao(): NavigationDao
     abstract fun hotKeyDao(): HotKeyDao
@@ -252,6 +249,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 移除 article 缓存表：文章列表已改为纯网络分页，不再需要 Room 缓存。 */
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                executeSql(connection, "DROP TABLE IF EXISTS `article`")
+            }
+        }
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -269,7 +273,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_7_8,
                     MIGRATION_8_9,
                     MIGRATION_9_10,
-                    MIGRATION_10_11
+                    MIGRATION_10_11,
+                    MIGRATION_11_12
                 )
                 .build()
         }

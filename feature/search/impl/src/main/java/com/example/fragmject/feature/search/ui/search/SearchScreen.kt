@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
@@ -64,7 +65,7 @@ import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.feature.user.UserNavKey
 import com.example.fragmject.core.ui.components.ClearTextField
 import com.example.fragmject.core.ui.components.SkeletonContent
-import com.example.fragmject.core.ui.components.SwipeRefreshBox
+import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import com.example.fragmject.core.designsystem.AppColors
@@ -76,7 +77,11 @@ fun SearchScreen(
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
+    val isSearch by searchViewModel.isSearch.collectAsStateWithLifecycle()
+    val isHotKeyLoading by searchViewModel.isHotKeyLoading.collectAsStateWithLifecycle()
+    val hotKeyResult by searchViewModel.hotKeyResult.collectAsStateWithLifecycle()
+    val searchHistoryResult by searchViewModel.searchHistoryResult.collectAsStateWithLifecycle()
+    val pagingItems = searchViewModel.pagingFlow.collectAsLazyPagingItems()
     var searchText by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -166,16 +171,16 @@ fun SearchScreen(
             }
         },
     ) { innerPadding ->
-        SkeletonContent(isLoading = searchUiState.isHotKeyLoading) {
+        SkeletonContent(isLoading = isHotKeyLoading) {
             Column(modifier = Modifier.padding(innerPadding)) {
-                if (!searchUiState.isSearch) {
+                if (!isSearch) {
                     Text(
                         text = "大家都在搜",
                         modifier = Modifier.padding(15.dp),
                         fontSize = 16.sp,
                     )
                     FlowRow(modifier = Modifier.fillMaxWidth()) {
-                        searchUiState.hotKeyResult.forEach {
+                        hotKeyResult.forEach {
                             Box(modifier = Modifier.padding(15.dp, 0.dp, 15.dp, 0.dp)) {
                                 Button(
                                     onClick = {
@@ -202,7 +207,7 @@ fun SearchScreen(
                             }
                         }
                     }
-                    if (searchUiState.searchHistoryResult.isNotEmpty()) {
+                    if (searchHistoryResult.isNotEmpty()) {
                         Text(
                             text = "历史搜索",
                             modifier = Modifier.padding(15.dp),
@@ -213,7 +218,7 @@ fun SearchScreen(
                             verticalArrangement = Arrangement.spacedBy(1.dp),
                         ) {
                             itemsIndexed(
-                                searchUiState.searchHistoryResult,
+                                searchHistoryResult,
                                 key = { _, item -> item.id }
                             ) { _, item ->
                                 Row(
@@ -248,18 +253,13 @@ fun SearchScreen(
                         }
                     }
                 } else {
-                    SwipeRefreshBox(
-                        items = searchUiState.articlesResult,
-                        isRefreshing = searchUiState.isRefreshing,
-                        hasMore = searchUiState.isLoading,
-                        isFinishing = searchUiState.isFinishing,
-                        onRefresh = { searchViewModel.getHome(searchText) },
-                        onLoad = { searchViewModel.getNext(searchText) },
+                    PagingSwipeRefreshBox(
+                        pagingItems = pagingItems,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
-                        key = { _, item -> item.id },
-                    ) { _, item ->
+                        key = { it.id },
+                    ) { item ->
                         ArticleCard(
                             data = remember(item.id) { item.toArticleCardUiState() },
                             onArticleClick = { onNavigate(WebNavKey(it)) },

@@ -17,12 +17,11 @@ import java.nio.charset.Charset
  * 的方式拆分：
  *
  * - 公开入口仍只挂在 `FileUtil` 这一个 `object` 上，**所有调用方零改动**；
- * - 内部按职责拆到 5 个 `internal` 顶层文件：
+ * - 内部按职责拆到 4 个 `internal` 顶层文件：
  *   - [FileSizeUtil.kt]：尺寸 / 可用空间
  *   - [FileIOUtil.kt]：流读写
  *   - [FileMimeUtil.kt]：MIME / 文件头
  *   - [FileEncodeUtil.kt]：Base64 / 二进制串
- *   - [FileDirtyTestUtil.kt]：脏数据写入测试
  *
  * 顺手修复的真实 Bug 详见各拆分文件 KDoc。
  */
@@ -115,8 +114,4 @@ object FileUtil {
 
     fun decodeString(content: String, charset: Charset = Charset.defaultCharset()): ByteArray =
         decodeStringInternal(content, charset)
-
-    // ---------- 脏数据写入测试（仅用于本地存储压力调试） ----------
-
-    fun writeDirtyRead(destFile: File) = writeDirtyReadInternal(destFile)
 }

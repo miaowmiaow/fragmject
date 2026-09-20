@@ -5,7 +5,7 @@ import com.example.fragmject.core.model.Navigation
 import com.google.gson.reflect.TypeToken
 
 fun Navigation.toEntity(cacheKey: String, sortOrder: Int): NavigationEntity {
-    val gson = ArticleTypeConverters.gson
+    val gson = JsonConverters.gson
     return NavigationEntity(
         navId = cid.ifEmpty { name },
         cacheKey = cacheKey,
@@ -18,7 +18,7 @@ fun Navigation.toEntity(cacheKey: String, sortOrder: Int): NavigationEntity {
 }
 
 fun NavigationEntity.toDomain(): Navigation {
-    val gson = ArticleTypeConverters.gson
+    val gson = JsonConverters.gson
     return Navigation(
         cid = cid,
         name = name,

@@ -1,7 +1,8 @@
 package com.example.fragmject.core.domain.repository
 
-import com.example.fragmject.core.domain.result.ArticlePageResult
+import androidx.paging.PagingData
 import com.example.fragmject.core.domain.result.DomainResult
+import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
 import kotlinx.coroutines.flow.Flow
 
@@ -11,5 +12,5 @@ import kotlinx.coroutines.flow.Flow
 interface SearchRepository {
     fun observeHotKey(): Flow<List<HotKey>>
     suspend fun refreshHotKey(): DomainResult<Unit>
-    suspend fun searchArticles(key: String, page: Int): DomainResult<ArticlePageResult>
+    fun getSearchPagingData(key: String): Flow<PagingData<Article>>
 }

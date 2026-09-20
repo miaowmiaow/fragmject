@@ -3,8 +3,8 @@ package com.example.fragmject.feature.user.ui.history
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.History
 import com.example.fragmject.core.domain.repository.HistoryRepository
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
-import com.example.fragmject.core.common.viewmodel.updateSuccessFrom
+import androidx.lifecycle.ViewModel
+import com.example.fragmject.core.common.utils.updateSuccessFrom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +27,7 @@ val BrowseHistoryUiState.historyResult: List<History> get() = (this as? BrowseHi
 @HiltViewModel
 class BrowseHistoryViewModel @Inject constructor(
     private val historyRepo: HistoryRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<BrowseHistoryUiState>(BrowseHistoryUiState.Success())
     val uiState: StateFlow<BrowseHistoryUiState> = _uiState.asStateFlow()

@@ -15,14 +15,11 @@ android {
 
 dependencies {
     api(project(":feature:home:api"))
-    // 各 Screen 构造跨域 NavKey（api 契约，不依赖 feature impl）
     implementation(project(":feature:user:api"))
     implementation(project(":feature:collection:api"))
     implementation(project(":feature:article:api"))
-    // MyScreen 引用 LoginNavKey（auth）、DemoNavKey（demo）
     implementation(project(":feature:auth:api"))
     implementation(project(":feature:demo:api"))
-    // MainScreen 引用 SearchNavKey（search）
     implementation(project(":feature:search:api"))
 
     implementation(project(":core:common"))
@@ -38,6 +35,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.coil.compose)
 
     testImplementation(libs.junit)

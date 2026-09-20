@@ -1,13 +1,12 @@
 package com.example.fragmject.feature.collection.ui.myshare
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.collection.components.ArticleListPage
+import com.example.fragmject.feature.collection.components.PagingArticleListPage
 
 @Composable
 fun MyShareScreen(
@@ -15,15 +14,10 @@ fun MyShareScreen(
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ArticleListPage(
+    val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
+    PagingArticleListPage(
         title = "我的分享",
-        items = uiState.result,
-        isRefreshing = uiState.isRefreshing,
-        hasMore = uiState.isLoading,
-        isFinishing = uiState.isFinishing,
-        onRefresh = { viewModel.getHome() },
-        onLoad = { viewModel.getNext() },
+        pagingItems = pagingItems,
         onNavigate = onNavigate,
         onNavigateUp = onNavigateUp,
         onCollect = viewModel.collectAction,

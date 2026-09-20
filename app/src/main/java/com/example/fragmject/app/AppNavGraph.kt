@@ -20,8 +20,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.example.fragmject.core.common.DetailPaneNavKey
-import com.example.fragmject.core.common.RequiresAuth
+import com.example.fragmject.core.navigation.DetailPaneNavKey
+import com.example.fragmject.core.navigation.RequiresAuth
 import com.example.fragmject.core.model.User
 import com.example.fragmject.core.navigation.NavCallbacks
 import com.example.fragmject.core.navigation.NavContentRegistry

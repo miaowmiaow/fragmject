@@ -20,7 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.ReorderLazyColumn
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import androidx.lifecycle.ViewModel
 import com.example.fragmject.feature.demo.ui.gridselect.Photo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,7 +64,7 @@ data class ColumnUiState(
     val result: List<Photo> = emptyList(),
 )
 
-class ColumnViewModel : BaseViewModel() {
+class ColumnViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ColumnUiState())
 
     val uiState: StateFlow<ColumnUiState> = _uiState.asStateFlow()

@@ -1,14 +1,18 @@
 package com.example.fragmject.feature.home.ui.main
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.example.fragmject.core.domain.repository.NavigationRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
-import com.example.fragmject.core.domain.result.ArticlePageResult
 import com.example.fragmject.core.domain.result.DomainResult
+import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.model.Navigation
 import com.example.fragmject.core.model.Tree
 import com.example.fragmject.feature.home.MainDispatcherRule
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -24,7 +28,6 @@ import org.junit.Test
  *
  * 这是 Phase 5 引入 kotlinx-coroutines-test 后解锁的首个 ViewModel 层测试。
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
 
     @get:Rule
@@ -78,6 +81,14 @@ private class FakeSearchRepository(
 
     override fun observeHotKey(): Flow<List<HotKey>> = hotKeyFlow
     override suspend fun refreshHotKey(): DomainResult<Unit> = DomainResult.Success(Unit)
-    override suspend fun searchArticles(key: String, page: Int): DomainResult<ArticlePageResult> =
-        DomainResult.Success(ArticlePageResult())
+    override fun getSearchPagingData(key: String): Flow<PagingData<Article>> = Pager(
+        config = PagingConfig(pageSize = 20),
+        pagingSourceFactory = {
+            object : PagingSource<Int, Article>() {
+                override fun getRefreshKey(state: PagingState<Int, Article>): Int? = null
+                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Article> =
+                    LoadResult.Page(emptyList(), prevKey = null, nextKey = null)
+            }
+        },
+    ).flow
 }

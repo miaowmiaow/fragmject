@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.ProjectTree
 import com.example.fragmject.core.domain.repository.ProjectRepository
 import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
-import com.example.fragmject.core.common.viewmodel.updateSuccessFrom
+import androidx.lifecycle.ViewModel
+import com.example.fragmject.core.common.utils.updateSuccessFrom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +29,7 @@ private const val TAG = "ProjectTreeVM"
 @HiltViewModel
 class ProjectTreeViewModel @Inject constructor(
     private val repo: ProjectRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProjectTreeUiState>(ProjectTreeUiState.Success())
     val uiState: StateFlow<ProjectTreeUiState> = _uiState.asStateFlow()

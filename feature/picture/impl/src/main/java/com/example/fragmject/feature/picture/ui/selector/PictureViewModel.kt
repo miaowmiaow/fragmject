@@ -3,7 +3,7 @@ package com.example.fragmject.feature.picture.ui.selector
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.common.viewmodel.BaseViewModel
+import androidx.lifecycle.ViewModel
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.feature.picture.model.AlbumBean
@@ -20,7 +20,7 @@ import androidx.core.net.toUri
 class PictureViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val albumRepository: AlbumRepository,
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val mediaMap = HashMap<String, MutableList<MediaBean>>()
 

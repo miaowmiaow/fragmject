@@ -1,18 +1,16 @@
 package com.example.fragmject.core.domain.repository
 
+import androidx.paging.PagingData
 import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.domain.result.PageData
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.ProjectTree
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 项目领域端口：项目树 + 项目分类文章（Room 唯一数据源模式，第 1 页进 Room）。
+ * 项目领域端口：项目树（Tab 栏，Room 缓存）+ 项目分类文章（纯网络分页）。
  */
 interface ProjectRepository {
     fun observeProjectTree(): Flow<List<ProjectTree>>
-    fun observeProjectArticles(cid: String): Flow<List<Article>>
     suspend fun refreshProjectTree(): DomainResult<Unit>
-    suspend fun refreshProjectArticles(cid: String): DomainResult<Int>
-    suspend fun loadProjectNextPage(cid: String, page: Int): DomainResult<PageData>
+    fun getProjectPagingData(cid: String): Flow<PagingData<Article>>
 }

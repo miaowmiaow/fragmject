@@ -1,17 +1,20 @@
 package com.example.fragmject.core.domain.repository
 
-import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.domain.result.PageData
+import androidx.paging.PagingData
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.Banner
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 首页聚合层领域端口：Room 唯一数据源模式。
+ * 首页领域端口：文章列表纯网络分页 + banner/top 头部网络拉取。
  */
 interface HomeRepository {
-    fun observeHomeArticles(): Flow<List<Article>>
-    fun observeHomeBanners(): Flow<List<Banner>>
-    suspend fun refreshHome(): DomainResult<Int>
-    suspend fun loadNextPage(page: Int): DomainResult<PageData>
+    /** 首页文章分页数据流（page 从 0 开始，纯网络）。 */
+    fun getHomePagingData(): Flow<PagingData<Article>>
+
+    /** 拉取首页 banner（轮播图）。 */
+    suspend fun fetchHomeBanners(): List<Banner>
+
+    /** 拉取首页置顶文章。 */
+    suspend fun fetchTopArticles(): List<Article>
 }

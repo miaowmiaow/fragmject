@@ -16,5 +16,6 @@ dependencies {
     implementation(project(":core:model"))
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
+    implementation(libs.androidx.room3.paging)
     testImplementation(libs.junit)
 }

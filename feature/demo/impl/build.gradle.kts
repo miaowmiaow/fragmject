@@ -9,8 +9,6 @@ dependencies {
     api(project(":feature:demo:api"))
     // 跨域：BarcodeScanningScreen/PictureSelectorDemoScreen 引用 PictureSelectorNavKey（picture/api）
     implementation(project(":feature:picture:api"))
-    // NestedScroll1Screen 引用 WebViewAssetInterceptor（article/api）
-    implementation(project(":feature:article:api"))
 
     implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
@@ -18,6 +16,7 @@ dependencies {
     implementation(project(":core:player"))
     implementation(project(":core:domain"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:webview"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

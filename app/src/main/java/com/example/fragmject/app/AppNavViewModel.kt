@@ -1,24 +1,21 @@
 package com.example.fragmject.app
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.model.User
+import com.example.fragmject.core.navigation.AuthStateProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /**
- * 导航层 ViewModel：提供当前登录用户状态，
- * 替代原先 AppNavGraph 内通过 Hilt EntryPoint 直接获取 UserRepository 的做法。
+ * 导航层 ViewModel：提供当前登录状态。
+ *
+ * 通过 core:navigation 的 [AuthStateProvider] 契约获取登录态，
+ * 不再直接依赖 core:domain 的 UserRepository 或 core:model 的 User。
  */
 @HiltViewModel
 class AppNavViewModel @Inject constructor(
-    userRepository: UserRepository,
+    authStateProvider: AuthStateProvider,
 ) : ViewModel() {
 
-    val user: StateFlow<User?> = userRepository.observeCurrentUser()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    val isLoggedIn: StateFlow<Boolean> = authStateProvider.isLoggedIn
 }

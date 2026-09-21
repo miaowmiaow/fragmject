@@ -2,25 +2,32 @@ package com.example.fragmject.feature.picture.ui.selector
 
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.ViewModel
+import com.example.fragmject.core.common.utils.AppScope
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.feature.picture.model.AlbumBean
 import com.example.fragmject.feature.picture.model.MediaBean
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Singleton
 import androidx.core.net.toUri
 
-@HiltViewModel
+/**
+ * 图片选择/预览/编辑流程共享状态。
+ *
+ * 由 @HiltViewModel 改为 @Singleton：三个导航 entry（Selector/Preview/Editor）
+ * 各自拥有独立 ViewModelStore，无法通过 viewModel() 天然共享；改为 Hilt 单例后，
+ * 相册数据 + 选中状态 + UI 状态可跨页面共享，同时由 picture 模块内部管理，
+ * app 层不再 import 本类。
+ */
+@Singleton
 class PictureViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val albumRepository: AlbumRepository,
-) : ViewModel() {
+) {
 
     private val mediaMap = HashMap<String, MutableList<MediaBean>>()
 
@@ -138,7 +145,7 @@ class PictureViewModel @Inject constructor(
      * 获取相册资源
      */
     fun queryAlbum() {
-        viewModelScope.launch {
+        AppScope.launch {
             try {
                 val groups = albumRepository.queryAlbums()
                 mediaMap.clear()

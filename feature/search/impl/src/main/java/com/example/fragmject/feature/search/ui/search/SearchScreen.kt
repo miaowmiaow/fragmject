@@ -58,8 +58,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.components.ArticleCard
-import com.example.fragmject.core.ui.components.toArticleCardUiState
+import com.example.fragmject.core.ui.components.FeedCard
+import com.example.fragmject.feature.search.mapper.toFeedCardUiState
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.feature.user.UserNavKey
@@ -260,13 +260,12 @@ fun SearchScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         key = { it.id },
                     ) { item ->
-                        ArticleCard(
-                            data = remember(item.id) { item.toArticleCardUiState() },
-                            onArticleClick = { onNavigate(WebNavKey(it)) },
+                        FeedCard(
+                            data = remember(item.id) { item.toFeedCardUiState() },
+                            onItemClick = { onNavigate(WebNavKey(it)) },
                             onUserClick = { onNavigate(UserNavKey(it)) },
-                            onChapterClick = { onNavigate(SystemNavKey(it)) },
-                            onTagClick = { onNavigate(SystemNavKey(it)) },
-                            onCollectClick = searchViewModel.collectAction,
+                            onFooterClick = { onNavigate(SystemNavKey(it)) },
+                            onToggleClick = searchViewModel.collectAction,
                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                         )
                     }

@@ -30,7 +30,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.fragmject.feature.article.utils.WebViewAssetInterceptor
+import com.example.fragmject.core.webview.WebViewAssetInterceptor
 import org.json.JSONObject
 import kotlin.math.abs
 import com.example.fragmject.core.designsystem.AppColors

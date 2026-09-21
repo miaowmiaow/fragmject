@@ -26,24 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavKey
 import coil.compose.AsyncImage
-import com.example.fragmject.feature.user.BrowseHistoryNavKey
-import com.example.fragmject.feature.demo.DemoNavKey
-import com.example.fragmject.feature.auth.LoginNavKey
-import com.example.fragmject.feature.user.MyCoinNavKey
-import com.example.fragmject.feature.collection.MyCollectNavKey
-import com.example.fragmject.feature.collection.MyShareNavKey
-import com.example.fragmject.feature.user.SettingNavKey
-import com.example.fragmject.feature.user.UserNavKey
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.core.ui.components.ArrowRightItem
+import com.example.fragmject.feature.home.nav.MyNavActions
 
 @Composable
 fun MyScreen(
     viewModel: MyViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
+    actions: MyNavActions = MyNavActions(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
@@ -61,9 +53,9 @@ fun MyScreen(
                     .clip(RoundedCornerShape(50))
                     .clickable {
                         if (uiState.user.id > 0) {
-                            onNavigate(UserNavKey(uiState.user.id.toString()))
+                            actions.onUserClick(uiState.user.id.toString())
                         } else {
-                            onNavigate(LoginNavKey)
+                            actions.onLoginClick()
                         }
                     }
                     .size(90.dp)
@@ -77,9 +69,9 @@ fun MyScreen(
                     .clip(RoundedCornerShape(50))
                     .clickable {
                         if (uiState.user.id > 0) {
-                            onNavigate(UserNavKey(uiState.user.id.toString()))
+                            actions.onUserClick(uiState.user.id.toString())
                         } else {
-                            onNavigate(LoginNavKey)
+                            actions.onLoginClick()
                         }
                     }
                     .size(90.dp)
@@ -91,9 +83,9 @@ fun MyScreen(
                 .clickable(
                     onClick = {
                         if (uiState.user.id > 0) {
-                            onNavigate(UserNavKey(uiState.user.id.toString()))
+                            actions.onUserClick(uiState.user.id.toString())
                         } else {
-                            onNavigate(LoginNavKey)
+                            actions.onLoginClick()
                         }
                     },
                     indication = null,
@@ -105,17 +97,17 @@ fun MyScreen(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(45.dp))
-        ArrowRightItem("组件Demo") { onNavigate(DemoNavKey) }
+        ArrowRightItem("组件Demo") { actions.onDemoClick() }
         HorizontalDivider()
-        ArrowRightItem("我的积分") { onNavigate(MyCoinNavKey) }
+        ArrowRightItem("我的积分") { actions.onMyCoinClick() }
         HorizontalDivider()
-        ArrowRightItem("我的收藏") { onNavigate(MyCollectNavKey) }
+        ArrowRightItem("我的收藏") { actions.onMyCollectClick() }
         HorizontalDivider()
-        ArrowRightItem("我的分享") { onNavigate(MyShareNavKey) }
+        ArrowRightItem("我的分享") { actions.onMyShareClick() }
         HorizontalDivider()
-        ArrowRightItem("浏览历史") { onNavigate(BrowseHistoryNavKey) }
+        ArrowRightItem("浏览历史") { actions.onBrowseHistoryClick() }
         HorizontalDivider()
-        ArrowRightItem("系统设置") { onNavigate(SettingNavKey) }
+        ArrowRightItem("系统设置") { actions.onSettingClick() }
     }
 }
 

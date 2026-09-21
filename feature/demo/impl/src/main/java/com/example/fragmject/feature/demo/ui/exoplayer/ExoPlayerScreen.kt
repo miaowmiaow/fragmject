@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
-import com.example.fragmject.core.player.ExoPlayer
+import com.example.fragmject.core.player.ExoPlayerContainer
 
 @Composable
 fun ExoPlayerScreen() {
@@ -27,7 +27,7 @@ fun ExoPlayerScreen() {
         }
     }
     //媒体类型参考：https://developer.android.com/media/media3/exoplayer/hls?hl=zh-cn
-    ExoPlayer(
+    ExoPlayerContainer(
         mediaItems = listOf(
             MediaItem.fromUri("https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/hls/xgplayer-demo.m3u8"),
             MediaItem.fromUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4")

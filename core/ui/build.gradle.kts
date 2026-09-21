@@ -13,7 +13,6 @@ android {
 dependencies {
     implementation(project(":core:common"))
     api(project(":core:designsystem"))
-    api(project(":core:model"))
 
     implementation(libs.coil.compose)
     implementation(libs.androidx.paging.compose)

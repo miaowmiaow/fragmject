@@ -18,16 +18,16 @@ import androidx.navigation3.runtime.NavKey
 import androidx.paging.compose.LazyPagingItems
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.model.Article
-import com.example.fragmject.core.ui.components.ArticleCard
+import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.core.ui.components.toArticleCardUiState
 import com.example.fragmject.feature.article.WebNavKey
+import com.example.fragmject.feature.collection.mapper.toFeedCardUiState
 import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.feature.user.UserNavKey
 
 /**
  * 公共「文章列表页」Paging 版：统一 MyShareScreen 等页面重复的
- * 「标题栏 + PagingSwipeRefreshBox + ArticleCard」骨架。
+ * 「标题栏 + PagingSwipeRefreshBox + FeedCard」骨架。
  */
 @Composable
 fun PagingArticleListPage(
@@ -62,13 +62,12 @@ fun PagingArticleListPage(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             key = { it.id },
         ) { item ->
-            ArticleCard(
-                data = remember(item.id) { item.toArticleCardUiState() },
-                onArticleClick = { onNavigate(WebNavKey(it)) },
+            FeedCard(
+                data = remember(item.id) { item.toFeedCardUiState() },
+                onItemClick = { onNavigate(WebNavKey(it)) },
                 onUserClick = { onNavigate(UserNavKey(it)) },
-                onChapterClick = { onNavigate(SystemNavKey(it)) },
-                onTagClick = { onNavigate(SystemNavKey(it)) },
-                onCollectClick = onCollect,
+                onFooterClick = { onNavigate(SystemNavKey(it)) },
+                onToggleClick = onCollect,
             )
         }
     }

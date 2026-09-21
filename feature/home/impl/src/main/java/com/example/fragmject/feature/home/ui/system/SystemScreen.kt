@@ -23,23 +23,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavKey
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.core.ui.components.ArticleCard
-import com.example.fragmject.core.ui.components.toArticleCardUiState
-import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.feature.home.SystemNavKey
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.core.ui.components.FeedCard
+import com.example.fragmject.feature.home.mapper.toFeedCardUiState
+import com.example.fragmject.feature.home.nav.HomeNavActions
 import com.example.fragmject.core.model.Tree
 
 @Composable
 fun SystemScreen(
     cid: String,
     systemViewModel: SystemViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
+    actions: HomeNavActions = HomeNavActions(),
     onNavigateUp: () -> Unit = {},
 ) {
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
@@ -87,13 +84,12 @@ fun SystemScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     key = { it.id },
                 ) { item ->
-                    ArticleCard(
-                        data = remember(item.id) { item.toArticleCardUiState() },
-                        onArticleClick = { onNavigate(WebNavKey(it)) },
-                        onUserClick = { onNavigate(UserNavKey(it)) },
-                        onChapterClick = { onNavigate(SystemNavKey(it)) },
-                        onTagClick = { onNavigate(SystemNavKey(it)) },
-                        onCollectClick = systemViewModel.collectAction,
+                    FeedCard(
+                        data = remember(item.id) { item.toFeedCardUiState() },
+                        onItemClick = actions.onArticleClick,
+                        onUserClick = actions.onAuthorClick,
+                        onFooterClick = actions.onChapterClick,
+                        onToggleClick = systemViewModel.collectAction,
                     )
                 }
             }

@@ -71,8 +71,8 @@ import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.utils.videoScanJs
 import com.example.fragmject.feature.article.VideoDownloadNavKey
 import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.feature.article.components.WebView
-import com.example.fragmject.feature.article.components.rememberWebViewControl
+import com.example.fragmject.feature.article.components.ArticleWebViewContainer
+import com.example.fragmject.core.webview.rememberWebViewControl
 import com.example.fragmject.feature.user.BrowseHistoryNavKey
 import kotlinx.coroutines.launch
 
@@ -100,6 +100,7 @@ fun WebScreen(
     val sheetPagerState = rememberPagerState(0) { 2 }
     val control = rememberWebViewControl()
     val mediaController = rememberWebMediaController()
+    var injectState by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf<String?>("") }
     val bookmark by webViewModel.bookmark.collectAsStateWithLifecycle()
     LaunchedEffect(url) { webViewModel.init(url) }
@@ -248,7 +249,8 @@ fun WebScreen(
                                 }
                                 Button(
                                     onClick = {
-                                        control.inject()
+                                        injectState = !injectState
+                                        control.reload()
                                         scope.launch { bottomSheetState.partialExpand() }
                                     },
                                     modifier = Modifier
@@ -268,7 +270,7 @@ fun WebScreen(
                                     Icon(
                                         painter = painterResource(R.mipmap.ic_web_debug),
                                         contentDescription = null,
-                                        tint = if (control.injectState) {
+                                        tint = if (injectState) {
                                             MaterialTheme.colorScheme.onSurface
                                         } else {
                                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -462,12 +464,13 @@ fun WebScreen(
                         }
                     }
                 }
-                WebView(
+                ArticleWebViewContainer(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
                     url = url,
                     control = control,
+                    injectState = injectState,
                     onReceivedTitle = {
                         title = it
                         webViewModel.setBrowseHistory(it.toString(), url)

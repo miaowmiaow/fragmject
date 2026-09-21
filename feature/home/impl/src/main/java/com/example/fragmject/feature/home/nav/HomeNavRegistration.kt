@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.navigation.NavContentRegistry
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.feature.home.SystemNavKey
+import com.example.fragmject.feature.home.nav.homeNavActions
 import com.example.fragmject.feature.home.ui.main.MainScreen
 import com.example.fragmject.feature.home.ui.system.SystemScreen
 
@@ -30,7 +31,7 @@ fun NavContentRegistry.registerHomeNavContents(
     }
     register<SystemNavKey> { navKey, callbacks ->
         key(navKey.cid) {
-            SystemScreen(cid = navKey.cid, onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+            SystemScreen(cid = navKey.cid, actions = homeNavActions(callbacks.onNavigate), onNavigateUp = callbacks.onNavigateUp)
         }
     }
 }

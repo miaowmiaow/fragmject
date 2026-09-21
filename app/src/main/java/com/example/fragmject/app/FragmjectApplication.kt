@@ -12,7 +12,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
-import com.example.fragmject.feature.article.WebViewPool
+import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.network.di.CoilOkHttpClient
 import com.example.fragmject.core.common.utils.CacheUtils
 import dagger.hilt.android.HiltAndroidApp

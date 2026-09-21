@@ -22,10 +22,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.fragmject.core.navigation.DetailPaneNavKey
 import com.example.fragmject.core.navigation.RequiresAuth
-import com.example.fragmject.core.model.User
 import com.example.fragmject.core.navigation.NavCallbacks
 import com.example.fragmject.core.navigation.NavContentRegistry
-import com.example.fragmject.feature.picture.ui.selector.PictureViewModel
 import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.feature.user.nav.registerUserNavContents
@@ -52,11 +50,8 @@ fun AppNavGraph(
     modifier: Modifier = Modifier
 ) {
     val navViewModel: AppNavViewModel = viewModel()
-    val user by navViewModel.user.collectAsStateWithLifecycle()
+    val isLoggedIn by navViewModel.isLoggedIn.collectAsStateWithLifecycle()
     val backStack = rememberNavBackStack(MainNavKey)
-
-    // Picture 模块的共享 ViewModel，跨 Selector/Preview/Editor 三个页面
-    val pictureViewModel: PictureViewModel = viewModel()
 
     // ---- Expanded 列表-详情同屏状态 ----
     // 仅在 Expanded 模式下使用：点击文章时不走 backStack，而是由 MainScreen 右侧面板渲染
@@ -67,12 +62,12 @@ fun AppNavGraph(
     // ---- 导航动作（直接操作 backStack） ----
     // 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen
     // 不会被重组，因此 navigate lambda 必须保持稳定引用，内部通过
-    // rememberUpdatedState 读取最新的 user，避免闭包捕获过期状态。
-    val currentUser by rememberUpdatedState(user)
+    // rememberUpdatedState 读取最新的登录态，避免闭包捕获过期状态。
+    val currentIsLoggedIn by rememberUpdatedState(isLoggedIn)
     val currentIsExpanded by rememberUpdatedState(isExpanded)
     val navigate: (NavKey) -> Unit = remember {
         { key ->
-            if (requiredLoginNavKey(key, currentUser)) {
+            if (requiredLoginNavKey(key, currentIsLoggedIn)) {
                 backStack.add(LoginNavKey)
             } else if (currentIsExpanded && isDetailPaneKey(key)) {
                 selectedDetailKey = key
@@ -116,7 +111,7 @@ fun AppNavGraph(
         registerHomeNavContents(selectedDetailKey, { selectedDetailKey = null }, detailContent)
         registerDemoNavContents()
         registerSearchNavContents()
-        registerPictureNavContents(pictureViewModel)
+        registerPictureNavContents()
     }
 
     NavDisplay(
@@ -162,8 +157,8 @@ fun AppNavGraph(
 /**
  * 判定指定路由是否需要登录态。依赖 [RequiresAuth] 标记接口自动识别。
  */
-private fun requiredLoginNavKey(key: NavKey, user: User?): Boolean {
-    return key is RequiresAuth && (user == null || user.id <= 0)
+private fun requiredLoginNavKey(key: NavKey, isLoggedIn: Boolean): Boolean {
+    return key is RequiresAuth && !isLoggedIn
 }
 
 /**

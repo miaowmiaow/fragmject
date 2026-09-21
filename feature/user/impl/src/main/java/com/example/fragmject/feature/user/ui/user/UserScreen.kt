@@ -38,8 +38,8 @@ import com.example.fragmject.core.ui.components.CollapsingHeader
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.utils.getScreenWidth
-import com.example.fragmject.core.ui.components.ArticleCard
-import com.example.fragmject.core.ui.components.toArticleCardUiState
+import com.example.fragmject.core.ui.components.FeedCard
+import com.example.fragmject.feature.user.mapper.toFeedCardUiState
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.feature.user.UserNavKey
@@ -124,13 +124,12 @@ fun UserScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 key = { it.id },
             ) { item ->
-                ArticleCard(
-                    data = remember(item.id) { item.toArticleCardUiState() },
-                    onArticleClick = { onNavigate(WebNavKey(it)) },
+                FeedCard(
+                    data = remember(item.id) { item.toFeedCardUiState() },
+                    onItemClick = { onNavigate(WebNavKey(it)) },
                     onUserClick = { onNavigate(UserNavKey(it)) },
-                    onChapterClick = { onNavigate(SystemNavKey(it)) },
-                    onTagClick = { onNavigate(SystemNavKey(it)) },
-                    onCollectClick = viewModel.collectAction,
+                    onFooterClick = { onNavigate(SystemNavKey(it)) },
+                    onToggleClick = viewModel.collectAction,
                 )
             }
         }

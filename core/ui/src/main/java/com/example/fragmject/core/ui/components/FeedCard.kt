@@ -1,12 +1,10 @@
 package com.example.fragmject.core.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,9 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,41 +34,41 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil.compose.AsyncImage
-import com.example.fragmject.core.model.ArticleTag
-import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppSpacing
+import com.example.fragmject.core.ui.R
 import kotlinx.coroutines.launch
 
 /**
- * 通用文章卡片组件——零 NavKey 依赖，所有导航/交互通过回调外传。
+ * 通用信息流卡片组件——零业务语义、零模型依赖。
  *
- * @param data        卡片展示数据（[ArticleCardUiState]）
- * @param onArticleClick 点击卡片主体 → 参数为文章 link
- * @param onUserClick    点击头像 → 参数为 userId
- * @param onChapterClick 点击章节/标签区域 → 参数为 chapterId（也用于"新"/"置顶"）
- * @param onTagClick     点击分类标签按钮 → 参数为 cid
- * @param onCollectClick 点击收藏按钮 → 参数为 (articleId, 是否收藏)
+ * 由 ArticleCard 泛化而来：移除文章特有的「章节 / 新 / 置顶 / 分类」等业务概念，
+ * 统一抽象为 footer（底部信息 + 可点击项）与 footerBadges（角标）两个通用槽位。
+ * 所有业务语义由调用方在映射层（Article → FeedCardUiState）翻译。
+ *
+ * @param data          卡片展示数据（[FeedCardUiState]）
+ * @param onItemClick   点击卡片主体 → 参数为跳转链接 link
+ * @param onUserClick   点击头像 → 参数为 userId
+ * @param onFooterClick 点击底部信息/角标区域 → 参数为 footerId
+ * @param onToggleClick 点击选中切换按钮 → 参数为 (id, 选中态)
  */
 @Composable
-fun ArticleCard(
-    data: ArticleCardUiState,
+fun FeedCard(
+    data: FeedCardUiState,
     modifier: Modifier = Modifier,
-    onArticleClick: (String) -> Unit = {},
+    onItemClick: (String) -> Unit = {},
     onUserClick: (String) -> Unit = {},
-    onChapterClick: (String) -> Unit = {},
-    onTagClick: (String) -> Unit = {},
-    onCollectClick: suspend (String, Boolean) -> Unit = { _, _ -> },
+    onFooterClick: (String) -> Unit = {},
+    onToggleClick: suspend (String, Boolean) -> Unit = { _, _ -> },
 ) {
     val scope = rememberCoroutineScope()
-    var collected by remember(data.id) { mutableStateOf(data.isCollected) }
-    val collectResId = getCollectResId(collected)
+    var selected by remember(data.id) { mutableStateOf(data.selected) }
+    val toggleResId = getToggleResId(selected)
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AppSpacing.cardCornerRadius))
             .clipToBounds()
-            .clickable { onArticleClick(data.link) }
+            .clickable { onItemClick(data.link) }
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .fillMaxWidth()
     ) {
@@ -106,35 +102,13 @@ fun ArticleCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = data.niceDate,
+                    text = data.date,
                     color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
-            data.tags?.let { tags ->
-                if (tags.isNotEmpty()) {
-                    OutlinedButton(
-                        onClick = { onTagClick(tags[0].extractCid()) },
-                        modifier = Modifier.height(AppSpacing.buttonSmallHeight),
-                        shape = RoundedCornerShape(AppSpacing.tagCornerRadius),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onTertiaryContainer),
-                        contentPadding = PaddingValues(3.dp, 2.dp, 3.dp, 2.dp)
-                    ) {
-                        Text(
-                            text = tags[0].name,
-                            fontSize = 12.sp,
-                            lineHeight = 12.sp
-                        )
-                    }
-                }
             }
         }
         Spacer(Modifier.size(AppSpacing.cardItemGap))
@@ -170,9 +144,9 @@ fun ArticleCard(
                     )
                 }
             }
-            if (data.envelopePic.isNotBlank()) {
+            if (data.coverUrl.isNotBlank()) {
                 AsyncImage(
-                    model = data.envelopePic,
+                    model = data.coverUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .width(AppSpacing.thumbnailWidth)
@@ -194,20 +168,10 @@ fun ArticleCard(
                     .weight(1f)
                     .padding(end = AppSpacing.cardFooterEndPadding)
             ) {
-                if (data.fresh) {
+                data.footerBadges.forEach { badge ->
                     Text(
-                        text = "新  ",
-                        modifier = footModifier.clickable { onChapterClick(data.chapterId) },
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        fontSize = 12.sp,
-                        lineHeight = 12.sp,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                if (data.top) {
-                    Text(
-                        text = "置顶  ",
-                        modifier = footModifier.clickable { onChapterClick(data.chapterId) },
+                        text = "${badge.text}  ",
+                        modifier = footModifier.clickable { onFooterClick(data.footerId) },
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontSize = 12.sp,
                         lineHeight = 12.sp,
@@ -215,8 +179,8 @@ fun ArticleCard(
                     )
                 }
                 Text(
-                    text = data.chapterName,
-                    modifier = footModifier.clickable { onChapterClick(data.chapterId) },
+                    text = data.footerText,
+                    modifier = footModifier.clickable { onFooterClick(data.footerId) },
                     color = MaterialTheme.colorScheme.onTertiary,
                     fontSize = 12.sp,
                     lineHeight = 12.sp,
@@ -225,42 +189,23 @@ fun ArticleCard(
                 )
             }
             Image(
-                painter = painterResource(id = collectResId),
+                painter = painterResource(id = toggleResId),
                 contentDescription = "",
                 modifier = footModifier
                     .height(AppSpacing.buttonSmallHeight)
                     .clickable {
                         scope.launch {
-                            onCollectClick(data.id, !collected)
-                            collected = !collected
+                            onToggleClick(data.id, !selected)
+                            selected = !selected
                         }
                     })
         }
     }
 }
 
-private fun getCollectResId(collect: Boolean): Int {
-    return when (collect) {
+private fun getToggleResId(selected: Boolean): Int {
+    return when (selected) {
         true -> R.mipmap.ic_collect_checked
         false -> R.mipmap.ic_collect_unchecked
     }
-}
-
-/**
- * 从 [ArticleTag.url] 中提取文章分类 cid。
- *
- * URL 格式通常为 `https://www.wanandroid.com/project/list/1?cid=294`，
- * 优先通过 query 参数 "cid" 获取，其次从 pathSegments 提取。
- */
-private fun ArticleTag.extractCid(): String {
-    val uriString = "https://www.wanandroid.com$url"
-    val uri = uriString.toUri()
-    var cid = uri.getQueryParameter("cid")
-    if (cid.isNullOrBlank()) {
-        val paths = uri.pathSegments
-        if (paths != null && paths.size >= 3) {
-            cid = paths[2]
-        }
-    }
-    return cid ?: "0"
 }

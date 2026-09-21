@@ -71,6 +71,8 @@ import com.example.fragmject.feature.home.ui.my.MyScreen
 import com.example.fragmject.feature.home.ui.nav.NavScreen
 import com.example.fragmject.feature.home.ui.home.HomeScreen
 import com.example.fragmject.feature.home.ui.project.ProjectScreen
+import com.example.fragmject.feature.home.nav.homeNavActions
+import com.example.fragmject.feature.home.nav.myNavActions
 import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 
 // =====================================================================
@@ -90,19 +92,19 @@ private fun MainContent(
     Column(modifier = modifier) {
         when (navIndex) {
             0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
-                HomeScreen(listState = homeListState, onNavigate = onNavigate)
+                HomeScreen(listState = homeListState, actions = homeNavActions(onNavigate))
             }
 
             1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
-                NavScreen(systemData = systemData, onNavigate = onNavigate)
+                NavScreen(systemData = systemData, actions = homeNavActions(onNavigate))
             }
 
             2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
-                ProjectScreen(onNavigate = onNavigate)
+                ProjectScreen(actions = homeNavActions(onNavigate))
             }
 
             3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
-                MyScreen(onNavigate = onNavigate)
+                MyScreen(actions = myNavActions(onNavigate))
             }
         }
     }

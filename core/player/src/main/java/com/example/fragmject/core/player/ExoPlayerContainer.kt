@@ -40,7 +40,7 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * 空实现播放器监听器，作为 [ExoPlayer] 的默认 [Player.Listener]。
+ * 空实现播放器监听器，作为 [ExoPlayerContainer] 的默认 [Player.Listener]。
  *
  * 提升为单例以避免默认参数在每次重组时都新建 `object : Player.Listener {}` 匿名实例；
  * 该监听器无状态，全局共享是安全的。
@@ -49,7 +49,7 @@ private val NoOpPlayerListener = object : Player.Listener {}
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun ExoPlayer(
+fun ExoPlayerContainer(
     mediaItems: List<MediaItem>,
     modifier: Modifier = Modifier,
     control: ExoPlayerControl = rememberExoPlayerControl(),

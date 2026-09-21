@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:webview"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -25,8 +26,6 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.media3.exoplayer)
-    // WebViewManager 使用 okio.ByteString.encodeUtf8，通过 okhttp 传递引入
-    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
 }

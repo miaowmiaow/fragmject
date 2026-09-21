@@ -40,13 +40,13 @@ fun SkeletonList(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         items(itemCount) {
-            SkeletonArticleCard()
+            SkeletonCard()
         }
     }
 }
 
 @Composable
-private fun SkeletonArticleCard() {
+private fun SkeletonCard() {
     Column(
         modifier = Modifier
             .fillMaxWidth()

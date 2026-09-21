@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.home.ui.home
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,19 +17,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.core.ui.components.ArticleCard
+import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.core.ui.components.toArticleCardUiState
-import com.example.fragmject.feature.home.SystemNavKey
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.feature.home.mapper.toFeedCardUiState
+import com.example.fragmject.feature.home.nav.HomeNavActions
 import com.example.fragmject.feature.home.components.BannerPager
 
 @Composable
 fun HomeScreen(
     listState: LazyListState,
     viewModel: HomeViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
+    actions: HomeNavActions = HomeNavActions(),
 ) {
     val banners by viewModel.banners.collectAsStateWithLifecycle()
     val topArticles by viewModel.topArticles.collectAsStateWithLifecycle()
@@ -49,31 +46,29 @@ fun HomeScreen(
                     BannerPager(
                         data = banners,
                         pathMapping = { it.imagePath },
-                        onClick = { _, banner -> onNavigate(WebNavKey(banner.url)) }
+                        onClick = { _, banner -> actions.onArticleClick(banner.url) }
                     )
                 }
             }
             items(topArticles, key = { "top_${it.id}" }) { article ->
-                ArticleCard(
-                    data = remember(article.id) { article.toArticleCardUiState() },
+                FeedCard(
+                    data = remember(article.id) { article.toFeedCardUiState() },
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                    onArticleClick = { onNavigate(WebNavKey(it)) },
-                    onUserClick = { onNavigate(UserNavKey(it)) },
-                    onChapterClick = { onNavigate(SystemNavKey(it)) },
-                    onTagClick = { onNavigate(SystemNavKey(it)) },
-                    onCollectClick = viewModel.collectAction,
+                    onItemClick = actions.onArticleClick,
+                    onUserClick = actions.onAuthorClick,
+                    onFooterClick = actions.onChapterClick,
+                    onToggleClick = viewModel.collectAction,
                 )
             }
         },
     ) { item ->
-        ArticleCard(
-            data = remember(item.id) { item.toArticleCardUiState() },
+        FeedCard(
+            data = remember(item.id) { item.toFeedCardUiState() },
             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-            onArticleClick = { onNavigate(WebNavKey(it)) },
-            onUserClick = { onNavigate(UserNavKey(it)) },
-            onChapterClick = { onNavigate(SystemNavKey(it)) },
-            onTagClick = { onNavigate(SystemNavKey(it)) },
-            onCollectClick = viewModel.collectAction,
+            onItemClick = actions.onArticleClick,
+            onUserClick = actions.onAuthorClick,
+            onFooterClick = actions.onChapterClick,
+            onToggleClick = viewModel.collectAction,
         )
     }
 }

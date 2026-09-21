@@ -1,4 +1,4 @@
-package com.example.fragmject.feature.article.utils
+package com.example.fragmject.core.webview
 
 import android.content.Context
 import android.util.Log
@@ -10,8 +10,8 @@ import java.io.File
 /**
  * WebView 本地 assets 资源拦截器。
  *
- * 从 [WebViewManager] 抽离到 article/api，供 article/impl 内部与 demo 等模块复用，
- * 避免 demo 直接依赖 article/impl（仅需依赖 article/api 即可）。
+ * 归属 core:webview，供 article/impl、demo 等模块复用，
+ * 避免各业务模块直接依赖 WebView 运行时实现。
  */
 object WebViewAssetInterceptor {
 

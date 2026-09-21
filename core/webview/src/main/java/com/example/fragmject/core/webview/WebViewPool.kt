@@ -1,4 +1,4 @@
-package com.example.fragmject.feature.article
+package com.example.fragmject.core.webview
 
 import android.content.Context
 import android.webkit.WebResourceRequest
@@ -8,10 +8,10 @@ import android.webkit.WebView
 /**
  * WebView 池生命周期与缓存契约。
  *
- * 定义在 article/api：app 层与 article/impl 内部的 WebView 组件仅依赖本接口，
- * 不再直接依赖 impl 内部的 WebViewManager 实现，从而切断「组件 → impl」耦合。
+ * 定义在 core:webview：app 层、article/impl 与其他 WebView 消费方仅依赖本接口，
+ * 不再直接依赖 WebViewManager 具体实现，从而切断「组件 → 实现」耦合。
  *
- * 实现见 article/impl 的 [WebViewManager]（由 Hilt 以单例提供）。
+ * 实现见 core:webview 的 [WebViewManager]（由 Hilt 以单例提供）。
  */
 interface WebViewPool {
     /** 应用启动后预创建一个空闲 WebView，供下次 obtain 复用。 */

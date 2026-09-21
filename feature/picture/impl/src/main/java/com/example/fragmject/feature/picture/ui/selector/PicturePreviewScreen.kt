@@ -53,7 +53,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.fragmject.feature.picture.model.MediaBean
 import kotlinx.coroutines.launch
@@ -68,7 +67,7 @@ fun PicturePreviewScreen(
     onFinish: (List<String>) -> Unit,
     onDismiss: () -> Unit,
     onOpenEditor: (Uri) -> Unit = {},
-    viewModel: PictureViewModel = viewModel(),
+    viewModel: PictureViewModel,
 ) {
     val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
     val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()

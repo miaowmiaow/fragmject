@@ -49,7 +49,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /** 收藏 / 取消收藏，供 ArticleCard 的 onCollectClick 直接绑定。 */
+/** 收藏 / 取消收藏，供 FeedCard 的 onToggleClick 直接绑定。 */
     override val collectAction: suspend (String, Boolean) -> Unit = { id, collect ->
         collectArticle(id, collect)
     }

@@ -14,8 +14,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.fragmject.feature.article.WebViewPool
-import com.example.fragmject.core.domain.repository.ThemeRepository
+import com.example.fragmject.core.webview.WebViewPool
+import com.example.fragmject.core.designsystem.ThemeStateProvider
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.common.debug.DebugBridge
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var themeRepository: ThemeRepository
+    lateinit var themeStateProvider: ThemeStateProvider
 
     @Inject
     lateinit var webViewPool: WebViewPool
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val darkTheme by themeRepository.observeDarkTheme()
+            val darkTheme by themeStateProvider.darkTheme
                 .collectAsStateWithLifecycle(initialValue = false)
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {

@@ -1,4 +1,4 @@
-package com.example.fragmject.feature.article.utils
+package com.example.fragmject.core.webview
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
@@ -19,7 +19,6 @@ import android.webkit.WebViewClient
 import com.example.fragmject.core.common.utils.AppScope
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.common.utils.CacheUtils
-import com.example.fragmject.feature.article.WebViewPool
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

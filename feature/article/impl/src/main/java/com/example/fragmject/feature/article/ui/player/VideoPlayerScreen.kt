@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
-import com.example.fragmject.core.player.ExoPlayer
+import com.example.fragmject.core.player.ExoPlayerContainer
 
 /**
  * 播放本地视频文件的全屏播放器。
@@ -71,7 +71,7 @@ fun VideoPlayerScreen(filePath: String, onNavigateUp: () -> Unit = {}) {
         }
     }
 
-    ExoPlayer(
+    ExoPlayerContainer(
         mediaItems = listOf(MediaItem.fromUri("file://$filePath")),
         modifier = Modifier.fillMaxSize()
     )

@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.home.ui.project
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,17 +24,15 @@ import com.example.fragmject.core.ui.components.SkeletonContent
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.TabBar
 import kotlinx.coroutines.launch
-import com.example.fragmject.core.ui.components.ArticleCard
-import com.example.fragmject.core.ui.components.toArticleCardUiState
-import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.feature.home.SystemNavKey
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.core.ui.components.FeedCard
+import com.example.fragmject.feature.home.mapper.toFeedCardUiState
+import com.example.fragmject.feature.home.nav.HomeNavActions
 
 @Composable
 fun ProjectScreen(
     projectTreeViewModel: ProjectTreeViewModel = viewModel(),
     projectListViewModel: ProjectListViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
+    actions: HomeNavActions = HomeNavActions(),
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -64,13 +61,12 @@ fun ProjectScreen(
                     contentPadding = PaddingValues(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) { item ->
-                    ArticleCard(
-                        data = remember(item.id) { item.toArticleCardUiState() },
-                        onArticleClick = { onNavigate(WebNavKey(it)) },
-                        onUserClick = { onNavigate(UserNavKey(it)) },
-                        onChapterClick = { onNavigate(SystemNavKey(it)) },
-                        onTagClick = { onNavigate(SystemNavKey(it)) },
-                        onCollectClick = projectListViewModel.collectAction,
+                    FeedCard(
+                        data = remember(item.id) { item.toFeedCardUiState() },
+                        onItemClick = actions.onArticleClick,
+                        onUserClick = actions.onAuthorClick,
+                        onFooterClick = actions.onChapterClick,
+                        onToggleClick = projectListViewModel.collectAction,
                     )
                 }
             }

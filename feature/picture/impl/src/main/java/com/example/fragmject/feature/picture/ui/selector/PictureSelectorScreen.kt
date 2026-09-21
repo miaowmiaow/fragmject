@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.fragmject.feature.picture.model.MediaBean
 
@@ -67,7 +66,7 @@ fun PictureSelectorScreen(
     onFinish: (List<MediaBean>) -> Unit,
     onDismiss: () -> Unit,
     onPreview: (List<String>) -> Unit = {},
-    viewModel: PictureViewModel = viewModel(),
+    viewModel: PictureViewModel,
 ) {
     val context = LocalContext.current
     val albumResult by viewModel.albumResult.collectAsStateWithLifecycle()

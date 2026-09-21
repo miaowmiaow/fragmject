@@ -1,0 +1,120 @@
+package com.example.fragmject.core.data.impl.di
+
+import com.example.fragmject.core.data.impl.repository.AlbumRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.CoinRankRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.DownloadRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.HistoryRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.HomeRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.MediaRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.MyCollectRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.MyRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.OfflineFirstNavigationRepository
+import com.example.fragmject.core.data.impl.repository.ProjectRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.ScheduleRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.SearchRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.SystemRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.ThemeRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.UserCenterRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.UserRepositoryImpl
+import com.example.fragmject.core.data.impl.repository.VideoDownloadRepositoryImpl
+import com.example.fragmject.core.domain.repository.AlbumRepository
+import com.example.fragmject.core.domain.repository.CoinRankRepository
+import com.example.fragmject.core.domain.repository.DownloadRepository
+import com.example.fragmject.core.domain.repository.HistoryRepository
+import com.example.fragmject.core.domain.repository.HomeRepository
+import com.example.fragmject.core.domain.repository.MediaRepository
+import com.example.fragmject.core.domain.repository.MyCollectRepository
+import com.example.fragmject.core.domain.repository.MyRepository
+import com.example.fragmject.core.domain.repository.NavigationRepository
+import com.example.fragmject.core.domain.repository.ProjectRepository
+import com.example.fragmject.core.domain.repository.ScheduleRepository
+import com.example.fragmject.core.domain.repository.SearchRepository
+import com.example.fragmject.core.domain.repository.SystemRepository
+import com.example.fragmject.core.domain.repository.ThemeRepository
+import com.example.fragmject.core.domain.repository.UserCenterRepository
+import com.example.fragmject.core.domain.repository.UserRepository
+import com.example.fragmject.core.domain.repository.VideoDownloadRepository
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+/**
+ * 领域端口 Adapter 绑定。
+ *
+ * 使用 [Binds] 抽象方法在接口与实现之间建立桥接，替代原先的 [dagger.Provides]
+ * 工厂方法，减少 Dagger 生成的 Factory 类数量、加快编译并缩小 dex。
+ */
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMyRepository(impl: MyRepositoryImpl): MyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHistoryRepository(impl: HistoryRepositoryImpl): HistoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNavigationRepository(impl: OfflineFirstNavigationRepository): NavigationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHomeRepository(impl: HomeRepositoryImpl): HomeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProjectRepository(impl: ProjectRepositoryImpl): ProjectRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCoinRankRepository(impl: CoinRankRepositoryImpl): CoinRankRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSystemRepository(impl: SystemRepositoryImpl): SystemRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMyCollectRepository(impl: MyCollectRepositoryImpl): MyCollectRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchRepository(impl: SearchRepositoryImpl): SearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserCenterRepository(impl: UserCenterRepositoryImpl): UserCenterRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindScheduleRepository(impl: ScheduleRepositoryImpl): ScheduleRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDownloadRepository(impl: DownloadRepositoryImpl): DownloadRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMediaRepository(impl: MediaRepositoryImpl): MediaRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindVideoDownloadRepository(impl: VideoDownloadRepositoryImpl): VideoDownloadRepository
+}

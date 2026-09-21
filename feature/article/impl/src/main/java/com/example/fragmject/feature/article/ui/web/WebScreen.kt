@@ -68,12 +68,12 @@ import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.R
-import com.example.fragmject.core.ui.utils.videoScanJs
+import com.example.fragmject.core.webview.videoScanJs
 import com.example.fragmject.feature.article.VideoDownloadNavKey
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.article.components.ArticleWebViewContainer
 import com.example.fragmject.core.webview.rememberWebViewControl
-import com.example.fragmject.feature.user.BrowseHistoryNavKey
+import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +84,7 @@ fun WebScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val userNavigator = LocalUserNavigator.current
     val scope = rememberCoroutineScope()
     val webViewModel: WebViewModel = viewModel()
     var customView by remember { mutableStateOf<View?>(null) }
@@ -195,7 +196,7 @@ fun WebScreen(
                                 }
                                 Button(
                                     onClick = {
-                                        onNavigate(BrowseHistoryNavKey)
+                                        userNavigator.openBrowseHistory()
                                         scope.launch { bottomSheetState.partialExpand() }
                                     },
                                     modifier = Modifier

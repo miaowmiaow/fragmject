@@ -11,10 +11,12 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    implementation(project(":core:android-platform"))
+    implementation(project(":core:data-contract"))
     api(project(":core:model"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.gson)
+    implementation(libs.kotlin.reflect)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.okhttp)

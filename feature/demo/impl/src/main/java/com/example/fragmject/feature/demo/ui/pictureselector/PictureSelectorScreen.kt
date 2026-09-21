@@ -17,17 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.picture.PictureSelectorNavKey
+import com.example.fragmject.core.navigation.contracts.LocalPictureNavigator
 
 @Composable
 fun PictureSelectorDemoScreen(onNavigate: (key: NavKey) -> Unit = {}) {
+    val pictureNavigator = LocalPictureNavigator.current
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AssistChip(
-            onClick = { onNavigate(PictureSelectorNavKey) },
+            onClick = { pictureNavigator.openPictureSelector() },
             label = { Text("打开相册") },
             leadingIcon = {
                 Icon(

@@ -1,8 +1,8 @@
 package com.example.fragmject.core.network.http
 
 import android.content.Context
-import com.example.fragmject.core.common.debug.DebugBridge
-import com.example.fragmject.core.common.utils.CacheUtils
+import com.example.fragmject.core.network.BuildConfig
+import com.example.fragmject.core.android.platform.CacheUtils
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
@@ -102,13 +102,10 @@ object OkUtils {
 
         // 仅在 Debug 包添加日志拦截器；Release 包完全不添加，避免每个请求上的
         // 日志字符串拼接与拦截器链开销，同时从根上防止账号 / Cookie 等敏感数据经日志泄露。
-        if (DebugBridge.isDebugBuild) {
-            val loggingLevel = if (DebugBridge.isHttpVerboseLogging) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.BASIC
-            }
-            builder.addNetworkInterceptor(HttpLoggingInterceptor().setLevel(loggingLevel))
+        if (BuildConfig.DEBUG) {
+            builder.addNetworkInterceptor(
+                HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+            )
         }
 
         return builder.build()

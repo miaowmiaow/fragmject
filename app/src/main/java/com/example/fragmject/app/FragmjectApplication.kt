@@ -14,7 +14,7 @@ import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.network.di.CoilOkHttpClient
-import com.example.fragmject.core.common.utils.CacheUtils
+import com.example.fragmject.core.android.platform.CacheUtils
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import okhttp3.OkHttpClient

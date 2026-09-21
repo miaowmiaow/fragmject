@@ -28,16 +28,31 @@ class NavContentRegistry {
     inline fun <reified K : NavKey> register(
         noinline content: @Composable (K, NavCallbacks) -> Unit,
     ) {
+        check(K::class !in contents) {
+            "Duplicate NavKey registration: ${K::class.simpleName}"
+        }
         contents[K::class] = { key, callbacks ->
             @Suppress("UNCHECKED_CAST")
             content(key as K, callbacks)
         }
     }
 
-    /** 按 NavKey 类型渲染对应内容；未注册则空渲染。 */
+    /**
+     * 按 NavKey 类型渲染对应内容。
+     *
+     * 未注册即抛 [IllegalStateException]：遗漏注册属开发期编程错误，
+     * 宁可尽早崩溃暴露，也不静默空白。
+     *
+     * TODO(阶段 5)：release 变体改走「错误上报 + 受控错误页」，待错误状态统一时完善。
+     */
     @Composable
     fun Render(key: NavKey, callbacks: NavCallbacks) {
-        contents[key::class]?.invoke(key, callbacks)
+        val content = contents[key::class]
+        check(content != null) {
+            "No renderer registered for NavKey: ${key::class.simpleName}. " +
+                "Ensure a NavContentContributor registers it."
+        }
+        content(key, callbacks)
     }
 
     /** 遍历全部注册项，供 entryProvider 驱动全屏 entry 构建。 */

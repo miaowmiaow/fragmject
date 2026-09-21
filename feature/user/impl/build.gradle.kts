@@ -7,15 +7,14 @@ plugins {
 
 dependencies {
     api(project(":feature:user:api"))
-    implementation(project(":feature:article:api"))
-    implementation(project(":feature:home:api"))
 
-    implementation(project(":core:common"))
+    implementation(project(":core:android-platform"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:navigation-contracts"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

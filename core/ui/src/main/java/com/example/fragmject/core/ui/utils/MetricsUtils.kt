@@ -1,7 +1,7 @@
 package com.example.fragmject.core.ui.utils
 
 import android.content.Context
-import com.example.fragmject.core.common.provider.BaseContentProvider
+import com.example.fragmject.core.android.platform.BaseContentProvider
 
 /**
  * 获取屏幕宽度

@@ -9,7 +9,7 @@ import android.webkit.WebView as AndroidWebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.example.fragmject.core.ui.utils.JsInjectCache
+import com.example.fragmject.core.webview.JsInjectCache
 import com.example.fragmject.core.webview.WebViewContainer
 import com.example.fragmject.core.webview.WebViewControl
 

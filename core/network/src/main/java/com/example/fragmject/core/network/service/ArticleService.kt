@@ -3,8 +3,8 @@ package com.example.fragmject.core.network.service
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.ArticleData
 import com.example.fragmject.core.model.Banner
-import com.example.fragmject.core.network.datasource.ArticleDataSource
-import com.example.fragmject.core.network.http.DataResponse
+import com.example.fragmject.core.data.contract.remote.ArticleRemoteDataSource
+import com.example.fragmject.core.data.contract.model.DataResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -12,7 +12,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-internal interface ArticleService : ArticleDataSource {
+internal interface ArticleService : ArticleRemoteDataSource {
 
     @GET("article/list/{page}/json")
     override suspend fun getArticleList(@Path("page") page: Int): DataResponse<ArticleData>

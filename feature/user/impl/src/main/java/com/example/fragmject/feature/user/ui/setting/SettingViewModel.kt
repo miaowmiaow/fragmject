@@ -3,8 +3,8 @@ package com.example.fragmject.feature.user.ui.setting
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.common.utils.CacheUtils
-import com.example.fragmject.core.common.utils.updateSuccessFrom
+import com.example.fragmject.core.android.platform.CacheUtils
+import com.example.fragmject.core.ui.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.usecase.LogoutUseCase

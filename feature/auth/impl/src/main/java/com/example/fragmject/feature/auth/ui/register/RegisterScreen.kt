@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.auth.ui.register
 
-import androidx.navigation3.runtime.NavKey
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,25 +34,25 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.feature.auth.components.AccountForm
-import com.example.fragmject.feature.home.MainNavKey
 
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(),
     onNavigateUp: () -> Unit = {},
-    onPopBackStack: (key: NavKey) -> Unit = {},
 ) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val isLoading = uiState is RegisterUiState.Loading
+    val homeNavigator = LocalHomeNavigator.current
     LaunchedEffect(uiState, snackbarHostState) {
         when (val s = uiState) {
             is RegisterUiState.Success -> {
-                onPopBackStack(MainNavKey)
+                homeNavigator.openMain()
                 snackbarHostState.showSnackbar(s.message)
                 viewModel.resetMessage()
             }

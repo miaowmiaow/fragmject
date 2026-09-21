@@ -5,10 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.model.Tree
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.common.utils.updateSuccessFrom
-import com.example.fragmject.core.domain.repository.NavigationRepository
-import com.example.fragmject.core.domain.repository.SearchRepository
+import com.example.fragmject.core.ui.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.result.DomainResult
+import com.example.fragmject.core.domain.usecase.MainHeaderAggregateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,8 +36,7 @@ private const val TAG = "MainVM"
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val navigationRepository: NavigationRepository,
-    private val searchRepository: SearchRepository,
+    private val headerAggregate: MainHeaderAggregateUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Success(isLoading = true))
@@ -46,23 +44,19 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            searchRepository.observeHotKey().collect { hotKeys ->
+            headerAggregate.hotKeys.collect { hotKeys ->
                 _uiState.updateSuccessFrom({ MainUiState.Success() }) { it.copy(hotKeyResult = hotKeys) }
             }
         }
         viewModelScope.launch {
-            navigationRepository.observeSystemTree().collect { trees ->
+            headerAggregate.trees.collect { trees ->
                 _uiState.updateSuccessFrom({ MainUiState.Success() }) { it.copy(treeResult = trees) }
             }
         }
         viewModelScope.launch {
-            when (val r = navigationRepository.refreshSystemTree()) {
+            when (val r = headerAggregate.refreshAll()) {
                 is DomainResult.Success -> Unit
-                is DomainResult.Failure -> Log.e(TAG, "refreshSystemTree failed: ${r.code} ${r.message}")
-            }
-            when (val r = searchRepository.refreshHotKey()) {
-                is DomainResult.Success -> Unit
-                is DomainResult.Failure -> Log.e(TAG, "refreshHotKey failed: ${r.code} ${r.message}")
+                is DomainResult.Failure -> Log.e(TAG, "refresh header failed: ${r.code} ${r.message}")
             }
             _uiState.updateSuccessFrom({ MainUiState.Success() }) { it.copy(isLoading = false) }
         }

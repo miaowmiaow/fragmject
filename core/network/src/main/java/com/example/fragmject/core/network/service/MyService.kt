@@ -3,9 +3,9 @@ package com.example.fragmject.core.network.service
 import com.example.fragmject.core.model.Coin
 import com.example.fragmject.core.model.MyCoinData
 import com.example.fragmject.core.model.ShareArticle
-import com.example.fragmject.core.network.datasource.MyRemoteDataSource
-import com.example.fragmject.core.network.http.DataResponse
-import com.example.fragmject.core.network.http.HttpResponse
+import com.example.fragmject.core.data.contract.remote.MyRemoteDataSource
+import com.example.fragmject.core.data.contract.model.DataResponse
+import com.example.fragmject.core.data.contract.model.HttpResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET

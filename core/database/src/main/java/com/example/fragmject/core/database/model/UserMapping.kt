@@ -17,3 +17,19 @@ fun UserEntity.toDomain() = User(
     coinCount = coinCount,
     collectIds = collectIds,
 )
+
+/** 领域模型 [User] → [UserEntity]（Room Entity）。 */
+fun User.toEntity() = UserEntity(
+    id = id,
+    username = username,
+    nickname = nickname,
+    token = token,
+    password = password,
+    admin = admin,
+    email = email,
+    icon = icon,
+    type = type,
+    publicName = publicName,
+    coinCount = coinCount,
+    collectIds = collectIds,
+)

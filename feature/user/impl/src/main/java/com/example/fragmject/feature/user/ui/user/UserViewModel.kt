@@ -3,7 +3,6 @@ package com.example.fragmject.feature.user.ui.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
-import com.example.fragmject.core.ui.contract.CollectActionHolder
 import com.example.fragmject.core.domain.repository.UserCenterRepository
 import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
 import com.example.fragmject.core.model.Coin
@@ -22,7 +21,7 @@ import javax.inject.Inject
 class UserViewModel @Inject constructor(
     private val repo: UserCenterRepository,
     private val collectArticle: CollectArticleUseCase,
-) : ViewModel(), CollectActionHolder {
+) : ViewModel() {
 
     private val _userId = MutableStateFlow("")
 
@@ -48,7 +47,7 @@ class UserViewModel @Inject constructor(
     }
 
     /** 收藏 / 取消收藏。 */
-    override val collectAction: suspend (String, Boolean) -> Unit = { id, collect ->
+    suspend fun collect(id: String, collect: Boolean) {
         collectArticle(id, collect)
     }
 }

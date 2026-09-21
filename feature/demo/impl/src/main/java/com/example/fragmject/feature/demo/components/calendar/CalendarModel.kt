@@ -2,7 +2,7 @@ package com.example.fragmject.feature.demo.components.calendar
 
 import androidx.compose.material3.CalendarLocale
 import com.example.fragmject.core.domain.repository.ScheduleRepository
-import com.example.fragmject.core.common.utils.AppScope
+import com.example.fragmject.core.android.platform.AppScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek

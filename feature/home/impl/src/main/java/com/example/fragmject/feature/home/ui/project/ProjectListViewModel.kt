@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.example.fragmject.core.ui.contract.CollectActionHolder
 import com.example.fragmject.core.domain.repository.ProjectRepository
 import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
 import com.example.fragmject.core.model.Article
@@ -17,7 +16,7 @@ import javax.inject.Inject
 class ProjectListViewModel @Inject constructor(
     private val repo: ProjectRepository,
     private val collectArticle: CollectArticleUseCase,
-) : ViewModel(), CollectActionHolder {
+) : ViewModel() {
 
     /** 每个 cid 的独立分页流缓存，避免 HorizontalPager 切页时重建 Pager 丢失已加载数据。 */
     private val pagerCache = ConcurrentHashMap<String, Flow<PagingData<Article>>>()
@@ -28,7 +27,7 @@ class ProjectListViewModel @Inject constructor(
         }
 
     /** 收藏 / 取消收藏。 */
-    override val collectAction: suspend (String, Boolean) -> Unit = { id, collect ->
+    suspend fun collect(id: String, collect: Boolean) {
         collectArticle(id, collect)
     }
 }

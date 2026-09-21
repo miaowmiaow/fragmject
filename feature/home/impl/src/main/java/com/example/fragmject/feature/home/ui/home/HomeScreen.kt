@@ -57,7 +57,7 @@ fun HomeScreen(
                     onItemClick = actions.onArticleClick,
                     onUserClick = actions.onAuthorClick,
                     onFooterClick = actions.onChapterClick,
-                    onToggleClick = viewModel.collectAction,
+                    onToggleClick = viewModel::collect,
                 )
             }
         },
@@ -68,7 +68,7 @@ fun HomeScreen(
             onItemClick = actions.onArticleClick,
             onUserClick = actions.onAuthorClick,
             onFooterClick = actions.onChapterClick,
-            onToggleClick = viewModel.collectAction,
+            onToggleClick = viewModel::collect,
         )
     }
 }

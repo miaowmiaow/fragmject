@@ -12,8 +12,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    implementation(project(":core:data-contract"))
     implementation(project(":core:model"))
+    implementation(libs.gson)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.androidx.room3.paging)

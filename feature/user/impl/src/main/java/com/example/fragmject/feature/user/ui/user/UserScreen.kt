@@ -40,8 +40,8 @@ import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.utils.getScreenWidth
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.feature.user.mapper.toFeedCardUiState
-import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.feature.home.SystemNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
 import com.example.fragmject.feature.user.UserNavKey
 import com.example.fragmject.core.ui.utils.AvatarUtils
 
@@ -53,6 +53,8 @@ fun UserScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val coin by viewModel.coin.collectAsStateWithLifecycle()
+    val articleNavigator = LocalArticleNavigator.current
+    val homeNavigator = LocalHomeNavigator.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     LaunchedEffect(userId) { viewModel.init(userId) }
     val context = LocalContext.current
@@ -126,10 +128,10 @@ fun UserScreen(
             ) { item ->
                 FeedCard(
                     data = remember(item.id) { item.toFeedCardUiState() },
-                    onItemClick = { onNavigate(WebNavKey(it)) },
+                    onItemClick = { articleNavigator.openArticle(it) },
                     onUserClick = { onNavigate(UserNavKey(it)) },
-                    onFooterClick = { onNavigate(SystemNavKey(it)) },
-                    onToggleClick = viewModel.collectAction,
+                    onFooterClick = { homeNavigator.openSystem(it) },
+                    onToggleClick = viewModel::collect,
                 )
             }
         }

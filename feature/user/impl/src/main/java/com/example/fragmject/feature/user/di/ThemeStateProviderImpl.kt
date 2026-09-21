@@ -1,6 +1,6 @@
 package com.example.fragmject.feature.user.di
 
-import com.example.fragmject.core.common.utils.AppScope
+import com.example.fragmject.core.android.platform.AppScope
 import com.example.fragmject.core.designsystem.ThemeStateProvider
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import kotlinx.coroutines.flow.SharingStarted

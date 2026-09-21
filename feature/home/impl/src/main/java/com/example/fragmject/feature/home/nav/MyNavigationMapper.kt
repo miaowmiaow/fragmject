@@ -1,14 +1,9 @@
 package com.example.fragmject.feature.home.nav
 
-import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.feature.auth.LoginNavKey
-import com.example.fragmject.feature.collection.MyCollectNavKey
-import com.example.fragmject.feature.collection.MyShareNavKey
-import com.example.fragmject.feature.demo.DemoNavKey
-import com.example.fragmject.feature.user.BrowseHistoryNavKey
-import com.example.fragmject.feature.user.MyCoinNavKey
-import com.example.fragmject.feature.user.SettingNavKey
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.core.navigation.contracts.AuthNavigator
+import com.example.fragmject.core.navigation.contracts.CollectionNavigator
+import com.example.fragmject.core.navigation.contracts.DemoNavigator
+import com.example.fragmject.core.navigation.contracts.UserNavigator
 
 /**
  * 「我的」菜单页语义导航动作。
@@ -31,15 +26,23 @@ data class MyNavActions(
 )
 
 /**
- * 将导航回调转换为「我的」页语义动作，集中创建各 feature NavKey。
+ * 将语义导航契约转换为「我的」页语义动作。
+ *
+ * 依赖 [com.example.fragmject.core.navigation.contracts] 下的语义接口，
+ * 由 app 组合根提供实现并映射到具体 NavKey；本模块不再 import 任何跨 feature NavKey。
  */
-fun myNavActions(onNavigate: (NavKey) -> Unit): MyNavActions = MyNavActions(
-    onUserClick = { onNavigate(UserNavKey(it)) },
-    onLoginClick = { onNavigate(LoginNavKey) },
-    onDemoClick = { onNavigate(DemoNavKey) },
-    onMyCoinClick = { onNavigate(MyCoinNavKey) },
-    onMyCollectClick = { onNavigate(MyCollectNavKey) },
-    onMyShareClick = { onNavigate(MyShareNavKey) },
-    onBrowseHistoryClick = { onNavigate(BrowseHistoryNavKey) },
-    onSettingClick = { onNavigate(SettingNavKey) },
+fun myNavActions(
+    userNavigator: UserNavigator,
+    authNavigator: AuthNavigator,
+    collectionNavigator: CollectionNavigator,
+    demoNavigator: DemoNavigator,
+): MyNavActions = MyNavActions(
+    onUserClick = { userNavigator.openUserProfile(it) },
+    onLoginClick = { authNavigator.openLogin() },
+    onDemoClick = { demoNavigator.openDemo() },
+    onMyCoinClick = { userNavigator.openMyCoin() },
+    onMyCollectClick = { collectionNavigator.openMyCollect() },
+    onMyShareClick = { collectionNavigator.openMyShare() },
+    onBrowseHistoryClick = { userNavigator.openBrowseHistory() },
+    onSettingClick = { userNavigator.openSetting() },
 )

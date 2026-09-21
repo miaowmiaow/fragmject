@@ -20,10 +20,10 @@ import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.feature.article.WebNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
 import com.example.fragmject.feature.collection.mapper.toFeedCardUiState
-import com.example.fragmject.feature.home.SystemNavKey
-import com.example.fragmject.feature.user.UserNavKey
 
 /**
  * 公共「文章列表页」Paging 版：统一 MyShareScreen 等页面重复的
@@ -37,6 +37,9 @@ fun PagingArticleListPage(
     onNavigateUp: () -> Unit = {},
     onCollect: suspend (String, Boolean) -> Unit = { _, _ -> },
 ) {
+    val articleNavigator = LocalArticleNavigator.current
+    val userNavigator = LocalUserNavigator.current
+    val homeNavigator = LocalHomeNavigator.current
     Scaffold(
         topBar = {
             TitleBar(
@@ -64,9 +67,9 @@ fun PagingArticleListPage(
         ) { item ->
             FeedCard(
                 data = remember(item.id) { item.toFeedCardUiState() },
-                onItemClick = { onNavigate(WebNavKey(it)) },
-                onUserClick = { onNavigate(UserNavKey(it)) },
-                onFooterClick = { onNavigate(SystemNavKey(it)) },
+                onItemClick = { articleNavigator.openArticle(it) },
+                onUserClick = { userNavigator.openUserProfile(it) },
+                onFooterClick = { homeNavigator.openSystem(it) },
                 onToggleClick = onCollect,
             )
         }

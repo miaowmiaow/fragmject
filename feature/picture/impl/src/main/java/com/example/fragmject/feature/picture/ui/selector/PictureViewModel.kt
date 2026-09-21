@@ -2,7 +2,7 @@ package com.example.fragmject.feature.picture.ui.selector
 
 import android.net.Uri
 import android.util.Log
-import com.example.fragmject.core.common.utils.AppScope
+import com.example.fragmject.core.android.platform.AppScope
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.feature.picture.model.AlbumBean

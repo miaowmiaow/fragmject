@@ -11,9 +11,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    implementation(project(":core:android-platform"))
     api(project(":core:designsystem"))
 
+    implementation(libs.kotlinx.coroutines)
     implementation(libs.coil.compose)
     implementation(libs.androidx.paging.compose)
 

@@ -60,10 +60,13 @@ class WebViewModel @Inject constructor(
             onResult(false)
             return
         }
-        if (URLUtil.isValidUrl(extra)) {
-            mediaRepository.saveImageToAlbum(extra) { onResult(it.success) }
-        } else {
-            mediaRepository.saveBase64ImageToAlbum(extra) { onResult(it.success) }
+        viewModelScope.launch {
+            val result = if (URLUtil.isValidUrl(extra)) {
+                mediaRepository.saveImageToAlbum(extra)
+            } else {
+                mediaRepository.saveBase64ImageToAlbum(extra)
+            }
+            onResult(result.success)
         }
     }
 

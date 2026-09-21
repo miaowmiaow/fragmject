@@ -56,52 +56,47 @@
 
 ## 项目目录结构
 ```
-├── app                                         app 壳工程
+├── app                                          app 壳工程
 |  └── src
 |     └── main
-|     |   ├── assets                            assets 目录（HTML/JS/JSON 测试数据）
-|     |   └── java                              源码目录
+|     |   ├── assets                             assets 目录（HTML/JS/JSON 测试数据）
+|     |   └── java                               源码目录
 |     |      ├── MainActivity.kt                 唯一 Activity
-|     |      ├── FragmjectApplication.kt        Application（Hilt 入口）
-|     |      └── AppNavGraph.kt                 导航图（Navigation 3 + WindowSizeClass 自适应）
+|     |      ├── FragmjectApplication.kt         Application（Hilt 入口）
+|     |      └── AppNavGraph.kt                  导航图（Navigation 3 + WindowSizeClass 自适应）
 |     |
-|     ├── build.gradle.kts                      模块构建配置
-|     ├── dictionary                            自定义混淆字典
-|     └── proguard-rules.pro                    代码混淆配置文件
+|     ├── build.gradle.kts                       模块构建配置
+|     ├── dictionary                             自定义混淆字典
+|     └── proguard-rules.pro                     代码混淆配置文件
 | 
-├── core                                        核心层（基础能力，不依赖业务）
-|  ├── common                                   公共工具（TransitionGuard 等）
-|  ├── data                                     数据层（Repository）
-|  ├── database                                 数据库（Room 3）
-|  ├── designsystem                             设计系统（AppTheme / WindowSizeClass / 组件）
-|  ├── domain                                   领域层
-|  ├── model                                    数据模型
-|  ├── network                                  网络层（Retrofit + OkHttp）
-|  └── ui                                       UI 组件库（ArticleCard / BannerPager / SwipeRefreshBox 等）
+├── core                                         核心层（基础能力，不依赖业务）
+|  ├── android-platform                          平台与进程级能力（AppScope / BaseContentProvider / File* / CacheUtils / UriPathHelper）
+|  ├── data-contract                             数据端口契约（remote/local DataSource + HTTP 协议模型）
+|  ├── data-impl                                 数据实现（RepositoryImpl / PagingSource / Hilt 绑定）
+|  ├── database                                  数据库（Room 3）
+|  ├── designsystem                              设计系统（AppTheme / WindowSizeClass / 组件）
+|  ├── domain                                    领域层（Repository 接口 + UseCase + DomainResult）
+|  ├── model                                     数据模型
+|  ├── navigation                                导航能力（Navigation 3 类型安全路由）
+|  ├── navigation-contracts                      导航契约（语义 Navigator，跨 feature 解耦）
+|  ├── network                                   网络层（Retrofit + OkHttp）
+|  ├── player                                    播放能力（Media3）
+|  ├── ui                                        UI 组件库（FeedCard / SwipeRefreshBox 等）
+|  └── webview                                   WebView 能力
 | 
-├── feature                                    功能模块层
-|  ├── picture                                  图片模块（选择器 / 预览 / 编辑器）
-|  |  ├── api                                   API 层（NavKey 定义）
-|  |  └── impl                                  实现层（Screen / ViewModel）
-|  └── wan                                      wan 主业务模块
-|     ├── api                                    API 层（NavKey 统一路由表）
-|     └── impl                                   实现层
-|        ├── main                               首页（Home / Nav / Project / My）
-|        ├── login                              登录 / 注册
-|        ├── search                             搜索
-|        ├── system                             知识体系
-|        ├── user                               用户主页
-|        ├── web                                WebView 文章详情
-|        ├── setting                            系统设置
-|        ├── my_coin                            我的积分
-|        ├── my_collect                         我的收藏
-|        ├── my_share                           我的分享
-|        ├── rank                               积分排行榜
-|        ├── browse_history                     浏览历史
-|        ├── share                              新建分享
-|        └── demo                               组件 Demo
+├── feature                                      功能模块层（每个模块均含 api / impl 两个子模块）
+|  ├── article                                   文章模块（WebView 详情 / 下载 / 播放）
+|  |  ├── api                                    API 层（NavKey 定义）
+|  |  └── impl                                   实现层（Screen / ViewModel）
+|  ├── auth                                      登录 / 注册
+|  ├── collection                                收藏 / 分享
+|  ├── demo                                      组件 Demo（日历 / 图片选择 / 拖拽等）
+|  ├── home                                      首页（Home / Nav / Project / System / My）
+|  ├── picture                                   图片模块（选择器 / 预览 / 编辑器）
+|  ├── search                                    搜索
+|  └── user                                      用户（主页 / 积分 / 排行 / 设置 / 历史）
 | 
-├── build-logic                                 构建逻辑（Gradle Convention 插件）
+├── build-logic                                  构建逻辑（Gradle Convention 插件）
 |  └── convention
 |     └── src/main/kotlin
 |        ├── FragmjectAndroidApplicationPlugin   application 约定插件
@@ -112,12 +107,12 @@
 |        └── FragmjectAndroidRoomPlugin          Room 约定插件
 |
 ├── gradle
-|  └── libs.versions.toml                       版本目录（统一依赖管理）
+|  └── libs.versions.toml                        版本目录（统一依赖管理）
 |
-├── build.gradle.kts                            项目构建配置
-├── config.properties                           项目配置
-├── gradle.properties                           gradle 配置
-└── settings.gradle.kts                         项目模块依赖配置
+├── build.gradle.kts                             项目构建配置
+├── config.properties                            项目配置
+├── gradle.properties                            gradle 配置
+└── settings.gradle.kts                          项目模块依赖配置
 ```
 ## 下载体验
 - [![](https://img.shields.io/badge/Download-apk-green.svg)](https://github.com/miaowmiaow/fragmject/blob/master/app/free/release/wan-release-1.6.0-free.apk)
@@ -146,8 +141,8 @@ graph LR
 
 ### 涉及文件
 - [LocalWindowSizeClass.kt](core/designsystem/src/main/java/com/example/fragmject/core/designsystem/LocalWindowSizeClass.kt) — `CompositionLocal` 注入 + 便捷扩展
-- [AppNavGraph.kt](app/src/main/java/com/example/fragmject/app/AppNavGraph.kt) — Expanded 模式拦截 `NavKey`，传递给 `DetailPane`
-- [MainScreen.kt](feature/wan/impl/src/main/java/com/example/fragmject/feature/wan/main/MainScreen.kt) — 三态布局分发 + `DetailPane` 路由
+- [AppNavGraph.kt](app/src/main/java/com/example/fragmject/app/navigation/AppNavGraph.kt) — Expanded 模式拦截 `NavKey`，传递给 `DetailPane`
+- [MainScreen.kt](feature/home/impl/src/main/java/com/example/fragmject/feature/home/ui/main/MainScreen.kt) — 三态布局分发 + `DetailPane` 路由
 
 ### 使用方式
 ```kotlin
@@ -389,10 +384,12 @@ if (context is AppCompatActivity) {
 #### 源码位置
 ```
 └── feature
-    └── wan
+    └── demo
        └── impl
-          └── demo
-             └── CalendarScreen.kt
+          └── ui
+             └── calendar
+                └── CalendarScreen.kt
+```
 
 #### 快速使用
 ```

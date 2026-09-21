@@ -16,9 +16,9 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.example.fragmject.core.common.utils.AppScope
+import com.example.fragmject.core.android.platform.AppScope
 import com.example.fragmject.core.domain.repository.DownloadRepository
-import com.example.fragmject.core.common.utils.CacheUtils
+import com.example.fragmject.core.android.platform.CacheUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

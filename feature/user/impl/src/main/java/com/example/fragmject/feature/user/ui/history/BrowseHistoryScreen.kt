@@ -44,7 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.article.WebNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
 import com.example.fragmject.core.ui.components.SwipeBox
 import com.example.fragmject.core.ui.components.TabBar
 import com.example.fragmject.core.ui.components.rememberSwipeBoxControl
@@ -59,6 +59,7 @@ fun BrowseHistoryScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val articleNavigator = LocalArticleNavigator.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val tabs = listOf("书签", "历史")
@@ -111,7 +112,7 @@ fun BrowseHistoryScreen(
                                     if (page == 0) {
                                         viewModel.setBrowseHistory(item.value, item.url)
                                     }
-                                    onNavigate(WebNavKey(item.url))
+                                    articleNavigator.openArticle(item.url)
                                 }
                                 .background(MaterialTheme.colorScheme.surfaceContainer)
                                 .wrapContentHeight(),

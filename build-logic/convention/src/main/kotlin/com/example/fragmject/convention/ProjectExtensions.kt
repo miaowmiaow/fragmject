@@ -32,6 +32,6 @@ internal data class FragmjectConfig(
     }
 }
 
-/** 将 project path 转为 namespace */
+/** 将 project path 转为 namespace（`:` 与 `-` 均归一化为 `.`）。 */
 internal fun Project.defaultNamespace(): String =
-    "com.example.fragmject.${path.removePrefix(":").replace(":", ".")}"
+    "com.example.fragmject.${path.removePrefix(":").replace(":", ".").replace("-", ".")}"

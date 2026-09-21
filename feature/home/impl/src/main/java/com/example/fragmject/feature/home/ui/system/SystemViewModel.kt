@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.example.fragmject.core.ui.contract.CollectActionHolder
 import com.example.fragmject.core.domain.repository.NavigationRepository
 import com.example.fragmject.core.domain.repository.SystemRepository
 import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
@@ -24,7 +23,7 @@ class SystemViewModel @Inject constructor(
     private val repo: SystemRepository,
     private val collectArticle: CollectArticleUseCase,
     private val navigationRepository: NavigationRepository,
-) : ViewModel(), CollectActionHolder {
+) : ViewModel() {
 
     /** 体系树（与 MainViewModel 共享同一 Room 数据源，供 SystemScreen 定位 cid）。 */
     private val _treeResult = MutableStateFlow<List<Tree>>(emptyList())
@@ -47,7 +46,7 @@ class SystemViewModel @Inject constructor(
         }
 
     /** 收藏 / 取消收藏。 */
-    override val collectAction: suspend (String, Boolean) -> Unit = { id, collect ->
+    suspend fun collect(id: String, collect: Boolean) {
         collectArticle(id, collect)
     }
 }

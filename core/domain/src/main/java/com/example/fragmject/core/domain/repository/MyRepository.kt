@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * 当前登录用户「我的」领域端口：积分、分享、收藏。
  *
- * 实现由 data 层适配器提供，内部消化 [com.example.fragmject.core.network.http.DataResponse]。
+ * 实现由 data 层适配器提供，内部消化 [com.example.fragmject.core.data.contract.model.DataResponse]。
  */
 interface MyRepository {
     /** 我的积分汇总。 */

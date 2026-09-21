@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * 对 RoomDatabase 进行封装。
- * 具体用法见 core/database/store 下的各 Store 对象（如 ScheduleStore）。
+ * 具体用法见 core/database/local 下的各 LocalDataSource 实现（如 ScheduleLocalDataSourceImpl）。
  */
 @Database(entities = [KVEntity::class], version = 2, exportSchema = true)
 abstract class KVDatabase : RoomDatabase() {

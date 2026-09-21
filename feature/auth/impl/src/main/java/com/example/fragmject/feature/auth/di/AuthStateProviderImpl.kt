@@ -1,6 +1,6 @@
 package com.example.fragmject.feature.auth.di
 
-import com.example.fragmject.core.common.utils.AppScope
+import com.example.fragmject.core.android.platform.AppScope
 import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.navigation.AuthStateProvider
 import kotlinx.coroutines.flow.SharingStarted

@@ -37,7 +37,7 @@ import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.feature.user.UserNavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.article.WebNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.designsystem.TitleBar
@@ -48,6 +48,7 @@ fun RankScreen(
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
+    val articleNavigator = LocalArticleNavigator.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     Scaffold(
         topBar = {
@@ -68,7 +69,7 @@ fun RankScreen(
                 actions = {
                     IconButton(
                         modifier = Modifier.height(45.dp),
-                        onClick = { onNavigate(WebNavKey("https://www.wanandroid.com/blog/show/2653")) }
+                        onClick = { articleNavigator.openArticle("https://www.wanandroid.com/blog/show/2653") }
                     ) {
                         Icon(
                             painter = painterResource(R.mipmap.ic_rule),

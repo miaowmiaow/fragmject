@@ -1,6 +1,7 @@
 package com.example.fragmject.core.network
 
-import com.example.fragmject.core.network.http.HttpResponse
+import com.example.fragmject.core.data.contract.model.HttpResponse
+import com.example.fragmject.core.data.contract.remote.DownloadRemoteDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -16,13 +17,13 @@ import java.io.File
  */
 class Downloader(
     private val client: OkHttpClient,
-) {
+) : DownloadRemoteDataSource {
 
-    suspend fun download(
+    override suspend fun download(
         url: String,
         savePath: String,
         fileName: String,
-        headers: Map<String, String> = emptyMap(),
+        headers: Map<String, String>,
     ): HttpResponse = withContext(Dispatchers.IO) {
         try {
             val okRequest = Request.Builder()

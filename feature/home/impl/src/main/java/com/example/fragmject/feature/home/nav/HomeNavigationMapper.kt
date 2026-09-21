@@ -1,9 +1,7 @@
 package com.example.fragmject.feature.home.nav
 
-import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.feature.home.SystemNavKey
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.core.navigation.contracts.ArticleNavigator
+import com.example.fragmject.core.navigation.contracts.UserNavigator
 
 /**
  * Home 域语义导航动作。
@@ -18,10 +16,17 @@ data class HomeNavActions(
 )
 
 /**
- * 将导航回调转换为语义动作，集中创建 WebNavKey / UserNavKey / SystemNavKey。
+ * 将语义导航契约转换为 Home 域语义动作。
+ *
+ * 跨域（文章/用户）依赖语义 Navigator；[onChapterClick] 是 Home 内部导航
+ * （SystemNavKey），由调用方基于自身 onNavigate 提供，避免本模块 import 跨 feature NavKey。
  */
-fun homeNavActions(onNavigate: (NavKey) -> Unit): HomeNavActions = HomeNavActions(
-    onArticleClick = { onNavigate(WebNavKey(it)) },
-    onAuthorClick = { onNavigate(UserNavKey(it)) },
-    onChapterClick = { onNavigate(SystemNavKey(it)) },
+fun homeNavActions(
+    articleNavigator: ArticleNavigator,
+    userNavigator: UserNavigator,
+    onChapterClick: (String) -> Unit,
+): HomeNavActions = HomeNavActions(
+    onArticleClick = { articleNavigator.openArticle(it) },
+    onAuthorClick = { userNavigator.openUserProfile(it) },
+    onChapterClick = onChapterClick,
 )

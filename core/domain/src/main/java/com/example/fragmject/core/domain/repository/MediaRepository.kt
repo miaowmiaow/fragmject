@@ -5,8 +5,9 @@ import com.example.fragmject.core.domain.result.MediaSaveResult
 /**
  * 媒体保存领域端口。
  *
- * 抽象「保存图片/视频到系统相册」能力。保存是异步平台操作，
- * 通过 [onFinish] 回调返回结果，避免 suspend 桥接时失败路径无回调导致协程悬挂。
+ * 抽象「保存图片/视频到系统相册」能力。保存是异步平台操作，通过 suspend 函数
+ * 返回 [MediaSaveResult]，由调用方（ViewModel）在自身作用域内调度，避免 data 层
+ * 用 fire-and-forget 的进程级 scope 启动不受控的协程。
  *
  * 参数全部使用平台无关类型，保持 domain 层纯净：
  * - [saveImageToAlbum] url 版本：由 data 层负责下载后写入相册；
@@ -19,11 +20,11 @@ import com.example.fragmject.core.domain.result.MediaSaveResult
  * - [deleteImageUri] 删除预创建但未写入数据的图片记录（拍照取消/失败时清理，避免残留透明图）。
  */
 interface MediaRepository {
-    fun saveImageToAlbum(url: String, onFinish: (MediaSaveResult) -> Unit)
-    fun saveImageToAlbum(imageBytes: ByteArray, onFinish: (MediaSaveResult) -> Unit)
-    fun saveBase64ImageToAlbum(base64: String, onFinish: (MediaSaveResult) -> Unit)
-    fun saveVideoToAlbum(filePath: String, onFinish: (MediaSaveResult) -> Unit)
-    fun notifyMediaAdded(filePath: String, onFinish: (MediaSaveResult) -> Unit)
+    suspend fun saveImageToAlbum(url: String): MediaSaveResult
+    suspend fun saveImageToAlbum(imageBytes: ByteArray): MediaSaveResult
+    suspend fun saveBase64ImageToAlbum(base64: String): MediaSaveResult
+    suspend fun saveVideoToAlbum(filePath: String): MediaSaveResult
+    suspend fun notifyMediaAdded(filePath: String): MediaSaveResult
     fun createImageUri(): String
     fun finishImageUri(uri: String)
     fun deleteImageUri(uri: String)

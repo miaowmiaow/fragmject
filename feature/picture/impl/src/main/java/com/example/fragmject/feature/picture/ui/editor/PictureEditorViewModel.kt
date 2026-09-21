@@ -41,10 +41,9 @@ class PictureEditorViewModel @Inject constructor(
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
                 baos.toByteArray()
             }
-            mediaRepository.saveImageToAlbum(bytes) { result ->
-                _isSaving.value = false
-                onFinish(result.path, result.uri.toUri())
-            }
+            val result = mediaRepository.saveImageToAlbum(bytes)
+            _isSaving.value = false
+            onFinish(result.path, result.uri.toUri())
         }
     }
 }

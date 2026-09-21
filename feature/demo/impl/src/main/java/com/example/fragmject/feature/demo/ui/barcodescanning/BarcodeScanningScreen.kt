@@ -40,7 +40,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.feature.picture.PictureSelectorNavKey
+import com.example.fragmject.core.navigation.contracts.LocalPictureNavigator
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BarcodeScanningScreen(onNavigate: (NavKey) -> Unit = {}) {
+    val pictureNavigator = LocalPictureNavigator.current
     val context = LocalContext.current
     val cameraPermissions = arrayOf(
         Manifest.permission.CAMERA,
@@ -143,7 +144,7 @@ fun BarcodeScanningScreen(onNavigate: (NavKey) -> Unit = {}) {
             )
         }
         AssistChip(
-            onClick = { onNavigate(PictureSelectorNavKey) },
+            onClick = { pictureNavigator.openPictureSelector() },
             label = {},
             leadingIcon = {
                 Icon(

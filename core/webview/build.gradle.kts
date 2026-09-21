@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core:common"))
+    implementation(project(":core:android-platform"))
     implementation(project(":core:domain"))
 
     // WebViewManager 使用 okio.ByteString.encodeUtf8，通过 okhttp 传递引入

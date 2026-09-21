@@ -81,10 +81,12 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
+    implementation(project(":core:android-platform"))
+    implementation(project(":core:data-impl"))
+    implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:navigation-contracts"))
     implementation(project(":core:network"))
     implementation(project(":core:webview"))
     implementation(project(":feature:article:impl"))
@@ -112,4 +114,5 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(libs.konsist)
 }

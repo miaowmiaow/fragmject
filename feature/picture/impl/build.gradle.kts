@@ -10,7 +10,7 @@ dependencies {
     api(project(":feature:picture:api"))
 
     // Core
-    implementation(project(":core:common"))
+    implementation(project(":core:android-platform"))
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
     implementation(project(":core:navigation"))

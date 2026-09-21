@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * 历史 / 书签 / 搜索记录领域端口。
  *
- * 实现由 data 层适配器提供，内部操作 database 的 HistoryStore。
+ * 实现由 data 层适配器提供，内部依赖 data-contract 的 HistoryLocalDataSource。
  */
 interface HistoryRepository {
     fun observeBookmarks(): Flow<List<History>>

@@ -8,6 +8,7 @@ import androidx.paging.PagingState
 import com.example.fragmject.core.domain.repository.NavigationRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.result.DomainResult
+import com.example.fragmject.core.domain.usecase.MainHeaderAggregateUseCase
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.model.Navigation
@@ -38,7 +39,7 @@ class MainViewModelTest {
         val navigationRepo = FakeNavigationRepository(trees = listOf(Tree(id = "1", name = "体系")))
         val searchRepo = FakeSearchRepository(hotKeys = listOf(HotKey(name = "问答")))
 
-        val viewModel = MainViewModel(navigationRepo, searchRepo)
+        val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
 
         val state = viewModel.uiState.value as MainUiState.Success
         assertEquals(1, state.treeResult.size)
@@ -54,7 +55,7 @@ class MainViewModelTest {
         val navigationRepo = FakeNavigationRepository(refreshTreeResult = DomainResult.Failure("500", "boom"))
         val searchRepo = FakeSearchRepository()
 
-        val viewModel = MainViewModel(navigationRepo, searchRepo)
+        val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
 
         val state = viewModel.uiState.value as MainUiState.Success
         // 失败路径也应把 isLoading 置 false，避免 UI 永久转圈

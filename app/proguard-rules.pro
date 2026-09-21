@@ -256,8 +256,8 @@
 -keep class * extends androidx.room.RoomDatabase { *; }
 
 # 3) HttpResponse 框架：基类与所有子类（带泛型 data 字段）
--keep public class com.example.fragmject.core.network.http.HttpResponse { *; }
--keep public class * extends com.example.fragmject.core.network.http.HttpResponse { *; }
+-keep public class com.example.fragmject.core.data.contract.model.HttpResponse { *; }
+-keep public class * extends com.example.fragmject.core.data.contract.model.HttpResponse { *; }
 
 # ============================== kotlinx.serialization ==============================
 # AppNavGraph.kt 使用 @Serializable 配合 Compose Navigation typed routes。

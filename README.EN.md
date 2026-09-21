@@ -48,68 +48,63 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 
 ## Project Directory Structure
 ```
-├── app                                         app shell module
+├── app                                          app shell module
 |  └── src
 |     └── main
-|     |   ├── assets                            assets (HTML/JS/JSON mock data)
-|     |   └── java                              source code
+|     |   ├── assets                             assets (HTML/JS/JSON mock data)
+|     |   └── java                               source code
 |     |      ├── MainActivity.kt                 single Activity
-|     |      ├── FragmjectApplication.kt        Application (Hilt entry)
-|     |      └── AppNavGraph.kt                 navigation graph (Navigation 3 + WindowSizeClass)
+|     |      ├── FragmjectApplication.kt         Application (Hilt entry)
+|     |      └── AppNavGraph.kt                  navigation graph (Navigation 3 + WindowSizeClass)
 |     |
-|     ├── build.gradle.kts                      module build config
-|     ├── dictionary                            custom obfuscation dictionary
-|     └── proguard-rules.pro                    code obfuscation config
+|     ├── build.gradle.kts                       module build config
+|     ├── dictionary                             custom obfuscation dictionary
+|     └── proguard-rules.pro                     code obfuscation config
 | 
-├── core                                        core layer (foundation, no business dependencies)
-|  ├── common                                   shared utilities (TransitionGuard etc.)
-|  ├── data                                     data layer (Repository)
-|  ├── database                                 database (Room 3)
-|  ├── designsystem                             design system (AppTheme / WindowSizeClass / components)
-|  ├── domain                                   domain layer
-|  ├── model                                    data models
-|  ├── network                                  network layer (Retrofit + OkHttp)
-|  └── ui                                       UI component library (ArticleCard / BannerPager / SwipeRefreshBox etc.)
+├── core                                         core layer (foundation, no business dependencies)
+|  ├── android-platform                          platform & process-level utilities (AppScope / BaseContentProvider / File* / CacheUtils / UriPathHelper)
+|  ├── data-contract                             data port contracts (remote/local DataSource + HTTP protocol models)
+|  ├── data-impl                                 data implementation (RepositoryImpl / PagingSource / Hilt bindings)
+|  ├── database                                  database (Room 3)
+|  ├── designsystem                              design system (AppTheme / WindowSizeClass / components)
+|  ├── domain                                    domain layer (Repository interfaces + UseCase + DomainResult)
+|  ├── model                                     data models
+|  ├── navigation                                navigation capability (Navigation 3 type-safe routes)
+|  ├── navigation-contracts                      navigation contracts (semantic Navigator, cross-feature decoupling)
+|  ├── network                                   network layer (Retrofit + OkHttp)
+|  ├── player                                    playback capability (Media3)
+|  ├── ui                                        UI component library (FeedCard / SwipeRefreshBox etc.)
+|  └── webview                                   WebView capability
 | 
-├── feature                                     feature modules
-|  ├── picture                                  picture module (picker / preview / editor)
-|  |  ├── api                                   API layer (NavKey definitions)
-|  |  └── impl                                  implementation layer (Screen / ViewModel)
-|  └── wan                                      wan main business module
-|     ├── api                                    API layer (NavKey unified routing table)
-|     └── impl                                   implementation layer
-|        ├── main                               home (Home / Nav / Project / My)
-|        ├── login                              login / signup
-|        ├── search                             search
-|        ├── system                             knowledge hierarchy
-|        ├── user                               user profile
-|        ├── web                                WebView article detail
-|        ├── setting                            system settings
-|        ├── my_coin                            my points
-|        ├── my_collect                         my favorites
-|        ├── my_share                           my shares
-|        ├── rank                               points leaderboard
-|        ├── browse_history                     browsing history
-|        ├── share                              new share
-|        └── demo                               component demos
+├── feature                                      feature modules (each contains api / impl submodules)
+|  ├── article                                   article module (WebView detail / download / playback)
+|  |  ├── api                                    API layer (NavKey definitions)
+|  |  └── impl                                   implementation layer (Screen / ViewModel)
+|  ├── auth                                      login / signup
+|  ├── collection                                favorites / shares
+|  ├── demo                                      component demos (calendar / image picker / drag etc.)
+|  ├── home                                      home (Home / Nav / Project / System / My)
+|  ├── picture                                   picture module (picker / preview / editor)
+|  ├── search                                    search
+|  └── user                                      user (profile / points / ranking / settings / history)
 | 
-├── build-logic                                 build logic (Gradle Convention Plugins)
+├── build-logic                                  build logic (Gradle Convention Plugins)
 |  └── convention
 |     └── src/main/kotlin
-|        ├── FragmjectAndroidApplicationPlugin  application convention plugin
-|        ├── FragmjectAndroidComposePlugin      compose convention plugin
-|        ├── FragmjectAndroidFeaturePlugin      feature convention plugin
-|        ├── FragmjectAndroidHiltPlugin         Hilt convention plugin
-|        ├── FragmjectAndroidLibraryPlugin      library convention plugin
-|        └── FragmjectAndroidRoomPlugin         Room convention plugin
+|        ├── FragmjectAndroidApplicationPlugin   application convention plugin
+|        ├── FragmjectAndroidComposePlugin       compose convention plugin
+|        ├── FragmjectAndroidFeaturePlugin       feature convention plugin
+|        ├── FragmjectAndroidHiltPlugin          Hilt convention plugin
+|        ├── FragmjectAndroidLibraryPlugin       library convention plugin
+|        └── FragmjectAndroidRoomPlugin          Room convention plugin
 |
 ├── gradle
-|  └── libs.versions.toml                       version catalog
+|  └── libs.versions.toml                        version catalog
 |
-├── build.gradle.kts                            project build config
-├── config.properties                           project config
-├── gradle.properties                           gradle config
-└── settings.gradle.kts                         module dependency config
+├── build.gradle.kts                             project build config
+├── config.properties                            project config
+├── gradle.properties                            gradle config
+└── settings.gradle.kts                          module dependency config
 ```
 
 ## Download
@@ -139,8 +134,8 @@ graph LR
 
 ### Key Files
 - [LocalWindowSizeClass.kt](core/designsystem/src/main/java/com/example/fragmject/core/designsystem/LocalWindowSizeClass.kt) — `CompositionLocal` injection + helper extensions
-- [AppNavGraph.kt](app/src/main/java/com/example/fragmject/app/AppNavGraph.kt) — intercepts `NavKey` in Expanded mode, forwards to `DetailPane`
-- [MainScreen.kt](feature/wan/impl/src/main/java/com/example/fragmject/feature/wan/main/MainScreen.kt) — three-layout dispatch + `DetailPane` routing
+- [AppNavGraph.kt](app/src/main/java/com/example/fragmject/app/navigation/AppNavGraph.kt) — intercepts `NavKey` in Expanded mode, forwards to `DetailPane`
+- [MainScreen.kt](feature/home/impl/src/main/java/com/example/fragmject/feature/home/ui/main/MainScreen.kt) — three-layout dispatch + `DetailPane` routing
 
 ### Usage
 ```kotlin
@@ -257,10 +252,11 @@ if (context is AppCompatActivity) {
 #### Source location
 ```
 └── feature
-    └── wan
+    └── demo
        └── impl
-          └── demo
-             └── CalendarScreen.kt
+          └── ui
+             └── calendar
+                └── CalendarScreen.kt
 ```
 
 #### Quick access

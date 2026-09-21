@@ -15,19 +15,13 @@ android {
 
 dependencies {
     api(project(":feature:home:api"))
-    implementation(project(":feature:user:api"))
-    implementation(project(":feature:collection:api"))
-    implementation(project(":feature:article:api"))
-    implementation(project(":feature:auth:api"))
-    implementation(project(":feature:demo:api"))
-    implementation(project(":feature:search:api"))
 
-    implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:navigation-contracts"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

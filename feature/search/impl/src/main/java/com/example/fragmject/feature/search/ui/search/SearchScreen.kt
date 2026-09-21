@@ -60,9 +60,9 @@ import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.feature.search.mapper.toFeedCardUiState
-import com.example.fragmject.feature.article.WebNavKey
-import com.example.fragmject.feature.home.SystemNavKey
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
 import com.example.fragmject.core.ui.components.ClearTextField
 import com.example.fragmject.core.ui.components.SkeletonContent
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
@@ -77,6 +77,9 @@ fun SearchScreen(
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
 ) {
+    val articleNavigator = LocalArticleNavigator.current
+    val userNavigator = LocalUserNavigator.current
+    val homeNavigator = LocalHomeNavigator.current
     val isSearch by searchViewModel.isSearch.collectAsStateWithLifecycle()
     val isHotKeyLoading by searchViewModel.isHotKeyLoading.collectAsStateWithLifecycle()
     val hotKeyResult by searchViewModel.hotKeyResult.collectAsStateWithLifecycle()
@@ -262,10 +265,10 @@ fun SearchScreen(
                     ) { item ->
                         FeedCard(
                             data = remember(item.id) { item.toFeedCardUiState() },
-                            onItemClick = { onNavigate(WebNavKey(it)) },
-                            onUserClick = { onNavigate(UserNavKey(it)) },
-                            onFooterClick = { onNavigate(SystemNavKey(it)) },
-                            onToggleClick = searchViewModel.collectAction,
+                            onItemClick = { articleNavigator.openArticle(it) },
+                            onUserClick = { userNavigator.openUserProfile(it) },
+                            onFooterClick = { homeNavigator.openSystem(it) },
+                            onToggleClick = searchViewModel::collect,
                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                         )
                     }

@@ -66,7 +66,7 @@ fun ProjectScreen(
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,
-                        onToggleClick = projectListViewModel.collectAction,
+                        onToggleClick = projectListViewModel::collect,
                     )
                 }
             }

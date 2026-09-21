@@ -7,15 +7,14 @@ plugins {
 
 dependencies {
     api(project(":feature:demo:api"))
-    // 跨域：BarcodeScanningScreen/PictureSelectorDemoScreen 引用 PictureSelectorNavKey（picture/api）
-    implementation(project(":feature:picture:api"))
 
-    implementation(project(":core:common"))
+    implementation(project(":core:android-platform"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:player"))
     implementation(project(":core:domain"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:navigation-contracts"))
     implementation(project(":core:webview"))
 
     implementation(libs.androidx.activity.compose)

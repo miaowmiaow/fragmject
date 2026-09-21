@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.History
 import com.example.fragmject.core.domain.repository.HistoryRepository
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.common.utils.updateSuccessFrom
+import com.example.fragmject.core.ui.utils.updateSuccessFrom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

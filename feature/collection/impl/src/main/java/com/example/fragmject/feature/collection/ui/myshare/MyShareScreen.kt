@@ -20,7 +20,7 @@ fun MyShareScreen(
         pagingItems = pagingItems,
         onNavigate = onNavigate,
         onNavigateUp = onNavigateUp,
-        onCollect = viewModel.collectAction,
+        onCollect = viewModel::collect,
     )
 }
 

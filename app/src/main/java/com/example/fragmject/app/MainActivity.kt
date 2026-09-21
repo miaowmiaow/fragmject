@@ -11,6 +11,7 @@ import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,7 +19,18 @@ import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.designsystem.ThemeStateProvider
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.common.debug.DebugBridge
+import com.example.fragmject.app.navigation.AppNavGraph
+import com.example.fragmject.app.navigation.AppNavigatorBundle
+import com.example.fragmject.app.navigation.NavigationDispatcher
+import com.example.fragmject.core.navigation.NavContentContributor
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contracts.LocalAuthNavigator
+import com.example.fragmject.core.navigation.contracts.LocalCollectionNavigator
+import com.example.fragmject.core.navigation.contracts.LocalDemoNavigator
+import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contracts.LocalPictureNavigator
+import com.example.fragmject.core.navigation.contracts.LocalSearchNavigator
+import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -30,6 +42,15 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var webViewPool: WebViewPool
+
+    @Inject
+    lateinit var navigationDispatcher: NavigationDispatcher
+
+    @Inject
+    lateinit var navigatorBundle: AppNavigatorBundle
+
+    @Inject
+    lateinit var navContributors: Set<@JvmSuppressWildcards NavContentContributor>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -54,14 +75,25 @@ class MainActivity : ComponentActivity() {
                 .collectAsStateWithLifecycle(initialValue = false)
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {
-                    AppNavGraph()
+                    CompositionLocalProvider(
+                        LocalArticleNavigator provides navigatorBundle.articleNavigator,
+                        LocalUserNavigator provides navigatorBundle.userNavigator,
+                        LocalAuthNavigator provides navigatorBundle.authNavigator,
+                        LocalCollectionNavigator provides navigatorBundle.collectionNavigator,
+                        LocalSearchNavigator provides navigatorBundle.searchNavigator,
+                        LocalDemoNavigator provides navigatorBundle.demoNavigator,
+                        LocalPictureNavigator provides navigatorBundle.pictureNavigator,
+                        LocalHomeNavigator provides navigatorBundle.homeNavigator,
+                    ) {
+                        AppNavGraph(navigationDispatcher, navContributors)
+                    }
                 }
             }
         }
         // WebView 预创建（内部已在主线程 IdleHandler 中执行，不阻塞首帧）
         webViewPool.prepare(applicationContext)
         // 仅在 Debug 构建中启用 WebView 调试，避免在 Release 包暴露调试接口
-        if (DebugBridge.allowWebContentsDebugging) {
+        if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
     }

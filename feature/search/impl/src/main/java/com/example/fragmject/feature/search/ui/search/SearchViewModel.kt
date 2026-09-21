@@ -3,7 +3,6 @@ package com.example.fragmject.feature.search.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
-import com.example.fragmject.core.ui.contract.CollectActionHolder
 import com.example.fragmject.core.domain.repository.HistoryRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
@@ -25,7 +24,7 @@ class SearchViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
     private val historyRepo: HistoryRepository,
     private val collectArticle: CollectArticleUseCase,
-) : ViewModel(), CollectActionHolder {
+) : ViewModel() {
 
     /** 搜索词驱动搜索结果分页流，搜索词变化时重建 Pager。 */
     private val _searchKey = MutableStateFlow<String?>(null)
@@ -80,7 +79,7 @@ class SearchViewModel @Inject constructor(
     }
 
     /** 收藏 / 取消收藏。 */
-    override val collectAction: suspend (String, Boolean) -> Unit = { id, collect ->
+    suspend fun collect(id: String, collect: Boolean) {
         collectArticle(id, collect)
     }
 }

@@ -36,13 +36,15 @@ dependencyResolutionManagement {
 rootProject.name = "fragmject"
 
 include(":app")
-include(":core:common")
-include(":core:data")
+include(":core:android-platform")
+include(":core:data-impl")
+include(":core:data-contract")
 include(":core:database")
 include(":core:designsystem")
 include(":core:domain")
 include(":core:model")
 include(":core:navigation")
+include(":core:navigation-contracts")
 include(":core:network")
 include(":core:player")
 include(":core:ui")

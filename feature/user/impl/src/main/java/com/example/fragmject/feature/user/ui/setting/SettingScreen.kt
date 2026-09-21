@@ -45,7 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.article.WebNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
 import com.example.fragmject.core.ui.components.ArrowRightItem
 import com.example.fragmject.core.ui.components.LoadingContent
 import com.example.fragmject.core.designsystem.NightSwitchButton
@@ -60,6 +60,7 @@ fun SettingScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val articleNavigator = LocalArticleNavigator.current
     val cacheSize by viewModel.cacheSize.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
@@ -128,9 +129,9 @@ fun SettingScreen(
                         Spacer(Modifier.width(5.dp))
                     }
                     HorizontalDivider()
-                    ArrowRightItem("隐私政策") { onNavigate(WebNavKey("file:///android_asset/privacy_policy.html")) }
+                    ArrowRightItem("隐私政策") { articleNavigator.openArticle("file:///android_asset/privacy_policy.html") }
                     HorizontalDivider()
-                    ArrowRightItem("问题反馈") { onNavigate(WebNavKey("https://github.com/miaowmiaow/fragmject/issues")) }
+                    ArrowRightItem("问题反馈") { articleNavigator.openArticle("https://github.com/miaowmiaow/fragmject/issues") }
                     HorizontalDivider()
                     Row(
                         modifier = Modifier
@@ -160,7 +161,7 @@ fun SettingScreen(
                         )
                     }
                     HorizontalDivider()
-                    ArrowRightItem("关于玩Android") { onNavigate(WebNavKey("https://wanandroid.com")) }
+                    ArrowRightItem("关于玩Android") { articleNavigator.openArticle("https://wanandroid.com") }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.user != null) {
                         Button(

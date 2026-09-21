@@ -45,7 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.feature.article.WebNavKey
+import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
 import com.example.fragmject.core.ui.components.ClearTextField
 import com.example.fragmject.core.ui.components.LoadingContent
 import kotlinx.coroutines.launch
@@ -58,6 +58,7 @@ fun ShareArticleScreen(
     onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val articleNavigator = LocalArticleNavigator.current
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -94,7 +95,7 @@ fun ShareArticleScreen(
                                 }
                                 return@IconButton
                             }
-                            onNavigate(WebNavKey(linkText))
+                            articleNavigator.openArticle(linkText)
                         }
                     ) {
                         Icon(

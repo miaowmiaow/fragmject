@@ -1,13 +1,14 @@
 package com.example.fragmject.core.network.di
 
 import android.content.Context
-import com.example.fragmject.core.common.utils.GsonUtils
+import com.example.fragmject.core.network.http.GsonUtils
 import com.example.fragmject.core.network.Downloader
-import com.example.fragmject.core.network.datasource.ArticleDataSource
-import com.example.fragmject.core.network.datasource.CommonDataSource
-import com.example.fragmject.core.network.datasource.MyRemoteDataSource
-import com.example.fragmject.core.network.datasource.ProjectDataSource
-import com.example.fragmject.core.network.datasource.UserRemoteDataSource
+import com.example.fragmject.core.data.contract.remote.ArticleRemoteDataSource
+import com.example.fragmject.core.data.contract.remote.CommonRemoteDataSource
+import com.example.fragmject.core.data.contract.remote.DownloadRemoteDataSource
+import com.example.fragmject.core.data.contract.remote.MyRemoteDataSource
+import com.example.fragmject.core.data.contract.remote.ProjectRemoteDataSource
+import com.example.fragmject.core.data.contract.remote.UserRemoteDataSource
 import com.example.fragmject.core.network.http.AssetsFallbackInterceptor
 import com.example.fragmject.core.network.http.OkUtils
 import com.example.fragmject.core.network.service.ArticleService
@@ -91,21 +92,21 @@ object NetworkModule {
     @Singleton
     fun provideDownloader(
         @DownloadOkHttpClient client: OkHttpClient,
-    ): Downloader = Downloader(client)
+    ): DownloadRemoteDataSource = Downloader(client)
 
     @Provides
     @Singleton
-    fun provideArticleDataSource(retrofit: Retrofit): ArticleDataSource =
+    fun provideArticleDataSource(retrofit: Retrofit): ArticleRemoteDataSource =
         retrofit.create(ArticleService::class.java)
 
     @Provides
     @Singleton
-    fun provideProjectDataSource(retrofit: Retrofit): ProjectDataSource =
+    fun provideProjectDataSource(retrofit: Retrofit): ProjectRemoteDataSource =
         retrofit.create(ProjectService::class.java)
 
     @Provides
     @Singleton
-    fun provideCommonDataSource(retrofit: Retrofit): CommonDataSource =
+    fun provideCommonDataSource(retrofit: Retrofit): CommonRemoteDataSource =
         retrofit.create(CommonService::class.java)
 
     @Provides

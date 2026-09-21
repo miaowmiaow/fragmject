@@ -89,7 +89,7 @@ fun SystemScreen(
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,
-                        onToggleClick = systemViewModel.collectAction,
+                        onToggleClick = systemViewModel::collect,
                     )
                 }
             }

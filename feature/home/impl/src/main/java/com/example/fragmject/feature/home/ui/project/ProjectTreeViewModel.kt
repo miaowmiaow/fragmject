@@ -6,7 +6,7 @@ import com.example.fragmject.core.model.ProjectTree
 import com.example.fragmject.core.domain.repository.ProjectRepository
 import com.example.fragmject.core.domain.result.DomainResult
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.common.utils.updateSuccessFrom
+import com.example.fragmject.core.ui.utils.updateSuccessFrom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

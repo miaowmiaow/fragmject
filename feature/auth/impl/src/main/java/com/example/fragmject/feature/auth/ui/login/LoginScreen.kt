@@ -33,27 +33,27 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.feature.auth.components.AccountForm
 import com.example.fragmject.feature.auth.RegisterNavKey
-import com.example.fragmject.feature.home.MainNavKey
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onNavigate: (key: NavKey) -> Unit = {},
     onNavigateUp: () -> Unit = {},
-    onPopBackStack: (key: NavKey) -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val isLoading = uiState is LoginUiState.Loading
+    val homeNavigator = LocalHomeNavigator.current
 
     LaunchedEffect(uiState, snackbarHostState) {
         when (val s = uiState) {
             is LoginUiState.Success -> {
-                onPopBackStack(MainNavKey)
+                homeNavigator.openMain()
                 snackbarHostState.showSnackbar(s.message)
                 viewModel.resetMessage()
             }

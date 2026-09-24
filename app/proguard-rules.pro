@@ -22,13 +22,13 @@
 # ========================== 全局选项 ==========================
 # 注：R8 会忽略 -optimizationpasses / -dontpreverify / -dontskipnonpubliclibraryclasses /
 #     -useuniqueclassmembernames / -printconfiguration（无参形式）。仅保留对 R8 有效的项。
--verbose                                                                        # 输出详细日志，便于定位 R8 报错
--ignorewarnings                                                                 # 忽略 dontwarn 之外的零散警告
 -dontusemixedcaseclassnames                                                     # 混淆后类名只用小写，避免在大小写不敏感文件系统上冲突
 -printmapping build/outputs/mapping.txt                                           # 输出符号映射文件，便于线上崩溃还原
 -allowaccessmodification                                                        # 允许 R8 调整访问修饰符以支持更激进的内联/合并
 -renamesourcefileattribute SourceFile                                           # 将源文件名替换为 SourceFile，配合 LineNumberTable 还原崩溃栈
--optimizations !code/simplification/arithmetic,!field/*,!class/merging/*        # 关闭过激算法：保留字段名/算术化简、避免类合并影响反射
+# 已移除 -optimizations 的关闭项（!code/simplification/arithmetic,!field/*,!class/merging/*），
+# 恢复 R8 默认完整优化：类合并、字段优化、算术化简等，进一步压缩体积。
+# 业务模型 / 数据库类已通过下方 -keep 规则保留，Gson/Room 反射目标不受影响。
 # 必要的属性：注解（含运行时注解）、内部类签名、泛型签名、行号、异常表
 -keepattributes *Annotation*,InnerClasses,EnclosingMethod
 -keepattributes Signature
@@ -53,12 +53,12 @@
 -keep public class * extends android.view.View
 
 # 保留androidx关键包（避免全量 keep 导致包体积膨胀，R8 会自动处理其余类的优化）
+# Compose / Navigation / Room 均已通过各自库的 consumer rules 自动保留所需符号，
+# 此处不再全量 keep，避免阻止 R8 对相关代码做裁剪与优化。
+# 注：androidx.room3.RoomDatabase 为历史错误包名（Room 正确包名是 androidx.room），已移除。
 -dontwarn androidx.**
 -keep public class * extends androidx.activity.ComponentActivity
--keep public class * extends androidx.lifecycle.ViewModel
--keep public class * extends androidx.room3.RoomDatabase
--keep class androidx.compose.** { *; }
--keep class androidx.navigation.** { *; }
+-keep,allowobfuscation public class * extends androidx.lifecycle.ViewModel
 -keep,allowobfuscation @interface androidx.annotation.Keep
 -keep @androidx.annotation.Keep class *
 -keepclassmembers class * { @androidx.annotation.Keep *; }
@@ -236,12 +236,7 @@
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 
 # ============================== 业务数据模型保护 ==============================
-# 历史遗留：旧规则写的是 com.example.miaow.**.bean/data，但本仓库实际业务包名是
-# com.example.fragment.project.**，导致 release 包混淆后 Gson 反射拿不到字段、
-# 反序列化结果整体为 null（首页/项目/导航全部空数据 → "重试"页）。
-
 # 1) Gson 反序列化目标：core:model 下所有 Bean（Article / Banner / User / Tree / HotKey ...）
-#    注：旧规则使用的 com.example.fragment.project.data.** 是错误的历史包名，会导致 Release 包反序列化全为 null。
 -keep class com.example.fragmject.core.model.** { *; }
 -keep interface com.example.fragmject.core.model.** { *; }
 # 1.1) 嵌套类（如 Article$Tag、Coin$CoinInfoBean）在 R8 fullMode 下也需要保留

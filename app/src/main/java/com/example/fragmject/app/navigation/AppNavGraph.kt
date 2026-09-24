@@ -6,6 +6,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +18,7 @@ import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -47,11 +49,23 @@ private const val NAV_TRANSITION_DURATION_MS = 350
 fun AppNavGraph(
     navigationDispatcher: NavigationDispatcher,
     navContributors: Set<NavContentContributor>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialBackStack: List<NavKey> = listOf(MainNavKey),
+    pendingDeepLink: DeepLinkRequest? = null,
 ) {
     val navViewModel: AppNavViewModel = viewModel()
     val isLoggedIn by navViewModel.isLoggedIn.collectAsStateWithLifecycle()
-    val backStack = rememberNavBackStack(MainNavKey)
+    val backStack = rememberNavBackStack(*initialBackStack.toTypedArray())
+
+    // ---- 运行时深层链接（onNewIntent 触发） ----
+    // 首次启动由 initialBackStack 初始化 backStack；此处仅处理后续动态深层链接。
+    LaunchedEffect(pendingDeepLink) {
+        val request = pendingDeepLink ?: return@LaunchedEffect
+        matchDeepLink(request)?.let { newStack ->
+            backStack.clear()
+            backStack.addAll(newStack)
+        }
+    }
 
     // ---- Expanded 列表-详情同屏状态 ----
     // 仅在 Expanded 模式下使用：点击文章时不走 backStack，而是由 MainScreen 右侧面板渲染
@@ -142,13 +156,13 @@ fun AppNavGraph(
 
 /**
  * 深层链接待支持，详情参考 AppNavGraph:
- * fragmject://com.fragment.project/rank
- * fragmject://com.fragment.project/search/$key
- * fragmject://com.fragment.project/web/${Uri.encode(url)}
+ * fragmject://com.example.fragment.project/rank
+ * fragmject://com.example.fragment.project/search/$key
+ * fragmject://com.example.fragment.project/web/${Uri.encode(url)}
  * 示例代码如下：
  * val deepLinkIntent = Intent(
  *     Intent.ACTION_VIEW,
- *     "fragmject://com.fragment.project/web/${Uri.encode("http://www.baidu.com")}".toUri(),
+ *     "fragmject://com.example.fragment.project/web/${Uri.encode("http://www.baidu.com")}".toUri(),
  * )
  * val deepLinkPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
  *     addNextIntentWithParentStack(deepLinkIntent)
@@ -156,7 +170,7 @@ fun AppNavGraph(
  * }
  * deepLinkPendingIntent?.send()
  */
-// const val fragmentUri = "fragmject://com.fragment.project"
+// const val fragmentUri = "fragmject://com.example.fragment.project"
 
 // ---- 辅助函数 ----
 

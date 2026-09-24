@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
@@ -13,8 +14,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.designsystem.ThemeStateProvider
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
@@ -22,6 +25,7 @@ import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.app.navigation.AppNavGraph
 import com.example.fragmject.app.navigation.AppNavigatorBundle
 import com.example.fragmject.app.navigation.NavigationDispatcher
+import com.example.fragmject.app.navigation.resolveDeepLinkBackStack
 import com.example.fragmject.core.navigation.NavContentContributor
 import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
 import com.example.fragmject.core.navigation.contracts.LocalAuthNavigator
@@ -52,6 +56,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var navContributors: Set<@JvmSuppressWildcards NavContentContributor>
 
+    /** 运行时深层链接请求（onNewIntent 触发），首次启动走 onCreate 的 initialBackStack。 */
+    private val pendingDeepLink = mutableStateOf<DeepLinkRequest?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         // 自定义退出过渡：150ms alpha + 轻微缩放，避免 splash 与首页之间的"硬切"
@@ -70,6 +77,8 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // 解析冷启动深层链接，得到初始返回栈（热启动深层链接走 onNewIntent → pendingDeepLink）
+        val initialBackStack = resolveDeepLinkBackStack(intent)
         setContent {
             val darkTheme by themeStateProvider.darkTheme
                 .collectAsStateWithLifecycle(initialValue = false)
@@ -85,7 +94,12 @@ class MainActivity : ComponentActivity() {
                         LocalPictureNavigator provides navigatorBundle.pictureNavigator,
                         LocalHomeNavigator provides navigatorBundle.homeNavigator,
                     ) {
-                        AppNavGraph(navigationDispatcher, navContributors)
+                        AppNavGraph(
+                            navigationDispatcher = navigationDispatcher,
+                            navContributors = navContributors,
+                            initialBackStack = initialBackStack,
+                            pendingDeepLink = pendingDeepLink.value,
+                        )
                     }
                 }
             }
@@ -96,6 +110,12 @@ class MainActivity : ComponentActivity() {
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingDeepLink.value = intent.data?.let { DeepLinkRequest(uri = it) }
     }
 }
 

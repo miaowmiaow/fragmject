@@ -59,7 +59,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="com.fragment.project"
+                    android:host="com.example.fragment.project"
                     android:scheme="fragmject" />
             </intent-filter>
         </activity>

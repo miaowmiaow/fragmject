@@ -155,26 +155,6 @@ fun AppNavGraph(
 }
 
 /**
- * 深层链接待支持，详情参考 AppNavGraph:
- * fragmject://com.example.fragment.project/rank
- * fragmject://com.example.fragment.project/search/$key
- * fragmject://com.example.fragment.project/web/${Uri.encode(url)}
- * 示例代码如下：
- * val deepLinkIntent = Intent(
- *     Intent.ACTION_VIEW,
- *     "fragmject://com.example.fragment.project/web/${Uri.encode("http://www.baidu.com")}".toUri(),
- * )
- * val deepLinkPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
- *     addNextIntentWithParentStack(deepLinkIntent)
- *     getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
- * }
- * deepLinkPendingIntent?.send()
- */
-// const val fragmentUri = "fragmject://com.example.fragment.project"
-
-// ---- 辅助函数 ----
-
-/**
  * 判定指定路由是否需要登录态。依赖 [RequiresAuth] 标记接口自动识别。
  */
 private fun requiredLoginNavKey(key: NavKey, isLoggedIn: Boolean): Boolean {

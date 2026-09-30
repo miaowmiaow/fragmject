@@ -29,28 +29,6 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
     @CoilOkHttpClient
     lateinit var okHttpClient: OkHttpClient
 
-    override fun onCreate() {
-        super.onCreate()
-
-        // ===== 自定义 SSL 证书接入示例（默认关闭，需要时取消注释） =====
-        // 证书文件放在 assets 或 res/raw 下，按需读取后注入即可；
-        // 至少配置服务端证书（serverCertificates）或客户端证书（clientCertificate+密码）之一才会启用，
-        // 未配置时自动回落到系统默认 SSL 校验，无性能损耗。
-        //
-        // 场景一：单向 TLS（固定服务端证书，替换默认 CA 校验）
-        // OkUtils.setSslConfig(
-        //     serverCertificates = arrayOf(assets.open("server.crt")),
-        // )
-        //
-        // 场景二：双向 TLS（同时校验客户端证书）
-        // OkUtils.setSslConfig(
-        //     clientCertificate = assets.open("client.p12"),
-        //     clientCertificatePwd = "your_password",
-        //     serverCertificates = arrayOf(assets.open("server.crt")),
-        // )
-        // ===== 示例结束 =====
-    }
-
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(applicationContext)
             .crossfade(true)

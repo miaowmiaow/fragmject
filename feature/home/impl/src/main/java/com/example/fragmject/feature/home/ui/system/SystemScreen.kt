@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.home.ui.system
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +43,13 @@ fun SystemScreen(
 ) {
     val onNavigateUp = LocalOnNavigateUp.current
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
+    val overrides by systemViewModel.collectState.overrides.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        systemViewModel.collectState.collectFailed.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
     // getTree 会遍历整个 treeResult 查找 cid；用 remember(cid, treeResult) 缓存，
     // 避免 SystemScreen 因分页加载/翻页等高频重组时重复执行 O(n*m) 遍历。
     val treeData = remember(cid, treeResult) { treeResult.getTree(cid) }
@@ -86,11 +95,11 @@ fun SystemScreen(
                     key = { it.id },
                 ) { item ->
                     FeedCard(
-                        data = remember(item.id) { item.toFeedCardUIState() },
+                        data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,
-                        onToggleClick = systemViewModel::collect,
+                        onToggleClick = systemViewModel.collectState::toggle,
                     )
                 }
             }

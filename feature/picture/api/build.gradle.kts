@@ -1,6 +1,6 @@
 plugins {
     id("fragmject.android.library")
-    id("fragmject.android.feature")
+    id("fragmject.kotlin.serialization")
 }
 
 dependencies {

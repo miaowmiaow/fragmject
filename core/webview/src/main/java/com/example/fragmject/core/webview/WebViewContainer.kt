@@ -296,7 +296,7 @@ private class PooledWebViewClient(
                 WebViewAssetInterceptor.isAssetsResource(request) ->
                     WebViewAssetInterceptor.assetsResourceRequest(context, request)
 
-                webResourceCache.isCacheResource(request) ->
+                webResourceCache.isCacheableResource(request) ->
                     webResourceCache.cacheResourceRequest(context, request, callbacks.url)
 
                 else -> null

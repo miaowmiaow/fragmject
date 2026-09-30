@@ -51,17 +51,27 @@ class CalendarViewModel @Inject constructor(
 
     fun addSchedule(date: LocalDate, text: String) {
         viewModelScope.launch {
-            val updated = _scheduleMap.value[date].orEmpty().toMutableList().apply { add(text) }
+            val previous = _scheduleMap.value
+            val updated = previous[date].orEmpty().toMutableList().apply { add(text) }
             _scheduleMap.update { it + (date to updated) }
-            scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+            try {
+                scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+            } catch (e: Exception) {
+                _scheduleMap.value = previous
+            }
         }
     }
 
     fun removeSchedule(date: LocalDate, text: String) {
         viewModelScope.launch {
-            val updated = _scheduleMap.value[date].orEmpty().toMutableList().apply { remove(text) }
+            val previous = _scheduleMap.value
+            val updated = previous[date].orEmpty().toMutableList().apply { remove(text) }
             _scheduleMap.update { it + (date to updated) }
-            scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+            try {
+                scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+            } catch (e: Exception) {
+                _scheduleMap.value = previous
+            }
         }
     }
 }

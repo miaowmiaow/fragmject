@@ -1,6 +1,6 @@
 plugins {
     id("fragmject.android.library")
-    id("fragmject.android.feature")
+    id("fragmject.kotlin.parcelize")
     id("fragmject.android.room")
     id("fragmject.android.hilt")
 }

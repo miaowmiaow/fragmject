@@ -35,6 +35,7 @@ import com.example.fragmject.core.navigation.runtime.NavContentRegistry
 import com.example.fragmject.core.navigation.runtime.NavFlowScope
 import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
 import com.example.fragmject.feature.auth.LoginNavKey
+import com.example.fragmject.feature.auth.RegisterNavKey
 import com.example.fragmject.feature.home.MainNavKey
 
 /** 页面转场动画时长 (ms)，与 Compose 过渡动画同步。 */
@@ -91,23 +92,20 @@ fun AppNavGraph(
     val activeContributors = flowScopeContributors.filter { contributor ->
         backStack.any { contributor.matches(it) }
     }
-    var flowScopes by remember {
+    // 组合期同步创建作用域（remember 保证首帧即就绪，不再走空态兜底），
+    // 已有作用域经 previousScopes 增量保留，退出者由 LaunchedEffect close。
+    var previousScopes by remember {
         mutableStateOf<Map<NavFlowScopeContributor, NavFlowScope>>(emptyMap())
     }
+    val flowScopes = remember(activeContributors) {
+        activeContributors.associateWith { contributor ->
+            previousScopes[contributor] ?: contributor.create()
+        }
+    }
     LaunchedEffect(activeContributors) {
-        val updated = flowScopes.toMutableMap()
-        for (contributor in activeContributors) {
-            if (contributor !in updated) {
-                updated[contributor] = contributor.create()
-            }
-        }
-        val toRemove = flowScopes.keys.filter { it !in activeContributors }
-        for (contributor in toRemove) {
-            updated.remove(contributor)?.close()
-        }
-        if (updated != flowScopes) {
-            flowScopes = updated
-        }
+        val toClose = previousScopes.keys.filter { it !in activeContributors }
+        toClose.forEach { contributor -> previousScopes[contributor]?.close() }
+        previousScopes = flowScopes
     }
 
     // ---- 导航动作（直接操作 backStack） ----
@@ -129,7 +127,17 @@ fun AppNavGraph(
         }
     }
     val navigateUp: () -> Unit = remember {
-        { if (backStack.size > 1) backStack.removeLastOrNull() else backStack.add(MainNavKey) }
+        {
+            if (backStack.size > 1) {
+                val popped = backStack.removeLastOrNull()
+                // 离开登录流程时放弃待回跳目标，避免下次登录成功后被迫跳转
+                if (popped is LoginNavKey || popped is RegisterNavKey) {
+                    pendingRedirect = null
+                }
+            } else {
+                backStack.add(MainNavKey)
+            }
+        }
     }
     val popBackStack: (NavKey) -> Unit = remember {
         {
@@ -152,12 +160,20 @@ fun AppNavGraph(
             onAuthSuccess = {
                 val target = pendingRedirect
                 pendingRedirect = null
+                // 连续弹出栈顶的认证页（Login/Register），避免从登录页进注册页回跳后残留
+                while (backStack.lastOrNull() is LoginNavKey || backStack.lastOrNull() is RegisterNavKey) {
+                    backStack.removeLastOrNull()
+                }
                 if (target != null) {
-                    // 移除 Login 页后回跳目标（直接操作 backStack，避开守卫）
-                    if (backStack.lastOrNull() is LoginNavKey) {
-                        backStack.removeLastOrNull()
+                    // 显式按 isDetailPaneKey 分流，绕过 navigate 的守卫判断：
+                    // 登录成功时 isLoggedIn 尚未经 StateFlow→Compose 多跳异步更新，
+                    // 若走 navigate 会被 requiredLoginNavKey 再次拦截并把 target 塞回
+                    // pendingRedirect，形成回跳死循环。这里直接复用 Expanded 分发逻辑。
+                    if (currentIsExpanded && isDetailPaneKey(target)) {
+                        selectedDetailKey = target
+                    } else {
+                        backStack.add(target)
                     }
-                    backStack.add(target)
                 } else {
                     // 无回跳目标：清栈回首页
                     popBackStack(MainNavKey)

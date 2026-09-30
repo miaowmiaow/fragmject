@@ -191,7 +191,7 @@ fun WebScreen(
                     injectState = injectState,
                     onReceivedTitle = {
                         title = it
-                        webViewModel.setBrowseHistory(it.toString(), url)
+                        webViewModel.recordBrowseVisit(it.toString(), url)
                     },
                     onCustomView = { customView = it },
                     shouldOverrideUrl = { articleNavigator.openArticle(it) },

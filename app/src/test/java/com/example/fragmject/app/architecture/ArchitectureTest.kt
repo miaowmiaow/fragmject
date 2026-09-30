@@ -121,6 +121,121 @@ class ArchitectureTest {
     }
 
     /**
+     * 规则 6：`feature:*:api` 不得依赖 `feature:*:impl`。
+     * api 是纯契约层（NavKey/接口），不得反向依赖实现层，保持依赖方向 impl → api 单向。
+     */
+    @Test
+    fun `feature api does not depend on feature impl`() {
+        productionFiles
+            .filter { it.isFeatureApi() }
+            .assertFalse(
+                additionalMessage = "feature:*:api 不得依赖 feature:*:impl",
+            ) { file -> file.hasFeatureImplImport() }
+    }
+
+    /**
+     * 规则 7：`core` / `feature` 模块不得依赖 `:app`。
+     * `:app` 是唯一组合根，依赖方向应为 app → feature/core，不可反向。
+     */
+    @Test
+    fun `core and feature do not depend on app`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/") || it.projectPath.contains("/feature/") }
+            .assertFalse(
+                additionalMessage = "core / feature 模块不得依赖 :app",
+            ) { file ->
+                file.hasImport { imp -> imp.name.startsWith("com.example.fragmject.app.") }
+            }
+    }
+
+    /**
+     * 规则 8：`core:model` / `core:domain` / `core:data-contract` 不得依赖 Android framework。
+     * 纯契约 / 数据层必须保持平台无关，禁止任何 `android.*`（framework）导入。
+     * 注：`core:designsystem` 为 Compose UI 层，`android.view.Window` 等属合法 UI 能力，不在此列。
+     */
+    @Test
+    fun `core contract layers do not depend on android framework`() {
+        productionFiles
+            .filter {
+                it.projectPath.contains("/core/model/") ||
+                    it.projectPath.contains("/core/domain/") ||
+                    it.projectPath.contains("/core/data-contract/")
+            }
+            .assertFalse(
+                additionalMessage = "core:model / core:domain / core:data-contract 不得依赖 android.*（framework）",
+            ) { file ->
+                file.hasImport { imp -> imp.name.startsWith("android.") }
+            }
+    }
+
+    /**
+     * 规则 9：`core:data-repository` 仅允许白名单内的 Android framework 导入。
+     * 媒体库（MediaStore / ContentUris）已下沉 core:android-platform，此处只允许
+     * Context / Environment / Log 基础设施，其余 `android.*` 一律失败。
+     */
+    @Test
+    fun `core data repository only allows whitelisted android imports`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/data-repository/") }
+            .assertFalse(
+                additionalMessage = "core:data-repository 仅允许 android.content.Context / android.os.Environment / android.util.Log",
+            ) { file ->
+                file.hasImport { imp ->
+                    imp.name.startsWith("android.") &&
+                        imp.name !in setOf(
+                            "android.content.Context",
+                            "android.os.Environment",
+                            "android.util.Log",
+                        )
+                }
+            }
+    }
+
+    /**
+     * 规则 10：`core:designsystem` 仅禁止数据 / 媒体提供类 API 混入。
+     * UI 层允许 android.view.Window、android.annotation.SuppressLint、android.graphics 等合法 UI 能力，
+     * 但禁止 android.provider.* / android.content.ContentResolver / android.media.* / android.database.*，
+     * 防止媒体查询或数据库代码误放进设计系统。
+     */
+    @Test
+    fun `core designsystem does not depend on data provider apis`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/designsystem/") }
+            .assertFalse(
+                additionalMessage = "core:designsystem 不得依赖 android.provider.* / android.content.ContentResolver / android.media.* / android.database.*",
+            ) { file ->
+                file.hasImport { imp ->
+                    imp.name.startsWith("android.provider.") ||
+                        imp.name == "android.content.ContentResolver" ||
+                        imp.name.startsWith("android.media.") ||
+                        imp.name.startsWith("android.database.")
+                }
+            }
+    }
+
+    /**
+     * 规则 11：`core:ui` 仅禁止数据 / 媒体提供类 API 混入。
+     * UI 组件库允许 BitmapFactory / android.text.Html / displayMetrics 等合法 UI 能力，
+     * 但禁止 android.provider.* / android.content.ContentResolver / android.media.* / android.database.*，
+     * 防止媒体查询或数据库代码误放进 UI 组件库。
+     */
+    @Test
+    fun `core ui does not depend on data provider apis`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/ui/") }
+            .assertFalse(
+                additionalMessage = "core:ui 不得依赖 android.provider.* / android.content.ContentResolver / android.media.* / android.database.*",
+            ) { file ->
+                file.hasImport { imp ->
+                    imp.name.startsWith("android.provider.") ||
+                        imp.name == "android.content.ContentResolver" ||
+                        imp.name.startsWith("android.media.") ||
+                        imp.name.startsWith("android.database.")
+                }
+            }
+    }
+
+    /**
      * 守卫测试：确保各规则的选择器能匹配到真实文件，避免选择器写错导致规则空转（永远通过）。
      */
     @Test
@@ -134,8 +249,20 @@ class ArchitectureTest {
             productionFiles.any { it.isFeatureImpl() },
         )
         assertTrue(
+            "feature api 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.isFeatureApi() },
+        )
+        assertTrue(
             "core/data-repository 选择器匹配 0 文件，检查 projectPath 前缀",
             productionFiles.any { it.projectPath.contains("/core/data-repository/") },
+        )
+        assertTrue(
+            "core/designsystem 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/designsystem/") },
+        )
+        assertTrue(
+            "core/ui 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/ui/") },
         )
     }
 
@@ -147,6 +274,9 @@ class ArchitectureTest {
 
     private fun KoFileDeclaration.isFeatureImpl(): Boolean =
         projectPath.contains("/feature/") && projectPath.contains("/impl/")
+
+    private fun KoFileDeclaration.isFeatureApi(): Boolean =
+        projectPath.contains("/feature/") && projectPath.contains("/api/")
 
     private fun KoFileDeclaration.featureName(): String? {
         val marker = "/feature/"
@@ -180,6 +310,19 @@ class ArchitectureTest {
             if (!imp.name.startsWith(prefix)) return@hasImport false
             val segments = imp.name.split(".")
             segments.size > 6 && segments[4] != own
+        }
+    }
+
+    /**
+     * 判定文件是否 import 了任何 feature impl 类（7+ 段包名）。
+     * 用于「feature:*:api 不得依赖 feature:*:impl」规则：api 模块自身不含 impl 子包，
+     * 任何 >6 段的 feature 导入都是对 impl 的反向依赖，因此不区分 own
+     * （与 [hasOtherFeatureImplImport] 针对 impl 模块区分 own 的语义不同）。
+     */
+    private fun KoFileDeclaration.hasFeatureImplImport(): Boolean {
+        val prefix = "com.example.fragmject.feature."
+        return hasImport { imp ->
+            imp.name.startsWith(prefix) && imp.name.split(".").size > 6
         }
     }
 

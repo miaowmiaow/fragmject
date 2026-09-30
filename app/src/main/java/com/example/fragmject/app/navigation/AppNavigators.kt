@@ -27,6 +27,9 @@ import com.example.fragmject.feature.user.MyCoinNavKey
 import com.example.fragmject.feature.user.RankNavKey
 import com.example.fragmject.feature.user.SettingNavKey
 import com.example.fragmject.feature.user.UserNavKey
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -93,9 +96,20 @@ class AppDemoNavigator @Inject constructor(
 class AppPictureNavigator @Inject constructor(
     private val dispatcher: NavigationDispatcher,
 ) : PictureNavigator {
+    private val _selectedUris = MutableStateFlow<List<String>>(emptyList())
+    override val selectedUris: StateFlow<List<String>> = _selectedUris.asStateFlow()
+
     override fun openPictureSelector() = dispatcher.navigate(PictureSelectorNavKey)
-    override fun openPicturePreview(uris: List<String>) = dispatcher.navigate(PicturePreviewNavKey(uris))
-    override fun openPictureEditor(oldUriString: String) = dispatcher.navigate(PictureEditorNavKey(oldUriString))
+
+    override fun onPictureSelected(uris: List<String>) {
+        _selectedUris.value = uris
+    }
+
+    override fun openPicturePreview(uris: List<String>) =
+        dispatcher.navigate(PicturePreviewNavKey(uris))
+
+    override fun openPictureEditor(oldUriString: String) =
+        dispatcher.navigate(PictureEditorNavKey(oldUriString))
 }
 
 @Singleton

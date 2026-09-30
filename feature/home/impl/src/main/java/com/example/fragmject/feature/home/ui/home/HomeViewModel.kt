@@ -4,9 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.domain.repository.HomeRepository
 import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
 import com.example.fragmject.core.domain.usecase.HomeHeaderAggregateUseCase
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.Banner
@@ -23,7 +23,7 @@ private const val TAG = "HomeVM"
 class HomeViewModel @Inject constructor(
     private val repo: HomeRepository,
     private val headerAggregate: HomeHeaderAggregateUseCase,
-    private val collectArticle: CollectArticleUseCase,
+    val collectState: CollectState,
 ) : ViewModel() {
 
     /** 文章分页数据流（纯网络 PagingSource）。 */
@@ -56,8 +56,4 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /** 收藏 / 取消收藏，供 FeedCard 的 onToggleClick 直接绑定。 */
-    suspend fun collect(id: String, collect: Boolean) {
-        collectArticle(id, collect)
-    }
 }

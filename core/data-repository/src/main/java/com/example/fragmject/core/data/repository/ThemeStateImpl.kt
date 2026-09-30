@@ -1,7 +1,7 @@
-package com.example.fragmject.feature.user
+package com.example.fragmject.core.data.repository
 
 import com.example.fragmject.core.android.platform.AppScope
-import com.example.fragmject.core.designsystem.ThemeState
+import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,8 +12,8 @@ import javax.inject.Singleton
 /**
  * 主题态实现：把 [ThemeRepository.observeDarkTheme] 暴露为应用级深色模式状态。
  *
- * 放在 feature:user:impl（主题设置 UI 所在模块），使 app 只依赖 core:designsystem
- * 的 [ThemeState]，不再 import ThemeRepository。
+ * 下沉到 core:data-repository（领域端口装配层），与 AuthState 契约/实现归位方式一致，
+ * 使 core 不再依赖 feature 提供实现，裁剪 feature:user:impl 不会导致全局主题态缺 binding。
  */
 @Singleton
 class ThemeStateImpl @Inject constructor(

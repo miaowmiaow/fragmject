@@ -1,5 +1,6 @@
 plugins {
     id("fragmject.android.library")
+    id("fragmject.android.hilt")
 }
 
 dependencies {

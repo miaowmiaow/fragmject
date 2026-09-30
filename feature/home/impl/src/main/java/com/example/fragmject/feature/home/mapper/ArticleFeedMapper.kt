@@ -12,7 +12,7 @@ import com.example.fragmject.core.ui.utils.fromHtml
  * 文章业务语义在此处翻译为通用字段：
  * 章节 → footerText/footerId，新/置顶 → footerBadges，收藏 → selected。
  */
-fun Article.toFeedCardUIState(): FeedCardUIState = FeedCardUIState(
+fun Article.toFeedCardUIState(selectedOverride: Boolean? = null): FeedCardUIState = FeedCardUIState(
     id = id,
     title = fromHtml(title),
     desc = fromHtml(desc),
@@ -26,7 +26,7 @@ fun Article.toFeedCardUIState(): FeedCardUIState = FeedCardUIState(
         if (fresh) add(FooterBadge("新"))
         if (top) add(FooterBadge("置顶"))
     },
-    selected = collect,
+    selected = selectedOverride ?: collect,
     displayName = "$author$shareUser".ifBlank { "匿名" },
     avatarResId = AvatarUtils.avatarResIdBySeed("$author$shareUser".ifBlank { userId }),
 )

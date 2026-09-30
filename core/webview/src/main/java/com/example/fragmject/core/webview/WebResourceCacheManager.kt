@@ -2,11 +2,11 @@ package com.example.fragmject.core.webview
 
 import android.content.Context
 import android.util.Log
-import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import com.example.fragmject.core.android.platform.AppScope
 import com.example.fragmject.core.android.platform.CacheUtils
+import com.example.fragmject.core.android.platform.CookieStore
 import com.example.fragmject.core.android.platform.FileDownloader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -112,12 +112,12 @@ class WebResourceCacheManager @Inject constructor(
      * 无 Cookie 时退化为纯 URL 哈希，保留无身份场景的缓存能力。
      */
     private fun htmlCacheKey(url: String): String {
-        val cookie = CookieManager.getInstance().getCookie(url).orEmpty()
+        val cookie = CookieStore.getCookie(url).orEmpty()
         val raw = if (cookie.isBlank()) url else "$url|$cookie"
         return raw.encodeUtf8().md5().hex()
     }
 
-    override fun isCacheResource(request: WebResourceRequest): Boolean {
+    override fun isCacheableResource(request: WebResourceRequest): Boolean {
         val extension = request.getExtensionFromUrl()
         if (extension.isBlank()) {
             val accept = request.requestHeaders["Accept"] ?: return false
@@ -292,7 +292,7 @@ class WebResourceCacheManager @Inject constructor(
     ): Map<String, String> {
         val headers = HashMap<String, String>()
         request.requestHeaders.forEach { (k, v) -> headers[k] = v }
-        CookieManager.getInstance().getCookie(url)?.let { cookie ->
+        CookieStore.getCookie(url)?.let { cookie ->
             if (cookie.isNotBlank()) headers["Cookie"] = cookie
         }
         if (!referer.isNullOrBlank()) headers["Referer"] = referer

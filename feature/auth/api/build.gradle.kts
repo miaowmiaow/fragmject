@@ -1,9 +1,8 @@
 plugins {
     id("fragmject.android.library")
-    id("fragmject.android.feature")
+    id("fragmject.kotlin.serialization")
 }
 
 dependencies {
     api(libs.androidx.navigation3.runtime)
-    api(libs.kotlinx.coroutines.core)
 }

@@ -11,7 +11,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:android-platform"))
     api(project(":core:designsystem"))
 
     implementation(libs.kotlinx.coroutines)

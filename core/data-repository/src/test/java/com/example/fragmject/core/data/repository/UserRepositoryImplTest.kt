@@ -4,8 +4,7 @@ import com.example.fragmject.core.data.contract.local.UserLocalDataSource
 import com.example.fragmject.core.data.contract.model.DataResponse
 import com.example.fragmject.core.data.contract.model.HttpResponse
 import com.example.fragmject.core.data.contract.remote.UserRemoteDataSource
-import com.example.fragmject.core.domain.result.LoginResult
-import com.example.fragmject.core.domain.result.RegisterResult
+import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.model.ShareArticle
 import com.example.fragmject.core.model.User
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +35,7 @@ class UserRepositoryImplTest {
 
         val result = repo.login("test", "pass")
 
-        assertTrue(result is LoginResult.Success)
+        assertTrue(result is AuthResult.Success)
         assertEquals("test", local.current()?.username)
     }
 
@@ -50,7 +49,7 @@ class UserRepositoryImplTest {
 
         val result = repo.login("test", "wrong")
 
-        assertTrue(result is LoginResult.Error)
+        assertTrue(result is AuthResult.Error)
         assertNull(local.current())
     }
 
@@ -66,7 +65,7 @@ class UserRepositoryImplTest {
 
         val result = repo.login("test", "wrong")
 
-        assertTrue(result is LoginResult.Error)
+        assertTrue(result is AuthResult.Error)
         assertNull(local.current())
     }
 
@@ -82,7 +81,7 @@ class UserRepositoryImplTest {
 
         val result = repo.register("new", "pass", "pass")
 
-        assertTrue(result is RegisterResult.Success)
+        assertTrue(result is AuthResult.Success)
         assertEquals("new", local.current()?.username)
     }
 
@@ -98,7 +97,7 @@ class UserRepositoryImplTest {
 
         val result = repo.register("new", "pass", "pass")
 
-        assertTrue(result is RegisterResult.Error)
+        assertTrue(result is AuthResult.Error)
         assertNull(local.current())
     }
 

@@ -25,9 +25,9 @@ class HistoryRepositoryImpl @Inject constructor(
 
     override suspend fun setBookmark(value: String, url: String) = local.setBookmark(value, url)
 
-    override suspend fun setBrowseHistory(value: String, url: String) = local.setBrowseHistory(value, url)
+    override suspend fun recordBrowseVisit(value: String, url: String) = local.recordBrowseVisit(value, url)
 
-    override suspend fun setSearchHistory(value: String) = local.setSearchHistory(value)
+    override suspend fun recordSearchQuery(value: String) = local.recordSearchQuery(value)
 
     override suspend fun deleteHistory(history: History) = local.deleteHistory(history)
 }

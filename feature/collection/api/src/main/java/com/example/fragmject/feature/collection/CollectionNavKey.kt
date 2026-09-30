@@ -17,4 +17,4 @@ object MyCollectNavKey : RequiresAuth, DetailPaneNavKey
 object MyShareNavKey : RequiresAuth, DetailPaneNavKey
 
 @Serializable
-object ShareArticleNavKey : NavKey
+object ShareArticleNavKey : RequiresAuth

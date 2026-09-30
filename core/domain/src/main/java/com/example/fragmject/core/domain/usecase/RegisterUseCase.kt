@@ -1,7 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.domain.result.RegisterResult
+import com.example.fragmject.core.domain.result.AuthResult
 import javax.inject.Inject
 
 /**
@@ -15,11 +15,11 @@ class RegisterUseCase @Inject constructor(
         username: String,
         password: String,
         repassword: String,
-    ): RegisterResult {
-        if (username.isBlank()) return RegisterResult.Error("用户名不能为空")
-        if (password.isBlank()) return RegisterResult.Error("密码不能为空")
-        if (repassword.isBlank()) return RegisterResult.Error("确认密码不能为空")
-        if (password != repassword) return RegisterResult.Error("两次密码不一样")
+    ): AuthResult {
+        if (username.isBlank()) return AuthResult.Error("用户名不能为空")
+        if (password.isBlank()) return AuthResult.Error("密码不能为空")
+        if (repassword.isBlank()) return AuthResult.Error("确认密码不能为空")
+        if (password != repassword) return AuthResult.Error("两次密码不一样")
         return userRepo.register(username, password, repassword)
     }
 }

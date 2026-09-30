@@ -58,26 +58,26 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.fragmject.feature.picture.PictureFlowState
-import com.example.fragmject.feature.picture.model.MediaItem
+import com.example.fragmject.feature.picture.state.PictureFlowState
 
 @Composable
 fun PictureSelectorScreen(
     modifier: Modifier = Modifier,
-    onFinish: (List<MediaItem>) -> Unit,
+    onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onPreview: (List<String>) -> Unit = {},
-    viewModel: PictureFlowState,
+    flowState: PictureFlowState,
 ) {
     val context = LocalContext.current
-    val albumResult by viewModel.albumResult.collectAsStateWithLifecycle()
-    val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
-    val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
-    val selectedUriSet by viewModel.selectedUriSet.collectAsStateWithLifecycle()
-    val currAlbumName by viewModel.currAlbumName.collectAsStateWithLifecycle()
-    val expanded by viewModel.albumMenuExpanded.collectAsStateWithLifecycle()
-    val hasPermission by viewModel.hasPermission.collectAsStateWithLifecycle()
-    val queryAttempted by viewModel.queryAttempted.collectAsStateWithLifecycle()
+    val albumResult by flowState.albumResult.collectAsStateWithLifecycle()
+    val currAlbumResult by flowState.currAlbumResult.collectAsStateWithLifecycle()
+    val selectedUris by flowState.selectedUris.collectAsStateWithLifecycle()
+    val selectedUriSet by flowState.selectedUriSet.collectAsStateWithLifecycle()
+    val currAlbumName by flowState.currAlbumName.collectAsStateWithLifecycle()
+    val expanded by flowState.albumMenuExpanded.collectAsStateWithLifecycle()
+    val hasPermission by flowState.hasPermission.collectAsStateWithLifecycle()
+    val queryAttempted by flowState.queryAttempted.collectAsStateWithLifecycle()
+    val queryError by flowState.queryError.collectAsStateWithLifecycle()
 
     val selectPositionMap = remember(selectedUris) {
         selectedUris.withIndex().associate { (num, uri) -> uri to (num + 1) }
@@ -101,9 +101,9 @@ fun PictureSelectorScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
-        viewModel.setHasPermission(storagePermissions.all { results[it] == true })
+        flowState.setHasPermission(storagePermissions.all { results[it] == true })
         // 权限回调后重新查询（无论结果如何，都尝试查询）
-        viewModel.queryAlbum()
+        flowState.queryAlbum()
     }
 
     // 初始权限检查：有权限直接查询，无权限则自动弹出系统授权对话框
@@ -111,9 +111,9 @@ fun PictureSelectorScreen(
         val granted = storagePermissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
-        viewModel.setHasPermission(granted)
+        flowState.setHasPermission(granted)
         if (granted) {
-            viewModel.queryAlbum()
+            flowState.queryAlbum()
         } else {
             permissionLauncher.launch(storagePermissions)
         }
@@ -125,18 +125,18 @@ fun PictureSelectorScreen(
     ) { success ->
         if (success) {
             // 清除 pending 状态，让真实照片对系统相册与查询可见
-            viewModel.finishTakePictureUri()
+            flowState.finishTakePictureUri()
             // 重新查询相册，获取相机写入后的真实数据并按最新修改时间排序到头部
-            viewModel.queryAlbum()
+            flowState.queryAlbum()
         } else {
             // 拍照失败或用户取消：删除预创建但未写入数据的记录，避免相册残留透明图
-            viewModel.deleteTakePictureUri()
+            flowState.deleteTakePictureUri()
         }
     }
 
     // 启动相机：预创建 Uri 后拉起系统相机
     fun launchCamera() {
-        val uri = viewModel.createTakePictureUri()
+        val uri = flowState.createTakePictureUri()
         if (uri != null) {
             takePictureLauncher.launch(uri)
         } else {
@@ -156,7 +156,30 @@ fun PictureSelectorScreen(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        if (queryAttempted && albumResult.isEmpty() && !hasPermission) {
+        if (queryAttempted && queryError) {
+            // 查询失败：显示错误占位与重试
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .windowInsetsPadding(WindowInsets.systemBars),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    "相册加载失败",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("请检查权限后重试", color = Color.Gray, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = { flowState.queryAlbum() }) {
+                    Text("重试")
+                }
+            }
+        } else if (queryAttempted && albumResult.isEmpty() && !hasPermission) {
             // 权限未授权：显示授权提示
             Column(
                 modifier = Modifier
@@ -217,7 +240,7 @@ fun PictureSelectorScreen(
                     // 相册选择（始终居中）
                     Box(modifier = Modifier.align(Alignment.Center)) {
                         Row(
-                            modifier = Modifier.clickable { viewModel.setAlbumMenuExpanded(true) },
+                            modifier = Modifier.clickable { flowState.setAlbumMenuExpanded(true) },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -235,7 +258,7 @@ fun PictureSelectorScreen(
                         }
                         DropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { viewModel.setAlbumMenuExpanded(false) },
+                            onDismissRequest = { flowState.setAlbumMenuExpanded(false) },
                             containerColor = Color(0xFF2B2B2B),
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -251,8 +274,8 @@ fun PictureSelectorScreen(
                                         )
                                     },
                                     onClick = {
-                                        viewModel.updateCurrAlbum(album.name)
-                                        viewModel.setAlbumMenuExpanded(false)
+                                        flowState.updateCurrAlbum(album.name)
+                                        flowState.setAlbumMenuExpanded(false)
                                     }
                                 )
                             }
@@ -260,12 +283,7 @@ fun PictureSelectorScreen(
                     }
 
                     TextButton(
-                        onClick = {
-                            val data = selectedUris.mapNotNull { uriStr ->
-                                currAlbumResult.find { it.uri.toString() == uriStr }
-                            }
-                            onFinish(data)
-                        },
+                        onClick = { onConfirm() },
                         enabled = selectedUris.isNotEmpty(),
                         modifier = Modifier.align(Alignment.CenterEnd)
                     ) {
@@ -326,7 +344,7 @@ fun PictureSelectorScreen(
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
                                 .clickable {
-                                    viewModel.toggleSelection(uriStr)
+                                    flowState.toggleSelection(uriStr)
                                 }
                         ) {
                             AsyncImage(

@@ -66,7 +66,7 @@ class VideoDownloadRepositoryImpl @Inject constructor(
         loadFromDisk()
     }
 
-    override fun register(title: String, url: String): String {
+    override fun startOrReuseDownload(title: String, url: String): String {
         // 去重：同 URL 已有 Downloading/Pending 任务则复用，避免重复下载
         val existing = _tasks.value.find {
             it.url == url && (it.status == VideoDownloadStatus.Downloading || it.status == VideoDownloadStatus.Pending)

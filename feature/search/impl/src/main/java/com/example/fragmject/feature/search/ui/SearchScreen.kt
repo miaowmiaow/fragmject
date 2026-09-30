@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.search.ui
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -79,18 +81,31 @@ fun SearchScreen(
     val userNavigator = LocalUserNavigator.current
     val homeNavigator = LocalHomeNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current
-    val isSearch by searchViewModel.isSearch.collectAsStateWithLifecycle()
+    val isShowingSearchResults by searchViewModel.isShowingSearchResults.collectAsStateWithLifecycle()
     val isHotKeyLoading by searchViewModel.isHotKeyLoading.collectAsStateWithLifecycle()
     val hotKeyResult by searchViewModel.hotKeyResult.collectAsStateWithLifecycle()
     val searchHistoryResult by searchViewModel.searchHistoryResult.collectAsStateWithLifecycle()
     val pagingItems = searchViewModel.pagingFlow.collectAsLazyPagingItems()
-    var searchText by rememberSaveable { mutableStateOf("") }
+    val overrides by searchViewModel.collectState.overrides.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        searchViewModel.collectState.collectFailed.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+    var searchText by rememberSaveable { mutableStateOf(key) }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     BackHandler(searchText.isNotBlank()) {
         searchText = ""
-        searchViewModel.clearArticles()
+searchViewModel.exitSearchResults()
+    }
+    LaunchedEffect(key) {
+        if (key.isNotBlank()) {
+            searchText = key
+            searchViewModel.submitSearch(key)
+        }
     }
     LaunchedEffect(searchText) {
         if (searchText.isNotBlank()) return@LaunchedEffect
@@ -116,7 +131,7 @@ fun SearchScreen(
                     onValueChange = { searchText = it },
                     onClear = {
                         searchText = ""
-                        searchViewModel.clearArticles()
+searchViewModel.exitSearchResults()
                     },
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
@@ -149,9 +164,9 @@ fun SearchScreen(
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             if (searchText.isNotBlank()) {
-                                searchViewModel.getHome(searchText)
+searchViewModel.submitSearch(searchText)
                             } else {
-                                searchViewModel.clearArticles()
+searchViewModel.exitSearchResults()
                             }
                             focusManager.clearFocus()
                             keyboardController?.hide()
@@ -175,7 +190,7 @@ fun SearchScreen(
     ) { innerPadding ->
         SkeletonContent(isLoading = isHotKeyLoading) {
             Column(modifier = Modifier.padding(innerPadding)) {
-                if (!isSearch) {
+                if (!isShowingSearchResults) {
                     Text(
                         text = "大家都在搜",
                         modifier = Modifier.padding(15.dp),
@@ -188,7 +203,7 @@ fun SearchScreen(
                                     onClick = {
                                         focusManager.clearFocus()
                                         searchText = it.name
-                                        searchViewModel.getHome(searchText)
+searchViewModel.submitSearch(searchText)
                                     },
                                     modifier = Modifier
                                         .height(40.dp)
@@ -228,7 +243,7 @@ fun SearchScreen(
                                         .clickable {
                                             focusManager.clearFocus()
                                             searchText = item.value
-                                            searchViewModel.getHome(searchText)
+searchViewModel.submitSearch(searchText)
                                         }
                                         .background(MaterialTheme.colorScheme.surfaceContainer)
                                         .height(45.dp)
@@ -263,11 +278,11 @@ fun SearchScreen(
                         key = { it.id },
                     ) { item ->
                         FeedCard(
-                            data = remember(item.id) { item.toFeedCardUIState() },
+                            data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
                             onItemClick = { articleNavigator.openArticle(it) },
                             onUserClick = { userNavigator.openUserProfile(it) },
                             onFooterClick = { homeNavigator.openSystemTree(it) },
-                            onToggleClick = searchViewModel::collect,
+                            onToggleClick = searchViewModel.collectState::toggle,
                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                         )
                     }

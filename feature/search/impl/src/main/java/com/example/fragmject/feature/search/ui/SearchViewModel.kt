@@ -3,9 +3,9 @@ package com.example.fragmject.feature.search.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.domain.repository.HistoryRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
-import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
 import com.example.fragmject.core.model.History
 import com.example.fragmject.core.model.HotKey
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
     private val historyRepo: HistoryRepository,
-    private val collectArticle: CollectArticleUseCase,
+    val collectState: CollectState,
 ) : ViewModel() {
 
     /** 搜索词驱动搜索结果分页流，搜索词变化时重建 Pager。 */
@@ -33,8 +33,8 @@ class SearchViewModel @Inject constructor(
         .flatMapLatest { key -> searchRepository.getSearchPagingData(key) }
         .cachedIn(viewModelScope)
 
-    private val _isSearch = MutableStateFlow(false)
-    val isSearch: StateFlow<Boolean> = _isSearch.asStateFlow()
+    private val _isShowingSearchResults = MutableStateFlow(false)
+    val isShowingSearchResults: StateFlow<Boolean> = _isShowingSearchResults.asStateFlow()
 
     private val _searchHistoryResult = MutableStateFlow<List<History>>(emptyList())
     val searchHistoryResult: StateFlow<List<History>> = _searchHistoryResult.asStateFlow()
@@ -65,21 +65,17 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun clearArticles() {
-        _isSearch.value = false
+    fun exitSearchResults() {
+        _isShowingSearchResults.value = false
         _searchKey.value = null
     }
 
-    fun getHome(key: String) {
+    fun submitSearch(key: String) {
         viewModelScope.launch {
-            historyRepo.setSearchHistory(key)
+            historyRepo.recordSearchQuery(key)
         }
-        _isSearch.value = true
+        _isShowingSearchResults.value = true
         _searchKey.value = key
     }
 
-    /** 收藏 / 取消收藏。 */
-    suspend fun collect(id: String, collect: Boolean) {
-        collectArticle(id, collect)
-    }
 }

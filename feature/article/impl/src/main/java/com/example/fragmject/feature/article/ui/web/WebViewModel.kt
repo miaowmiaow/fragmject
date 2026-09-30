@@ -50,8 +50,8 @@ class WebViewModel @Inject constructor(
         }
     }
 
-    fun setBrowseHistory(title: String, url: String) {
-        viewModelScope.launch { historyRepo.setBrowseHistory(title, url) }
+    fun recordBrowseVisit(title: String, url: String) {
+        viewModelScope.launch { historyRepo.recordBrowseVisit(title, url) }
     }
 
     /** 保存图片：URL 走下载保存，base64 走解码保存，结果通过 [onResult] 回传。 */
@@ -70,9 +70,9 @@ class WebViewModel @Inject constructor(
         }
     }
 
-    /** 注册视频下载任务，标题为空时回退为 URL 末段文件名。 */
+    /** 启动或复用视频下载任务，标题为空时回退为 URL 末段文件名。 */
     fun registerVideo(title: String?, url: String) {
-        videoDownloadRepository.register(
+        videoDownloadRepository.startOrReuseDownload(
             title = title ?: url.substringAfterLast("/").substringBefore("?"),
             url = url,
         )

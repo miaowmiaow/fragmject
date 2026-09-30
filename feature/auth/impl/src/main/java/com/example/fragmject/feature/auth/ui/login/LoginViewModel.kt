@@ -2,7 +2,7 @@ package com.example.fragmject.feature.auth.ui.login
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.domain.result.LoginResult
+import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.domain.usecase.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,8 +39,8 @@ class LoginViewModel @Inject constructor(
         _uiState.update { LoginUiState.Loading }
         viewModelScope.launch {
             when (val result = loginUseCase(username, password)) {
-                is LoginResult.Success -> _uiState.update { LoginUiState.Success(result.message) }
-                is LoginResult.Error -> _uiState.update { LoginUiState.Error(result.message) }
+                is AuthResult.Success -> _uiState.update { LoginUiState.Success(result.message) }
+                is AuthResult.Error -> _uiState.update { LoginUiState.Error(result.message) }
             }
         }
     }

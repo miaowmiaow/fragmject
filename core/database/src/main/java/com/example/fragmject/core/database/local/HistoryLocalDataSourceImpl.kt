@@ -45,7 +45,7 @@ class HistoryLocalDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun setBrowseHistory(value: String, url: String) {
+    override suspend fun recordBrowseVisit(value: String, url: String) {
         val existing = historyDao.getByUrl(key = KEY_BROWSE_HISTORY, url = url)
         if (existing != null) historyDao.delete(existing)
         historyDao.insertWithLimitCheck(
@@ -53,7 +53,7 @@ class HistoryLocalDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun setSearchHistory(value: String) {
+    override suspend fun recordSearchQuery(value: String) {
         val existing = historyDao.getByValue(key = KEY_SEARCH_HISTORY, value = value)
         if (existing != null) historyDao.delete(existing)
         historyDao.insertWithLimitCheck(

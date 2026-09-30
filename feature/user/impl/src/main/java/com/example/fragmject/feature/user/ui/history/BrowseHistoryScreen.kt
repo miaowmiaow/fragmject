@@ -109,7 +109,7 @@ fun BrowseHistoryScreen(
                             modifier = Modifier
                                 .clickable {
                                     if (page == 0) {
-                                        viewModel.setBrowseHistory(item.value, item.url)
+                                        viewModel.recordBrowseVisit(item.value, item.url)
                                     }
                                     articleNavigator.openArticle(item.url)
                                 }

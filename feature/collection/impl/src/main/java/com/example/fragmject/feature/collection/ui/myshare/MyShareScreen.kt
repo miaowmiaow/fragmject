@@ -15,7 +15,7 @@ fun MyShareScreen(
     PagingArticleListPage(
         title = "我的分享",
         pagingItems = pagingItems,
-        onCollect = viewModel::collect,
+        collectState = viewModel.collectState,
     )
 }
 

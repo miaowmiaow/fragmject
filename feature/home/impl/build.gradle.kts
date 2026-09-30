@@ -1,7 +1,6 @@
 plugins {
     id("fragmject.android.library")
     id("fragmject.android.compose")
-    id("fragmject.android.feature")
     id("fragmject.android.hilt")
 }
 
@@ -32,6 +31,7 @@ dependencies {
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.coil.compose)
+    implementation(libs.kotlinx.coroutines)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

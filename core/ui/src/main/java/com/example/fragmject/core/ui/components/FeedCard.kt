@@ -19,11 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.fragmject.core.designsystem.AppSpacing
 import com.example.fragmject.core.ui.R
-import kotlinx.coroutines.launch
 
 /**
  * 通用信息流卡片组件——零业务语义、零模型依赖。
@@ -59,11 +53,9 @@ fun FeedCard(
     onItemClick: (String) -> Unit = {},
     onUserClick: (String) -> Unit = {},
     onFooterClick: (String) -> Unit = {},
-    onToggleClick: suspend (String, Boolean) -> Unit = { _, _ -> },
+    onToggleClick: (String, Boolean) -> Unit = { _, _ -> },
 ) {
-    val scope = rememberCoroutineScope()
-    var selected by remember(data.id) { mutableStateOf(data.selected) }
-    val toggleResId = getToggleResId(selected)
+    val toggleResId = getToggleResId(data.selected)
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AppSpacing.cardCornerRadius))
@@ -193,12 +185,7 @@ fun FeedCard(
                 contentDescription = "",
                 modifier = footModifier
                     .height(AppSpacing.buttonSmallHeight)
-                    .clickable {
-                        scope.launch {
-                            onToggleClick(data.id, !selected)
-                            selected = !selected
-                        }
-                    })
+                    .clickable { onToggleClick(data.id, !data.selected) })
         }
     }
 }

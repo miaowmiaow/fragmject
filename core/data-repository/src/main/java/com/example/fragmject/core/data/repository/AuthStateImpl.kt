@@ -1,6 +1,7 @@
-package com.example.fragmject.feature.auth
+package com.example.fragmject.core.data.repository
 
 import com.example.fragmject.core.android.platform.AppScope
+import com.example.fragmject.core.domain.AuthState
 import com.example.fragmject.core.domain.repository.UserRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -10,15 +11,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * 认证会话实现：把 [UserRepository.observeCurrentUser] 映射为布尔登录态。
+ * 认证状态实现：把 [UserRepository.observeCurrentUser] 映射为布尔登录态。
  *
- * 实现 feature:auth:api 的 [AuthSession] 契约，供导航守卫消费；
- * app 层只依赖 auth:api 的 AuthSession，不再 import UserRepository / User 模型。
+ * 下沉到 core:data-repository（领域端口装配层），与 CollectState / ThemeState 归位方式一致；
+ * app 层只依赖 core:domain 的 AuthState，不再 import UserRepository / User 模型。
  */
 @Singleton
-class AuthSessionImpl @Inject constructor(
+class AuthStateImpl @Inject constructor(
     userRepository: UserRepository,
-) : AuthSession {
+) : AuthState {
     override val isLoggedIn: StateFlow<Boolean> =
         userRepository.observeCurrentUser()
             .map { it != null && it.id > 0 }

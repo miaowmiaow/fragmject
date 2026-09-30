@@ -2,7 +2,7 @@ package com.example.fragmject.feature.auth.ui.register
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.domain.result.RegisterResult
+import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.domain.usecase.RegisterUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,8 +36,8 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { RegisterUiState.Loading }
         viewModelScope.launch {
             when (val result = registerUseCase(username, password, repassword)) {
-                is RegisterResult.Success -> _uiState.update { RegisterUiState.Success(result.message) }
-                is RegisterResult.Error -> _uiState.update { RegisterUiState.Error(result.message) }
+                is AuthResult.Success -> _uiState.update { RegisterUiState.Success(result.message) }
+                is AuthResult.Error -> _uiState.update { RegisterUiState.Error(result.message) }
             }
         }
     }

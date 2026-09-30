@@ -3,8 +3,7 @@ package com.example.fragmject.core.data.repository
 import com.example.fragmject.core.data.contract.local.UserLocalDataSource
 import com.example.fragmject.core.data.contract.remote.UserRemoteDataSource
 import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.domain.result.LoginResult
-import com.example.fragmject.core.domain.result.RegisterResult
+import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.model.User
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -23,13 +22,13 @@ class UserRepositoryImpl @Inject constructor(
     private val local: UserLocalDataSource,
 ) : UserRepository {
 
-    override suspend fun login(username: String, password: String): LoginResult {
+    override suspend fun login(username: String, password: String): AuthResult {
         val resp = remote.login(username, password)
         return if (resp.errorCode == "0") {
             resp.data?.let { saveUser(it) }
-            LoginResult.Success(resp.errorMsg)
+            AuthResult.Success(resp.errorMsg)
         } else {
-            LoginResult.Error(resp.errorMsg)
+            AuthResult.Error(resp.errorMsg)
         }
     }
 
@@ -37,13 +36,13 @@ class UserRepositoryImpl @Inject constructor(
         username: String,
         password: String,
         repassword: String,
-    ): RegisterResult {
+    ): AuthResult {
         val resp = remote.register(username, password, repassword)
         return if (resp.errorCode == "0") {
             resp.data?.let { saveUser(it) }
-            RegisterResult.Success(resp.errorMsg)
+            AuthResult.Success(resp.errorMsg)
         } else {
-            RegisterResult.Error(resp.errorMsg)
+            AuthResult.Error(resp.errorMsg)
         }
     }
 

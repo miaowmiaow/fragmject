@@ -1,7 +1,6 @@
 plugins {
     id("fragmject.android.library")
     id("fragmject.android.compose")
-    id("fragmject.android.feature")
     id("fragmject.android.hilt")
 }
 
@@ -22,6 +21,7 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.kotlinx.coroutines)
 
     testImplementation(libs.junit)
 }

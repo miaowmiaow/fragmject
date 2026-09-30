@@ -1,6 +1,7 @@
 package com.example.fragmject.feature.user.ui.setting
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.android.platform.CacheUtils
@@ -29,13 +30,16 @@ sealed interface SettingUiState {
 }
 
 sealed interface SettingEvent {
-    data object LogoutCompleted : SettingEvent
+    data object LogoutSucceeded : SettingEvent
+    data object LogoutFailed : SettingEvent
 }
 
 // Screen accessors
 val SettingUiState.user get() = (this as? SettingUiState.Success)?.user
 val SettingUiState.darkTheme get() = (this as? SettingUiState.Success)?.darkTheme ?: false
 val SettingUiState.isLoading get() = this is SettingUiState.Loading
+
+private const val TAG = "SettingVM"
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
@@ -90,9 +94,15 @@ class SettingViewModel @Inject constructor(
     fun logout() {
         _uiState.update { SettingUiState.Loading }
         viewModelScope.launch {
-            logoutUseCase()
-            _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
-            _events.send(SettingEvent.LogoutCompleted)
+            try {
+                val success = logoutUseCase()
+                _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
+                _events.send(if (success) SettingEvent.LogoutSucceeded else SettingEvent.LogoutFailed)
+            } catch (e: Exception) {
+                Log.e(TAG, "logout failed", e)
+                _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
+                _events.send(SettingEvent.LogoutFailed)
+            }
         }
     }
 }

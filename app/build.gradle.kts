@@ -4,7 +4,6 @@ import java.util.Properties
 plugins {
     id("fragmject.android.application")
     id("fragmject.android.compose")
-    id("fragmject.android.feature")
     id("fragmject.android.hilt")
 }
 
@@ -85,6 +84,7 @@ dependencies {
     implementation(project(":core:data-repository"))
     implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:domain"))
     implementation(project(":core:navigation-runtime"))
     implementation(project(":core:navigation-contract"))
     implementation(project(":core:network"))

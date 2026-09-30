@@ -101,9 +101,11 @@
 |     └── src/main/kotlin
 |        ├── FragmjectAndroidApplicationPlugin   application 约定插件
 |        ├── FragmjectAndroidComposePlugin       compose 约定插件
-|        ├── FragmjectAndroidFeaturePlugin       feature 约定插件
+|        ├── FragmjectKotlinParcelizePlugin      Kotlin Parcelize 能力插件
+|        ├── FragmjectKotlinSerializationPlugin  Kotlin Serialization 能力插件
 |        ├── FragmjectAndroidHiltPlugin          Hilt 约定插件
 |        ├── FragmjectAndroidLibraryPlugin       library 约定插件
+|        ├── FragmjectAndroidDependencyGuardPlugin dependency 校验插件
 |        └── FragmjectAndroidRoomPlugin          Room 约定插件
 |
 ├── gradle

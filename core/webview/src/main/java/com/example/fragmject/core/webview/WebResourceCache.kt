@@ -29,7 +29,7 @@ interface WebResourceCache {
     fun cacheHtmlRequest(context: Context, request: WebResourceRequest): WebResourceResponse?
 
     /** 判断请求是否为可缓存资源（图片/样式/脚本/字体等）。 */
-    fun isCacheResource(request: WebResourceRequest): Boolean
+    fun isCacheableResource(request: WebResourceRequest): Boolean
 
     /**
      * 命中本地磁盘缓存则返回响应；未命中返回 null 并异步下载填充缓存。

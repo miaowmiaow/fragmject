@@ -6,7 +6,7 @@ import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.navigation.runtime.NavFlowScope
 import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
 import com.example.fragmject.feature.picture.PictureFlowNavKey
-import com.example.fragmject.feature.picture.PictureFlowState
+import com.example.fragmject.feature.picture.state.PictureFlowState
 import javax.inject.Inject
 import javax.inject.Singleton
 

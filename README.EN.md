@@ -93,9 +93,11 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 |     └── src/main/kotlin
 |        ├── FragmjectAndroidApplicationPlugin   application convention plugin
 |        ├── FragmjectAndroidComposePlugin       compose convention plugin
-|        ├── FragmjectAndroidFeaturePlugin       feature convention plugin
+|        ├── FragmjectKotlinParcelizePlugin      Kotlin Parcelize capability plugin
+|        ├── FragmjectKotlinSerializationPlugin  Kotlin Serialization capability plugin
 |        ├── FragmjectAndroidHiltPlugin          Hilt convention plugin
 |        ├── FragmjectAndroidLibraryPlugin       library convention plugin
+|        ├── FragmjectAndroidDependencyGuardPlugin dependency guard plugin
 |        └── FragmjectAndroidRoomPlugin          Room convention plugin
 |
 ├── gradle

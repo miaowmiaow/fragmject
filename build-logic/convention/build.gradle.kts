@@ -33,9 +33,13 @@ gradlePlugin {
             id = libs.plugins.fragmject.android.compose.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectAndroidComposePlugin"
         }
-        register("androidFeature") {
-            id = libs.plugins.fragmject.android.feature.get().pluginId
-            implementationClass = "com.example.fragmject.convention.FragmjectAndroidFeaturePlugin"
+        register("kotlinParcelize") {
+            id = libs.plugins.fragmject.kotlin.parcelize.get().pluginId
+            implementationClass = "com.example.fragmject.convention.FragmjectKotlinParcelizePlugin"
+        }
+        register("kotlinSerialization") {
+            id = libs.plugins.fragmject.kotlin.serialization.get().pluginId
+            implementationClass = "com.example.fragmject.convention.FragmjectKotlinSerializationPlugin"
         }
         register("androidHilt") {
             id = libs.plugins.fragmject.android.hilt.get().pluginId
@@ -52,6 +56,10 @@ gradlePlugin {
         register("stabilityCheck") {
             id = libs.plugins.fragmject.android.stability.check.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectAndroidStabilityCheckPlugin"
+        }
+        register("dependencyGuard") {
+            id = libs.plugins.fragmject.android.dependency.guard.get().pluginId
+            implementationClass = "com.example.fragmject.convention.FragmjectAndroidDependencyGuardPlugin"
         }
     }
 }

@@ -8,6 +8,8 @@ plugins {
 dependencies {
     api(project(":core:model"))
     implementation(libs.kotlin.stdlib)
-    implementation(libs.kotlinx.coroutines)
+    // 纯契约层仅需 Flow/suspend，与 core:domain 一致只用 -core，
+    // 不引入含 Android Dispatchers.Main 的 -android 版本。
+    implementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
 }

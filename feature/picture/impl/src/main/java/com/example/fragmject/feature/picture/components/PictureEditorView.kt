@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.graphics.values
-import com.example.fragmject.core.ui.utils.getBitmapFromPath
-import com.example.fragmject.core.ui.utils.getBitmapFromUri
+import com.example.fragmject.core.android.platform.getBitmapFromPath
+import com.example.fragmject.core.android.platform.getBitmapFromUri
 import com.example.fragmject.feature.picture.impl.R
 import com.example.fragmject.feature.picture.components.layer.GraffitiLayer
 import com.example.fragmject.feature.picture.components.layer.MosaicLayer
@@ -165,7 +165,9 @@ class PictureEditorState {
         invalidate()
     }
 
-    fun saveBitmap(): Bitmap {
+    fun saveBitmap(): Bitmap? {
+        // 原图未加载（mosaicBitmap 为 null）时不产出有效位图，避免保存 1×1 透明图并误删原图。
+        if (mosaicBitmap == null) return null
         val tempMatrix = Matrix(bitmapMatrix)
         bitmapMatrix.reset()
         val width = max(bitmapRectF.width().toInt(), 1)

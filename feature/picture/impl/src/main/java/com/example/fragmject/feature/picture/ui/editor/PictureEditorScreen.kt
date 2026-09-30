@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragmject.core.ui.utils.getBitmapFromUri
+import com.example.fragmject.core.android.platform.getBitmapFromUri
 import com.example.fragmject.feature.picture.components.EditorMode
 import com.example.fragmject.feature.picture.components.PictureEditorCanvas
 import com.example.fragmject.feature.picture.components.rememberPictureEditorState
@@ -133,15 +133,19 @@ fun PictureEditorScreen(
                     onClick = {
                         if (!isSaving) {
                             val result = state.saveBitmap()
-                            viewModel.save(
-                                result,
-                                onSuccess = { path, uri ->
-                                    onFinish(path, uri)
-                                },
-                                onError = {
-                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
-                                },
-                            )
+                            if (result == null) {
+                                Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
+                            } else {
+                                viewModel.save(
+                                    result,
+                                    onSuccess = { path, uri ->
+                                        onFinish(path, uri)
+                                    },
+                                    onError = {
+                                        Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                                    },
+                                )
+                            }
                         }
                     },
                     enabled = !isSaving

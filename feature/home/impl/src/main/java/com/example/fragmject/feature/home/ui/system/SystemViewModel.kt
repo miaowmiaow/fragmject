@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.domain.repository.SystemRepository
-import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.Tree
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SystemViewModel @Inject constructor(
     private val repo: SystemRepository,
-    private val collectArticle: CollectArticleUseCase,
+    val collectState: CollectState,
 ) : ViewModel() {
 
     /** 体系树（与 MainViewModel 共享同一 Room 数据源，供 SystemScreen 定位 cid）。 */
@@ -43,8 +43,4 @@ class SystemViewModel @Inject constructor(
             repo.getSystemPagingData(cid).cachedIn(viewModelScope)
         }
 
-    /** 收藏 / 取消收藏。 */
-    suspend fun collect(id: String, collect: Boolean) {
-        collectArticle(id, collect)
-    }
 }

@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.home.ui.project
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,10 +11,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +40,13 @@ fun ProjectScreen(
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState { projectTreeUiState.result.size }
+    val overrides by projectListViewModel.collectState.overrides.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        projectListViewModel.collectState.collectFailed.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
     Column {
         TabBar(
             data = projectTreeUiState.result,
@@ -62,11 +72,11 @@ fun ProjectScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) { item ->
                     FeedCard(
-                        data = remember(item.id) { item.toFeedCardUIState() },
+                        data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,
-                        onToggleClick = projectListViewModel::collect,
+                        onToggleClick = projectListViewModel.collectState::toggle,
                     )
                 }
             }

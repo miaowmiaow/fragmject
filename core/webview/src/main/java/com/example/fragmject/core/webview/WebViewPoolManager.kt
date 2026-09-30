@@ -9,11 +9,11 @@ import android.graphics.Color
 import android.os.Handler
 import android.util.Log
 import android.view.ViewGroup
-import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.example.fragmject.core.android.platform.AppScope
+import com.example.fragmject.core.android.platform.CookieStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -89,7 +89,7 @@ class WebViewPoolManager @Inject constructor(
             WebView.RENDERER_PRIORITY_BOUND,
             true
         )
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+        CookieStore.setAcceptThirdPartyCookies(webView, true)
         return webView
     }
 

@@ -3,7 +3,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    // model 类型（Article/Banner 等）出现在领域端口公开签名中，须用 api 暴露给消费方，
+    // 与 core:data-contract 的 api(project(":core:model")) 保持一致，避免消费方重复补依赖。
+    api(project(":core:model"))
     // 领域层唯一刻意接受的第三方依赖：paging-common 为纯 JVM 库，PagingData 是不可变分页载体，
     // 不违反「领域层不依赖 Android framework」的硬规则；禁止引入含 Android 的 paging-runtime。
     api(libs.androidx.paging.common)

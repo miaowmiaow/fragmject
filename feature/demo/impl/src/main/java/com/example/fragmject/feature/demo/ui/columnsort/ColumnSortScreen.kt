@@ -21,7 +21,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.ReorderLazyColumn
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.feature.demo.ui.gridselect.Photo
+import com.example.fragmject.feature.demo.model.Photo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

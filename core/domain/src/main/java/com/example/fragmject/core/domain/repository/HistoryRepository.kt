@@ -13,7 +13,7 @@ interface HistoryRepository {
     fun observeBrowseHistory(): Flow<List<History>>
     fun observeSearchHistory(): Flow<List<History>>
     suspend fun setBookmark(value: String, url: String)
-    suspend fun setBrowseHistory(value: String, url: String)
-    suspend fun setSearchHistory(value: String)
+    suspend fun recordBrowseVisit(value: String, url: String)
+    suspend fun recordSearchQuery(value: String)
     suspend fun deleteHistory(history: History)
 }

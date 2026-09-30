@@ -1,6 +1,8 @@
 package com.example.fragmject.core.navigation.contract
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * 语义导航契约的 Compose 访问入口。
@@ -56,9 +58,11 @@ private object NoOpDemoNavigator : DemoNavigator {
 }
 
 private object NoOpPictureNavigator : PictureNavigator {
+    override val selectedUris: StateFlow<List<String>> = MutableStateFlow(emptyList())
     override fun openPictureSelector() = Unit
     override fun openPicturePreview(uris: List<String>) = Unit
     override fun openPictureEditor(oldUriString: String) = Unit
+    override fun onPictureSelected(uris: List<String>) = Unit
 }
 
 private object NoOpHomeNavigator : HomeNavigator {

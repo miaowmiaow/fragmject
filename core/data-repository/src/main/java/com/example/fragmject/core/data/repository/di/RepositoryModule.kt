@@ -1,7 +1,9 @@
 package com.example.fragmject.core.data.repository.di
 
+import com.example.fragmject.core.data.repository.AuthStateImpl
 import com.example.fragmject.core.data.repository.AlbumRepositoryImpl
 import com.example.fragmject.core.data.repository.CoinRankRepositoryImpl
+import com.example.fragmject.core.data.repository.CollectStateImpl
 import com.example.fragmject.core.data.repository.DownloadRepositoryImpl
 import com.example.fragmject.core.data.repository.HistoryRepositoryImpl
 import com.example.fragmject.core.data.repository.HomeRepositoryImpl
@@ -14,9 +16,13 @@ import com.example.fragmject.core.data.repository.ScheduleRepositoryImpl
 import com.example.fragmject.core.data.repository.SearchRepositoryImpl
 import com.example.fragmject.core.data.repository.SystemRepositoryImpl
 import com.example.fragmject.core.data.repository.ThemeRepositoryImpl
+import com.example.fragmject.core.data.repository.ThemeStateImpl
 import com.example.fragmject.core.data.repository.UserCenterRepositoryImpl
 import com.example.fragmject.core.data.repository.UserRepositoryImpl
 import com.example.fragmject.core.data.repository.VideoDownloadRepositoryImpl
+import com.example.fragmject.core.domain.AuthState
+import com.example.fragmject.core.domain.CollectState
+import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.CoinRankRepository
 import com.example.fragmject.core.domain.repository.DownloadRepository
@@ -65,6 +71,18 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindThemeState(impl: ThemeStateImpl): ThemeState
+
+    @Binds
+    @Singleton
+    abstract fun bindCollectState(impl: CollectStateImpl): CollectState
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthState(impl: AuthStateImpl): AuthState
 
     @Binds
     @Singleton

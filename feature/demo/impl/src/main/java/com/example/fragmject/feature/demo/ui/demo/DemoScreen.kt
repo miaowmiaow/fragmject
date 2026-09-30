@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,7 +86,7 @@ fun DemoScreen() {
         "嵌套滚动1",
         "嵌套滚动2",
     )
-    var selectedTab by remember { mutableStateOf(tabs[0]) }
+    var selectedTab by rememberSaveable { mutableStateOf(tabs[0]) }
     Scaffold(
         topBar = {
             if(!showTitleBar){

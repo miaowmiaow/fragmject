@@ -27,14 +27,14 @@ enum class VideoDownloadStatus { Pending, Downloading, Complete, Failed }
  *
  * 抽象「下载 + 任务状态维护 + 断点续传路径持久化」完整能力：
  * - UI 层通过 [tasks] StateFlow 观察，每项下载进度 0f-1f 实时更新；
- * - [register] 提交新下载任务，内部自动完成下载编排与状态更新；
+ * - [startOrReuseDownload] 提交新下载任务，内部自动完成下载编排与状态更新；
  * - 任务列表持久化到内部存储 JSON 文件，App 重启后自动恢复并续传。
  */
 interface VideoDownloadRepository {
     val tasks: StateFlow<List<VideoDownloadTask>>
 
-    /** 提交新下载任务（同 URL 已有未完成任务则复用）。返回任务 id。 */
-    fun register(title: String, url: String): String
+    /** 启动下载或复用已有任务（同 URL 已有未完成任务则复用）。返回任务 id。 */
+    fun startOrReuseDownload(title: String, url: String): String
 
     /** 重试失败的任务。 */
     fun retry(id: String)

@@ -1,7 +1,15 @@
 package com.example.fragmject.feature.picture.nav
 
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
 import com.example.fragmject.core.navigation.runtime.LocalNavFlowScopes
@@ -11,7 +19,7 @@ import com.example.fragmject.core.navigation.runtime.NavContentRegistry
 import com.example.fragmject.feature.picture.PictureEditorNavKey
 import com.example.fragmject.feature.picture.PicturePreviewNavKey
 import com.example.fragmject.feature.picture.PictureSelectorNavKey
-import com.example.fragmject.feature.picture.PictureFlowState
+import com.example.fragmject.feature.picture.state.PictureFlowState
 import com.example.fragmject.feature.picture.ui.editor.PictureEditorScreen
 import com.example.fragmject.feature.picture.ui.selector.PicturePreviewScreen
 import com.example.fragmject.feature.picture.ui.selector.PictureSelectorScreen
@@ -32,13 +40,18 @@ object PictureNavContentContributor : NavContentContributor {
                 val pictureNavigator = LocalPictureNavigator.current
                 val onNavigateUp = LocalOnNavigateUp.current
                 PictureSelectorScreen(
-                    onFinish = { onNavigateUp() },
+                    onConfirm = {
+                        pictureNavigator.onPictureSelected(pictureFlowState.selectedUris.value)
+                        onNavigateUp()
+                    },
                     onDismiss = { onNavigateUp() },
                     onPreview = { uris ->
                         pictureNavigator.openPicturePreview(uris)
                     },
-                    viewModel = pictureFlowState,
+                    flowState = pictureFlowState,
                 )
+            } else {
+                PictureFlowScopeUnavailable()
             }
         }
         registry.register<PicturePreviewNavKey> { navKey ->
@@ -50,13 +63,15 @@ object PictureNavContentContributor : NavContentContributor {
                     mode = PreviewMode.SELECT,
                     origSelectUris = navKey.uris,
                     previewPosition = 0,
-                    onFinish = { onNavigateUp() },
+                    onConfirm = { onNavigateUp() },
                     onDismiss = { onNavigateUp() },
                     onOpenEditor = { uri ->
                         pictureNavigator.openPictureEditor(uri.toString())
                     },
-                    viewModel = pictureFlowState,
+                    flowState = pictureFlowState,
                 )
+            } else {
+                PictureFlowScopeUnavailable()
             }
         }
         registry.register<PictureEditorNavKey> { navKey ->
@@ -77,6 +92,8 @@ object PictureNavContentContributor : NavContentContributor {
                     },
                     onDismiss = { onNavigateUp() },
                 )
+            } else {
+                PictureFlowScopeUnavailable()
             }
         }
     }
@@ -88,7 +105,25 @@ object PictureNavContentContributor : NavContentContributor {
 @Composable
 private fun rememberPictureFlowState(): PictureFlowState? {
     val scopes = LocalNavFlowScopes.current
-    return remember(scopes) {
+    val state = remember(scopes) {
         scopes.values.filterIsInstance<PictureFlowState>().firstOrNull()
+    }
+    if (state == null) {
+        Log.w(TAG, "PictureFlowState 匹配失败：当前流程作用域中不存在 PictureFlowState")
+    }
+    return state
+}
+
+private const val TAG = "PictureNav"
+
+@Composable
+private fun PictureFlowScopeUnavailable() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("图片流程未初始化", color = Color.White)
     }
 }

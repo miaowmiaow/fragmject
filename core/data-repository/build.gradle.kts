@@ -1,6 +1,5 @@
 plugins {
     id("fragmject.android.library")
-    id("fragmject.android.feature")
     id("fragmject.android.hilt")
 }
 

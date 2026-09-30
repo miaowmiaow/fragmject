@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.fragmject.feature.picture.PictureFlowState
+import com.example.fragmject.feature.picture.state.PictureFlowState
 import com.example.fragmject.feature.picture.model.MediaItem
 import kotlinx.coroutines.launch
 
@@ -65,21 +65,17 @@ fun PicturePreviewScreen(
     mode: PreviewMode = PreviewMode.NORM,
     origSelectUris: List<String> = emptyList(),
     previewPosition: Int = 0,
-    onFinish: (List<String>) -> Unit,
+    onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onOpenEditor: (Uri) -> Unit = {},
-    viewModel: PictureFlowState,
+    flowState: PictureFlowState,
 ) {
-    val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
-    val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
-    val selectedUriSet by viewModel.selectedUriSet.collectAsStateWithLifecycle()
+    val currAlbumResult by flowState.currAlbumResult.collectAsStateWithLifecycle()
+    val selectedUris by flowState.selectedUris.collectAsStateWithLifecycle()
+    val selectedUriSet by flowState.selectedUriSet.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var showTitleBar by remember { mutableStateOf(true) }
     var showNavBar by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        viewModel.initSelection(origSelectUris)
-    }
 
     val data = remember(currAlbumResult, origSelectUris, mode) {
         if (mode == PreviewMode.SELECT) {
@@ -237,8 +233,7 @@ fun PicturePreviewScreen(
                         fontSize = 16.sp
                     )
                     TextButton(onClick = {
-                        onFinish(selectedUris)
-                        onDismiss()
+                        onConfirm()
                     }) {
                         Text("完成", color = Color.White, fontSize = 16.sp)
                     }
@@ -319,7 +314,7 @@ fun PicturePreviewScreen(
                         TextButton(onClick = {
                             val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
                                 ?: return@TextButton
-                            viewModel.toggleSelection(uriStr)
+                            flowState.toggleSelection(uriStr)
                         }) {
                             val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
                                 ?: ""

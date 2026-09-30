@@ -19,7 +19,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import com.example.fragmject.core.webview.WebViewPool
-import com.example.fragmject.core.designsystem.ThemeState
+import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.app.navigation.AppNavGraph

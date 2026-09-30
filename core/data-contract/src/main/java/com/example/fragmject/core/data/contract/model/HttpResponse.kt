@@ -9,10 +9,4 @@ package com.example.fragmject.core.data.contract.model
 open class HttpResponse @JvmOverloads constructor(
     var errorCode: String = "",
     var errorMsg: String = ""
-) {
-    var time = System.currentTimeMillis()
-
-    fun setRequestTime(reqTime: Long) {
-        time -= reqTime
-    }
-}
+)

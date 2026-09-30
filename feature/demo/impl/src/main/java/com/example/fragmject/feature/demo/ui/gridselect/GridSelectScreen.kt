@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.demo.ui.gridselect
 
-import android.util.Log
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
@@ -51,7 +50,7 @@ import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toIntRect
 import coil.compose.rememberAsyncImagePainter
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.R
+import com.example.fragmject.feature.demo.model.Photo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
@@ -59,31 +58,6 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * https://gist.github.com/JolandaVerhoef/bcaf96360b92bba974e3796fe37247e2
  */
-
-class Photo(
-    val id: Int
-) {
-    private val avatarList: List<Int> = listOf(
-        R.mipmap.avatar_1_raster,
-        R.mipmap.avatar_2_raster,
-        R.mipmap.avatar_3_raster,
-        R.mipmap.avatar_4_raster,
-        R.mipmap.avatar_5_raster,
-        R.mipmap.avatar_6_raster,
-    )
-
-    fun getAvatarRes(): Int {
-        var index = 0
-        try {
-            if (id >= 0) {
-                index = id % 6
-            }
-        } catch (e: Exception) {
-            Log.e("GridSelectScreen", "getAvatarRes: id=$id failed", e)
-        }
-        return avatarList[index]
-    }
-}
 
 @Composable
 fun GridSelectScreen(

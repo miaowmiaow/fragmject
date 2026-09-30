@@ -1,7 +1,6 @@
 package com.example.fragmject.core.domain.repository
 
-import com.example.fragmject.core.domain.result.LoginResult
-import com.example.fragmject.core.domain.result.RegisterResult
+import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.model.User
 import kotlinx.coroutines.flow.Flow
 
@@ -13,8 +12,8 @@ import kotlinx.coroutines.flow.Flow
  * login/register 成功后由 Adapter 持久化用户，logout 成功后由 Adapter 清空会话。
  */
 interface UserRepository {
-    suspend fun login(username: String, password: String): LoginResult
-    suspend fun register(username: String, password: String, repassword: String): RegisterResult
+    suspend fun login(username: String, password: String): AuthResult
+    suspend fun register(username: String, password: String, repassword: String): AuthResult
     suspend fun logout(): Boolean
 
     /** 持久化当前登录用户。 */

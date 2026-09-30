@@ -1,7 +1,6 @@
 [versions]
 androidGradlePlugin = "9.4.1"
 activity = "1.13.0"
-appcompat = "1.8.0"
 androidxCamera = "1.6.2"
 androidxComposeBom = "2026.09.00"
 androidxCoreKtx = "1.19.1"
@@ -10,10 +9,7 @@ androidxMedia3 = "1.11.1"
 androidxFragmentKtx = "1.9.1"
 androidxLifecycle = "2.11.0"
 androidxNavigation3 = "1.2.0"
-androidxRecyclerview = "1.4.0"
-androidxViewpager2 = "1.1.0"
 androidxWebkit = "1.17.1"
-asm = "9.10.1"
 barcodeScanning = "17.3.0"
 coil = "2.7.0"
 gson = "2.14.0"
@@ -34,7 +30,6 @@ room3 = "3.0.3"
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "androidxCamera" }
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "androidxCamera" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "androidxCamera" }
@@ -66,18 +61,11 @@ androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidxRecyclerview" }
-androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidxViewpager2" }
 androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3" }
 androidx-room3-gradle-plugin = { group = "androidx.room3", name = "room3-gradle-plugin", version.ref = "room3" }
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3" }
 androidx-room3-paging = { group = "androidx.room3", name = "room3-paging", version.ref = "room3" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidxWebkit" }
-asm = { group = "org.ow2.asm",  name= "asm", version.ref = "asm" }
-asm-analysis = { group = "org.ow2.asm", name = "asm-analysis", version.ref = "asm" }
-asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
-asm-tree = { group = "org.ow2.asm", name = "asm-tree", version.ref = "asm" }
-asm-util = { group = "org.ow2.asm", name = "asm-util", version.ref = "asm" }
 barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "barcodeScanning" }
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
@@ -117,8 +105,10 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 # Plugins defined by this project
 fragmject-android-application = { id = "fragmject.android.application" }
 fragmject-android-compose = { id = "fragmject.android.compose" }
-fragmject-android-feature = { id = "fragmject.android.feature" }
 fragmject-android-hilt = { id = "fragmject.android.hilt" }
 fragmject-android-library = { id = "fragmject.android.library" }
 fragmject-android-room = { id = "fragmject.android.room" }
 fragmject-android-stability-check = { id = "fragmject.android.stability-check" }
+fragmject-android-dependency-guard = { id = "fragmject.android.dependency-guard" }
+fragmject-kotlin-parcelize = { id = "fragmject.kotlin.parcelize" }
+fragmject-kotlin-serialization = { id = "fragmject.kotlin.serialization" }

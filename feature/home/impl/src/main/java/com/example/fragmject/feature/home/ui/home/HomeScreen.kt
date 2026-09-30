@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.home.ui.home
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,9 +9,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,6 +35,13 @@ fun HomeScreen(
     val banners by viewModel.banners.collectAsStateWithLifecycle()
     val topArticles by viewModel.topArticles.collectAsStateWithLifecycle()
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
+    val overrides by viewModel.collectState.overrides.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.collectState.collectFailed.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
     PagingSwipeRefreshBox(
         pagingItems = pagingItems,
         modifier = Modifier.fillMaxSize(),
@@ -52,23 +62,23 @@ fun HomeScreen(
             }
             items(topArticles, key = { "top_${it.id}" }) { article ->
                 FeedCard(
-                    data = remember(article.id) { article.toFeedCardUIState() },
+                    data = remember(article.id, overrides[article.id]) { article.toFeedCardUIState(overrides[article.id]) },
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                     onItemClick = actions.onArticleClick,
                     onUserClick = actions.onAuthorClick,
                     onFooterClick = actions.onChapterClick,
-                    onToggleClick = viewModel::collect,
+                    onToggleClick = viewModel.collectState::toggle,
                 )
             }
         },
     ) { item ->
         FeedCard(
-            data = remember(item.id) { item.toFeedCardUIState() },
+            data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
             onItemClick = actions.onArticleClick,
             onUserClick = actions.onAuthorClick,
             onFooterClick = actions.onChapterClick,
-            onToggleClick = viewModel::collect,
+            onToggleClick = viewModel.collectState::toggle,
         )
     }
 }

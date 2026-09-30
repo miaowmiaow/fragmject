@@ -35,3 +35,13 @@
 - [ ] Room3 升级时，核对 `schemas/` 下各版本 json 是否存在、auto-migration 是否有兜底
 - [ ] 升级后跑一遍 `:app:compileFreeDebugKotlin` 确认 Hilt KSP 依赖图无误
 - [ ] 若涉及 Compose 稳定性，同步更新 `compose_stability_config.conf` 或对应 `@Immutable` 注解
+
+## 5. 架构分层约定（UseCase 边界）
+
+领域层 `core:domain` 同时提供 Repository 接口与 UseCase，二者边界约定如下：
+
+- **UseCase 仅用于「跨多个 Repository 的编排」**：当一个操作需要聚合多个领域端口（例如 `HomeHeaderAggregateUseCase` 聚合 banner + 置顶文章）时，才新增 UseCase。
+- **单 Repository 的单步查询/写入由 ViewModel 直接依赖 Repository 接口**：不再为「一个 UseCase 仅透传调用一个 Repository 方法」的形式性封装新建 UseCase，避免产生大量透传型 UseCase。
+- 领域输入校验（如登录的空值/格式校验）归 UseCase；数据持久化副作用归 data 层 Adapter。
+
+> 这是刻意为之的务实分层，不追求 UseCase 全覆盖；现有代码保持现状，新增代码遵循上述边界即可。

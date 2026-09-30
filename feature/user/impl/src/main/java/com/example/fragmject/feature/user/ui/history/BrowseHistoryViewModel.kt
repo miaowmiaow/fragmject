@@ -40,8 +40,8 @@ class BrowseHistoryViewModel @Inject constructor(
         }
     }
 
-    fun setBrowseHistory(title: String, url: String) {
-        viewModelScope.launch { historyRepo.setBrowseHistory(title, url) }
+    fun recordBrowseVisit(title: String, url: String) {
+        viewModelScope.launch { historyRepo.recordBrowseVisit(title, url) }
     }
 
     fun deleteHistory(history: History) {

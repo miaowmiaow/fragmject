@@ -9,7 +9,7 @@ import com.example.fragmject.core.ui.utils.fromHtml
 /**
  * 将 [Article] 领域对象映射为通用 [FeedCardUIState]。
  */
-fun Article.toFeedCardUIState(): FeedCardUIState = FeedCardUIState(
+fun Article.toFeedCardUIState(selectedOverride: Boolean? = null): FeedCardUIState = FeedCardUIState(
     id = id,
     title = fromHtml(title),
     desc = fromHtml(desc),
@@ -23,7 +23,7 @@ fun Article.toFeedCardUIState(): FeedCardUIState = FeedCardUIState(
         if (fresh) add(FooterBadge("新"))
         if (top) add(FooterBadge("置顶"))
     },
-    selected = collect,
+    selected = selectedOverride ?: collect,
     displayName = "$author$shareUser".ifBlank { "匿名" },
     avatarResId = AvatarUtils.avatarResIdBySeed("$author$shareUser".ifBlank { userId }),
 )

@@ -15,7 +15,7 @@ fun MyCollectScreen(
     PagingArticleListPage(
         title = "我的收藏",
         pagingItems = pagingItems,
-        onCollect = viewModel::collect,
+        collectState = viewModel.collectState,
     )
 }
 

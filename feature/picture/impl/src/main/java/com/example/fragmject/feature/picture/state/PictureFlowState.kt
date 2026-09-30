@@ -1,4 +1,4 @@
-package com.example.fragmject.feature.picture
+package com.example.fragmject.feature.picture.state
 
 import android.net.Uri
 import android.util.Log
@@ -8,6 +8,7 @@ import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.navigation.runtime.NavFlowScope
 import com.example.fragmject.feature.picture.model.Album
 import com.example.fragmject.feature.picture.model.MediaItem
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,6 +55,8 @@ class PictureFlowState(
     val hasPermission: StateFlow<Boolean> = _hasPermission.asStateFlow()
     private val _queryAttempted = MutableStateFlow(false)
     val queryAttempted: StateFlow<Boolean> = _queryAttempted.asStateFlow()
+    private val _queryError = MutableStateFlow(false)
+    val queryError: StateFlow<Boolean> = _queryError.asStateFlow()
     private val _takePictureUri = MutableStateFlow<Uri?>(null)
     val takePictureUri: StateFlow<Uri?> = _takePictureUri.asStateFlow()
 
@@ -65,11 +68,6 @@ class PictureFlowState(
             _selectedUris.value += uri
             _selectedUriSet.value += uri
         }
-    }
-
-    fun initSelection(uris: List<String>) {
-        _selectedUris.value = uris
-        _selectedUriSet.value = uris.toSet()
     }
 
     fun setAlbumMenuExpanded(expanded: Boolean) {
@@ -166,8 +164,12 @@ class PictureFlowState(
                         _currAlbumResult.value = mediaMap[first.name] ?: emptyList()
                     }
                 }
+                _queryError.value = false
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("PictureFlowState", "loadAlbum failed", e)
+                _queryError.value = true
             } finally {
                 if (version == queryVersion) {
                     _queryAttempted.value = true

@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.user.ui.user
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -56,8 +57,14 @@ fun UserScreen(
     val userNavigator = LocalUserNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
+    val overrides by viewModel.collectState.overrides.collectAsStateWithLifecycle()
     LaunchedEffect(userId) { viewModel.init(userId) }
     val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.collectState.collectFailed.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
     val density = LocalDensity.current
     val sw = context.getScreenWidth()
     val collapsingHeaderState = rememberCollapsingHeaderState()
@@ -127,11 +134,11 @@ fun UserScreen(
                 key = { it.id },
             ) { item ->
                 FeedCard(
-                    data = remember(item.id) { item.toFeedCardUIState() },
+                    data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
                     onItemClick = { articleNavigator.openArticle(it) },
                     onUserClick = { userNavigator.openUserProfile(it) },
                     onFooterClick = { homeNavigator.openSystemTree(it) },
-                    onToggleClick = viewModel::collect,
+                    onToggleClick = viewModel.collectState::toggle,
                 )
             }
         }

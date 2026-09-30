@@ -2,7 +2,7 @@ package com.example.fragmject.core.network.http
 
 import android.content.Context
 import com.example.fragmject.core.network.BuildConfig
-import com.example.fragmject.core.android.platform.FileUtil
+import com.example.fragmject.core.android.platform.FileUtils
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -38,7 +38,7 @@ class AssetsFallbackInterceptor(
             if (!BuildConfig.DEBUG) throw e
 
             val jsonName = toJsonName(request.url)
-            val json = FileUtil.readAssetString(context, "json/$jsonName.json")
+            val json = FileUtils.readAssetString(context, "json/$jsonName.json")
             if (json.isBlank()) throw e
 
             Response.Builder()

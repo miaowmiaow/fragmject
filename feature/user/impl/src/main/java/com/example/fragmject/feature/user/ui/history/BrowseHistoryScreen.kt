@@ -42,9 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.SwipeBox
 import com.example.fragmject.core.ui.components.TabBar
 import com.example.fragmject.core.ui.components.rememberSwipeBoxControl
@@ -55,11 +55,10 @@ import com.example.fragmject.core.designsystem.TitleBar
 @Composable
 fun BrowseHistoryScreen(
     viewModel: BrowseHistoryViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val articleNavigator = LocalArticleNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val tabs = listOf("书签", "历史")

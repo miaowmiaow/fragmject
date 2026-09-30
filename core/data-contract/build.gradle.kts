@@ -6,7 +6,7 @@ plugins {
 // 与代码包名 `com.example.fragmject.core.data.contract` 保持一致，无需显式声明。
 
 dependencies {
-    implementation(project(":core:model"))
+    api(project(":core:model"))
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
     testImplementation(libs.junit)

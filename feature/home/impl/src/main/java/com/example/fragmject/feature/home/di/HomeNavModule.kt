@@ -1,6 +1,6 @@
 package com.example.fragmject.feature.home.di
 
-import com.example.fragmject.core.navigation.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.feature.home.nav.HomeNavContentContributor
 import dagger.Module
 import dagger.Provides

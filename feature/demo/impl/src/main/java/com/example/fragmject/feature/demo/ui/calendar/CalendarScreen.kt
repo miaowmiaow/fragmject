@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.designsystem.AppTheme
@@ -46,6 +47,8 @@ import com.example.fragmject.feature.demo.components.calendar.rememberCalendarSt
 fun CalendarScreen(
     viewModel: CalendarViewModel = viewModel(),
 ) {
+    val scheduleMap by viewModel.scheduleMap.collectAsStateWithLifecycle()
+    val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
     Box(contentAlignment = Alignment.BottomEnd) {
         val calendarState = rememberCalendarState()
         var openDialog by remember { mutableStateOf(false) }
@@ -99,7 +102,7 @@ fun CalendarScreen(
                             }
                             TextButton(
                                 onClick = {
-                                    calendarState.addSchedule(text)
+                                    selectedDate?.let { viewModel.addSchedule(it, text) }
                                     openDialog = false
                                 },
                                 modifier = Modifier.weight(1f)
@@ -117,7 +120,10 @@ fun CalendarScreen(
         Calendar(
             state = calendarState,
             modifier = Modifier.padding(vertical = 15.dp),
-            scheduleRepository = viewModel.scheduleRepository,
+            scheduleMap = scheduleMap,
+            selectedDate = selectedDate,
+            onSelectDate = viewModel::selectDate,
+            onRemoveSchedule = viewModel::removeSchedule,
             onSelectedDateChange = { _, _, _ ->
                 // no-op：日期选中事件占位回调
             }

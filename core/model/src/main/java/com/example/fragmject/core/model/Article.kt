@@ -1,10 +1,5 @@
 package com.example.fragmject.core.model
 
-data class ShareArticle(
-    val coinInfo: Coin? = null,
-    val shareArticles: ArticleData? = null,
-)
-
 data class ArticleData(
     val curPage: String = "",
     val datas: List<Article>? = null,

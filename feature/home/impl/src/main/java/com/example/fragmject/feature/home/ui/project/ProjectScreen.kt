@@ -25,7 +25,7 @@ import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.TabBar
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.feature.home.mapper.toFeedCardUiState
+import com.example.fragmject.feature.home.mapper.toFeedCardUIState
 import com.example.fragmject.feature.home.nav.HomeNavActions
 
 @Composable
@@ -62,7 +62,7 @@ fun ProjectScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) { item ->
                     FeedCard(
-                        data = remember(item.id) { item.toFeedCardUiState() },
+                        data = remember(item.id) { item.toFeedCardUIState() },
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,

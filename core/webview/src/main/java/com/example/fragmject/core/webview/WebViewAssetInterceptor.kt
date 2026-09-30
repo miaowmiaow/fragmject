@@ -2,7 +2,6 @@ package com.example.fragmject.core.webview
 
 import android.content.Context
 import android.util.Log
-import android.webkit.MimeTypeMap
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import java.io.File
@@ -34,28 +33,6 @@ object WebViewAssetInterceptor {
         } catch (e: Exception) {
             Log.e(TAG, "assetsResourceRequest failed: ${request.url}", e)
             null
-        }
-    }
-
-    private fun WebResourceRequest.getExtensionFromUrl(): String {
-        return try {
-            MimeTypeMap.getFileExtensionFromUrl(url.toString())
-        } catch (e: Exception) {
-            Log.e(TAG, "getExtensionFromUrl failed: $url", e)
-            ""
-        }
-    }
-
-    private fun WebResourceRequest.getMimeTypeFromUrl(): String {
-        return try {
-            when (val extension = getExtensionFromUrl()) {
-                "", "null", "*/*" -> "*/*"
-                "json" -> "application/json"
-                else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "getMimeTypeFromUrl failed: $url", e)
-            "*/*"
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.user.ui.user
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,22 +38,23 @@ import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.utils.getScreenWidth
 import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.feature.user.mapper.toFeedCardUiState
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
-import com.example.fragmject.feature.user.UserNavKey
+import com.example.fragmject.feature.user.mapper.toFeedCardUIState
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.utils.AvatarUtils
 
 @Composable
 fun UserScreen(
     userId: String,
     viewModel: UserViewModel = viewModel(key = userId),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val coin by viewModel.coin.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
     val homeNavigator = LocalHomeNavigator.current
+    val userNavigator = LocalUserNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     LaunchedEffect(userId) { viewModel.init(userId) }
     val context = LocalContext.current
@@ -127,10 +127,10 @@ fun UserScreen(
                 key = { it.id },
             ) { item ->
                 FeedCard(
-                    data = remember(item.id) { item.toFeedCardUiState() },
+                    data = remember(item.id) { item.toFeedCardUIState() },
                     onItemClick = { articleNavigator.openArticle(it) },
-                    onUserClick = { onNavigate(UserNavKey(it)) },
-                    onFooterClick = { homeNavigator.openSystem(it) },
+                    onUserClick = { userNavigator.openUserProfile(it) },
+                    onFooterClick = { homeNavigator.openSystemTree(it) },
                     onToggleClick = viewModel::collect,
                 )
             }

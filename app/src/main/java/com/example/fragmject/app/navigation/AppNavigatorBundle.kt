@@ -1,13 +1,13 @@
 package com.example.fragmject.app.navigation
 
-import com.example.fragmject.core.navigation.contracts.ArticleNavigator
-import com.example.fragmject.core.navigation.contracts.AuthNavigator
-import com.example.fragmject.core.navigation.contracts.CollectionNavigator
-import com.example.fragmject.core.navigation.contracts.DemoNavigator
-import com.example.fragmject.core.navigation.contracts.HomeNavigator
-import com.example.fragmject.core.navigation.contracts.PictureNavigator
-import com.example.fragmject.core.navigation.contracts.SearchNavigator
-import com.example.fragmject.core.navigation.contracts.UserNavigator
+import com.example.fragmject.core.navigation.contract.ArticleNavigator
+import com.example.fragmject.core.navigation.contract.AuthNavigator
+import com.example.fragmject.core.navigation.contract.CollectionNavigator
+import com.example.fragmject.core.navigation.contract.DemoNavigator
+import com.example.fragmject.core.navigation.contract.HomeNavigator
+import com.example.fragmject.core.navigation.contract.PictureNavigator
+import com.example.fragmject.core.navigation.contract.SearchNavigator
+import com.example.fragmject.core.navigation.contract.UserNavigator
 import javax.inject.Inject
 import javax.inject.Singleton
 

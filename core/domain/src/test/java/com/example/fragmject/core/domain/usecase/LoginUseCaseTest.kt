@@ -2,7 +2,6 @@ package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.result.LoginResult
-import com.example.fragmject.core.domain.result.LogoutResult
 import com.example.fragmject.core.domain.result.RegisterResult
 import com.example.fragmject.core.model.User
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +49,7 @@ private class FakeUserRepository(
     override suspend fun login(username: String, password: String): LoginResult = loginResult
     override suspend fun register(username: String, password: String, repassword: String): RegisterResult =
         RegisterResult.Error("未实现")
-    override suspend fun logout(): LogoutResult = LogoutResult(success = false)
+    override suspend fun logout(): Boolean = false
     override suspend fun saveUser(user: User) = Unit
     override fun observeCurrentUser(): Flow<User?> = flowOf(null)
 }

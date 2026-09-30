@@ -44,9 +44,9 @@ import kotlinx.coroutines.launch
  *
  * 由 ArticleCard 泛化而来：移除文章特有的「章节 / 新 / 置顶 / 分类」等业务概念，
  * 统一抽象为 footer（底部信息 + 可点击项）与 footerBadges（角标）两个通用槽位。
- * 所有业务语义由调用方在映射层（Article → FeedCardUiState）翻译。
+ * 所有业务语义由调用方在映射层（Article → FeedCardUIState）翻译。
  *
- * @param data          卡片展示数据（[FeedCardUiState]）
+ * @param data          卡片展示数据（[FeedCardUIState]）
  * @param onItemClick   点击卡片主体 → 参数为跳转链接 link
  * @param onUserClick   点击头像 → 参数为 userId
  * @param onFooterClick 点击底部信息/角标区域 → 参数为 footerId
@@ -54,7 +54,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun FeedCard(
-    data: FeedCardUiState,
+    data: FeedCardUIState,
     modifier: Modifier = Modifier,
     onItemClick: (String) -> Unit = {},
     onUserClick: (String) -> Unit = {},

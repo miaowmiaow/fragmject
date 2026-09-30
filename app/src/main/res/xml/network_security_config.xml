@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <base-config cleartextTrafficPermitted="true">
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        cleartextTrafficPermitted=true 为有意保留：
+        WebView 需加载 http 明文内容（第三方网页、博客图片等），
+        关闭会破坏网页浏览与图片加载功能。
+    -->
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

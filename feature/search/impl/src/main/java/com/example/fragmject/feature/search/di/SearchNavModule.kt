@@ -1,6 +1,6 @@
 package com.example.fragmject.feature.search.di
 
-import com.example.fragmject.core.navigation.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.feature.search.nav.SearchNavContentContributor
 import dagger.Module
 import dagger.Provides

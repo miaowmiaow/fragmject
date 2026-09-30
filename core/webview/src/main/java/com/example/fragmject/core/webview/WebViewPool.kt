@@ -1,17 +1,16 @@
 package com.example.fragmject.core.webview
 
 import android.content.Context
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
 import android.webkit.WebView
 
 /**
- * WebView 池生命周期与缓存契约。
+ * WebView 池生命周期契约。
  *
  * 定义在 core:webview：app 层、article/impl 与其他 WebView 消费方仅依赖本接口，
- * 不再直接依赖 WebViewManager 具体实现，从而切断「组件 → 实现」耦合。
+ * 不再直接依赖 WebViewPoolManager 具体实现，从而切断「组件 → 实现」耦合。
  *
- * 实现见 core:webview 的 [WebViewManager]（由 Hilt 以单例提供）。
+ * 缓存与加载优化职责已拆至 [WebResourceCache]，与池生命周期解耦。
+ * 实现见 core:webview 的 [WebViewPoolManager]（由 Hilt 以单例提供）。
  */
 interface WebViewPool {
     /** 应用启动后预创建一个空闲 WebView，供下次 obtain 复用。 */
@@ -28,13 +27,4 @@ interface WebViewPool {
 
     /** 极端缺内存时彻底释放所有 WebView。 */
     fun releaseAll()
-
-    /** 判断请求是否为可缓存资源（图片/样式/脚本/字体等）。 */
-    fun isCacheResource(request: WebResourceRequest): Boolean
-
-    /** 命中本地磁盘缓存则返回响应；未命中返回 null 并异步下载填充缓存。 */
-    fun cacheResourceRequest(context: Context, request: WebResourceRequest): WebResourceResponse?
-
-    /** 预解析 URL 的主机名，降低首次连接延迟。 */
-    fun prefetchDns(url: String)
 }

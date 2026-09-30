@@ -15,12 +15,35 @@ import javax.inject.Singleton
 @Singleton
 class NavigationDispatcher @Inject constructor() {
 
-    /** 推入/跳转到指定路由。 */
-    var navigate: (NavKey) -> Unit = { }
+    // 导航能力由组合根（AppNavGraph）在组合期通过 bind 注入，
+    // 语义 Navigator（AppXxxNavigator）只读调用，无法覆盖。
+    private var navigateImpl: (NavKey) -> Unit = { }
+    private var navigateUpImpl: () -> Unit = { }
+    private var popBackStackImpl: (NavKey) -> Unit = { }
+    private var onAuthSuccessImpl: () -> Unit = { }
 
-    /** 返回上一级。 */
-    var navigateUp: () -> Unit = { }
+    /** 推入/跳转到指定路由（只读）。 */
+    val navigate: (NavKey) -> Unit get() = navigateImpl
 
-    /** 弹出到指定路由所在位置。 */
-    var popBackStack: (NavKey) -> Unit = { }
+    /** 返回上一级（只读）。 */
+    val navigateUp: () -> Unit get() = navigateUpImpl
+
+    /** 弹出到指定路由所在位置（只读）。 */
+    val popBackStack: (NavKey) -> Unit get() = popBackStackImpl
+
+    /** 认证（登录/注册）成功后回跳（只读）。 */
+    val onAuthSuccess: () -> Unit get() = onAuthSuccessImpl
+
+    /** 绑定当前导航能力，仅 [AppNavGraph]（组合根）在组合期调用。 */
+    fun bind(
+        navigate: (NavKey) -> Unit,
+        navigateUp: () -> Unit,
+        popBackStack: (NavKey) -> Unit,
+        onAuthSuccess: () -> Unit,
+    ) {
+        navigateImpl = navigate
+        navigateUpImpl = navigateUp
+        popBackStackImpl = popBackStack
+        onAuthSuccessImpl = onAuthSuccess
+    }
 }

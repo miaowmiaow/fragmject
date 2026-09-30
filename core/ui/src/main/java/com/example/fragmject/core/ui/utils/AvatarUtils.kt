@@ -33,4 +33,15 @@ object AvatarUtils {
     fun avatarResId(userId: Long): Int {
         return avatarResId(userId.toString())
     }
+
+    /**
+     * 基于字符串种子的稳定头像选择器。
+     *
+     * [avatarResId] 依赖数字 userId 取模，但部分接口（如体系 article/list 的 cid 分页）
+     * 返回的 userId 为 -1 或缺失，导致所有条目命中同一个头像。
+     * 此方法改用作者名等稳定字符串散列，保证不同作者头像分散。
+     */
+    fun avatarResIdBySeed(seed: String): Int {
+        return avatarList[seed.hashCode().mod(avatarList.size)]
+    }
 }

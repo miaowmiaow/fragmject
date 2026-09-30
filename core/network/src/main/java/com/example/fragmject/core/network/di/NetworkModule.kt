@@ -2,7 +2,7 @@ package com.example.fragmject.core.network.di
 
 import android.content.Context
 import com.example.fragmject.core.network.http.GsonUtils
-import com.example.fragmject.core.network.Downloader
+import com.example.fragmject.core.network.OkHttpFileDownloader
 import com.example.fragmject.core.data.contract.remote.ArticleRemoteDataSource
 import com.example.fragmject.core.data.contract.remote.CommonRemoteDataSource
 import com.example.fragmject.core.data.contract.remote.DownloadRemoteDataSource
@@ -92,7 +92,7 @@ object NetworkModule {
     @Singleton
     fun provideDownloader(
         @DownloadOkHttpClient client: OkHttpClient,
-    ): DownloadRemoteDataSource = Downloader(client)
+    ): DownloadRemoteDataSource = OkHttpFileDownloader(client)
 
     @Provides
     @Singleton

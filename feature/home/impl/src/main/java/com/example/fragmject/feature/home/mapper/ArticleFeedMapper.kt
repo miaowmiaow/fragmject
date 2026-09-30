@@ -1,18 +1,18 @@
 package com.example.fragmject.feature.home.mapper
 
 import com.example.fragmject.core.model.Article
-import com.example.fragmject.core.ui.components.FeedCardUiState
+import com.example.fragmject.core.ui.components.FeedCardUIState
 import com.example.fragmject.core.ui.components.FooterBadge
 import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.core.ui.utils.fromHtml
 
 /**
- * 将 [Article] 领域对象映射为通用 [FeedCardUiState]。
+ * 将 [Article] 领域对象映射为通用 [FeedCardUIState]。
  *
  * 文章业务语义在此处翻译为通用字段：
  * 章节 → footerText/footerId，新/置顶 → footerBadges，收藏 → selected。
  */
-fun Article.toFeedCardUiState(): FeedCardUiState = FeedCardUiState(
+fun Article.toFeedCardUIState(): FeedCardUIState = FeedCardUIState(
     id = id,
     title = fromHtml(title),
     desc = fromHtml(desc),
@@ -28,7 +28,7 @@ fun Article.toFeedCardUiState(): FeedCardUiState = FeedCardUiState(
     },
     selected = collect,
     displayName = "$author$shareUser".ifBlank { "匿名" },
-    avatarResId = AvatarUtils.avatarResId(userId),
+    avatarResId = AvatarUtils.avatarResIdBySeed("$author$shareUser".ifBlank { userId }),
 )
 
 /** 用「·」拼接多级章节名。 */

@@ -31,8 +31,12 @@ class PictureEditorViewModel @Inject constructor(
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
-    /** 将 Bitmap 压缩为 PNG 并保存到相册，完成后通过 [onFinish] 回传路径与 Uri。 */
-    fun save(bitmap: Bitmap, onFinish: (path: String, uri: Uri) -> Unit) {
+    /** 将 Bitmap 压缩为 PNG 并保存到相册；成功后回传 path/uri，失败回调 [onError]。 */
+    fun save(
+        bitmap: Bitmap,
+        onSuccess: (path: String, uri: Uri) -> Unit,
+        onError: () -> Unit,
+    ) {
         if (_isSaving.value) return
         _isSaving.value = true
         viewModelScope.launch {
@@ -43,7 +47,13 @@ class PictureEditorViewModel @Inject constructor(
             }
             val result = mediaRepository.saveImageToAlbum(bytes)
             _isSaving.value = false
-            onFinish(result.path, result.uri.toUri())
+            // 仅保存成功且 URI 有效才回调成功；失败则保留编辑页并提示，
+            // 避免后续以空 URI 替换/删除原图。
+            if (result.success && result.uri.isNotBlank()) {
+                onSuccess(result.path, result.uri.toUri())
+            } else {
+                onError()
+            }
         }
     }
 }

@@ -26,9 +26,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.feature.home.mapper.toFeedCardUiState
+import com.example.fragmject.feature.home.mapper.toFeedCardUIState
 import com.example.fragmject.feature.home.nav.HomeNavActions
 import com.example.fragmject.core.model.Tree
 
@@ -37,8 +38,8 @@ fun SystemScreen(
     cid: String,
     systemViewModel: SystemViewModel = viewModel(),
     actions: HomeNavActions = HomeNavActions(),
-    onNavigateUp: () -> Unit = {},
 ) {
+    val onNavigateUp = LocalOnNavigateUp.current
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
     // getTree 会遍历整个 treeResult 查找 cid；用 remember(cid, treeResult) 缓存，
     // 避免 SystemScreen 因分页加载/翻页等高频重组时重复执行 O(n*m) 遍历。
@@ -85,7 +86,7 @@ fun SystemScreen(
                     key = { it.id },
                 ) { item ->
                     FeedCard(
-                        data = remember(item.id) { item.toFeedCardUiState() },
+                        data = remember(item.id) { item.toFeedCardUIState() },
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,

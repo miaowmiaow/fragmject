@@ -81,6 +81,12 @@ fun WebViewContainer(
             WebViewPoolEntryPoint::class.java,
         ).webViewPool()
     }
+    val webResourceCache = remember(context) {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            WebViewPoolEntryPoint::class.java,
+        ).webResourceCache()
+    }
 
     // 用 SharedFlow 而不是 mutableState 承接权限请求，避免相同实例引用导致 LaunchedEffect 不再触发
     val permissionRequests =
@@ -151,6 +157,8 @@ fun WebViewContainer(
 
     AndroidView(
         factory = { ctx ->
+            // 进入 WebView 页面时触发缓存维护（文件数超限按 mtime 淘汰），内部异步执行
+            webResourceCache.evictByMtimeIfNeeded(ctx)
             webViewManager.obtain(ctx, url).apply {
                 this.layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -164,9 +172,9 @@ fun WebViewContainer(
                 val chromeClient = PooledWebChromeClient(callbacks)
                 webChromeClient = chromeClient
                 webViewClient =
-                    PooledWebViewClient(callbacks, webViewManager) { chromeClient.resetInjection() }
+                    PooledWebViewClient(callbacks, webResourceCache) { chromeClient.resetInjection() }
                 if (URLUtil.isValidUrl(url) && this.url != url) {
-                    webViewManager.prefetchDns(url)
+                    webResourceCache.prefetchDns(url)
                     this.loadUrl(url)
                 }
                 tag?.let { title -> callbacks.onTitle(title.toString()) }
@@ -176,7 +184,7 @@ fun WebViewContainer(
         update = { wv ->
             // url 变化时主动 loadUrl，避免复用同一个 WebView 时新地址不生效
             if (URLUtil.isValidUrl(url) && wv.url != url) {
-                webViewManager.prefetchDns(url)
+                webResourceCache.prefetchDns(url)
                 wv.loadUrl(url)
             }
         },
@@ -271,7 +279,7 @@ private class PooledWebChromeClient(
 
 private class PooledWebViewClient(
     private val callbacks: WebViewCallbacks,
-    private val webViewManager: WebViewPool,
+    private val webResourceCache: WebResourceCache,
     private val onReset: () -> Unit,
 ) : WebViewClient() {
 
@@ -281,13 +289,19 @@ private class PooledWebViewClient(
     ): WebResourceResponse? {
         if (view != null && request != null) {
             val context = view.context
-            when {
-                WebViewAssetInterceptor.isAssetsResource(request) ->
-                    return WebViewAssetInterceptor.assetsResourceRequest(context, request)
+            val response: WebResourceResponse? = when {
+                webResourceCache.isCacheableHtml(request) ->
+                    webResourceCache.cacheHtmlRequest(context, request)
 
-                webViewManager.isCacheResource(request) ->
-                    return webViewManager.cacheResourceRequest(context, request)
+                WebViewAssetInterceptor.isAssetsResource(request) ->
+                    WebViewAssetInterceptor.assetsResourceRequest(context, request)
+
+                webResourceCache.isCacheResource(request) ->
+                    webResourceCache.cacheResourceRequest(context, request, callbacks.url)
+
+                else -> null
             }
+            if (response != null) return response
         }
         return super.shouldInterceptRequest(view, request)
     }

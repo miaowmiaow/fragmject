@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @SuppressLint("UnusedBoxWithConstraintsScope", "FrequentlyChangingValue")
 @Composable
@@ -36,6 +37,10 @@ internal fun MonthPager(
     model: CalendarModel,
     monthModePagerState: PagerState,
     weekModePagerState: PagerState,
+    scheduleMap: Map<LocalDate, List<String>>,
+    selectedDate: LocalDate?,
+    onSelectDate: (LocalDate) -> Unit,
+    onRemoveSchedule: (LocalDate, String) -> Unit,
     onSelectedDateChange: (year: Int, month: Int, day: Int) -> Unit,
 ) {
     val density = LocalDensity.current
@@ -43,16 +48,6 @@ internal fun MonthPager(
     var mode by remember(state.mode) { mutableStateOf(state.mode) }
     val isWeekMode = mode == CalendarMode.Week
     var selectedWeek by remember { mutableIntStateOf(0) }
-    var selectedDate by remember(model.localCalendarDate()) { mutableStateOf(model.localCalendarDate()) }
-    LaunchedEffect(state) {
-        state.handleCalendarEvent(
-            addSchedule = {
-                scope.launch {
-                    selectedDate?.addSchedule(it)
-                }
-            }
-        )
-    }
     val pagerState = if (isWeekMode) weekModePagerState else monthModePagerState
     //周模式和月模式联动
     LaunchedEffect(pagerState) {
@@ -60,11 +55,9 @@ internal fun MonthPager(
             if (isWeekMode) {
                 val month = model.weekModeByIndex(page) ?: return@collectLatest
                 selectedWeek = model.weekByWeekModeIndex(page)
-                val isDay = month.weeks[selectedWeek].firstOrNull { it.selectedDay.value }
+                val isDay = month.weeks[selectedWeek].firstOrNull { it.localDate == selectedDate }
                 if (isDay == null) {
-                    selectedDate?.selectedDay?.emit(false)
-                    selectedDate = month.weeks[selectedWeek].firstOrNull { it.currMonth }
-                    selectedDate?.selectedDay?.emit(true)
+                    month.weeks[selectedWeek].firstOrNull { it.currMonth }?.localDate?.let(onSelectDate)
                 }
                 val index = (month.year - model.startYear()) * 12 + month.month - 1
                 if (monthModePagerState.currentPage != index) {
@@ -74,12 +67,10 @@ internal fun MonthPager(
                 }
             } else {
                 val month = model.monthModeByIndex(page) ?: return@collectLatest
-                val isDay = month.weeks[selectedWeek].firstOrNull { it.selectedDay.value }
+                val isDay = month.weeks[selectedWeek].firstOrNull { it.localDate == selectedDate }
                 if (isDay == null) {
                     selectedWeek = 0
-                    selectedDate?.selectedDay?.emit(false)
-                    selectedDate = month.weeks[selectedWeek].firstOrNull { it.currMonth }
-                    selectedDate?.selectedDay?.emit(true)
+                    month.weeks[selectedWeek].firstOrNull { it.currMonth }?.localDate?.let(onSelectDate)
                 }
                 val index = model.weekModeIndexByDate(month.year, month.month, selectedWeek)
                 if (weekModePagerState.currentPage != index) {
@@ -146,12 +137,13 @@ internal fun MonthPager(
                     isMonthFillMode = isMonthFillMode,
                     offsetProvider = { anchoredDraggableOffset },
                 ) { date ->
-                    DayContent(date, isMonthFillMode) {
-                        scope.launch {
-                            selectedDate?.selectedDay?.emit(false)
-                            selectedDate = date
-                            selectedDate?.selectedDay?.emit(true)
-                        }
+                    DayContent(
+                        date = date,
+                        isMonthFillMode = isMonthFillMode,
+                        schedule = scheduleMap[date.localDate].orEmpty(),
+                        isSelected = date.localDate == selectedDate,
+                    ) {
+                        onSelectDate(date.localDate)
                         onSelectedDateChange(date.year, date.month, date.day)
                         selectedWeek = date.week
                         if (anchoredDraggableState.currentValue == CalendarMode.Week) {
@@ -166,12 +158,16 @@ internal fun MonthPager(
                     }
                 }
                 ScheduleContent(
-                    date = selectedDate,
+                    date = selectedDate?.let { model.calendarDate(it) },
                     mode = mode,
                     height = height,
                     listState = listState,
                     userScrollEnabled = { mode == CalendarMode.Week },
                     offsetProvider = { anchoredDraggableOffset.toInt() },
+                    schedule = selectedDate?.let { scheduleMap[it].orEmpty() }.orEmpty(),
+                    onRemoveSchedule = { text ->
+                        selectedDate?.let { onRemoveSchedule(it, text) }
+                    },
                 )
             }
         }

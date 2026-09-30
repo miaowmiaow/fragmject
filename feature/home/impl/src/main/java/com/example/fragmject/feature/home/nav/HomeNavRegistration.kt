@@ -1,13 +1,14 @@
 package com.example.fragmject.feature.home.nav
 
 import androidx.compose.runtime.key
-import com.example.fragmject.core.navigation.LocalDetailContent
-import com.example.fragmject.core.navigation.LocalOnClearDetail
-import com.example.fragmject.core.navigation.LocalSelectedDetailKey
-import com.example.fragmject.core.navigation.NavContentContributor
-import com.example.fragmject.core.navigation.NavContentRegistry
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
+import com.example.fragmject.core.navigation.runtime.LocalDetailContent
+import com.example.fragmject.core.navigation.runtime.LocalOnClearDetail
+import com.example.fragmject.core.navigation.runtime.LocalSelectedDetailKey
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentRegistry
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.feature.home.ui.main.MainScreen
@@ -22,24 +23,22 @@ import com.example.fragmject.feature.home.ui.system.SystemScreen
  */
 object HomeNavContentContributor : NavContentContributor {
     override fun contribute(registry: NavContentRegistry) {
-        registry.register<MainNavKey> { _, callbacks ->
+        registry.register<MainNavKey> {
             MainScreen(
-                onNavigate = callbacks.onNavigate,
                 selectedDetailKey = LocalSelectedDetailKey.current,
                 onClearDetail = LocalOnClearDetail.current,
                 detailContent = LocalDetailContent.current,
             )
         }
-        registry.register<SystemNavKey> { navKey, callbacks ->
+        registry.register<SystemNavKey> { navKey ->
             key(navKey.cid) {
                 SystemScreen(
                     cid = navKey.cid,
                     actions = homeNavActions(
                         articleNavigator = LocalArticleNavigator.current,
                         userNavigator = LocalUserNavigator.current,
-                        onChapterClick = { callbacks.onNavigate(SystemNavKey(it)) },
+                        homeNavigator = LocalHomeNavigator.current,
                     ),
-                    onNavigateUp = callbacks.onNavigateUp,
                 )
             }
         }

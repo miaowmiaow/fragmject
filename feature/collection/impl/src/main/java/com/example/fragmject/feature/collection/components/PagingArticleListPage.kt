@@ -14,16 +14,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
 import androidx.paging.compose.LazyPagingItems
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
-import com.example.fragmject.feature.collection.mapper.toFeedCardUiState
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.feature.collection.mapper.toFeedCardUIState
 
 /**
  * 公共「文章列表页」Paging 版：统一 MyShareScreen 等页面重复的
@@ -33,13 +33,12 @@ import com.example.fragmject.feature.collection.mapper.toFeedCardUiState
 fun PagingArticleListPage(
     title: String,
     pagingItems: LazyPagingItems<Article>,
-    onNavigate: (NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
     onCollect: suspend (String, Boolean) -> Unit = { _, _ -> },
 ) {
     val articleNavigator = LocalArticleNavigator.current
     val userNavigator = LocalUserNavigator.current
     val homeNavigator = LocalHomeNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     Scaffold(
         topBar = {
             TitleBar(
@@ -66,10 +65,10 @@ fun PagingArticleListPage(
             key = { it.id },
         ) { item ->
             FeedCard(
-                data = remember(item.id) { item.toFeedCardUiState() },
+                data = remember(item.id) { item.toFeedCardUIState() },
                 onItemClick = { articleNavigator.openArticle(it) },
                 onUserClick = { userNavigator.openUserProfile(it) },
-                onFooterClick = { homeNavigator.openSystem(it) },
+                onFooterClick = { homeNavigator.openSystemTree(it) },
                 onToggleClick = onCollect,
             )
         }

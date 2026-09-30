@@ -5,8 +5,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.fragmject.core.navigation.NavContentContributor
-import com.example.fragmject.core.navigation.NavContentRegistry
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentRegistry
 import com.example.fragmject.feature.article.VideoDownloadNavKey
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.article.ui.download.VideoDownloadScreen
@@ -18,26 +18,20 @@ import com.example.fragmject.feature.article.ui.web.WebScreen
  */
 object ArticleNavContentContributor : NavContentContributor {
     override fun contribute(registry: NavContentRegistry) {
-        registry.register<WebNavKey> { navKey, callbacks ->
+        registry.register<WebNavKey> { navKey ->
             key(navKey.url) {
-                WebScreen(
-                    url = navKey.url,
-                    onNavigate = callbacks.onNavigate,
-                    onNavigateUp = callbacks.onNavigateUp
-                )
+                WebScreen(url = navKey.url)
             }
         }
-        registry.register<VideoDownloadNavKey> { _, callbacks ->
+        registry.register<VideoDownloadNavKey> {
             var currentFilePath by remember { mutableStateOf<String?>(null) }
             val filePath = currentFilePath
             if (filePath != null) {
                 VideoPlayerScreen(
                     filePath = filePath,
-                    onNavigateUp = { currentFilePath = null },
                 )
             } else {
                 VideoDownloadScreen(
-                    onNavigateUp = callbacks.onNavigateUp,
                     onPlayVideo = { currentFilePath = it },
                 )
             }

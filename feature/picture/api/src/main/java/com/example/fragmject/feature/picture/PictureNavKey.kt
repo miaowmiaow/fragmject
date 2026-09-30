@@ -12,10 +12,10 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-object PictureSelectorNavKey : NavKey
+object PictureSelectorNavKey : NavKey, PictureFlowNavKey
 
 @Serializable
-data class PicturePreviewNavKey(val uris: List<String>) : NavKey
+data class PicturePreviewNavKey(val uris: List<String>) : NavKey, PictureFlowNavKey
 
 @Serializable
-data class PictureEditorNavKey(val oldUriString: String) : NavKey
+data class PictureEditorNavKey(val oldUriString: String) : NavKey, PictureFlowNavKey

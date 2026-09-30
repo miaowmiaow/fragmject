@@ -1,7 +1,7 @@
 package com.example.fragmject.app.navigation
 
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.navigation.AuthStateProvider
+import com.example.fragmject.feature.auth.AuthSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -9,13 +9,13 @@ import javax.inject.Inject
 /**
  * 导航层 ViewModel：提供当前登录状态。
  *
- * 通过 core:navigation 的 [AuthStateProvider] 契约获取登录态，
+ * 通过 feature:auth:api 的 [AuthSession] 契约获取登录态，
  * 不再直接依赖 core:domain 的 UserRepository 或 core:model 的 User。
  */
 @HiltViewModel
 class AppNavViewModel @Inject constructor(
-    authStateProvider: AuthStateProvider,
+    authSession: AuthSession,
 ) : ViewModel() {
 
-    val isLoggedIn: StateFlow<Boolean> = authStateProvider.isLoggedIn
+    val isLoggedIn: StateFlow<Boolean> = authSession.isLoggedIn
 }

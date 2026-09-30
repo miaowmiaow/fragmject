@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -24,14 +23,17 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.example.fragmject.core.navigation.DetailPaneNavKey
-import com.example.fragmject.core.navigation.RequiresAuth
-import com.example.fragmject.core.navigation.LocalDetailContent
-import com.example.fragmject.core.navigation.LocalOnClearDetail
-import com.example.fragmject.core.navigation.LocalSelectedDetailKey
-import com.example.fragmject.core.navigation.NavCallbacks
-import com.example.fragmject.core.navigation.NavContentContributor
-import com.example.fragmject.core.navigation.NavContentRegistry
+import com.example.fragmject.core.navigation.runtime.DetailPaneNavKey
+import com.example.fragmject.core.navigation.runtime.RequiresAuth
+import com.example.fragmject.core.navigation.runtime.LocalDetailContent
+import com.example.fragmject.core.navigation.runtime.LocalNavFlowScopes
+import com.example.fragmject.core.navigation.runtime.LocalOnClearDetail
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
+import com.example.fragmject.core.navigation.runtime.LocalSelectedDetailKey
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentRegistry
+import com.example.fragmject.core.navigation.runtime.NavFlowScope
+import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
 import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.home.MainNavKey
 
@@ -49,9 +51,11 @@ private const val NAV_TRANSITION_DURATION_MS = 350
 fun AppNavGraph(
     navigationDispatcher: NavigationDispatcher,
     navContributors: Set<NavContentContributor>,
+    flowScopeContributors: Set<NavFlowScopeContributor>,
     modifier: Modifier = Modifier,
     initialBackStack: List<NavKey> = listOf(MainNavKey),
     pendingDeepLink: DeepLinkRequest? = null,
+    onDeepLinkConsumed: () -> Unit = {},
 ) {
     val navViewModel: AppNavViewModel = viewModel()
     val isLoggedIn by navViewModel.isLoggedIn.collectAsStateWithLifecycle()
@@ -65,6 +69,7 @@ fun AppNavGraph(
             backStack.clear()
             backStack.addAll(newStack)
         }
+        onDeepLinkConsumed()
     }
 
     // ---- Expanded 列表-详情同屏状态 ----
@@ -72,6 +77,38 @@ fun AppNavGraph(
     val windowSizeClass = LocalWindowSizeClass.current
     val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
     var selectedDetailKey by remember { mutableStateOf<NavKey?>(null) }
+
+    // ---- 被登录守卫拦截的待回跳目标 ----
+    // 守卫拦截未登录访问受保护路由时，在此暂存原目标；登录/注册成功后经
+    // onAuthSuccess 消费并回跳。属导航图运行时状态，随 backStack 同生命周期
+    // （配置变更重建、进程死亡丢弃，与 backStack 非序列化行为一致）。
+    var pendingRedirect by remember { mutableStateOf<NavKey?>(null) }
+
+    // ---- 流程作用域 ----
+    // 通用机制：对每个 NavFlowScopeContributor，若 backStack 中存在其流程的 key 则创建
+    // 作用域、全部退出时 close 销毁。取代进程级 @Singleton，使在途工作随流程结束取消。
+    // app 组合根只依赖通用 NavFlowScopeContributor，不感知具体 feature 流程类型。
+    val activeContributors = flowScopeContributors.filter { contributor ->
+        backStack.any { contributor.matches(it) }
+    }
+    var flowScopes by remember {
+        mutableStateOf<Map<NavFlowScopeContributor, NavFlowScope>>(emptyMap())
+    }
+    LaunchedEffect(activeContributors) {
+        val updated = flowScopes.toMutableMap()
+        for (contributor in activeContributors) {
+            if (contributor !in updated) {
+                updated[contributor] = contributor.create()
+            }
+        }
+        val toRemove = flowScopes.keys.filter { it !in activeContributors }
+        for (contributor in toRemove) {
+            updated.remove(contributor)?.close()
+        }
+        if (updated != flowScopes) {
+            flowScopes = updated
+        }
+    }
 
     // ---- 导航动作（直接操作 backStack） ----
     // 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen
@@ -82,6 +119,7 @@ fun AppNavGraph(
     val navigate: (NavKey) -> Unit = remember {
         { key ->
             if (requiredLoginNavKey(key, currentIsLoggedIn)) {
+                pendingRedirect = key
                 backStack.add(LoginNavKey)
             } else if (currentIsExpanded && isDetailPaneKey(key)) {
                 selectedDetailKey = key
@@ -104,26 +142,41 @@ fun AppNavGraph(
     }
 
     // ---- 绑定导航能力到语义 Navigator ----
-    // navigate/navigateUp/popBackStack 均为 remember 稳定引用，SideEffect 每次重组后
-    // 重新绑定即可（重复赋值无害），语义 Navigator 实现据此把语义动作落到具体 NavKey。
-    SideEffect {
-        navigationDispatcher.navigate = navigate
-        navigationDispatcher.navigateUp = navigateUp
-        navigationDispatcher.popBackStack = popBackStack
+    // navigate/navigateUp/popBackStack 均为 remember 稳定引用，内部状态经
+    // rememberUpdatedState 与闭包捕获的稳定 State 读取，故只需绑定一次。
+    LaunchedEffect(Unit) {
+        navigationDispatcher.bind(
+            navigate = navigate,
+            navigateUp = navigateUp,
+            popBackStack = popBackStack,
+            onAuthSuccess = {
+                val target = pendingRedirect
+                pendingRedirect = null
+                if (target != null) {
+                    // 移除 Login 页后回跳目标（直接操作 backStack，避开守卫）
+                    if (backStack.lastOrNull() is LoginNavKey) {
+                        backStack.removeLastOrNull()
+                    }
+                    backStack.add(target)
+                } else {
+                    // 无回跳目标：清栈回首页
+                    popBackStack(MainNavKey)
+                }
+            },
+        )
     }
 
     // ---- 统一导航内容注册表 ----
     // 全屏 entry 与面板 detailContent 共用同一份「NavKey → 渲染器」映射，
     // 回调作为运行时参数注入：全屏走 navigate/navigateUp，面板走 onClearDetail。
     val registry = NavContentRegistry()
-    val fullCallbacks = NavCallbacks(
-        onNavigate = navigate,
-        onNavigateUp = navigateUp,
-        onPopBackStack = popBackStack,
-    )
-    val detailContent: @Composable (NavKey, (NavKey) -> Unit, () -> Unit) -> Unit =
-        { key, onNav, onUp ->
-            registry.Render(key, NavCallbacks(onNavigate = onNav, onNavigateUp = onUp))
+    val detailContent: @Composable (NavKey) -> Unit =
+        { key ->
+            CompositionLocalProvider(
+                LocalOnNavigateUp provides { selectedDetailKey = null },
+            ) {
+                registry.Render(key)
+            }
         }
 
     navContributors.forEach { it.contribute(registry) }
@@ -132,6 +185,7 @@ fun AppNavGraph(
         LocalSelectedDetailKey provides selectedDetailKey,
         LocalOnClearDetail provides { selectedDetailKey = null },
         LocalDetailContent provides detailContent,
+        LocalNavFlowScopes provides flowScopes,
     ) {
         NavDisplay(
             backStack = backStack,
@@ -147,7 +201,13 @@ fun AppNavGraph(
             },
             entryProvider = entryProvider {
                 registry.forEach { clazz, renderer ->
-                    addEntryProvider(clazz) { key -> renderer(key, fullCallbacks) }
+                    addEntryProvider(clazz) { key ->
+                        CompositionLocalProvider(
+                            LocalOnNavigateUp provides navigateUp,
+                        ) {
+                            renderer(key)
+                        }
+                    }
                 }
             }
         )

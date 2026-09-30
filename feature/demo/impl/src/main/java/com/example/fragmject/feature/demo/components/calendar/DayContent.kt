@@ -23,17 +23,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.core.designsystem.AppColors
 
 @Composable
 internal fun DayContent(
     date: CalendarDate,
     isMonthFillMode: Boolean,
+    schedule: List<String>,
+    isSelected: Boolean,
     onClick: () -> Unit = {}
 ) {
-    val schedule by date.schedule.collectAsStateWithLifecycle()
-    val selectedDay by date.selectedDay.collectAsStateWithLifecycle()
     val festivals = remember(date) { date.getFestival() }
     val hasFestival = remember(date) { date.isFestival() }
     val dayLabel = remember(date, isMonthFillMode) {
@@ -57,7 +56,7 @@ internal fun DayContent(
                 }
             }
             .then(
-                if (date.currMonth && selectedDay) {
+                if (date.currMonth && isSelected) {
                     Modifier
                         .background(
                             if (hasFestival) {
@@ -82,7 +81,7 @@ internal fun DayContent(
                     .fillMaxWidth()
                     .clipToBounds(),
                 color = if (date.currMonth) {
-                    if (selectedDay && !hasFestival) {
+                    if (isSelected && !hasFestival) {
                         MaterialTheme.colorScheme.secondaryContainer
                     } else {
                         MaterialTheme.colorScheme.onPrimary
@@ -99,7 +98,7 @@ internal fun DayContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clipToBounds(),
-                color = if (date.currMonth && selectedDay) {
+                color = if (date.currMonth && isSelected) {
                     if (hasFestival) {
                         MaterialTheme.colorScheme.onSecondaryContainer
                     } else {

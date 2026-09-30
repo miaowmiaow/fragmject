@@ -1,7 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.repository.MyRepository
-import com.example.fragmject.core.domain.result.ShareArticleResult
+import com.example.fragmject.core.domain.result.SimpleResult
 import javax.inject.Inject
 
 /**
@@ -10,7 +10,7 @@ import javax.inject.Inject
 class ShareArticleUseCase @Inject constructor(
     private val repo: MyRepository,
 ) {
-    suspend operator fun invoke(title: String, link: String): ShareArticleResult {
+    suspend operator fun invoke(title: String, link: String): SimpleResult {
         return repo.shareArticle(title, link)
     }
 }

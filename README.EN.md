@@ -62,15 +62,15 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 |     └── proguard-rules.pro                     code obfuscation config
 | 
 ├── core                                         core layer (foundation, no business dependencies)
-|  ├── android-platform                          platform & process-level utilities (AppScope / BaseContentProvider / File* / CacheUtils / UriPathHelper)
+|  ├── android-platform                          platform & process-level utilities (AppScope / BaseContentProvider / File* / CacheUtils / UriPathUtils)
 |  ├── data-contract                             data port contracts (remote/local DataSource + HTTP protocol models)
-|  ├── data-impl                                 data implementation (RepositoryImpl / PagingSource / Hilt bindings)
+|  ├── data-repository                           data implementation (RepositoryImpl / PagingSource / Hilt bindings)
 |  ├── database                                  database (Room 3)
 |  ├── designsystem                              design system (AppTheme / WindowSizeClass / components)
 |  ├── domain                                    domain layer (Repository interfaces + UseCase + DomainResult)
 |  ├── model                                     data models
-|  ├── navigation                                navigation capability (Navigation 3 type-safe routes)
-|  ├── navigation-contracts                      navigation contracts (semantic Navigator, cross-feature decoupling)
+|  ├── navigation-contract                       navigation contracts (semantic Navigator, cross-feature decoupling)
+|  ├── navigation-runtime                        navigation capability (Navigation 3 type-safe routes)
 |  ├── network                                   network layer (Retrofit + OkHttp)
 |  ├── player                                    playback capability (Media3)
 |  ├── ui                                        UI component library (FeedCard / SwipeRefreshBox etc.)
@@ -106,9 +106,6 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 ├── gradle.properties                            gradle config
 └── settings.gradle.kts                          module dependency config
 ```
-
-## Download
-- [![](https://img.shields.io/badge/Download-apk-green.svg)](https://github.com/miaowmiaow/fragmject/blob/master/app/free/release/wan-release-1.6.0-free.apk)
 
 ## Adaptive Layout (WindowSizeClass)
 The project implements full adaptive layout for tablets and foldables using `material3-window-size-class`.

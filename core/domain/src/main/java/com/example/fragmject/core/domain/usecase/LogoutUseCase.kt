@@ -10,6 +10,6 @@ class LogoutUseCase @Inject constructor(
     private val userRepo: UserRepository,
 ) {
     suspend operator fun invoke(): Boolean {
-        return userRepo.logout().success
+        return userRepo.logout()
     }
 }

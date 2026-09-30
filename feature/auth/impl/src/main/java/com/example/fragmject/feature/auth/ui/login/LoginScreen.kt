@@ -31,29 +31,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contract.LocalAuthNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.feature.auth.components.AccountForm
-import com.example.fragmject.feature.auth.RegisterNavKey
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val isLoading = uiState is LoginUiState.Loading
-    val homeNavigator = LocalHomeNavigator.current
+    val authNavigator = LocalAuthNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
 
     LaunchedEffect(uiState, snackbarHostState) {
         when (val s = uiState) {
             is LoginUiState.Success -> {
-                homeNavigator.openMain()
+                authNavigator.onAuthSuccess()
                 snackbarHostState.showSnackbar(s.message)
                 viewModel.resetMessage()
             }
@@ -78,7 +76,7 @@ fun LoginScreen(
                 isLoading = isLoading,
                 onBack = onNavigateUp,
                 onSubmit = { viewModel.login(usernameText, passwordText) },
-                onBottomLinkClick = { onNavigate(RegisterNavKey) },
+                onBottomLinkClick = { authNavigator.openRegister() },
                 contentPadding = innerPadding,
             ) {
                 WhiteTextField(

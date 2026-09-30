@@ -2,6 +2,7 @@ package com.example.fragmject.feature.picture.ui.clip
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,6 +48,7 @@ fun PictureClipScreen(
 ) {
     val state = rememberPictureClipState()
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     LaunchedEffect(bitmap) {
         state.setBitmap(bitmap)
@@ -102,9 +105,15 @@ fun PictureClipScreen(
                     onClick = {
                         if (!isSaving) {
                             val result = state.saveBitmap()
-                            viewModel.save(result) { path, uri ->
-                                onFinish(path, uri)
-                            }
+                            viewModel.save(
+                                result,
+                                onSuccess = { path, uri ->
+                                    onFinish(path, uri)
+                                },
+                                onError = {
+                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                                },
+                            )
                         }
                     },
                     enabled = !isSaving

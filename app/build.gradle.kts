@@ -82,11 +82,11 @@ android {
 
 dependencies {
     implementation(project(":core:android-platform"))
-    implementation(project(":core:data-impl"))
+    implementation(project(":core:data-repository"))
     implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
-    implementation(project(":core:navigation"))
-    implementation(project(":core:navigation-contracts"))
+    implementation(project(":core:navigation-runtime"))
+    implementation(project(":core:navigation-contract"))
     implementation(project(":core:network"))
     implementation(project(":core:webview"))
     implementation(project(":feature:article:impl"))

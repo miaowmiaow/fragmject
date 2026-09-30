@@ -33,7 +33,7 @@ class ArchitectureTest {
         productionFiles
             .filter { it.projectPath.contains("/core/domain/") }
             .assertFalse(
-                additionalMessage = "core:domain 不得依赖 core:data-impl / core:network / core:database",
+                additionalMessage = "core:domain 不得依赖 core:data-repository / core:network / core:database",
             ) { file ->
                 file.hasImport { imp ->
                     imp.name.startsWith("com.example.fragmject.core.data.") ||
@@ -102,16 +102,16 @@ class ArchitectureTest {
     }
 
     /**
-     * 规则 5：`core:data-impl`（数据实现层）不得依赖 `network / database`。
+     * 规则 5：`core:data-repository`（数据实现层）不得依赖 `network / database`。
      * Repository / PagingSource 只依赖 `core:data-contract` 的 remote/local 端口，
      * 不得直接依赖 Retrofit Service、Room DAO/Entity 或 Store（阶段 4 验收标准第 6 条）。
      */
     @Test
     fun `core data does not depend on network database`() {
         productionFiles
-            .filter { it.projectPath.contains("/core/data-impl/") }
+            .filter { it.projectPath.contains("/core/data-repository/") }
             .assertFalse(
-                additionalMessage = "core:data-impl 不得依赖 core:network / core:database（Repository/PagingSource 只依赖 data-contract 端口）",
+                additionalMessage = "core:data-repository 不得依赖 core:network / core:database（Repository/PagingSource 只依赖 data-contract 端口）",
             ) { file ->
                 file.hasImport { imp ->
                     imp.name.startsWith("com.example.fragmject.core.network.") ||
@@ -134,8 +134,8 @@ class ArchitectureTest {
             productionFiles.any { it.isFeatureImpl() },
         )
         assertTrue(
-            "core/data-impl 选择器匹配 0 文件，检查 projectPath 前缀",
-            productionFiles.any { it.projectPath.contains("/core/data-impl/") },
+            "core/data-repository 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/data-repository/") },
         )
     }
 

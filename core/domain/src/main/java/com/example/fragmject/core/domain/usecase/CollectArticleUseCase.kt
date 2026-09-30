@@ -1,7 +1,7 @@
 package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.repository.MyRepository
-import com.example.fragmject.core.domain.result.CollectResult
+import com.example.fragmject.core.domain.result.SimpleResult
 import javax.inject.Inject
 
 /**
@@ -14,6 +14,6 @@ import javax.inject.Inject
 class CollectArticleUseCase @Inject constructor(
     private val repo: MyRepository,
 ) {
-    suspend operator fun invoke(id: String, collect: Boolean): CollectResult =
+    suspend operator fun invoke(id: String, collect: Boolean): SimpleResult =
         if (collect) repo.collectArticle(id) else repo.uncollectArticle(id)
 }

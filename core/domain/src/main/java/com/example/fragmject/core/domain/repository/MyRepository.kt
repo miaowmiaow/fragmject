@@ -1,8 +1,7 @@
 package com.example.fragmject.core.domain.repository
 
 import androidx.paging.PagingData
-import com.example.fragmject.core.domain.result.CollectResult
-import com.example.fragmject.core.domain.result.ShareArticleResult
+import com.example.fragmject.core.domain.result.SimpleResult
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.Coin
 import com.example.fragmject.core.model.MyCoin
@@ -24,11 +23,11 @@ interface MyRepository {
     fun getMySharePagingData(): Flow<PagingData<Article>>
 
     /** 新增一篇分享。 */
-    suspend fun shareArticle(title: String, link: String): ShareArticleResult
+    suspend fun shareArticle(title: String, link: String): SimpleResult
 
     /** 收藏一篇文章（id 为文章 originId）。 */
-    suspend fun collectArticle(id: String): CollectResult
+    suspend fun collectArticle(id: String): SimpleResult
 
     /** 取消收藏一篇文章（id 为文章 originId）。 */
-    suspend fun uncollectArticle(id: String): CollectResult
+    suspend fun uncollectArticle(id: String): SimpleResult
 }

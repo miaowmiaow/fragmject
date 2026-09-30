@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.user.ui.rank
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,9 +34,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.utils.AvatarUtils
-import com.example.fragmject.feature.user.UserNavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.designsystem.TitleBar
@@ -45,10 +45,10 @@ import com.example.fragmject.core.designsystem.TitleBar
 @Composable
 fun RankScreen(
     viewModel: RankViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val articleNavigator = LocalArticleNavigator.current
+    val userNavigator = LocalUserNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     Scaffold(
         topBar = {
@@ -104,7 +104,7 @@ fun RankScreen(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable { onNavigate(UserNavKey(item.userId)) }
+                        .clickable { userNavigator.openUserProfile(item.userId) }
                             .size(30.dp)
                     )
                     Spacer(Modifier.width(10.dp))

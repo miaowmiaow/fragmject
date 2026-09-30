@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.collection.ui.share
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +44,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ClearTextField
 import com.example.fragmject.core.ui.components.LoadingContent
 import kotlinx.coroutines.launch
@@ -54,11 +54,10 @@ import com.example.fragmject.core.designsystem.TitleBar
 @Composable
 fun ShareArticleScreen(
     viewModel: ShareArticleViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }

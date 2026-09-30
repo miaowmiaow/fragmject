@@ -19,7 +19,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.feature.home.mapper.toFeedCardUiState
+import com.example.fragmject.feature.home.mapper.toFeedCardUIState
 import com.example.fragmject.feature.home.nav.HomeNavActions
 import com.example.fragmject.feature.home.components.BannerPager
 
@@ -52,7 +52,7 @@ fun HomeScreen(
             }
             items(topArticles, key = { "top_${it.id}" }) { article ->
                 FeedCard(
-                    data = remember(article.id) { article.toFeedCardUiState() },
+                    data = remember(article.id) { article.toFeedCardUIState() },
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                     onItemClick = actions.onArticleClick,
                     onUserClick = actions.onAuthorClick,
@@ -63,7 +63,7 @@ fun HomeScreen(
         },
     ) { item ->
         FeedCard(
-            data = remember(item.id) { item.toFeedCardUiState() },
+            data = remember(item.id) { item.toFeedCardUIState() },
             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
             onItemClick = actions.onArticleClick,
             onUserClick = actions.onAuthorClick,

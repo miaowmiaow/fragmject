@@ -1,7 +1,6 @@
 package com.example.fragmject.core.domain.repository
 
 import com.example.fragmject.core.domain.result.LoginResult
-import com.example.fragmject.core.domain.result.LogoutResult
 import com.example.fragmject.core.domain.result.RegisterResult
 import com.example.fragmject.core.model.User
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 interface UserRepository {
     suspend fun login(username: String, password: String): LoginResult
     suspend fun register(username: String, password: String, repassword: String): RegisterResult
-    suspend fun logout(): LogoutResult
+    suspend fun logout(): Boolean
 
     /** 持久化当前登录用户。 */
     suspend fun saveUser(user: User)

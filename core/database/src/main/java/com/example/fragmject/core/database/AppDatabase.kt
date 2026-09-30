@@ -8,22 +8,30 @@ import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import com.example.fragmject.core.database.dao.CoinRankDao
 import com.example.fragmject.core.database.dao.HistoryDao
+import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.dao.HotKeyDao
-import com.example.fragmject.core.database.dao.NavigationDao
 import com.example.fragmject.core.database.dao.ProjectTreeDao
 import com.example.fragmject.core.database.dao.TreeDao
 import com.example.fragmject.core.database.dao.UserDao
 import com.example.fragmject.core.database.model.CoinRankEntity
 import com.example.fragmject.core.database.model.HistoryEntity
 import com.example.fragmject.core.database.model.HotKeyEntity
-import com.example.fragmject.core.database.model.NavigationEntity
+import com.example.fragmject.core.database.model.HomeNavEntity
 import com.example.fragmject.core.database.model.ProjectTreeEntity
 import com.example.fragmject.core.database.model.TreeEntity
 import com.example.fragmject.core.database.model.UserEntity
 
 @Database(
-    entities = [HistoryEntity::class, UserEntity::class, TreeEntity::class, NavigationEntity::class, HotKeyEntity::class, ProjectTreeEntity::class, CoinRankEntity::class],
-    version = 12,
+    entities = [
+        HistoryEntity::class,
+        UserEntity::class,
+        TreeEntity::class,
+        HomeNavEntity::class,
+        HotKeyEntity::class,
+        ProjectTreeEntity::class,
+        CoinRankEntity::class,
+    ],
+    version = 13,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,7 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
     abstract fun userDao(): UserDao
     abstract fun treeDao(): TreeDao
-    abstract fun navigationDao(): NavigationDao
+    abstract fun homeNavDao(): HomeNavDao
     abstract fun hotKeyDao(): HotKeyDao
     abstract fun projectTreeDao(): ProjectTreeDao
     abstract fun coinRankDao(): CoinRankDao
@@ -256,6 +264,26 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 重命名 navigation 表为 home_nav，并同步重建索引名以匹配新 schema。 */
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                executeSql(connection, "ALTER TABLE `navigation` RENAME TO `home_nav`")
+                executeSql(connection, "DROP INDEX IF EXISTS `index_navigation_cache_key_navId`")
+                executeSql(
+                    connection,
+                    "DROP INDEX IF EXISTS `index_navigation_cache_key_sort_order`"
+                )
+                executeSql(
+                    connection,
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_home_nav_cache_key_navId` ON `home_nav` (`cache_key`, `navId`)"
+                )
+                executeSql(
+                    connection,
+                    "CREATE INDEX IF NOT EXISTS `index_home_nav_cache_key_sort_order` ON `home_nav` (`cache_key`, `sort_order`)"
+                )
+            }
+        }
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -274,7 +302,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_8_9,
                     MIGRATION_9_10,
                     MIGRATION_10_11,
-                    MIGRATION_11_12
+                    MIGRATION_11_12,
+                    MIGRATION_12_13
                 )
                 .build()
         }

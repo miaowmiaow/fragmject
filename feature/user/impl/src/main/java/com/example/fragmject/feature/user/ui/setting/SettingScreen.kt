@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.user.ui.setting
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,7 +44,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ArrowRightItem
 import com.example.fragmject.core.ui.components.LoadingContent
 import com.example.fragmject.core.designsystem.NightSwitchButton
@@ -56,11 +56,10 @@ import com.example.fragmject.core.designsystem.TitleBar
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     val cacheSize by viewModel.cacheSize.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {

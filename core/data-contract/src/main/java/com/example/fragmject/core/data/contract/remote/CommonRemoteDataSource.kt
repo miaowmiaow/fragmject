@@ -3,7 +3,7 @@ package com.example.fragmject.core.data.contract.remote
 import com.example.fragmject.core.data.contract.model.DataResponse
 import com.example.fragmject.core.model.CoinRankData
 import com.example.fragmject.core.model.HotKey
-import com.example.fragmject.core.model.Navigation
+import com.example.fragmject.core.model.NavTab
 import com.example.fragmject.core.model.Tree
 
 /**
@@ -14,7 +14,7 @@ import com.example.fragmject.core.model.Tree
  */
 interface CommonRemoteDataSource {
     suspend fun getCoinRank(page: Int): DataResponse<CoinRankData>
-    suspend fun fetchNavigation(): DataResponse<MutableList<Navigation>>
+    suspend fun fetchNavigation(): DataResponse<MutableList<NavTab>>
     suspend fun fetchSystemTree(): DataResponse<MutableList<Tree>>
     suspend fun fetchHotKey(): DataResponse<List<HotKey>>
 }

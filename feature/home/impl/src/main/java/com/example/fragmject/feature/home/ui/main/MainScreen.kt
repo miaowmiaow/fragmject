@@ -58,7 +58,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.ui.R
-import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.LoopVerticalPager
 import com.example.fragmject.core.model.HotKey
@@ -66,12 +65,13 @@ import com.example.fragmject.core.model.Tree
 import com.example.fragmject.core.designsystem.BottomNavItem
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.designsystem.AppColors
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contracts.LocalAuthNavigator
-import com.example.fragmject.core.navigation.contracts.LocalCollectionNavigator
-import com.example.fragmject.core.navigation.contracts.LocalDemoNavigator
-import com.example.fragmject.core.navigation.contracts.LocalSearchNavigator
-import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalAuthNavigator
+import com.example.fragmject.core.navigation.contract.LocalCollectionNavigator
+import com.example.fragmject.core.navigation.contract.LocalDemoNavigator
+import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contract.LocalSearchNavigator
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
 import com.example.fragmject.feature.home.ui.my.MyScreen
 import com.example.fragmject.feature.home.ui.nav.NavScreen
 import com.example.fragmject.feature.home.ui.home.HomeScreen
@@ -129,7 +129,13 @@ private fun NavigationDrawerContent(
     onNavClick: (Int) -> Unit,
 ) {
     Column(modifier = Modifier.width(IntrinsicSize.Min)) {
-        Spacer(Modifier.height(45.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .statusBarsPadding()
+                .height(45.dp),
+        )
         navItems.forEachIndexed { index, item ->
             NavigationDrawerItem(
                 selected = navIndex == index,
@@ -184,21 +190,19 @@ private fun ContentPane(
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
     selectedDetailKey: NavKey? = null,
     onClearDetail: () -> Unit = {},
-    detailContent: @Composable (NavKey, (NavKey) -> Unit, () -> Unit) -> Unit = { _, _, _ -> },
+    detailContent: @Composable (NavKey) -> Unit = { _ -> },
 ) {
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeListState = rememberLazyListState()
 
-    // 跨域语义动作：由 CompositionLocal 提供的语义 Navigator 构造（导航是 UI 层职责）；
-    // Home 内部 SystemNavKey 仍走 onNavigate。
+    // 跨域语义动作：由 CompositionLocal 提供的语义 Navigator 构造（导航是 UI 层职责）。
     val homeActions = homeNavActions(
         articleNavigator = LocalArticleNavigator.current,
         userNavigator = LocalUserNavigator.current,
-        onChapterClick = { onNavigate(SystemNavKey(it)) },
+        homeNavigator = LocalHomeNavigator.current,
     )
     val myActions = myNavActions(
         userNavigator = LocalUserNavigator.current,
@@ -231,7 +235,6 @@ fun MainScreen(
             navItems, navIndex, onNavClick,
             uiState.hotKeyResult, uiState.treeResult,
             homeListState, homeActions, myActions,
-            onNavigate,
             selectedDetailKey = selectedDetailKey,
             onClearDetail = onClearDetail,
             detailContent = detailContent,
@@ -312,7 +315,6 @@ private fun MediumMainScreen(
         Surface(
             modifier = Modifier
                 .fillMaxHeight()
-                .statusBarsPadding()
                 .shadow(5.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 1.dp,
@@ -346,15 +348,13 @@ private fun ExpandedMainScreen(
     homeListState: LazyListState,
     homeActions: HomeNavActions,
     myActions: MyNavActions,
-    onNavigate: (key: NavKey) -> Unit,
     selectedDetailKey: NavKey?,
     onClearDetail: () -> Unit,
-    detailContent: @Composable (NavKey, (NavKey) -> Unit, () -> Unit) -> Unit,
+    detailContent: @Composable (NavKey) -> Unit,
 ) {
     PermanentNavigationDrawer(
         drawerContent = {
             Surface(
-                modifier = Modifier.statusBarsPadding(),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 1.dp,
             ) {
@@ -382,7 +382,7 @@ private fun ExpandedMainScreen(
                         .weight(0.5f)
                         .fillMaxHeight()
                 ) {
-                    detailContent(selectedDetailKey, onNavigate, onClearDetail)
+                    detailContent(selectedDetailKey)
                 }
             }
         } else {

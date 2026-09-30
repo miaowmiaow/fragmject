@@ -5,13 +5,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.example.fragmject.core.domain.repository.NavigationRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
+import com.example.fragmject.core.domain.repository.SystemRepository
 import com.example.fragmject.core.domain.result.DomainResult
 import com.example.fragmject.core.domain.usecase.MainHeaderAggregateUseCase
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
-import com.example.fragmject.core.model.Navigation
 import com.example.fragmject.core.model.Tree
 import com.example.fragmject.feature.home.MainDispatcherRule
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +35,7 @@ class MainViewModelTest {
 
     @Test
     fun `init - collects hot keys and system tree`() = runTest {
-        val navigationRepo = FakeNavigationRepository(trees = listOf(Tree(id = "1", name = "体系")))
+        val navigationRepo = FakeSystemRepository(trees = listOf(Tree(id = "1", name = "体系")))
         val searchRepo = FakeSearchRepository(hotKeys = listOf(HotKey(name = "问答")))
 
         val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
@@ -52,7 +51,7 @@ class MainViewModelTest {
 
     @Test
     fun `init - refresh failure still clears loading`() = runTest {
-        val navigationRepo = FakeNavigationRepository(refreshTreeResult = DomainResult.Failure("500", "boom"))
+        val navigationRepo = FakeSystemRepository(refreshTreeResult = DomainResult.Failure("500", "boom"))
         val searchRepo = FakeSearchRepository()
 
         val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
@@ -63,16 +62,24 @@ class MainViewModelTest {
     }
 }
 
-private class FakeNavigationRepository(
+private class FakeSystemRepository(
     trees: List<Tree> = emptyList(),
     private val refreshTreeResult: DomainResult<Unit> = DomainResult.Success(Unit),
-) : NavigationRepository {
+) : SystemRepository {
     private val treeFlow = MutableStateFlow(trees)
 
-    override fun observeNavigation(): Flow<List<Navigation>> = flowOf(emptyList())
     override fun observeSystemTree(): Flow<List<Tree>> = treeFlow
-    override suspend fun refreshNavigation(): DomainResult<Unit> = DomainResult.Success(Unit)
     override suspend fun refreshSystemTree(): DomainResult<Unit> = refreshTreeResult
+    override fun getSystemPagingData(cid: String): Flow<PagingData<Article>> = Pager(
+        config = PagingConfig(pageSize = 20),
+        pagingSourceFactory = {
+            object : PagingSource<Int, Article>() {
+                override fun getRefreshKey(state: PagingState<Int, Article>): Int? = null
+                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Article> =
+                    LoadResult.Page(emptyList(), prevKey = null, nextKey = null)
+            }
+        },
+    ).flow
 }
 
 private class FakeSearchRepository(

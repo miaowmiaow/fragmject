@@ -15,12 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contracts.LocalPictureNavigator
+import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
 
 @Composable
-fun PictureSelectorDemoScreen(onNavigate: (key: NavKey) -> Unit = {}) {
+fun PictureSelectorDemoScreen() {
     val pictureNavigator = LocalPictureNavigator.current
     Column(
         modifier = Modifier.fillMaxSize(),

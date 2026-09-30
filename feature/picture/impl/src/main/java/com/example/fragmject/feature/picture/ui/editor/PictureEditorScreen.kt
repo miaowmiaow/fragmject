@@ -2,6 +2,7 @@ package com.example.fragmject.feature.picture.ui.editor
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -132,9 +133,15 @@ fun PictureEditorScreen(
                     onClick = {
                         if (!isSaving) {
                             val result = state.saveBitmap()
-                            viewModel.save(result) { path, uri ->
-                                onFinish(path, uri)
-                            }
+                            viewModel.save(
+                                result,
+                                onSuccess = { path, uri ->
+                                    onFinish(path, uri)
+                                },
+                                onError = {
+                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                                },
+                            )
                         }
                     },
                     enabled = !isSaving

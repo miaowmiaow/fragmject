@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.user.ui.mycoin
 
-import androidx.navigation3.runtime.NavKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,7 +32,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
-import com.example.fragmject.feature.user.RankNavKey
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.ui.components.CollapsingHeader
@@ -44,10 +44,10 @@ import com.example.fragmject.core.ui.utils.getScreenWidth
 @Composable
 fun MyCoinScreen(
     viewModel: MyCoinViewModel = viewModel(),
-    onNavigate: (key: NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val userNavigator = LocalUserNavigator.current
+    val onNavigateUp = LocalOnNavigateUp.current
     val density = LocalDensity.current
     val sw = context.getScreenWidth()
     val collapsingHeaderState = rememberCollapsingHeaderState()
@@ -65,7 +65,7 @@ fun MyCoinScreen(
                         modifier = Modifier
                             .height(collapsingHeaderState.titleBarSize)
                             .align(Alignment.TopEnd),
-                        onClick = { onNavigate(RankNavKey) }
+                        onClick = { userNavigator.openRank() }
                     ) {
                         Icon(
                             painter = painterResource(R.mipmap.ic_rank),

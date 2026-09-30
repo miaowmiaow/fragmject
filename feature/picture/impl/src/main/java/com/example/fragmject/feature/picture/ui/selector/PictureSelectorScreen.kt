@@ -58,15 +58,16 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.fragmject.feature.picture.model.MediaBean
+import com.example.fragmject.feature.picture.PictureFlowState
+import com.example.fragmject.feature.picture.model.MediaItem
 
 @Composable
 fun PictureSelectorScreen(
     modifier: Modifier = Modifier,
-    onFinish: (List<MediaBean>) -> Unit,
+    onFinish: (List<MediaItem>) -> Unit,
     onDismiss: () -> Unit,
     onPreview: (List<String>) -> Unit = {},
-    viewModel: PictureViewModel,
+    viewModel: PictureFlowState,
 ) {
     val context = LocalContext.current
     val albumResult by viewModel.albumResult.collectAsStateWithLifecycle()
@@ -84,7 +85,13 @@ fun PictureSelectorScreen(
 
     // 存储权限
     val storagePermissions = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14+：请求部分照片访问，用户可选择「仅选中的照片」
+            arrayOf(
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
         } else {
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)

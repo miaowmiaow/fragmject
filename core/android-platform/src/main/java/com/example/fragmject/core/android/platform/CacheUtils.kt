@@ -8,7 +8,7 @@ import java.io.File
 object CacheUtils {
 
     fun getDirFile(context: Context, name: String): File {
-        return if (FileUtil.isSDCardAlive()) {
+        return if (FileUtils.isSDCardAlive()) {
             File(context.externalCacheDir, name).apply { mkdirs() }
         } else {
             File(context.cacheDir, name).apply { mkdirs() }
@@ -21,20 +21,22 @@ object CacheUtils {
 
     suspend fun getTotalSize(context: Context): String {
         return withContext(Dispatchers.IO) {
-            var cacheSize = FileUtil.getSize(context.cacheDir)
-            if (FileUtil.isSDCardAlive()) {
+            var cacheSize = FileUtils.getSize(context.cacheDir)
+            if (FileUtils.isSDCardAlive()) {
                 context.externalCacheDir?.apply {
-                    cacheSize += FileUtil.getSize(this)
+                    cacheSize += FileUtils.getSize(this)
                 }
             }
-            FileUtil.formatSize(cacheSize.toDouble())
+            FileUtils.formatSize(cacheSize.toDouble())
         }
     }
 
-    fun clearAllCache(context: Context) {
-        FileUtil.delete(context.cacheDir)
-        if (FileUtil.isSDCardAlive()) {
-            FileUtil.delete(context.externalCacheDir)
+    suspend fun clearAllCache(context: Context) {
+        withContext(Dispatchers.IO) {
+            FileUtils.delete(context.cacheDir)
+            if (FileUtils.isSDCardAlive()) {
+                FileUtils.delete(context.externalCacheDir)
+            }
         }
     }
 

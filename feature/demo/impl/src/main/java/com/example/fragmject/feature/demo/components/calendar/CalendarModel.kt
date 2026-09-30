@@ -1,10 +1,6 @@
 package com.example.fragmject.feature.demo.components.calendar
 
 import androidx.compose.material3.CalendarLocale
-import com.example.fragmject.core.domain.repository.ScheduleRepository
-import com.example.fragmject.core.android.platform.AppScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -13,7 +9,6 @@ import kotlin.math.ceil
 
 class CalendarModel(
     locale: CalendarLocale,
-    private val scheduleRepository: ScheduleRepository,
 ) {
 
     var firstStartup: Boolean = true
@@ -65,17 +60,14 @@ class CalendarModel(
                             val daysInLastMonth = lastMonth.lengthOfMonth()
                             val d = daysInLastMonth - (firstDayOfMonth - cellIndex) + 1
                             val (y, m) = adjustYearAndMonth(year, month, -1)
-data.add(CalendarDate(y, m, d, week, scheduleRepository = scheduleRepository))
+data.add(CalendarDate(y, m, d, week))
                         } else if (cellIndex >= (firstDayOfMonth + daysInMonth)) {
                             val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
                             val (y, m) = adjustYearAndMonth(year, month, 1)
-data.add(CalendarDate(y, m, d, week, scheduleRepository = scheduleRepository))
+data.add(CalendarDate(y, m, d, week))
                         } else {
                             val d = cellIndex - firstDayOfMonth + 1
-val date = CalendarDate(year, month, d, week, true, scheduleRepository)
-                            if (year == localYear && month == localMonth && d == localDay) {
-                                date.selectedDay.tryEmit(true)
-                            }
+val date = CalendarDate(year, month, d, week, true)
                             data.add(date)
                             daysData.add(date)
                         }
@@ -111,6 +103,11 @@ val date = CalendarDate(year, month, d, week, true, scheduleRepository)
      */
     private fun calendarDate(year: Int, month: Int, day: Int): CalendarDate? {
         return monthModeByDate(year, month)?.days?.getOrNull(day - 1)
+    }
+
+    /** 根据 [LocalDate] 反查日历日期对象，供组件按选中日期获取展示信息。 */
+    fun calendarDate(date: LocalDate): CalendarDate? {
+        return monthModeByDate(date.year, date.monthValue)?.days?.getOrNull(date.dayOfMonth - 1)
     }
 
     fun localCalendarDate(): CalendarDate? {
@@ -202,35 +199,15 @@ data class CalendarDate(
     val day: Int = 1,
     val week: Int,
     val currMonth: Boolean = false,
-    val scheduleRepository: ScheduleRepository,
 ) {
 
-    val schedule: MutableStateFlow<MutableList<String>> = MutableStateFlow(mutableListOf())
-    val selectedDay: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
-    suspend fun addSchedule(text: String) {
-        val value = schedule.value.toMutableList()
-        value.add(text)
-        schedule.emit(value)
-        scheduleRepository.setSchedule(year, month, day, value)
-    }
-
-    suspend fun removeSchedule(text: String) {
-        val value = schedule.value.toMutableList()
-        value.remove(text)
-        schedule.emit(value)
-        scheduleRepository.setSchedule(year, month, day, value)
-    }
+    /** 日期唯一标识，供页面级状态持有者按日索引日程与选中态。 */
+    val localDate: LocalDate = LocalDate.of(year, month, day)
 
     private var lunarDate: LunarDate? = null
 
     private fun lunar(): LunarDate {
-        return lunarDate ?: getLunarDate(year, month, day).also {
-            AppScope.launch {
-                schedule.emit(scheduleRepository.getSchedule(year, month, day).toMutableList())
-            }
-            lunarDate = it
-        }
+        return lunarDate ?: getLunarDate(year, month, day).also { lunarDate = it }
     }
 
     fun animalsYear(): String {

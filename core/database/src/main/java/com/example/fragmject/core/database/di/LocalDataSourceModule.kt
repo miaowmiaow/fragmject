@@ -1,17 +1,21 @@
 package com.example.fragmject.core.database.di
 
 import com.example.fragmject.core.data.contract.local.HistoryLocalDataSource
+import com.example.fragmject.core.data.contract.local.HomeNavLocalDataSource
 import com.example.fragmject.core.data.contract.local.HotKeyLocalDataSource
-import com.example.fragmject.core.data.contract.local.NavigationLocalDataSource
 import com.example.fragmject.core.data.contract.local.ProjectTreeLocalDataSource
 import com.example.fragmject.core.data.contract.local.ScheduleLocalDataSource
+import com.example.fragmject.core.data.contract.local.SystemTreeLocalDataSource
 import com.example.fragmject.core.data.contract.local.ThemeLocalDataSource
+import com.example.fragmject.core.data.contract.local.UserLocalDataSource
 import com.example.fragmject.core.database.local.HistoryLocalDataSourceImpl
+import com.example.fragmject.core.database.local.HomeNavLocalDataSourceImpl
 import com.example.fragmject.core.database.local.HotKeyLocalDataSourceImpl
-import com.example.fragmject.core.database.local.NavigationLocalDataSourceImpl
 import com.example.fragmject.core.database.local.ProjectTreeLocalDataSourceImpl
 import com.example.fragmject.core.database.local.ScheduleLocalDataSourceImpl
+import com.example.fragmject.core.database.local.SystemTreeLocalDataSourceImpl
 import com.example.fragmject.core.database.local.ThemeLocalDataSourceImpl
+import com.example.fragmject.core.database.local.UserLocalDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -31,7 +35,11 @@ abstract class LocalDataSourceModule {
 
     @Binds
     @Singleton
-    abstract fun bindNavigationLocalDataSource(impl: NavigationLocalDataSourceImpl): NavigationLocalDataSource
+    abstract fun bindHomeNavLocalDataSource(impl: HomeNavLocalDataSourceImpl): HomeNavLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindSystemTreeLocalDataSource(impl: SystemTreeLocalDataSourceImpl): SystemTreeLocalDataSource
 
     @Binds
     @Singleton
@@ -48,4 +56,8 @@ abstract class LocalDataSourceModule {
     @Binds
     @Singleton
     abstract fun bindProjectTreeLocalDataSource(impl: ProjectTreeLocalDataSourceImpl): ProjectTreeLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindUserLocalDataSource(impl: UserLocalDataSourceImpl): UserLocalDataSource
 }

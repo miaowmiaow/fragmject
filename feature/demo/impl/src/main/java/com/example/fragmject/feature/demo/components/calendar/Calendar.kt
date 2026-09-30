@@ -14,31 +14,28 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragmject.core.domain.repository.ScheduleRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.time.LocalDate
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Calendar(
     state: CalendarState,
     modifier: Modifier = Modifier,
-    scheduleRepository: ScheduleRepository,
+    scheduleMap: Map<LocalDate, List<String>>,
+    selectedDate: LocalDate?,
+    onSelectDate: (LocalDate) -> Unit,
+    onRemoveSchedule: (LocalDate, String) -> Unit,
     onSelectedDateChange: (year: Int, month: Int, day: Int) -> Unit,
 ) {
 
     val defaultLocale = LocalConfiguration.current.locales[0]
-    val model = remember(defaultLocale, scheduleRepository) {
-        CalendarModel(defaultLocale, scheduleRepository)
+    val model = remember(defaultLocale) {
+        CalendarModel(defaultLocale)
     }
 
     val weekModePagerState = rememberCalendarPagerState(
@@ -76,43 +73,22 @@ fun Calendar(
             model = model,
             monthModePagerState = monthModePagerState,
             weekModePagerState = weekModePagerState,
+            scheduleMap = scheduleMap,
+            selectedDate = selectedDate,
+            onSelectDate = onSelectDate,
+            onRemoveSchedule = onRemoveSchedule,
             onSelectedDateChange = onSelectedDateChange,
         )
     }
 }
 
 @Stable
-class CalendarState(
-    private val scope: CoroutineScope
-) {
+class CalendarState {
     var mode = CalendarMode.Week
-
-    private sealed interface CalendarEvent {
-        data class Schedule(val text: String) : CalendarEvent
-    }
-
-    private val calendarEvents: MutableSharedFlow<CalendarEvent> = MutableSharedFlow()
-
-    internal suspend fun handleCalendarEvent(
-        addSchedule: (String) -> Unit = {},
-    ): Nothing = withContext(Dispatchers.Main) {
-        calendarEvents.collect { event ->
-            if (event is CalendarEvent.Schedule) {
-                addSchedule(event.text)
-            }
-        }
-    }
-
-    fun addSchedule(text: String) {
-        scope.launch { calendarEvents.emit(CalendarEvent.Schedule(text)) }
-    }
-
 }
 
 @Composable
-fun rememberCalendarState(
-    scope: CoroutineScope = rememberCoroutineScope()
-): CalendarState = remember(scope) { CalendarState(scope) }
+fun rememberCalendarState(): CalendarState = remember { CalendarState() }
 
 internal const val YearInRow = 3
 internal val YearHeight = 45.dp

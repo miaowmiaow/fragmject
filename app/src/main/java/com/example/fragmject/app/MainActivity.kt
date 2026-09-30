@@ -19,22 +19,23 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import com.example.fragmject.core.webview.WebViewPool
-import com.example.fragmject.core.designsystem.ThemeStateProvider
+import com.example.fragmject.core.designsystem.ThemeState
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.app.navigation.AppNavGraph
 import com.example.fragmject.app.navigation.AppNavigatorBundle
 import com.example.fragmject.app.navigation.NavigationDispatcher
 import com.example.fragmject.app.navigation.resolveDeepLinkBackStack
-import com.example.fragmject.core.navigation.NavContentContributor
-import com.example.fragmject.core.navigation.contracts.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contracts.LocalAuthNavigator
-import com.example.fragmject.core.navigation.contracts.LocalCollectionNavigator
-import com.example.fragmject.core.navigation.contracts.LocalDemoNavigator
-import com.example.fragmject.core.navigation.contracts.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contracts.LocalPictureNavigator
-import com.example.fragmject.core.navigation.contracts.LocalSearchNavigator
-import com.example.fragmject.core.navigation.contracts.LocalUserNavigator
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
+import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalAuthNavigator
+import com.example.fragmject.core.navigation.contract.LocalCollectionNavigator
+import com.example.fragmject.core.navigation.contract.LocalDemoNavigator
+import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
+import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
+import com.example.fragmject.core.navigation.contract.LocalSearchNavigator
+import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -42,7 +43,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var themeStateProvider: ThemeStateProvider
+    lateinit var themeState: ThemeState
 
     @Inject
     lateinit var webViewPool: WebViewPool
@@ -55,6 +56,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var navContributors: Set<@JvmSuppressWildcards NavContentContributor>
+
+    @Inject
+    lateinit var flowScopeContributors: Set<@JvmSuppressWildcards NavFlowScopeContributor>
 
     /** 运行时深层链接请求（onNewIntent 触发），首次启动走 onCreate 的 initialBackStack。 */
     private val pendingDeepLink = mutableStateOf<DeepLinkRequest?>(null)
@@ -80,7 +84,7 @@ class MainActivity : ComponentActivity() {
         // 解析冷启动深层链接，得到初始返回栈（热启动深层链接走 onNewIntent → pendingDeepLink）
         val initialBackStack = resolveDeepLinkBackStack(intent)
         setContent {
-            val darkTheme by themeStateProvider.darkTheme
+            val darkTheme by themeState.darkTheme
                 .collectAsStateWithLifecycle(initialValue = false)
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {
@@ -97,8 +101,10 @@ class MainActivity : ComponentActivity() {
                         AppNavGraph(
                             navigationDispatcher = navigationDispatcher,
                             navContributors = navContributors,
+                            flowScopeContributors = flowScopeContributors,
                             initialBackStack = initialBackStack,
                             pendingDeepLink = pendingDeepLink.value,
+                            onDeepLinkConsumed = { pendingDeepLink.value = null },
                         )
                     }
                 }

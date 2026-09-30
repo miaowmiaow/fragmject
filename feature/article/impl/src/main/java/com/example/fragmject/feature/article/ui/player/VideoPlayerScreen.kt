@@ -18,7 +18,7 @@ import com.example.fragmject.core.player.ExoPlayerContainer
  */
 @Suppress("DEPRECATION")
 @Composable
-fun VideoPlayerScreen(filePath: String, onNavigateUp: () -> Unit = {}) {
+fun VideoPlayerScreen(filePath: String) {
     val activity = LocalActivity.current ?: return
     val window = activity.window
     val decorView = window.decorView

@@ -5,4 +5,5 @@ plugins {
 
 dependencies {
     api(libs.androidx.navigation3.runtime)
+    api(libs.kotlinx.coroutines.core)
 }

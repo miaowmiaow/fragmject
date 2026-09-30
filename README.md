@@ -70,15 +70,15 @@
 |     └── proguard-rules.pro                     代码混淆配置文件
 | 
 ├── core                                         核心层（基础能力，不依赖业务）
-|  ├── android-platform                          平台与进程级能力（AppScope / BaseContentProvider / File* / CacheUtils / UriPathHelper）
+|  ├── android-platform                          平台与进程级能力（AppScope / BaseContentProvider / File* / CacheUtils / UriPathUtils）
 |  ├── data-contract                             数据端口契约（remote/local DataSource + HTTP 协议模型）
-|  ├── data-impl                                 数据实现（RepositoryImpl / PagingSource / Hilt 绑定）
+|  ├── data-repository                           数据实现（RepositoryImpl / PagingSource / Hilt 绑定）
 |  ├── database                                  数据库（Room 3）
 |  ├── designsystem                              设计系统（AppTheme / WindowSizeClass / 组件）
 |  ├── domain                                    领域层（Repository 接口 + UseCase + DomainResult）
 |  ├── model                                     数据模型
-|  ├── navigation                                导航能力（Navigation 3 类型安全路由）
-|  ├── navigation-contracts                      导航契约（语义 Navigator，跨 feature 解耦）
+|  ├── navigation-contract                       导航契约（语义 Navigator，跨 feature 解耦）
+|  ├── navigation-runtime                        导航能力（Navigation 3 类型安全路由）
 |  ├── network                                   网络层（Retrofit + OkHttp）
 |  ├── player                                    播放能力（Media3）
 |  ├── ui                                        UI 组件库（FeedCard / SwipeRefreshBox 等）
@@ -114,8 +114,6 @@
 ├── gradle.properties                            gradle 配置
 └── settings.gradle.kts                          项目模块依赖配置
 ```
-## 下载体验
-- [![](https://img.shields.io/badge/Download-apk-green.svg)](https://github.com/miaowmiaow/fragmject/blob/master/app/free/release/wan-release-1.6.0-free.apk)
 
 ## 大屏自适应（WindowSizeClass）
 项目基于 `material3-window-size-class` 实现了完整的大屏/折叠屏自适应布局。
@@ -211,6 +209,8 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 [最通俗易懂的字节码插桩实战 —— 优雅的打印方法执行时间](https://juejin.cn/post/6986848837797658637)
 
 [最通俗易懂的字节码插桩实战 —— 自动埋点](https://juejin.cn/post/6985366891447451662)
+
+> 字节码插桩相关源码（`library-plugin` / `MiaowPlugin`）已从当前分支移除，如需查看完整实现，请切换到 Tags [v1.3.0](https://github.com/miaowmiaow/fragmject/tree/v1.3.0)。
 
 #### 隐私合规 ———— 替换目标字段或方法（library-plugin）
 [一文学会字节码替换，再也不用担心隐私合规审核](https://juejin.cn/post/7121985493445083149)

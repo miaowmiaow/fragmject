@@ -1,9 +1,9 @@
 package com.example.fragmject.feature.home.nav
 
-import com.example.fragmject.core.navigation.contracts.AuthNavigator
-import com.example.fragmject.core.navigation.contracts.CollectionNavigator
-import com.example.fragmject.core.navigation.contracts.DemoNavigator
-import com.example.fragmject.core.navigation.contracts.UserNavigator
+import com.example.fragmject.core.navigation.contract.AuthNavigator
+import com.example.fragmject.core.navigation.contract.CollectionNavigator
+import com.example.fragmject.core.navigation.contract.DemoNavigator
+import com.example.fragmject.core.navigation.contract.UserNavigator
 
 /**
  * 「我的」菜单页语义导航动作。
@@ -28,7 +28,7 @@ data class MyNavActions(
 /**
  * 将语义导航契约转换为「我的」页语义动作。
  *
- * 依赖 [com.example.fragmject.core.navigation.contracts] 下的语义接口，
+ * 依赖 [com.example.fragmject.core.navigation.contract] 下的语义接口，
  * 由 app 组合根提供实现并映射到具体 NavKey；本模块不再 import 任何跨 feature NavKey。
  */
 fun myNavActions(

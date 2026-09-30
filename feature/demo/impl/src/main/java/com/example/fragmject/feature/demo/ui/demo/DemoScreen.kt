@@ -33,9 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.feature.demo.ui.animatedcontent.AnimatedContentScreen
 import com.example.fragmject.feature.demo.ui.barcodescanning.BarcodeScanningScreen
 import com.example.fragmject.feature.demo.ui.calendar.CalendarScreen
@@ -58,10 +58,8 @@ import com.example.fragmject.feature.demo.ui.wheelpicker.WheelPickerScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun DemoScreen(
-    onNavigate: (NavKey) -> Unit = {},
-    onNavigateUp: () -> Unit = {}
-) {
+fun DemoScreen() {
+    val onNavigateUp = LocalOnNavigateUp.current
     var showTitleBar by remember { mutableStateOf(true) }
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
@@ -165,7 +163,7 @@ fun DemoScreen(
                         4 -> FullTextScreen()
                         5 -> SwipeBoxScreen()
                         6 -> PermissionScreen()
-                        7 -> PictureSelectorDemoScreen(onNavigate = onNavigate)
+                        7 -> PictureSelectorDemoScreen()
                         8 -> ScrollableScreen()
                         9 -> DraggableScreen()
                         10 -> TransformableScreen()

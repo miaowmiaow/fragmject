@@ -1,7 +1,7 @@
 package com.example.fragmject.feature.home
 
 import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.core.navigation.DetailPaneNavKey
+import com.example.fragmject.core.navigation.runtime.DetailPaneNavKey
 import kotlinx.serialization.Serializable
 
 /**

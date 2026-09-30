@@ -1,7 +1,7 @@
 package com.example.fragmject.feature.collection.nav
 
-import com.example.fragmject.core.navigation.NavContentContributor
-import com.example.fragmject.core.navigation.NavContentRegistry
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentRegistry
 import com.example.fragmject.feature.collection.MyCollectNavKey
 import com.example.fragmject.feature.collection.MyShareNavKey
 import com.example.fragmject.feature.collection.ShareArticleNavKey
@@ -14,14 +14,14 @@ import com.example.fragmject.feature.collection.ui.share.ShareArticleScreen
  */
 object CollectionNavContentContributor : NavContentContributor {
     override fun contribute(registry: NavContentRegistry) {
-        registry.register<MyCollectNavKey> { _, callbacks ->
-            MyCollectScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<MyCollectNavKey> {
+            MyCollectScreen()
         }
-        registry.register<MyShareNavKey> { _, callbacks ->
-            MyShareScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<MyShareNavKey> {
+            MyShareScreen()
         }
-        registry.register<ShareArticleNavKey> { _, callbacks ->
-            ShareArticleScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<ShareArticleNavKey> {
+            ShareArticleScreen()
         }
     }
 }

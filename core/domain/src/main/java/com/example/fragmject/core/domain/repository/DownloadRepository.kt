@@ -1,6 +1,6 @@
 package com.example.fragmject.core.domain.repository
 
-import com.example.fragmject.core.domain.result.DownloadResult
+import com.example.fragmject.core.domain.result.SimpleResult
 
 /**
  * 文件下载领域端口。
@@ -14,5 +14,5 @@ interface DownloadRepository {
         savePath: String,
         fileName: String,
         headers: Map<String, String> = emptyMap(),
-    ): DownloadResult
+    ): SimpleResult
 }

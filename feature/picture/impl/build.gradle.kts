@@ -13,7 +13,8 @@ dependencies {
     implementation(project(":core:android-platform"))
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
-    implementation(project(":core:navigation"))
+    implementation(project(":core:navigation-contract"))
+    implementation(project(":core:navigation-runtime"))
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation3.runtime)

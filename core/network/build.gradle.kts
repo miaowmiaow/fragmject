@@ -13,7 +13,7 @@ android {
 dependencies {
     implementation(project(":core:android-platform"))
     implementation(project(":core:data-contract"))
-    api(project(":core:model"))
+    implementation(project(":core:model"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.gson)
     implementation(libs.kotlin.reflect)

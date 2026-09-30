@@ -54,7 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.fragmject.feature.picture.model.MediaBean
+import com.example.fragmject.feature.picture.PictureFlowState
+import com.example.fragmject.feature.picture.model.MediaItem
 import kotlinx.coroutines.launch
 
 enum class PreviewMode { NORM, SELECT }
@@ -67,7 +68,7 @@ fun PicturePreviewScreen(
     onFinish: (List<String>) -> Unit,
     onDismiss: () -> Unit,
     onOpenEditor: (Uri) -> Unit = {},
-    viewModel: PictureViewModel,
+    viewModel: PictureFlowState,
 ) {
     val currAlbumResult by viewModel.currAlbumResult.collectAsStateWithLifecycle()
     val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
@@ -84,7 +85,7 @@ fun PicturePreviewScreen(
         if (mode == PreviewMode.SELECT) {
             origSelectUris.map { uriStr ->
                 currAlbumResult.find { it.uri.toString() == uriStr }
-                    ?: MediaBean("", Uri.EMPTY)
+                    ?: MediaItem("", Uri.EMPTY)
             }
         } else {
             currAlbumResult.toList()

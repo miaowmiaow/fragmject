@@ -4,6 +4,7 @@ import android.view.Window
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.view.WindowCompat
 
 /**
@@ -20,7 +21,11 @@ fun AppTheme(
     content: @Composable () -> Unit,
 ) {
 
-    LaunchedEffect(window, darkTheme) {
+    // 配置（如横竖屏切换）会触发 enableEdgeToEdge 重置系统栏外观，
+    // 因此把 configuration 纳入 key，确保旋转后仍重新应用正确的图标颜色。
+    val configuration = LocalConfiguration.current
+
+    LaunchedEffect(window, darkTheme, configuration) {
         window?.let {
             val insetsController = WindowCompat.getInsetsController(window, window.decorView)
             insetsController.isAppearanceLightStatusBars = false

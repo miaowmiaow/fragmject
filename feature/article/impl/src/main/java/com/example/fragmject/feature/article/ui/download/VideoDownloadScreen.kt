@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.domain.repository.VideoDownloadStatus
 import com.example.fragmject.core.domain.repository.VideoDownloadTask
 import java.io.File
@@ -51,11 +52,11 @@ import java.io.File
  */
 @Composable
 fun VideoDownloadScreen(
-    onNavigateUp: () -> Unit = {},
-    onPlayVideo: (filePath: String) -> Unit = {},
     viewModel: VideoDownloadViewModel = viewModel(),
+    onPlayVideo: (filePath: String) -> Unit = {},
 ) {
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val onNavigateUp = LocalOnNavigateUp.current
 
     Column(modifier = Modifier.fillMaxSize()) {
         TitleBar(

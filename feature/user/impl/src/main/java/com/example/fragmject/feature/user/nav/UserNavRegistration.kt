@@ -1,8 +1,8 @@
 package com.example.fragmject.feature.user.nav
 
 import androidx.compose.runtime.key
-import com.example.fragmject.core.navigation.NavContentContributor
-import com.example.fragmject.core.navigation.NavContentRegistry
+import com.example.fragmject.core.navigation.runtime.NavContentContributor
+import com.example.fragmject.core.navigation.runtime.NavContentRegistry
 import com.example.fragmject.feature.user.BrowseHistoryNavKey
 import com.example.fragmject.feature.user.MyCoinNavKey
 import com.example.fragmject.feature.user.RankNavKey
@@ -19,21 +19,21 @@ import com.example.fragmject.feature.user.ui.user.UserScreen
  */
 object UserNavContentContributor : NavContentContributor {
     override fun contribute(registry: NavContentRegistry) {
-        registry.register<BrowseHistoryNavKey> { _, callbacks ->
-            BrowseHistoryScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<BrowseHistoryNavKey> {
+            BrowseHistoryScreen()
         }
-        registry.register<MyCoinNavKey> { _, callbacks ->
-            MyCoinScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<MyCoinNavKey> {
+            MyCoinScreen()
         }
-        registry.register<RankNavKey> { _, callbacks ->
-            RankScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<RankNavKey> {
+            RankScreen()
         }
-        registry.register<SettingNavKey> { _, callbacks ->
-            SettingScreen(onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+        registry.register<SettingNavKey> {
+            SettingScreen()
         }
-        registry.register<UserNavKey> { navKey, callbacks ->
+        registry.register<UserNavKey> { navKey ->
             key(navKey.userId) {
-                UserScreen(userId = navKey.userId, onNavigate = callbacks.onNavigate, onNavigateUp = callbacks.onNavigateUp)
+                UserScreen(userId = navKey.userId)
             }
         }
     }

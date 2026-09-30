@@ -13,8 +13,8 @@ dependencies {
     implementation(project(":core:player"))
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
-    implementation(project(":core:navigation"))
-    implementation(project(":core:navigation-contracts"))
+    implementation(project(":core:navigation-runtime"))
+    implementation(project(":core:navigation-contract"))
     implementation(project(":core:webview"))
 
     implementation(libs.androidx.activity.compose)

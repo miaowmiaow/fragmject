@@ -36,13 +36,14 @@ fun Context.getBitmapPathFromUri(uri: Uri): String {
 }
 
 fun Context.contentResolverQueryPath(uri: Uri, selection: String = ""): String {
-    val cursor = contentResolver.query(uri, null, selection, null, null)
-    if (cursor != null) {
-        if (cursor.moveToFirst()) {
-            val index = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
-            return cursor.getString(index)
+    // 必须用 use：成功路径也曾直接 return，导致每次保存图片/视频都泄漏一个 Cursor
+    val cursor = contentResolver.query(uri, null, selection, null, null) ?: return ""
+    return cursor.use {
+        if (it.moveToFirst()) {
+            val index = it.getColumnIndex(MediaStore.Images.Media.DATA)
+            if (index >= 0) it.getString(index) else ""
+        } else {
+            ""
         }
-        cursor.close()
     }
-    return ""
 }

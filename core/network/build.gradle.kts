@@ -24,6 +24,8 @@ android {
 dependencies {
     implementation(project(":core:android-platform"))
     implementation(project(":core:data-contract"))
+    // CookieJar 经 core:domain 的 CookieStore 端口读写会话（WebView 登录后由 OkHttp 复用）
+    implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.gson)

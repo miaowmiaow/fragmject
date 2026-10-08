@@ -32,14 +32,21 @@ import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.graphics.values
-import com.example.fragmject.core.android.platform.getBitmapFromPath
-import com.example.fragmject.core.android.platform.getBitmapFromUri
+import com.example.fragmject.core.data.repository.media.BitmapImageHandle
+import com.example.fragmject.core.domain.media.ImageHandle
+import com.example.fragmject.core.domain.media.ImageSource
 import com.example.fragmject.feature.picture.impl.R
 import com.example.fragmject.feature.picture.components.layer.GraffitiLayer
 import com.example.fragmject.feature.picture.components.layer.MosaicLayer
 import com.example.fragmject.feature.picture.components.layer.OnStickerClickListener
 import com.example.fragmject.feature.picture.components.layer.StickerLayer
 import com.example.fragmject.feature.picture.model.StickerAttrs
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import java.util.Stack
 import kotlin.math.abs
 import kotlin.math.max
@@ -80,6 +87,16 @@ class PictureEditorState {
 
     private var bitmapPath: String? = null
     private var bitmapUri: Uri? = null
+
+    /**
+     * 位图加载钩子：由页面注入（经 MediaEditor 端口），使解码不再发生在主线程。
+     *
+     * 未注入时回退为不加载（画布保持空白），避免 UI 直接调用平台解码能力。
+     */
+    private var bitmapLoader: (suspend (ImageSource, Int) -> Bitmap?)? = null
+
+    private val loadScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var loadJob: Job? = null
 
     val context: Context
 
@@ -165,7 +182,13 @@ class PictureEditorState {
         invalidate()
     }
 
-    fun saveBitmap(): Bitmap? {
+    /**
+     * 合成当前编辑结果。
+     *
+     * 返回领域句柄 [ImageHandle] 而非 [Bitmap]：原图未加载时返回 null，
+     * 后续的尺寸校验、编码与落盘交由 MediaEditor 处理。
+     */
+    fun saveBitmap(): ImageHandle? {
         // 原图未加载（mosaicBitmap 为 null）时不产出有效位图，避免保存 1×1 透明图并误删原图。
         if (mosaicBitmap == null) return null
         val tempMatrix = Matrix(bitmapMatrix)
@@ -177,7 +200,7 @@ class PictureEditorState {
         canvas.drawColor(Color.TRANSPARENT)
         draw(canvas)
         bitmapMatrix.set(tempMatrix)
-        return bitmap
+        return BitmapImageHandle(bitmap)
     }
 
     fun draw(canvas: Canvas) {
@@ -325,15 +348,31 @@ class PictureEditorState {
         bitmapMatrix.postTranslate(dx, dy)
     }
 
+    /** 释放加载作用域：页面离开组合时调用，避免在途解码协程泄漏。 */
+    fun release() {
+        loadJob?.cancel()
+        loadScope.cancel()
+    }
+
+    /** 注入位图加载能力：返回真实 Bitmap，由 MediaEditor 在 IO 线程完成解码。 */
+    fun setBitmapLoader(loader: suspend (ImageSource, Int) -> Bitmap?) {
+        bitmapLoader = loader
+        if (viewSize.width > 0) initBitmap()
+    }
+
     fun initBitmap() {
         val w = viewSize.width
         val h = viewSize.height
         if (w == 0 || h == 0) return
-        bitmapPath?.let { path ->
-            context.getBitmapFromPath(path, w)?.let { setupBitmap(it, w, h) }
-        }
-        bitmapUri?.let { uri ->
-            context.getBitmapFromUri(uri, w)?.let { setupBitmap(it, w, h) }
+        val loader = bitmapLoader ?: return
+        // 串行加载：新尺寸到来时取消上一次解码，避免旧位图覆盖新结果
+        loadJob?.cancel()
+        loadJob = loadScope.launch {
+            val source = bitmapPath?.let { ImageSource.Path(it) }
+                ?: bitmapUri?.let { ImageSource.Uri(it.toString()) }
+                ?: return@launch
+            val bitmap = loader(source, w) ?: return@launch
+            setupBitmap(bitmap, w, h)
         }
     }
 

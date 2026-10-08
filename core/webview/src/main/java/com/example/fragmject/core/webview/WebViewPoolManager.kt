@@ -9,11 +9,11 @@ import android.graphics.Color
 import android.os.Handler
 import android.util.Log
 import android.view.ViewGroup
+import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.example.fragmject.core.android.platform.AppScope
-import com.example.fragmject.core.android.platform.CookieStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -89,7 +89,8 @@ class WebViewPoolManager @Inject constructor(
             WebView.RENDERER_PRIORITY_BOUND,
             true
         )
-        CookieStore.setAcceptThirdPartyCookies(webView, true)
+        // 第三方 Cookie 开关需要 WebView 实例，故留在池内直接设置，不进入 CookieStore 领域契约
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         return webView
     }
 
@@ -258,6 +259,10 @@ class WebViewPoolManager @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "releaseAll failed", e)
         }
+    }
+
+    override fun setDebuggingEnabled(enabled: Boolean) {
+        WebView.setWebContentsDebuggingEnabled(enabled)
     }
 
     /**

@@ -25,8 +25,13 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun login(username: String, password: String): AuthResult {
         val resp = remote.login(username, password)
         return if (resp.errorCode == "0") {
-            resp.data?.let { saveUser(it) }
-            AuthResult.Success(resp.errorMsg)
+            val user = resp.data
+            if (user == null) {
+                AuthResult.Error("用户信息获取失败")
+            } else {
+                saveUser(user)
+                AuthResult.Success(resp.errorMsg)
+            }
         } else {
             AuthResult.Error(resp.errorMsg)
         }
@@ -39,8 +44,13 @@ class UserRepositoryImpl @Inject constructor(
     ): AuthResult {
         val resp = remote.register(username, password, repassword)
         return if (resp.errorCode == "0") {
-            resp.data?.let { saveUser(it) }
-            AuthResult.Success(resp.errorMsg)
+            val user = resp.data
+            if (user == null) {
+                AuthResult.Error("用户信息获取失败")
+            } else {
+                saveUser(user)
+                AuthResult.Success(resp.errorMsg)
+            }
         } else {
             AuthResult.Error(resp.errorMsg)
         }

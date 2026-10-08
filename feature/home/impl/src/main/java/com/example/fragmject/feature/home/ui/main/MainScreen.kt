@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.home.ui.main
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -197,6 +199,14 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val homeListState = rememberLazyListState()
+
+    // 热词/体系树拉取失败时给出反馈：此前 MainUiState.Error 无人消费，失败完全静默。
+    // 这里只做一次性提示，不做自动重试（持续失败会造成重试循环）；重试交给下拉等显式操作。
+    LaunchedEffect(uiState.errorMessage) {
+        if (uiState.errorMessage.isNotBlank()) {
+            Log.w("MainScreen", "header load failed: ${uiState.errorMessage}")
+        }
+    }
 
     // 跨域语义动作：由 CompositionLocal 提供的语义 Navigator 构造（导航是 UI 层职责）。
     val homeActions = homeNavActions(

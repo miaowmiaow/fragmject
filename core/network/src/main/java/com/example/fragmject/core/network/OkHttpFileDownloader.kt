@@ -2,6 +2,7 @@ package com.example.fragmject.core.network
 
 import com.example.fragmject.core.data.contract.model.HttpResponse
 import com.example.fragmject.core.data.contract.remote.DownloadRemoteDataSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -48,6 +49,10 @@ class OkHttpFileDownloader(
                 }
                 HttpResponse(errorCode = "0", errorMsg = "success")
             }
+        } catch (e: CancellationException) {
+            // 与 NetworkResultMapper / BasePagingSource 一致：取消信号必须原样抛出，
+            // 否则「超时取消」会被误报为下载失败（WebResourceCacheManager 依赖此区分）
+            throw e
         } catch (e: Exception) {
             HttpResponse(errorCode = "-1", errorMsg = e.message ?: e.javaClass.simpleName)
         }

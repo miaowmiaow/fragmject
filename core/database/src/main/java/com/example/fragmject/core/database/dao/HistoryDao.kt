@@ -48,4 +48,23 @@ interface HistoryDao {
             trimToLimit(HISTORY_LIMIT)
         }
     }
+
+    /**
+     * 覆盖写入书签：删除同 url 的旧记录后插入新记录。
+     *
+     * 必须整体置于 @Transaction：拆成三步调用时，并发写入同一 key 会互相踩踏，
+     * 产生重复行或丢失记录。
+     */
+    @Transaction
+    suspend fun replaceByUrl(key: String, value: String, url: String) {
+        getByUrl(key = key, url = url)?.let { delete(it) }
+        insertWithLimitCheck(HistoryEntity(id = 0, key = key, value = value, url = url))
+    }
+
+    /** 覆盖写入搜索词：删除同 value 的旧记录后插入新记录。 */
+    @Transaction
+    suspend fun replaceByValue(key: String, value: String) {
+        getByValue(key = key, value = value)?.let { delete(it) }
+        insertWithLimitCheck(HistoryEntity(id = 0, key = key, value = value))
+    }
 }

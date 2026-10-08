@@ -1,59 +1,67 @@
 package com.example.fragmject.feature.picture.ui.editor
 
-import android.graphics.Bitmap
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.domain.repository.MediaRepository
+import com.example.fragmject.core.domain.media.EditedImage
+import com.example.fragmject.core.domain.media.ImageHandle
+import com.example.fragmject.core.domain.media.ImageSource
+import com.example.fragmject.core.domain.media.MediaEditor
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import javax.inject.Inject
-import androidx.core.net.toUri
 
 /**
  * 图片编辑 / 裁剪保存 ViewModel。
  *
- * 承接原先生硬写在 `PictureEditorScreen` / `PictureClipScreen` 中的保存编排
- * （Bitmap 压缩 + MediaRepository 落盘 + isSaving 状态），
- * 使 `mediaRepository` 不再作为参数穿透两个 Composable 层。
+ * 经由 [MediaEditor] 领域端口完成「位图加载 + 有效性校验 + 编码 + 落盘」，
+ * UI 不再直接调用平台解码/保存能力，也不再自行判断位图是否有效。
  */
 @HiltViewModel
 class PictureEditorViewModel @Inject constructor(
-    private val mediaRepository: MediaRepository,
+    private val mediaEditor: MediaEditor,
 ) : ViewModel() {
 
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
-    /** 将 Bitmap 压缩为 PNG 并保存到相册；成功后回传 path/uri，失败回调 [onError]。 */
+    private val _saveProgress = MutableStateFlow(0f)
+    val saveProgress: StateFlow<Float> = _saveProgress.asStateFlow()
+
+    /**
+     * 保存编辑结果。
+     *
+     * [produce] 返回画布合成出的位图句柄（未就绪时返回 null），
+     * 之后的校验、编码、落盘全部由 [MediaEditor] 承担。
+     */
     fun save(
-        bitmap: Bitmap,
-        onSuccess: (path: String, uri: Uri) -> Unit,
+        produce: () -> ImageHandle?,
+        onSuccess: (EditedImage) -> Unit,
         onError: () -> Unit,
     ) {
         if (_isSaving.value) return
         _isSaving.value = true
         viewModelScope.launch {
-            val bytes = withContext(Dispatchers.Default) {
-                val baos = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-                baos.toByteArray()
-            }
-            val result = mediaRepository.saveImageToAlbum(bytes)
-            _isSaving.value = false
-            // 仅保存成功且 URI 有效才回调成功；失败则保留编辑页并提示，
-            // 避免后续以空 URI 替换/删除原图。
-            if (result.success && result.uri.isNotBlank()) {
-                onSuccess(result.path, result.uri.toUri())
-            } else {
-                onError()
+            try {
+                val handle = produce()
+                val edited = if (handle == null) null else mediaEditor.saveImage(handle)
+                if (edited != null) onSuccess(edited) else onError()
+            } finally {
+                _isSaving.value = false
             }
         }
     }
+
+    /** 贴纸选取：解码下沉到 [MediaEditor]，不在 ActivityResult 回调里主线程解码。 */
+    fun pickSticker(uriString: String, targetWidth: Int = 512, onLoaded: (ImageHandle) -> Unit) {
+        viewModelScope.launch {
+            mediaEditor.loadBitmap(ImageSource.Uri(uriString), targetWidth)?.let(onLoaded)
+        }
+    }
+
+    /** 供画布加载位图：返回领域句柄，解码由 [MediaEditor] 在 IO 线程完成。 */
+    suspend fun loadBitmap(source: ImageSource, targetWidth: Int = 0): ImageHandle? =
+        mediaEditor.loadBitmap(source, targetWidth)
 }

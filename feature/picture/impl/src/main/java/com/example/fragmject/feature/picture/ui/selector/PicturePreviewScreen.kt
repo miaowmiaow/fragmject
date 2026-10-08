@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.fragmject.feature.picture.state.PictureFlowState
-import com.example.fragmject.feature.picture.model.MediaItem
 import kotlinx.coroutines.launch
 
 enum class PreviewMode { NORM, SELECT }
@@ -63,30 +62,21 @@ enum class PreviewMode { NORM, SELECT }
 @Composable
 fun PicturePreviewScreen(
     mode: PreviewMode = PreviewMode.NORM,
-    origSelectUris: List<String> = emptyList(),
     previewPosition: Int = 0,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onOpenEditor: (Uri) -> Unit = {},
     flowState: PictureFlowState,
 ) {
-    val currAlbumResult by flowState.currAlbumResult.collectAsStateWithLifecycle()
-    val selectedUris by flowState.selectedUris.collectAsStateWithLifecycle()
+    val previewSource by flowState.previewSource.collectAsStateWithLifecycle()
     val selectedUriSet by flowState.selectedUriSet.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var showTitleBar by remember { mutableStateOf(true) }
     var showNavBar by remember { mutableStateOf(true) }
 
-    val data = remember(currAlbumResult, origSelectUris, mode) {
-        if (mode == PreviewMode.SELECT) {
-            origSelectUris.map { uriStr ->
-                currAlbumResult.find { it.uri.toString() == uriStr }
-                    ?: MediaItem("", Uri.EMPTY)
-            }
-        } else {
-            currAlbumResult.toList()
-        }
-    }
+    // 预览快照：进入预览前由 PictureFlowState.startPreview 一次性解析，
+    // 跨相册选择也能正确命中，编辑保存后经 updateMediaUri 同步更新，不随相册切换漂移。
+    val data = previewSource
 
     val pagerState = rememberPagerState(
         initialPage = if (mode == PreviewMode.SELECT) 0 else previewPosition,

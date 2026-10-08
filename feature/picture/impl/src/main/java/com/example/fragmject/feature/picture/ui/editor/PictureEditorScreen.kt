@@ -38,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,9 +52,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fragmject.core.android.platform.getBitmapFromUri
+import com.example.fragmject.core.data.repository.media.BitmapImageHandle
 import com.example.fragmject.feature.picture.components.EditorMode
 import com.example.fragmject.feature.picture.components.PictureEditorCanvas
 import com.example.fragmject.feature.picture.components.rememberPictureEditorState
@@ -86,17 +88,30 @@ fun PictureEditorScreen(
     val stickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
+        // 解码下沉到 MediaEditor（IO 线程），不在 ActivityResult 回调里做主线程解码
         uri?.let {
-            val bmp = context.getBitmapFromUri(it, 512)
-            bmp?.let { bitmap ->
-                state.setSticker(StickerAttrs(bitmap))
-                selectedToolIndex = -1
+            viewModel.pickSticker(it.toString()) { handle ->
+                (handle as? BitmapImageHandle)?.bitmap?.let { bitmap ->
+                    state.setSticker(StickerAttrs(bitmap))
+                    selectedToolIndex = -1
+                }
             }
+        }
+    }
+
+    // 注入位图加载钩子：画布尺寸确定后经 MediaEditor 异步解码
+    LaunchedEffect(Unit) {
+        state.setBitmapLoader { source, targetWidth ->
+            (viewModel.loadBitmap(source, targetWidth) as? BitmapImageHandle)?.bitmap
         }
     }
 
     LaunchedEffect(bitmapPath, bitmapUri) {
         state.setBitmapPathOrUri(bitmapPath, bitmapUri)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { state.release() }
     }
 
     Box(
@@ -132,20 +147,13 @@ fun PictureEditorScreen(
                 TextButton(
                     onClick = {
                         if (!isSaving) {
-                            val result = state.saveBitmap()
-                            if (result == null) {
-                                Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
-                            } else {
-                                viewModel.save(
-                                    result,
-                                    onSuccess = { path, uri ->
-                                        onFinish(path, uri)
-                                    },
-                                    onError = {
-                                        Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
-                                    },
-                                )
-                            }
+                            viewModel.save(
+                                produce = { state.saveBitmap() },
+                                onSuccess = { edited -> onFinish(edited.path, edited.uriString.toUri()) },
+                                onError = {
+                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                                },
+                            )
                         }
                     },
                     enabled = !isSaving
@@ -272,7 +280,7 @@ fun PictureEditorScreen(
                                         3 -> {
                                             showColorBar = false
                                             showMosaicUndo = false
-                                            clipBitmap = state.saveBitmap()
+                                            clipBitmap = (state.saveBitmap() as? BitmapImageHandle)?.bitmap
                                             showClipScreen = true
                                         }
                                         4 -> {

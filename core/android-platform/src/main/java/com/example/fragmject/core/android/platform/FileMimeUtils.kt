@@ -4,10 +4,10 @@ import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
-import android.webkit.MimeTypeMap
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.net.URLConnection
 import java.nio.file.Files
 import java.util.Locale
 
@@ -118,11 +118,12 @@ internal fun getFileMimeTypeInternal(file: File): String {
     }
     var mimeType: String? = null
     val filePath = file.absolutePath
-    val suffix = MimeTypeMap.getFileExtensionFromUrl(filePath)
+    // 用 java.net.URLConnection 而非 android.webkit.MimeTypeMap：后者属 WebView 包，
+    // 会让平台层莫名依赖 webkit（架构规则要求 webkit 只出现在 core:webview）。
     try {
-        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(suffix)
+        mimeType = URLConnection.guessContentTypeFromName(filePath)
     } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType MimeTypeMap failed: $filePath", e)
+        Log.e(TAG, "getFileMimeType guessContentType failed: $filePath", e)
     }
     if (mimeType != null) {
         return mimeType

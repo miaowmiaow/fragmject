@@ -41,6 +41,19 @@ class ShareArticleViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 复位「分享成功」标记。
+     *
+     * NavDisplay 未接入 entry 级 ViewModelStore 时，本 ViewModel 由 Activity 共享；
+     * 若不复位，第二次进入本页会因残留的 success=true 被立即返回，无法再次分享。
+     * 页面进入时必须调用。
+     */
+    fun resetSuccess() {
+        _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) {
+            it.copy(success = false, isLoading = false)
+        }
+    }
+
     fun updateTitle(title: String) {
         _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) { it.copy(title = title) }
     }
@@ -71,7 +84,16 @@ class ShareArticleViewModel @Inject constructor(
         viewModelScope.launch {
             val response = shareArticle(current.title, current.link)
             _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) {
-                it.copy(isLoading = false, success = response.success, message = response.message)
+                if (response.success) {
+                    // 成功：显式置 success=true，空消息回退默认文案
+                    it.copy(
+                        isLoading = false,
+                        success = true,
+                        message = response.message.ifBlank { "分享成功" },
+                    )
+                } else {
+                    it.copy(isLoading = false, success = false, message = response.message)
+                }
             }
         }
     }

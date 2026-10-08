@@ -37,6 +37,8 @@ import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
 import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.auth.RegisterNavKey
 import com.example.fragmject.feature.home.MainNavKey
+import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
+import com.example.fragmject.feature.picture.PictureFlowNavKey
 
 /** 页面转场动画时长 (ms)，与 Compose 过渡动画同步。 */
 private const val NAV_TRANSITION_DURATION_MS = 350
@@ -57,6 +59,8 @@ fun AppNavGraph(
     initialBackStack: List<NavKey> = listOf(MainNavKey),
     pendingDeepLink: DeepLinkRequest? = null,
     onDeepLinkConsumed: () -> Unit = {},
+    /** 栈内仅剩首页时的返回出口（交由 Activity 结束/退到后台）。 */
+    onExit: () -> Unit = {},
 ) {
     val navViewModel: AppNavViewModel = viewModel()
     val isLoggedIn by navViewModel.isLoggedIn.collectAsStateWithLifecycle()
@@ -67,8 +71,10 @@ fun AppNavGraph(
     LaunchedEffect(pendingDeepLink) {
         val request = pendingDeepLink ?: return@LaunchedEffect
         matchDeepLink(request)?.let { newStack ->
+            // 保留栈底 Main，避免用户在多层流程中时收到深链导致在途流程被整体丢弃
             backStack.clear()
-            backStack.addAll(newStack)
+            backStack.add(MainNavKey)
+            backStack.addAll(newStack.dropWhile { it == MainNavKey })
         }
         onDeepLinkConsumed()
     }
@@ -108,6 +114,15 @@ fun AppNavGraph(
         previousScopes = flowScopes
     }
 
+    // ---- 选图结果清理 ----
+    // 图片流程全部退出时清空结果：系统返回键不走选择器的取消回调，
+    // 否则发起方下次进入仍会看到上一次选中的图片。
+    val pictureNavigator = LocalPictureNavigator.current
+    val hasPictureFlow = backStack.any { it is PictureFlowNavKey }
+    LaunchedEffect(hasPictureFlow) {
+        if (!hasPictureFlow) pictureNavigator.clearSelection()
+    }
+
     // ---- 导航动作（直接操作 backStack） ----
     // 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen
     // 不会被重组，因此 navigate lambda 必须保持稳定引用，内部通过
@@ -119,6 +134,8 @@ fun AppNavGraph(
             if (requiredLoginNavKey(key, currentIsLoggedIn)) {
                 pendingRedirect = key
                 backStack.add(LoginNavKey)
+            } else if (backStack.lastOrNull() == key) {
+                // 去重：与栈顶相同的 key 不再入栈，避免「返回一次仍停在同一页」
             } else if (currentIsExpanded && isDetailPaneKey(key)) {
                 selectedDetailKey = key
             } else {
@@ -126,6 +143,8 @@ fun AppNavGraph(
             }
         }
     }
+    // onExit 来自 Activity，经 rememberUpdatedState 读取最新引用，避免 remember 捕获过期值
+    val currentOnExit by rememberUpdatedState(onExit)
     val navigateUp: () -> Unit = remember {
         {
             if (backStack.size > 1) {
@@ -135,7 +154,8 @@ fun AppNavGraph(
                     pendingRedirect = null
                 }
             } else {
-                backStack.add(MainNavKey)
+                // 栈内仅剩首页：交由 Activity 退出，此前是空操作导致首页无法用返回键退出
+                currentOnExit()
             }
         }
     }
@@ -185,7 +205,11 @@ fun AppNavGraph(
     // ---- 统一导航内容注册表 ----
     // 全屏 entry 与面板 detailContent 共用同一份「NavKey → 渲染器」映射，
     // 回调作为运行时参数注入：全屏走 navigate/navigateUp，面板走 onClearDetail。
-    val registry = NavContentRegistry()
+    val registry = remember(navContributors) {
+        NavContentRegistry().apply {
+            navContributors.forEach { it.contribute(this) }
+        }
+    }
     val detailContent: @Composable (NavKey) -> Unit =
         { key ->
             CompositionLocalProvider(
@@ -195,8 +219,6 @@ fun AppNavGraph(
             }
         }
 
-    navContributors.forEach { it.contribute(registry) }
-
     CompositionLocalProvider(
         LocalSelectedDetailKey provides selectedDetailKey,
         LocalOnClearDetail provides { selectedDetailKey = null },
@@ -205,7 +227,8 @@ fun AppNavGraph(
     ) {
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
+            // 复用 navigateUp：系统返回键与顶部返回按钮走同一套清理（含登录回跳清理与根栈兜底）
+            onBack = navigateUp,
             modifier = modifier,
             transitionSpec = {
                 slideInHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { it } togetherWith

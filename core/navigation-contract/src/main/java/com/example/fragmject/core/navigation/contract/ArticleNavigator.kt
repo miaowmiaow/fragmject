@@ -10,7 +10,4 @@ interface ArticleNavigator {
 
     /** 打开文章详情（WebView 网页）。 */
     fun openArticle(url: String)
-
-    /** 打开视频下载页。 */
-    fun openVideoDownload()
 }

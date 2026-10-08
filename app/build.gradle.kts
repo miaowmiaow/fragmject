@@ -10,8 +10,10 @@ plugins {
 val configProperties = Properties()
 configProperties.load(FileInputStream(rootProject.file("config.properties")))
 
-val keystoreProperties = Properties()
-keystoreProperties.load(FileInputStream(rootProject.file("keystore.properties")))
+val keystoreFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) }
+}
 
 android {
     namespace = "com.example.fragmject.app"
@@ -38,12 +40,16 @@ android {
         }
     }
 
+    // 开源项目忽略签名相关配置的安全性问题，实际项目请使用安全的方式管理签名信息
+    // 仅当 keystore.properties 存在且配置完整时才创建 config，否则走默认 debug 签名
     signingConfigs {
-        create("config") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = file(keystoreProperties.getProperty("storeFile"))
-            storePassword = keystoreProperties.getProperty("storePassword")
+        if (keystoreProperties.containsKey("storeFile")) {
+            create("config") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
         }
     }
 
@@ -56,12 +62,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("config")
+            signingConfig = signingConfigs.findByName("config")
         }
         debug {
             isDebuggable = true
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("config")
+            signingConfig = signingConfigs.findByName("config")
             //noinspection ChromeOsAbiSupport
             ndk.abiFilters += "x86"
         }

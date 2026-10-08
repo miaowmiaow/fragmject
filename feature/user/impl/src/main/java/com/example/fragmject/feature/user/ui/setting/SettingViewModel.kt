@@ -1,17 +1,16 @@
 package com.example.fragmject.feature.user.ui.setting
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.android.platform.CacheUtils
 import com.example.fragmject.core.ui.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserRepository
+import com.example.fragmject.core.domain.system.SystemStorage
 import com.example.fragmject.core.domain.usecase.LogoutUseCase
 import com.example.fragmject.core.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,24 +38,25 @@ val SettingUiState.user get() = (this as? SettingUiState.Success)?.user
 val SettingUiState.darkTheme get() = (this as? SettingUiState.Success)?.darkTheme ?: false
 val SettingUiState.isLoading get() = this is SettingUiState.Loading
 
-private const val TAG = "SettingVM"
-
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val logoutUseCase: LogoutUseCase,
     private val userRepo: UserRepository,
     private val themeRepo: ThemeRepository,
+    private val systemStorage: SystemStorage,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SettingUiState>(SettingUiState.Success())
     val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
 
-    private val _cacheSize = MutableStateFlow("0KB")
-    val cacheSize: StateFlow<String> = _cacheSize.asStateFlow()
-
     private val _events = Channel<SettingEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
+
+    /** 缓存大小展示文本；读写经由 [SystemStorage]，UI 不接触缓存目录。 */
+    val cacheSizeText: StateFlow<String> get() = systemStorage.cacheSizeText
+
+    /** 是否正在清理缓存：用于禁用入口，避免重复触发清理。 */
+    val isClearing: StateFlow<Boolean> get() = systemStorage.isClearing
 
     init {
         viewModelScope.launch {
@@ -69,26 +69,21 @@ class SettingViewModel @Inject constructor(
                 _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it.copy(darkTheme = dark) }
             }
         }
-        refreshCacheSize()
+        viewModelScope.launch { systemStorage.refreshCacheSize() }
     }
 
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch { themeRepo.setDarkTheme(darkTheme) }
     }
 
-    /** 刷新缓存大小显示（IO 下沉到 ViewModel）。 */
+    /** 刷新缓存大小显示：读写经由 [SystemStorage]，UI 不接触缓存目录。 */
     fun refreshCacheSize() {
-        viewModelScope.launch {
-            _cacheSize.value = CacheUtils.getTotalSize(context)
-        }
+        viewModelScope.launch { systemStorage.refreshCacheSize() }
     }
 
-    /** 清除缓存后刷新缓存大小显示（IO 下沉到 ViewModel）。 */
+    /** 清除缓存：清理范围等业务规则由 [SystemStorage] 实现承担。 */
     fun clearCache() {
-        viewModelScope.launch {
-            CacheUtils.clearAllCache(context)
-            _cacheSize.value = CacheUtils.getTotalSize(context)
-        }
+        viewModelScope.launch { systemStorage.clearCache() }
     }
 
     fun logout() {
@@ -98,11 +93,17 @@ class SettingViewModel @Inject constructor(
                 val success = logoutUseCase()
                 _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
                 _events.send(if (success) SettingEvent.LogoutSucceeded else SettingEvent.LogoutFailed)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "logout failed", e)
                 _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
                 _events.send(SettingEvent.LogoutFailed)
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "SettingViewModel"
     }
 }

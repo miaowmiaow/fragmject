@@ -1,6 +1,6 @@
 package com.example.fragmject.core.domain
 
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -17,8 +17,13 @@ interface CollectState {
     /** 乐观覆盖层：articleId -> 是否已收藏（临时翻转），未覆盖项由 Article.collect 兜底。 */
     val overrides: StateFlow<Map<String, Boolean>>
 
-    /** 收藏失败的一次性消息。 */
-    val collectFailed: SharedFlow<String>
+    /**
+     * 收藏失败消息（广播，允许多订阅者）。
+     *
+     * 订阅方有多个页面；曾使用单消费者 Channel，导致同屏多页面互相争抢事件、
+     * 提示错位或丢失，故改为 SharedFlow。
+     */
+    val collectFailed: Flow<String>
 
     /** 切换收藏态：乐观翻转 + 失败回滚 + 发事件。 */
     fun toggle(id: String, collect: Boolean)

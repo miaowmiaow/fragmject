@@ -51,9 +51,11 @@ fun LoginScreen(
     LaunchedEffect(uiState, snackbarHostState) {
         when (val s = uiState) {
             is LoginUiState.Success -> {
-                authNavigator.onAuthSuccess()
-                snackbarHostState.showSnackbar(s.message)
+                // onAuthSuccess 会触发本 entry 出栈，SnackbarHost 随组合销毁，
+                // 故不在此显示 snackbar；跳转回首页即登录成功的反馈。
+                // 先清状态再导航，避免状态残留导致重复触发。
                 viewModel.resetMessage()
+                authNavigator.onAuthSuccess()
             }
             is LoginUiState.Error -> {
                 snackbarHostState.showSnackbar(s.message)

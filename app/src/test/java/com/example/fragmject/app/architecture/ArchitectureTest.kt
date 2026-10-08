@@ -19,6 +19,15 @@ import org.junit.Test
  */
 class ArchitectureTest {
 
+    /**
+     * 规则 12 的唯一例外：位图句柄的平台实现。
+     *
+     * 画布持有真实 android.graphics.Bitmap，必须包装为领域句柄 [ImageHandle] 才能
+     * 交给 MediaEditor；除此之外 feature 不得引用 data 层任何类型。
+     */
+    private val DATA_EXCEPTION_IMPORT =
+        "com.example.fragmject.core.data.repository.media.BitmapImageHandle"
+
     /** 只扫描 main sourceSet 的生产代码，排除 build 生成物与测试代码。 */
     private val productionFiles: List<KoFileDeclaration> = Konsist.scopeFromProject()
         .files
@@ -172,13 +181,17 @@ class ArchitectureTest {
      * 规则 9：`core:data-repository` 仅允许白名单内的 Android framework 导入。
      * 媒体库（MediaStore / ContentUris）已下沉 core:android-platform，此处只允许
      * Context / Environment / Log 基础设施，其余 `android.*` 一律失败。
+     *
+     * 例外（ImageHandle 领域句柄服务）：`media` 包下的 [BitmapImageHandle] 必须持有
+     * 真实 android.graphics.Bitmap 才能交给 MediaEditor 编码；[MediaEditorImpl] 处理
+     * ImageSource.Uri 图片源需 android.net.Uri。二者均为刻意收敛在 media 子包的平台依赖。
      */
     @Test
     fun `core data repository only allows whitelisted android imports`() {
         productionFiles
             .filter { it.projectPath.contains("/core/data-repository/") }
             .assertFalse(
-                additionalMessage = "core:data-repository 仅允许 android.content.Context / android.os.Environment / android.util.Log",
+                additionalMessage = "core:data-repository 仅允许 Context/Environment/Log/Bitmap/Uri（后两者限 media 包）",
             ) { file ->
                 file.hasImport { imp ->
                     imp.name.startsWith("android.") &&
@@ -186,6 +199,8 @@ class ArchitectureTest {
                             "android.content.Context",
                             "android.os.Environment",
                             "android.util.Log",
+                            "android.graphics.Bitmap",
+                            "android.net.Uri",
                         )
                 }
             }
@@ -236,6 +251,61 @@ class ArchitectureTest {
     }
 
     /**
+     * 规则 12：feature 不得依赖数据层平台能力与数据实现。
+     *
+     * 所需平台能力必须经 core:domain 端口获取：
+     * - 缓存目录 / 清理 → [com.example.fragmject.core.domain.system.SystemStorage]
+     * - 位图解码 / 编辑保存 → [com.example.fragmject.core.domain.media.MediaEditor]
+     *
+     * 唯一例外：`core.data.repository.media.BitmapImageHandle`。画布持有真实
+     * android.graphics.Bitmap，必须包装为领域句柄才能交给 MediaEditor；
+     * 除该类外，feature 不得引用 data 层任何类型。
+     */
+    @Test
+    fun `feature does not depend on data platform or data impl`() {
+        productionFiles
+            .filter { it.projectPath.contains("/feature/") }
+            .assertFalse(
+                additionalMessage = "feature 不得依赖 core:android-platform / data-repository / data-contract / network / database（仅允许 BitmapImageHandle）",
+            ) { file ->
+                file.hasImport { imp ->
+                    when {
+                        imp.name == DATA_EXCEPTION_IMPORT -> false
+                        imp.name.startsWith("com.example.fragmject.core.android.platform.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.data.repository.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.data.contract.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.network.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.database.") -> true
+                        else -> false
+                    }
+                }
+            }
+    }
+
+    /**
+     * 规则 13：`android.webkit.*` 只允许出现在 `core:webview`。
+     *
+     * WebView 平台类型（WebView / CookieManager / WebResourceRequest…）是 UI 基础设施的
+     * 实现细节；其他模块必须经 core:webview 的封装使用：
+     * - 链接判定 / 长按命中 → [WebViewCommons]
+     * - 调试开关 → WebViewPool.setDebuggingEnabled
+     *
+     * 例外：`feature:demo:impl` 是平台 API 演示模块，允许直接使用 WebView 演示原生能力，
+     * 业务 feature 不得效仿。
+     */
+    @Test
+    fun `android webkit is confined to core webview`() {
+        productionFiles
+            .filterNot {
+                it.projectPath.contains("/core/webview/") ||
+                    it.projectPath.contains("/feature/demo/impl/")
+            }
+            .assertFalse(
+                additionalMessage = "android.webkit.* 只允许出现在 core:webview（feature:demo:impl 为演示模块例外）",
+            ) { file -> file.hasImport { imp -> imp.name.startsWith("android.webkit.") } }
+    }
+
+    /**
      * 守卫测试：确保各规则的选择器能匹配到真实文件，避免选择器写错导致规则空转（永远通过）。
      */
     @Test
@@ -263,6 +333,26 @@ class ArchitectureTest {
         assertTrue(
             "core/ui 选择器匹配 0 文件，检查 projectPath 前缀",
             productionFiles.any { it.projectPath.contains("/core/ui/") },
+        )
+        assertTrue(
+            "core/model 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/model/") },
+        )
+        assertTrue(
+            "core/data-contract 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/data-contract/") },
+        )
+        assertTrue(
+            "feature 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/feature/") },
+        )
+        assertTrue(
+            "core/webview 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/webview/") },
+        )
+        assertTrue(
+            "core/android-platform 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/android-platform/") },
         )
     }
 

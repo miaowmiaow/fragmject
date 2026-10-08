@@ -8,7 +8,6 @@ import com.example.fragmject.core.navigation.contract.HomeNavigator
 import com.example.fragmject.core.navigation.contract.PictureNavigator
 import com.example.fragmject.core.navigation.contract.SearchNavigator
 import com.example.fragmject.core.navigation.contract.UserNavigator
-import com.example.fragmject.feature.article.VideoDownloadNavKey
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.auth.RegisterNavKey
@@ -46,7 +45,6 @@ class AppArticleNavigator @Inject constructor(
     private val dispatcher: NavigationDispatcher,
 ) : ArticleNavigator {
     override fun openArticle(url: String) = dispatcher.navigate(WebNavKey(url))
-    override fun openVideoDownload() = dispatcher.navigate(VideoDownloadNavKey)
 }
 
 @Singleton
@@ -103,6 +101,10 @@ class AppPictureNavigator @Inject constructor(
 
     override fun onPictureSelected(uris: List<String>) {
         _selectedUris.value = uris
+    }
+
+    override fun clearSelection() {
+        _selectedUris.value = emptyList()
     }
 
     override fun openPicturePreview(uris: List<String>) =

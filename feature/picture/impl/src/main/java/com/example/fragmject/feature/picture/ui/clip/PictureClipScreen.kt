@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.feature.picture.components.PictureClipCanvas
 import com.example.fragmject.feature.picture.components.rememberPictureClipState
@@ -104,16 +105,18 @@ fun PictureClipScreen(
                 TextButton(
                     onClick = {
                         if (!isSaving) {
-                            val result = state.saveBitmap()
-                            viewModel.save(
-                                result,
-                                onSuccess = { path, uri ->
-                                    onFinish(path, uri)
-                                },
-                                onError = {
-                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
-                                },
-                            )
+                            val handle = state.saveBitmap()
+                            if (handle == null) {
+                                Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
+                            } else {
+                                viewModel.save(
+                                    produce = { handle },
+                                    onSuccess = { edited -> onFinish(edited.path, edited.uriString.toUri()) },
+                                    onError = {
+                                        Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                                    },
+                                )
+                            }
                         }
                     },
                     enabled = !isSaving

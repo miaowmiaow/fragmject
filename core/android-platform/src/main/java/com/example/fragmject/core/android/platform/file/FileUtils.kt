@@ -1,4 +1,4 @@
-package com.example.fragmject.core.android.platform
+package com.example.fragmject.core.android.platform.file
 
 import android.content.Context
 import android.net.Uri

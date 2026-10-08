@@ -125,10 +125,10 @@
 | R2/R3/R6 | feature impl 不依赖其他 feature 的 impl/api；feature api 不依赖 feature impl |
 | R8 | feature → core 必须在 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 内 |
 
-**B. Konsist 源码规则** — `app/src/test/.../ArchitectureTest.kt`，13 条 + 1 条守卫测试
+**B. Konsist 源码规则** — `app/src/test/.../ArchitectureTest.kt`，16 条 + 1 条守卫测试
 运行：`./gradlew :app:testFreeDebugUnitTest --tests "*ArchitectureTest"`
 
-规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**，以及 `boundary selectors match real files`（防止选择器写错导致规则空转）。
+规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、**16（`core:data-repository` 的 `media` 包对外只暴露 `BitmapImageHandle`）**，以及 `boundary selectors match real files`（防止选择器写错导致规则空转）。
 
 > Gradle 守卫与 Konsist 互补：`implementation(project(...))` 不产生 import 时 Konsist 感知不到；反之 Gradle 看不到源码内的越界引用。二者必须同时维护。
 
@@ -142,6 +142,10 @@
 | Konsist 规则 12 放行 `core.data.repository.media.BitmapImageHandle` | `DATA_EXCEPTION_IMPORT` | 同上 |
 | Konsist 规则 13 放行 `feature/demo/impl` | 规则内 `filterNot` | demo 是平台 API 演示模块，业务 feature 不得效仿 |
 | Konsist 规则 9 白名单 `android.graphics.Bitmap` / `android.net.Uri` | 规则内 `setOf(...)` | 限 `media` 子包内使用 |
+| `:app` 组合根使用 lifecycle 的 `viewModel()` | 规则 14 仅过滤 `/feature/` | `AppNavViewModel` 在 `NavDisplay` 之外，本就应是 Activity 作用域 |
+| 大屏 DetailPane 用 `ProvideDetailPaneViewModelStore` 自建 owner | `core:navigation-runtime` | DetailPane 不在 `NavEntry` 内，拿不到 entry 级 store，需按 key 提供等价作用域 |
+| `CookieStore` 实现放 `core:webview`，由 `:app` 聚合注入 | Gradle 守卫矩阵 + Konsist 规则 15 | network 不得依赖 webview；实现必须经 Hilt 绑定，network 只允许注入使用 |
+| `:feature:picture:impl` → `:core:data-repository`（仅 `BitmapImageHandle`） | `FEATURE_EXTRA_CORE_DEPENDENCIES` + 规则 12 + **规则 16** | 画布持有真实 `Bitmap`，必须构造/拆包领域句柄；上移到 domain 会把 `Bitmap.compress` 平台行为带进领域层。三重锁定防扩散 |
 
 新增例外时同步改 Gradle 矩阵与 Konsist 规则，并在本表登记；**任何例外都应能回答「为什么不用契约」。**
 
@@ -163,7 +167,28 @@ core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）
               domain:system    （主题 / 缓存 / 存储）
 ```
 
-### 6.8 变更 checklist
+### 6.8 `core:android-platform` 的定位
+
+它是**零依赖的叶子模块**，承载「多方共用的 Android 平台原语」。消费方**只限 core 内部**
+（`data-repository` / `network` / `webview` / `player`）；`app` 与 `feature` 一律经
+`core:domain` 端口间接使用，不得直接依赖（守卫白名单未声明即失败）。
+
+职责用**包**划分，不按技术类别再拆模块（否则违反 §6.2 门槛）：
+
+| 包 | 内容 | 典型消费方 |
+|---|---|---|
+| `media/` | `MediaStoreUtils`、`MediaRow`、`BitmapCodec`、`BitmapDecoder`、`UriPathUtils` | data-repository |
+| `file/` | `FileUtils` 门面及其 internal 实现（`FileIOUtils`/`FileSizeUtils`/`FileMimeUtils`） | network、data-repository |
+| `cache/` | `CacheUtils`、`CacheDirs` | network、webview、player、data-repository |
+| `digest/` | `DigestUtils` | webview |
+| `app/` | `AppCoroutineScope`（进程级协程作用域，Hilt 单例） | data-repository、webview |
+
+**跨模块的隐式契约必须集中定义**：缓存目录名由 `CacheDirs` 统一声明，
+`core:player`（`EXOPLAYER`）、`core:network`（`OKHTTP`）、`core:webview`（`WEB`/`WEB_HTML`）、
+`app`（`COIL`）与 `SystemStorage` 的清理排除表（`PROTECTED`）全部引用同一常量。
+分散硬编码时，任一侧改名不报错但会**删掉正在使用的缓存**。
+
+### 6.9 变更 checklist
 
 新增能力或模块时逐项确认：
 

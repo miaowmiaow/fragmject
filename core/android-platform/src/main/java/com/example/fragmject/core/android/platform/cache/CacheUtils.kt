@@ -1,6 +1,8 @@
-package com.example.fragmject.core.android.platform
+package com.example.fragmject.core.android.platform.cache
+
 
 import android.content.Context
+import com.example.fragmject.core.android.platform.file.FileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

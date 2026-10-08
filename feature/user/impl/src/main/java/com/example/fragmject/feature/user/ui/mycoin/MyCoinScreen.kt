@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.navigation.contract.LocalUserNavigator
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
@@ -43,7 +43,7 @@ import com.example.fragmject.core.ui.utils.getScreenWidth
 
 @Composable
 fun MyCoinScreen(
-    viewModel: MyCoinViewModel = viewModel(),
+    viewModel: MyCoinViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val userNavigator = LocalUserNavigator.current

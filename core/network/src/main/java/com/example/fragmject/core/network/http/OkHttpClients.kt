@@ -1,7 +1,8 @@
 package com.example.fragmject.core.network.http
 
 import android.content.Context
-import com.example.fragmject.core.android.platform.CacheUtils
+import com.example.fragmject.core.android.platform.cache.CacheDirs
+import com.example.fragmject.core.android.platform.cache.CacheUtils
 import com.example.fragmject.core.data.contract.http.SslConfig
 import com.example.fragmject.core.network.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -48,7 +49,7 @@ class OkHttpClients @Inject constructor(
             )
             .retryOnConnectionFailure(true)
             .cookieJar(cookieJar)
-            .cache(Cache(CacheUtils.getDirFile(context, "okhttp"), CACHE_SIZE_BYTES))
+            .cache(Cache(CacheUtils.getDirFile(context, CacheDirs.OKHTTP), CACHE_SIZE_BYTES))
 
         // 仅当存在有效 SSL 配置时才启用自定义 SSL；否则使用系统默认实现，
         // 避免在未配置证书时传入 null trustManager 或做无意义的 SSLContext 构建。

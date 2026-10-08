@@ -41,7 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
@@ -54,7 +54,7 @@ import com.example.fragmject.core.designsystem.TitleBar
 
 @Composable
 fun BrowseHistoryScreen(
-    viewModel: BrowseHistoryViewModel = viewModel(),
+    viewModel: BrowseHistoryViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val articleNavigator = LocalArticleNavigator.current

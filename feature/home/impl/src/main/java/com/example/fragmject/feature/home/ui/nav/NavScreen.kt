@@ -46,7 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.feature.home.nav.HomeNavActions
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.SkeletonContent
@@ -88,7 +88,7 @@ fun NavScreen(
 
 @Composable
 fun NavLinkContent(
-    viewModel: NavViewModel = viewModel(),
+    viewModel: NavViewModel = hiltViewModel(),
     actions: HomeNavActions = HomeNavActions(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

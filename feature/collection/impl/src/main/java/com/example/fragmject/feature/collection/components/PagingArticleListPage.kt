@@ -46,6 +46,8 @@ fun PagingArticleListPage(
     val homeNavigator = LocalHomeNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current
     val overrides by collectState.overrides.collectAsStateWithLifecycle()
+    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
+    val onToggleClick = remember(collectState) { collectState::toggle }
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         collectState.collectFailed.collect { message ->
@@ -82,7 +84,7 @@ fun PagingArticleListPage(
                 onItemClick = { articleNavigator.openArticle(it) },
                 onUserClick = { userNavigator.openUserProfile(it) },
                 onFooterClick = { homeNavigator.openSystemTree(it) },
-                onToggleClick = collectState::toggle,
+                onToggleClick = onToggleClick,
             )
         }
     }

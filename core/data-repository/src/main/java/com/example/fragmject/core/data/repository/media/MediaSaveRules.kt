@@ -17,8 +17,10 @@ import javax.inject.Singleton
  * - 编码失败不得继续落盘；
  * - 落盘结果必须 uri 非空才算成功（曾出现 success=true 但 uri 为空）。
  */
+// internal：仅由本模块 MediaEditorImpl 注入使用，
+// 对外不暴露（架构测试规则 16 约束 media 包的对外表面）
 @Singleton
-class MediaSaveRules @Inject constructor(
+internal class MediaSaveRules @Inject constructor(
     private val mediaRepository: MediaRepository,
 ) {
 

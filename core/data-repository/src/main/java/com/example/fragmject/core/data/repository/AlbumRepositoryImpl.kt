@@ -1,7 +1,7 @@
 package com.example.fragmject.core.data.repository
 
 import android.content.Context
-import com.example.fragmject.core.android.platform.MediaStoreUtils
+import com.example.fragmject.core.android.platform.media.MediaStoreUtils
 import com.example.fragmject.core.domain.repository.AlbumGroup
 import com.example.fragmject.core.domain.repository.AlbumImage
 import com.example.fragmject.core.domain.repository.AlbumRepository

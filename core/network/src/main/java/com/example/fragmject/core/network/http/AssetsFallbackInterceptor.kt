@@ -2,7 +2,7 @@ package com.example.fragmject.core.network.http
 
 import android.content.Context
 import com.example.fragmject.core.network.BuildConfig
-import com.example.fragmject.core.android.platform.FileUtils
+import com.example.fragmject.core.android.platform.file.FileUtils
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType

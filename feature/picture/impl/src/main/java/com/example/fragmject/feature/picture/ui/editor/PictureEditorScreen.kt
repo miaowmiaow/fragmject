@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.data.repository.media.BitmapImageHandle
 import com.example.fragmject.feature.picture.components.EditorMode
 import com.example.fragmject.feature.picture.components.PictureEditorCanvas
@@ -67,7 +67,7 @@ import com.example.fragmject.feature.picture.utils.ColorUtils
 fun PictureEditorScreen(
     bitmapPath: String? = null,
     bitmapUri: Uri? = null,
-    viewModel: PictureEditorViewModel = viewModel(),
+    viewModel: PictureEditorViewModel = hiltViewModel(),
     onFinish: (path: String, uri: Uri) -> Unit,
     onDismiss: () -> Unit,
 ) {

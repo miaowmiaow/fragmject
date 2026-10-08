@@ -86,7 +86,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:android-platform"))
+    // 无 :core:android-platform：该模块只被 core 内部消费，app 经领域端口间接使用，
+    // 依赖守卫 APP_ALLOWED_DEPENDENCIES 已不再放行此边
     implementation(project(":core:data-repository"))
     implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
@@ -109,6 +110,8 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    // entry 级 ViewModelStore：ViewModel 随 NavEntry 出栈而清除（NavDisplay 的 entryDecorators）
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
 
@@ -117,7 +120,7 @@ dependencies {
     implementation(libs.coil.svg)
     implementation(libs.coil.video)
 
-    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
 
     testImplementation(libs.junit)
     testImplementation(libs.konsist)

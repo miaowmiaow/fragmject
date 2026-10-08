@@ -306,6 +306,78 @@ class ArchitectureTest {
     }
 
     /**
+     * 规则 14：feature 内创建 ViewModel 必须使用 `hiltViewModel()`。
+     *
+     * 项目已接入 entry 级 ViewModelStore（[rememberViewModelStoreNavEntryDecorator]），
+     * 单栏页面的 ViewModel 随 NavEntry 出栈清除；entry owner 不带 Hilt 工厂，
+     * 使用 lifecycle 的 `viewModel()` 会导致注入失败或退化成 Activity 作用域。
+     *
+     * 例外：`app` 组合根在 NavDisplay 之外创建的 ViewModel（如 AppNavViewModel）
+     * 本就应是 Activity 作用域，不在本规则约束范围内。
+     */
+    @Test
+    fun `feature creates viewmodel with hiltViewModel`() {
+        productionFiles
+            .filter { it.projectPath.contains("/feature/") }
+            .assertFalse(
+                additionalMessage = "feature 必须使用 hiltViewModel()，禁止 androidx.lifecycle.viewmodel.compose.viewModel",
+            ) { file ->
+                file.hasImport { imp ->
+                    imp.name == "androidx.lifecycle.viewmodel.compose.viewModel"
+                }
+            }
+    }
+
+    /**
+     * 规则 15：`CookieStore` 的实现不得出现在 core 内部除 webview 之外的模块。
+     *
+     * [com.example.fragmject.core.domain.session.CookieStore] 的唯一实现是
+     * core:webview 的 `WebViewCookieStore`（android.webkit.CookieManager），
+     * 由 core:webview/di/CookieStoreModule 经 @Binds 绑定，再由 :app 组合根聚合注入。
+     *
+     * core:network 只允许构造注入该端口（CookieJar），不得自行实现：network 不允许
+     * 依赖 webview（Gradle 守卫 CORE_ALLOWED_DEPENDENCIES），就地实现会绕过该约束，
+     * 并造成 WebView 与 OkHttp 两个会话真相源。
+     *
+     * 只扫描 main 源集：测试里的 Fake 实现（CookieJarTest）不受约束。
+     */
+    @Test
+    fun `cookie store implementation only in core webview`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/") }
+            .filterNot { it.projectPath.contains("/core/webview/") }
+            .assertFalse(
+                additionalMessage = "CookieStore 实现只允许出现在 core:webview（唯一实现 WebViewCookieStore），其他 core 模块只允许注入使用",
+            ) { file ->
+                file.classes().any { klass ->
+                    klass.countParents { parent -> parent.name == "CookieStore" } > 0
+                }
+            }
+    }
+
+    /**
+     * 规则 16：`core:data-repository` 的 `media` 包对外只暴露 `BitmapImageHandle`。
+     *
+     * [BitmapImageHandle] 是全项目唯一允许 feature 直接引用的 data 层类型（规则 12 的例外）。
+     * 为防例外沿「同包扩散」——后人在 media 包新增 public 类、被 feature 顺手引用——
+     * 该包其余实现（`MediaEditorImpl` / `MediaSaveRules`）必须声明为 `internal`，
+     * 对外只经 `core:domain` 的 `MediaEditor` 端口暴露。
+     */
+    @Test
+    fun `data repository media package exposes only bitmap image handle`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/data-repository/") }
+            .filter { it.projectPath.contains("/media/") }
+            .assertFalse(
+                additionalMessage = "core:data-repository 的 media 包对外只允许暴露 BitmapImageHandle，其余顶层类必须 internal",
+            ) { file ->
+                file.classes().any { klass ->
+                    klass.name != "BitmapImageHandle" && klass.hasPublicOrDefaultModifier
+                }
+            }
+    }
+
+    /**
      * 守卫测试：确保各规则的选择器能匹配到真实文件，避免选择器写错导致规则空转（永远通过）。
      */
     @Test
@@ -353,6 +425,17 @@ class ArchitectureTest {
         assertTrue(
             "core/android-platform 选择器匹配 0 文件，检查 projectPath 前缀",
             productionFiles.any { it.projectPath.contains("/core/android-platform/") },
+        )
+        assertTrue(
+            "core/network 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any { it.projectPath.contains("/core/network/") },
+        )
+        assertTrue(
+            "core/data-repository/media 选择器匹配 0 文件，检查 projectPath 前缀",
+            productionFiles.any {
+                it.projectPath.contains("/core/data-repository/") &&
+                    it.projectPath.contains("/media/")
+            },
         )
     }
 

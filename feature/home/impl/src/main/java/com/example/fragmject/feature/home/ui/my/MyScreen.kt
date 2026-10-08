@@ -4,14 +4,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,17 +26,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.core.ui.components.ArrowRightItem
+import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.feature.home.nav.MyNavActions
 
 @Composable
 fun MyScreen(
-    viewModel: MyViewModel = viewModel(),
+    viewModel: MyViewModel = hiltViewModel(),
     actions: MyNavActions = MyNavActions(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

@@ -16,11 +16,13 @@ dependencies {
     implementation(project(":core:webview"))
 
     implementation(libs.androidx.activity.compose)
+    // 显式声明：使用 androidx.core.content.ContextCompat / androidx.core.view.*（core-ktx）
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
 
     // Coil
     implementation(libs.coil.compose)

@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.CollapsingHeader
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
@@ -49,7 +49,7 @@ import com.example.fragmject.core.ui.utils.AvatarUtils
 @Composable
 fun UserScreen(
     userId: String,
-    viewModel: UserViewModel = viewModel(key = userId),
+    viewModel: UserViewModel = hiltViewModel(key = userId),
 ) {
     val coin by viewModel.coin.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
@@ -58,6 +58,8 @@ fun UserScreen(
     val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     val overrides by viewModel.collectState.overrides.collectAsStateWithLifecycle()
+    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
+    val onToggleClick = remember(viewModel.collectState) { viewModel.collectState::toggle }
     LaunchedEffect(userId) { viewModel.init(userId) }
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -138,7 +140,7 @@ fun UserScreen(
                     onItemClick = { articleNavigator.openArticle(it) },
                     onUserClick = { userNavigator.openUserProfile(it) },
                     onFooterClick = { homeNavigator.openSystemTree(it) },
-                    onToggleClick = viewModel.collectState::toggle,
+                    onToggleClick = onToggleClick,
                 )
             }
         }

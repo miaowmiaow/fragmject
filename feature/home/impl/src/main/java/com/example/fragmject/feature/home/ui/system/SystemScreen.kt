@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
@@ -38,12 +38,14 @@ import com.example.fragmject.core.model.Tree
 @Composable
 fun SystemScreen(
     cid: String,
-    systemViewModel: SystemViewModel = viewModel(),
+    systemViewModel: SystemViewModel = hiltViewModel(),
     actions: HomeNavActions = HomeNavActions(),
 ) {
     val onNavigateUp = LocalOnNavigateUp.current
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
     val overrides by systemViewModel.collectState.overrides.collectAsStateWithLifecycle()
+    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
+    val onToggleClick = remember(systemViewModel.collectState) { systemViewModel.collectState::toggle }
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         systemViewModel.collectState.collectFailed.collect { message ->
@@ -99,7 +101,7 @@ fun SystemScreen(
                         onItemClick = actions.onArticleClick,
                         onUserClick = actions.onAuthorClick,
                         onFooterClick = actions.onChapterClick,
-                        onToggleClick = systemViewModel.collectState::toggle,
+                        onToggleClick = onToggleClick,
                     )
                 }
             }

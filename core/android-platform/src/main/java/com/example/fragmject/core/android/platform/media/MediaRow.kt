@@ -1,4 +1,4 @@
-package com.example.fragmject.core.android.platform
+package com.example.fragmject.core.android.platform.media
 
 /**
  * MediaStore 查询的行模型：对媒体库游标行字段的中立封装（平台层）。

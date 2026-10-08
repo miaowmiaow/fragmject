@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 图片选择/预览/编辑流程共享状态（一次图片流程对应一个实例）。
@@ -161,18 +162,25 @@ class PictureFlowState(
                 val groups = albumRepository.queryAlbums()
                 if (version != queryVersion) return@launch
                 mediaMap.clear()
+                // 映射放到 Default：flowScope 是 Main.immediate，而这里要为每张图做一次
+                // Uri.parse + MediaItem 分配（5000 张时是 5000 次），留在主线程会明显卡顿
+                val beansByGroup = withContext(Dispatchers.Default) {
+                    groups.associate { group ->
+                        group.name to group.images.map { image ->
+                            MediaItem(
+                                name = image.name,
+                                uri = image.uri.toUri(),
+                                width = image.width,
+                                height = image.height,
+                                mimeType = image.mimeType,
+                            )
+                        }
+                    }
+                }
                 val albumData = mutableListOf<Album>()
                 var totalCount = 0
                 groups.forEach { group ->
-                    val beans = group.images.map { image ->
-                        MediaItem(
-                            name = image.name,
-                            uri = image.uri.toUri(),
-                            width = image.width,
-                            height = image.height,
-                            mimeType = image.mimeType,
-                        )
-                    }
+                    val beans = beansByGroup[group.name].orEmpty()
                     totalCount += beans.size
                     mediaMap[group.name] = beans.toMutableList()
                     albumData.add(

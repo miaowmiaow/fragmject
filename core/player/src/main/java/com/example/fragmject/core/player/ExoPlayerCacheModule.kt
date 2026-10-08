@@ -5,7 +5,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import com.example.fragmject.core.android.platform.CacheUtils
+import com.example.fragmject.core.android.platform.cache.CacheDirs
+import com.example.fragmject.core.android.platform.cache.CacheUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.EntryPoint
@@ -38,7 +39,7 @@ object ExoPlayerCacheModule {
         @ApplicationContext context: Context,
         databaseProvider: StandaloneDatabaseProvider,
     ): SimpleCache = SimpleCache(
-        CacheUtils.getDirFile(context, "exoplayer_cache"),
+        CacheUtils.getDirFile(context, CacheDirs.EXOPLAYER),
         LeastRecentlyUsedCacheEvictor(500 * 1024 * 1024),
         databaseProvider,
     )
@@ -47,6 +48,9 @@ object ExoPlayerCacheModule {
 /**
  * 供 Composable 通过 [EntryPointAccessors] 获取单例 [SimpleCache] 的入口。
  */
+// 需单独标注：@OptIn 只作用于 object ExoPlayerCacheModule，不会传播到同文件的其他顶层声明，
+// 而本接口的返回值 SimpleCache 与 Hilt 生成的 EntryPoint 实现都属于 UnstableApi 用法
+@androidx.annotation.OptIn(UnstableApi::class)
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface ExoPlayerCacheEntryPoint {

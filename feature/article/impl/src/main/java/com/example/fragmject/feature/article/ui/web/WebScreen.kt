@@ -35,7 +35,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
@@ -56,7 +56,7 @@ fun WebScreen(
     val articleNavigator = LocalArticleNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current
     val scope = rememberCoroutineScope()
-    val webViewModel: WebViewModel = viewModel()
+    val webViewModel: WebViewModel = hiltViewModel()
     var customView by remember { mutableStateOf<View?>(null) }
     var sheetValue by rememberSaveable { mutableStateOf(SheetValue.PartiallyExpanded) }
     val bottomSheetState = rememberStandardBottomSheetState(

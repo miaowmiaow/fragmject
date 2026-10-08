@@ -21,6 +21,17 @@ package com.example.fragmject.core.domain.session
  * 为什么不在端口里暴露 android.webkit.WebView：
  * domain 禁止 android.*（架构测试规则 8）。第三方 Cookie 开关属于 WebView 实例配置，
  * 由 core:webview 在池内创建 WebView 时自行处理，不进入领域契约。
+ *
+ * 实现归属（必须遵守，违反会被架构测试规则 15 拦截）：
+ * - **唯一实现**：`core:webview` 的 `WebViewCookieStore`（基于 `android.webkit.CookieManager`），
+ *   由 `core:webview/di/CookieStoreModule` 经 `@Binds` 绑定到本契约，
+ *   再由 `:app` 组合根聚合 Hilt 模块完成最终的图组装。
+ * - **消费方只允许注入使用**：`core:network` 的 `CookieJar` 构造注入本端口并读写 Cookie。
+ *   network **不得自行实现本接口**——network 不允许依赖 webview
+ *   （见 Gradle 守卫 `CORE_ALLOWED_DEPENDENCIES`），自行实现等于绕过该约束，
+ *   会形成「第二个会话真相源」，导致 WebView 与 OkHttp 的 Cookie 不一致。
+ * - 如需新增实现（例如纯 OkHttp 的 Cookie 容器），应先调整依赖矩阵与实现归属，
+ *   而不是在 network 内部就地 new 一个。
  */
 interface CookieStore {
 

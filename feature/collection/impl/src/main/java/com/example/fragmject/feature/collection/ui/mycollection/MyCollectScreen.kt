@@ -2,14 +2,14 @@ package com.example.fragmject.feature.collection.ui.mycollection
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.feature.collection.components.PagingArticleListPage
 
 @Composable
 fun MyCollectScreen(
-    viewModel: MyCollectViewModel = viewModel(),
+    viewModel: MyCollectViewModel = hiltViewModel(),
 ) {
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     PagingArticleListPage(

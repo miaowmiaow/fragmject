@@ -23,10 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
+/** 每张骨架卡的骨架块数量，用于把卡索引展开成全局块索引。 */
+private const val SLOTS_PER_CARD = 5
+
 /**
  * 首屏加载骨架屏：以灰块模拟列表结构，替代「转圈 + 空白」。
- * 每个骨架块独立叠加 shimmer 扫光（一条亮带从左到右），
- * 网络差、加载久时也能有明确动效反馈。
+ *
+ * 整屏只创建一个 shimmer 动画（[rememberShimmerProgress]），所有骨架块共享进度并各自带
+ * 相位偏移（[shimmerPhaseOf]）保留错落感；进度在 draw 阶段读取，因此不触发重组，
+ * 首屏加载期间不再有 30 个无限动画与每帧的 Shader 分配。
  */
 @Composable
 fun SkeletonList(
@@ -34,19 +39,23 @@ fun SkeletonList(
     itemCount: Int = 6,
     contentPadding: PaddingValues = PaddingValues(10.dp),
 ) {
+    val shimmerProgress = rememberShimmerProgress()
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        items(itemCount) {
-            SkeletonCard()
+        items(itemCount) { index ->
+            SkeletonCard(shimmerProgress = shimmerProgress, cardIndex = index)
         }
     }
 }
 
 @Composable
-private fun SkeletonCard() {
+private fun SkeletonCard(
+    shimmerProgress: () -> Float,
+    cardIndex: Int,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -58,6 +67,8 @@ private fun SkeletonCard() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SkeletonBlock(
                 modifier = Modifier.size(28.dp),
+                shimmerProgress = shimmerProgress,
+                shimmerPhase = shimmerPhaseOf(cardIndex * SLOTS_PER_CARD + 0),
                 shape = CircleShape
             )
             Spacer(Modifier.width(10.dp))
@@ -65,16 +76,35 @@ private fun SkeletonCard() {
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                SkeletonBlock(Modifier.width(80.dp).height(12.dp))   // 用户名单
-                SkeletonBlock(Modifier.width(56.dp).height(12.dp))   // 日期单
+                // 用户名单
+                SkeletonBlock(
+                    Modifier.width(80.dp).height(12.dp),
+                    shimmerProgress,
+                    shimmerPhaseOf(cardIndex * SLOTS_PER_CARD + 1),
+                )
+                // 日期单
+                SkeletonBlock(
+                    Modifier.width(56.dp).height(12.dp),
+                    shimmerProgress,
+                    shimmerPhaseOf(cardIndex * SLOTS_PER_CARD + 2),
+                )
             }
         }
         Spacer(Modifier.height(12.dp))
         // 主体：标题单 + 描述单
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SkeletonBlock(Modifier.fillMaxWidth(0.9f).height(14.dp))  // 标题单
-            SkeletonBlock(Modifier.fillMaxWidth(0.7f).height(14.dp))  // 描述单
+            // 标题单
+            SkeletonBlock(
+                Modifier.fillMaxWidth(0.9f).height(14.dp),
+                shimmerProgress,
+                shimmerPhaseOf(cardIndex * SLOTS_PER_CARD + 3),
+            )
+            // 描述单
+            SkeletonBlock(
+                Modifier.fillMaxWidth(0.7f).height(14.dp),
+                shimmerProgress,
+                shimmerPhaseOf(cardIndex * SLOTS_PER_CARD + 4),
+            )
         }
     }
 }
-

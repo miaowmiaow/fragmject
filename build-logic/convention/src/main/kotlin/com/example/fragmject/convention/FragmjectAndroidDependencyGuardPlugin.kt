@@ -19,13 +19,6 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         if (target != target.rootProject) return
 
-        // 配置期（所有子项目评估完成后）构建依赖边，执行期仅消费纯数据，
-        // 避免在任务执行期访问 Project 状态（这是配置缓存不兼容的根源）。
-        lateinit var edges: Map<String, Set<String>>
-        target.gradle.projectsEvaluated {
-            edges = buildEdges(target)
-        }
-
         target.tasks.register("verifyModuleDependencies") {
             group = "verification"
             description = "校验模块间 Gradle 依赖方向，防止绕过源码级架构约束"
@@ -33,6 +26,9 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
             notCompatibleWithConfigurationCache("遍历所有子项目的 Gradle 依赖图")
 
             doLast {
+                // 执行期再构建依赖边，避免在配置阶段访问 Project 状态：
+                // projectsEvaluated 回调是配置缓存不兼容的「逃逸点」，会导致缓存静默失效、每次全量重配。
+                val edges = buildEdges(target)
                 val violations = collectViolations(edges)
                 if (violations.isNotEmpty()) {
                     throw GradleException(

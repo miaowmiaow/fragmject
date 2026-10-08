@@ -1,6 +1,7 @@
 package com.example.fragmject.core.network.di
 
 import android.content.Context
+import com.example.fragmject.core.network.BuildConfig
 import com.example.fragmject.core.network.http.GsonUtils
 import com.example.fragmject.core.network.OkHttpFileDownloader
 import com.example.fragmject.core.data.contract.remote.ArticleRemoteDataSource
@@ -22,7 +23,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
@@ -32,11 +32,6 @@ import javax.inject.Singleton
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class DownloadOkHttpClient
-
-/** 图片加载（Coil）专用 OkHttpClient 的 qualifier。 */
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class CoilOkHttpClient
 
 /**
  * 网络层 Hilt 模块：集中提供 OkHttpClient、Retrofit、下载器与各数据源。
@@ -48,8 +43,6 @@ annotation class CoilOkHttpClient
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://www.wanandroid.com/"
-
     @Provides
     @Singleton
     fun provideOkHttpClient(
@@ -60,30 +53,15 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    @CoilOkHttpClient
-    fun provideCoilOkHttpClient(
-        @ApplicationContext context: Context,
-    ): OkHttpClient = OkUtils.httpClient(context)
-
-    @Provides
-    @Singleton
     @DownloadOkHttpClient
-    fun provideDownloadClient(client: OkHttpClient): OkHttpClient {
-        // 下载专用 client：移除兜底拦截器、清除 BODY 日志拦截器、禁用缓存，仅保留 HEADERS 日志。
-        return client.newBuilder().apply {
-            interceptors().removeAll { it is AssetsFallbackInterceptor }
-            networkInterceptors().removeAll { it is HttpLoggingInterceptor }
-            addNetworkInterceptor(
-                HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS)
-            )
-            cache(null)
-        }.build()
-    }
+    fun provideDownloadClient(
+        @ApplicationContext context: Context,
+    ): OkHttpClient = OkUtils.downloadClient(context)
 
     @Provides
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+        .baseUrl(BuildConfig.BASE_URL)
         .client(client)
         .addConverterFactory(GsonConverterFactory.create(GsonUtils.gson))
         .build()

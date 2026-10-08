@@ -24,10 +24,10 @@ fun TransformableScreen() {
     var scale by remember { mutableFloatStateOf(0.5f) }
     var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+    val state = rememberTransformableState { _, zoomChange, panChange, rotationChange ->
         scale *= zoomChange
         rotation += rotationChange
-        offset += offsetChange
+        offset += panChange
     }
     Box(
         Modifier

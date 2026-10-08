@@ -13,21 +13,16 @@ import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
 import com.example.fragmject.core.webview.WebViewPool
-import com.example.fragmject.core.network.di.CoilOkHttpClient
+import com.example.fragmject.core.network.http.OkUtils
 import com.example.fragmject.core.android.platform.CacheUtils
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
-import okhttp3.OkHttpClient
 
 @HiltAndroidApp
 class FragmjectApplication : Application(), ImageLoaderFactory {
 
     @Inject
     lateinit var webViewPool: WebViewPool
-
-    @Inject
-    @CoilOkHttpClient
-    lateinit var okHttpClient: OkHttpClient
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(applicationContext)
@@ -49,7 +44,7 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
                     .maxSizeBytes(50L * 1024 * 1024)
                     .build()
             }
-            .okHttpClient(okHttpClient)
+            .okHttpClient(OkUtils.imageClient(applicationContext))
             .components(fun ComponentRegistry.Builder.() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder.Factory())
@@ -73,6 +68,7 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
      * WebView 单实例约 30~80MB，keep-alive 池上限为 8 个，在低端机上前台峰值可达数百 MB。
      * 主动响应 onTrimMemory 可在系统承压前释放资源，比被动等待 GC/被 kill 友好得多。
      */
+    @Suppress("DEPRECATION")
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         when (level) {

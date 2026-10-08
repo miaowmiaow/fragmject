@@ -27,6 +27,14 @@ object OkUtils {
     @Volatile
     private var httpClient: OkHttpClient? = null
 
+    // 图片加载（Coil）专用 client：禁用 OkHttp 缓存、Debug 下仅打印 HEADERS 日志。
+    @Volatile
+    private var imageClient: OkHttpClient? = null
+
+    // 流式下载专用 client：配置同图片 client（禁缓存、Debug 仅 HEADERS 日志），不含离线兜底拦截器。
+    @Volatile
+    private var downloadClient: OkHttpClient? = null
+
     // SSL 相关配置：默认均为 null（不启用自定义 SSL），后续接入证书时通过 setSslConfig 注入。
     private var clientCertificate: InputStream? = null
     private var clientCertificatePwd: String? = null
@@ -87,6 +95,49 @@ object OkUtils {
         // 双重检查锁：仅在尚未初始化时进入同步块；初始化后无锁竞争直接返回。
         httpClient ?: getOkHttpBuilder(context).also { httpClient = it }
     }
+
+    /**
+     * 图片加载（Coil）专用 OkHttpClient。
+     *
+     * 与业务请求 client 分离：
+     * - 禁用 OkHttp 磁盘缓存，避免与 Coil 自带磁盘缓存形成双重缓存；
+     * - Debug 包仅保留 HEADERS 日志（图片响应体量大，BODY 日志刷屏且无意义），
+     *   Release 包依旧不加任何日志拦截器。
+     */
+    @JvmStatic
+    fun imageClient(context: Context): OkHttpClient = imageClient ?: synchronized(this) {
+        imageClient ?: buildNoCacheClient(context).also { imageClient = it }
+    }
+
+    /**
+     * 流式下载专用 OkHttpClient。
+     *
+     * 基于裸 client（不含离线兜底拦截器）正向构建：
+     * - 禁用 OkHttp 磁盘缓存，避免大文件写缓存导致 SocketException；
+     * - Debug 包仅保留 HEADERS 日志，Release 包不加任何日志拦截器。
+     */
+    @JvmStatic
+    fun downloadClient(context: Context): OkHttpClient = downloadClient ?: synchronized(this) {
+        downloadClient ?: buildNoCacheClient(context).also { downloadClient = it }
+    }
+
+    /**
+     * 构建「禁用 OkHttp 磁盘缓存、Debug 下仅保留 HEADERS 日志」的 client。
+     * 图片加载与流式下载共用：两者都不需要 OkHttp 磁盘缓存，也都无需打印 BODY 日志。
+     */
+    private fun buildNoCacheClient(context: Context): OkHttpClient =
+        httpClient(context).newBuilder()
+            .cache(null)
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    // 将 BODY 日志降级为 HEADERS，避免大体积响应刷屏。
+                    networkInterceptors().removeAll { it is HttpLoggingInterceptor }
+                    addNetworkInterceptor(
+                        HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS)
+                    )
+                }
+            }
+            .build()
 
     private fun getOkHttpBuilder(context: Context): OkHttpClient {
         val builder = OkHttpClient().newBuilder()

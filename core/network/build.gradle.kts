@@ -1,9 +1,21 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("fragmject.android.library")
     id("fragmject.android.hilt")
 }
 
+val configProperties = Properties()
+configProperties.load(FileInputStream(rootProject.file("config.properties")))
+
+val baseUrl: String = configProperties.getProperty("baseUrl")
+
 android {
+    defaultConfig {
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+    }
+
     buildFeatures {
         buildConfig = true
     }

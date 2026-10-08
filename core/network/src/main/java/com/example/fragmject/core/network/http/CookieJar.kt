@@ -23,7 +23,9 @@ class CookieJar @Inject constructor(
         // CookieStore.getCookie() 期望完整 URL（含 scheme），传 host 在部分系统上可能取不到 Cookie
         store.getCookie(url.toString())?.let { cookiesStr ->
             if (cookiesStr.isNotEmpty()) {
-                val cookies = cookiesStr.split(";".toRegex())
+                // 用字符重载而非 ";" .toRegex()：toRegex() 每次都会 Pattern.compile，
+                // 而 loadForRequest 是 OkHttp 每请求必调的回调
+                val cookies = cookiesStr.split(';')
                 for (cookie in cookies) {
                     Cookie.parse(url, cookie.trim())?.apply {
                         cookieList.add(this)

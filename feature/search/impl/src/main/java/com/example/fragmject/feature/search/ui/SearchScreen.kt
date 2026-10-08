@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.FeedCard
@@ -75,7 +75,7 @@ import com.example.fragmject.core.designsystem.AppColors
 @Composable
 fun SearchScreen(
     key: String,
-    searchViewModel: SearchViewModel = viewModel(),
+    searchViewModel: SearchViewModel = hiltViewModel(),
 ) {
     val articleNavigator = LocalArticleNavigator.current
     val userNavigator = LocalUserNavigator.current
@@ -87,6 +87,8 @@ fun SearchScreen(
     val searchHistoryResult by searchViewModel.searchHistoryResult.collectAsStateWithLifecycle()
     val pagingItems = searchViewModel.pagingFlow.collectAsLazyPagingItems()
     val overrides by searchViewModel.collectState.overrides.collectAsStateWithLifecycle()
+    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
+    val onToggleClick = remember(searchViewModel.collectState) { searchViewModel.collectState::toggle }
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         searchViewModel.collectState.collectFailed.collect { message ->
@@ -282,7 +284,7 @@ searchViewModel.submitSearch(searchText)
                             onItemClick = { articleNavigator.openArticle(it) },
                             onUserClick = { userNavigator.openUserProfile(it) },
                             onFooterClick = { homeNavigator.openSystemTree(it) },
-                            onToggleClick = searchViewModel.collectState::toggle,
+                            onToggleClick = onToggleClick,
                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                         )
                     }

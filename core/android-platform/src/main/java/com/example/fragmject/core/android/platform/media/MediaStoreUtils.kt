@@ -1,4 +1,5 @@
-package com.example.fragmject.core.android.platform
+package com.example.fragmject.core.android.platform.media
+
 
 import android.content.ContentUris
 import android.content.ContentValues
@@ -13,6 +14,7 @@ import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
 import android.provider.MediaStore.MediaColumns.MIME_TYPE
 import android.provider.MediaStore.MediaColumns.RELATIVE_PATH
 import android.util.Log
+import com.example.fragmject.core.android.platform.file.FileUtils
 import androidx.core.net.toUri
 import java.io.File
 import java.io.FileInputStream

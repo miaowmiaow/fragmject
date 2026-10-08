@@ -1,9 +1,9 @@
 package com.example.fragmject.core.data.repository.media
 
 import android.content.Context
-import android.net.Uri
-import com.example.fragmject.core.android.platform.getBitmapFromPath
-import com.example.fragmject.core.android.platform.getBitmapFromUri
+import androidx.core.net.toUri
+import com.example.fragmject.core.android.platform.media.getBitmapFromPath
+import com.example.fragmject.core.android.platform.media.getBitmapFromUri
 import com.example.fragmject.core.domain.media.EditedImage
 import com.example.fragmject.core.domain.media.ImageHandle
 import com.example.fragmject.core.domain.media.ImageSource
@@ -22,8 +22,10 @@ import javax.inject.Singleton
  * 保存的业务规则（有效性校验、编码、落盘判定）委托给 [MediaSaveRules]，
  * 后者不依赖 Context，可在纯 JVM 下测试。
  */
+// internal：仅由本模块 di/RepositoryModule 的 @Binds 绑定，
+// 对外只暴露 core:domain 的 MediaEditor 端口（架构测试规则 16 约束 media 包的对外表面）
 @Singleton
-class MediaEditorImpl @Inject constructor(
+internal class MediaEditorImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val saveRules: MediaSaveRules,
 ) : MediaEditor {
@@ -34,7 +36,7 @@ class MediaEditorImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             val bitmap = when (source) {
                 is ImageSource.Path -> context.getBitmapFromPath(source.value, targetWidth)
-                is ImageSource.Uri -> context.getBitmapFromUri(Uri.parse(source.value), targetWidth)
+                is ImageSource.Uri -> context.getBitmapFromUri(source.value.toUri(), targetWidth)
             }
             // 业务规则：解码失败或退化成 1×1 的位图一律视为无效
             bitmap?.takeIf { it.width > 1 && it.height > 1 }?.let(::BitmapImageHandle)

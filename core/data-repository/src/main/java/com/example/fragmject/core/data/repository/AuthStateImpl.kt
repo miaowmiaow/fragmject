@@ -1,6 +1,6 @@
 package com.example.fragmject.core.data.repository
 
-import com.example.fragmject.core.android.platform.AppScope
+import com.example.fragmject.core.android.platform.app.AppCoroutineScope
 import com.example.fragmject.core.domain.AuthState
 import com.example.fragmject.core.domain.repository.UserRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,9 +19,10 @@ import javax.inject.Singleton
 @Singleton
 class AuthStateImpl @Inject constructor(
     userRepository: UserRepository,
+    appScope: AppCoroutineScope,
 ) : AuthState {
     override val isLoggedIn: StateFlow<Boolean> =
         userRepository.observeCurrentUser()
             .map { it != null && it.id > 0 }
-            .stateIn(AppScope, SharingStarted.Eagerly, false)
+            .stateIn(appScope, SharingStarted.Eagerly, false)
 }

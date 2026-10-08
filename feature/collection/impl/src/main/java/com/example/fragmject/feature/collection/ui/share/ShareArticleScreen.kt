@@ -41,7 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
@@ -53,10 +53,9 @@ import com.example.fragmject.core.designsystem.TitleBar
 
 @Composable
 fun ShareArticleScreen(
-    viewModel: ShareArticleViewModel = viewModel(key = "share_article"),
+    viewModel: ShareArticleViewModel = hiltViewModel(key = "share_article"),
 ) {
-    // 进入即复位成功标记：ViewModel 由 Activity 共享，残留的 success 会导致本页被立即返回
-    LaunchedEffect(Unit) { viewModel.resetSuccess() }
+    // 无需复位成功标记：ViewModel 已限定到 NavEntry，出栈即清除，再次进入必为全新实例
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current

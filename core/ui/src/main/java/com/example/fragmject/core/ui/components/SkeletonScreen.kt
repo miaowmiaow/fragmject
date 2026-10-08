@@ -14,7 +14,9 @@ import androidx.compose.ui.unit.dp
 
 /**
  * 非列表内容的首屏骨架屏：「标题条 + 通栏条目条」。
- * 每个骨架块独立带 shimmer 扫光。
+ *
+ * 整屏只创建一个 shimmer 动画（[rememberShimmerProgress]），所有骨架块共享进度并各自带
+ * 相位偏移（[shimmerPhaseOf]）保留错落感。
  */
 @Composable
 fun SkeletonScreen(
@@ -22,6 +24,7 @@ fun SkeletonScreen(
     rowCount: Int = 8,
     contentPadding: PaddingValues = PaddingValues(10.dp),
 ) {
+    val shimmerProgress = rememberShimmerProgress()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -32,14 +35,18 @@ fun SkeletonScreen(
         SkeletonBlock(
             modifier = Modifier
                 .fillMaxWidth(0.4f)
-                .height(28.dp)
+                .height(28.dp),
+            shimmerProgress = shimmerProgress,
+            shimmerPhase = shimmerPhaseOf(0),
         )
         Spacer(Modifier.height(10.dp))
-        repeat(rowCount) {
+        repeat(rowCount) { rowIndex ->
             SkeletonBlock(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(48.dp),
+                shimmerProgress = shimmerProgress,
+                shimmerPhase = shimmerPhaseOf(rowIndex + 1),
             )
         }
     }

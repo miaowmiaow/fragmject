@@ -3,9 +3,9 @@ package com.example.fragmject.core.data.repository
 import android.content.Context
 import android.os.Environment
 import android.util.Log
-import com.example.fragmject.core.android.platform.BitmapCodec
-import com.example.fragmject.core.android.platform.CacheUtils
-import com.example.fragmject.core.android.platform.MediaStoreUtils
+import com.example.fragmject.core.android.platform.media.BitmapCodec
+import com.example.fragmject.core.android.platform.cache.CacheUtils
+import com.example.fragmject.core.android.platform.media.MediaStoreUtils
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.domain.result.MediaSaveResult
@@ -21,7 +21,7 @@ import javax.inject.Singleton
  * 纯 MediaStore 写入委托给 [MediaStoreUtils]，不再依赖 network 层的 AlbumHelper。
  *
  * 所有保存方法均为 suspend，由调用方（ViewModel）在自身作用域调度，
- * 不再使用进程级 AppScope 启动 fire-and-forget 协程。
+ * 不再使用进程级 AppCoroutineScope 启动 fire-and-forget 协程。
  */
 @Singleton
 class MediaRepositoryImpl @Inject constructor(

@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.ReorderLazyVerticalGrid
@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.update
 
 @Composable
 fun GridSortScreen(
-    viewModel: PhotosGridViewModel = viewModel(),
+    viewModel: PhotosGridViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val state = rememberLazyGridState()

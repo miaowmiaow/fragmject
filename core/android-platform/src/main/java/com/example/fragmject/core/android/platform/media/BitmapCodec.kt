@@ -1,4 +1,4 @@
-package com.example.fragmject.core.android.platform
+package com.example.fragmject.core.android.platform.media
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

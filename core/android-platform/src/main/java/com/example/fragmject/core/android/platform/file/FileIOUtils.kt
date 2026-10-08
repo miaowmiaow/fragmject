@@ -1,4 +1,4 @@
-package com.example.fragmject.core.android.platform
+package com.example.fragmject.core.android.platform.file
 
 import android.content.Context
 import android.util.Log
@@ -184,9 +184,6 @@ internal fun readStreamBytesInternal(inputStream: InputStream?, readCount: Int):
     }
     return null
 }
-
-internal fun readAssetStringInternal(fileName: String): String =
-    readAssetStringInternal(BaseContentProvider.context(), fileName)
 
 internal fun readAssetStringInternal(context: Context, fileName: String): String {
     val sb = StringBuilder()

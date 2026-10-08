@@ -30,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.utils.AvatarUtils
@@ -44,7 +44,7 @@ import com.example.fragmject.core.designsystem.TitleBar
 
 @Composable
 fun RankScreen(
-    viewModel: RankViewModel = viewModel(),
+    viewModel: RankViewModel = hiltViewModel(),
 ) {
     val articleNavigator = LocalArticleNavigator.current
     val userNavigator = LocalUserNavigator.current

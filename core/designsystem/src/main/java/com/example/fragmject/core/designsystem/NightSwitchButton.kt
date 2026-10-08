@@ -125,7 +125,7 @@ fun Sky(
         targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = getRandom(3000f, 5000f).toInt(),
+                durationMillis = remember { getRandom(3000f, 5000f).toInt() },
                 easing = LinearEasing,
             ),
             repeatMode = RepeatMode.Reverse,
@@ -137,7 +137,7 @@ fun Sky(
         targetValue = 1.1f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = getRandom(5000f, 7000f).toInt(),
+                durationMillis = remember { getRandom(5000f, 7000f).toInt() },
                 easing = LinearEasing,
             ),
             repeatMode = RepeatMode.Reverse,
@@ -149,7 +149,7 @@ fun Sky(
         targetValue = 1.15f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = getRandom(1000f, 10000f).toInt(),
+                durationMillis = remember { getRandom(1000f, 10000f).toInt() },
                 easing = LinearEasing,
             ),
             repeatMode = RepeatMode.Reverse,
@@ -349,11 +349,12 @@ fun Stars(
         (progress - perDistance) / (1f - perDistance * 2f)
     }
     for (nightStar in nightStars) {
-        // if NightStar is not lighting, then start lighting animation
-        if (nightStar.status.value == NightStarStatus.Start) {
-            nightStar.status.value = NightStarStatus.Lighting
-        }
+        // 状态迁移统一由 LaunchedEffect 承担：在组合期写 snapshot 状态会使当前组合立即失效，
+        // 触发额外一轮重组（Compose 明确反模式），这里只读取不写入。
         LaunchedEffect(nightStar) {
+            if (nightStar.status.value == NightStarStatus.Start) {
+                nightStar.status.value = NightStarStatus.Lighting
+            }
             if (nightStar.status.value == NightStarStatus.Lighting) {
                 val durationMs = getRandom(3000f, 6000f).toLong()
                 val halfCycleMs = (durationMs / 4).coerceAtLeast(16) // 每半周期

@@ -1,6 +1,6 @@
 package com.example.fragmject.core.data.repository
 
-import com.example.fragmject.core.android.platform.AppScope
+import com.example.fragmject.core.android.platform.app.AppCoroutineScope
 import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,8 +18,9 @@ import javax.inject.Singleton
 @Singleton
 class ThemeStateImpl @Inject constructor(
     themeRepository: ThemeRepository,
+    appScope: AppCoroutineScope,
 ) : ThemeState {
     override val darkTheme: StateFlow<Boolean> =
         themeRepository.observeDarkTheme()
-            .stateIn(AppScope, SharingStarted.Eagerly, false)
+            .stateIn(appScope, SharingStarted.Eagerly, false)
 }

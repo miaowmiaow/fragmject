@@ -7,13 +7,14 @@ import android.content.ContextWrapper
 import android.content.MutableContextWrapper
 import android.graphics.Color
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.example.fragmject.core.android.platform.AppScope
+import com.example.fragmject.core.android.platform.app.AppCoroutineScope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,10 +33,14 @@ import javax.inject.Singleton
 @Singleton
 class WebViewPoolManager @Inject constructor(
     @ApplicationContext private val appContext: Context,
+    private val appScope: AppCoroutineScope,
 ) : WebViewPool {
 
     companion object {
         private const val TAG = "WebViewPoolManager"
+
+        /** 预热兜底延迟：主线程长时间无空闲时强制执行，避免预热永不发生。 */
+        private const val WARMUP_FALLBACK_DELAY_MS = 4_000L
     }
 
     /**
@@ -100,9 +105,19 @@ class WebViewPoolManager @Inject constructor(
      */
     override fun prepare(context: Context) {
         val appCtx = context.applicationContext
-        Handler(appCtx.mainLooper).postDelayed({
-            warmupSpareWebView(appCtx)
-        }, 500L)
+        val handler = Handler(appCtx.mainLooper)
+        val warmup = Runnable { warmupSpareWebView(appCtx) }
+        // 用 IdleHandler 把预热放到主线程**真正空闲**时：new WebView 会触发 provider/so
+        // 加载与渲染进程预热，典型 50–300ms 主线程停顿；固定 postDelayed(500) 无法保证
+        // 那一刻主线程是空闲的，往往正好落在首屏加载/骨架屏期间造成掉帧。
+        // 延迟任务仅作兜底：主线程长时间不空闲时强制执行（重复执行由 spareWebView 判空吸收）。
+        handler.post {
+            Looper.myQueue().addIdleHandler {
+                warmup.run()
+                false // 只执行一次
+            }
+            handler.postDelayed(warmup, WARMUP_FALLBACK_DELAY_MS)
+        }
     }
 
     private fun warmupSpareWebView(appContext: Context) {
@@ -135,7 +150,7 @@ class WebViewPoolManager @Inject constructor(
                 spareWebView = null
                 // 取走后异步补充一个新的热身实例，保证下次 obtain 仍能秒开
                 val appCtx = it.context.applicationContext
-                AppScope.launch(Dispatchers.Main) {
+                appScope.launch(Dispatchers.Main) {
                     if (spareWebView == null) {
                         try {
                             spareWebView = create(appCtx)

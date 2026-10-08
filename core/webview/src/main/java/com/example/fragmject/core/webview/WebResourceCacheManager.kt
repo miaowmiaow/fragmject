@@ -4,8 +4,9 @@ import android.content.Context
 import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
-import com.example.fragmject.core.android.platform.AppScope
-import com.example.fragmject.core.android.platform.CacheUtils
+import com.example.fragmject.core.android.platform.app.AppCoroutineScope
+import com.example.fragmject.core.android.platform.cache.CacheDirs
+import com.example.fragmject.core.android.platform.cache.CacheUtils
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.domain.session.CookieStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -14,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import com.example.fragmject.core.android.platform.DigestUtils
+import com.example.fragmject.core.android.platform.digest.DigestUtils
 import java.io.File
 import java.net.InetAddress
 import java.net.URI
@@ -35,12 +36,22 @@ class WebResourceCacheManager @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val downloader: DownloadRepository,
     private val cookieStore: CookieStore,
+    private val appScope: AppCoroutineScope,
 ) : WebResourceCache {
 
     companion object {
         private const val TAG = "WebResourceCache"
         private const val DOWNLOAD_TIMEOUT_MS = 8_000L
-        private const val WEB_CACHE_DIR = "web_cache"
+        private val WEB_CACHE_DIR = CacheDirs.WEB
+
+        /**
+         * mtime 回写的最小间隔。
+         *
+         * [cacheResourceRequest] 命中时会 touch mtime 作为 LRU 依据，而 touch 是一次
+         * utimes 写系统调用，发生在 `shouldInterceptRequest` 的同步路径上。
+         * LRU 只需要「大致最近使用」的粒度，因此限制回写频率。
+         */
+        private const val MTIME_TOUCH_INTERVAL_MS = 60_000L
 
         /** 本地缓存文件数上限。超过时按 mtime 淘汰最旧文件，mtime 在每次命中时被 touch。 */
         private const val WEB_CACHE_MAX_FILES = 5000
@@ -55,13 +66,23 @@ class WebResourceCacheManager @Inject constructor(
         )
 
         /** HTML 主文档独立缓存目录，与静态资源缓存解耦（独立 TTL/上限）。 */
-        private const val HTML_CACHE_DIR = "web_html_cache"
+        private val HTML_CACHE_DIR = CacheDirs.WEB_HTML
 
         /** HTML 缓存文件数上限，超过时按 mtime 淘汰最旧文件。 */
         private const val HTML_CACHE_MAX_FILES = 200
 
         /** HTML 硬过期时长：超过则强制回源，避免后台刷新持续失败导致内容永久陈旧。 */
         private const val HTML_HARD_EXPIRE_MS = 7L * 24 * 60 * 60 * 1000
+
+        /**
+         * HTML 最小刷新间隔：命中缓存且距上次**成功刷新**不足该间隔时，直接返回缓存，
+         * 不再发起后台刷新。
+         *
+         * mtime 在命中时不会被 touch、只在下载成功时写入（见 [scheduleHtmlDownload]），
+         * 因此 mtime 即「上次成功刷新时间」，可直接用作间隔判断。
+         * 没有这层判断时，1 分钟内重复打开同一文章会触发 N 次完整 HTML 下载。
+         */
+        private const val HTML_MIN_REFRESH_INTERVAL_MS = 5L * 60 * 1000
     }
 
     /** 正在下载中的缓存任务，按缓存 key 去重，避免并发重复下载同一资源。 */
@@ -103,6 +124,12 @@ class WebResourceCacheManager @Inject constructor(
                     file.delete()
                     scheduleHtmlDownload(key, cachePath, fileName, url, request)
                     return null
+                }
+                // 距上次成功刷新过近：直接返回缓存，不发起后台刷新。
+                // 否则「打开 → 返回 → 再打开」这类短时重复访问会各自触发一次完整 HTML 下载，
+                // 使缓存的收益被自身抵消；同时每次下载成功都会触发一次 evictByMtime 磁盘遍历。
+                if (age < HTML_MIN_REFRESH_INTERVAL_MS) {
+                    return WebResourceResponse("text/html", null, file.inputStream())
                 }
                 // 命中：直接返回缓存 + 后台异步刷新（stale-while-revalidate）
                 scheduleHtmlDownload(key, cachePath, fileName, url, request)
@@ -150,9 +177,14 @@ class WebResourceCacheManager @Inject constructor(
             val fileName = DigestUtils.md5Hex(url)
             val key = cachePath + File.separator + fileName
             val file = File(key)
-            if (file.exists() && file.isFile && file.length() > 0L) {
-                // 命中：touch mtime 作为"最近访问"标记，直接返回文件流
-                file.setLastModified(System.currentTimeMillis())
+            if (file.isFile && file.length() > 0L) {
+                // 命中：仅在距上次 touch 超过 [MTIME_TOUCH_INTERVAL_MS] 时才回写 mtime。
+                // file.isFile 已隐含 exists 判断，无需再调一次 exists()。
+                // 原实现每次命中都写一次 utimes，100 资源的页面就是 100 次同步写系统调用。
+                val now = System.currentTimeMillis()
+                if (now - file.lastModified() > MTIME_TOUCH_INTERVAL_MS) {
+                    file.setLastModified(now)
+                }
                 val mimeType = request.getMimeTypeFromUrl()
                 WebResourceResponse(mimeType, null, file.inputStream()).apply {
                     responseHeaders = mapOf("Access-Control-Allow-Origin" to "*")
@@ -171,7 +203,7 @@ class WebResourceCacheManager @Inject constructor(
     override fun prefetchDns(url: String) {
         try {
             val host = URI(url).host ?: return
-            AppScope.launch(Dispatchers.IO) {
+            appScope.launch(Dispatchers.IO) {
                 try {
                     InetAddress.getByName(host)
                 } catch (_: Exception) {
@@ -182,7 +214,7 @@ class WebResourceCacheManager @Inject constructor(
     }
 
     override fun evictByMtimeIfNeeded(context: Context) {
-        AppScope.launch(Dispatchers.IO) {
+        appScope.launch(Dispatchers.IO) {
             try {
                 evictByMtime(webCachePath, WEB_CACHE_MAX_FILES)
                 evictByMtime(htmlCachePath, HTML_CACHE_MAX_FILES)
@@ -215,7 +247,7 @@ class WebResourceCacheManager @Inject constructor(
         val headers = buildDownloadHeaders(url, referer, request)
         val partFileName = "$fileName.part"
         val partFile = File(cachePath, partFileName)
-        val job = AppScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
+        val job = appScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
             try {
                 val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
                     downloader.download(url, cachePath, partFileName, headers)
@@ -262,7 +294,7 @@ class WebResourceCacheManager @Inject constructor(
     ) {
         val headers = buildDownloadHeaders(url, null, request)
         val tmpFileName = "$fileName.tmp"
-        val job = AppScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
+        val job = appScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
             try {
                 val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
                     downloader.download(url, cachePath, tmpFileName, headers)
@@ -329,10 +361,13 @@ class WebResourceCacheManager @Inject constructor(
             val files = dir.listFiles() ?: return
             if (files.size <= maxFiles) return
 
-            // 按 mtime 升序（最旧的在前），删除超出上限的文件
-            files.sortedBy { it.lastModified() }
-                .take(files.size - maxFiles)
-                .forEach { it.delete() }
+            // 先一次性取出 mtime 再排序：sortedBy 的选择器会在**每次比较**时重新调用，
+            // 直接写 sortedBy { it.lastModified() } 会产生 O(n log n) 次 stat
+            // （5000 文件约 6 万次）。按 mtime 升序（最旧的在前），删除超出上限的文件。
+            val withMtime = files.map { it to it.lastModified() }
+            withMtime.sortedBy { it.second }
+                .take(withMtime.size - maxFiles)
+                .forEach { it.first.delete() }
         } catch (e: Exception) {
             Log.e(TAG, "evictByMtime failed", e)
         }

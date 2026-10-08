@@ -19,11 +19,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import androidx.navigation3.runtime.NavBackStack
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.fragmject.core.navigation.runtime.DetailPaneNavKey
+import com.example.fragmject.core.navigation.runtime.ProvideDetailPaneViewModelStore
 import com.example.fragmject.core.navigation.runtime.RequiresAuth
 import com.example.fragmject.core.navigation.runtime.LocalDetailContent
 import com.example.fragmject.core.navigation.runtime.LocalNavFlowScopes
@@ -119,8 +122,12 @@ fun AppNavGraph(
     // 否则发起方下次进入仍会看到上一次选中的图片。
     val pictureNavigator = LocalPictureNavigator.current
     val hasPictureFlow = backStack.any { it is PictureFlowNavKey }
+    // 进入图片流程时清空上一次的选图结果。
+    // 结果只在「确认选择」时写入（PictureNavRegistration.onConfirm），而系统返回/手势返回
+    // 不会走选择器的取消回调。因此在**进入**时清空比在退出时清空更可靠：退出时清空会把
+    // 刚确认的结果一并擦掉（曾表现为「选完图回到发起方却不显示」）。
     LaunchedEffect(hasPictureFlow) {
-        if (!hasPictureFlow) pictureNavigator.clearSelection()
+        if (hasPictureFlow) pictureNavigator.clearSelection()
     }
 
     // ---- 导航动作（直接操作 backStack） ----
@@ -212,10 +219,14 @@ fun AppNavGraph(
     }
     val detailContent: @Composable (NavKey) -> Unit =
         { key ->
-            CompositionLocalProvider(
-                LocalOnNavigateUp provides { selectedDetailKey = null },
-            ) {
-                registry.Render(key)
+            // DetailPane 不在 NavDisplay 内，拿不到 entry 级 ViewModelStore；
+            // 这里按 key 提供一个等价作用域，使两栏模式与单栏行为一致。
+            ProvideDetailPaneViewModelStore(key = key) {
+                CompositionLocalProvider(
+                    LocalOnNavigateUp provides { selectedDetailKey = null },
+                ) {
+                    registry.Render(key)
+                }
             }
         }
 
@@ -226,6 +237,12 @@ fun AppNavGraph(
         LocalNavFlowScopes provides flowScopes,
     ) {
         NavDisplay(
+            // entry 级作用域：ViewModel 随 NavEntry 出栈而清除（覆盖默认值时必须补回
+            // rememberSaveableStateHolderNavEntryDecorator，否则 rememberSaveable 会退回 Activity 级）
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
             backStack = backStack,
             // 复用 navigateUp：系统返回键与顶部返回按钮走同一套清理（含登录回跳清理与根栈兜底）
             onBack = navigateUp,

@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -272,6 +273,15 @@ fun RefreshIndicator(
     }
     val position = distanceFraction() * loadingHeightPx
 
+    // 帧资源一次性解码并复用：painterResource 以 resId 为 remember key，
+    // 若按 id 现取现用，拖动时 id 每帧变化会触发「每帧一次 webp 解码（主线程同步）」；
+    // 刷新中的 infinite 动画也有约 25 次/秒换帧。这里一次性建好 37 个 Painter 后只做索引切换。
+    // 代价：首个使用该指示器的页面一次性解码 37 张小图（约几十 ms），之后恒定 O(1)。
+    val painters = ArrayList<Painter>(RefreshingResIds.size)
+    for (resId in RefreshingResIds) {
+        painters.add(painterResource(resId))
+    }
+
     // 仅在下拉刷新进行中才启动无限循环动画；列表空闲时（isRefreshing=false）不创建动画，
     // 避免无限动画每帧 tick 造成的无效 CPU 开销与潜在重组。
     val id = if (isRefreshing) {
@@ -291,7 +301,7 @@ fun RefreshIndicator(
     }
 
     Image(
-        painter = painterResource(RefreshingResIds[id]),
+        painter = painters[id],
         contentDescription = null,
         modifier = Modifier
             .graphicsLayer {

@@ -57,7 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
@@ -99,7 +99,7 @@ private fun MainContent(
     modifier: Modifier = Modifier,
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
-    Column(modifier = modifier) {
+    Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
         when (navIndex) {
             0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
                 HomeScreen(listState = homeListState, actions = homeActions)
@@ -191,7 +191,7 @@ private fun ContentPane(
 
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel = viewModel(),
+    viewModel: MainViewModel = hiltViewModel(),
     selectedDetailKey: NavKey? = null,
     onClearDetail: () -> Unit = {},
     detailContent: @Composable (NavKey) -> Unit = { _ -> },
@@ -209,17 +209,30 @@ fun MainScreen(
     }
 
     // 跨域语义动作：由 CompositionLocal 提供的语义 Navigator 构造（导航是 UI 层职责）。
-    val homeActions = homeNavActions(
-        articleNavigator = LocalArticleNavigator.current,
-        userNavigator = LocalUserNavigator.current,
-        homeNavigator = LocalHomeNavigator.current,
-    )
-    val myActions = myNavActions(
-        userNavigator = LocalUserNavigator.current,
-        authNavigator = LocalAuthNavigator.current,
-        collectionNavigator = LocalCollectionNavigator.current,
-        demoNavigator = LocalDemoNavigator.current,
-    )
+    val articleNavigator = LocalArticleNavigator.current
+    val userNavigator = LocalUserNavigator.current
+    val homeNavigator = LocalHomeNavigator.current
+    val authNavigator = LocalAuthNavigator.current
+    val collectionNavigator = LocalCollectionNavigator.current
+    val demoNavigator = LocalDemoNavigator.current
+
+    // 必须 remember：HomeNavActions/MyNavActions 是含 lambda 的 data class，
+    // 每次重组新建实例会让四个子页的参数「不等」，从而无法跳过重组。
+    val homeActions = remember(articleNavigator, userNavigator, homeNavigator) {
+        homeNavActions(
+            articleNavigator = articleNavigator,
+            userNavigator = userNavigator,
+            homeNavigator = homeNavigator,
+        )
+    }
+    val myActions = remember(userNavigator, authNavigator, collectionNavigator, demoNavigator) {
+        myNavActions(
+            userNavigator = userNavigator,
+            authNavigator = authNavigator,
+            collectionNavigator = collectionNavigator,
+            demoNavigator = demoNavigator,
+        )
+    }
 
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = remember {

@@ -134,9 +134,11 @@ abstract class RepositoryModule {
     @Singleton
     abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
 
+    // internal：MediaEditorImpl 为 internal（架构测试规则 16 约束 media 包对外表面），
+    // Kotlin 不允许 public 函数暴露 internal 类型；internal 方法在字节码中仍是 public，Dagger 可正常处理
     @Binds
     @Singleton
-    abstract fun bindMediaEditor(impl: MediaEditorImpl): MediaEditor
+    internal abstract fun bindMediaEditor(impl: MediaEditorImpl): MediaEditor
 
     @Binds
     @Singleton

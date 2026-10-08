@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.SkeletonContent
@@ -39,13 +39,15 @@ import com.example.fragmject.feature.home.nav.HomeNavActions
 
 @Composable
 fun ProjectScreen(
-    projectTreeViewModel: ProjectTreeViewModel = viewModel(),
-    projectListViewModel: ProjectListViewModel = viewModel(),
+    projectTreeViewModel: ProjectTreeViewModel = hiltViewModel(),
+    projectListViewModel: ProjectListViewModel = hiltViewModel(),
     actions: HomeNavActions = HomeNavActions(),
 ) {
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val overrides by projectListViewModel.collectState.overrides.collectAsStateWithLifecycle()
+    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
+    val onToggleClick = remember(projectListViewModel.collectState) { projectListViewModel.collectState::toggle }
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         projectListViewModel.collectState.collectFailed.collect { message ->
@@ -89,7 +91,7 @@ fun ProjectScreen(
                             onItemClick = actions.onArticleClick,
                             onUserClick = actions.onAuthorClick,
                             onFooterClick = actions.onChapterClick,
-                            onToggleClick = projectListViewModel.collectState::toggle,
+                            onToggleClick = onToggleClick,
                         )
                     }
                 }

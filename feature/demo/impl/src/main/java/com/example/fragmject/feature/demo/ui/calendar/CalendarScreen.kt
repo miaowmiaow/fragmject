@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.R
@@ -45,7 +45,7 @@ import com.example.fragmject.feature.demo.components.calendar.rememberCalendarSt
 
 @Composable
 fun CalendarScreen(
-    viewModel: CalendarViewModel = viewModel(),
+    viewModel: CalendarViewModel = hiltViewModel(),
 ) {
     val scheduleMap by viewModel.scheduleMap.collectAsStateWithLifecycle()
     val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()

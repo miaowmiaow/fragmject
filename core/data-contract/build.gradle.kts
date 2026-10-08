@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     // 纯契约层仅需 Flow/suspend，与 core:domain 一致只用 -core，
     // 不引入含 Android Dispatchers.Main 的 -android 版本。
-    implementation(libs.kotlinx.coroutines.core)
+    // 用 api：本地数据源与远程数据源的公开签名暴露 Flow，消费方需随之可见。
+    api(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
 }

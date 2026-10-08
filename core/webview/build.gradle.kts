@@ -6,9 +6,9 @@ plugins {
 
 dependencies {
     implementation(project(":core:android-platform"))
+    // 资源缓存复用领域下载端口（DownloadRepository），由 data 层基于 OkHttp 实现
+    implementation(project(":core:domain"))
 
-    // WebResourceCacheManager 使用 okio.ByteString.encodeUtf8，通过 okhttp 传递引入
-    implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines)
 
     // WebViewContainer 使用 rememberLauncherForActivityResult 申请权限

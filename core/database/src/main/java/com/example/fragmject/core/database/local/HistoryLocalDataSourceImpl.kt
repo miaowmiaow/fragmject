@@ -1,7 +1,6 @@
 package com.example.fragmject.core.database.local
 
 import com.example.fragmject.core.database.dao.HistoryDao
-import com.example.fragmject.core.database.model.HistoryEntity
 import com.example.fragmject.core.database.model.toDomain
 import com.example.fragmject.core.database.model.toEntity
 import com.example.fragmject.core.data.contract.local.HistoryLocalDataSource
@@ -37,28 +36,18 @@ class HistoryLocalDataSourceImpl @Inject constructor(
     override fun observeSearchHistory(): Flow<List<History>> =
         historyDao.getByKey(KEY_SEARCH_HISTORY).map { list -> list.map { it.toDomain() } }
 
+    // 「查询 → 删除旧记录 → 插入」的原子性由 DAO 的 @Transaction 方法保证：
+    // @Transaction 只在 Room 生成的 DAO 实现中生效，标注在本类方法上无效。
     override suspend fun setBookmark(value: String, url: String) {
-        val existing = historyDao.getByUrl(key = KEY_BOOKMARK, url = url)
-        if (existing != null) historyDao.delete(existing)
-        historyDao.insertWithLimitCheck(
-            HistoryEntity(id = 0, key = KEY_BOOKMARK, value = value, url = url)
-        )
+        historyDao.replaceByUrl(key = KEY_BOOKMARK, value = value, url = url)
     }
 
     override suspend fun recordBrowseVisit(value: String, url: String) {
-        val existing = historyDao.getByUrl(key = KEY_BROWSE_HISTORY, url = url)
-        if (existing != null) historyDao.delete(existing)
-        historyDao.insertWithLimitCheck(
-            HistoryEntity(id = 0, key = KEY_BROWSE_HISTORY, value = value, url = url)
-        )
+        historyDao.replaceByUrl(key = KEY_BROWSE_HISTORY, value = value, url = url)
     }
 
     override suspend fun recordSearchQuery(value: String) {
-        val existing = historyDao.getByValue(key = KEY_SEARCH_HISTORY, value = value)
-        if (existing != null) historyDao.delete(existing)
-        historyDao.insertWithLimitCheck(
-            HistoryEntity(id = 0, key = KEY_SEARCH_HISTORY, value = value)
-        )
+        historyDao.replaceByValue(key = KEY_SEARCH_HISTORY, value = value)
     }
 
     override suspend fun deleteHistory(history: History) {

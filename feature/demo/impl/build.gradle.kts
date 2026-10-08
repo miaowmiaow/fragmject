@@ -7,7 +7,6 @@ plugins {
 dependencies {
     api(project(":feature:demo:api"))
 
-    implementation(project(":core:android-platform"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:player"))

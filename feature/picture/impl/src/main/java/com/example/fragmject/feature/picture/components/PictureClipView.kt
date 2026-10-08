@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.values
+import com.example.fragmject.core.data.repository.media.BitmapImageHandle
+import com.example.fragmject.core.domain.media.ImageHandle
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
@@ -176,8 +178,12 @@ class PictureClipState {
         isScaling = false
     }
 
-    fun saveBitmap(): Bitmap {
-        val bmp = _bitmap ?: return createBitmap(1, 1)
+    /**
+     * 合成裁剪结果，返回领域句柄 [ImageHandle]；未就绪返回 null，
+     * 后续的尺寸校验、编码与落盘交由 MediaEditor 处理。
+     */
+    fun saveBitmap(): ImageHandle? {
+        val bmp = _bitmap ?: return null
         val width = max(clipRectF.width().toInt(), 1)
         val height = max(clipRectF.height().toInt(), 1)
         val clipBitmap = createBitmap(width, height)
@@ -193,7 +199,7 @@ class PictureClipState {
         }
         canvas.drawRect(tempClip, Paint(Paint.ANTI_ALIAS_FLAG))
         canvas.drawBitmap(bmp, null, tempBitmapRect, paint)
-        return clipBitmap
+        return BitmapImageHandle(clipBitmap)
     }
 
     private fun computeBitmapRectF() {

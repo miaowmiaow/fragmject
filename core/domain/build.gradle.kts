@@ -15,7 +15,9 @@ dependencies {
     implementation(libs.kotlin.stdlib)
     // 协程仅需纯 JVM 的 core 版（Flow/async/coroutineScope 等），不含 Dispatchers.Main 等 Android 调度器，
     // 与 hilt/paging 一并保证领域层构建依赖彻底脱离 Android framework。
-    implementation(libs.kotlinx.coroutines.core)
+    // 用 api：MediaEditor.saveProgress / SystemStorage.cacheSizeText 等公开签名暴露 Flow/StateFlow，
+    // 消费方（feature）需随之可见，避免各自重复声明。
+    api(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -2,6 +2,8 @@ package com.example.fragmject.core.data.repository.di
 
 import com.example.fragmject.core.data.repository.AuthStateImpl
 import com.example.fragmject.core.data.repository.AlbumRepositoryImpl
+import com.example.fragmject.core.data.repository.media.MediaEditorImpl
+import com.example.fragmject.core.data.repository.system.SystemStorageImpl
 import com.example.fragmject.core.data.repository.CoinRankRepositoryImpl
 import com.example.fragmject.core.data.repository.CollectStateImpl
 import com.example.fragmject.core.data.repository.DownloadRepositoryImpl
@@ -19,10 +21,11 @@ import com.example.fragmject.core.data.repository.ThemeRepositoryImpl
 import com.example.fragmject.core.data.repository.ThemeStateImpl
 import com.example.fragmject.core.data.repository.UserCenterRepositoryImpl
 import com.example.fragmject.core.data.repository.UserRepositoryImpl
-import com.example.fragmject.core.data.repository.VideoDownloadRepositoryImpl
 import com.example.fragmject.core.domain.AuthState
 import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.domain.ThemeState
+import com.example.fragmject.core.domain.media.MediaEditor
+import com.example.fragmject.core.domain.system.SystemStorage
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.CoinRankRepository
 import com.example.fragmject.core.domain.repository.DownloadRepository
@@ -39,7 +42,6 @@ import com.example.fragmject.core.domain.repository.SystemRepository
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserCenterRepository
 import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.domain.repository.VideoDownloadRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -134,5 +136,9 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindVideoDownloadRepository(impl: VideoDownloadRepositoryImpl): VideoDownloadRepository
+    abstract fun bindMediaEditor(impl: MediaEditorImpl): MediaEditor
+
+    @Binds
+    @Singleton
+    abstract fun bindSystemStorage(impl: SystemStorageImpl): SystemStorage
 }

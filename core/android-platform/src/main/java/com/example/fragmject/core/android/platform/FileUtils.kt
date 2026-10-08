@@ -4,9 +4,6 @@ import android.content.Context
 import android.net.Uri
 import java.io.Closeable
 import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
-import java.nio.charset.Charset
 
 /**
  * 文件工具门面对象。
@@ -17,13 +14,15 @@ import java.nio.charset.Charset
  * 的方式拆分：
  *
  * - 公开入口仍只挂在 `FileUtils` 这一个 `object` 上，**所有调用方零改动**；
- * - 内部按职责拆到 4 个 `internal` 顶层文件：
+ * - 内部按职责拆到 `internal` 顶层文件（原编码类已因零调用整体移除）：
  *   - [FileSizeUtils.kt]：尺寸 / 可用空间
  *   - [FileIOUtils.kt]：流读写
  *   - [FileMimeUtils.kt]：MIME / 文件头
- *   - [FileEncodeUtils.kt]：Base64 / 二进制串
  *
  * 顺手修复的真实 Bug 详见各拆分文件 KDoc。
+ *
+ * 门面只保留实际有调用点的方法；Base64 / 二进制串一类零调用的转发已删除，
+ * 其实现文件 [FileEncodeUtils.kt] 一并移除，避免继续堆积无人使用的公开 API。
  */
 object FileUtils {
 
@@ -37,37 +36,7 @@ object FileUtils {
 
     fun formatSize(size: Double): String = formatSizeInternal(size)
 
-    fun getAvailableStorage(): Long = getAvailableStorageInternal()
-
     // ---------- 流读写 ----------
-
-    fun writeToFile(inputStream: InputStream, destFile: File, append: Boolean): Boolean =
-        writeToFileInternal(inputStream, destFile, append)
-
-    fun writeToFile(
-        content: String,
-        charset: Charset = Charset.defaultCharset(),
-        destFile: File,
-        append: Boolean,
-    ): Boolean = writeToFileInternal(content, charset, destFile, append)
-
-    fun writeToFile(data: ByteArray, destFile: File, append: Boolean): Boolean =
-        writeToFileInternal(data, destFile, append)
-
-    fun writeStream(inputStream: InputStream, outputStream: OutputStream): Boolean =
-        writeStreamInternal(inputStream, outputStream)
-
-    fun readFileBytes(file: File): ByteArray? = readFileBytesInternal(file)
-
-    fun readFileBytes(file: File, position: Int, length: Int): ByteArray? =
-        readFileBytesRangeInternal(file, position, length)
-
-    fun readStreamBytes(inputStream: InputStream): ByteArray? = readStreamBytesInternal(inputStream)
-
-    fun readStreamBytes(inputStream: InputStream?, readCount: Int): ByteArray? =
-        readStreamBytesInternal(inputStream, readCount)
-
-    fun readAssetString(fileName: String): String = readAssetStringInternal(fileName)
 
     fun readAssetString(context: Context, fileName: String): String =
         readAssetStringInternal(context, fileName)
@@ -76,42 +45,8 @@ object FileUtils {
 
     // ---------- MIME / 文件头 ----------
 
-    fun parseHeadCode(headCode: String): String = parseHeadCodeInternal(headCode)
-
-    fun readFileHeadString(file: File): String = readFileHeadStringInternal(file)
-
-    fun readFileHeadString(context: Context, fileUri: Uri): String =
-        readFileHeadStringInternal(context, fileUri)
-
-    fun getFileTypeCode(file: File): String = getFileTypeCodeInternal(file)
-
-    fun getFileTypeCode(context: Context, fileUri: Uri): String =
-        getFileTypeCodeInternal(context, fileUri)
-
     fun getFileMimeType(context: Context, fileUri: Uri): String =
         getFileMimeTypeInternal(context, fileUri)
 
     fun getFileMimeType(file: File): String = getFileMimeTypeInternal(file)
-
-    // ---------- 编码 / Base64 / 二进制串 ----------
-
-    fun strToBinary(str: String): String = strToBinaryInternal(str)
-
-    fun binaryToStr(binaryStr: String): String = binaryToStrInternal(binaryStr)
-
-    fun encodeBase64(bytes: ByteArray): String = encodeBase64Internal(bytes)
-
-    fun encodeBinary(bytes: ByteArray, charset: Charset = Charset.defaultCharset()): String =
-        encodeBinaryInternal(bytes, charset)
-
-    fun encodeBytes(bytes: ByteArray, charset: Charset = Charset.defaultCharset()): String =
-        encodeBytesInternal(bytes, charset)
-
-    fun decodeBase64(content: String): ByteArray? = decodeBase64Internal(content)
-
-    fun decodeBinary(content: String, charset: Charset = Charset.defaultCharset()): ByteArray =
-        decodeBinaryInternal(content, charset)
-
-    fun decodeString(content: String, charset: Charset = Charset.defaultCharset()): ByteArray =
-        decodeStringInternal(content, charset)
 }

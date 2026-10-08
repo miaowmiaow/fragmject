@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +25,7 @@ import com.example.fragmject.feature.picture.ui.editor.PictureEditorScreen
 import com.example.fragmject.feature.picture.ui.selector.PicturePreviewScreen
 import com.example.fragmject.feature.picture.ui.selector.PictureSelectorScreen
 import com.example.fragmject.feature.picture.ui.selector.PreviewMode
+import kotlinx.coroutines.launch
 
 /**
  * Picture Feature 导航内容贡献者：注册本域 NavKey → 渲染器映射。
@@ -44,8 +46,14 @@ object PictureNavContentContributor : NavContentContributor {
                         pictureNavigator.onPictureSelected(pictureFlowState.selectedUris.value)
                         onNavigateUp()
                     },
-                    onDismiss = { onNavigateUp() },
+                    onDismiss = {
+                        // 取消选择时上报空结果，避免 AppPictureNavigator 单例残留上次选图结果
+                        pictureNavigator.onPictureSelected(emptyList())
+                        onNavigateUp()
+                    },
                     onPreview = { uris ->
+                        // 进入预览前先按 uris 解析出 MediaItem 快照，预览页只读快照
+                        pictureFlowState.startPreview(uris)
                         pictureNavigator.openPicturePreview(uris)
                     },
                     flowState = pictureFlowState,
@@ -54,14 +62,13 @@ object PictureNavContentContributor : NavContentContributor {
                 PictureFlowScopeUnavailable()
             }
         }
-        registry.register<PicturePreviewNavKey> { navKey ->
+        registry.register<PicturePreviewNavKey> { _ ->
             val pictureFlowState = rememberPictureFlowState()
             if (pictureFlowState != null) {
                 val pictureNavigator = LocalPictureNavigator.current
                 val onNavigateUp = LocalOnNavigateUp.current
                 PicturePreviewScreen(
                     mode = PreviewMode.SELECT,
-                    origSelectUris = navKey.uris,
                     previewPosition = 0,
                     onConfirm = { onNavigateUp() },
                     onDismiss = { onNavigateUp() },
@@ -86,7 +93,8 @@ object PictureNavContentContributor : NavContentContributor {
                         // 避免失败路径以空 URI 误删原图。
                         if (newUri.toString().isNotBlank()) {
                             pictureFlowState.updateMediaUri(oldUri, newUri)
-                            pictureFlowState.deleteMedia(oldUri)
+                            // 挂流程作用域：页面随即出栈，组合作用域会被取消导致原图残留
+                            pictureFlowState.deleteMediaAsync(oldUri)
                         }
                         onNavigateUp()
                     },

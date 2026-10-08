@@ -70,6 +70,16 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
             violations.add("检测到依赖环：$cycle")
         }
 
+        // 新增：所有 feature:*:impl 必须被 app 组合根聚合，
+        // 避免新增 feature 忘记聚合导致页面静默缺失
+        val appDeps = edges[":app"].orEmpty()
+        edges.keys
+            .filter { it.startsWith(":feature:") && it.endsWith(":impl") }
+            .filter { it !in appDeps }
+            .forEach { impl ->
+                violations.add(":app 未依赖 $impl（feature:*:impl 必须由 app 组合根聚合，否则页面静默缺失）")
+            }
+
         for ((from, toSet) in edges) {
             for (to in toSet) {
                 checkRule(from, to)?.let { violations.add(it) }
@@ -125,6 +135,14 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
                         return "$from -> $to（feature impl 不得依赖其他 feature api）"
                     }
                 }
+            }
+        }
+        // R8: feature 依赖的 core 模块必须在白名单内（正向声明，未声明的 feature→core 边一律失败）
+        if (from.startsWith(":feature:") && to.startsWith(":core:")) {
+            val allowed = FEATURE_ALLOWED_CORE_DEPENDENCIES +
+                FEATURE_EXTRA_CORE_DEPENDENCIES[from].orEmpty()
+            if (to !in allowed) {
+                return "$from -> $to（feature 依赖的 core 模块超出白名单，仅允许依赖：$allowed）"
             }
         }
         // 新增：core 模块内部依赖白名单（正向声明，未声明的 core→core 边一律失败）
@@ -209,7 +227,14 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     ":core:data-contract" to setOf(":core:model"),
     ":core:domain" to setOf(":core:model"),
     ":core:database" to setOf(":core:data-contract", ":core:model"),
-    ":core:network" to setOf(":core:android-platform", ":core:data-contract", ":core:model"),
+    // 说明：network 依赖 domain 仅为引用 CookieStore 这一共享会话契约（WebView 登录后由 OkHttp 复用）。
+    // network 不得因此依赖 webview；SslConfig 等网络配置契约仍放在 data-contract。
+    ":core:network" to setOf(
+        ":core:android-platform",
+        ":core:data-contract",
+        ":core:domain",
+        ":core:model",
+    ),
     ":core:data-repository" to setOf(
         ":core:domain",
         ":core:android-platform",
@@ -218,5 +243,35 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     ),
     ":core:ui" to setOf(":core:designsystem"),
     ":core:player" to setOf(":core:android-platform"),
-    ":core:webview" to setOf(":core:android-platform"),
+    ":core:webview" to setOf(":core:android-platform", ":core:domain"),
+)
+
+/**
+ * feature 模块允许依赖的 core 模块白名单（正向声明）。
+ *
+ * feature 只能经由 :core:domain 端口访问数据，因此 data-contract / data-repository /
+ * network / database 一律不在白名单内，防止数据实现层泄漏到 UI 层。
+ * 未声明的 feature→core 边一律失败。
+ */
+private val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
+    ":core:designsystem",
+    ":core:domain",
+    ":core:model",
+    ":core:navigation-runtime",
+    ":core:navigation-contract",
+    ":core:player",
+    ":core:ui",
+    ":core:webview",
+)
+
+/**
+ * 按 feature 单独放行的 core 依赖（越权例外，必须写明理由与范围）。
+ *
+ * 全局白名单之外只允许极少数例外，且必须限定到具体 feature，
+ * 避免「一个模块破例 → 所有模块可依赖」的扩散。
+ */
+private val FEATURE_EXTRA_CORE_DEPENDENCIES: Map<String, Set<String>> = mapOf(
+    // picture 的画布持有真实 android.graphics.Bitmap，必须包装为 BitmapImageHandle
+    // 才能交给 MediaEditor；除此之外不得引用 data 层任何类型（由架构测试规则 12 约束 import）。
+    ":feature:picture:impl" to setOf(":core:data-repository"),
 )

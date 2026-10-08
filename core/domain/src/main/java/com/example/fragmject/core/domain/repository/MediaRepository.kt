@@ -25,7 +25,7 @@ interface MediaRepository {
     suspend fun saveBase64ImageToAlbum(base64: String): MediaSaveResult
     suspend fun saveVideoToAlbum(filePath: String): MediaSaveResult
     suspend fun notifyMediaAdded(filePath: String): MediaSaveResult
-    fun createImageUri(): String
-    fun finishImageUri(uri: String)
-    fun deleteImageUri(uri: String)
+    suspend fun createImageUri(): String
+    suspend fun finishImageUri(uri: String)
+    suspend fun deleteImageUri(uri: String)
 }

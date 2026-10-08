@@ -6,10 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * Article Feature — 文章域路由表。
  *
- * WebView 文章详情（跨域共享入口）+ 视频下载。
+ * WebView 文章详情（跨域共享入口）。
  */
 @Serializable
 data class WebNavKey(val url: String) : DetailPaneNavKey
-
-@Serializable
-object VideoDownloadNavKey : DetailPaneNavKey

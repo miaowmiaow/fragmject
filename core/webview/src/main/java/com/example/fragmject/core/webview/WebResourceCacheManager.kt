@@ -6,13 +6,15 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import com.example.fragmject.core.android.platform.AppScope
 import com.example.fragmject.core.android.platform.CacheUtils
-import com.example.fragmject.core.android.platform.CookieStore
-import com.example.fragmject.core.android.platform.FileDownloader
+import com.example.fragmject.core.domain.repository.DownloadRepository
+import com.example.fragmject.core.domain.session.CookieStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import okio.ByteString.Companion.encodeUtf8
+import com.example.fragmject.core.android.platform.DigestUtils
 import java.io.File
 import java.net.InetAddress
 import java.net.URI
@@ -30,7 +32,9 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 @Singleton
 class WebResourceCacheManager @Inject constructor(
-    private val downloader: FileDownloader,
+    @ApplicationContext private val appContext: Context,
+    private val downloader: DownloadRepository,
+    private val cookieStore: CookieStore,
 ) : WebResourceCache {
 
     companion object {
@@ -63,6 +67,15 @@ class WebResourceCacheManager @Inject constructor(
     /** 正在下载中的缓存任务，按缓存 key 去重，避免并发重复下载同一资源。 */
     private val inFlightDownloads: ConcurrentHashMap<String, Job> = ConcurrentHashMap()
 
+    /**
+     * 缓存目录（解析一次）。
+     *
+     * 每次拦截都调 CacheUtils.getDirPath 会执行 mkdirs 并产生多轮磁盘 stat，
+     * 叠加在 shouldInterceptRequest 线程上拖慢首屏，故在此缓存。
+     */
+    private val webCachePath: String by lazy { CacheUtils.getDirPath(appContext, WEB_CACHE_DIR) }
+    private val htmlCachePath: String by lazy { CacheUtils.getDirPath(appContext, HTML_CACHE_DIR) }
+
     override fun isCacheableHtml(request: WebResourceRequest): Boolean {
         if (!request.method.equals("GET", true)) return false
         if (!request.isForMainFrame) return false
@@ -79,7 +92,7 @@ class WebResourceCacheManager @Inject constructor(
     ): WebResourceResponse? {
         return try {
             val url = request.url.toString()
-            val cachePath = CacheUtils.getDirPath(context, HTML_CACHE_DIR)
+            val cachePath = htmlCachePath
             val fileName = htmlCacheKey(url)
             val key = cachePath + File.separator + fileName
             val file = File(key)
@@ -112,9 +125,9 @@ class WebResourceCacheManager @Inject constructor(
      * 无 Cookie 时退化为纯 URL 哈希，保留无身份场景的缓存能力。
      */
     private fun htmlCacheKey(url: String): String {
-        val cookie = CookieStore.getCookie(url).orEmpty()
+        val cookie = cookieStore.getCookie(url).orEmpty()
         val raw = if (cookie.isBlank()) url else "$url|$cookie"
-        return raw.encodeUtf8().md5().hex()
+        return DigestUtils.md5Hex(raw)
     }
 
     override fun isCacheableResource(request: WebResourceRequest): Boolean {
@@ -133,8 +146,8 @@ class WebResourceCacheManager @Inject constructor(
     ): WebResourceResponse? {
         return try {
             val url = request.url.toString()
-            val cachePath = CacheUtils.getDirPath(context, WEB_CACHE_DIR)
-            val fileName = url.encodeUtf8().md5().hex()
+            val cachePath = webCachePath
+            val fileName = DigestUtils.md5Hex(url)
             val key = cachePath + File.separator + fileName
             val file = File(key)
             if (file.exists() && file.isFile && file.length() > 0L) {
@@ -171,12 +184,8 @@ class WebResourceCacheManager @Inject constructor(
     override fun evictByMtimeIfNeeded(context: Context) {
         AppScope.launch(Dispatchers.IO) {
             try {
-                evictByMtime(
-                    CacheUtils.getDirPath(
-                        context.applicationContext,
-                        WEB_CACHE_DIR
-                    )
-                )
+                evictByMtime(webCachePath, WEB_CACHE_MAX_FILES)
+                evictByMtime(htmlCachePath, HTML_CACHE_MAX_FILES)
             } catch (_: Exception) {
             }
         }
@@ -204,34 +213,36 @@ class WebResourceCacheManager @Inject constructor(
         // 虽 OkHttp 已通过 CookieJar 同步 Cookie，但显式补充可形成双保险，
         // 并便于通过日志诊断 Cookie/Referer 是否真正生效。
         val headers = buildDownloadHeaders(url, referer, request)
-        val job = AppScope.launch(Dispatchers.IO) {
+        val partFileName = "$fileName.part"
+        val partFile = File(cachePath, partFileName)
+        val job = AppScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
             try {
-                val success = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
-                    downloader.download(url, cachePath, fileName, headers)
+                val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
+                    downloader.download(url, cachePath, partFileName, headers)
                 }
-                if (success == true) {
-                    if (file.exists() && file.isFile && file.length() > 0L) {
-                        file.setLastModified(System.currentTimeMillis())
-                    }
+                if (result?.success == true && partFile.exists() && partFile.length() > 0L) {
+                    // 原子 rename：仅完整下载成功才覆盖目标，截断的 .part 不会成为缓存目标
+                    if (file.exists()) file.delete()
+                    partFile.renameTo(file)
+                    file.setLastModified(System.currentTimeMillis())
                 } else {
-                    // 下载失败，清理零字节残留
-                    if (file.exists() && file.length() == 0L) {
-                        file.delete()
-                    }
+                    // 超时/失败：无条件删除 .part，避免半截文件残留
+                    partFile.delete()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Async download failed: $url", e)
-                if (file.exists() && file.length() == 0L) {
-                    file.delete()
-                }
+                partFile.delete()
             } finally {
-                inFlightDownloads.remove(key)
+                // 仅当表项仍是本协程时才移除，防止被取消的协程误删正在运行的表项
+                coroutineContext[Job]?.let { inFlightDownloads.remove(key, it) }
             }
         }
-        // putIfAbsent 保证并发安全：如果已有协程在下载同一资源，取消刚创建的
+        // putIfAbsent 保证并发安全：仅当成功插入（无并发下载）时才启动，避免重复下载
         val existing = inFlightDownloads.putIfAbsent(key, job)
         if (existing != null) {
             job.cancel()
+        } else {
+            job.start()
         }
     }
 
@@ -251,17 +262,19 @@ class WebResourceCacheManager @Inject constructor(
     ) {
         val headers = buildDownloadHeaders(url, null, request)
         val tmpFileName = "$fileName.tmp"
-        val job = AppScope.launch(Dispatchers.IO) {
+        val job = AppScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
             try {
-                val success = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
+                val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
                     downloader.download(url, cachePath, tmpFileName, headers)
                 }
                 val tmp = File(cachePath, tmpFileName)
                 val target = File(cachePath, fileName)
-                if (success == true && tmp.exists() && tmp.length() > 0L) {
+                if (result?.success == true && tmp.exists() && tmp.length() > 0L) {
                     if (target.exists()) target.delete()
                     tmp.renameTo(target)
                     target.setLastModified(System.currentTimeMillis())
+                    // HTML 缓存无独立淘汰时机，下载成功后同步检查并淘汰超出上限的文件
+                    evictByMtime(cachePath, HTML_CACHE_MAX_FILES)
                 } else {
                     tmp.delete()
                 }
@@ -269,12 +282,15 @@ class WebResourceCacheManager @Inject constructor(
                 Log.e(TAG, "Html download failed: $url", e)
                 File(cachePath, tmpFileName).delete()
             } finally {
-                inFlightDownloads.remove(key)
+                // 仅当表项仍是本协程时才移除，防止被取消的协程误删正在运行的表项
+                coroutineContext[Job]?.let { inFlightDownloads.remove(key, it) }
             }
         }
         val existing = inFlightDownloads.putIfAbsent(key, job)
         if (existing != null) {
             job.cancel()
+        } else {
+            job.start()
         }
     }
 
@@ -292,7 +308,7 @@ class WebResourceCacheManager @Inject constructor(
     ): Map<String, String> {
         val headers = HashMap<String, String>()
         request.requestHeaders.forEach { (k, v) -> headers[k] = v }
-        CookieStore.getCookie(url)?.let { cookie ->
+        cookieStore.getCookie(url)?.let { cookie ->
             if (cookie.isNotBlank()) headers["Cookie"] = cookie
         }
         if (!referer.isNullOrBlank()) headers["Referer"] = referer
@@ -307,15 +323,15 @@ class WebResourceCacheManager @Inject constructor(
      * 时被 touch 为当前时间，因此越久未用的文件 mtime 越早，天然等价于 LRU 语义。
      * 只在溢出时才执行文件系统遍历和排序，冷启动零开销。
      */
-    private fun evictByMtime(cachePath: String) {
+    private fun evictByMtime(cachePath: String, maxFiles: Int) {
         try {
             val dir = File(cachePath)
             val files = dir.listFiles() ?: return
-            if (files.size <= WEB_CACHE_MAX_FILES) return
+            if (files.size <= maxFiles) return
 
             // 按 mtime 升序（最旧的在前），删除超出上限的文件
             files.sortedBy { it.lastModified() }
-                .take(files.size - WEB_CACHE_MAX_FILES)
+                .take(files.size - maxFiles)
                 .forEach { it.delete() }
         } catch (e: Exception) {
             Log.e(TAG, "evictByMtime failed", e)

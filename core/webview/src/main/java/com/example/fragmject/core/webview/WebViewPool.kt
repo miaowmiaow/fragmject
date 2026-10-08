@@ -27,4 +27,11 @@ interface WebViewPool {
 
     /** 极端缺内存时彻底释放所有 WebView。 */
     fun releaseAll()
+
+    /**
+     * 开关 WebView 远程调试（对应 WebView.setWebContentsDebuggingEnabled）。
+     *
+     * 收敛到本契约，避免组合根（app）直接引用 android.webkit.WebView。
+     */
+    fun setDebuggingEnabled(enabled: Boolean)
 }

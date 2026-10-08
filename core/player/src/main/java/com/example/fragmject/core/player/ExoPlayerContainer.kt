@@ -14,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -21,15 +22,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
-import com.example.fragmject.core.android.platform.CacheUtils
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -56,6 +55,14 @@ fun ExoPlayerContainer(
     playListener: Player.Listener = NoOpPlayerListener,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+    // SimpleCache 为 @Singleton，经 EntryPoint 获取，避免每次组合重建与 release 后复用崩溃
+    val cache = remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            ExoPlayerCacheEntryPoint::class.java,
+        ).simpleCache()
+    }
     var playerView by remember { mutableStateOf<PlayerView?>(null) }
     LaunchedEffect(playerView, control) {
         val player = playerView?.player ?: return@LaunchedEffect
@@ -102,10 +109,6 @@ fun ExoPlayerContainer(
                 )
                 setShowShuffleButton(true)
                 setFullscreenButtonClickListener { }
-                val cacheDir = CacheUtils.getDirFile(context, "exoplayer_cache")
-                val evictor = LeastRecentlyUsedCacheEvictor(500 * 1024 * 1024)
-                val databaseProvider = StandaloneDatabaseProvider(context)
-                val cache = SimpleCache(cacheDir, evictor, databaseProvider)
                 val cacheDataSourceFactory = CacheDataSource.Factory().setCache(cache)
                     .setUpstreamDataSourceFactory(DefaultDataSource.Factory(context))
                     .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)

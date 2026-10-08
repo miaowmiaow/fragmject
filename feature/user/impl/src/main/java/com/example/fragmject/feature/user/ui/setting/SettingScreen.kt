@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ArrowRightItem
 import com.example.fragmject.core.ui.components.LoadingContent
@@ -61,13 +62,16 @@ fun SettingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
+    val homeNavigator = LocalHomeNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current
-    val cacheSize by viewModel.cacheSize.collectAsStateWithLifecycle()
+    val cacheSize by viewModel.cacheSizeText.collectAsStateWithLifecycle()
+    val isClearing by viewModel.isClearing.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                SettingEvent.LogoutSucceeded -> onNavigateUp()
+                // 登出成功：经首页语义动作清栈回首页（HomeNavigator.openMain 的实际使用点）
+                SettingEvent.LogoutSucceeded -> homeNavigator.openMain()
                 SettingEvent.LogoutFailed -> snackbarHostState.showSnackbar("登出失败，请重试")
             }
         }
@@ -138,7 +142,7 @@ fun SettingScreen(
                     HorizontalDivider()
                     Row(
                         modifier = Modifier
-                            .clickable {
+                            .clickable(enabled = !isClearing) {
                                 showDialog = true
                             }
                             .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -154,7 +158,7 @@ fun SettingScreen(
                             fontSize = 13.sp,
                         )
                         Text(
-                            text = cacheSize,
+                            text = if (isClearing) "清理中…" else cacheSize,
                             fontSize = 13.sp,
                         )
                         Image(

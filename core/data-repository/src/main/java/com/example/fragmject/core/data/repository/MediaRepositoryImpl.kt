@@ -98,14 +98,20 @@ class MediaRepositoryImpl @Inject constructor(
             MediaSaveResult(success = uri.isNotBlank(), path = path, uri = uri)
         }
 
-    override fun createImageUri(): String = MediaStoreUtils.createImageUri(context)
-
-    override fun finishImageUri(uri: String) {
-        MediaStoreUtils.finishImageUri(context, uri)
+    override suspend fun createImageUri(): String = withContext(Dispatchers.IO) {
+        MediaStoreUtils.createImageUri(context)
     }
 
-    override fun deleteImageUri(uri: String) {
-        MediaStoreUtils.deleteImageUri(context, uri)
+    override suspend fun finishImageUri(uri: String) {
+        withContext(Dispatchers.IO) {
+            MediaStoreUtils.finishImageUri(context, uri)
+        }
+    }
+
+    override suspend fun deleteImageUri(uri: String) {
+        withContext(Dispatchers.IO) {
+            MediaStoreUtils.deleteImageUri(context, uri)
+        }
     }
 
     private companion object {

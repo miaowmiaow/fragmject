@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +60,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.fragmject.feature.picture.state.PictureFlowState
+import kotlinx.coroutines.launch
 
 @Composable
 fun PictureSelectorScreen(
@@ -69,6 +71,7 @@ fun PictureSelectorScreen(
     flowState: PictureFlowState,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val albumResult by flowState.albumResult.collectAsStateWithLifecycle()
     val currAlbumResult by flowState.currAlbumResult.collectAsStateWithLifecycle()
     val selectedUris by flowState.selectedUris.collectAsStateWithLifecycle()
@@ -123,24 +126,28 @@ fun PictureSelectorScreen(
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) {
-            // 清除 pending 状态，让真实照片对系统相册与查询可见
-            flowState.finishTakePictureUri()
-            // 重新查询相册，获取相机写入后的真实数据并按最新修改时间排序到头部
-            flowState.queryAlbum()
-        } else {
-            // 拍照失败或用户取消：删除预创建但未写入数据的记录，避免相册残留透明图
-            flowState.deleteTakePictureUri()
+        scope.launch {
+            if (success) {
+                // 清除 pending 状态，让真实照片对系统相册与查询可见
+                flowState.finishTakePictureUri()
+                // 重新查询相册，获取相机写入后的真实数据并按最新修改时间排序到头部
+                flowState.queryAlbum()
+            } else {
+                // 拍照失败或用户取消：删除预创建但未写入数据的记录，避免相册残留透明图
+                flowState.deleteTakePictureUri()
+            }
         }
     }
 
     // 启动相机：预创建 Uri 后拉起系统相机
     fun launchCamera() {
-        val uri = flowState.createTakePictureUri()
-        if (uri != null) {
-            takePictureLauncher.launch(uri)
-        } else {
-            Toast.makeText(context, "无法创建照片文件", Toast.LENGTH_SHORT).show()
+        scope.launch {
+            val uri = flowState.createTakePictureUri()
+            if (uri != null) {
+                takePictureLauncher.launch(uri)
+            } else {
+                Toast.makeText(context, "无法创建照片文件", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

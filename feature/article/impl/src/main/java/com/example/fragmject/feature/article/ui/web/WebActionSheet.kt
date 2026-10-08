@@ -3,12 +3,7 @@ package com.example.fragmject.feature.article.ui.web
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowCircleDown
-import androidx.compose.material.icons.filled.SdCard
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,7 +19,7 @@ import com.example.fragmject.core.model.History
 import com.example.fragmject.core.ui.R
 
 /**
- * WebView 底部操作面板：两页 Pager（常用操作 / 视频增强）。
+ * WebView 底部操作面板：单行常用操作（刷新 / 历史 / 收藏 / 调试注入）。
  *
  * 仅负责渲染，全部动作由 [WebScreen] 通过回调注入（含 partialExpand 等编排），
  * 保持无状态、单向数据流。
@@ -33,133 +28,70 @@ import com.example.fragmject.core.ui.R
 @Composable
 fun WebActionSheet(
     bottomSheetState: SheetState,
-    sheetPagerState: PagerState,
     bookmark: History?,
     injectState: Boolean,
     onReload: () -> Unit,
     onOpenHistory: () -> Unit,
     onToggleBookmark: () -> Unit,
     onToggleInject: () -> Unit,
-    onScanVideo: () -> Unit,
-    onOpenVideoDownload: () -> Unit,
-    onQuickBack: () -> Unit,
-    onQuickForward: () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     BottomSheetScaffold(
         sheetContent = {
-            HorizontalPager(
-                state = sheetPagerState,
-            ) { page ->
-                if (page == 0) {
-                    Row(modifier = Modifier.height(64.dp)) {
-                        WebActionButton(
-                            onClick = onReload,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_refresh),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
+            Row(modifier = Modifier.height(64.dp)) {
+                WebActionButton(
+                    onClick = onReload,
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_refresh),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        WebActionButton(
-                            onClick = onOpenHistory,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_history),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                WebActionButton(
+                    onClick = onOpenHistory,
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_history),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        WebActionButton(
-                            onClick = onToggleBookmark,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_bookmark),
-                                    contentDescription = null,
-                                    tint = if (bookmark != null) {
-                                        MaterialTheme.colorScheme.onSurface
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                WebActionButton(
+                    onClick = onToggleBookmark,
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_bookmark),
+                            contentDescription = null,
+                            tint = if (bookmark != null) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
                         )
-                        WebActionButton(
-                            onClick = onToggleInject,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_web_debug),
-                                    contentDescription = null,
-                                    tint = if (injectState) {
-                                        MaterialTheme.colorScheme.onSurface
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                WebActionButton(
+                    onClick = onToggleInject,
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_web_debug),
+                            contentDescription = null,
+                            tint = if (injectState) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
                         )
-                    }
-                } else {
-                    // 视频增强
-                    Row(modifier = Modifier.height(64.dp)) {
-                        WebActionButton(
-                            onClick = onScanVideo,
-                            horizontalPadding = 18.dp,
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowCircleDown,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                        WebActionButton(
-                            onClick = onOpenVideoDownload,
-                            horizontalPadding = 18.dp,
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Default.SdCard,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                        WebActionButton(
-                            onClick = onQuickBack,
-                            horizontalPadding = 18.dp,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_quick_back),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                        WebActionButton(
-                            onClick = onQuickForward,
-                            horizontalPadding = 18.dp,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(R.mipmap.ic_quick_forward),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
             }
         },
         scaffoldState = scaffoldState,

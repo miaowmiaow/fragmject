@@ -21,6 +21,7 @@ dependencies {
     compileOnly(libs.androidx.room3.gradle.plugin)
     compileOnly(libs.gradle)
     compileOnly(libs.kotlin.gradle.plugin)
+    compileOnly(libs.kotlin.compose.gradle.plugin)
 }
 
 gradlePlugin {
@@ -32,6 +33,12 @@ gradlePlugin {
         register("androidCompose") {
             id = libs.plugins.fragmject.android.compose.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectAndroidComposePlugin"
+        }
+        register("androidComposeRuntime") {
+            // 直接硬编码 id：避免与 fragmject-android-compose 产生版本目录访问器前缀冲突
+            // （fragmject.android.compose-runtime 是 compose 的前缀扩展，无法共存于 catalog 访问器）
+            id = "fragmject.android.compose-runtime"
+            implementationClass = "com.example.fragmject.convention.FragmjectAndroidComposeRuntimePlugin"
         }
         register("kotlinParcelize") {
             id = libs.plugins.fragmject.kotlin.parcelize.get().pluginId

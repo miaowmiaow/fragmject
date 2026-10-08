@@ -6,6 +6,8 @@ import com.example.fragmject.core.domain.repository.AlbumGroup
 import com.example.fragmject.core.domain.repository.AlbumImage
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,7 +24,7 @@ class AlbumRepositoryImpl @Inject constructor(
         private const val DEFAULT_BUCKET_NAME = "所有照片"
     }
 
-    override suspend fun queryAlbums(): List<AlbumGroup> {
+    override suspend fun queryAlbums(): List<AlbumGroup> = withContext(Dispatchers.IO) {
         val rows = MediaStoreUtils.queryImages(context)
 
         // LinkedHashMap 保持插入顺序，确保「所有照片」始终在第一位。
@@ -43,7 +45,7 @@ class AlbumRepositoryImpl @Inject constructor(
             mediaMap.getValue(DEFAULT_BUCKET_NAME).add(image)
         }
 
-        return mediaMap.map { (key, value) ->
+        mediaMap.map { (key, value) ->
             AlbumGroup(
                 name = key,
                 coverUri = value.lastOrNull()?.uri ?: "",

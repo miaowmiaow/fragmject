@@ -60,6 +60,10 @@ class PictureFlowState(
     private val _takePictureUri = MutableStateFlow<Uri?>(null)
     val takePictureUri: StateFlow<Uri?> = _takePictureUri.asStateFlow()
 
+    /** 预览快照：进入预览时由 [startPreview] 一次性解析，预览页只读此快照，不随相册切换漂移。 */
+    private val _previewSource = MutableStateFlow<List<MediaItem>>(emptyList())
+    val previewSource: StateFlow<List<MediaItem>> = _previewSource.asStateFlow()
+
     fun toggleSelection(uri: String, maxSelection: Int = 9) {
         if (uri in _selectedUriSet.value) {
             _selectedUris.value -= uri
@@ -78,7 +82,7 @@ class PictureFlowState(
         _hasPermission.value = granted
     }
 
-    fun createTakePictureUri(): Uri? {
+    suspend fun createTakePictureUri(): Uri? {
         val uriString = mediaRepository.createImageUri()
         if (uriString.isEmpty()) return null
         val uri = uriString.toUri()
@@ -86,13 +90,13 @@ class PictureFlowState(
         return uri
     }
 
-    fun finishTakePictureUri() {
+    suspend fun finishTakePictureUri() {
         val uri = _takePictureUri.value ?: return
         mediaRepository.finishImageUri(uri.toString())
         _takePictureUri.value = null
     }
 
-    fun deleteTakePictureUri() {
+    suspend fun deleteTakePictureUri() {
         val uri = _takePictureUri.value ?: return
         mediaRepository.deleteImageUri(uri.toString())
         _takePictureUri.value = null
@@ -115,15 +119,38 @@ class PictureFlowState(
         }
         _selectedUris.value = _selectedUris.value.map { if (it == oldStr) newStr else it }
         _selectedUriSet.value = _selectedUriSet.value.map { if (it == oldStr) newStr else it }.toSet()
+        // 同步更新预览快照，使编辑保存后返回预览页仍显示新图
+        _previewSource.value = _previewSource.value.map { item ->
+            if (item.uri.toString() == oldStr) item.clone().apply { uri = newUri } else item
+        }
     }
 
-    fun deleteMedia(uri: Uri) {
+    suspend fun deleteMedia(uri: Uri) {
         mediaRepository.deleteImageUri(uri.toString())
+    }
+
+    /**
+     * 异步删除媒体（如编辑保存后清理原图）。
+     *
+     * 必须挂在 [flowScope] 而非页面组合作用域：保存成功后页面会立即出栈，
+     * rememberCoroutineScope 随之取消，导致删除被中断、原图残留。
+     */
+    fun deleteMediaAsync(uri: Uri) {
+        flowScope.launch { deleteMedia(uri) }
     }
 
     fun updateCurrAlbum(name: String) {
         _currAlbumName.value = name
         _currAlbumResult.value = mediaMap[name] ?: emptyList()
+    }
+
+    /** 进入预览：按 [uris] 顺序从全量相册解析出实际 [MediaItem] 快照，跨相册也能正确命中。 */
+    fun startPreview(uris: List<String>) {
+        val all = mediaMap.values.flatten()
+        _previewSource.value = uris.mapIndexed { index, uriStr ->
+            all.find { it.uri.toString() == uriStr }
+                ?: MediaItem("", "empty://preview/$index".toUri())
+        }
     }
 
     fun queryAlbum() {

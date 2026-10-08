@@ -9,12 +9,6 @@ import android.os.Build
 import android.util.Log
 import kotlin.math.sqrt
 
-// java.lang.RuntimeException: Canvas: trying to draw too large(xxx bytes) bitmap.
-// 该异常由 android.graphics.RecordingCanvas.java 或 android.view.DisplayListCanvas.java（SDK 版本差异）的
-// throwIfCannotDraw(Bitmap bitmap) 抛出。阅读源码可知加载的图片内存大小超过 MAX_BITMAP_SIZE，
-// 因此控制图片的加载内存即可解决。
-const val MAX_BITMAP_SIZE = 64f * 1024 * 1024 // 64 MB
-
 /**
  * 按目标宽度解码文件路径对应的 Bitmap，带 inSampleSize 降采样。
  */
@@ -58,7 +52,10 @@ fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap? {
                 }
             } else {
                 @Suppress("DEPRECATION")
-                BitmapFactory.decodeStream(contentResolver.openInputStream(uri), null, option)
+                // 仅用于读取尺寸（inJustDecodeBounds），流必须关闭；真实解码在下方 68 行再次打开
+                contentResolver.openInputStream(uri)?.use {
+                    BitmapFactory.decodeStream(it, null, option)
+                }
             }
             val scale = (option.outWidth * 1f / targetWidth)
             option.inSampleSize = if (scale > 1) sqrt(scale).toInt() else 1

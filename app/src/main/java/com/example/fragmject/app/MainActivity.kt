@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
-import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -105,6 +104,9 @@ class MainActivity : ComponentActivity() {
                             initialBackStack = initialBackStack,
                             pendingDeepLink = pendingDeepLink.value,
                             onDeepLinkConsumed = { pendingDeepLink.value = null },
+                            // 栈内仅剩首页时的返回出口：退到后台而非直接销毁，
+                            // 保留任务栈以便再次进入时恢复现场
+                            onExit = { moveTaskToBack(true) },
                         )
                     }
                 }
@@ -114,7 +116,7 @@ class MainActivity : ComponentActivity() {
         webViewPool.prepare(applicationContext)
         // 仅在 Debug 构建中启用 WebView 调试，避免在 Release 包暴露调试接口
         if (BuildConfig.DEBUG) {
-            WebView.setWebContentsDebuggingEnabled(true)
+            webViewPool.setDebuggingEnabled(true)
         }
     }
 

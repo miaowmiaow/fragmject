@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -36,6 +38,7 @@ fun HomeScreen(
     val topArticles by viewModel.topArticles.collectAsStateWithLifecycle()
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     val overrides by viewModel.collectState.overrides.collectAsStateWithLifecycle()
+    val headerError by viewModel.headerError.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.collectState.collectFailed.collect { message ->
@@ -58,6 +61,14 @@ fun HomeScreen(
                         pathMapping = { it.imagePath },
                         onClick = { _, banner -> actions.onArticleClick(banner.url) }
                     )
+                }
+            } else if (headerError != null) {
+                // 头部失败且列表可见时给出提示：整页失败/空态已由 PagingSwipeRefreshBox
+                // 的 EmptyContent 覆盖，这里只补「列表正常、头部静默失败」这一情形
+                item(key = "header_error") {
+                    TextButton(onClick = viewModel::loadHeader) {
+                        Text("头部内容加载失败，点击重试")
+                    }
                 }
             }
             items(topArticles, key = { "top_${it.id}" }) { article ->

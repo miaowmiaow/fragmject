@@ -53,8 +53,10 @@ import com.example.fragmject.core.designsystem.TitleBar
 
 @Composable
 fun ShareArticleScreen(
-    viewModel: ShareArticleViewModel = viewModel(),
+    viewModel: ShareArticleViewModel = viewModel(key = "share_article"),
 ) {
+    // 进入即复位成功标记：ViewModel 由 Activity 共享，残留的 success 会导致本页被立即返回
+    LaunchedEffect(Unit) { viewModel.resetSuccess() }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val articleNavigator = LocalArticleNavigator.current
     val onNavigateUp = LocalOnNavigateUp.current
@@ -64,9 +66,15 @@ fun ShareArticleScreen(
     val titleText = uiState.title
     val linkText = uiState.link
     LaunchedEffect(uiState.message) {
-        if (uiState.message.isNotBlank()) {
+        if (uiState.message.isNotBlank() && !uiState.success) {
             snackbarHostState.showSnackbar(uiState.message)
             viewModel.resetMessage()
+        }
+    }
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            // 分享成功：直接返回上一页（返回即成功反馈，避免 snackbar 随页面销毁丢失）
+            onNavigateUp()
         }
     }
     Scaffold(

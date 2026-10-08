@@ -26,7 +26,6 @@ val LocalHomeNavigator = staticCompositionLocalOf<HomeNavigator> { NoOpHomeNavig
 
 private object NoOpArticleNavigator : ArticleNavigator {
     override fun openArticle(url: String) = Unit
-    override fun openVideoDownload() = Unit
 }
 
 private object NoOpUserNavigator : UserNavigator {
@@ -63,6 +62,7 @@ private object NoOpPictureNavigator : PictureNavigator {
     override fun openPicturePreview(uris: List<String>) = Unit
     override fun openPictureEditor(oldUriString: String) = Unit
     override fun onPictureSelected(uris: List<String>) = Unit
+    override fun clearSelection() = Unit
 }
 
 private object NoOpHomeNavigator : HomeNavigator {

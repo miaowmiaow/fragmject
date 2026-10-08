@@ -1,45 +1,56 @@
 package com.example.fragmject.feature.article.ui.web
 
-import android.webkit.URLUtil
+import com.example.fragmject.core.webview.WebViewCommons
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.domain.repository.HistoryRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
-import com.example.fragmject.core.domain.repository.VideoDownloadRepository
 import com.example.fragmject.core.model.History
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * Web 页的 ViewModel：承载书签状态、浏览历史写入与媒体交互编排。
  *
- * 图片保存与视频下载的 repository 调用收拢到这里，
+ * 图片保存的 repository 调用收拢到这里，
  * Composable 只负责对话框状态与 Toast 反馈，不再直接触碰领域端口。
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class WebViewModel @Inject constructor(
     private val historyRepo: HistoryRepository,
     private val mediaRepository: MediaRepository,
-    private val videoDownloadRepository: VideoDownloadRepository,
 ) : ViewModel() {
 
     private val _bookmark = MutableStateFlow<History?>(null)
     val bookmark: StateFlow<History?> = _bookmark.asStateFlow()
 
-    private var currentUrl: String = ""
+    private val currentUrl = MutableStateFlow("")
+
+    init {
+        viewModelScope.launch {
+            currentUrl
+                .filter { it.isNotBlank() }
+                .flatMapLatest { url ->
+                    historyRepo.observeBookmarks().map { bookmarks ->
+                        bookmarks.firstOrNull { it.url == url }
+                    }
+                }
+                .collect { _bookmark.value = it }
+        }
+    }
 
     fun init(url: String) {
-        if (currentUrl == url) return
-        currentUrl = url
-        viewModelScope.launch {
-            historyRepo.observeBookmarks().collect { bookmarks ->
-                _bookmark.value = bookmarks.firstOrNull { it.url == url }
-            }
-        }
+        if (currentUrl.value == url) return
+        currentUrl.value = url
     }
 
     fun toggleBookmark(title: String, url: String) {
@@ -61,20 +72,12 @@ class WebViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            val result = if (URLUtil.isValidUrl(extra)) {
+            val result = if (WebViewCommons.isHttpUrl(extra)) {
                 mediaRepository.saveImageToAlbum(extra)
             } else {
                 mediaRepository.saveBase64ImageToAlbum(extra)
             }
             onResult(result.success)
         }
-    }
-
-    /** 启动或复用视频下载任务，标题为空时回退为 URL 末段文件名。 */
-    fun registerVideo(title: String?, url: String) {
-        videoDownloadRepository.startOrReuseDownload(
-            title = title ?: url.substringAfterLast("/").substringBefore("?"),
-            url = url,
-        )
     }
 }

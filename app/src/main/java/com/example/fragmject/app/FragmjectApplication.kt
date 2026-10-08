@@ -13,8 +13,8 @@ import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
 import com.example.fragmject.core.webview.WebViewPool
-import com.example.fragmject.core.network.http.OkUtils
-import com.example.fragmject.core.android.platform.CacheUtils
+import com.example.fragmject.core.domain.system.SystemStorage
+import com.example.fragmject.core.network.di.imageOkHttpClient
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -23,6 +23,9 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
 
     @Inject
     lateinit var webViewPool: WebViewPool
+
+    @Inject
+    lateinit var systemStorage: SystemStorage
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(applicationContext)
@@ -36,15 +39,11 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
             .diskCachePolicy(CachePolicy.ENABLED)
             .diskCache {
                 DiskCache.Builder()
-                    .directory(
-                        CacheUtils.getDirFile(
-                            applicationContext, "coil"
-                        )
-                    )
+                    .directory(systemStorage.cacheDirectory())
                     .maxSizeBytes(50L * 1024 * 1024)
                     .build()
             }
-            .okHttpClient(OkUtils.imageClient(applicationContext))
+            .okHttpClient(imageOkHttpClient(applicationContext))
             .components(fun ComponentRegistry.Builder.() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder.Factory())

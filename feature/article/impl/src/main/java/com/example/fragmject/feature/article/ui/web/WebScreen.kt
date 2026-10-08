@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +43,6 @@ import com.example.fragmject.core.navigation.contract.LocalUserNavigator
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.webview.rememberWebViewControl
-import com.example.fragmject.core.webview.videoScanJs
 import com.example.fragmject.feature.article.components.ArticleWebViewContainer
 import kotlinx.coroutines.launch
 
@@ -69,7 +67,6 @@ fun WebScreen(
         },
         skipHiddenState = false
     )
-    val sheetPagerState = rememberPagerState(0) { 2 }
     val control = rememberWebViewControl()
     val mediaController = rememberWebMediaController()
     var injectState by remember { mutableStateOf(false) }
@@ -147,7 +144,6 @@ fun WebScreen(
         ) {
             WebActionSheet(
                 bottomSheetState = bottomSheetState,
-                sheetPagerState = sheetPagerState,
                 bookmark = bookmark,
                 injectState = injectState,
                 onReload = {
@@ -167,19 +163,6 @@ fun WebScreen(
                     control.reload()
                     scope.launch { bottomSheetState.partialExpand() }
                 },
-                onScanVideo = {
-                    control.evaluateJavascript(videoScanJs())
-                    scope.launch { bottomSheetState.partialExpand() }
-                },
-                onOpenVideoDownload = {
-                    articleNavigator.openVideoDownload()
-                },
-                onQuickBack = {
-                    control.evaluateJavascript("javascript:quickBack10()")
-                },
-                onQuickForward = {
-                    control.evaluateJavascript("javascript:quickForward10()")
-                },
             ) { padding ->
                 WebProgressBar(progress = control.progress)
                 ArticleWebViewContainer(
@@ -196,13 +179,10 @@ fun WebScreen(
                     onCustomView = { customView = it },
                     shouldOverrideUrl = { articleNavigator.openArticle(it) },
                     onLongPressImage = mediaController::onLongPressImage,
-                    onVideoDetected = mediaController::onVideoDetected,
                 )
                 WebMediaDialogs(
                     controller = mediaController,
-                    title = title,
                     onSaveImage = webViewModel::saveImage,
-                    onRegisterVideo = webViewModel::registerVideo,
                 )
             }
         }

@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.home.ui.nav
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.model.NavTab
 import com.example.fragmject.core.domain.repository.HomeNavRepository
@@ -19,13 +18,16 @@ sealed interface NavUiState {
     data class Success(
         val navigationResult: List<NavTab> = emptyList(),
     ) : NavUiState
+    data class Error(
+        val code: String = "",
+        val message: String = "",
+    ) : NavUiState
 }
 
 // Screen accessors
 val NavUiState.navigationResult get() = (this as? NavUiState.Success)?.navigationResult ?: emptyList()
 val NavUiState.isLoading get() = this is NavUiState.Loading
-
-private const val TAG = "NavVM"
+val NavUiState.errorMessage get() = (this as? NavUiState.Error)?.message ?: ""
 
 @HiltViewModel
 class NavViewModel @Inject constructor(
@@ -46,7 +48,8 @@ class NavViewModel @Inject constructor(
         viewModelScope.launch {
             when (val r = homeNavRepository.refreshNavigation()) {
                 is DomainResult.Success -> Unit
-                is DomainResult.Failure -> Log.e(TAG, "refreshNavigation failed: ${r.code} ${r.message}")
+                is DomainResult.Failure ->
+                    _uiState.value = NavUiState.Error(r.code, r.message)
             }
         }
     }

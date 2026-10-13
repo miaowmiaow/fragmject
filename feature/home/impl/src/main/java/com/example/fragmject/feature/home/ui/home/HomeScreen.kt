@@ -23,7 +23,7 @@ import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
-import com.example.fragmject.core.ui.mapper.toFeedCardUIState
+import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 import com.example.fragmject.feature.home.components.BannerPager
 
 @Composable
@@ -68,7 +68,7 @@ fun HomeScreen(
             }
             items(topArticles, key = { "top_${it.id}" }) { article ->
                 FeedCard(
-                    data = remember(article.id, collectInteraction.overrides[article.id]) { article.toFeedCardUIState(collectInteraction.overrides[article.id]) },
+                    data = rememberArticleFeedData(article, collectInteraction.overrides),
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                     onItemClick = onArticleClick,
                     onUserClick = onAuthorClick,
@@ -79,7 +79,7 @@ fun HomeScreen(
         },
     ) { item ->
         FeedCard(
-            data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
+            data = rememberArticleFeedData(item, collectInteraction.overrides),
             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
             onItemClick = onArticleClick,
             onUserClick = onAuthorClick,

@@ -12,10 +12,11 @@ dependencies {
     // Core
     implementation(project(":core:image-editor"))
     implementation(project(":core:domain"))
-    implementation(project(":core:ui"))
     implementation(project(":core:navigation-contract"))
     implementation(project(":core:navigation-runtime"))
 
+    // 显式声明：使用 androidx.activity.compose.rememberLauncherForActivityResult
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     // 显式声明：使用 androidx.core.graphics.* / androidx.core.net.toUri /
     // androidx.core.content.ContextCompat（core-ktx）

@@ -79,6 +79,8 @@ android {
 dependencies {
     // 无 :core:android-platform：该模块只被 core 内部消费，app 经领域端口间接使用，
     // 依赖守卫 APP_ALLOWED_DEPENDENCIES 已不再放行此边
+    // data-repository / database：app 源码零 import，仅因其中 @Module/@InstallIn 需进入
+    // Hilt SingletonComponent 而声明（组合根聚合），勿删
     implementation(project(":core:data-repository"))
     implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
@@ -110,6 +112,9 @@ dependencies {
     implementation(libs.coil.gif)
     implementation(libs.coil.svg)
     implementation(libs.coil.video)
+    // 显式声明：FragmjectApplication 使用 okhttp3.OkHttpClient 装配 Coil ImageLoader，
+    // 此前靠 coil 传递，coil 升级到不传递 okhttp 的版本会静默失败
+    implementation(libs.okhttp)
 
     implementation(libs.hilt.lifecycle.viewmodel.compose)
 

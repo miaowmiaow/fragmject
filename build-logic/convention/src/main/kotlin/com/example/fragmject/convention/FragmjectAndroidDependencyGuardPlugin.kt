@@ -215,13 +215,14 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
                 return "$from -> $to（feature 依赖的 core 模块超出白名单，仅允许依赖：$allowed）"
             }
         }
-        // R9: feature:*:api 只允许依赖纯契约（navigation-contract），不得依赖运行时机制模块
-        // （navigation-runtime 含 Registry/Contributor/FlowScope 等渲染与装配机制）。
-        // 该规则把「api 只能依赖契约」从约定升格为编译期强制，防止标记接口误落 runtime 导致污染复现。
-        if (from.startsWith(":feature:") && from.endsWith(":api") &&
-            to == ":core:navigation-runtime"
-        ) {
-            return "$from -> $to（feature:*:api 不得依赖导航运行时机制模块，改用 :core:navigation-contract）"
+        // R9: feature:*:api 只允许依赖纯契约（navigation-contract），正向断言。
+        // api 是「路由键契约」层，不得依赖运行时机制（navigation-runtime）、领域端口（domain）、
+        // UI（ui/designsystem）等任何运行时/领域模块，防止契约层被污染后失去可复用性。
+        if (from.startsWith(":feature:") && from.endsWith(":api") && to.startsWith(":core:")) {
+            val allowed = FEATURE_API_ALLOWED_CORE_DEPENDENCIES
+            if (to !in allowed) {
+                return "$from -> $to（feature:*:api 只允许依赖纯契约，超出白名单，仅允许依赖：$allowed）"
+            }
         }
         // 新增：core 模块内部依赖白名单（正向声明，未声明的 core→core 边一律失败）
         if (from.startsWith(":core:") && to.startsWith(":core:")) {
@@ -354,6 +355,17 @@ private val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
     ":core:player",
     ":core:ui",
     ":core:webview",
+)
+
+/**
+ * feature:*:api 允许依赖的 core 模块白名单（正向声明）。
+ *
+ * api 是纯契约层（NavKey 路由键），只允许依赖 navigation-contract；
+ * 运行时机制（navigation-runtime）、领域端口（domain）、UI（ui/designsystem）
+ * 一律不得进入 api。外部库（如 androidx.navigation3.runtime）不受本表约束。
+ */
+private val FEATURE_API_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
+    ":core:navigation-contract",
 )
 
 /**

@@ -9,7 +9,6 @@ dependencies {
 
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
-    implementation(project(":core:player"))
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:navigation-runtime"))
@@ -24,7 +23,6 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.media3.exoplayer)
     implementation(libs.kotlinx.coroutines)
 
     testImplementation(libs.junit)

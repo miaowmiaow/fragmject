@@ -53,7 +53,7 @@ fun TitleBar(
             .height(45.dp),
         navigationIcon = {
             if (onNavigateUp != null) {
-                DefaultBackIcon(onNavigateUp)
+                BackIcon(onNavigateUp)
             } else {
                 navigationIcon()
             }
@@ -67,11 +67,11 @@ fun TitleBar(
 }
 
 /**
- * 默认返回箭头：左上角 [IconButton] + ArrowBack，点击回调 [onNavigateUp]。
- * 供「返回上一页」的页面复用，替代各 feature 复制的 IconButton + ArrowBack。
+ * 返回箭头：左上角 [IconButton] + ArrowBack，点击回调 [onNavigateUp]。
+ * 供「返回上一页」的页面复用（TitleBar 与 AccountForm 等自定义顶栏共用）。
  */
 @Composable
-private fun DefaultBackIcon(onNavigateUp: () -> Unit) {
+fun BackIcon(onNavigateUp: () -> Unit) {
     IconButton(
         modifier = Modifier.height(45.dp),
         onClick = onNavigateUp,

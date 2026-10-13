@@ -23,7 +23,11 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * 本地数据源的 Hilt 绑定：把各 Room/KV 适配器绑定到 data-contract 的本地端口。
+ * 本地数据源的 Hilt 绑定。
+ *
+ * 其余 5 个（HomeNav/HotKey/ProjectTree/SystemTree/User）绑定到 data-contract 本地端口，
+ * 再由 data-repository 实现 domain 端口；History/Schedule/Theme 三条零逻辑链已合并，
+ * database 直接实现 domain 端口（无中间透传层），故这里同时出现两类绑定。
  */
 @Module
 @InstallIn(SingletonComponent::class)

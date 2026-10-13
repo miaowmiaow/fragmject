@@ -338,6 +338,58 @@ class ArchitectureTest {
     }
 
     /**
+     * 规则 16：`feature:*:api` 只允许引用纯契约（`core:navigation-contract`）。
+     *
+     * api 是「路由键契约」层（NavKey），不得引入领域端口（domain）、UI（ui/designsystem）、
+     * 导航运行时机制（navigation-runtime）等运行时/领域模块，否则契约层被污染后失去可复用性。
+     *
+     * 本规则是 Gradle 守卫 R9（`FEATURE_API_ALLOWED_CORE_DEPENDENCIES`）的源码层对偶：
+     * Gradle 只能校验「声明的 project 依赖边」，本规则按源码 import 校验，
+     * 可捕获「靠传递路径编译到」的越界引用（Gradle 对这类引用无感知）。
+     */
+    @Test
+    fun `feature api only depends on navigation contract`() {
+        productionFiles
+            .filter { it.isFeatureApi() }
+            .assertFalse(
+                additionalMessage = "feature:*:api 只允许引用 core:navigation-contract，不得 import domain/ui/designsystem/navigation-runtime 等机制模块",
+            ) { file ->
+                file.hasImport { imp ->
+                    when {
+                        imp.name.startsWith("com.example.fragmject.core.domain.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.ui.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.designsystem.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.navigation.runtime.") -> true
+                        else -> false
+                    }
+                }
+            }
+    }
+
+    /**
+     * 规则 17：`core:database` 只允许实现三个零逻辑链 domain 端口。
+     *
+     * History/Schedule/Theme 三条零逻辑链合并后，database 直接实现 domain 端口
+     * （无「data-contract 本地端口 + data-repository 透传」两层中间层）。
+     * 这是**登记过的例外**（见 dependencies-policy.md §6.6），禁止扩散到其它 domain 端口——
+     * 其它端口的实现必须落在 core:data-repository，否则守卫与文档会同时失守。
+     */
+    @Test
+    fun `core database only implements whitelisted domain ports`() {
+        val whitelist = setOf("HistoryRepository", "ScheduleRepository", "ThemeRepository")
+        productionFiles
+            .filter { it.projectPath.contains("/core/database/") }
+            .assertFalse(
+                additionalMessage = "core:database 只允许实现 $whitelist（零逻辑链例外），其他 domain 端口的实现必须在 core:data-repository",
+            ) { file ->
+                file.hasImport { imp ->
+                    imp.name.startsWith("com.example.fragmject.core.domain.repository.") &&
+                        imp.name.substringAfterLast(".") !in whitelist
+                }
+            }
+    }
+
+    /**
      * 守卫测试：确保各规则的选择器能匹配到真实文件，避免选择器写错导致规则空转（永远通过）。
      */
     @Test

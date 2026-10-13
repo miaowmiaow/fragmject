@@ -22,6 +22,9 @@ data class SaveResult(val path: String, val uri: String)
  *
  * feature 只与本引擎交互，返回 [SaveResult]（含相册 uri）；不再直接接触
  * 平台解码（android-platform）或数据实现（data-repository）的任何类型。
+ *
+ * 有意不做接口分离：引擎暴露 android.graphics.Bitmap，接口无法进入 domain；
+ * 且仅 feature:picture 消费、暂无 fake 注入需求，故以具体类提供。
  */
 @Singleton
 class ImageEditorEngine @Inject constructor(

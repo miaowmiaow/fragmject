@@ -18,7 +18,7 @@ import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.navigation.contract.LocalNavigators
-import com.example.fragmject.core.ui.mapper.toFeedCardUIState
+import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 
 /**
  * 公共「文章列表页」Paging 版：统一 MyShareScreen 等页面重复的
@@ -53,7 +53,7 @@ fun PagingArticleListPage(
             key = { it.id },
         ) { item ->
             FeedCard(
-                data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
+                data = rememberArticleFeedData(item, collectInteraction.overrides),
                 onItemClick = { articleNavigator.openArticle(it) },
                 onUserClick = { userNavigator.openUserProfile(it) },
                 onFooterClick = { homeNavigator.openSystemTree(it) },

@@ -20,8 +20,6 @@ import com.example.fragmject.core.network.service.UserService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.EntryPoint
-import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
@@ -113,22 +111,3 @@ object NetworkModule {
     fun provideMyRemoteDataSource(retrofit: Retrofit): MyRemoteDataSource =
         retrofit.create(MyService::class.java)
 }
-
-/**
- * 供无法构造注入的场景（Coil ImageLoaderFactory）获取图片专用 client 的入口。
- *
- * 与 core:player 的 ExoPlayerCacheEntryPoint 手法一致。
- */
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface NetworkImageEntryPoint {
-    @ImageOkHttpClient
-    fun imageClient(): OkHttpClient
-}
-
-/** 从 ApplicationContext 获取图片专用 client。 */
-fun imageOkHttpClient(context: Context): OkHttpClient =
-    EntryPointAccessors.fromApplication(
-        context.applicationContext,
-        NetworkImageEntryPoint::class.java,
-    ).imageClient()

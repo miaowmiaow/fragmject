@@ -99,6 +99,7 @@
 | `feature:*:api` | **仅对外契约**：`NavKey` 路由键、跨 feature 语义 Navigator |
 | `core:domain` | **业务能力端口**：Repository 接口、UseCase、领域结果模型、平台能力契约 |
 | `core:data-repository` | 上述端口的实现（Hilt `@Binds` 绑定） |
+| `core:database` | **例外**：直接实现 `HistoryRepository` / `ScheduleRepository` / `ThemeRepository` 三个 domain 端口（零逻辑链合并，见 §6.6），其余通过 data-contract 本地端口间接实现 |
 
 理由：
 
@@ -125,7 +126,7 @@
 | R1/R5 | `domain` 不依赖 data/network/database；`data-repository` 不依赖 network/database |
 | R2/R3/R6 | feature impl 不依赖其他 feature 的 impl/api；feature api 不依赖 feature impl |
 | R8 | feature → core 必须在 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 内 |
-| R9 | `feature:*:api` 不得依赖 `:core:navigation-runtime`（纯契约归 contract，机制归 runtime） |
+| R9 | `feature:*:api` → core 走 `FEATURE_API_ALLOWED_CORE_DEPENDENCIES` 正向声明（当前仅 `:core:navigation-contract`）；`feature:*:impl` → core 走 `FEATURE_ALLOWED_CORE_DEPENDENCIES`（更宽）。契约层不得引入 domain/ui/runtime 等机制模块 |
 
 **B. Konsist 源码规则** — `app/src/test/.../ArchitectureTest.kt`，15 条 + 1 条守卫测试
 运行：`./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"`
@@ -144,6 +145,7 @@
 | `:app` 组合根使用 lifecycle 的 `viewModel()` | 规则 14 仅过滤 `/feature/` | `AppNavViewModel` 在 `NavDisplay` 之外，本就应是 Activity 作用域 |
 | 大屏 DetailPane 用 `ProvideDetailPaneViewModelStore` 自建 owner | `core:navigation-runtime` | DetailPane 不在 `NavEntry` 内，拿不到 entry 级 store，需按 key 提供等价作用域 |
 | `CookieStore` 实现放 `core:webview`，由 `:app` 聚合注入 | Gradle 守卫矩阵 + Konsist 规则 15 | network 不得依赖 webview；实现必须经 Hilt 绑定，network 只允许注入使用 |
+| `core:database` 直接实现 `History/Schedule/Theme` 三个 domain 端口 | `LocalDataSourceModule` + 守卫矩阵注释 | 三条零逻辑链合并后无中间透传层（domain 端口与 KV/Room 适配器签名一致）。**禁止扩散**：其他 domain 端口的实现仍必须落在 `core:data-repository` |
 
 新增例外时同步改 Gradle 矩阵与 Konsist 规则，并在本表登记；**任何例外都应能回答「为什么不用契约」。**
 

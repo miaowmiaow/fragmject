@@ -25,7 +25,7 @@ import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
-import com.example.fragmject.core.ui.mapper.toFeedCardUIState
+import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.model.Tree
 
@@ -78,7 +78,7 @@ fun SystemScreen(
                     key = { it.id },
                 ) { item ->
                     FeedCard(
-                        data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
+                        data = rememberArticleFeedData(item, collectInteraction.overrides),
                         onItemClick = onArticleClick,
                         onUserClick = onAuthorClick,
                         onFooterClick = onChapterClick,

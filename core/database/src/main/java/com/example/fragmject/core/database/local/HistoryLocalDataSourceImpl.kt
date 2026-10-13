@@ -3,7 +3,7 @@ package com.example.fragmject.core.database.local
 import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.model.toDomain
 import com.example.fragmject.core.database.model.toEntity
-import com.example.fragmject.core.data.contract.local.HistoryLocalDataSource
+import com.example.fragmject.core.domain.repository.HistoryRepository
 import com.example.fragmject.core.model.History
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -11,7 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * [HistoryLocalDataSource] 的 Room 适配器实现。
+ * [HistoryRepository] 的 Room 适配器实现。
  *
  * 按 key 划分书签 / 浏览历史 / 搜索记录，对外只暴露领域模型 [History]，
  * Room Entity 不泄漏到 data 层。
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class HistoryLocalDataSourceImpl @Inject constructor(
     private val historyDao: HistoryDao,
-) : HistoryLocalDataSource {
+) : HistoryRepository {
 
     private companion object {
         const val KEY_BOOKMARK = "bookmark"

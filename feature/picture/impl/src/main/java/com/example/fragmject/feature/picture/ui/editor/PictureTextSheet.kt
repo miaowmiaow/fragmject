@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
-import com.example.fragmject.feature.picture.model.StickerAttrs
+import com.example.fragmject.core.image.editor.model.StickerAttrs
 import com.example.fragmject.feature.picture.utils.ColorUtils
 
 @Composable

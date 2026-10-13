@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
                 }
                 is DomainResult.Failure -> {
                     // 头部拉取失败时保留旧值，并暴露错误态供 UI 提示/重试
-                    _headerError.value = HeaderError(result.code, result.message)
+                    _headerError.value = HeaderError(result.message)
                 }
             }
         }
@@ -61,6 +61,5 @@ class HomeViewModel @Inject constructor(
 
 /** 首页头部加载错误态。 */
 data class HeaderError(
-    val code: String,
     val message: String,
 )

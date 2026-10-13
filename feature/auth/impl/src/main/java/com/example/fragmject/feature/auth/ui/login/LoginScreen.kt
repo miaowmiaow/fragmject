@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contract.LocalAuthNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.feature.auth.components.AccountForm
@@ -45,7 +45,7 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val isLoading = uiState is LoginUiState.Loading
-    val authNavigator = LocalAuthNavigator.current
+    val authNavigator = LocalNavigators.current.auth
     val onNavigateUp = LocalOnNavigateUp.current
 
     LaunchedEffect(uiState, snackbarHostState) {

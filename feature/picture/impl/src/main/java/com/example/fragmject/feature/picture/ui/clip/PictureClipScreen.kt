@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.fragmject.feature.picture.components.PictureClipCanvas
-import com.example.fragmject.feature.picture.components.rememberPictureClipState
+import com.example.fragmject.core.image.editor.components.PictureClipCanvas
+import com.example.fragmject.core.image.editor.components.rememberPictureClipState
 import com.example.fragmject.feature.picture.ui.editor.PictureEditorViewModel
 
 @Composable
@@ -105,13 +105,13 @@ fun PictureClipScreen(
                 TextButton(
                     onClick = {
                         if (!isSaving) {
-                            val handle = state.saveBitmap()
-                            if (handle == null) {
+                            val bitmap = state.saveBitmap()
+                            if (bitmap == null) {
                                 Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
                             } else {
                                 viewModel.save(
-                                    produce = { handle },
-                                    onSuccess = { edited -> onFinish(edited.path, edited.uriString.toUri()) },
+                                    produce = { bitmap },
+                                    onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
                                     onError = {
                                         Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
                                     },

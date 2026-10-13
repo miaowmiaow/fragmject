@@ -1,13 +1,13 @@
 package com.example.fragmject.core.database.di
 
-import com.example.fragmject.core.data.contract.local.HistoryLocalDataSource
 import com.example.fragmject.core.data.contract.local.HomeNavLocalDataSource
 import com.example.fragmject.core.data.contract.local.HotKeyLocalDataSource
 import com.example.fragmject.core.data.contract.local.ProjectTreeLocalDataSource
-import com.example.fragmject.core.data.contract.local.ScheduleLocalDataSource
 import com.example.fragmject.core.data.contract.local.SystemTreeLocalDataSource
-import com.example.fragmject.core.data.contract.local.ThemeLocalDataSource
 import com.example.fragmject.core.data.contract.local.UserLocalDataSource
+import com.example.fragmject.core.domain.repository.HistoryRepository
+import com.example.fragmject.core.domain.repository.ScheduleRepository
+import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.database.local.HistoryLocalDataSourceImpl
 import com.example.fragmject.core.database.local.HomeNavLocalDataSourceImpl
 import com.example.fragmject.core.database.local.HotKeyLocalDataSourceImpl
@@ -31,7 +31,7 @@ abstract class LocalDataSourceModule {
 
     @Binds
     @Singleton
-    abstract fun bindHistoryLocalDataSource(impl: HistoryLocalDataSourceImpl): HistoryLocalDataSource
+    abstract fun bindHistoryRepository(impl: HistoryLocalDataSourceImpl): HistoryRepository
 
     @Binds
     @Singleton
@@ -43,11 +43,11 @@ abstract class LocalDataSourceModule {
 
     @Binds
     @Singleton
-    abstract fun bindThemeLocalDataSource(impl: ThemeLocalDataSourceImpl): ThemeLocalDataSource
+    abstract fun bindThemeRepository(impl: ThemeLocalDataSourceImpl): ThemeRepository
 
     @Binds
     @Singleton
-    abstract fun bindScheduleLocalDataSource(impl: ScheduleLocalDataSourceImpl): ScheduleLocalDataSource
+    abstract fun bindScheduleRepository(impl: ScheduleLocalDataSourceImpl): ScheduleRepository
 
     @Binds
     @Singleton

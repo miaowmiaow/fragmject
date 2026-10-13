@@ -20,9 +20,7 @@ internal data class FragmjectConfig(
 ) {
     companion object {
         fun load(project: Project): FragmjectConfig {
-            val props = Properties().apply {
-                load(FileInputStream(project.rootProject.file("config.properties")))
-            }
+            val props = project.loadConfigProperties()
             return FragmjectConfig(
                 compileSdk = props.getProperty("compileSdkVersion").toInt(),
                 minSdk = props.getProperty("minSdkVersion").toInt(),
@@ -35,3 +33,9 @@ internal data class FragmjectConfig(
 /** 将 project path 转为 namespace（`:` 与 `-` 均归一化为 `.`）。 */
 internal fun Project.defaultNamespace(): String =
     "com.example.fragmject.${path.removePrefix(":").replace(":", ".").replace("-", ".")}"
+
+/** 加载根目录 config.properties，供各模块 build 脚本复用（消除 app / network 的重复加载）。 */
+fun Project.loadConfigProperties(): Properties =
+    Properties().apply {
+        load(FileInputStream(rootProject.file("config.properties")))
+    }

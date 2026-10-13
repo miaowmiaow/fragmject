@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.home.ui.project
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,13 +14,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,26 +31,22 @@ import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.TabBar
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.feature.home.mapper.toFeedCardUIState
-import com.example.fragmject.feature.home.nav.HomeNavActions
+import com.example.fragmject.core.ui.components.rememberCollectInteraction
+import com.example.fragmject.core.ui.mapper.toFeedCardUIState
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 
 @Composable
 fun ProjectScreen(
     projectTreeViewModel: ProjectTreeViewModel = hiltViewModel(),
     projectListViewModel: ProjectListViewModel = hiltViewModel(),
-    actions: HomeNavActions = HomeNavActions(),
 ) {
+    val navigators = LocalNavigators.current
+    val onArticleClick = remember(navigators) { { url: String -> navigators.article.openArticle(url) } }
+    val onAuthorClick = remember(navigators) { { userId: String -> navigators.user.openUserProfile(userId) } }
+    val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val overrides by projectListViewModel.collectState.overrides.collectAsStateWithLifecycle()
-    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
-    val onToggleClick = remember(projectListViewModel.collectState) { projectListViewModel.collectState::toggle }
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        projectListViewModel.collectState.collectFailed.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
+    val collectInteraction = rememberCollectInteraction(projectListViewModel.collectState)
     when (val state = projectTreeUiState) {
         is ProjectTreeUiState.Error -> {
             ProjectTreeError(message = state.message, onRetry = projectTreeViewModel::refresh)
@@ -87,11 +80,11 @@ fun ProjectScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) { item ->
                         FeedCard(
-                            data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
-                            onItemClick = actions.onArticleClick,
-                            onUserClick = actions.onAuthorClick,
-                            onFooterClick = actions.onChapterClick,
-                            onToggleClick = onToggleClick,
+                            data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
+                            onItemClick = onArticleClick,
+                            onUserClick = onAuthorClick,
+                            onFooterClick = onChapterClick,
+                            onToggleClick = collectInteraction.onToggleClick,
                         )
                     }
                 }

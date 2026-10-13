@@ -1,19 +1,10 @@
 package com.example.fragmject.feature.picture.nav
 
-import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
-import com.example.fragmject.core.navigation.runtime.LocalNavFlowScopes
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.core.navigation.runtime.NavContentRegistry
@@ -25,113 +16,95 @@ import com.example.fragmject.feature.picture.ui.editor.PictureEditorScreen
 import com.example.fragmject.feature.picture.ui.selector.PicturePreviewScreen
 import com.example.fragmject.feature.picture.ui.selector.PictureSelectorScreen
 import com.example.fragmject.feature.picture.ui.selector.PreviewMode
-import kotlinx.coroutines.launch
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 
 /**
  * Picture Feature 导航内容贡献者：注册本域 NavKey → 渲染器映射。
  *
- * 三个页面（Selector/Preview/Editor）共享同一 [PictureFlowState]。状态由 app 组合根
- * 经通用 [LocalNavFlowScopes] 下发（PictureFlowScopeContributor 创建），本模块不感知
- * app 组合根，app 组合根也不感知 PictureFlowState 等具体类型。
+ * 三个页面（Selector/Preview/Editor）共享同一进程级单例的 [PictureFlowState]
+ * （Hilt @Singleton，降级自 NavFlowScope 通用流程作用域机制）。
  */
 object PictureNavContentContributor : NavContentContributor {
     override fun contribute(registry: NavContentRegistry) {
         registry.register<PictureSelectorNavKey> {
             val pictureFlowState = rememberPictureFlowState()
-            if (pictureFlowState != null) {
-                val pictureNavigator = LocalPictureNavigator.current
-                val onNavigateUp = LocalOnNavigateUp.current
-                PictureSelectorScreen(
-                    onConfirm = {
-                        pictureNavigator.onPictureSelected(pictureFlowState.selectedUris.value)
-                        onNavigateUp()
-                    },
-                    onDismiss = {
-                        // 取消选择时上报空结果，避免 AppPictureNavigator 单例残留上次选图结果
-                        pictureNavigator.onPictureSelected(emptyList())
-                        onNavigateUp()
-                    },
-                    onPreview = { uris ->
-                        // 进入预览前先按 uris 解析出 MediaItem 快照，预览页只读快照
-                        pictureFlowState.startPreview(uris)
-                        pictureNavigator.openPicturePreview(uris)
-                    },
-                    flowState = pictureFlowState,
-                )
-            } else {
-                PictureFlowScopeUnavailable()
-            }
+            val pictureNavigator = LocalNavigators.current.picture
+            val onNavigateUp = LocalOnNavigateUp.current
+            PictureSelectorScreen(
+                onConfirm = {
+                    pictureNavigator.onPictureSelected(pictureFlowState.selectedUris.value)
+                    onNavigateUp()
+                },
+                onDismiss = {
+                    // 取消选择时上报空结果，避免 AppPictureNavigator 单例残留上次选图结果
+                    pictureNavigator.onPictureSelected(emptyList())
+                    onNavigateUp()
+                },
+                onPreview = { uris ->
+                    // 进入预览前先按 uris 解析出 MediaItem 快照，预览页只读快照
+                    pictureFlowState.startPreview(uris)
+                    pictureNavigator.openPicturePreview(uris)
+                },
+                flowState = pictureFlowState,
+            )
         }
         registry.register<PicturePreviewNavKey> { _ ->
             val pictureFlowState = rememberPictureFlowState()
-            if (pictureFlowState != null) {
-                val pictureNavigator = LocalPictureNavigator.current
-                val onNavigateUp = LocalOnNavigateUp.current
-                PicturePreviewScreen(
-                    mode = PreviewMode.SELECT,
-                    previewPosition = 0,
-                    onConfirm = { onNavigateUp() },
-                    onDismiss = { onNavigateUp() },
-                    onOpenEditor = { uri ->
-                        pictureNavigator.openPictureEditor(uri.toString())
-                    },
-                    flowState = pictureFlowState,
-                )
-            } else {
-                PictureFlowScopeUnavailable()
-            }
+            val pictureNavigator = LocalNavigators.current.picture
+            val onNavigateUp = LocalOnNavigateUp.current
+            PicturePreviewScreen(
+                mode = PreviewMode.SELECT,
+                previewPosition = 0,
+                onConfirm = { onNavigateUp() },
+                onDismiss = { onNavigateUp() },
+                onOpenEditor = { uri ->
+                    pictureNavigator.openPictureEditor(uri.toString())
+                },
+                flowState = pictureFlowState,
+            )
         }
         registry.register<PictureEditorNavKey> { navKey ->
             val pictureFlowState = rememberPictureFlowState()
-            if (pictureFlowState != null) {
-                val onNavigateUp = LocalOnNavigateUp.current
-                val oldUri = navKey.oldUriString.toUri()
-                PictureEditorScreen(
-                    bitmapUri = oldUri,
-                    onFinish = { _, newUri ->
-                        // 防御：仅当保存成功产生有效新 URI 时才替换/删除原图，
-                        // 避免失败路径以空 URI 误删原图。
-                        if (newUri.toString().isNotBlank()) {
-                            pictureFlowState.updateMediaUri(oldUri, newUri)
-                            // 挂流程作用域：页面随即出栈，组合作用域会被取消导致原图残留
-                            pictureFlowState.deleteMediaAsync(oldUri)
-                        }
-                        onNavigateUp()
-                    },
-                    onDismiss = { onNavigateUp() },
-                )
-            } else {
-                PictureFlowScopeUnavailable()
-            }
+            val onNavigateUp = LocalOnNavigateUp.current
+            val oldUri = navKey.oldUriString.toUri()
+            PictureEditorScreen(
+                bitmapUri = oldUri,
+                onFinish = { _, newUri ->
+                    // 防御：仅当保存成功产生有效新 URI 时才替换/删除原图，
+                    // 避免失败路径以空 URI 误删原图。
+                    if (newUri.toString().isNotBlank()) {
+                        pictureFlowState.updateMediaUri(oldUri, newUri)
+                        // 挂进程级 flowScope：页面随即出栈，组合作用域会被取消导致原图残留
+                        pictureFlowState.deleteMediaAsync(oldUri)
+                    }
+                    onNavigateUp()
+                },
+                onDismiss = { onNavigateUp() },
+            )
         }
     }
 }
 
 /**
- * 从通用 [LocalNavFlowScopes] 中取回本模块的 [PictureFlowState]。
+ * 经 Hilt 取回进程级单例的 [PictureFlowState]。
  */
 @Composable
-private fun rememberPictureFlowState(): PictureFlowState? {
-    val scopes = LocalNavFlowScopes.current
-    val state = remember(scopes) {
-        scopes.values.filterIsInstance<PictureFlowState>().firstOrNull()
+private fun rememberPictureFlowState(): PictureFlowState {
+    val context = LocalContext.current
+    return remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            PictureFlowStateEntryPoint::class.java,
+        ).pictureFlowState()
     }
-    if (state == null) {
-        Log.w(TAG, "PictureFlowState 匹配失败：当前流程作用域中不存在 PictureFlowState")
-    }
-    return state
 }
 
-private const val TAG = "PictureNav"
-
-@Composable
-private fun PictureFlowScopeUnavailable() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text("图片流程未初始化", color = Color.White)
-    }
+/** Hilt entry point：向 Composable 暴露 @Singleton 的 [PictureFlowState]。 */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface PictureFlowStateEntryPoint {
+    fun pictureFlowState(): PictureFlowState
 }

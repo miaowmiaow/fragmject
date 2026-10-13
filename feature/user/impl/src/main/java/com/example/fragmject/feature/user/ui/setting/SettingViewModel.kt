@@ -7,7 +7,6 @@ import com.example.fragmject.core.ui.utils.updateSuccessFrom
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.system.SystemStorage
-import com.example.fragmject.core.domain.usecase.LogoutUseCase
 import com.example.fragmject.core.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -40,7 +39,6 @@ val SettingUiState.isLoading get() = this is SettingUiState.Loading
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val logoutUseCase: LogoutUseCase,
     private val userRepo: UserRepository,
     private val themeRepo: ThemeRepository,
     private val systemStorage: SystemStorage,
@@ -90,7 +88,7 @@ class SettingViewModel @Inject constructor(
         _uiState.update { SettingUiState.Loading }
         viewModelScope.launch {
             try {
-                val success = logoutUseCase()
+                val success = userRepo.logout()
                 _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
                 _events.send(if (success) SettingEvent.LogoutSucceeded else SettingEvent.LogoutFailed)
             } catch (e: CancellationException) {

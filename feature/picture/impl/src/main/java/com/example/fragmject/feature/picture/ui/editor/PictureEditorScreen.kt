@@ -55,11 +55,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.fragmject.core.data.repository.media.BitmapImageHandle
-import com.example.fragmject.feature.picture.components.EditorMode
-import com.example.fragmject.feature.picture.components.PictureEditorCanvas
-import com.example.fragmject.feature.picture.components.rememberPictureEditorState
-import com.example.fragmject.feature.picture.model.StickerAttrs
+import com.example.fragmject.core.image.editor.components.EditorMode
+import com.example.fragmject.core.image.editor.components.PictureEditorCanvas
+import com.example.fragmject.core.image.editor.components.rememberPictureEditorState
+import com.example.fragmject.core.image.editor.model.StickerAttrs
 import com.example.fragmject.feature.picture.ui.clip.PictureClipScreen
 import com.example.fragmject.feature.picture.utils.ColorUtils
 
@@ -88,21 +87,12 @@ fun PictureEditorScreen(
     val stickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        // 解码下沉到 MediaEditor（IO 线程），不在 ActivityResult 回调里做主线程解码
+        // 解码下沉到 ImageEditorEngine（IO 线程），不在 ActivityResult 回调里做主线程解码
         uri?.let {
-            viewModel.pickSticker(it.toString()) { handle ->
-                (handle as? BitmapImageHandle)?.bitmap?.let { bitmap ->
-                    state.setSticker(StickerAttrs(bitmap))
-                    selectedToolIndex = -1
-                }
+            viewModel.pickSticker(it.toString()) { bitmap ->
+                state.setSticker(StickerAttrs(bitmap))
+                selectedToolIndex = -1
             }
-        }
-    }
-
-    // 注入位图加载钩子：画布尺寸确定后经 MediaEditor 异步解码
-    LaunchedEffect(Unit) {
-        state.setBitmapLoader { source, targetWidth ->
-            (viewModel.loadBitmap(source, targetWidth) as? BitmapImageHandle)?.bitmap
         }
     }
 
@@ -149,7 +139,7 @@ fun PictureEditorScreen(
                         if (!isSaving) {
                             viewModel.save(
                                 produce = { state.saveBitmap() },
-                                onSuccess = { edited -> onFinish(edited.path, edited.uriString.toUri()) },
+                                onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
                                 onError = {
                                     Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
                                 },
@@ -280,7 +270,7 @@ fun PictureEditorScreen(
                                         3 -> {
                                             showColorBar = false
                                             showMosaicUndo = false
-                                            clipBitmap = (state.saveBitmap() as? BitmapImageHandle)?.bitmap
+                                            clipBitmap = state.saveBitmap()
                                             showClipScreen = true
                                         }
                                         4 -> {

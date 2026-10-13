@@ -6,14 +6,12 @@ import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
-import com.example.fragmject.core.database.dao.CoinRankDao
 import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.dao.HotKeyDao
 import com.example.fragmject.core.database.dao.ProjectTreeDao
 import com.example.fragmject.core.database.dao.TreeDao
 import com.example.fragmject.core.database.dao.UserDao
-import com.example.fragmject.core.database.model.CoinRankEntity
 import com.example.fragmject.core.database.model.HistoryEntity
 import com.example.fragmject.core.database.model.HotKeyEntity
 import com.example.fragmject.core.database.model.HomeNavEntity
@@ -29,9 +27,8 @@ import com.example.fragmject.core.database.model.UserEntity
         HomeNavEntity::class,
         HotKeyEntity::class,
         ProjectTreeEntity::class,
-        CoinRankEntity::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,7 +39,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun homeNavDao(): HomeNavDao
     abstract fun hotKeyDao(): HotKeyDao
     abstract fun projectTreeDao(): ProjectTreeDao
-    abstract fun coinRankDao(): CoinRankDao
 
     companion object {
 
@@ -284,6 +280,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 移除 coin_rank 缓存表：积分排行榜已改为纯网络分页，不再需要 Room 缓存。 */
+        private val MIGRATION_13_14 = object : Migration(13, 14) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                executeSql(connection, "DROP TABLE IF EXISTS `coin_rank`")
+            }
+        }
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -303,7 +306,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_9_10,
                     MIGRATION_10_11,
                     MIGRATION_11_12,
-                    MIGRATION_12_13
+                    MIGRATION_12_13,
+                    MIGRATION_13_14
                 )
                 .build()
         }

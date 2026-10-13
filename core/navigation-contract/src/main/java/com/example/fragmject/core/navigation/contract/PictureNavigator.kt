@@ -12,16 +12,16 @@ import kotlinx.coroutines.flow.StateFlow
 interface PictureNavigator {
 
     /** 打开图片选择器。 */
-    fun openPictureSelector()
+    fun openPictureSelector() = Unit
 
     /** 打开图片预览。 */
-    fun openPicturePreview(uris: List<String>)
+    fun openPicturePreview(uris: List<String>) = Unit
 
     /** 打开图片编辑。 */
-    fun openPictureEditor(oldUriString: String)
+    fun openPictureEditor(oldUriString: String) = Unit
 
     /** 选择器确认后上报选中结果（由图片流程在「确定」时调用）。 */
-    fun onPictureSelected(uris: List<String>)
+    fun onPictureSelected(uris: List<String>) = Unit
 
     /**
      * 清空选中结果。
@@ -35,7 +35,7 @@ interface PictureNavigator {
      * - 系统返回 → 进入时已清空，发起方看到空结果，不会残留上一次的选中；
      * - 再次进入 → 清空，不会与上一次结果混淆。
      */
-    fun clearSelection()
+    fun clearSelection() = Unit
 
     /** 最近一次选图结果（发起方订阅以更新 UI）。 */
     val selectedUris: StateFlow<List<String>>

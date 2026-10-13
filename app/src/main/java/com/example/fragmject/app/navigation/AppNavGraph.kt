@@ -25,22 +25,19 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.example.fragmject.core.navigation.runtime.DetailPaneNavKey
+import com.example.fragmject.core.navigation.contract.DetailPaneNavKey
 import com.example.fragmject.core.navigation.runtime.ProvideDetailPaneViewModelStore
-import com.example.fragmject.core.navigation.runtime.RequiresAuth
+import com.example.fragmject.core.navigation.contract.RequiresAuth
 import com.example.fragmject.core.navigation.runtime.LocalDetailContent
-import com.example.fragmject.core.navigation.runtime.LocalNavFlowScopes
 import com.example.fragmject.core.navigation.runtime.LocalOnClearDetail
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.navigation.runtime.LocalSelectedDetailKey
 import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.core.navigation.runtime.NavContentRegistry
-import com.example.fragmject.core.navigation.runtime.NavFlowScope
-import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
 import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.auth.RegisterNavKey
 import com.example.fragmject.feature.home.MainNavKey
-import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.feature.picture.PictureFlowNavKey
 
 /** 页面转场动画时长 (ms)，与 Compose 过渡动画同步。 */
@@ -57,7 +54,6 @@ private const val NAV_TRANSITION_DURATION_MS = 350
 fun AppNavGraph(
     navigationDispatcher: NavigationDispatcher,
     navContributors: Set<NavContentContributor>,
-    flowScopeContributors: Set<NavFlowScopeContributor>,
     modifier: Modifier = Modifier,
     initialBackStack: List<NavKey> = listOf(MainNavKey),
     pendingDeepLink: DeepLinkRequest? = null,
@@ -94,33 +90,10 @@ fun AppNavGraph(
     // （配置变更重建、进程死亡丢弃，与 backStack 非序列化行为一致）。
     var pendingRedirect by remember { mutableStateOf<NavKey?>(null) }
 
-    // ---- 流程作用域 ----
-    // 通用机制：对每个 NavFlowScopeContributor，若 backStack 中存在其流程的 key 则创建
-    // 作用域、全部退出时 close 销毁。取代进程级 @Singleton，使在途工作随流程结束取消。
-    // app 组合根只依赖通用 NavFlowScopeContributor，不感知具体 feature 流程类型。
-    val activeContributors = flowScopeContributors.filter { contributor ->
-        backStack.any { contributor.matches(it) }
-    }
-    // 组合期同步创建作用域（remember 保证首帧即就绪，不再走空态兜底），
-    // 已有作用域经 previousScopes 增量保留，退出者由 LaunchedEffect close。
-    var previousScopes by remember {
-        mutableStateOf<Map<NavFlowScopeContributor, NavFlowScope>>(emptyMap())
-    }
-    val flowScopes = remember(activeContributors) {
-        activeContributors.associateWith { contributor ->
-            previousScopes[contributor] ?: contributor.create()
-        }
-    }
-    LaunchedEffect(activeContributors) {
-        val toClose = previousScopes.keys.filter { it !in activeContributors }
-        toClose.forEach { contributor -> previousScopes[contributor]?.close() }
-        previousScopes = flowScopes
-    }
-
     // ---- 选图结果清理 ----
     // 图片流程全部退出时清空结果：系统返回键不走选择器的取消回调，
     // 否则发起方下次进入仍会看到上一次选中的图片。
-    val pictureNavigator = LocalPictureNavigator.current
+    val pictureNavigator = LocalNavigators.current.picture
     val hasPictureFlow = backStack.any { it is PictureFlowNavKey }
     // 进入图片流程时清空上一次的选图结果。
     // 结果只在「确认选择」时写入（PictureNavRegistration.onConfirm），而系统返回/手势返回
@@ -234,7 +207,6 @@ fun AppNavGraph(
         LocalSelectedDetailKey provides selectedDetailKey,
         LocalOnClearDetail provides { selectedDetailKey = null },
         LocalDetailContent provides detailContent,
-        LocalNavFlowScopes provides flowScopes,
     ) {
         NavDisplay(
             // entry 级作用域：ViewModel 随 NavEntry 出栈而清除（覆盖默认值时必须补回

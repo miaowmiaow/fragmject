@@ -1,8 +1,7 @@
 package com.example.fragmject.feature.collection
 
-import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.core.navigation.runtime.DetailPaneNavKey
-import com.example.fragmject.core.navigation.runtime.RequiresAuth
+import com.example.fragmject.core.navigation.contract.DetailPaneNavKey
+import com.example.fragmject.core.navigation.contract.RequiresAuth
 import kotlinx.serialization.Serializable
 
 /**

@@ -22,19 +22,11 @@ import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.app.navigation.AppNavGraph
-import com.example.fragmject.app.navigation.AppNavigatorBundle
 import com.example.fragmject.app.navigation.NavigationDispatcher
 import com.example.fragmject.app.navigation.resolveDeepLinkBackStack
 import com.example.fragmject.core.navigation.runtime.NavContentContributor
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalAuthNavigator
-import com.example.fragmject.core.navigation.contract.LocalCollectionNavigator
-import com.example.fragmject.core.navigation.contract.LocalDemoNavigator
-import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
-import com.example.fragmject.core.navigation.contract.LocalSearchNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
-import com.example.fragmject.core.navigation.runtime.NavFlowScopeContributor
+import com.example.fragmject.core.navigation.contract.LocalNavigators
+import com.example.fragmject.core.navigation.contract.Navigators
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -51,13 +43,10 @@ class MainActivity : ComponentActivity() {
     lateinit var navigationDispatcher: NavigationDispatcher
 
     @Inject
-    lateinit var navigatorBundle: AppNavigatorBundle
+    lateinit var navigators: Navigators
 
     @Inject
     lateinit var navContributors: Set<@JvmSuppressWildcards NavContentContributor>
-
-    @Inject
-    lateinit var flowScopeContributors: Set<@JvmSuppressWildcards NavFlowScopeContributor>
 
     /** 运行时深层链接请求（onNewIntent 触发），首次启动走 onCreate 的 initialBackStack。 */
     private val pendingDeepLink = mutableStateOf<DeepLinkRequest?>(null)
@@ -88,19 +77,11 @@ class MainActivity : ComponentActivity() {
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {
                     CompositionLocalProvider(
-                        LocalArticleNavigator provides navigatorBundle.articleNavigator,
-                        LocalUserNavigator provides navigatorBundle.userNavigator,
-                        LocalAuthNavigator provides navigatorBundle.authNavigator,
-                        LocalCollectionNavigator provides navigatorBundle.collectionNavigator,
-                        LocalSearchNavigator provides navigatorBundle.searchNavigator,
-                        LocalDemoNavigator provides navigatorBundle.demoNavigator,
-                        LocalPictureNavigator provides navigatorBundle.pictureNavigator,
-                        LocalHomeNavigator provides navigatorBundle.homeNavigator,
+                        LocalNavigators provides navigators,
                     ) {
                         AppNavGraph(
                             navigationDispatcher = navigationDispatcher,
                             navContributors = navContributors,
-                            flowScopeContributors = flowScopeContributors,
                             initialBackStack = initialBackStack,
                             pendingDeepLink = pendingDeepLink.value,
                             onDeepLinkConsumed = { pendingDeepLink.value = null },

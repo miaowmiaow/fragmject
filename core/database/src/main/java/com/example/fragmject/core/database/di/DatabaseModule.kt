@@ -3,7 +3,6 @@ package com.example.fragmject.core.database.di
 import android.content.Context
 import com.example.fragmject.core.database.AppDatabase
 import com.example.fragmject.core.database.KVDatabase
-import com.example.fragmject.core.database.dao.CoinRankDao
 import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.dao.HotKeyDao
@@ -57,9 +56,6 @@ object DatabaseModule {
 
     @Provides
     fun provideProjectTreeDao(db: AppDatabase): ProjectTreeDao = db.projectTreeDao()
-
-    @Provides
-    fun provideCoinRankDao(db: AppDatabase): CoinRankDao = db.coinRankDao()
 
     @Provides
     fun provideKVDao(db: KVDatabase): KVDao = db.kvDao()

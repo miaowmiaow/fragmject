@@ -13,11 +13,11 @@ android {
 
 dependencies {
     implementation(project(":core:data-contract"))
+    implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(libs.gson)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.androidx.room3.runtime)
-    implementation(libs.androidx.room3.paging)
     testImplementation(libs.junit)
 }

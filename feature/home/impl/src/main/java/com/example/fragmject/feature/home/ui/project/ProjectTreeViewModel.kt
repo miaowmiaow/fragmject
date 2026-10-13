@@ -14,13 +14,8 @@ import javax.inject.Inject
 
 sealed interface ProjectTreeUiState {
     data object Loading : ProjectTreeUiState
-    data class Success(
-        val result: List<ProjectTree> = emptyList(),
-    ) : ProjectTreeUiState
-    data class Error(
-        val code: String = "",
-        val message: String = "",
-    ) : ProjectTreeUiState
+    data class Success(val result: List<ProjectTree> = emptyList()) : ProjectTreeUiState
+    data class Error(val message: String = "") : ProjectTreeUiState
 }
 
 // Screen accessors
@@ -52,7 +47,7 @@ class ProjectTreeViewModel @Inject constructor(
             when (val r = repo.refreshProjectTree()) {
                 is DomainResult.Success -> Unit
                 is DomainResult.Failure ->
-                    _uiState.value = ProjectTreeUiState.Error(r.code, r.message)
+                    _uiState.value = ProjectTreeUiState.Error(r.message)
             }
         }
     }

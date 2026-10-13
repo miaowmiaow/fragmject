@@ -1,35 +1,24 @@
 package com.example.fragmject.feature.collection.components
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.LazyPagingItems
 import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.designsystem.TitleBar
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
+import com.example.fragmject.core.ui.components.rememberCollectInteraction
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
-import com.example.fragmject.feature.collection.mapper.toFeedCardUIState
+import com.example.fragmject.core.navigation.contract.LocalNavigators
+import com.example.fragmject.core.ui.mapper.toFeedCardUIState
 
 /**
  * 公共「文章列表页」Paging 版：统一 MyShareScreen 等页面重复的
@@ -41,32 +30,16 @@ fun PagingArticleListPage(
     pagingItems: LazyPagingItems<Article>,
     collectState: CollectState,
 ) {
-    val articleNavigator = LocalArticleNavigator.current
-    val userNavigator = LocalUserNavigator.current
-    val homeNavigator = LocalHomeNavigator.current
+    val articleNavigator = LocalNavigators.current.article
+    val userNavigator = LocalNavigators.current.user
+    val homeNavigator = LocalNavigators.current.home
     val onNavigateUp = LocalOnNavigateUp.current
-    val overrides by collectState.overrides.collectAsStateWithLifecycle()
-    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
-    val onToggleClick = remember(collectState) { collectState::toggle }
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        collectState.collectFailed.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
+    val collectInteraction = rememberCollectInteraction(collectState)
     Scaffold(
         topBar = {
             TitleBar(
                 title = title,
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                },
+                onNavigateUp = onNavigateUp,
             )
         },
     ) { innerPadding ->
@@ -80,11 +53,11 @@ fun PagingArticleListPage(
             key = { it.id },
         ) { item ->
             FeedCard(
-                data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
+                data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
                 onItemClick = { articleNavigator.openArticle(it) },
                 onUserClick = { userNavigator.openUserProfile(it) },
                 onFooterClick = { homeNavigator.openSystemTree(it) },
-                onToggleClick = onToggleClick,
+                onToggleClick = collectInteraction.onToggleClick,
             )
         }
     }

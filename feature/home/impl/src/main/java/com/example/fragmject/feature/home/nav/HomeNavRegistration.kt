@@ -6,9 +6,6 @@ import com.example.fragmject.core.navigation.runtime.LocalOnClearDetail
 import com.example.fragmject.core.navigation.runtime.LocalSelectedDetailKey
 import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.core.navigation.runtime.NavContentRegistry
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.feature.home.SystemNavKey
 import com.example.fragmject.feature.home.ui.main.MainScreen
@@ -34,11 +31,6 @@ object HomeNavContentContributor : NavContentContributor {
             key(navKey.cid) {
                 SystemScreen(
                     cid = navKey.cid,
-                    actions = homeNavActions(
-                        articleNavigator = LocalArticleNavigator.current,
-                        userNavigator = LocalUserNavigator.current,
-                        homeNavigator = LocalHomeNavigator.current,
-                    ),
                 )
             }
         }

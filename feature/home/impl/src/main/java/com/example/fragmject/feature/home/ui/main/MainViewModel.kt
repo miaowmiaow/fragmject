@@ -26,7 +26,6 @@ sealed interface MainUiState {
         val isLoading: Boolean = false,
     ) : MainUiState
     data class Error(
-        val code: String = "",
         val message: String = "",
     ) : MainUiState
 }
@@ -56,7 +55,7 @@ class MainViewModel @Inject constructor(
                     }
                 }
                 is DomainResult.Failure -> {
-                    _uiState.value = MainUiState.Error(r.code, r.message)
+                    _uiState.value = MainUiState.Error(r.message)
                 }
             }
         }
@@ -82,7 +81,7 @@ class MainViewModel @Inject constructor(
                     _uiState.updateSuccessFrom({ MainUiState.Success() }) { it.copy(isLoading = false) }
                 }
                 is DomainResult.Failure -> {
-                    _uiState.value = MainUiState.Error(r.code, r.message)
+                    _uiState.value = MainUiState.Error(r.message)
                 }
             }
         }

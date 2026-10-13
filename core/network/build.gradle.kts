@@ -1,13 +1,11 @@
-import java.io.FileInputStream
-import java.util.Properties
+import com.example.fragmject.convention.loadConfigProperties
 
 plugins {
     id("fragmject.android.library")
     id("fragmject.android.hilt")
 }
 
-val configProperties = Properties()
-configProperties.load(FileInputStream(rootProject.file("config.properties")))
+val configProperties = loadConfigProperties()
 
 val baseUrl: String = configProperties.getProperty("baseUrl")
 

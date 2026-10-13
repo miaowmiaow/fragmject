@@ -12,19 +12,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed interface MyUiState {
-    val user: User
-    data class NoUser(
-        override val user: User = User(id = 0, username = "", nickname = ""),
-    ) : MyUiState
-}
+data class MyUiState(
+    val user: User = User(id = 0, username = "", nickname = ""),
+)
 
 @HiltViewModel
 class MyViewModel @Inject constructor(
     private val userRepo: UserRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MyUiState.NoUser())
+    private val _uiState = MutableStateFlow(MyUiState())
     val uiState: StateFlow<MyUiState> = _uiState.asStateFlow()
 
     init {

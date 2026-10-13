@@ -9,11 +9,11 @@ package com.example.fragmject.core.navigation.contract
 interface AuthNavigator {
 
     /** 打开登录页。 */
-    fun openLogin()
+    fun openLogin() = Unit
 
     /** 打开注册页。 */
-    fun openRegister()
+    fun openRegister() = Unit
 
     /** 认证（登录/注册）成功后回跳：若存在被守卫拦截的原目标则跳转，否则回首页。 */
-    fun onAuthSuccess()
+    fun onAuthSuccess() = Unit
 }

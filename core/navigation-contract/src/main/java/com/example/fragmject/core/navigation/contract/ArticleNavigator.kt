@@ -9,5 +9,5 @@ package com.example.fragmject.core.navigation.contract
 interface ArticleNavigator {
 
     /** 打开文章详情（WebView 网页）。 */
-    fun openArticle(url: String)
+    fun openArticle(url: String) = Unit
 }

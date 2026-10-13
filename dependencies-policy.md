@@ -35,7 +35,7 @@
 - [ ] `libs.versions.toml` 中版本号与注释同步更新
 - [ ] `./gradlew build` 全量构建通过
 - [ ] Room3 升级时，核对 `schemas/` 下各版本 json 是否存在、auto-migration 是否有兜底
-- [ ] 升级后跑一遍 `:app:compileFreeDebugKotlin` 确认 Hilt KSP 依赖图无误
+- [ ] 升级后跑一遍 `:app:compileDebugKotlin` 确认 Hilt KSP 依赖图无误
 - [ ] 若涉及 Compose 稳定性，同步更新 `compose_stability_config.conf` 或对应 `@Immutable` 注解
 
 ## 5. 架构分层约定（UseCase 边界）
@@ -106,10 +106,11 @@
 2. 「单消费者端口是否该上移」是一个会反复出现的判断题，统一放 `core:domain` 可消除这类判断；
 3. `core:domain` 的膨胀是可预期的、可拆分的（见 §6.6），而语义混杂的 `api` 模块难以拆分。
 
-**已落地的两个例子**：
+**已落地的例子**：
 
-- `MediaEditor` / `ImageHandle` / `ImageSource`（`core/domain/media/`）— 位图解码与编辑导出，实现 `MediaEditorImpl` 在 `core/data-repository/media/`
 - `SystemStorage`（`core/domain/system/`）— 缓存目录与清理，实现 `SystemStorageImpl` 在 `core/data-repository/system/`
+
+> 注：原先的 `MediaEditor` / `ImageHandle` / `ImageSource` 端口已随「图片编辑引擎化」重构为 `core:image-editor` 引擎——画布、裁剪、编码、落盘整体收敛进引擎，不再以领域端口形式暴露。这类「平台相关 UI 能力」应走 core 引擎而非 domain 端口。
 
 ### 6.5 现有约束清单（CI 可执行）
 
@@ -124,11 +125,12 @@
 | R1/R5 | `domain` 不依赖 data/network/database；`data-repository` 不依赖 network/database |
 | R2/R3/R6 | feature impl 不依赖其他 feature 的 impl/api；feature api 不依赖 feature impl |
 | R8 | feature → core 必须在 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 内 |
+| R9 | `feature:*:api` 不得依赖 `:core:navigation-runtime`（纯契约归 contract，机制归 runtime） |
 
-**B. Konsist 源码规则** — `app/src/test/.../ArchitectureTest.kt`，16 条 + 1 条守卫测试
-运行：`./gradlew :app:testFreeDebugUnitTest --tests "*ArchitectureTest"`
+**B. Konsist 源码规则** — `app/src/test/.../ArchitectureTest.kt`，15 条 + 1 条守卫测试
+运行：`./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"`
 
-规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、**16（`core:data-repository` 的 `media` 包对外只暴露 `BitmapImageHandle`）**，以及 `boundary selectors match real files`（防止选择器写错导致规则空转）。
+规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**，以及 `boundary selectors match real files`（防止选择器写错导致规则空转）。
 
 > Gradle 守卫与 Konsist 互补：`implementation(project(...))` 不产生 import 时 Konsist 感知不到；反之 Gradle 看不到源码内的越界引用。二者必须同时维护。
 
@@ -138,14 +140,10 @@
 
 | 例外 | 位置 | 理由 |
 |---|---|---|
-| `:feature:picture:impl` → `:core:data-repository` | `FEATURE_EXTRA_CORE_DEPENDENCIES` | 画布持有真实 `android.graphics.Bitmap`，需 `BitmapImageHandle` 包装后才能交给 `MediaEditor` |
-| Konsist 规则 12 放行 `core.data.repository.media.BitmapImageHandle` | `DATA_EXCEPTION_IMPORT` | 同上 |
 | Konsist 规则 13 放行 `feature/demo/impl` | 规则内 `filterNot` | demo 是平台 API 演示模块，业务 feature 不得效仿 |
-| Konsist 规则 9 白名单 `android.graphics.Bitmap` / `android.net.Uri` | 规则内 `setOf(...)` | 限 `media` 子包内使用 |
 | `:app` 组合根使用 lifecycle 的 `viewModel()` | 规则 14 仅过滤 `/feature/` | `AppNavViewModel` 在 `NavDisplay` 之外，本就应是 Activity 作用域 |
 | 大屏 DetailPane 用 `ProvideDetailPaneViewModelStore` 自建 owner | `core:navigation-runtime` | DetailPane 不在 `NavEntry` 内，拿不到 entry 级 store，需按 key 提供等价作用域 |
 | `CookieStore` 实现放 `core:webview`，由 `:app` 聚合注入 | Gradle 守卫矩阵 + Konsist 规则 15 | network 不得依赖 webview；实现必须经 Hilt 绑定，network 只允许注入使用 |
-| `:feature:picture:impl` → `:core:data-repository`（仅 `BitmapImageHandle`） | `FEATURE_EXTRA_CORE_DEPENDENCIES` + 规则 12 + **规则 16** | 画布持有真实 `Bitmap`，必须构造/拆包领域句柄；上移到 domain 会把 `Bitmap.compress` 平台行为带进领域层。三重锁定防扩散 |
 
 新增例外时同步改 Gradle 矩阵与 Konsist 规则，并在本表登记；**任何例外都应能回答「为什么不用契约」。**
 

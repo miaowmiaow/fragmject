@@ -32,13 +32,21 @@ import coil.compose.AsyncImage
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.ArrowRightItem
 import com.example.fragmject.core.ui.utils.AvatarUtils
-import com.example.fragmject.feature.home.nav.MyNavActions
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 
 @Composable
 fun MyScreen(
     viewModel: MyViewModel = hiltViewModel(),
-    actions: MyNavActions = MyNavActions(),
 ) {
+    val navigators = LocalNavigators.current
+    val onUserClick = remember(navigators) { { userId: String -> navigators.user.openUserProfile(userId) } }
+    val onLoginClick = remember(navigators) { { navigators.auth.openLogin() } }
+    val onDemoClick = remember(navigators) { { navigators.demo.openDemo() } }
+    val onMyCoinClick = remember(navigators) { { navigators.user.openMyCoin() } }
+    val onMyCollectClick = remember(navigators) { { navigators.collection.openMyCollect() } }
+    val onMyShareClick = remember(navigators) { { navigators.collection.openMyShare() } }
+    val onBrowseHistoryClick = remember(navigators) { { navigators.user.openBrowseHistory() } }
+    val onSettingClick = remember(navigators) { { navigators.user.openSetting() } }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
@@ -57,9 +65,9 @@ fun MyScreen(
                     .clip(RoundedCornerShape(50))
                     .clickable {
                         if (uiState.user.id > 0) {
-                            actions.onUserClick(uiState.user.id.toString())
+                            onUserClick(uiState.user.id.toString())
                         } else {
-                            actions.onLoginClick()
+                            onLoginClick()
                         }
                     }
                     .size(90.dp)
@@ -73,9 +81,9 @@ fun MyScreen(
                     .clip(RoundedCornerShape(50))
                     .clickable {
                         if (uiState.user.id > 0) {
-                            actions.onUserClick(uiState.user.id.toString())
+                            onUserClick(uiState.user.id.toString())
                         } else {
-                            actions.onLoginClick()
+                            onLoginClick()
                         }
                     }
                     .size(90.dp)
@@ -87,9 +95,9 @@ fun MyScreen(
                 .clickable(
                     onClick = {
                         if (uiState.user.id > 0) {
-                            actions.onUserClick(uiState.user.id.toString())
+                            onUserClick(uiState.user.id.toString())
                         } else {
-                            actions.onLoginClick()
+                            onLoginClick()
                         }
                     },
                     indication = null,
@@ -101,17 +109,17 @@ fun MyScreen(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(45.dp))
-        ArrowRightItem("组件Demo") { actions.onDemoClick() }
+        ArrowRightItem("组件Demo") { onDemoClick() }
         HorizontalDivider()
-        ArrowRightItem("我的积分") { actions.onMyCoinClick() }
+        ArrowRightItem("我的积分") { onMyCoinClick() }
         HorizontalDivider()
-        ArrowRightItem("我的收藏") { actions.onMyCollectClick() }
+        ArrowRightItem("我的收藏") { onMyCollectClick() }
         HorizontalDivider()
-        ArrowRightItem("我的分享") { actions.onMyShareClick() }
+        ArrowRightItem("我的分享") { onMyShareClick() }
         HorizontalDivider()
-        ArrowRightItem("浏览历史") { actions.onBrowseHistoryClick() }
+        ArrowRightItem("浏览历史") { onBrowseHistoryClick() }
         HorizontalDivider()
-        ArrowRightItem("系统设置") { actions.onSettingClick() }
+        ArrowRightItem("系统设置") { onSettingClick() }
     }
 }
 

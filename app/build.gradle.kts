@@ -1,4 +1,4 @@
-import java.io.FileInputStream
+import com.example.fragmject.convention.loadConfigProperties
 import java.util.Properties
 
 plugins {
@@ -7,8 +7,7 @@ plugins {
     id("fragmject.android.hilt")
 }
 
-val configProperties = Properties()
-configProperties.load(FileInputStream(rootProject.file("config.properties")))
+val configProperties = loadConfigProperties()
 
 val keystoreFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
@@ -28,6 +27,9 @@ android {
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        // 单渠道无 flavor/dimension：manifest 占位符直接收敛到 defaultConfig
+        manifestPlaceholders["app_channel_value"] = "free"
+        manifestPlaceholders["app_name_value"] = "玩Android"
     }
 
     buildFeatures {
@@ -70,17 +72,6 @@ android {
             signingConfig = signingConfigs.findByName("config")
             //noinspection ChromeOsAbiSupport
             ndk.abiFilters += "x86"
-        }
-    }
-
-    flavorDimensions += "tier"
-
-    productFlavors {
-        create("free") {
-            applicationIdSuffix = ".free"
-            dimension = "tier"
-            manifestPlaceholders["app_channel_value"] = name
-            manifestPlaceholders["app_name_value"] = "玩Android"
         }
     }
 }

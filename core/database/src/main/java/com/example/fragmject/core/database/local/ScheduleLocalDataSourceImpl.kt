@@ -3,18 +3,18 @@ package com.example.fragmject.core.database.local
 import android.util.Log
 import com.example.fragmject.core.database.KVDatabase
 import com.example.fragmject.core.database.model.JsonConverters
-import com.example.fragmject.core.data.contract.local.ScheduleLocalDataSource
+import com.example.fragmject.core.domain.repository.ScheduleRepository
 import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * [ScheduleLocalDataSource] 的 KV 适配器实现。
+ * [ScheduleRepository] 的 KV 适配器实现。
  */
 @Singleton
 class ScheduleLocalDataSourceImpl @Inject constructor(
     private val kvDatabase: KVDatabase,
-) : ScheduleLocalDataSource {
+) : ScheduleRepository {
 
     private companion object {
         const val SCHEDULE_KEY_PREFIX = "schedule"

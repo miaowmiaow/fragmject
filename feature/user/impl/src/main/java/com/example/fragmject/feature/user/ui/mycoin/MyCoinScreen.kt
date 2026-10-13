@@ -32,7 +32,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.ui.R
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.designsystem.AppColors
@@ -46,7 +46,7 @@ fun MyCoinScreen(
     viewModel: MyCoinViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-    val userNavigator = LocalUserNavigator.current
+    val userNavigator = LocalNavigators.current.user
     val onNavigateUp = LocalOnNavigateUp.current
     val density = LocalDensity.current
     val sw = context.getScreenWidth()

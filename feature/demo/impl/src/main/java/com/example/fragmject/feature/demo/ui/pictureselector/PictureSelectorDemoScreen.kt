@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contract.LocalPictureNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 
 @Composable
 fun PictureSelectorDemoScreen() {
-    val pictureNavigator = LocalPictureNavigator.current
+    val pictureNavigator = LocalNavigators.current.picture
     val selectedUris by pictureNavigator.selectedUris.collectAsStateWithLifecycle()
     val selectedUri = selectedUris.firstOrNull()
     Column(

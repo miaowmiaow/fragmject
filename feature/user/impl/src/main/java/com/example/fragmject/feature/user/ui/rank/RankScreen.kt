@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,8 +33,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.designsystem.AppColors
@@ -46,26 +43,15 @@ import com.example.fragmject.core.designsystem.TitleBar
 fun RankScreen(
     viewModel: RankViewModel = hiltViewModel(),
 ) {
-    val articleNavigator = LocalArticleNavigator.current
-    val userNavigator = LocalUserNavigator.current
+    val articleNavigator = LocalNavigators.current.article
+    val userNavigator = LocalNavigators.current.user
     val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     Scaffold(
         topBar = {
             TitleBar(
                 title = "积分排行榜",
-                navigationIcon = {
-                    IconButton(
-                        modifier = Modifier.height(45.dp),
-                        onClick = onNavigateUp
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                },
+                onNavigateUp = onNavigateUp,
                 actions = {
                     IconButton(
                         modifier = Modifier.height(45.dp),

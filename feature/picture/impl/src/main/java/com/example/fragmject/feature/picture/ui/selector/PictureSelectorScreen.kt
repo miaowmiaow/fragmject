@@ -45,8 +45,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -110,7 +113,14 @@ fun PictureSelectorScreen(
     }
 
     // 初始权限检查：有权限直接查询，无权限则自动弹出系统授权对话框
+    // flowReset 用 rememberSaveable 区分「流程开始」与「流程内返回」：点预览再返回时
+    // 恢复 true 跳过归零；流程结束再进入时丢弃恢复 false，才归零一次跨流程残留状态。
+    var flowReset by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
+        if (!flowReset) {
+            flowState.reset()
+            flowReset = true
+        }
         val granted = storagePermissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }

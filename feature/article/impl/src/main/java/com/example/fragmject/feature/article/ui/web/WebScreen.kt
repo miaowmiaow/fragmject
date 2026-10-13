@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,8 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.designsystem.TitleBar
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.webview.rememberWebViewControl
@@ -52,8 +49,8 @@ fun WebScreen(
     url: String,
 ) {
     val context = LocalContext.current
-    val userNavigator = LocalUserNavigator.current
-    val articleNavigator = LocalArticleNavigator.current
+    val userNavigator = LocalNavigators.current.user
+    val articleNavigator = LocalNavigators.current.article
     val onNavigateUp = LocalOnNavigateUp.current
     val scope = rememberCoroutineScope()
     val webViewModel: WebViewModel = hiltViewModel()
@@ -103,20 +100,7 @@ fun WebScreen(
         topBar = {
             TitleBar(
                 title = title.toString(),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            onNavigateUp()
-                        },
-                        modifier = Modifier.height(45.dp)
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                },
+                onNavigateUp = onNavigateUp,
                 actions = {
                     IconButton(
                         onClick = {

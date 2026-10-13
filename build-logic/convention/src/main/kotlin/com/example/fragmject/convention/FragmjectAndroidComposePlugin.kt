@@ -28,7 +28,6 @@ class FragmjectAndroidComposePlugin : Plugin<Project> {
             applyComposeBase()
             dependencies.apply {
                 add("implementation", libs.findLibrary("androidx-compose-animation").get())
-                add("implementation", libs.findLibrary("androidx-compose-material").get())
                 add("implementation", libs.findLibrary("androidx-compose-material-icon-core").get())
                 add("implementation", libs.findLibrary("androidx-compose-material-icon-extended").get())
                 add("implementation", libs.findLibrary("androidx-compose-material3").get())

@@ -67,21 +67,11 @@ import com.example.fragmject.core.model.Tree
 import com.example.fragmject.core.designsystem.BottomNavItem
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.designsystem.AppColors
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalAuthNavigator
-import com.example.fragmject.core.navigation.contract.LocalCollectionNavigator
-import com.example.fragmject.core.navigation.contract.LocalDemoNavigator
-import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contract.LocalSearchNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.feature.home.ui.my.MyScreen
 import com.example.fragmject.feature.home.ui.nav.NavScreen
 import com.example.fragmject.feature.home.ui.home.HomeScreen
 import com.example.fragmject.feature.home.ui.project.ProjectScreen
-import com.example.fragmject.feature.home.nav.HomeNavActions
-import com.example.fragmject.feature.home.nav.MyNavActions
-import com.example.fragmject.feature.home.nav.homeNavActions
-import com.example.fragmject.feature.home.nav.myNavActions
 import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 
 // =====================================================================
@@ -94,27 +84,25 @@ private fun MainContent(
     navItems: List<BottomNavItem>,
     systemData: List<Tree>,
     homeListState: LazyListState,
-    homeActions: HomeNavActions,
-    myActions: MyNavActions,
     modifier: Modifier = Modifier,
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
     Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
         when (navIndex) {
             0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
-                HomeScreen(listState = homeListState, actions = homeActions)
+                HomeScreen(listState = homeListState)
             }
 
             1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
-                NavScreen(systemData = systemData, actions = homeActions)
+                NavScreen(systemData = systemData)
             }
 
             2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
-                ProjectScreen(actions = homeActions)
+                ProjectScreen()
             }
 
             3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
-                MyScreen(actions = myActions)
+                MyScreen()
             }
         }
     }
@@ -167,8 +155,6 @@ private fun ContentPane(
     hotKeyResult: List<HotKey>?,
     systemData: List<Tree>,
     homeListState: LazyListState,
-    homeActions: HomeNavActions,
-    myActions: MyNavActions,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -178,8 +164,6 @@ private fun ContentPane(
             navItems = navItems,
             systemData = systemData,
             homeListState = homeListState,
-            homeActions = homeActions,
-            myActions = myActions,
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -208,32 +192,6 @@ fun MainScreen(
         }
     }
 
-    // 跨域语义动作：由 CompositionLocal 提供的语义 Navigator 构造（导航是 UI 层职责）。
-    val articleNavigator = LocalArticleNavigator.current
-    val userNavigator = LocalUserNavigator.current
-    val homeNavigator = LocalHomeNavigator.current
-    val authNavigator = LocalAuthNavigator.current
-    val collectionNavigator = LocalCollectionNavigator.current
-    val demoNavigator = LocalDemoNavigator.current
-
-    // 必须 remember：HomeNavActions/MyNavActions 是含 lambda 的 data class，
-    // 每次重组新建实例会让四个子页的参数「不等」，从而无法跳过重组。
-    val homeActions = remember(articleNavigator, userNavigator, homeNavigator) {
-        homeNavActions(
-            articleNavigator = articleNavigator,
-            userNavigator = userNavigator,
-            homeNavigator = homeNavigator,
-        )
-    }
-    val myActions = remember(userNavigator, authNavigator, collectionNavigator, demoNavigator) {
-        myNavActions(
-            userNavigator = userNavigator,
-            authNavigator = authNavigator,
-            collectionNavigator = collectionNavigator,
-            demoNavigator = demoNavigator,
-        )
-    }
-
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = remember {
         listOf(
@@ -257,7 +215,7 @@ fun MainScreen(
         WindowWidthSizeClass.Expanded -> ExpandedMainScreen(
             navItems, navIndex, onNavClick,
             uiState.hotKeyResult, uiState.treeResult,
-            homeListState, homeActions, myActions,
+            homeListState,
             selectedDetailKey = selectedDetailKey,
             onClearDetail = onClearDetail,
             detailContent = detailContent,
@@ -266,13 +224,13 @@ fun MainScreen(
         WindowWidthSizeClass.Medium -> MediumMainScreen(
             navItems, navIndex, onNavClick,
             uiState.hotKeyResult, uiState.treeResult,
-            homeListState, homeActions, myActions,
+            homeListState,
         )
 
         else -> CompactMainScreen(
             navItems, navIndex, onNavClick,
             uiState.hotKeyResult, uiState.treeResult,
-            homeListState, homeActions, myActions,
+            homeListState,
         )
     }
 }
@@ -289,8 +247,6 @@ private fun CompactMainScreen(
     hotKeyResult: List<HotKey>?,
     systemData: List<Tree>,
     homeListState: LazyListState,
-    homeActions: HomeNavActions,
-    myActions: MyNavActions,
 ) {
     Scaffold(
         topBar = { SearchBar(data = hotKeyResult) },
@@ -312,8 +268,6 @@ private fun CompactMainScreen(
             navItems,
             systemData,
             homeListState,
-            homeActions,
-            myActions,
             Modifier.padding(innerPadding)
         )
     }
@@ -331,8 +285,6 @@ private fun MediumMainScreen(
     hotKeyResult: List<HotKey>?,
     systemData: List<Tree>,
     homeListState: LazyListState,
-    homeActions: HomeNavActions,
-    myActions: MyNavActions,
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
         Surface(
@@ -350,8 +302,6 @@ private fun MediumMainScreen(
             hotKeyResult = hotKeyResult,
             systemData = systemData,
             homeListState = homeListState,
-            homeActions = homeActions,
-            myActions = myActions,
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -369,8 +319,6 @@ private fun ExpandedMainScreen(
     hotKeyResult: List<HotKey>?,
     systemData: List<Tree>,
     homeListState: LazyListState,
-    homeActions: HomeNavActions,
-    myActions: MyNavActions,
     selectedDetailKey: NavKey?,
     onClearDetail: () -> Unit,
     detailContent: @Composable (NavKey) -> Unit,
@@ -395,8 +343,6 @@ private fun ExpandedMainScreen(
                     hotKeyResult = hotKeyResult,
                     systemData = systemData,
                     homeListState = homeListState,
-                    homeActions = homeActions,
-                    myActions = myActions,
                     modifier = Modifier.weight(0.5f).fillMaxHeight(),
                 )
                 // ── 右侧：详情面板 (50%) ──
@@ -415,8 +361,6 @@ private fun ExpandedMainScreen(
                 hotKeyResult = hotKeyResult,
                 systemData = systemData,
                 homeListState = homeListState,
-                homeActions = homeActions,
-                myActions = myActions,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -460,8 +404,8 @@ private fun NavIcon(item: BottomNavItem) {
 fun SearchBar(
     data: List<HotKey>?,
 ) {
-    val searchNavigator = LocalSearchNavigator.current
-    val collectionNavigator = LocalCollectionNavigator.current
+    val searchNavigator = LocalNavigators.current.search
+    val collectionNavigator = LocalNavigators.current.collection
     Row(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.primaryContainer)

@@ -19,7 +19,6 @@ sealed interface NavUiState {
         val navigationResult: List<NavTab> = emptyList(),
     ) : NavUiState
     data class Error(
-        val code: String = "",
         val message: String = "",
     ) : NavUiState
 }
@@ -49,7 +48,7 @@ class NavViewModel @Inject constructor(
             when (val r = homeNavRepository.refreshNavigation()) {
                 is DomainResult.Success -> Unit
                 is DomainResult.Failure ->
-                    _uiState.value = NavUiState.Error(r.code, r.message)
+                    _uiState.value = NavUiState.Error(r.message)
             }
         }
     }

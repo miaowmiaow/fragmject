@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -23,6 +27,7 @@ import androidx.compose.ui.unit.sp
 fun TitleBar(
     title: String,
     modifier: Modifier = Modifier,
+    onNavigateUp: (() -> Unit)? = null,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
@@ -46,11 +51,35 @@ fun TitleBar(
             .background(MaterialTheme.colorScheme.primaryContainer)
             .statusBarsPadding()
             .height(45.dp),
-        navigationIcon = navigationIcon,
+        navigationIcon = {
+            if (onNavigateUp != null) {
+                DefaultBackIcon(onNavigateUp)
+            } else {
+                navigationIcon()
+            }
+        },
         actions = actions,
         colors = topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     )
+}
+
+/**
+ * 默认返回箭头：左上角 [IconButton] + ArrowBack，点击回调 [onNavigateUp]。
+ * 供「返回上一页」的页面复用，替代各 feature 复制的 IconButton + ArrowBack。
+ */
+@Composable
+private fun DefaultBackIcon(onNavigateUp: () -> Unit) {
+    IconButton(
+        modifier = Modifier.height(45.dp),
+        onClick = onNavigateUp,
+    ) {
+        Icon(
+            Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "返回",
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+    }
 }

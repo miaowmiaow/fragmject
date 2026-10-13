@@ -35,7 +35,6 @@ androidx-camera-mlkit = { group = "androidx.camera", name = "camera-mlkit-vision
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 androidx-compose-material-icon-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-compose-material-icon-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
@@ -58,7 +57,6 @@ androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", 
 androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3" }
 androidx-room3-gradle-plugin = { group = "androidx.room3", name = "room3-gradle-plugin", version.ref = "room3" }
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3" }
-androidx-room3-paging = { group = "androidx.room3", name = "room3-paging", version.ref = "room3" }
 barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "barcodeScanning" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" }

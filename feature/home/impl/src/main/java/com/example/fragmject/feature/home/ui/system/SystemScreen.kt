@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.home.ui.system
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,18 +8,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,27 +24,23 @@ import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.feature.home.mapper.toFeedCardUIState
-import com.example.fragmject.feature.home.nav.HomeNavActions
+import com.example.fragmject.core.ui.components.rememberCollectInteraction
+import com.example.fragmject.core.ui.mapper.toFeedCardUIState
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.model.Tree
 
 @Composable
 fun SystemScreen(
     cid: String,
     systemViewModel: SystemViewModel = hiltViewModel(),
-    actions: HomeNavActions = HomeNavActions(),
 ) {
+    val navigators = LocalNavigators.current
+    val onArticleClick = remember(navigators) { { url: String -> navigators.article.openArticle(url) } }
+    val onAuthorClick = remember(navigators) { { userId: String -> navigators.user.openUserProfile(userId) } }
+    val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
     val onNavigateUp = LocalOnNavigateUp.current
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
-    val overrides by systemViewModel.collectState.overrides.collectAsStateWithLifecycle()
-    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
-    val onToggleClick = remember(systemViewModel.collectState) { systemViewModel.collectState::toggle }
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        systemViewModel.collectState.collectFailed.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
+    val collectInteraction = rememberCollectInteraction(systemViewModel.collectState)
     // getTree 会遍历整个 treeResult 查找 cid；用 remember(cid, treeResult) 缓存，
     // 避免 SystemScreen 因分页加载/翻页等高频重组时重复执行 O(n*m) 遍历。
     val treeData = remember(cid, treeResult) { treeResult.getTree(cid) }
@@ -69,15 +58,7 @@ fun SystemScreen(
         topBar = {
             TitleBar(
                 title = treeData.second,
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                },
+                onNavigateUp = onNavigateUp,
             )
         },
     ) { innerPadding ->
@@ -97,11 +78,11 @@ fun SystemScreen(
                     key = { it.id },
                 ) { item ->
                     FeedCard(
-                        data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
-                        onItemClick = actions.onArticleClick,
-                        onUserClick = actions.onAuthorClick,
-                        onFooterClick = actions.onChapterClick,
-                        onToggleClick = onToggleClick,
+                        data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
+                        onItemClick = onArticleClick,
+                        onUserClick = onAuthorClick,
+                        onFooterClick = onChapterClick,
+                        onToggleClick = collectInteraction.onToggleClick,
                     )
                 }
             }

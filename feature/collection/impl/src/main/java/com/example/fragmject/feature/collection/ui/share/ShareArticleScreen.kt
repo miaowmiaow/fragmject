@@ -13,8 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -44,7 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.ui.R
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ClearTextField
 import com.example.fragmject.core.ui.components.LoadingContent
@@ -57,7 +55,7 @@ fun ShareArticleScreen(
 ) {
     // 无需复位成功标记：ViewModel 已限定到 NavEntry，出栈即清除，再次进入必为全新实例
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val articleNavigator = LocalArticleNavigator.current
+    val articleNavigator = LocalNavigators.current.article
     val onNavigateUp = LocalOnNavigateUp.current
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
@@ -80,18 +78,7 @@ fun ShareArticleScreen(
         topBar = {
             TitleBar(
                 title = "分享文章",
-                navigationIcon = {
-                    IconButton(
-                        modifier = Modifier.height(45.dp),
-                        onClick = onNavigateUp
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                },
+                onNavigateUp = onNavigateUp,
                 actions = {
                     IconButton(
                         onClick = {

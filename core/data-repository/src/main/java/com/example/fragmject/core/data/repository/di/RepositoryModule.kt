@@ -2,44 +2,36 @@ package com.example.fragmject.core.data.repository.di
 
 import com.example.fragmject.core.data.repository.AuthStateImpl
 import com.example.fragmject.core.data.repository.AlbumRepositoryImpl
-import com.example.fragmject.core.data.repository.media.MediaEditorImpl
 import com.example.fragmject.core.data.repository.system.SystemStorageImpl
 import com.example.fragmject.core.data.repository.CoinRankRepositoryImpl
 import com.example.fragmject.core.data.repository.CollectStateImpl
 import com.example.fragmject.core.data.repository.DownloadRepositoryImpl
-import com.example.fragmject.core.data.repository.HistoryRepositoryImpl
 import com.example.fragmject.core.data.repository.HomeRepositoryImpl
 import com.example.fragmject.core.data.repository.MediaRepositoryImpl
 import com.example.fragmject.core.data.repository.MyCollectRepositoryImpl
 import com.example.fragmject.core.data.repository.MyRepositoryImpl
 import com.example.fragmject.core.data.repository.HomeNavRepositoryImpl
 import com.example.fragmject.core.data.repository.ProjectRepositoryImpl
-import com.example.fragmject.core.data.repository.ScheduleRepositoryImpl
 import com.example.fragmject.core.data.repository.SearchRepositoryImpl
 import com.example.fragmject.core.data.repository.SystemRepositoryImpl
-import com.example.fragmject.core.data.repository.ThemeRepositoryImpl
 import com.example.fragmject.core.data.repository.ThemeStateImpl
 import com.example.fragmject.core.data.repository.UserCenterRepositoryImpl
 import com.example.fragmject.core.data.repository.UserRepositoryImpl
 import com.example.fragmject.core.domain.AuthState
 import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.domain.ThemeState
-import com.example.fragmject.core.domain.media.MediaEditor
 import com.example.fragmject.core.domain.system.SystemStorage
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.CoinRankRepository
 import com.example.fragmject.core.domain.repository.DownloadRepository
-import com.example.fragmject.core.domain.repository.HistoryRepository
 import com.example.fragmject.core.domain.repository.HomeRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.domain.repository.MyCollectRepository
 import com.example.fragmject.core.domain.repository.MyRepository
 import com.example.fragmject.core.domain.repository.HomeNavRepository
 import com.example.fragmject.core.domain.repository.ProjectRepository
-import com.example.fragmject.core.domain.repository.ScheduleRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.repository.SystemRepository
-import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserCenterRepository
 import com.example.fragmject.core.domain.repository.UserRepository
 import dagger.Binds
@@ -65,14 +57,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMyRepository(impl: MyRepositoryImpl): MyRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindHistoryRepository(impl: HistoryRepositoryImpl): HistoryRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindThemeRepository(impl: ThemeRepositoryImpl): ThemeRepository
 
     @Binds
     @Singleton
@@ -120,10 +104,6 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindScheduleRepository(impl: ScheduleRepositoryImpl): ScheduleRepository
-
-    @Binds
-    @Singleton
     abstract fun bindDownloadRepository(impl: DownloadRepositoryImpl): DownloadRepository
 
     @Binds
@@ -133,12 +113,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
-
-    // internal：MediaEditorImpl 为 internal（架构测试规则 16 约束 media 包对外表面），
-    // Kotlin 不允许 public 函数暴露 internal 类型；internal 方法在字节码中仍是 public，Dagger 可正常处理
-    @Binds
-    @Singleton
-    internal abstract fun bindMediaEditor(impl: MediaEditorImpl): MediaEditor
 
     @Binds
     @Singleton

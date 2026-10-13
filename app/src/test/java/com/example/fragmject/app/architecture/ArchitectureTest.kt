@@ -10,7 +10,7 @@ import org.junit.Test
  * 架构一致性测试（阶段 0 建立，D2 决策：fail 模式）。
  *
  * 规则以源码 import 为依据，通过 Konsist 解析整个项目的 Kotlin 文件。
- * 运行入口：`./gradlew :app:testFreeDebugUnitTest --tests "*ArchitectureTest"`
+ * 运行入口：`./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"`
  *
  * 路径约定（Konsist 的 [KoFileDeclaration.projectPath] 为相对项目根、以 `/` 开头的路径）：
  * - feature api 模块类：`com.example.fragmject.feature.<name>.<Class>`（6 段包名，如 NavKey）
@@ -18,15 +18,6 @@ import org.junit.Test
  * - core 模块类：`com.example.fragmject.core.<module>.<...>`
  */
 class ArchitectureTest {
-
-    /**
-     * 规则 12 的唯一例外：位图句柄的平台实现。
-     *
-     * 画布持有真实 android.graphics.Bitmap，必须包装为领域句柄 [ImageHandle] 才能
-     * 交给 MediaEditor；除此之外 feature 不得引用 data 层任何类型。
-     */
-    private val DATA_EXCEPTION_IMPORT =
-        "com.example.fragmject.core.data.repository.media.BitmapImageHandle"
 
     /** 只扫描 main sourceSet 的生产代码，排除 build 生成物与测试代码。 */
     private val productionFiles: List<KoFileDeclaration> = Konsist.scopeFromProject()
@@ -181,17 +172,13 @@ class ArchitectureTest {
      * 规则 9：`core:data-repository` 仅允许白名单内的 Android framework 导入。
      * 媒体库（MediaStore / ContentUris）已下沉 core:android-platform，此处只允许
      * Context / Environment / Log 基础设施，其余 `android.*` 一律失败。
-     *
-     * 例外（ImageHandle 领域句柄服务）：`media` 包下的 [BitmapImageHandle] 必须持有
-     * 真实 android.graphics.Bitmap 才能交给 MediaEditor 编码；[MediaEditorImpl] 处理
-     * ImageSource.Uri 图片源需 android.net.Uri。二者均为刻意收敛在 media 子包的平台依赖。
      */
     @Test
     fun `core data repository only allows whitelisted android imports`() {
         productionFiles
             .filter { it.projectPath.contains("/core/data-repository/") }
             .assertFalse(
-                additionalMessage = "core:data-repository 仅允许 Context/Environment/Log/Bitmap/Uri（后两者限 media 包）",
+                additionalMessage = "core:data-repository 仅允许 Context/Environment/Log",
             ) { file ->
                 file.hasImport { imp ->
                     imp.name.startsWith("android.") &&
@@ -199,8 +186,6 @@ class ArchitectureTest {
                             "android.content.Context",
                             "android.os.Environment",
                             "android.util.Log",
-                            "android.graphics.Bitmap",
-                            "android.net.Uri",
                         )
                 }
             }
@@ -253,24 +238,21 @@ class ArchitectureTest {
     /**
      * 规则 12：feature 不得依赖数据层平台能力与数据实现。
      *
-     * 所需平台能力必须经 core:domain 端口获取：
+     * 所需平台能力必须经 core 引擎/端口获取：
      * - 缓存目录 / 清理 → [com.example.fragmject.core.domain.system.SystemStorage]
-     * - 位图解码 / 编辑保存 → [com.example.fragmject.core.domain.media.MediaEditor]
+     * - 位图解码 / 编辑保存 → [com.example.fragmject.core.image.editor.ImageEditorEngine]
      *
-     * 唯一例外：`core.data.repository.media.BitmapImageHandle`。画布持有真实
-     * android.graphics.Bitmap，必须包装为领域句柄才能交给 MediaEditor；
-     * 除该类外，feature 不得引用 data 层任何类型。
+     * feature 不得引用 data 层任何类型。
      */
     @Test
     fun `feature does not depend on data platform or data impl`() {
         productionFiles
             .filter { it.projectPath.contains("/feature/") }
             .assertFalse(
-                additionalMessage = "feature 不得依赖 core:android-platform / data-repository / data-contract / network / database（仅允许 BitmapImageHandle）",
+                additionalMessage = "feature 不得依赖 core:android-platform / data-repository / data-contract / network / database",
             ) { file ->
                 file.hasImport { imp ->
                     when {
-                        imp.name == DATA_EXCEPTION_IMPORT -> false
                         imp.name.startsWith("com.example.fragmject.core.android.platform.") -> true
                         imp.name.startsWith("com.example.fragmject.core.data.repository.") -> true
                         imp.name.startsWith("com.example.fragmject.core.data.contract.") -> true
@@ -356,28 +338,6 @@ class ArchitectureTest {
     }
 
     /**
-     * 规则 16：`core:data-repository` 的 `media` 包对外只暴露 `BitmapImageHandle`。
-     *
-     * [BitmapImageHandle] 是全项目唯一允许 feature 直接引用的 data 层类型（规则 12 的例外）。
-     * 为防例外沿「同包扩散」——后人在 media 包新增 public 类、被 feature 顺手引用——
-     * 该包其余实现（`MediaEditorImpl` / `MediaSaveRules`）必须声明为 `internal`，
-     * 对外只经 `core:domain` 的 `MediaEditor` 端口暴露。
-     */
-    @Test
-    fun `data repository media package exposes only bitmap image handle`() {
-        productionFiles
-            .filter { it.projectPath.contains("/core/data-repository/") }
-            .filter { it.projectPath.contains("/media/") }
-            .assertFalse(
-                additionalMessage = "core:data-repository 的 media 包对外只允许暴露 BitmapImageHandle，其余顶层类必须 internal",
-            ) { file ->
-                file.classes().any { klass ->
-                    klass.name != "BitmapImageHandle" && klass.hasPublicOrDefaultModifier
-                }
-            }
-    }
-
-    /**
      * 守卫测试：确保各规则的选择器能匹配到真实文件，避免选择器写错导致规则空转（永远通过）。
      */
     @Test
@@ -429,13 +389,6 @@ class ArchitectureTest {
         assertTrue(
             "core/network 选择器匹配 0 文件，检查 projectPath 前缀",
             productionFiles.any { it.projectPath.contains("/core/network/") },
-        )
-        assertTrue(
-            "core/data-repository/media 选择器匹配 0 文件，检查 projectPath 前缀",
-            productionFiles.any {
-                it.projectPath.contains("/core/data-repository/") &&
-                    it.projectPath.contains("/media/")
-            },
         )
     }
 

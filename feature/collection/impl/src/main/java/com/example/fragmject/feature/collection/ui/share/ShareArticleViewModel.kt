@@ -2,51 +2,42 @@ package com.example.fragmject.feature.collection.ui.share
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.ui.utils.updateSuccessFrom
-import com.example.fragmject.core.domain.usecase.ShareArticleUseCase
+import com.example.fragmject.core.domain.repository.MyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed interface ShareArticleUiState {
-    data class Content(
-        val isLoading: Boolean = false,
-        val success: Boolean = false,
-        val message: String = "",
-        val title: String = "",
-        val link: String = "",
-    ) : ShareArticleUiState
-}
-
-val ShareArticleUiState.isLoading get() = (this as? ShareArticleUiState.Content)?.isLoading ?: false
-val ShareArticleUiState.success get() = (this as? ShareArticleUiState.Content)?.success ?: false
-val ShareArticleUiState.message get() = (this as? ShareArticleUiState.Content)?.message ?: ""
-val ShareArticleUiState.title get() = (this as? ShareArticleUiState.Content)?.title ?: ""
-val ShareArticleUiState.link get() = (this as? ShareArticleUiState.Content)?.link ?: ""
+data class ShareArticleUiState(
+    val isLoading: Boolean = false,
+    val success: Boolean = false,
+    val message: String = "",
+    val title: String = "",
+    val link: String = "",
+)
 
 @HiltViewModel
 class ShareArticleViewModel @Inject constructor(
-    private val shareArticle: ShareArticleUseCase,
+    private val myRepository: MyRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<ShareArticleUiState>(ShareArticleUiState.Content())
+    private val _uiState = MutableStateFlow(ShareArticleUiState())
 
     val uiState: StateFlow<ShareArticleUiState> = _uiState.asStateFlow()
 
     fun resetMessage() {
-        _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) { it.copy(message = "")
-        }
+        _uiState.update { it.copy(message = "") }
     }
 
     fun updateTitle(title: String) {
-        _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) { it.copy(title = title) }
+        _uiState.update { it.copy(title = title) }
     }
 
     fun updateLink(link: String) {
-        _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) { it.copy(link = link) }
+        _uiState.update { it.copy(link = link) }
     }
 
     /**
@@ -54,23 +45,19 @@ class ShareArticleViewModel @Inject constructor(
      * 校验失败时通过 [ShareArticleUiState.message] 反馈，由 UI 层 Snackbar 展示。
      */
     fun submit() {
-        val current = _uiState.value as? ShareArticleUiState.Content ?: return
+        val current = _uiState.value
         if (current.title.isBlank()) {
-            _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) {
-                it.copy(message = "文章标题不能为空")
-            }
+            _uiState.update { it.copy(message = "文章标题不能为空") }
             return
         }
         if (current.link.isBlank()) {
-            _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) {
-                it.copy(message = "文章链接不能为空")
-            }
+            _uiState.update { it.copy(message = "文章链接不能为空") }
             return
         }
-        _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) { it.copy(isLoading = true) }
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val response = shareArticle(current.title, current.link)
-            _uiState.updateSuccessFrom({ ShareArticleUiState.Content() }) {
+            val response = myRepository.shareArticle(current.title, current.link)
+            _uiState.update {
                 if (response.success) {
                     // 成功：显式置 success=true，空消息回退默认文案
                     it.copy(

@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.user.ui.user
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,10 +38,9 @@ import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.utils.getScreenWidth
 import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.feature.user.mapper.toFeedCardUIState
-import com.example.fragmject.core.navigation.contract.LocalArticleNavigator
-import com.example.fragmject.core.navigation.contract.LocalHomeNavigator
-import com.example.fragmject.core.navigation.contract.LocalUserNavigator
+import com.example.fragmject.core.ui.components.rememberCollectInteraction
+import com.example.fragmject.core.ui.mapper.toFeedCardUIState
+import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.utils.AvatarUtils
 
@@ -52,21 +50,14 @@ fun UserScreen(
     viewModel: UserViewModel = hiltViewModel(key = userId),
 ) {
     val coin by viewModel.coin.collectAsStateWithLifecycle()
-    val articleNavigator = LocalArticleNavigator.current
-    val homeNavigator = LocalHomeNavigator.current
-    val userNavigator = LocalUserNavigator.current
+    val articleNavigator = LocalNavigators.current.article
+    val homeNavigator = LocalNavigators.current.home
+    val userNavigator = LocalNavigators.current.user
     val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
-    val overrides by viewModel.collectState.overrides.collectAsStateWithLifecycle()
-    // 稳定回调：每次组合生成的 ::toggle 引用都是新实例，会让 FeedCard 无法跳过重组
-    val onToggleClick = remember(viewModel.collectState) { viewModel.collectState::toggle }
+    val collectInteraction = rememberCollectInteraction(viewModel.collectState)
     LaunchedEffect(userId) { viewModel.init(userId) }
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        viewModel.collectState.collectFailed.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
     val density = LocalDensity.current
     val sw = context.getScreenWidth()
     val collapsingHeaderState = rememberCollapsingHeaderState()
@@ -136,11 +127,11 @@ fun UserScreen(
                 key = { it.id },
             ) { item ->
                 FeedCard(
-                    data = remember(item.id, overrides[item.id]) { item.toFeedCardUIState(overrides[item.id]) },
+                    data = remember(item.id, collectInteraction.overrides[item.id]) { item.toFeedCardUIState(collectInteraction.overrides[item.id]) },
                     onItemClick = { articleNavigator.openArticle(it) },
                     onUserClick = { userNavigator.openUserProfile(it) },
                     onFooterClick = { homeNavigator.openSystemTree(it) },
-                    onToggleClick = onToggleClick,
+                    onToggleClick = collectInteraction.onToggleClick,
                 )
             }
         }

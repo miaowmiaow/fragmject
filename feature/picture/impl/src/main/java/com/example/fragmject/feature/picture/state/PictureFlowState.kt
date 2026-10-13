@@ -5,15 +5,15 @@ import android.util.Log
 import androidx.core.net.toUri
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
-import com.example.fragmject.core.navigation.runtime.NavFlowScope
 import com.example.fragmject.feature.picture.model.Album
 import com.example.fragmject.feature.picture.model.MediaItem
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,16 +21,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 图片选择/预览/编辑流程共享状态（一次图片流程对应一个实例）。
+ * 图片选择/预览/编辑流程共享状态（进程级单例）。
  *
- * 实现 [NavFlowScope]：由 [PictureFlowScopeContributor] 创建，app 组合根在图片流程
- * 全部退出时调用 [close] 销毁；查询挂靠独立 [flowScope]，随 [close] 取消，
+ * 降级自 navigation-runtime 的通用流程作用域机制（NavFlowScope 三件套）：项目仅 picture
+ * 一个流程，通用抽象属过度设计，故收敛为 Hilt @Singleton 由 picture 内部持有。跨流程的
+ * 状态残留由 [reset] 在进入选择器时归零；查询挂靠独立 [flowScope]（进程级），
  * 重复查询通过 [queryJob] 取消 + [queryVersion] 校验丢弃过期结果。
  */
-class PictureFlowState(
+@Singleton
+class PictureFlowState @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val albumRepository: AlbumRepository,
-) : NavFlowScope {
+) {
 
     private val mediaMap = HashMap<String, MutableList<MediaItem>>()
 
@@ -213,9 +215,18 @@ class PictureFlowState(
         }
     }
 
-    override fun close() {
-        flowScope.cancel()
-        queryJob?.cancel()
-        queryJob = null
+    /** 进入图片流程时归零跨流程残留状态（等价于原「每次流程新建实例」的语义）。 */
+    fun reset() {
+        _albumResult.value = emptyList()
+        _currAlbumResult.value = emptyList()
+        _currAlbumName.value = ""
+        _selectedUris.value = emptyList()
+        _selectedUriSet.value = emptySet()
+        _albumMenuExpanded.value = false
+        _hasPermission.value = false
+        _queryAttempted.value = false
+        _queryError.value = false
+        _takePictureUri.value = null
+        _previewSource.value = emptyList()
     }
 }

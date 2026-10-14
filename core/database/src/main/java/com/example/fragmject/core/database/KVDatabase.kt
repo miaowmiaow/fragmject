@@ -38,6 +38,9 @@ abstract class KVDatabase : RoomDatabase() {
             }
         }
 
+        /** 生产环境注册的全部迁移，供 `KVDatabaseMigrationTest` 复用。 */
+        internal val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -52,7 +55,7 @@ abstract class KVDatabase : RoomDatabase() {
                 KVDatabase::class.java,
                 "kv_database"
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(*MIGRATIONS)
                 .build()
         }
 

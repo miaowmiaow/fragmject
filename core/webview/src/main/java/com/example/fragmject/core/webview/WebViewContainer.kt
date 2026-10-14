@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.PermissionRequest
 import android.webkit.URLUtil
-import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -23,10 +22,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -47,7 +48,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,10 +55,10 @@ import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 通用 WebView 容器：只负责「显示网页 + 复用 WebView 池 + 拦截资源 + 通用事件回调」，
- * 不包含任何业务语义（文章 / 视频下载 / 脚本注入等）。
+ * 不包含任何业务语义（文章 / 视频下载 / 调试脚本开关等）。
  *
- * 业务层（如 article）通过 [onWebViewCreated] 注册 JS 接口、长按监听等自身能力，
- * 通过 [onInjectScripts] 在页面达到注入阈值时注入自己的脚本。
+ * 业务层通过 [scriptsProvider] 提供页面加载进度超过 80% 时注入的脚本文本，
+ * 通过 [onLongPressImage] 接收图片地址；原生 WebView 操作只在此模块内执行。
  */
 @Composable
 fun WebViewContainer(
@@ -68,8 +68,8 @@ fun WebViewContainer(
     onTitle: (String?) -> Unit = {},
     onCustomView: (View?) -> Unit = {},
     shouldOverrideUrl: (String) -> Unit = {},
-    onInjectScripts: (WebView) -> Unit = {},
-    onWebViewCreated: (WebView) -> Unit = {},
+    scriptsProvider: () -> List<String> = { emptyList() },
+    onLongPressImage: ((String?) -> Unit)? = null,
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
     var webViewError by remember { mutableStateOf<String?>(null) }
@@ -88,32 +88,75 @@ fun WebViewContainer(
         ).webResourceCache()
     }
 
+    // 网页权限请求：仅受信来源（https）、仅受支持资源，且每次都弹窗展示来源由用户确认。
+    // 每个 PermissionRequest 只能应答一次（grant/deny），因此统一经 answer* 收口。
     // 用 SharedFlow 而不是 mutableState 承接权限请求，避免相同实例引用导致 LaunchedEffect 不再触发
     val permissionRequests =
         remember { MutableSharedFlow<PermissionRequest>(extraBufferCapacity = 1) }
+    // 待用户确认 / 正在申请系统权限的请求；同一时刻只处理一个，其余直接拒绝
     var pendingPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
-    val resourceToPermissionMap = remember {
-        mapOf(
-            "android.webkit.resource.VIDEO_CAPTURE" to Manifest.permission.CAMERA,
-            "android.webkit.resource.AUDIO_CAPTURE" to Manifest.permission.RECORD_AUDIO,
-        )
-    }
+    // 用户已点击「允许」，系统权限弹窗进行中
+    var permissionConfirmed by remember { mutableStateOf(false) }
     val requestPermissions = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        pendingPermissionRequest?.apply {
-            if (result.values.all { it }) grant(resources)
-        }
+        val request = pendingPermissionRequest
         pendingPermissionRequest = null
-    }
-    LaunchedEffect(permissionRequests) {
-        permissionRequests.collectLatest { request ->
-            pendingPermissionRequest = request
-            val permissions = request.resources.mapNotNull { resourceToPermissionMap[it] }
-            if (permissions.isNotEmpty()) {
-                requestPermissions.launch(permissions.toTypedArray())
+        permissionConfirmed = false
+        if (request != null) {
+            val allowed = request.supportedWebResources()
+            if (allowed.isNotEmpty() && result.values.all { it }) {
+                request.answerGrant(allowed)
+            } else {
+                request.answerDeny()
             }
         }
+    }
+    LaunchedEffect(permissionRequests) {
+        permissionRequests.collect { request ->
+            if (pendingPermissionRequest == null &&
+                request.hasTrustedOrigin() &&
+                request.supportedWebResources().isNotEmpty()
+            ) {
+                permissionConfirmed = false
+                pendingPermissionRequest = request
+            } else {
+                request.answerDeny()
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            pendingPermissionRequest?.answerDeny()
+            pendingPermissionRequest = null
+        }
+    }
+    val confirmingRequest = pendingPermissionRequest
+    if (confirmingRequest != null && !permissionConfirmed) {
+        val resourceNames = confirmingRequest.supportedWebResources()
+            .joinToString("、") { WEB_PERMISSION_LABELS.getValue(it) }
+        AlertDialog(
+            onDismissRequest = {
+                pendingPermissionRequest = null
+                confirmingRequest.answerDeny()
+            },
+            title = { Text("网页权限请求") },
+            text = { Text("${confirmingRequest.origin?.host.orEmpty()} 请求使用$resourceNames，是否允许？") },
+            confirmButton = {
+                TextButton(onClick = {
+                    permissionConfirmed = true
+                    val permissions = confirmingRequest.supportedWebResources()
+                        .map { WEB_PERMISSIONS.getValue(it) }
+                    requestPermissions.launch(permissions.toTypedArray())
+                }) { Text("允许") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    pendingPermissionRequest = null
+                    confirmingRequest.answerDeny()
+                }) { Text("拒绝") }
+            },
+        )
     }
 
     // 一份与 Composable 状态绑定的回调容器；WebView 复用时只需替换里面的字段，不会替换 client 本体
@@ -127,10 +170,19 @@ fun WebViewContainer(
     }
     callbacks.onTitle = onTitle
     callbacks.onCustomView = onCustomView
-    callbacks.onPermissionRequest = { req -> req?.let { permissionRequests.tryEmit(it) } }
+    callbacks.onPermissionRequest = { req ->
+        if (req != null && !permissionRequests.tryEmit(req)) req.answerDeny()
+    }
+    // 页面在用户作答前取消了请求：丢弃待处理状态，不再应答（已失效的请求不能 grant/deny）
+    callbacks.onPermissionRequestCanceled = { req ->
+        if (req != null && pendingPermissionRequest === req) {
+            pendingPermissionRequest = null
+            permissionConfirmed = false
+        }
+    }
     callbacks.shouldOverrideUrl = shouldOverrideUrl
-    callbacks.onInjectScripts = onInjectScripts
-    callbacks.onWebViewCreated = onWebViewCreated
+    callbacks.scriptsProvider = scriptsProvider
+    callbacks.onLongPressImage = onLongPressImage
     callbacks.onReceivedError = { errorCode, description, _ ->
         webViewError = when (errorCode) {
             WebViewClient.ERROR_HOST_LOOKUP, WebViewClient.ERROR_CONNECT,
@@ -147,7 +199,7 @@ fun WebViewContainer(
                     reload = { it.reload() },
                     evaluateJavascript = { script, resultCallback ->
                         it.evaluateJavascript(script) { value ->
-                            resultCallback?.onReceiveValue(value ?: "")
+                            resultCallback?.invoke(value ?: "")
                         }
                     }
                 )
@@ -167,13 +219,21 @@ fun WebViewContainer(
                 setDownloadListener { downloadUrl, _, _, _, _ ->
                     handleDownload(ctx, downloadUrl)
                 }
-                // 业务钩子：注册 JS 接口、设置长按监听等业务能力
-                callbacks.onWebViewCreated(this)
+                setOnLongClickListener {
+                    val onImage = callbacks.onLongPressImage
+                    val result = hitTestResult
+                    if (onImage != null && WebViewCommons.isImageHitTest(result)) {
+                        onImage(result.extra)
+                        true
+                    } else {
+                        false
+                    }
+                }
                 val chromeClient = PooledWebChromeClient(callbacks)
                 webChromeClient = chromeClient
                 webViewClient =
                     PooledWebViewClient(callbacks, webResourceCache) { chromeClient.resetInjection() }
-                if (URLUtil.isValidUrl(url) && this.url != url) {
+                if (WebViewCommons.isLoadableUrl(url) && this.url != url) {
                     webResourceCache.prefetchDns(url)
                     this.loadUrl(url)
                 }
@@ -183,7 +243,7 @@ fun WebViewContainer(
         },
         update = { wv ->
             // url 变化时主动 loadUrl，避免复用同一个 WebView 时新地址不生效
-            if (URLUtil.isValidUrl(url) && wv.url != url) {
+            if (WebViewCommons.isLoadableUrl(url) && wv.url != url) {
                 webResourceCache.prefetchDns(url)
                 wv.loadUrl(url)
             }
@@ -230,9 +290,10 @@ private class WebViewCallbacks(
     var onTitle: (String?) -> Unit = {},
     var onCustomView: (View?) -> Unit = {},
     var onPermissionRequest: (PermissionRequest?) -> Unit = {},
+    var onPermissionRequestCanceled: (PermissionRequest?) -> Unit = {},
     var shouldOverrideUrl: (String) -> Unit = {},
-    var onInjectScripts: (WebView) -> Unit = {},
-    var onWebViewCreated: (WebView) -> Unit = {},
+    var scriptsProvider: () -> List<String> = { emptyList() },
+    var onLongPressImage: ((String?) -> Unit)? = null,
     var onReceivedError: (errorCode: Int, description: String, failingUrl: String?) -> Unit = { _, _, _ -> },
 )
 
@@ -251,7 +312,9 @@ private class PooledWebChromeClient(
         super.onProgressChanged(view, newProgress)
         callbacks.onProgress((newProgress / 100f).coerceIn(0f, 1f))
         if (newProgress > 80 && injectedForUrl != view.url) {
-            callbacks.onInjectScripts(view)
+            callbacks.scriptsProvider().forEach { script ->
+                view.evaluateJavascript(script) {}
+            }
             injectedForUrl = view.url
         }
     }
@@ -274,6 +337,46 @@ private class PooledWebChromeClient(
 
     override fun onPermissionRequest(request: PermissionRequest?) {
         callbacks.onPermissionRequest(request)
+    }
+
+    override fun onPermissionRequestCanceled(request: PermissionRequest?) {
+        callbacks.onPermissionRequestCanceled(request)
+    }
+}
+
+/** 网页可申请的资源与对应系统权限；不在表内的资源（如 DRM、MIDI）一律不授予。 */
+private val WEB_PERMISSIONS = mapOf(
+    PermissionRequest.RESOURCE_VIDEO_CAPTURE to Manifest.permission.CAMERA,
+    PermissionRequest.RESOURCE_AUDIO_CAPTURE to Manifest.permission.RECORD_AUDIO,
+)
+
+private val WEB_PERMISSION_LABELS = mapOf(
+    PermissionRequest.RESOURCE_VIDEO_CAPTURE to "摄像头",
+    PermissionRequest.RESOURCE_AUDIO_CAPTURE to "麦克风",
+)
+
+private fun PermissionRequest.supportedWebResources(): List<String> =
+    resources.filter { it in WEB_PERMISSIONS }
+
+/** 仅 https 且带主机名的来源可申请敏感权限；http、file 及无来源一律拒绝。 */
+private fun PermissionRequest.hasTrustedOrigin(): Boolean {
+    val origin = origin ?: return false
+    return origin.scheme.equals("https", ignoreCase = true) && !origin.host.isNullOrBlank()
+}
+
+private fun PermissionRequest.answerGrant(resources: List<String>) {
+    try {
+        grant(resources.toTypedArray())
+    } catch (e: Exception) {
+        Log.w("WebView", "grant permission failed", e)
+    }
+}
+
+private fun PermissionRequest.answerDeny() {
+    try {
+        deny()
+    } catch (e: Exception) {
+        Log.w("WebView", "deny permission failed", e)
     }
 }
 
@@ -380,7 +483,7 @@ class WebViewControl(private val scope: CoroutineScope) {
 
     private data class EvalEvent(
         val script: String,
-        val resultCallback: ValueCallback<String>?,
+        val resultCallback: ((String) -> Unit)?,
     )
 
     var progress: Float by mutableFloatStateOf(0f)
@@ -389,7 +492,7 @@ class WebViewControl(private val scope: CoroutineScope) {
     @OptIn(FlowPreview::class)
     internal suspend fun handleControlEvents(
         reload: () -> Unit = {},
-        evaluateJavascript: (script: String, resultCallback: ValueCallback<String>?) -> Unit = { _, _ -> },
+        evaluateJavascript: (script: String, resultCallback: ((String) -> Unit)?) -> Unit = { _, _ -> },
     ) = withContext(Dispatchers.Main) {
         launch {
             reloadEvents.debounce(350.milliseconds).collect { reload() }
@@ -405,7 +508,7 @@ class WebViewControl(private val scope: CoroutineScope) {
         scope.launch { reloadEvents.emit(Unit) }
     }
 
-    fun evaluateJavascript(script: String, resultCallback: ValueCallback<String>? = null) {
+    fun evaluateJavascript(script: String, resultCallback: ((String) -> Unit)? = null) {
         scope.launch { evalEvents.emit(EvalEvent(script, resultCallback)) }
     }
 }

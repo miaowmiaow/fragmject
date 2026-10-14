@@ -8,6 +8,8 @@ androidxCoreSplashscreen = "1.2.0"
 androidxMedia3 = "1.11.1"
 androidxLifecycle = "2.11.0"
 androidxNavigation3 = "1.2.0"
+androidxTestExtJunit = "1.2.1"
+androidxTestRunner = "1.7.0"
 barcodeScanning = "17.3.0"
 coil = "2.7.0"
 gson = "2.14.0"
@@ -57,6 +59,9 @@ androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", 
 androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3" }
 androidx-room3-gradle-plugin = { group = "androidx.room3", name = "room3-gradle-plugin", version.ref = "room3" }
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3" }
+androidx-room3-testing = { group = "androidx.room3", name = "room3-testing", version.ref = "room3" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "barcodeScanning" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" }

@@ -10,7 +10,7 @@
 
 | 依赖 | 现状 | 说明 |
 |---|---|---|
-| AGP | 9.4.0 | 高于正式版，使用 Canary/RC 分支 |
+| AGP | 9.4.1 | 高于正式版，使用 Canary/RC 分支 |
 | Kotlin | 2.4.20 | 跟随官方最新 |
 | KSP | 2.3.6 | 需与 Kotlin 版本对齐 |
 | Room3 | 3.0.3 | `androidx.room3` 尚处 alpha，API 演进频繁 |
@@ -42,11 +42,23 @@
 
 领域层 `core:domain` 同时提供 Repository 接口与 UseCase，二者边界约定如下：
 
-- **UseCase 仅用于「跨多个 Repository 的编排」**：当一个操作需要聚合多个领域端口（例如 `HomeHeaderAggregateUseCase` 聚合 banner + 置顶文章）时，才新增 UseCase。
+- **UseCase 承担领域校验、聚合或业务编排**：例如 `LoginUseCase` 校验输入，`HomeHeaderAggregateUseCase` 聚合同一 Repository 的 banner + 置顶文章；不以 Repository 数量判断是否需要 UseCase。
 - **单 Repository 的单步查询/写入由 ViewModel 直接依赖 Repository 接口**：不再为「一个 UseCase 仅透传调用一个 Repository 方法」的形式性封装新建 UseCase，避免产生大量透传型 UseCase。
 - 领域输入校验（如登录的空值/格式校验）归 UseCase；数据持久化副作用归 data 层 Adapter。
 
-> 这是刻意为之的务实分层，不追求 UseCase 全覆盖；现有代码保持现状，新增代码遵循上述边界即可。
+> 这是刻意为之的务实分层，不追求 UseCase 全覆盖。
+
+- Repository 的结果类型应覆盖预期网络、业务和持久化失败；协程取消原样传播。分页业务错误必须进入 `LoadResult.Error`，不能伪装成空列表或末页。
+- **业务码**：服务端 `errorCode` 的取值只在 `ApiCode`（data-contract）定义，成功与否只经 `HttpResponse.isSuccess` 判断；生产代码禁止对 `errorCode` 做字面量比较（`ArchitectureTest` 规则 18 守卫）。服务端「要求登录」(`-1001`) 只在 `toFailureCode()` 一处映射为领域码 `DomainResult.ERROR_UNAUTHENTICATED`，其余业务码原样透传。
+- **结果类型选型**（新增端口按此选，不再新造）：带数据的查询/刷新用 `DomainResult`；无数据写操作（分享、收藏、下载、清缓存）用 `SimpleResult`；登录/注册用 `AuthResult`；媒体保存用 `MediaSaveResult`。网络调用统一经 `fetchAsDomainResult` / `fetchAsSimpleResult`，不在仓库里手写 try/catch；`core:data-repository` 不得使用 `runCatching`（会吞掉协程取消，`ArchitectureTest` 规则 19 守卫），也不得对外暴露 `kotlin.Result`。
+- 「失败可降级为无数据」的读取（如用户积分）约定为：失败返回 `null`，由 UI 展示默认值；业务失败即使携带 data 也不视为有效数据。
+- `core:domain` 源码不依赖 Android framework 类型，但当前仍使用 Android library 插件，并公开接受 `PagingData` 耦合；不等同于完全技术无关的领域核心。
+- `core:model` 当前包含共享协议模型；仅在接口变化或业务约束需要时分离 DTO/领域模型/UI 模型，不机械增加三套映射。
+- 平台相关 UI 引擎保留在对应 core 模块。WebView 对业务层只提供脚本文本、图片长按等语义能力，不通过公开容器回调暴露原生 WebView。
+- 显式退出以本地用户与业务 Cookie 清理完成为成功；远端退出尽力执行。服务端 `-1001` 的全局失效、跨账户状态清理与 Cookie 过期检测尚未统一，不能把本地用户存在等同于服务端会话有效。
+- 导航图绑定必须有所有权并在组合退出时释放。登录回跳与详情目标保留至 Activity 配置变更，不承诺进程死亡恢复。
+- 登录态为三态（`AuthStatus`：未知/已登录/未登录）。守卫只在**确认未登录**时拦截；未知时暂存受保护目标，待状态确定后再放行或跳转登录。深层链接中的受保护目标同样经 `navigate` 守卫。
+- 外部可控输入必须白名单校验：WebView 主动加载仅允许 http(s) 与应用内置 `file:///android_asset/`（`WebViewCommons.isLoadableUrl`），web 深链仅允许 http(s)。网页申请摄像头/麦克风仅限 https 来源，每次弹窗展示来源并由用户确认，且只授予受支持的资源。
 
 ## 6. 模块依赖治理（防膨胀）
 
@@ -128,10 +140,10 @@
 | R8 | feature → core 必须在 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 内 |
 | R9 | `feature:*:api` → core 走 `FEATURE_API_ALLOWED_CORE_DEPENDENCIES` 正向声明（当前仅 `:core:navigation-contract`）；`feature:*:impl` → core 走 `FEATURE_ALLOWED_CORE_DEPENDENCIES`（更宽）。契约层不得引入 domain/ui/runtime 等机制模块 |
 
-**B. Konsist 源码规则** — `app/src/test/.../ArchitectureTest.kt`，15 条 + 1 条守卫测试
+**B. 源码与 API 回归规则** — `app/src/test/.../ArchitectureTest.kt`，含 Konsist import 检查、公开 WebView 容器参数检查与选择器守卫
 运行：`./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"`
 
-规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**，以及 `boundary selectors match real files`（防止选择器写错导致规则空转）。
+规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、16（feature api 仅依赖导航契约）、17（database 领域端口例外白名单），以及公开 WebView 容器参数回归检查与 `boundary selectors match real files`（防止选择器写错导致规则空转）。
 
 > Gradle 守卫与 Konsist 互补：`implementation(project(...))` 不产生 import 时 Konsist 感知不到；反之 Gradle 看不到源码内的越界引用。二者必须同时维护。
 
@@ -153,12 +165,13 @@
 
 `core:domain` 是当前唯一承载全部领域契约的模块，业务增长时它才是真正会膨胀的地方（当前 34 个 main kt 文件）。
 
-**现在不拆**，用 `repository/` `usecase/` `media/` `system/` `result/` 等包组织即可。触发拆分的阈值：
+**现在不拆**，用 `repository/` `usecase/` `media/` `system/` `result/` 等包组织即可。文件数量只作为评审信号，不作为自动拆分阈值。考虑拆分时，应有以下证据：
 
-- `core/domain/src/main` 文件数 **> 40**；或
-- 出现 **2 个以上**明显独立的业务上下文同时高频变更。
+- 明显独立的业务上下文具有不同负责人、变更频率或发布需求；
+- 无关业务变更持续造成跨上下文修改、编译或测试影响；
+- 新模块能建立明确且可执行的依赖边界，而不是仅增加分类目录。
 
-届时按限界上下文拆分（该方案同样需满足 §6.2 门槛）：
+满足 §6.2 门槛后，可按限界上下文拆分：
 
 ```
 core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）

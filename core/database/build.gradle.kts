@@ -20,4 +20,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
     implementation(libs.androidx.room3.runtime)
     testImplementation(libs.junit)
+
+    // 迁移测试：Room Gradle 插件会把 schemas/ 自动加入 androidTest assets
+    androidTestImplementation(libs.androidx.room3.testing)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.junit)
 }

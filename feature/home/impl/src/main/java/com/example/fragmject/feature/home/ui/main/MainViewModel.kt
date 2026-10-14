@@ -11,7 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,9 +50,10 @@ class MainViewModel @Inject constructor(
             _uiState.value = MainUiState.Success(isLoading = true)
             when (val r = headerAggregate.refreshAll()) {
                 is DomainResult.Success -> {
-                    _uiState.update { state ->
-                        (state as? MainUiState.Success)?.copy(isLoading = false) ?: state
-                    }
+                    _uiState.value = MainUiState.Success(
+                        hotKeyResult = headerAggregate.hotKeys.first(),
+                        treeResult = headerAggregate.trees.first(),
+                    )
                 }
                 is DomainResult.Failure -> {
                     _uiState.value = MainUiState.Error(r.message)

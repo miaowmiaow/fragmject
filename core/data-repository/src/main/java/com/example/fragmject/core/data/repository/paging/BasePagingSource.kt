@@ -2,7 +2,28 @@ package com.example.fragmject.core.data.repository.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.example.fragmject.core.data.contract.model.DataResponse
+import com.example.fragmject.core.data.contract.model.isSuccess
 import kotlinx.coroutines.CancellationException
+
+internal class PagingResponseException(
+    message: String,
+    val errorCode: String? = null,
+) : IllegalStateException(message)
+
+internal fun <T : Any> DataResponse<T>.requirePagingData(): T {
+    if (!isSuccess) {
+        val message = errorMsg.ifBlank { "分页请求失败" }
+        throw PagingResponseException(
+            message = "$message（错误码：${errorCode.ifBlank { "缺失" }}）",
+            errorCode = errorCode,
+        )
+    }
+    return data.requirePagingField("data")
+}
+
+internal fun <T : Any> T?.requirePagingField(fieldName: String): T =
+    this ?: throw PagingResponseException("分页响应缺少必需字段：$fieldName")
 
 /**
  * 分页数据统一视图：屏蔽不同接口返回结构中 [items]/[over] 的具体差异。

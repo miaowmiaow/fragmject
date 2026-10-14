@@ -15,7 +15,6 @@ import com.example.fragmject.core.model.Tree
 import com.example.fragmject.feature.home.MainDispatcherRule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -56,15 +55,34 @@ class MainViewModelTest {
 
         val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
 
+        val state = viewModel.uiState.value as MainUiState.Error
+        assertEquals("boom", state.message)
+        assertFalse(viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `retry after failure restores unchanged cached data`() = runTest {
+        val navigationRepo = FakeSystemRepository(
+            trees = listOf(Tree(id = "1", name = "体系")),
+            refreshTreeResult = DomainResult.Failure("500", "boom"),
+        )
+        val searchRepo = FakeSearchRepository(hotKeys = listOf(HotKey(name = "问答")))
+        val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
+        assertEquals("boom", (viewModel.uiState.value as MainUiState.Error).message)
+
+        navigationRepo.refreshTreeResult = DomainResult.Success(Unit)
+        viewModel.retry()
+
         val state = viewModel.uiState.value as MainUiState.Success
-        // 失败路径也应把 isLoading 置 false，避免 UI 永久转圈
+        assertEquals("体系", state.treeResult.single().name)
+        assertEquals("问答", state.hotKeyResult.single().name)
         assertFalse(state.isLoading)
     }
 }
 
 private class FakeSystemRepository(
     trees: List<Tree> = emptyList(),
-    private val refreshTreeResult: DomainResult<Unit> = DomainResult.Success(Unit),
+    var refreshTreeResult: DomainResult<Unit> = DomainResult.Success(Unit),
 ) : SystemRepository {
     private val treeFlow = MutableStateFlow(trees)
 

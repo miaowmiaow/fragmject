@@ -294,21 +294,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * 生产环境注册的全部迁移。升级 [Database.version] 时必须在此追加对应迁移，
+         * 并导出新 schema；`AppDatabaseMigrationTest` 以此列表校验迁移链完整且结果与 schema 一致。
+         */
+        internal val MIGRATIONS: Array<Migration> = arrayOf(
+            MIGRATION_4_5,
+            MIGRATION_5_6,
+            MIGRATION_6_7,
+            MIGRATION_7_8,
+            MIGRATION_8_9,
+            MIGRATION_9_10,
+            MIGRATION_10_11,
+            MIGRATION_11_12,
+            MIGRATION_12_13,
+            MIGRATION_13_14,
+        )
+
         /** 构建数据库实例（由 Hilt DatabaseModule 调用并持有单例）。 */
         fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
-                .addMigrations(
-                    MIGRATION_4_5,
-                    MIGRATION_5_6,
-                    MIGRATION_6_7,
-                    MIGRATION_7_8,
-                    MIGRATION_8_9,
-                    MIGRATION_9_10,
-                    MIGRATION_10_11,
-                    MIGRATION_11_12,
-                    MIGRATION_12_13,
-                    MIGRATION_13_14
-                )
+                .addMigrations(*MIGRATIONS)
                 .build()
         }
 

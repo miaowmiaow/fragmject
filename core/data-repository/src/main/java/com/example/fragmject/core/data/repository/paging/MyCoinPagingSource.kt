@@ -11,10 +11,10 @@ class MyCoinPagingSource(
 ) : BasePagingSource<MyCoin>(startPage = 1) {
 
     override suspend fun fetchPage(page: Int): PageData<MyCoin> {
-        val data = remote.getMyCoinList(page).data
+        val data = remote.getMyCoinList(page).requirePagingData()
         return PageData(
-            items = data?.datas.orEmpty(),
-            over = data?.over == true,
+            items = data.datas.requirePagingField("data.datas"),
+            over = data.over,
         )
     }
 }

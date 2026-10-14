@@ -12,10 +12,10 @@ class ProjectPagingSource(
 ) : BasePagingSource<Article>(startPage = 1) {
 
     override suspend fun fetchPage(page: Int): PageData<Article> {
-        val data = remote.getProjectList(page, cid).data
+        val data = remote.getProjectList(page, cid).requirePagingData()
         return PageData(
-            items = data?.datas.orEmpty(),
-            over = data?.over == true,
+            items = data.datas.requirePagingField("data.datas"),
+            over = data.over,
         )
     }
 }

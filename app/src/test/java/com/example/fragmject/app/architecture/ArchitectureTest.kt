@@ -444,6 +444,67 @@ class ArchitectureTest {
         )
     }
 
+    @Test
+    fun `webview container does not expose native callbacks`() {
+        val container = productionFiles.single {
+            it.projectPath.endsWith("/core/webview/src/main/java/com/example/fragmject/core/webview/WebViewContainer.kt")
+        }
+        val source = readSource(container)
+        val parameters = source.substringAfter("fun WebViewContainer(").substringBefore("\n) {")
+        assertTrue("WebViewContainer 参数选择器必须非空", parameters.contains("control: WebViewControl"))
+        org.junit.Assert.assertFalse(
+            "WebViewContainer 不得通过回调暴露原生 WebView，业务层应使用脚本与图片事件契约",
+            Regex("\\b(?:WebView|WebViewClient|WebChromeClient)\\b").containsMatchIn(parameters),
+        )
+    }
+
+    /**
+     * 规则 18：业务成功码只能经 `HttpResponse.isSuccess` / `ApiCode` 判断。
+     *
+     * 禁止在生产代码里对 `errorCode` 与字符串字面量做 `==` / `!=` 比较（如 `errorCode == "0"`），
+     * 否则成功码语义会再次散落到各仓库。唯一允许的比较位于 `HttpResponse.kt`（定义处）。
+     */
+    @Test
+    fun `business success code is judged only through api code`() {
+        val literalComparison = Regex("""errorCode\s*(==|!=)\s*"[^"]*"""")
+        val definition = "/core/data-contract/src/main/java/com/example/fragmject/core/data/contract/model/HttpResponse.kt"
+        val scanned = productionFiles.filterNot { it.projectPath.endsWith(definition) }
+        assertTrue("选择器必须覆盖 data-repository 生产文件", scanned.any { it.projectPath.contains("/core/data-repository/") })
+        assertTrue("选择器必须覆盖 network 生产文件", scanned.any { it.projectPath.contains("/core/network/") })
+        val offenders = scanned
+            .filter { literalComparison.containsMatchIn(readSource(it)) }
+            .map { it.projectPath }
+        assertTrue("以下文件直接比较 errorCode 字面量，请改用 isSuccess / ApiCode：$offenders", offenders.isEmpty())
+    }
+
+    /**
+     * 规则 19：`core:data-repository` 不得使用 `runCatching`。
+     *
+     * 仓库里的调用绝大多数是挂起的网络/IO 请求，`runCatching` 会把 `CancellationException`
+     * 一并吞掉（曾导致页面退出后积分请求被当成「失败」）。请统一使用
+     * `fetchAsDomainResult` / `fetchAsSimpleResult`，或显式 `catch (CancellationException)` 重抛。
+     * 注释中的说明文字不计入。
+     */
+    @Test
+    fun `data repository does not use run catching`() {
+        val repositoryFiles = productionFiles.filter { it.projectPath.contains("/core/data-repository/") }
+        assertTrue("选择器必须覆盖 data-repository 生产文件", repositoryFiles.isNotEmpty())
+        val offenders = repositoryFiles.filter { file ->
+            readSource(file).lineSequence()
+                .map { it.trim() }
+                .filterNot { it.startsWith("//") || it.startsWith("*") || it.startsWith("/*") }
+                .any { it.contains("runCatching") }
+        }.map { it.projectPath }
+        assertTrue("以下文件使用了 runCatching，会吞掉协程取消：$offenders", offenders.isEmpty())
+    }
+
+    /** 通过项目根目录读取源码文本，兼容 Gradle 以模块目录为工作目录的情况。 */
+    private fun readSource(file: KoFileDeclaration): String {
+        val root = generateSequence(java.io.File(System.getProperty("user.dir"))) { it.parentFile }
+            .first { java.io.File(it, "settings.gradle.kts").isFile }
+        return java.io.File(root, file.projectPath.removePrefix("/")).readText()
+    }
+
     // ---- 辅助判定 ----
 
     /** 判断文件是否属于 main 生产源集（路径包含 `/src/main/`）。 */

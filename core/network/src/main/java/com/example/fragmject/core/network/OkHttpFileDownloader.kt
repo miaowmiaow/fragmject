@@ -1,5 +1,6 @@
 package com.example.fragmject.core.network
 
+import com.example.fragmject.core.data.contract.model.ApiCode
 import com.example.fragmject.core.data.contract.model.HttpResponse
 import com.example.fragmject.core.data.contract.remote.DownloadRemoteDataSource
 import kotlinx.coroutines.CancellationException
@@ -36,7 +37,7 @@ class OkHttpFileDownloader(
             response.use { res ->
                 if (!res.isSuccessful) {
                     return@withContext HttpResponse(
-                        errorCode = "-1",
+                        errorCode = ApiCode.CLIENT_FAILURE,
                         errorMsg = "http ${res.code} ${res.message.ifBlank { "request failed" }}",
                     )
                 }
@@ -47,14 +48,14 @@ class OkHttpFileDownloader(
                         inputStream.copyTo(outputStream, bufferSize = 64 * 1024)
                     }
                 }
-                HttpResponse(errorCode = "0", errorMsg = "success")
+                HttpResponse(errorCode = ApiCode.SUCCESS, errorMsg = "success")
             }
         } catch (e: CancellationException) {
             // 与 NetworkResultMapper / BasePagingSource 一致：取消信号必须原样抛出，
             // 否则「超时取消」会被误报为下载失败（WebResourceCacheManager 依赖此区分）
             throw e
         } catch (e: Exception) {
-            HttpResponse(errorCode = "-1", errorMsg = e.message ?: e.javaClass.simpleName)
+            HttpResponse(errorCode = ApiCode.CLIENT_FAILURE, errorMsg = e.message ?: e.javaClass.simpleName)
         }
     }
 }

@@ -25,31 +25,38 @@ import javax.net.ssl.SSLContext
  * - SSL 配置作为构建方法的可选参数传入（默认 null = 系统默认校验），不进入 DI 图，
  *   避免 Hilt 试图构造含 Array<InputStream> 的配置对象。
  *
- * 调用方应把构建结果交给 Hilt 以 @Singleton 持有，避免重复创建连接池。
+ * 工厂统一拥有连接池、线程池与磁盘缓存，调用方以 Hilt @Singleton 持有派生 client。
  */
 @Singleton
-class OkHttpClients @Inject constructor(
-    @ApplicationContext private val context: Context,
+class OkHttpClients internal constructor(
+    private val cacheFactory: () -> Cache,
     private val cookieJar: CookieJar,
 ) {
+    @Inject
+    constructor(
+        @ApplicationContext context: Context,
+        cookieJar: CookieJar,
+    ) : this(
+        { Cache(CacheUtils.getDirFile(context, CacheDirs.OKHTTP), CACHE_SIZE_BYTES) },
+        cookieJar,
+    )
+
+    private val sharedClient = OkHttpClient.Builder()
+        .connectionPool(ConnectionPool(MAX_IDLE_CONNECTIONS, KEEP_ALIVE_MINUTES, TimeUnit.MINUTES))
+        .build()
+    private val sharedCache by lazy(cacheFactory)
+    private val defaultHttpClient by lazy { baseBuilder(null).cache(sharedCache).build() }
+    private val defaultNoCacheClient by lazy { buildNoCache(null) }
 
     private fun baseBuilder(ssl: SslConfig?): OkHttpClient.Builder {
-        val builder = OkHttpClient().newBuilder()
+        val builder = sharedClient.newBuilder()
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             // 显式声明 HTTP/2 优先，明确连接复用预期；服务端不支持时 OkHttp 会自动降级到 HTTP/1.1
             .protocols(listOf(Protocol.HTTP_2, Protocol.HTTP_1_1))
-            .connectionPool(
-                ConnectionPool(
-                    MAX_IDLE_CONNECTIONS,
-                    KEEP_ALIVE_MINUTES,
-                    TimeUnit.MINUTES,
-                )
-            )
             .retryOnConnectionFailure(true)
             .cookieJar(cookieJar)
-            .cache(Cache(CacheUtils.getDirFile(context, CacheDirs.OKHTTP), CACHE_SIZE_BYTES))
 
         // 仅当存在有效 SSL 配置时才启用自定义 SSL；否则使用系统默认实现，
         // 避免在未配置证书时传入 null trustManager 或做无意义的 SSLContext 构建。
@@ -73,16 +80,15 @@ class OkHttpClients @Inject constructor(
         return builder
     }
 
-    /** 业务请求 client：带 OkHttp 磁盘缓存与 Debug 日志。 */
-    fun http(ssl: SslConfig? = null): OkHttpClient = baseBuilder(ssl).build()
+    /** 业务请求 client：带共享磁盘缓存与 Debug 日志。 */
+    fun http(ssl: SslConfig? = null): OkHttpClient =
+        if (ssl == null) defaultHttpClient else baseBuilder(ssl).cache(sharedCache).build()
 
-    /**
-     * 图片加载 / 流式下载专用 client：禁用 OkHttp 磁盘缓存，Debug 下仅保留 HEADERS 日志。
-     *
-     * 基于 [http] 派生，会共享其连接池与线程池（与历史行为一致）。
-     */
-    fun noCache(ssl: SslConfig? = null): OkHttpClient = http(ssl).newBuilder()
-        .cache(null)
+    /** 图片加载 / 流式下载复用连接池与线程池，不创建磁盘缓存。 */
+    fun noCache(ssl: SslConfig? = null): OkHttpClient =
+        if (ssl == null) defaultNoCacheClient else buildNoCache(ssl)
+
+    private fun buildNoCache(ssl: SslConfig?): OkHttpClient = baseBuilder(ssl)
         .apply {
             if (BuildConfig.DEBUG) {
                 // 将 BODY 日志降级为 HEADERS，避免大体积响应刷屏。

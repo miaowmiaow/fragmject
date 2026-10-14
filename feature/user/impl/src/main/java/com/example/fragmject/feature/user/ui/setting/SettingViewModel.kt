@@ -30,6 +30,7 @@ sealed interface SettingUiState {
 sealed interface SettingEvent {
     data object LogoutSucceeded : SettingEvent
     data object LogoutFailed : SettingEvent
+    data class CacheClearFailed(val message: String) : SettingEvent
 }
 
 // Screen accessors
@@ -81,7 +82,12 @@ class SettingViewModel @Inject constructor(
 
     /** 清除缓存：清理范围等业务规则由 [SystemStorage] 实现承担。 */
     fun clearCache() {
-        viewModelScope.launch { systemStorage.clearCache() }
+        viewModelScope.launch {
+            val result = systemStorage.clearCache()
+            if (!result.success) {
+                _events.send(SettingEvent.CacheClearFailed(result.message.ifBlank { "清除缓存失败，请重试" }))
+            }
+        }
     }
 
     fun logout() {

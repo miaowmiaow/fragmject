@@ -42,7 +42,8 @@ android {
         }
     }
 
-    // 开源项目忽略签名相关配置的安全性问题，实际项目请使用安全的方式管理签名信息
+    // 仓库内的 keystore.properties / keystore.key 是有意提供的【测试专用】密钥，不用于正式发布，
+    // 入库属于有意为之，不视为凭据泄漏；正式发布请使用独立的私有签名并通过安全方式管理。
     // 仅当 keystore.properties 存在且配置完整时才创建 config，否则走默认 debug 签名
     signingConfigs {
         if (keystoreProperties.containsKey("storeFile")) {

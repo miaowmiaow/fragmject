@@ -11,10 +11,10 @@ class MyCollectPagingSource(
 ) : BasePagingSource<Article>(startPage = 0) {
 
     override suspend fun fetchPage(page: Int): PageData<Article> {
-        val data = remote.getCollectList(page).data
+        val data = remote.getCollectList(page).requirePagingData()
         return PageData(
-            items = data?.datas.orEmpty(),
-            over = data?.over == true,
+            items = data.datas.requirePagingField("data.datas"),
+            over = data.over,
         )
     }
 }

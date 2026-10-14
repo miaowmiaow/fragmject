@@ -30,6 +30,10 @@
 - 字节码插桩（ASM...）
 
 ## 开发环境
+- **JDK 21 及以上**：构建逻辑（`build-logic`）以 JVM 21 为目标编译，Gradle 需运行在 JDK 21 或更高版本上，低版本会在配置阶段报 `requires at least JVM runtime version 21`。Android Studio 请在 `Settings > Build Tools > Gradle` 中选择 `Android Studio default JDK`（内置 JBR 满足要求）；命令行请让 `JAVA_HOME` 指向 JDK 21+。项目未配置 toolchain 自动下载，也不强制某个精确版本。
+- **签名配置**：仓库内的 `keystore.properties` / `keystore.key` 是**测试专用**密钥，入库为有意设计；正式发布请使用独立的私有签名。
+- **CI**：`.github/workflows/ci.yml` 会在 PR 与主分支上运行模块依赖守卫、Compose 稳定性校验和全部单元测试（含 `ArchitectureTest`）。
+
 为了您能正常运行本项目，请先更新你的 `Android Studio` (可能需要梯子)。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn)   
 您也可以自行配置 `AGP` 和 `compose`来进行适配。 [libs.versions.toml](https://github.com/miaowmiaow/fragmject/blob/master/gradle/libs.versions.toml)   

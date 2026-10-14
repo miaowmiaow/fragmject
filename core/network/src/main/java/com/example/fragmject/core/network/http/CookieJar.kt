@@ -38,9 +38,22 @@ class CookieJar @Inject constructor(
 
     // Http 请求结束，Response 中有 Cookie 时候回调
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        for (cookie in cookies) {
-            store.setCookie(url.toString(), cookie.toString())
+        if (cookies.isEmpty()) return
+        var writeFailure: Exception? = null
+        try {
+            for (cookie in cookies) {
+                store.setCookie(url.toString(), cookie.toString())
+            }
+        } catch (e: Exception) {
+            writeFailure = e
+            throw e
+        } finally {
+            try {
+                store.flush()
+            } catch (e: Exception) {
+                val failure = writeFailure
+                if (failure == null) throw e else failure.addSuppressed(e)
+            }
         }
-        store.flush()
     }
 }

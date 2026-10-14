@@ -5,6 +5,7 @@ import androidx.room3.Delete
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
+import androidx.room3.Transaction
 import com.example.fragmject.core.database.model.UserEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -19,6 +20,12 @@ interface UserDao {
 
     @Query("DELETE FROM user")
     suspend fun clear()
+
+    @Transaction
+    suspend fun replace(user: UserEntity) {
+        clear()
+        insert(user)
+    }
 
     @Delete
     suspend fun delete(user: UserEntity): Int

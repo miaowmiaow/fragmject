@@ -15,35 +15,74 @@ import javax.inject.Singleton
 @Singleton
 class NavigationDispatcher @Inject constructor() {
 
-    // 导航能力由组合根（AppNavGraph）在组合期通过 bind 注入，
-    // 语义 Navigator（AppXxxNavigator）只读调用，无法覆盖。
-    private var navigateImpl: (NavKey) -> Unit = { }
-    private var navigateUpImpl: () -> Unit = { }
-    private var popBackStackImpl: (NavKey) -> Unit = { }
-    private var onAuthSuccessImpl: () -> Unit = { }
+    private sealed interface Command {
+        data class Navigate(val key: NavKey) : Command
+        data object NavigateUp : Command
+        data class PopBackStack(val key: NavKey) : Command
+        data object AuthSuccess : Command
+    }
 
-    /** 推入/跳转到指定路由（只读）。 */
-    val navigate: (NavKey) -> Unit get() = navigateImpl
+    private class Binding(
+        val owner: Any,
+        val navigate: (NavKey) -> Unit,
+        val navigateUp: () -> Unit,
+        val popBackStack: (NavKey) -> Unit,
+        val onAuthSuccess: () -> Unit,
+    ) {
+        fun execute(command: Command) {
+            when (command) {
+                is Command.Navigate -> navigate(command.key)
+                Command.NavigateUp -> navigateUp()
+                is Command.PopBackStack -> popBackStack(command.key)
+                Command.AuthSuccess -> onAuthSuccess()
+            }
+        }
+    }
 
-    /** 返回上一级（只读）。 */
-    val navigateUp: () -> Unit get() = navigateUpImpl
+    private var binding: Binding? = null
+    private val pendingCommands = ArrayDeque<Command>()
+    private var replaying = false
 
-    /** 弹出到指定路由所在位置（只读）。 */
-    val popBackStack: (NavKey) -> Unit get() = popBackStackImpl
+    fun navigate(key: NavKey) = dispatch(Command.Navigate(key))
 
-    /** 认证（登录/注册）成功后回跳（只读）。 */
-    val onAuthSuccess: () -> Unit get() = onAuthSuccessImpl
+    fun navigateUp() = dispatch(Command.NavigateUp)
 
-    /** 绑定当前导航能力，仅 [AppNavGraph]（组合根）在组合期调用。 */
+    fun popBackStack(key: NavKey) = dispatch(Command.PopBackStack(key))
+
+    fun onAuthSuccess() = dispatch(Command.AuthSuccess)
+
+    private fun dispatch(command: Command) {
+        val current = binding
+        if (current != null && !replaying) {
+            current.execute(command)
+        } else {
+            check(pendingCommands.size < 32) { "Too many navigation commands without an active graph" }
+            pendingCommands.addLast(command)
+        }
+    }
+
+    /** 在主线程绑定导航图，返回仅能释放本次绑定的清理函数。 */
     fun bind(
         navigate: (NavKey) -> Unit,
         navigateUp: () -> Unit,
         popBackStack: (NavKey) -> Unit,
         onAuthSuccess: () -> Unit,
-    ) {
-        navigateImpl = navigate
-        navigateUpImpl = navigateUp
-        popBackStackImpl = popBackStack
-        onAuthSuccessImpl = onAuthSuccess
+    ): () -> Unit {
+        val owner = Any()
+        binding = Binding(owner, navigate, navigateUp, popBackStack, onAuthSuccess)
+        if (!replaying) {
+            replaying = true
+            try {
+                while (pendingCommands.isNotEmpty()) {
+                    val current = binding ?: break
+                    current.execute(pendingCommands.removeFirst())
+                }
+            } finally {
+                replaying = false
+            }
+        }
+        return {
+            if (binding?.owner === owner) binding = null
+        }
     }
 }

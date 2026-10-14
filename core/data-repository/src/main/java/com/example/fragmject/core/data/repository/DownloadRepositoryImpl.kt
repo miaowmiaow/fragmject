@@ -1,6 +1,7 @@
 package com.example.fragmject.core.data.repository
 
 import com.example.fragmject.core.data.contract.remote.DownloadRemoteDataSource
+import com.example.fragmject.core.data.repository.util.fetchAsSimpleResult
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.domain.result.SimpleResult
 import javax.inject.Inject
@@ -19,11 +20,8 @@ class DownloadRepositoryImpl @Inject constructor(
         savePath: String,
         fileName: String,
         headers: Map<String, String>,
-    ): SimpleResult {
-        val response = downloader.download(url, savePath, fileName, headers)
-        return SimpleResult(
-            success = response.errorCode == "0",
-            message = response.errorMsg,
-        )
-    }
+    ): SimpleResult =
+        fetchAsSimpleResult(failureMessage = "下载失败") {
+            downloader.download(url, savePath, fileName, headers)
+        }
 }

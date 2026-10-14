@@ -11,10 +11,10 @@ class CoinRankPagingSource(
 ) : BasePagingSource<Coin>(startPage = 1) {
 
     override suspend fun fetchPage(page: Int): PageData<Coin> {
-        val data = remote.getCoinRank(page).data
+        val data = remote.getCoinRank(page).requirePagingData()
         return PageData(
-            items = data?.datas.orEmpty(),
-            over = data?.over == true,
+            items = data.datas.requirePagingField("data.datas"),
+            over = data.over,
         )
     }
 }

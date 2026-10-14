@@ -25,8 +25,7 @@ class UserLocalDataSourceImpl @Inject constructor(
         userDao.get().map { it?.toDomain() }
 
     override suspend fun saveUser(user: User) {
-        userDao.clear()
-        userDao.insert(user.toEntity())
+        userDao.replace(user.toEntity())
     }
 
     override suspend fun clearUser() {

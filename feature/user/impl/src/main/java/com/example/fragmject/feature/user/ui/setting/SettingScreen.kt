@@ -68,6 +68,7 @@ fun SettingScreen(
                 // 登出成功：经首页语义动作清栈回首页（HomeNavigator.openMain 的实际使用点）
                 SettingEvent.LogoutSucceeded -> homeNavigator.openMain()
                 SettingEvent.LogoutFailed -> snackbarHostState.showSnackbar("登出失败，请重试")
+                is SettingEvent.CacheClearFailed -> snackbarHostState.showSnackbar(event.message)
             }
         }
     }

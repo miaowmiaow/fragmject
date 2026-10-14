@@ -1,7 +1,10 @@
 package com.example.fragmject.app.navigation
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.core.domain.AuthState
+import com.example.fragmject.core.domain.AuthStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -17,5 +20,7 @@ class AppNavViewModel @Inject constructor(
     authState: AuthState,
 ) : ViewModel() {
 
-    val isLoggedIn: StateFlow<Boolean> = authState.isLoggedIn
+    val authStatus: StateFlow<AuthStatus> = authState.status
+    internal val pendingRedirectState = mutableStateOf<NavKey?>(null)
+    internal val selectedDetailState = mutableStateOf<NavKey?>(null)
 }

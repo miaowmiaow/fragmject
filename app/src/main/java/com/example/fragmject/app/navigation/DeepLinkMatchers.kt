@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import androidx.navigation3.runtime.deeplink.DeepLinkUri
 import androidx.navigation3.runtime.deeplink.UriDeepLinkMatcher
 import androidx.navigation3.runtime.deeplink.withBackStack
+import com.example.fragmject.core.webview.WebViewCommons
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.feature.search.SearchNavKey
@@ -60,7 +61,7 @@ val deepLinkMatchers: List<DeepLinkMatcher<*, *>> = listOf(
 fun matchDeepLink(request: DeepLinkRequest): List<NavKey>? {
     val matchResult = deepLinkMatchers.firstNotNullOfOrNull { it.match(request) }
         ?: return null
-    return when (matchResult) {
+    val backStack = when (matchResult) {
         is BackStackMatchResult<*, *> -> {
             @Suppress("UNCHECKED_CAST")
             matchResult.backStack as List<NavKey>
@@ -68,6 +69,17 @@ fun matchDeepLink(request: DeepLinkRequest): List<NavKey>? {
 
         else -> listOf(matchResult.key as NavKey)
     }
+    // 目标参数不合法（如 web 深链携带 javascript:/content: 等协议）时整体丢弃该深链
+    return backStack.takeIf { stack -> stack.all(::isAllowedDeepLinkTarget) }
+}
+
+/**
+ * 深链目标合法性：外部可控的参数必须通过白名单。
+ * web 深链只允许 http/https（assets 内置页仅限应用内部导航，不对外部深链开放）。
+ */
+internal fun isAllowedDeepLinkTarget(key: NavKey): Boolean = when (key) {
+    is WebNavKey -> WebViewCommons.isHttpUrl(key.url)
+    else -> true
 }
 
 /**

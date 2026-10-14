@@ -26,6 +26,10 @@ By working through this project you'll gain valuable insights into several areas
 - Advanced topics like bytecode manipulation via ASM library
 
 ## Development Environment
+- **JDK 21 or newer is required.** The convention plugins in `build-logic` target JVM 21, so Gradle must run on JDK 21+. Older JDKs fail at configuration time with `requires at least JVM runtime version 21`. In Android Studio, choose `Android Studio default JDK` under `Settings > Build Tools > Gradle` (the bundled JBR qualifies); on the command line, point `JAVA_HOME` at JDK 21+. The project does not configure toolchain auto-download and does not pin an exact version.
+- **Signing:** `keystore.properties` / `keystore.key` in the repository are **test-only** keys and are committed on purpose. Use a separate private keystore for real releases.
+- **CI** (`.github/workflows/ci.yml`) runs the module dependency guard, the Compose stability check and all unit tests (including `ArchitectureTest`) on pull requests and the main branch.
+
 In order for you to run this project normally, please use the latest preview version of Android Studio. You can download it at the following address:
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
 

@@ -1,5 +1,6 @@
 package com.example.fragmject.core.domain.system
 
+import com.example.fragmject.core.domain.result.SimpleResult
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 
@@ -26,6 +27,9 @@ interface SystemStorage {
 
     suspend fun refreshCacheSize()
 
-    /** 清理缓存并刷新大小；失败返回 [Result.failure]，[isClearing] 必定复位。 */
-    suspend fun clearCache(): Result<Unit>
+    /**
+     * 清理缓存并刷新大小；预期失败返回 `success = false` 的 [SimpleResult]，
+     * 协程取消原样抛出，[isClearing] 必定复位。
+     */
+    suspend fun clearCache(): SimpleResult
 }

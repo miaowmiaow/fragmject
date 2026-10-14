@@ -12,11 +12,9 @@ package com.example.fragmject.core.domain.session
  * core:webview 已依赖 core:domain（资源缓存复用 DownloadRepository），放 domain
  * 不会新增边；放 data-contract 反而会让 UI 基础设施反向依赖数据访问契约层。
  *
- * 为什么是同步接口：
- * 主要消费方 okhttp3.CookieJar 的 loadForRequest/saveFromResponse 是同步回调，
- * 若端口声明为 suspend，调用方只能 runBlocking（有 ANR 风险）或异步化（读写不保证时序）。
- * CookieManager 自身线程安全且开销极小，故端口与 OkHttp 保持同一形态（同步）。
- * 实现若需切线程，应在实现内部完成。
+ * 读写保持同步以适配 OkHttp 的 CookieJar 回调：写入返回前须确认完成，
+ * flush 返回前须确认此前写入已持久化。同步写入/持久化应在后台线程调用，
+ * 实现不得阻塞主线程等待平台回调。业务会话清理使用 suspend，允许等待删除与持久化。
  *
  * 为什么不在端口里暴露 android.webkit.WebView：
  * domain 禁止 android.*（架构测试规则 8）。第三方 Cookie 开关属于 WebView 实例配置，
@@ -26,7 +24,8 @@ package com.example.fragmject.core.domain.session
  * - **唯一实现**：`core:webview` 的 `WebViewCookieStore`（基于 `android.webkit.CookieManager`），
  *   由 `core:webview/di/CookieStoreModule` 经 `@Binds` 绑定到本契约，
  *   再由 `:app` 组合根聚合 Hilt 模块完成最终的图组装。
- * - **消费方只允许注入使用**：`core:network` 的 `CookieJar` 构造注入本端口并读写 Cookie。
+ * - **消费方只允许注入使用**：`core:network` 的 `CookieJar` 读写 Cookie，
+ *   `core:data-repository` 的 `UserRepositoryImpl` 清理业务会话，均构造注入本端口。
  *   network **不得自行实现本接口**——network 不允许依赖 webview
  *   （见 Gradle 守卫 `CORE_ALLOWED_DEPENDENCIES`），自行实现等于绕过该约束，
  *   会形成「第二个会话真相源」，导致 WebView 与 OkHttp 的 Cookie 不一致。
@@ -38,9 +37,12 @@ interface CookieStore {
     /** 读取指定 URL 的 Cookie（期望完整 URL 含 scheme）。 */
     fun getCookie(url: String): String?
 
-    /** 写入 Cookie。 */
+    /** 在后台线程写入 Cookie，返回前确认平台已完成写入。 */
     fun setCookie(url: String, value: String)
 
-    /** 将内存中的 Cookie 立即持久化。 */
+    /** 在后台线程将此前写入的 Cookie 持久化，失败时抛出异常。 */
     fun flush()
+
+    /** 清理业务站点会话，等待定向删除与持久化完成；不得清除其他浏览站点。 */
+    suspend fun clearSession()
 }

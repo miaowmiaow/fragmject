@@ -12,10 +12,10 @@ class SearchPagingSource(
 ) : BasePagingSource<Article>(startPage = 0) {
 
     override suspend fun fetchPage(page: Int): PageData<Article> {
-        val data = remote.searchArticles(key, page).data
+        val data = remote.searchArticles(key, page).requirePagingData()
         return PageData(
-            items = data?.datas.orEmpty(),
-            over = data?.over == true,
+            items = data.datas.requirePagingField("data.datas"),
+            over = data.over,
         )
     }
 }

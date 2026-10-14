@@ -6,14 +6,17 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.fragmject.core.designsystem.LocalWindowSizeClass
+import com.example.fragmject.core.domain.AuthStatus
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -62,33 +65,21 @@ fun AppNavGraph(
     onExit: () -> Unit = {},
 ) {
     val navViewModel: AppNavViewModel = viewModel()
-    val isLoggedIn by navViewModel.isLoggedIn.collectAsStateWithLifecycle()
-    val backStack = rememberNavBackStack(*initialBackStack.toTypedArray())
-
-    // ---- 运行时深层链接（onNewIntent 触发） ----
-    // 首次启动由 initialBackStack 初始化 backStack；此处仅处理后续动态深层链接。
-    LaunchedEffect(pendingDeepLink) {
-        val request = pendingDeepLink ?: return@LaunchedEffect
-        matchDeepLink(request)?.let { newStack ->
-            // 保留栈底 Main，避免用户在多层流程中时收到深链导致在途流程被整体丢弃
-            backStack.clear()
-            backStack.add(MainNavKey)
-            backStack.addAll(newStack.dropWhile { it == MainNavKey })
-        }
-        onDeepLinkConsumed()
-    }
+    val authStatus by navViewModel.authStatus.collectAsStateWithLifecycle()
+    // 初始栈中需要登录的目标不直接入栈，交给下方深链守卫经 navigate 统一判定。
+    val backStack = rememberNavBackStack(
+        *initialBackStack.filterNot { it is RequiresAuth }.ifEmpty { listOf(MainNavKey) }.toTypedArray()
+    )
 
     // ---- Expanded 列表-详情同屏状态 ----
     // 仅在 Expanded 模式下使用：点击文章时不走 backStack，而是由 MainScreen 右侧面板渲染
     val windowSizeClass = LocalWindowSizeClass.current
     val isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
-    var selectedDetailKey by remember { mutableStateOf<NavKey?>(null) }
+    var selectedDetailKey by navViewModel.selectedDetailState
 
     // ---- 被登录守卫拦截的待回跳目标 ----
-    // 守卫拦截未登录访问受保护路由时，在此暂存原目标；登录/注册成功后经
-    // onAuthSuccess 消费并回跳。属导航图运行时状态，随 backStack 同生命周期
-    // （配置变更重建、进程死亡丢弃，与 backStack 非序列化行为一致）。
-    var pendingRedirect by remember { mutableStateOf<NavKey?>(null) }
+    // Activity 作用域保留配置变更中的回跳目标，进程死亡后放弃待回跳。
+    var pendingRedirect by navViewModel.pendingRedirectState
 
     // ---- 选图结果清理 ----
     // 图片流程全部退出时清空结果：系统返回键不走选择器的取消回调，
@@ -107,11 +98,15 @@ fun AppNavGraph(
     // 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen
     // 不会被重组，因此 navigate lambda 必须保持稳定引用，内部通过
     // rememberUpdatedState 读取最新的登录态，避免闭包捕获过期状态。
-    val currentIsLoggedIn by rememberUpdatedState(isLoggedIn)
+    val currentAuthStatus by rememberUpdatedState(authStatus)
     val currentIsExpanded by rememberUpdatedState(isExpanded)
+    // 登录态尚未确定时到达的受保护目标：暂存，待状态确定后再决定放行或跳转登录。
+    var deferredNavigation by remember { mutableStateOf<NavKey?>(null) }
     val navigate: (NavKey) -> Unit = remember {
         { key ->
-            if (requiredLoginNavKey(key, currentIsLoggedIn)) {
+            if (key is RequiresAuth && currentAuthStatus == AuthStatus.UNKNOWN) {
+                deferredNavigation = key
+            } else if (requiredLoginNavKey(key, currentAuthStatus)) {
                 pendingRedirect = key
                 backStack.add(LoginNavKey)
             } else if (backStack.lastOrNull() == key) {
@@ -149,11 +144,45 @@ fun AppNavGraph(
         }
     }
 
+    // ---- 登录态确定后处理暂存的受保护目标 ----
+    LaunchedEffect(authStatus) {
+        if (authStatus != AuthStatus.UNKNOWN) {
+            deferredNavigation?.let { key ->
+                deferredNavigation = null
+                navigate(key)
+            }
+        }
+    }
+
+    // ---- 深层链接守卫 ----
+    // 受保护目标一律经 navigate：未登录时跳转登录并在成功后回跳，登录态未知时先暂存。
+    // 冷启动：初始栈已剔除受保护目标，这里只执行一次（rememberSaveable 覆盖配置变更与进程重建）。
+    var initialDeepLinkGuarded by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!initialDeepLinkGuarded) {
+            initialDeepLinkGuarded = true
+            initialBackStack.filter { it is RequiresAuth }.forEach { navigate(it) }
+        }
+    }
+    // 运行时深层链接（onNewIntent 触发）：首次启动由初始栈处理，此处仅处理后续动态深层链接。
+    LaunchedEffect(pendingDeepLink) {
+        val request = pendingDeepLink ?: return@LaunchedEffect
+        matchDeepLink(request)?.let { newStack ->
+            // 保留栈底 Main，避免用户在多层流程中时收到深链导致在途流程被整体丢弃
+            backStack.clear()
+            backStack.add(MainNavKey)
+            newStack.dropWhile { it == MainNavKey }.forEach { key ->
+                if (key is RequiresAuth) navigate(key) else backStack.add(key)
+            }
+        }
+        onDeepLinkConsumed()
+    }
+
     // ---- 绑定导航能力到语义 Navigator ----
     // navigate/navigateUp/popBackStack 均为 remember 稳定引用，内部状态经
     // rememberUpdatedState 与闭包捕获的稳定 State 读取，故只需绑定一次。
-    LaunchedEffect(Unit) {
-        navigationDispatcher.bind(
+    DisposableEffect(navigationDispatcher) {
+        val releaseBinding = navigationDispatcher.bind(
             navigate = navigate,
             navigateUp = navigateUp,
             popBackStack = popBackStack,
@@ -166,7 +195,7 @@ fun AppNavGraph(
                 }
                 if (target != null) {
                     // 显式按 isDetailPaneKey 分流，绕过 navigate 的守卫判断：
-                    // 登录成功时 isLoggedIn 尚未经 StateFlow→Compose 多跳异步更新，
+                    // 登录成功时登录态尚未经 StateFlow→Compose 多跳异步更新，
                     // 若走 navigate 会被 requiredLoginNavKey 再次拦截并把 target 塞回
                     // pendingRedirect，形成回跳死循环。这里直接复用 Expanded 分发逻辑。
                     if (currentIsExpanded && isDetailPaneKey(target)) {
@@ -180,6 +209,7 @@ fun AppNavGraph(
                 }
             },
         )
+        onDispose { releaseBinding() }
     }
 
     // ---- 统一导航内容注册表 ----
@@ -245,8 +275,8 @@ fun AppNavGraph(
 /**
  * 判定指定路由是否需要登录态。依赖 [RequiresAuth] 标记接口自动识别。
  */
-private fun requiredLoginNavKey(key: NavKey, isLoggedIn: Boolean): Boolean {
-    return key is RequiresAuth && !isLoggedIn
+private fun requiredLoginNavKey(key: NavKey, status: AuthStatus): Boolean {
+    return key is RequiresAuth && status == AuthStatus.LOGGED_OUT
 }
 
 /**

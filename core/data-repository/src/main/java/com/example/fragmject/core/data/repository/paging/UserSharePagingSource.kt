@@ -12,10 +12,11 @@ class UserSharePagingSource(
 ) : BasePagingSource<Article>(startPage = 1) {
 
     override suspend fun fetchPage(page: Int): PageData<Article> {
-        val data = remote.getUserShareArticles(userId, page).data?.shareArticles
+        val data = remote.getUserShareArticles(userId, page).requirePagingData()
+            .shareArticles.requirePagingField("data.shareArticles")
         return PageData(
-            items = data?.datas.orEmpty(),
-            over = data?.over == true,
+            items = data.datas.requirePagingField("data.shareArticles.datas"),
+            over = data.over,
         )
     }
 }

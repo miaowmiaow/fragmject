@@ -1,10 +1,13 @@
 package com.example.fragmject.core.data.repository.system
 
 import android.content.Context
+import android.util.Log
 import com.example.fragmject.core.android.platform.cache.CacheDirs
 import com.example.fragmject.core.android.platform.cache.CacheUtils
+import com.example.fragmject.core.domain.result.SimpleResult
 import com.example.fragmject.core.domain.system.SystemStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,20 +47,31 @@ class SystemStorageImpl @Inject constructor(
         _cacheSizeText.value = CacheUtils.getTotalSize(context)
     }
 
-    override suspend fun clearCache(): Result<Unit> {
+    override suspend fun clearCache(): SimpleResult {
         // 在调用方线程置位，保证 UI 能立即观察到「清理中」；
         // 用 try/finally 兜底：取消（页面退出）或异常时也必须复位，避免按钮永久禁用。
         _isClearing.value = true
         return try {
             withContext(Dispatchers.IO) {
-                runCatching {
+                try {
                     CacheUtils.clearAllCache(context, CacheDirs.PROTECTED)
                     _cacheSizeText.value = CacheUtils.getTotalSize(context)
+                    SimpleResult(success = true)
+                } catch (e: CancellationException) {
+                    // 旧实现的 runCatching 会把取消吞成失败结果，破坏结构化并发
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "clearCache failed", e)
+                    SimpleResult(success = false, message = "清除缓存失败，请重试")
                 }
             }
         } finally {
             _isClearing.value = false
         }
+    }
+
+    private companion object {
+        const val TAG = "SystemStorage"
     }
 
 }

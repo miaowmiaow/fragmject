@@ -6,7 +6,7 @@
 
 | 模块 | 定位 | 内容 |
 |---|---|---|
-| `core:navigation-contract` | **纯契约（端口）** | 语义 `Navigator` 接口、`Local*Navigator` CompositionLocal、`RequiresAuth` / `DetailPaneNavKey` 标记接口 |
+| `core:navigation-contract` | **纯契约（端口）** | 语义 `Navigator` 接口、`Local*Navigator` CompositionLocal、`RequiresAuth` / `DetailPaneNavKey` / `FlowScopedNavKey` 标记接口 |
 | `core:navigation-runtime` | **机制（运行时）** | `NavContentRegistry` / `NavContentContributor` 注册机制、`DetailPane` 渲染支持与 ViewModelStore |
 
 **核心约束（R9，编译期强制）**：`feature:*:api` 只允许依赖 `navigation-contract`，不得依赖 `navigation-runtime`。因此：
@@ -33,7 +33,9 @@ object MyCollectNavKey : RequiresAuth, DetailPaneNavKey
 
 - 需要登录 → 实现 `RequiresAuth`
 - 大屏详情面板渲染（而非全屏推入）→ 实现 `DetailPaneNavKey`
-- 两者都是 `core:navigation-contract` 里的纯标记接口
+- 属于同一条多步流程（如选图 → 预览 → 编辑）→ 实现 `FlowScopedNavKey`
+- 三者都是 `core:navigation-contract` 里的纯标记接口；**未实现** `DetailPaneNavKey` 的即全屏页，
+  请在 NavKey 的 KDoc 里写明「全屏页，故意不实现 DetailPaneNavKey」，避免后来者误以为是遗漏
 
 ### 第 2 步：impl 模块注册渲染器（NavContentContributor）
 
@@ -68,11 +70,17 @@ app 组合根通过 `Set<NavContentContributor>` 自动聚合所有贡献者，*
 ```kotlin
 // core/navigation-contract/.../contract/CollectionNavigator.kt
 interface CollectionNavigator {
-    fun openMyCollect() = Unit
+    // 注意：方法**不要写 `= Unit` 默认实现**——一旦给了默认实现，
+    // 新增动作时漏改 AppXxxNavigator 也能编译通过，运行时表现为「点击无反应」。
+    fun openMyCollect()
 }
 ```
 
-同时在 `NavigationCompositionLocals.kt` 的 `Navigators` 聚合体与 `noop()` 中补充 `collection` 字段。
+同时在 `NavigationCompositionLocals.kt` 的 `Navigators` 聚合体与 `noop()` 中补充 `collection` 字段
+（字段漏加编译器发现不了，由 `ArchitectureTest` 规则 20 兜底）。
+
+新增一个语义动作共需改 4 处：接口 → `Navigators` 字段 → `noop()` 空实现 → `AppXxxNavigator`，
+后两处漏改会直接编译失败。
 
 ### 第 4 步：app 组合根实现 Navigator 并绑定
 

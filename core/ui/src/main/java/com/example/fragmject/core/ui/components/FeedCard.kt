@@ -45,6 +45,13 @@ import com.example.fragmject.core.ui.R
  * @param onUserClick   点击头像 → 参数为 userId
  * @param onFooterClick 点击底部信息/角标区域 → 参数为 footerId
  * @param onToggleClick 点击选中切换按钮 → 参数为 (id, 选中态)
+ * @param onCoverClick  点击右侧封面图 → 参数为 coverUrl（留给调用方去开预览页）
+ * @param toggleCheckedIconRes   选中态切换按钮的图标（默认：勾选态方框）
+ * @param toggleUncheckedIconRes 未选中态切换按钮的图标
+ *
+ * **图标为何是参数**：卡片本身不含「收藏」语义，按钮只表达「已选 / 未选」。
+ * 默认值是通用勾选图标；调用方要表达收藏就传入自己的收藏图标，
+ * 避免通用组件把业务图标写死（历史上这里是硬编码的 `ic_collect_*`）。
  */
 @Composable
 fun FeedCard(
@@ -54,8 +61,11 @@ fun FeedCard(
     onUserClick: (String) -> Unit = {},
     onFooterClick: (String) -> Unit = {},
     onToggleClick: (String, Boolean) -> Unit = { _, _ -> },
+    onCoverClick: (String) -> Unit = {},
+    toggleCheckedIconRes: Int = R.mipmap.ic_toggle_checked,
+    toggleUncheckedIconRes: Int = R.mipmap.ic_toggle_unchecked,
 ) {
-    val toggleResId = getToggleResId(data.selected)
+    val toggleResId = if (data.selected) toggleCheckedIconRes else toggleUncheckedIconRes
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AppSpacing.cardCornerRadius))
@@ -137,13 +147,17 @@ fun FeedCard(
                 }
             }
             if (data.coverUrl.isNotBlank()) {
+                // 内层 clickable 会先于卡片主体的 clickable 消费事件，
+                // 因此点封面走 onCoverClick、点卡片其余区域仍走 onItemClick。
                 AsyncImage(
                     model = data.coverUrl,
-                    contentDescription = null,
+                    contentDescription = "封面",
                     modifier = Modifier
                         .width(AppSpacing.thumbnailWidth)
                         .padding(start = AppSpacing.cardItemGap)
-                        .aspectRatio(2f / 3f),
+                        .aspectRatio(2f / 3f)
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { onCoverClick(data.coverUrl) },
                     contentScale = ContentScale.Crop
                 )
             }
@@ -190,9 +204,4 @@ fun FeedCard(
     }
 }
 
-private fun getToggleResId(selected: Boolean): Int {
-    return when (selected) {
-        true -> R.mipmap.ic_collect_checked
-        false -> R.mipmap.ic_collect_unchecked
-    }
-}
+

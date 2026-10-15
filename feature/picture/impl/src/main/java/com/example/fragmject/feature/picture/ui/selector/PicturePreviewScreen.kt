@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -63,6 +64,8 @@ enum class PreviewMode { NORM, SELECT }
 fun PicturePreviewScreen(
     mode: PreviewMode = PreviewMode.NORM,
     previewPosition: Int = 0,
+    /** 是否展示「编辑」入口。纯看图（网络图 / 只读预览）传 false。 */
+    editable: Boolean = true,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onOpenEditor: (Uri) -> Unit = {},
@@ -206,7 +209,8 @@ fun PicturePreviewScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .height(45.dp)
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -222,18 +226,22 @@ fun PicturePreviewScreen(
                         color = Color.White,
                         fontSize = 16.sp
                     )
-                    TextButton(onClick = {
-                        onConfirm()
-                    }) {
-                        Text("完成", color = Color.White, fontSize = 16.sp)
+                    // 「完成」是选图流程的确认动作；纯看图靠返回箭头关闭，不再显示
+                    if (mode == PreviewMode.SELECT) {
+                        TextButton(onClick = {
+                            onConfirm()
+                        }) {
+                            Text("完成", color = Color.White, fontSize = 16.sp)
+                        }
                     }
                 }
             }
         }
 
-        // 底部栏
+        // 底部栏：纯看图（NORM 且不可编辑）时整条都不渲染，避免留下一条空黑条
+        val showBottomBar = showNavBar && (editable || mode == PreviewMode.SELECT)
         AnimatedVisibility(
-            visible = showNavBar,
+            visible = showBottomBar,
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             Box(
@@ -291,53 +299,61 @@ fun PicturePreviewScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 编辑按钮
-                        TextButton(onClick = {
-                            data.getOrNull(pagerState.currentPage)?.uri?.let { onOpenEditor(it) }
-                        }) {
-                            Icon(Icons.Filled.Edit, contentDescription = "编辑", tint = Color.White)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("编辑", color = Color.White, fontSize = 14.sp)
+                        // 编辑按钮：纯看图时不渲染（网络图也走不了本地编辑链路）
+                        if (editable) {
+                            TextButton(onClick = {
+                                data.getOrNull(pagerState.currentPage)?.uri?.let { onOpenEditor(it) }
+                            }) {
+                                Icon(
+                                    Icons.Filled.Edit,
+                                    contentDescription = "编辑",
+                                    tint = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("编辑", color = Color.White, fontSize = 14.sp)
+                            }
                         }
 
-                        // 选择框
-                        TextButton(onClick = {
-                            val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
-                                ?: return@TextButton
-                            flowState.toggleSelection(uriStr)
-                        }) {
-                            val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
-                                ?: ""
-                            val isSelected = uriStr in selectedUriSet
+                        // 选择框（仅选图流程；纯看图不该改动选图结果）
+                        if (mode == PreviewMode.SELECT) {
+                            TextButton(onClick = {
+                                val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
+                                    ?: return@TextButton
+                                flowState.toggleSelection(uriStr)
+                            }) {
+                                val uriStr = data.getOrNull(pagerState.currentPage)?.uri?.toString()
+                                    ?: ""
+                                val isSelected = uriStr in selectedUriSet
 
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .border(2.dp, Color.White, CircleShape)
-                                    .then(
-                                        if (isSelected) Modifier.background(
-                                            Color(0xFF508CEE),
-                                            CircleShape
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .border(2.dp, Color.White, CircleShape)
+                                        .then(
+                                            if (isSelected) Modifier.background(
+                                                Color(0xFF508CEE),
+                                                CircleShape
+                                            )
+                                            else Modifier
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(16.dp)
                                         )
-                                        else Modifier
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isSelected) {
-                                    Icon(
-                                        Icons.Filled.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    }
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    if (isSelected) "取消选择" else "选择",
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                if (isSelected) "取消选择" else "选择",
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
                         }
                     }
                 }

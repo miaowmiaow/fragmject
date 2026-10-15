@@ -72,7 +72,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun eachStepFrom8ToLatestMatchesExportedSchema() = runBlocking<Unit> {
+    fun eachStepFrom8ToLatestMatchesExportedSchema() = runBlocking {
         for (from in 8 until latestVersion) {
             context.deleteDatabase(TEST_DB)
             helper.createDatabase(from).close()
@@ -85,7 +85,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migration11To12DropsArticleTable() = runBlocking<Unit> {
+    fun migration11To12DropsArticleTable() = runBlocking {
         helper.createDatabase(11).use { db ->
             db.exec(
                 "INSERT INTO article (articleId, cache_key, sort_order, title, author, link, chapter_name, " +
@@ -103,7 +103,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migration12To13RenamesNavigationKeepingRowsAndIndices() = runBlocking<Unit> {
+    fun migration12To13RenamesNavigationKeepingRowsAndIndices() = runBlocking {
         helper.createDatabase(12).use { db ->
             db.exec(
                 "INSERT INTO navigation (navId, cache_key, sort_order, cid, name, articles_json, timestamp) " +
@@ -126,7 +126,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migration13To14DropsCoinRankTable() = runBlocking<Unit> {
+    fun migration13To14DropsCoinRankTable() = runBlocking {
         helper.createDatabase(13).use { db ->
             assertTrue("13 版本应仍有 coin_rank 表", db.hasObject("table", "coin_rank"))
         }
@@ -137,7 +137,33 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun userAndHistoryDataSurviveMigrationFrom8ToLatest() = runBlocking<Unit> {
+    fun migration14To15CreatesOtpAccountTableKeepingExistingData() = runBlocking {
+        helper.createDatabase(14).use { db ->
+            db.exec("INSERT INTO User (id, username, nickname, icon) VALUES (1, 'keep', 'Keep', NULL)")
+            db.exec("INSERT INTO History (`key`, value, url) VALUES ('search', 'keepme', '')")
+        }
+
+        helper.runMigrationsAndValidate(latestVersion, AppDatabase.MIGRATIONS.toList()).use { db ->
+            assertTrue("otp_account 表应被创建", db.hasObject("table", "otp_account"))
+            assertTrue(
+                "otp_account 应有 sort_order 索引",
+                db.indexNames("otp_account").contains("index_otp_account_sort_order"),
+            )
+            assertEquals(
+                listOf(
+                    "id", "issuer", "account_name", "secret_cipher", "algorithm",
+                    "digits", "period", "type", "counter", "sort_order", "created_at",
+                ),
+                db.query("PRAGMA table_info(otp_account)") { it.getText(1) },
+            )
+            // 已有数据不得丢失
+            assertEquals(listOf("keep"), db.query("SELECT username FROM User") { it.getText(0) })
+            assertEquals(listOf("keepme"), db.query("SELECT value FROM History") { it.getText(0) })
+        }
+    }
+
+    @Test
+    fun userAndHistoryDataSurviveMigrationFrom8ToLatest() = runBlocking {
         helper.createDatabase(8).use { db ->
             db.exec("INSERT INTO User (id, username, nickname, icon) VALUES (7, 'tom', 'Tom', 'icon.png')")
             db.exec("INSERT INTO History (`key`, value, url) VALUES ('search', 'kotlin', '')")
@@ -164,7 +190,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun legacyVersion4MigratesToLatestKeepingUserAndHistory() = runBlocking<Unit> {
+    fun legacyVersion4MigratesToLatestKeepingUserAndHistory() = runBlocking {
         helper.createDatabase(4).use { db ->
             db.exec("INSERT INTO User (id, username, nickname, dark_theme) VALUES (1, 'old', 'Old', '1')")
             db.exec("INSERT INTO History (`key`, value, url) VALUES ('search', 'legacy', '')")
@@ -176,7 +202,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun legacyVersion6MigratesToLatestAddingIconColumn() = runBlocking<Unit> {
+    fun legacyVersion6MigratesToLatestAddingIconColumn() = runBlocking {
         helper.createDatabase(6).use { db ->
             db.exec("INSERT INTO User (id, username, nickname) VALUES (2, 'mid', 'Mid')")
             db.exec("INSERT INTO History (`key`, value, url) VALUES ('search', 'v6', '')")
@@ -188,7 +214,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun migratedDatabaseOpensWithRealRoomAndDaoReadsRow() = runBlocking<Unit> {
+    fun migratedDatabaseOpensWithRealRoomAndDaoReadsRow() = runBlocking {
         helper.createDatabase(8).use { db ->
             db.exec("INSERT INTO User (id, username, nickname, icon) VALUES (9, 'jerry', 'Jerry', NULL)")
         }
@@ -204,7 +230,7 @@ class AppDatabaseMigrationTest {
     }
 
     @Test
-    fun freshInstallCreatesLatestSchemaAndUserReplaceIsAtomicReplacement() = runBlocking<Unit> {
+    fun freshInstallCreatesLatestSchemaAndUserReplaceIsAtomicReplacement() = runBlocking {
         val database = Room.databaseBuilder(context, AppDatabase::class.java, TEST_DB)
             .addMigrations(*AppDatabase.MIGRATIONS)
             .build()

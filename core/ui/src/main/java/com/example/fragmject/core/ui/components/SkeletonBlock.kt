@@ -22,10 +22,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import com.example.fragmject.core.designsystem.AppColors
 
-/** 骨架基础色：react-loading-skeleton 官方默认配色。 */
-internal val SkeletonBaseDark = Color(0xFF202020)
-internal val SkeletonBaseLight = Color(0xFFEBEBEB)
+/** 骨架基础色：react-loading-skeleton 官方默认配色（统一收在 [AppColors]，勿再本地定义色值）。 */
+internal val SkeletonBaseDark = AppColors.skeletonBaseDark
+internal val SkeletonBaseLight = AppColors.skeletonBaseLight
 
 @Composable
 internal fun isDarkTheme(): Boolean =
@@ -86,9 +87,9 @@ internal fun SkeletonBlock(
 internal fun shimmerPhaseOf(index: Int): Float =
     ((index * 0.6180339887f) % 1f) * 2f
 
-/** shimmer 高光色：react-loading-skeleton 官方默认配色。 */
-internal val ShimmerHighlightDark = Color(0xFF444444)
-internal val ShimmerHighlightLight = Color(0xFFF5F5F5)
+/** shimmer 高光色：react-loading-skeleton 官方默认配色（统一收在 [AppColors]）。 */
+internal val ShimmerHighlightDark = AppColors.skeletonHighlightDark
+internal val ShimmerHighlightLight = AppColors.skeletonHighlightLight
 
 /**
  * 完全复刻 react-loading-skeleton 的扫光动画：

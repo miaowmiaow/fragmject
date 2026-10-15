@@ -41,7 +41,7 @@ import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.auth.RegisterNavKey
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.core.navigation.contract.LocalNavigators
-import com.example.fragmject.feature.picture.PictureFlowNavKey
+import com.example.fragmject.core.navigation.contract.FlowScopedNavKey
 
 /** 页面转场动画时长 (ms)，与 Compose 过渡动画同步。 */
 private const val NAV_TRANSITION_DURATION_MS = 350
@@ -85,7 +85,7 @@ fun AppNavGraph(
     // 图片流程全部退出时清空结果：系统返回键不走选择器的取消回调，
     // 否则发起方下次进入仍会看到上一次选中的图片。
     val pictureNavigator = LocalNavigators.current.picture
-    val hasPictureFlow = backStack.any { it is PictureFlowNavKey }
+    val hasPictureFlow = backStack.any { it is FlowScopedNavKey }
     // 进入图片流程时清空上一次的选图结果。
     // 结果只在「确认选择」时写入（PictureNavRegistration.onConfirm），而系统返回/手势返回
     // 不会走选择器的取消回调。因此在**进入**时清空比在退出时清空更可靠：退出时清空会把
@@ -161,7 +161,7 @@ fun AppNavGraph(
     LaunchedEffect(Unit) {
         if (!initialDeepLinkGuarded) {
             initialDeepLinkGuarded = true
-            initialBackStack.filter { it is RequiresAuth }.forEach { navigate(it) }
+            initialBackStack.filterIsInstance<RequiresAuth>().forEach { navigate(it) }
         }
     }
     // 运行时深层链接（onNewIntent 触发）：首次启动由初始栈处理，此处仅处理后续动态深层链接。

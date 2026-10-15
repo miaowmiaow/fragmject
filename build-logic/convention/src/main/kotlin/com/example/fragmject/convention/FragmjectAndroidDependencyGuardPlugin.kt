@@ -208,6 +208,18 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
                 }
             }
         }
+        // R10: feature:*:api 不得依赖其他 feature:*:api（契约层横向边）。
+        // R2/R3 的前置条件是「from 以 :impl 结尾」，R6 只禁 api→impl，
+        // 因此 api→api 此前是 Gradle 守卫与 Konsist 规则的交叉盲区，这里补上。
+        if (from.startsWith(":feature:") && from.endsWith(":api") &&
+            to.startsWith(":feature:") && to.endsWith(":api")
+        ) {
+            val fromFeature = from.removePrefix(":feature:").substringBefore(":")
+            val toFeature = to.removePrefix(":feature:").substringBefore(":")
+            if (toFeature != fromFeature) {
+                return "$from -> $to（feature api 不得依赖其他 feature api：契约层禁止横向依赖）"
+            }
+        }
         // R8: feature 依赖的 core 模块必须在白名单内（正向声明，未声明的 feature→core 边一律失败）
         if (from.startsWith(":feature:") && to.startsWith(":core:")) {
             val allowed = FEATURE_ALLOWED_CORE_DEPENDENCIES
@@ -288,6 +300,7 @@ private val APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(
     ":core:network",
     ":core:webview",
     ":feature:article:impl",
+    ":feature:authenticator:impl",
     ":feature:auth:impl",
     ":feature:collection:impl",
     ":feature:demo:impl",
@@ -306,9 +319,16 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     ":core:designsystem" to emptySet(),
     ":core:data-contract" to setOf(":core:model"),
     ":core:domain" to setOf(":core:model"),
-    // database 直接实现 domain 端口（History/Schedule/Theme 零逻辑链合并后），
+    // database 直接实现 domain 端口（History/Schedule/Theme/OtpAccount 均无中间透传层），
     // domain 为纯契约层（仅依赖 model），数据实现依赖领域抽象方向正确。
-    ":core:database" to setOf(":core:data-contract", ":core:domain", ":core:model"),
+    // android-platform：OTP 密钥落库前需 Keystore 静态加密（KeystoreSecretCipher），
+    // 与「加密必须与存储同层」一致——data-repository 可用 android-platform 但不可见 DAO。
+    ":core:database" to setOf(
+        ":core:android-platform",
+        ":core:data-contract",
+        ":core:domain",
+        ":core:model",
+    ),
     // 说明：network 依赖 domain 仅为引用 CookieStore 这一共享会话契约（WebView 登录后由 OkHttp 复用）。
     // network 不得因此依赖 webview；SslConfig 等网络配置契约仍放在 data-contract。
     //
@@ -329,12 +349,18 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
         ":core:data-contract",
         ":core:model",
     ),
-    // core:ui 展示领域模型（Article → FeedCardUIState）是合法依赖：core:model 为零依赖叶子，
-    // 无传递污染。此前仅依赖 designsystem，导致 4 个 feature 各复制一份 ArticleFeedMapper。
-    // core:ui 收藏交互封装引用 domain 的 CollectState 契约（零 Android 依赖，无传递污染）
+    // core:ui 依赖 model / domain 是**登记过的例外**（2026-10 边界评审结论）：
+    // - ArticleFeedMapper 展示领域模型（Article → FeedCardUIState）；此前仅依赖 designsystem，
+    //   导致 4 个 feature 各复制一份该映射，属更糟的重复。
+    // - CollectInteraction 引用 domain 的 CollectState 契约（零 Android 依赖，无传递污染）。
+    // 约束：只允许这三条边，且业务文案/图标必须参数化可覆盖（见 ArticleFeedLabels / FeedCard 图标参数），
+    // 不得继续下探到 data-repository / network / database。
     ":core:ui" to setOf(":core:designsystem", ":core:model", ":core:domain"),
     ":core:image-editor" to setOf(":core:domain", ":core:android-platform"),
     ":core:player" to setOf(":core:android-platform"),
+    // qrscanner 只依赖 CameraX / ML Kit 等外部 SDK，不依赖其他 core 模块：
+    // 这些 SDK 由本引擎独占持有，feature 不得各自引入一份
+    ":core:qrscanner" to emptySet(),
     ":core:webview" to setOf(":core:android-platform", ":core:domain"),
 )
 
@@ -344,6 +370,17 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
  * feature 只能经由 :core:domain 端口访问数据，因此 data-contract / data-repository /
  * network / database 一律不在白名单内，防止数据实现层泄漏到 UI 层。
  * 未声明的 feature→core 边一律失败。
+ *
+ * 白名单里的 :core:webview / :core:qrscanner / :core:image-editor / :core:player 属
+ * **引擎模块**（dependencies-policy.md §6.10）：它们持有 Android platform API 或第三方 SDK
+ * （webkit / CameraX+ML Kit / 位图+Canvas / media3），且以 UI 形态存在，无法用 domain 端口表达，
+ * 因此允许 feature 直接依赖。
+ *
+ * ⚠️ 判据提醒：**不要用「当前只有 1 个消费者」去否决引擎模块**。引擎化的目的是消灭平台类型泄漏
+ * 与 domain 端口污染（历史上的 MediaEditor / ImageHandle / ImageSource 三个端口即因此被
+ * :core:image-editor 取代），不是共享复用——消费者数量是结果，不是判据。
+ * :core:image-editor 目前仅 picture/impl 消费、:core:player 仅 demo/impl 消费，均属预期，
+ * 不要把它们下沉回 feature。
  */
 private val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
     ":core:designsystem",
@@ -353,6 +390,7 @@ private val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
     ":core:navigation-runtime",
     ":core:navigation-contract",
     ":core:player",
+    ":core:qrscanner",
     ":core:ui",
     ":core:webview",
 )

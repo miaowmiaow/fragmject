@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
@@ -38,6 +38,9 @@ fun SystemScreen(
     val onArticleClick = remember(navigators) { { url: String -> navigators.article.openArticle(url) } }
     val onAuthorClick = remember(navigators) { { userId: String -> navigators.user.openUserProfile(userId) } }
     val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
+    val onCoverClick = remember(navigators) {
+        { url: String -> navigators.picture.openPicturePreview(listOf(url)) }
+    }
     val onNavigateUp = LocalOnNavigateUp.current
     val treeResult by systemViewModel.treeResult.collectAsStateWithLifecycle()
     val collectInteraction = rememberCollectInteraction(systemViewModel.collectState)
@@ -83,6 +86,7 @@ fun SystemScreen(
                         onUserClick = onAuthorClick,
                         onFooterClick = onChapterClick,
                         onToggleClick = collectInteraction.onToggleClick,
+                        onCoverClick = onCoverClick,
                     )
                 }
             }
@@ -102,9 +106,9 @@ fun SystemScreenPreview() {
  * 未命中时返回默认 (0, "体系", 空列表)。
  */
 private fun List<Tree>.getTree(cid: String): Triple<Int, String, List<Tree>> {
-    for (tree in this) {
-        tree.children?.forEachIndexed { index, data ->
-            if (data.id == cid) return Triple(index, tree.name, tree.children.orEmpty())
+    for ((children, _, _, _, name) in this) {
+        children?.forEachIndexed { index, data ->
+            if (data.id == cid) return Triple(index, name, children.orEmpty())
         }
     }
     return Triple(0, "体系", emptyList())

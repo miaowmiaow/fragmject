@@ -38,22 +38,30 @@ import com.example.fragmject.feature.user.RankNavKey
  * }
  * deepLinkPendingIntent?.send()
  */
-val deepLinkMatchers: List<DeepLinkMatcher<*, *>> = listOf(
-    UriDeepLinkMatcher(
-        uriPattern = DeepLinkUri("fragmject://com.example.fragment.project/rank"),
-        serializer = RankNavKey.serializer(),
-    ).withBackStack { matchResult -> listOf(MainNavKey, matchResult.key) },
+/**
+ * **惰性构造**：`UriDeepLinkMatcher` 内部会 `android.net.Uri.parse`，若写成普通顶层 val，
+ * 类初始化就会触发它——纯 JVM 单测（无 Robolectric）加载本文件时直接抛
+ * `Method parse in android.net.Uri not mocked`，连只验证 [isAllowedDeepLinkTarget] 的用例都跑不起来。
+ * 改为 `by lazy` 后，只有真正走深链匹配才构造，与「冷启动不一定有深链」的实际路径也一致。
+ */
+val deepLinkMatchers: List<DeepLinkMatcher<*, *>> by lazy {
+    listOf(
+        UriDeepLinkMatcher(
+            uriPattern = DeepLinkUri("fragmject://com.example.fragment.project/rank"),
+            serializer = RankNavKey.serializer(),
+        ).withBackStack { matchResult -> listOf(MainNavKey, matchResult.key) },
 
-    UriDeepLinkMatcher(
-        uriPattern = DeepLinkUri("fragmject://com.example.fragment.project/search/{key}"),
-        serializer = SearchNavKey.serializer(),
-    ).withBackStack { matchResult -> listOf(MainNavKey, matchResult.key) },
+        UriDeepLinkMatcher(
+            uriPattern = DeepLinkUri("fragmject://com.example.fragment.project/search/{key}"),
+            serializer = SearchNavKey.serializer(),
+        ).withBackStack { matchResult -> listOf(MainNavKey, matchResult.key) },
 
-    UriDeepLinkMatcher(
-        uriPattern = DeepLinkUri("fragmject://com.example.fragment.project/web/{url}"),
-        serializer = WebNavKey.serializer(),
-    ).withBackStack { matchResult -> listOf(MainNavKey, matchResult.key) },
-)
+        UriDeepLinkMatcher(
+            uriPattern = DeepLinkUri("fragmject://com.example.fragment.project/web/{url}"),
+            serializer = WebNavKey.serializer(),
+        ).withBackStack { matchResult -> listOf(MainNavKey, matchResult.key) },
+    )
+}
 
 /**
  * 将 [DeepLinkRequest] 匹配为目标 back stack；无匹配返回 null。

@@ -6,11 +6,13 @@ import com.example.fragmject.core.data.contract.local.ProjectTreeLocalDataSource
 import com.example.fragmject.core.data.contract.local.SystemTreeLocalDataSource
 import com.example.fragmject.core.data.contract.local.UserLocalDataSource
 import com.example.fragmject.core.domain.repository.HistoryRepository
+import com.example.fragmject.core.domain.repository.OtpAccountRepository
 import com.example.fragmject.core.domain.repository.ScheduleRepository
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.database.local.HistoryLocalDataSourceImpl
 import com.example.fragmject.core.database.local.HomeNavLocalDataSourceImpl
 import com.example.fragmject.core.database.local.HotKeyLocalDataSourceImpl
+import com.example.fragmject.core.database.local.OtpAccountRepositoryImpl
 import com.example.fragmject.core.database.local.ProjectTreeLocalDataSourceImpl
 import com.example.fragmject.core.database.local.ScheduleLocalDataSourceImpl
 import com.example.fragmject.core.database.local.SystemTreeLocalDataSourceImpl
@@ -64,4 +66,10 @@ abstract class LocalDataSourceModule {
     @Binds
     @Singleton
     abstract fun bindUserLocalDataSource(impl: UserLocalDataSourceImpl): UserLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindOtpAccountRepository(
+        impl: OtpAccountRepositoryImpl,
+    ): OtpAccountRepository
 }

@@ -154,7 +154,7 @@ fun NestedScroll1Screen() {
                                 return a.toInt() and -2
                             }
                         }
-                        loadUrl("file:///android_asset/privacy_policy.html")
+                        loadUrl("file:///android_asset/html/privacy_policy.html")
                         webView = this
                     }
                 },

@@ -9,11 +9,11 @@ package com.example.fragmject.core.navigation.contract
 interface CollectionNavigator {
 
     /** 打开我的收藏。 */
-    fun openMyCollect() = Unit
+    fun openMyCollect()
 
     /** 打开我的分享。 */
-    fun openMyShare() = Unit
+    fun openMyShare()
 
     /** 打开新建分享。 */
-    fun openShareArticle() = Unit
+    fun openShareArticle()
 }

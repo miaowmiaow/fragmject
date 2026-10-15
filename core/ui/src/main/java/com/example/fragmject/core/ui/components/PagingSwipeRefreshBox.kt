@@ -31,6 +31,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.example.fragmject.core.designsystem.AppColors
 
 /**
  * Paging 3 版下拉刷新 & 加载更多容器。
@@ -84,7 +85,7 @@ fun <T : Any> PagingSwipeRefreshBox(
                         enabled = enablePullRefresh,
                     )
                     .clipToBounds()
-                    .background(Color(0xFF010101))
+                    .background(AppColors.refreshContainer)
                     .graphicsLayer {
                         translationY = state.distanceFraction * thresholdPx
                     },
@@ -157,7 +158,7 @@ private fun FooterText(
         Text(
             text = text,
             fontSize = 12.sp,
-            color = Color(0xFF999999),
+            color = AppColors.refreshHintText,
             modifier = Modifier.align(Alignment.Center),
         )
     }

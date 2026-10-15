@@ -46,10 +46,10 @@ import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ArrowRightItem
 import com.example.fragmject.core.ui.components.LoadingContent
-import com.example.fragmject.core.designsystem.NightSwitchButton
+import com.example.fragmject.core.ui.components.NightSwitchButton
 import com.example.fragmject.core.ui.components.StandardDialog
 import com.example.fragmject.core.designsystem.AppColors
-import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.ui.components.TitleBar
 
 @Composable
 fun SettingScreen(
@@ -124,7 +124,7 @@ fun SettingScreen(
                         Spacer(Modifier.width(5.dp))
                     }
                     HorizontalDivider()
-                    ArrowRightItem("隐私政策") { articleNavigator.openArticle("file:///android_asset/privacy_policy.html") }
+                    ArrowRightItem("隐私政策") { articleNavigator.openArticle("file:///android_asset/html/privacy_policy.html") }
                     HorizontalDivider()
                     ArrowRightItem("问题反馈") { articleNavigator.openArticle("https://github.com/miaowmiaow/fragmject/issues") }
                     HorizontalDivider()

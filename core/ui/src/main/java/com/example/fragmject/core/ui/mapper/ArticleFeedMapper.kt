@@ -1,12 +1,29 @@
 package com.example.fragmject.core.ui.mapper
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.ui.components.FeedCardUIState
 import com.example.fragmject.core.ui.components.FooterBadge
 import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.core.ui.utils.fromHtml
+
+/**
+ * 映射过程中用到的**业务文案与开关**。
+ *
+ * 这些值原本硬编码在 [Article.toFeedCardUIState] 里，使通用 UI 层带上了文章业务语义
+ * （「新」「置顶」「匿名」、封面强制 https）。保留默认值的目的是让现有调用方零改动，
+ * 但**任何使用方都可以覆盖**；换业务、换语言、或不要协议升级时不必改 core:ui。
+ */
+@Immutable
+data class ArticleFeedLabels(
+    val freshBadge: String = "新",
+    val topBadge: String = "置顶",
+    val anonymousName: String = "匿名",
+    /** 把 `http://` 封面升为 `https://`（图床支持 https，混合协议会被拦截）。 */
+    val upgradeCoverToHttps: Boolean = true,
+)
 
 /**
  * 记住 [Article] 到 [FeedCardUIState] 的映射结果：按完整文章与收藏覆盖态缓存。
@@ -19,8 +36,9 @@ import com.example.fragmject.core.ui.utils.fromHtml
 fun rememberArticleFeedData(
     item: Article,
     overrides: Map<String, Boolean>,
-): FeedCardUIState = remember(item, overrides[item.id]) {
-    item.toFeedCardUIState(overrides[item.id])
+    labels: ArticleFeedLabels = ArticleFeedLabels(),
+): FeedCardUIState = remember(item, overrides[item.id], labels) {
+    item.toFeedCardUIState(overrides[item.id], labels)
 }
 
 /**
@@ -28,25 +46,39 @@ fun rememberArticleFeedData(
  *
  * 文章业务语义在此处翻译为通用字段：
  * 章节 → footerText/footerId，新/置顶 → footerBadges，收藏 → selected。
+ * 文案与协议开关来自 [labels]，可覆盖。
  */
-fun Article.toFeedCardUIState(selectedOverride: Boolean? = null): FeedCardUIState = FeedCardUIState(
-    id = id,
-    title = fromHtml(title),
-    desc = fromHtml(desc),
-    date = niceDate,
-    userId = userId,
-    link = link,
-    footerId = chapterId,
-    footerText = fromHtml(formatChapterName(superChapterName, chapterName)),
-    coverUrl = envelopePic.replace("http://", "https://"),
-    footerBadges = buildList {
-        if (fresh) add(FooterBadge("新"))
-        if (top) add(FooterBadge("置顶"))
-    },
-    selected = selectedOverride ?: collect,
-    displayName = "$author$shareUser".ifBlank { "匿名" },
-    avatarResId = AvatarUtils.avatarResIdBySeed("$author$shareUser".ifBlank { userId }),
-)
+fun Article.toFeedCardUIState(
+    selectedOverride: Boolean? = null,
+    labels: ArticleFeedLabels = ArticleFeedLabels(),
+): FeedCardUIState {
+    val rawAuthor = "$author$shareUser"
+    val authorName = rawAuthor.ifBlank { labels.anonymousName }
+    // 头像种子与展示名分开：无作者时用 userId 而非「匿名」，否则所有匿名文章头像都一样
+    val avatarSeed = rawAuthor.ifBlank { userId }
+    return FeedCardUIState(
+        id = id,
+        title = fromHtml(title),
+        desc = fromHtml(desc),
+        date = niceDate,
+        userId = userId,
+        link = link,
+        footerId = chapterId,
+        footerText = fromHtml(formatChapterName(superChapterName, chapterName)),
+        coverUrl = if (labels.upgradeCoverToHttps) {
+            envelopePic.replace("http://", "https://")
+        } else {
+            envelopePic
+        },
+        footerBadges = buildList {
+            if (fresh) add(FooterBadge(labels.freshBadge))
+            if (top) add(FooterBadge(labels.topBadge))
+        },
+        selected = selectedOverride ?: collect,
+        displayName = authorName,
+        avatarResId = AvatarUtils.avatarResIdBySeed(avatarSeed),
+    )
+}
 
 /** 用「·」拼接多级章节名。 */
 private fun formatChapterName(vararg names: String): String {

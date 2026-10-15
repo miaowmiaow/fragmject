@@ -47,6 +47,7 @@ fun MyScreen(
     val onMyShareClick = remember(navigators) { { navigators.collection.openMyShare() } }
     val onBrowseHistoryClick = remember(navigators) { { navigators.user.openBrowseHistory() } }
     val onSettingClick = remember(navigators) { { navigators.user.openSetting() } }
+    val onAuthenticatorClick = remember(navigators) { { navigators.authenticator.openAuthenticator() } }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
@@ -118,6 +119,8 @@ fun MyScreen(
         ArrowRightItem("我的分享") { onMyShareClick() }
         HorizontalDivider()
         ArrowRightItem("浏览历史") { onBrowseHistoryClick() }
+        HorizontalDivider()
+        ArrowRightItem("身份验证器") { onAuthenticatorClick() }
         HorizontalDivider()
         ArrowRightItem("系统设置") { onSettingClick() }
     }

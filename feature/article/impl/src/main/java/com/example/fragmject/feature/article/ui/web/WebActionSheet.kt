@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.fragmject.core.model.History
-import com.example.fragmject.core.ui.R
+import com.example.fragmject.feature.article.impl.R
 
 /**
  * WebView 底部操作面板：单行常用操作（刷新 / 历史 / 收藏 / 调试注入）。

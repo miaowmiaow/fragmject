@@ -30,8 +30,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fragmject.core.designsystem.BackIcon
-import com.example.fragmject.core.ui.R
+import com.example.fragmject.core.ui.components.BackIcon
+import com.example.fragmject.feature.auth.impl.R
 
 /**
  * 公共账号表单：统一 LoginScreen / RegisterScreen 重复的

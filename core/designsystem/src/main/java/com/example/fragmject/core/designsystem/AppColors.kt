@@ -22,6 +22,16 @@ object AppColors {
     val yellow = Color(0xFFFFB636)
     val alphaOrange = Color(0xB0FF8B80)
     val alphaGray = Color(0x39F5F5F5)
+
+    // 骨架屏（react-loading-skeleton 官方默认配色，原为 core:ui 内部常量）
+    val skeletonBaseDark = Color(0xFF202020)
+    val skeletonBaseLight = Color(0xFFEBEBEB)
+    val skeletonHighlightDark = Color(0xFF444444)
+    val skeletonHighlightLight = Color(0xFFF5F5F5)
+
+    // 下拉刷新/上拉加载的容器底色与提示文字色（原为 core:ui 内硬编码值）
+    val refreshContainer = Color(0xFF010101)
+    val refreshHintText = Color(0xFF999999)
 }
 
 val AppDarkColorScheme = darkColorScheme(

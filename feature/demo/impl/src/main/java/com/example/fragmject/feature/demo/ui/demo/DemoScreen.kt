@@ -34,7 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.feature.demo.ui.animatedcontent.AnimatedContentScreen

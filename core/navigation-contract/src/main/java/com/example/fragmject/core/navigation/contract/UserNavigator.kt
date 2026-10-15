@@ -9,17 +9,17 @@ package com.example.fragmject.core.navigation.contract
 interface UserNavigator {
 
     /** 查看用户主页。 */
-    fun openUserProfile(userId: String) = Unit
+    fun openUserProfile(userId: String)
 
     /** 打开系统设置。 */
-    fun openSetting() = Unit
+    fun openSetting()
 
     /** 打开我的积分/金币。 */
-    fun openMyCoin() = Unit
+    fun openMyCoin()
 
     /** 打开浏览历史。 */
-    fun openBrowseHistory() = Unit
+    fun openBrowseHistory()
 
     /** 打开积分排行榜。 */
-    fun openRank() = Unit
+    fun openRank()
 }

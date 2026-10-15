@@ -2,6 +2,8 @@ package com.example.fragmject.app.navigation
 
 import com.example.fragmject.core.navigation.contract.ArticleNavigator
 import com.example.fragmject.core.navigation.contract.AuthNavigator
+import com.example.fragmject.core.navigation.contract.AuthenticatorExportMode
+import com.example.fragmject.core.navigation.contract.AuthenticatorNavigator
 import com.example.fragmject.core.navigation.contract.CollectionNavigator
 import com.example.fragmject.core.navigation.contract.DemoNavigator
 import com.example.fragmject.core.navigation.contract.HomeNavigator
@@ -10,6 +12,10 @@ import com.example.fragmject.core.navigation.contract.SearchNavigator
 import com.example.fragmject.core.navigation.contract.UserNavigator
 import com.example.fragmject.feature.article.WebNavKey
 import com.example.fragmject.feature.auth.LoginNavKey
+import com.example.fragmject.feature.authenticator.AuthenticatorAddNavKey
+import com.example.fragmject.feature.authenticator.AuthenticatorExportQrNavKey
+import com.example.fragmject.feature.authenticator.AuthenticatorNavKey
+import com.example.fragmject.feature.authenticator.AuthenticatorTransferNavKey
 import com.example.fragmject.feature.auth.RegisterNavKey
 import com.example.fragmject.feature.collection.MyCollectNavKey
 import com.example.fragmject.feature.collection.MyShareNavKey
@@ -108,10 +114,13 @@ class AppPictureNavigator @Inject constructor(
     }
 
     override fun openPicturePreview(uris: List<String>) =
-        dispatcher.navigate(PicturePreviewNavKey(uris))
+        dispatcher.navigate(PicturePreviewNavKey(uris = uris, selectable = false))
 
-    override fun openPictureEditor(oldUriString: String) =
-        dispatcher.navigate(PictureEditorNavKey(oldUriString))
+    override fun openPicturePreviewForSelection(uris: List<String>) =
+        dispatcher.navigate(PicturePreviewNavKey(uris = uris, selectable = true))
+
+    override fun openPictureEditor(uriString: String) =
+        dispatcher.navigate(PictureEditorNavKey(uriString))
 }
 
 @Singleton
@@ -120,4 +129,17 @@ class AppHomeNavigator @Inject constructor(
 ) : HomeNavigator {
     override fun openMain() = dispatcher.popBackStack(MainNavKey)
     override fun openSystemTree(cid: String) = dispatcher.navigate(SystemNavKey(cid))
+}
+
+@Singleton
+class AppAuthenticatorNavigator @Inject constructor(
+    private val dispatcher: NavigationDispatcher,
+) : AuthenticatorNavigator {
+    override fun openAuthenticator() = dispatcher.navigate(AuthenticatorNavKey)
+    override fun openAuthenticatorAdd() = dispatcher.navigate(AuthenticatorAddNavKey)
+    override fun openAuthenticatorTransfer() = dispatcher.navigate(AuthenticatorTransferNavKey)
+    override fun openAuthenticatorExportQr(ids: List<Long>, mode: AuthenticatorExportMode) =
+        dispatcher.navigate(
+            AuthenticatorExportQrNavKey(ids = ids, batch = mode == AuthenticatorExportMode.BATCH),
+        )
 }

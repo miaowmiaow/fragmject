@@ -14,6 +14,9 @@ import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.domain.system.SystemStorage
+// 登记过的架构例外（ArchitectureTest 规则 21 白名单）：app 组合根不应引用数据实现层，
+// 但 Coil 需要 core:network 里「图片专用」OkHttpClient 的 qualifier。
+// 彻底消除需把 ImageLoader 装配下沉到同时可见 coil 与 network 的 core 模块，勿在此新增同类引用。
 import com.example.fragmject.core.network.di.ImageOkHttpClient
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient

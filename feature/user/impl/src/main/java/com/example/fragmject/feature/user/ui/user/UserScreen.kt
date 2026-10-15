@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,20 +28,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.components.CollapsingHeader
-import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
-import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
-import com.example.fragmject.core.ui.utils.getScreenWidth
-import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.core.ui.components.rememberCollectInteraction
-import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
+import com.example.fragmject.core.ui.components.CollapsingHeader
+import com.example.fragmject.core.ui.components.FeedCard
+import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
+import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
+import com.example.fragmject.core.ui.components.rememberCollectInteraction
+import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 import com.example.fragmject.core.ui.utils.AvatarUtils
+import com.example.fragmject.core.ui.utils.getScreenWidth
 
 @Composable
 fun UserScreen(
@@ -53,6 +52,7 @@ fun UserScreen(
     val articleNavigator = LocalNavigators.current.article
     val homeNavigator = LocalNavigators.current.home
     val userNavigator = LocalNavigators.current.user
+    val pictureNavigator = LocalNavigators.current.picture
     val onNavigateUp = LocalOnNavigateUp.current
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
     val collectInteraction = rememberCollectInteraction(viewModel.collectState)
@@ -132,6 +132,7 @@ fun UserScreen(
                     onUserClick = { userNavigator.openUserProfile(it) },
                     onFooterClick = { homeNavigator.openSystemTree(it) },
                     onToggleClick = collectInteraction.onToggleClick,
+                    onCoverClick = { url -> pictureNavigator.openPicturePreview(listOf(url)) },
                 )
             }
         }

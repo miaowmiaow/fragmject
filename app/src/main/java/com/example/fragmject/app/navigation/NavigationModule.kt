@@ -2,6 +2,7 @@ package com.example.fragmject.app.navigation
 
 import com.example.fragmject.core.navigation.contract.ArticleNavigator
 import com.example.fragmject.core.navigation.contract.AuthNavigator
+import com.example.fragmject.core.navigation.contract.AuthenticatorNavigator
 import com.example.fragmject.core.navigation.contract.CollectionNavigator
 import com.example.fragmject.core.navigation.contract.DemoNavigator
 import com.example.fragmject.core.navigation.contract.HomeNavigator
@@ -46,4 +47,7 @@ abstract class NavigationModule {
 
     @Binds
     abstract fun bindHomeNavigator(impl: AppHomeNavigator): HomeNavigator
+
+    @Binds
+    abstract fun bindAuthenticatorNavigator(impl: AppAuthenticatorNavigator): AuthenticatorNavigator
 }

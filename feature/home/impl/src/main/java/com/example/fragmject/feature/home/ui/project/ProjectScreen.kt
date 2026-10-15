@@ -44,6 +44,9 @@ fun ProjectScreen(
     val onArticleClick = remember(navigators) { { url: String -> navigators.article.openArticle(url) } }
     val onAuthorClick = remember(navigators) { { userId: String -> navigators.user.openUserProfile(userId) } }
     val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
+    val onCoverClick = remember(navigators) {
+        { url: String -> navigators.picture.openPicturePreview(listOf(url)) }
+    }
     val projectTreeUiState by projectTreeViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val collectInteraction = rememberCollectInteraction(projectListViewModel.collectState)
@@ -85,6 +88,7 @@ fun ProjectScreen(
                             onUserClick = onAuthorClick,
                             onFooterClick = onChapterClick,
                             onToggleClick = collectInteraction.onToggleClick,
+                            onCoverClick = onCoverClick,
                         )
                     }
                 }

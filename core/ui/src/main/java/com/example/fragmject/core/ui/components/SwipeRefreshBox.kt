@@ -47,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.ui.R
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -192,7 +193,7 @@ fun <T> SwipeRefreshBox(
                             enabled = enablePullRefresh,
                         )
                         .clipToBounds()
-                        .background(Color(0xFF010101))
+                        .background(AppColors.refreshContainer)
                         .graphicsLayer {
                             translationY = state.distanceFraction * threshold.roundToPx()
                         },
@@ -256,7 +257,7 @@ fun MoreIndicator(
         Text(
             text = if (finishing) "没有更多了！" else "正在加载中...",
             fontSize = 12.sp,
-            color = Color(0xFF999999),
+            color = AppColors.refreshHintText,
             modifier = Modifier.align(Alignment.Center)
         )
     }

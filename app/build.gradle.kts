@@ -91,6 +91,7 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:webview"))
     implementation(project(":feature:article:impl"))
+    implementation(project(":feature:authenticator:impl"))
     implementation(project(":feature:auth:impl"))
     implementation(project(":feature:collection:impl"))
     implementation(project(":feature:demo:impl"))

@@ -147,12 +147,19 @@ class PictureFlowState @Inject constructor(
         _currAlbumResult.value = mediaMap[name] ?: emptyList()
     }
 
-    /** 进入预览：按 [uris] 顺序从全量相册解析出实际 [MediaItem] 快照，跨相册也能正确命中。 */
+    /**
+     * 进入预览：按 [uris] 顺序解析出 [MediaItem] 快照，预览页只读此快照。
+     *
+     * - 命中本地媒体（选图流程）：直接取相册里的 MediaItem，跨相册也能正确命中；
+     * - 未命中：按原样回退成一个只带 uri 的 MediaItem——**不要**换成空占位 uri。
+     *   预览页不止用于本地相册，信息流的封面是网络 URL，回退成占位会显示一片空白。
+     *   只有确实是空串时才用占位，避免 coil 拿到空 model。
+     */
     fun startPreview(uris: List<String>) {
         val all = mediaMap.values.flatten()
         _previewSource.value = uris.mapIndexed { index, uriStr ->
             all.find { it.uri.toString() == uriStr }
-                ?: MediaItem("", "empty://preview/$index".toUri())
+                ?: MediaItem("", uriStr.takeIf { it.isNotBlank() }?.toUri() ?: "empty://preview/$index".toUri())
         }
     }
 

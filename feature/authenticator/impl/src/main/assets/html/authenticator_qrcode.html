@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<!--
+  离线页面：default-src 'none' 禁止一切外部资源，script / style 仅限本页与同目录文件。
+  页面与 qrcode.min.js 均来自 APK assets，不发起任何网络请求，
+  因此 TOTP 密钥不会离开设备。
+-->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>账号转移</title>
+<style>
+  body {
+    margin: 0;
+    padding: 16px;
+    background: #ffffff;
+    color: #111111;
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+  .item {
+    margin: 0 auto 20px;
+    padding: 20px 16px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    max-width: 420px;
+  }
+  .caption { font-size: 16px; font-weight: 600; margin-bottom: 4px; word-break: break-all; }
+  .name { font-size: 13px; color: #6b6b6b; margin-bottom: 16px; word-break: break-all; }
+  .qr { display: inline-block; }
+  .hint { font-size: 12px; color: #8a8a8a; margin-top: 12px; }
+  .empty { text-align: center; color: #888888; padding: 40px 0; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="list"><div class="empty">等待数据…</div></div>
+
+<script src="qrcode.min.js"></script>
+<script>
+  /**
+   * 由原生通过 evaluateJavascript 调用，参数为一个 JSON 对象（不是字符串）：
+   * { "items": [ { "caption": "ACME (alice@example.com)", "content": "otpauth://totp/..." } ] }
+   *
+   * 返回是否成功渲染。
+   */
+  function renderQr(payload) {
+    var list = document.getElementById('list');
+    if (!list) return false;
+    list.innerHTML = '';
+
+    var items = (payload && payload.items) ? payload.items : [];
+    if (!items.length) {
+      list.innerHTML = '<div class="empty">没有可导出的账户</div>';
+      return false;
+    }
+
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i] || {};
+      var wrap = document.createElement('div');
+      wrap.className = 'item';
+
+      var caption = document.createElement('div');
+      caption.className = 'caption';
+      // 用 textContent 而非 innerHTML：账户名来自用户输入，避免注入
+      caption.textContent = item.caption || '';
+      wrap.appendChild(caption);
+
+      if (item.name) {
+        var name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = item.name;
+        wrap.appendChild(name);
+      }
+
+      var holder = document.createElement('div');
+      holder.className = 'qr';
+      wrap.appendChild(holder);
+
+      var hint = document.createElement('div');
+      hint.className = 'hint';
+      hint.textContent = '用其他设备的验证器 App 扫描此二维码';
+      wrap.appendChild(hint);
+
+      list.appendChild(wrap);
+
+      try {
+        // size 由原生按内容长短给出：批量码内容长、模块密，需要更大的画布才扫得动
+        var size = (typeof item.size === 'number' && item.size > 0) ? item.size : 240;
+        new QRCode(holder, {
+          text: item.content || '',
+          width: size,
+          height: size,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        holder.textContent = '二维码生成失败';
+      }
+    }
+    return true;
+  }
+</script>
+</body>
+</html>

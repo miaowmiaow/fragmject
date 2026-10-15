@@ -14,7 +14,8 @@ import android.webkit.WebView
  */
 object WebViewCommons {
 
-    private const val ASSET_PREFIX = "file:///android_asset/"
+    /** assets 页面/资源 URL 前缀。拦截器复用同一常量，避免前缀散落多处。 */
+    internal const val ASSET_PREFIX = "file:///android_asset/"
 
     /** 是否为 http/https 链接（可直接用于下载或加载）。 */
     fun isHttpUrl(value: String): Boolean =
@@ -27,12 +28,26 @@ object WebViewCommons {
      * 其余协议（javascript:、content:、其他 file: 路径、自定义 scheme 等）一律拒绝；
      * assets 路径禁止出现 `..` 及其百分号编码，避免越出资源目录。
      */
-    fun isLoadableUrl(value: String): Boolean = isHttpUrl(value) || isBundledAssetUrl(value)
+    fun isLoadableUrl(value: String): Boolean = isHttpUrl(value) || assetPathOf(value) != null
 
-    private fun isBundledAssetUrl(value: String): Boolean {
-        if (!value.startsWith(ASSET_PREFIX)) return false
+    /**
+     * 由 assets URL 解析 assets 内的相对路径——**URL 路径即 assets 相对路径**
+     * （如 `file:///android_asset/html/a.html` → `html/a.html`）。
+     *
+     * 以下情形返回 null：非 assets URL、空路径、绝对路径，
+     * 以及含 `..` 或百分号编码 `..`（`%2e%2e`）的路径——避免越出资源目录。
+     *
+     * 纯字符串判断，便于 JVM 单测；[WebViewAssetInterceptor] 复用同一规则，
+     * 保证「能否加载」与「能否读取」判定一致。
+     */
+    internal fun assetPathOf(value: String): String? {
+        if (!value.startsWith(ASSET_PREFIX)) return null
         val path = value.substring(ASSET_PREFIX.length)
-        return path.isNotEmpty() && !path.contains("..") && !path.contains("%2e", ignoreCase = true)
+            .substringBefore('?')
+            .substringBefore('#')
+        if (path.isBlank() || path.startsWith("/")) return null
+        if (path.contains("..") || path.contains("%2e", ignoreCase = true)) return null
+        return path
     }
 
     /**

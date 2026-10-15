@@ -25,6 +25,18 @@ class ArchitectureTest {
         .filter { it.isMainSource() }
 
     /**
+     * 规则 21 的存量例外白名单：文件名 → 允许的数据层 import。
+     *
+     * 目前仅 `FragmjectApplication`：Coil 的 ImageLoader 需要一个「图片专用」OkHttpClient，
+     * 该实例的 qualifier `@ImageOkHttpClient` 定义在 core:network。彻底消除需把 ImageLoader
+     * 装配下沉到一个同时可见 coil 与 network 的 core 模块，属独立重构，此处先登记锁定。
+     * **禁止新增条目**：新增即视为违规。
+     */
+    private val APP_DATA_IMPORT_ALLOWLIST: Map<String, Set<String>> = mapOf(
+        "FragmjectApplication.kt" to setOf("com.example.fragmject.core.network.di.ImageOkHttpClient"),
+    )
+
+    /**
      * 规则 1：`core:domain` 不得依赖 `data / network / database`。
      * 领域层是纯契约层，只允许依赖 `core:model`。
      */
@@ -367,16 +379,25 @@ class ArchitectureTest {
     }
 
     /**
-     * 规则 17：`core:database` 只允许实现三个零逻辑链 domain 端口。
+     * 规则 17：`core:database` 只允许实现白名单内的零逻辑链 domain 端口。
      *
      * History/Schedule/Theme 三条零逻辑链合并后，database 直接实现 domain 端口
      * （无「data-contract 本地端口 + data-repository 透传」两层中间层）。
-     * 这是**登记过的例外**（见 dependencies-policy.md §6.6），禁止扩散到其它 domain 端口——
-     * 其它端口的实现必须落在 core:data-repository，否则守卫与文档会同时失守。
+     * OtpAccount 同属此类且**必须**落在 database：密钥须经 Keystore 加密
+     * （core:android-platform），而 data-repository 受 R5 约束不得依赖 database，
+     * 加密与 DAO 无法同处一层。
+     *
+     * 这些是**登记过的例外**（见 dependencies-policy.md §6.6），禁止继续扩散到其它
+     * domain 端口——其它端口的实现必须落在 core:data-repository，否则守卫与文档会同时失守。
      */
     @Test
     fun `core database only implements whitelisted domain ports`() {
-        val whitelist = setOf("HistoryRepository", "ScheduleRepository", "ThemeRepository")
+        val whitelist = setOf(
+            "HistoryRepository",
+            "ScheduleRepository",
+            "ThemeRepository",
+            "OtpAccountRepository",
+        )
         productionFiles
             .filter { it.projectPath.contains("/core/database/") }
             .assertFalse(
@@ -496,6 +517,129 @@ class ArchitectureTest {
                 .any { it.contains("runCatching") }
         }.map { it.projectPath }
         assertTrue("以下文件使用了 runCatching，会吞掉协程取消：$offenders", offenders.isEmpty())
+    }
+
+    /**
+     * 规则 20：导航契约必须完整接入「聚合容器 + app 实现」，且接口方法不得带默认实现。
+     *
+     * 契约方法一旦带 `= Unit` 默认实现，新增语义动作时漏改 `AppXxxNavigator` 也能编译通过，
+     * 运行时表现为「点击无反应」。因此：
+     * - 契约接口不得写 `= Unit`（漏实现直接编译失败，覆盖 app 实现与 [Navigators.noop]）；
+     * - 每个 `*Navigator` 都必须在 `Navigators` 聚合体与 `noop()` 中有对应字段
+     *   （漏字段不会被编译器发现，只能由本规则兜底）；
+     * - `AppNavigators.kt` 必须有对应实现类，且经 `@Binds` 装配（装配由 Hilt 编译期校验）。
+     */
+    @Test
+    fun `navigator contract is fully wired`() {
+        val contracts = productionFiles.filter {
+            it.projectPath.contains("/core/navigation-contract/") && it.projectPath.endsWith("Navigator.kt")
+        }
+        assertTrue("契约选择器匹配 0 文件，检查 core/navigation-contract 路径", contracts.size >= 9)
+        val locals = readSource(
+            productionFiles.single { it.projectPath.endsWith("/NavigationCompositionLocals.kt") },
+        )
+        val appNavigators = readSource(
+            productionFiles.single { it.projectPath.endsWith("/AppNavigators.kt") },
+        )
+        contracts.forEach { file ->
+            val contract = file.projectPath.substringAfterLast("/").removeSuffix(".kt")
+            val field = contract.removeSuffix("Navigator").replaceFirstChar { it.lowercase() }
+            val source = readSource(file)
+            org.junit.Assert.assertFalse(
+                "$contract 的方法不得带默认空实现（去掉 `= Unit`，让漏实现变成编译错误）",
+                Regex("""fun \w+\([^)]*\) *= *Unit""").containsMatchIn(source),
+            )
+            assertTrue(
+                "Navigators 聚合体缺少 `$field: $contract` 字段（新增契约需同步 Navigators + noop）",
+                Regex("""val $field: $contract\b""").containsMatchIn(locals),
+            )
+            assertTrue(
+                "Navigators.noop() 缺少 $contract 的空实现",
+                Regex("""$field = object : $contract\b""").containsMatchIn(locals),
+            )
+            assertTrue(
+                "AppNavigators.kt 缺少 App${contract.removeSuffix("Navigator")}Navigator : $contract 实现",
+                Regex("""class App${contract.removeSuffix("Navigator")}Navigator\b[\s\S]*?: $contract\b""")
+                    .containsMatchIn(appNavigators),
+            )
+        }
+    }
+
+    /**
+     * 规则 21：`:app` 生产代码不得引用数据实现层（`core:network` / `core:database` /
+     * `core:data-repository` / `core:data-contract`）。
+     *
+     * app 是组合根，负责 Hilt 聚合而非数据装配：直接引用数据层类型会让「换实现」变成改 app，
+     * 也让 Gradle 白名单（允许 app 依赖 network/database）失去约束意义——Gradle 只能校验
+     * 「声明的边」，校验不了源码 import，故由本规则补位。
+     *
+     * 存量例外（登记制，禁止新增）：[APP_DATA_IMPORT_ALLOWLIST]。
+     */
+    @Test
+    fun `app does not import data implementation layer`() {
+        val dataLayerImport = Regex(
+            """import com\.example\.fragmject\.core\.(?:network|database|data\.repository|data\.contract)\.[\w.]+""",
+        )
+        val appFiles = productionFiles.filter { it.projectPath.contains("/app/") }
+        assertTrue("app 选择器匹配 0 文件，检查 /app/ 路径", appFiles.isNotEmpty())
+        val offenders = appFiles.flatMap { file ->
+            val name = file.projectPath.substringAfterLast("/")
+            val allowlist = APP_DATA_IMPORT_ALLOWLIST[name].orEmpty()
+            dataLayerImport.findAll(readSource(file))
+                .map { it.value.removePrefix("import ") }
+                .filter { it !in allowlist }
+                .map { "$name → $it" }
+                .toList()
+        }
+        assertTrue(
+            "以下 app 源码引用了数据实现层（装配应下沉到对应 core 模块；确需引用请登记进 APP_DATA_IMPORT_ALLOWLIST）：$offenders",
+            offenders.isEmpty(),
+        )
+    }
+
+    /**
+     * 规则 22：`core:designsystem` 只允许是「设计令牌 + 主题」层，不得依赖其它业务/UI 模块。
+     *
+     * 2026-10 边界评审后，designsystem 只剩 `AppColors` / `AppSpacing` / `AppTheme` /
+     * `LocalWindowSizeClass`；`TitleBar` / `BackIcon` / `BottomNavItem` / `NightSwitchButton`
+     * 已迁入 `core:ui`。本规则锁定该边界，防止组件再被塞回设计令牌层（曾有一个 890 行的
+     * 动画控件放在这里）。
+     */
+    @Test
+    fun `core designsystem only depends on nothing but compose`() {
+        val designSystemFiles = productionFiles.filter { it.projectPath.contains("/core/designsystem/") }
+        assertTrue("core/designsystem 选择器匹配 0 文件", designSystemFiles.isNotEmpty())
+        val offenders = designSystemFiles
+            .filter { file ->
+                file.hasImport { imp -> imp.name.startsWith("com.example.fragmject.") }
+            }
+            .map { it.projectPath }
+        assertTrue(
+            "core:designsystem 不得 import 任何项目内模块（$offenders）——它只放颜色/间距/主题",
+            offenders.isEmpty(),
+        )
+    }
+
+    /**
+     * 规则 23：`core:ui` 不得下探数据实现层。
+     *
+     * `core:ui` 依赖 `core:model` / `core:domain` 是登记过的例外（见 Gradle 守卫
+     * `CORE_ALLOWED_DEPENDENCIES`），但**仅此而已**：一旦开始 import 数据实现层，
+     * 通用 UI 组件就会绑死具体数据来源，且会绕过 R1/R5 的分层约束。
+     */
+    @Test
+    fun `core ui does not depend on data implementation`() {
+        productionFiles
+            .filter { it.projectPath.contains("/core/ui/") }
+            .assertFalse(
+                additionalMessage = "core:ui 不得依赖 core:data-repository / network / database（只允许 designsystem / model / domain）",
+            ) { file ->
+                file.hasImport { imp ->
+                    imp.name.startsWith("com.example.fragmject.core.data.") ||
+                        imp.name.startsWith("com.example.fragmject.core.network.") ||
+                        imp.name.startsWith("com.example.fragmject.core.database.")
+                }
+            }
     }
 
     /** 通过项目根目录读取源码文本，兼容 Gradle 以模块目录为工作目录的情况。 */

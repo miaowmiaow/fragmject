@@ -46,7 +46,7 @@ import com.example.fragmject.core.ui.components.TabBar
 import com.example.fragmject.core.ui.components.rememberSwipeBoxControl
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.designsystem.AppColors
-import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.ui.components.TitleBar
 
 @Composable
 fun BrowseHistoryScreen(

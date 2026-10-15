@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.example.fragmject.core.domain.CollectState
-import com.example.fragmject.core.designsystem.TitleBar
+import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
@@ -33,6 +33,7 @@ fun PagingArticleListPage(
     val articleNavigator = LocalNavigators.current.article
     val userNavigator = LocalNavigators.current.user
     val homeNavigator = LocalNavigators.current.home
+    val pictureNavigator = LocalNavigators.current.picture
     val onNavigateUp = LocalOnNavigateUp.current
     val collectInteraction = rememberCollectInteraction(collectState)
     Scaffold(
@@ -58,6 +59,7 @@ fun PagingArticleListPage(
                 onUserClick = { userNavigator.openUserProfile(it) },
                 onFooterClick = { homeNavigator.openSystemTree(it) },
                 onToggleClick = collectInteraction.onToggleClick,
+                onCoverClick = { url -> pictureNavigator.openPicturePreview(listOf(url)) },
             )
         }
     }

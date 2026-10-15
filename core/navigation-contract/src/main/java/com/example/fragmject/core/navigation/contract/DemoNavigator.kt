@@ -9,5 +9,5 @@ package com.example.fragmject.core.navigation.contract
 interface DemoNavigator {
 
     /** 打开组件演示页。 */
-    fun openDemo() = Unit
+    fun openDemo()
 }

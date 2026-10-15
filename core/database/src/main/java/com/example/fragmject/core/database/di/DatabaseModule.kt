@@ -7,6 +7,7 @@ import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.dao.HotKeyDao
 import com.example.fragmject.core.database.dao.KVDao
+import com.example.fragmject.core.database.dao.OtpAccountDao
 import com.example.fragmject.core.database.dao.ProjectTreeDao
 import com.example.fragmject.core.database.dao.TreeDao
 import com.example.fragmject.core.database.dao.UserDao
@@ -56,6 +57,9 @@ object DatabaseModule {
 
     @Provides
     fun provideProjectTreeDao(db: AppDatabase): ProjectTreeDao = db.projectTreeDao()
+
+    @Provides
+    fun provideOtpAccountDao(db: AppDatabase): OtpAccountDao = db.otpAccountDao()
 
     @Provides
     fun provideKVDao(db: KVDatabase): KVDao = db.kvDao()

@@ -9,8 +9,8 @@ package com.example.fragmject.core.navigation.contract
 interface HomeNavigator {
 
     /** 回到首页（Tab 容器根路由）。 */
-    fun openMain() = Unit
+    fun openMain()
 
     /** 打开体系分类文章列表页。 */
-    fun openSystemTree(cid: String) = Unit
+    fun openSystemTree(cid: String)
 }

@@ -1,5 +1,11 @@
 *Read this in [English](README.EN.md)*
 
+## 架构文档
+
+- [分层架构指南](docs/layering.md) —— 模块分层、依赖方向、feature 内部目录约定、守卫规则清单（**新增代码该放哪里**）
+- [导航分层与新增导航指南](docs/navigation.md) —— NavKey、Navigator 契约、注册与跨域跳转
+- [依赖策略与例外管理](dependencies-policy.md) —— 新增模块门槛、core→core 矩阵、例外登记
+
 ## 前言
 刚开始学习 `Kotlin` 其实挺痛苦的，相关的书籍或视频偏向于知识点的讲解，没有完整的项目实操。   
 开源项目业务复杂，代码层层封装，用来上手实在不合适，于是便有了 `fragmject` 项目。   

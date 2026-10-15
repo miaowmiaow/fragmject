@@ -9,12 +9,14 @@ import androidx.sqlite.SQLiteConnection
 import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.dao.HotKeyDao
+import com.example.fragmject.core.database.dao.OtpAccountDao
 import com.example.fragmject.core.database.dao.ProjectTreeDao
 import com.example.fragmject.core.database.dao.TreeDao
 import com.example.fragmject.core.database.dao.UserDao
 import com.example.fragmject.core.database.model.HistoryEntity
 import com.example.fragmject.core.database.model.HotKeyEntity
 import com.example.fragmject.core.database.model.HomeNavEntity
+import com.example.fragmject.core.database.model.OtpAccountEntity
 import com.example.fragmject.core.database.model.ProjectTreeEntity
 import com.example.fragmject.core.database.model.TreeEntity
 import com.example.fragmject.core.database.model.UserEntity
@@ -27,8 +29,9 @@ import com.example.fragmject.core.database.model.UserEntity
         HomeNavEntity::class,
         HotKeyEntity::class,
         ProjectTreeEntity::class,
+        OtpAccountEntity::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun homeNavDao(): HomeNavDao
     abstract fun hotKeyDao(): HotKeyDao
     abstract fun projectTreeDao(): ProjectTreeDao
+    abstract fun otpAccountDao(): OtpAccountDao
 
     companion object {
 
@@ -287,6 +291,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * 新增 otp_account 表：Authenticator（TOTP）账户。
+         *
+         * `secret_cipher` 只存密文（IV||cipherText，见 `AesGcmCipher`），明文密钥不落库。
+         */
+        private val MIGRATION_14_15 = object : Migration(14, 15) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                executeSql(
+                    connection, """
+                    CREATE TABLE IF NOT EXISTS `otp_account` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `issuer` TEXT NOT NULL,
+                        `account_name` TEXT NOT NULL,
+                        `secret_cipher` BLOB NOT NULL,
+                        `algorithm` INTEGER NOT NULL,
+                        `digits` INTEGER NOT NULL,
+                        `period` INTEGER NOT NULL,
+                        `type` INTEGER NOT NULL,
+                        `counter` INTEGER NOT NULL,
+                        `sort_order` INTEGER NOT NULL,
+                        `created_at` INTEGER NOT NULL
+                    )
+                """.trimIndent()
+                )
+                executeSql(
+                    connection,
+                    "CREATE INDEX IF NOT EXISTS `index_otp_account_sort_order` ON `otp_account` (`sort_order`)"
+                )
+            }
+        }
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -309,6 +344,7 @@ abstract class AppDatabase : RoomDatabase() {
             MIGRATION_11_12,
             MIGRATION_12_13,
             MIGRATION_13_14,
+            MIGRATION_14_15,
         )
 
         /** 构建数据库实例（由 Hilt DatabaseModule 调用并持有单例）。 */

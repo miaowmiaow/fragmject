@@ -1,7 +1,6 @@
 plugins {
     id("fragmject.android.library")
     id("fragmject.android.compose")
-    id("fragmject.android.hilt")
 }
 
 android {
@@ -12,9 +11,11 @@ android {
 
 dependencies {
     api(project(":core:designsystem"))
-    implementation(project(":core:model"))
-    // 收藏交互封装需引用 domain 的 CollectState 契约；domain 为零 Android 依赖的纯契约层
-    implementation(project(":core:domain"))
+    // 公开签名里出现了 model/domain 的类型（ArticleFeedMapper 的 Article、
+    // CollectInteraction 的 CollectState），因此用 api 透传，与 core:domain 的
+    // `api(core:model)` 策略一致，避免消费方靠传递路径编译。
+    api(project(":core:model"))
+    api(project(":core:domain"))
     implementation(libs.kotlinx.coroutines)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.coil.compose)

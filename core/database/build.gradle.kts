@@ -12,6 +12,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:android-platform"))
     implementation(project(":core:data-contract"))
     implementation(project(":core:domain"))
     implementation(project(":core:model"))

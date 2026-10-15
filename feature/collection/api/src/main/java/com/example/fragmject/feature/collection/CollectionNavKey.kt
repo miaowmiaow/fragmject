@@ -15,5 +15,6 @@ object MyCollectNavKey : RequiresAuth, DetailPaneNavKey
 @Serializable
 object MyShareNavKey : RequiresAuth, DetailPaneNavKey
 
+/** 新建分享：需要登录，但走全屏页（**故意不**实现 DetailPaneNavKey）。 */
 @Serializable
 object ShareArticleNavKey : RequiresAuth

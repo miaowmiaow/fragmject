@@ -26,7 +26,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.navigation3.ui)
     implementation(libs.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.paging.runtime)

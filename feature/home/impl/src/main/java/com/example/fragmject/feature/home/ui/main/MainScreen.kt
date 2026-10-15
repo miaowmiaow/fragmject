@@ -59,12 +59,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.core.ui.R
+import com.example.fragmject.feature.home.impl.R
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.LoopVerticalPager
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.model.Tree
-import com.example.fragmject.core.designsystem.BottomNavItem
+import com.example.fragmject.core.ui.components.BottomNavItem
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.navigation.contract.LocalNavigators

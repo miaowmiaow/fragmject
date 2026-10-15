@@ -1,6 +1,7 @@
 package com.example.fragmject.feature.picture.nav
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
@@ -43,21 +44,22 @@ object PictureNavContentContributor : NavContentContributor {
                     pictureNavigator.onPictureSelected(emptyList())
                     onNavigateUp()
                 },
-                onPreview = { uris ->
-                    // 进入预览前先按 uris 解析出 MediaItem 快照，预览页只读快照
-                    pictureFlowState.startPreview(uris)
-                    pictureNavigator.openPicturePreview(uris)
-                },
+                onPreview = { uris -> pictureNavigator.openPicturePreviewForSelection(uris) },
                 flowState = pictureFlowState,
             )
         }
-        registry.register<PicturePreviewNavKey> { _ ->
+        registry.register<PicturePreviewNavKey> { navKey ->
             val pictureFlowState = rememberPictureFlowState()
             val pictureNavigator = LocalNavigators.current.picture
             val onNavigateUp = LocalOnNavigateUp.current
+            // 预览快照统一在这里解析（调用方只传 uri 列表，无需接触 PictureFlowState）：
+            // 选图流程传的是本地媒体 uri，信息流封面传的是网络 URL，两者都能解析出 MediaItem。
+            LaunchedEffect(navKey) { pictureFlowState.startPreview(navKey.uris) }
             PicturePreviewScreen(
-                mode = PreviewMode.SELECT,
+                // 选图态 = SELECT（带缩略图条、选择框与编辑入口）；纯看图 = NORM，只保留缩放/滑动
+                mode = if (navKey.selectable) PreviewMode.SELECT else PreviewMode.NORM,
                 previewPosition = 0,
+                editable = navKey.selectable,
                 onConfirm = { onNavigateUp() },
                 onDismiss = { onNavigateUp() },
                 onOpenEditor = { uri ->

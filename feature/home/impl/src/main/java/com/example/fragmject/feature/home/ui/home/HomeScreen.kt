@@ -24,7 +24,7 @@ import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
 import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
-import com.example.fragmject.feature.home.components.BannerPager
+import com.example.fragmject.feature.home.ui.home.BannerPager
 
 @Composable
 fun HomeScreen(
@@ -35,6 +35,10 @@ fun HomeScreen(
     val onArticleClick = remember(navigators) { { url: String -> navigators.article.openArticle(url) } }
     val onAuthorClick = remember(navigators) { { userId: String -> navigators.user.openUserProfile(userId) } }
     val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
+    // 点封面开大图预览：网络图，纯看图（不可编辑）
+    val onCoverClick = remember(navigators) {
+        { url: String -> navigators.picture.openPicturePreview(listOf(url)) }
+    }
     val banners by viewModel.banners.collectAsStateWithLifecycle()
     val topArticles by viewModel.topArticles.collectAsStateWithLifecycle()
     val pagingItems = viewModel.pagingFlow.collectAsLazyPagingItems()
@@ -74,6 +78,7 @@ fun HomeScreen(
                     onUserClick = onAuthorClick,
                     onFooterClick = onChapterClick,
                     onToggleClick = collectInteraction.onToggleClick,
+                    onCoverClick = onCoverClick,
                 )
             }
         },
@@ -85,6 +90,7 @@ fun HomeScreen(
             onUserClick = onAuthorClick,
             onFooterClick = onChapterClick,
             onToggleClick = collectInteraction.onToggleClick,
+            onCoverClick = onCoverClick,
         )
     }
 }

@@ -31,7 +31,8 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.fragmject.core.ui.R
+import com.example.fragmject.feature.user.impl.R
+import com.example.fragmject.core.model.MyCoin
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.designsystem.AppTheme
@@ -151,3 +152,17 @@ fun MyCoinScreen(
 fun MyCoinScreenPreview() {
     AppTheme { MyCoinScreen() }
 }
+/**
+ * MyCoin 的 UI 展示扩展：从 desc 中解析出时间与标题。
+ *
+ * 只在本 Screen 内使用，故为 private（原先是独立文件里的 public 扩展，
+ * 会让「只服务于一个页面」的格式化逻辑看起来像可复用工具）。
+ * 保持在 feature:user 的 UI 层（而非 core:model），避免领域模型承载字符串解析展示逻辑。
+ */
+private fun MyCoin.getTime(): String = desc.substring(0, secondSpace())
+
+private fun MyCoin.getTitle(): String = desc.substring(secondSpace() + 1)
+
+private fun MyCoin.firstSpace(): Int = desc.indexOf(" ")
+
+private fun MyCoin.secondSpace(): Int = desc.indexOf(" ", firstSpace() + 1)

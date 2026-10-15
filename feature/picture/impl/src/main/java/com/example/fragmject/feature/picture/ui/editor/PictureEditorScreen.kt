@@ -59,7 +59,6 @@ import com.example.fragmject.core.image.editor.components.EditorMode
 import com.example.fragmject.core.image.editor.components.PictureEditorCanvas
 import com.example.fragmject.core.image.editor.components.rememberPictureEditorState
 import com.example.fragmject.core.image.editor.model.StickerAttrs
-import com.example.fragmject.feature.picture.ui.clip.PictureClipScreen
 import com.example.fragmject.feature.picture.utils.ColorUtils
 
 @Composable
@@ -123,7 +122,8 @@ fun PictureEditorScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .height(45.dp)
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -141,7 +141,8 @@ fun PictureEditorScreen(
                                 produce = { state.saveBitmap() },
                                 onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
                                 onError = {
-                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT)
+                                        .show()
                                 },
                             )
                         }
@@ -257,22 +258,26 @@ fun PictureEditorScreen(
                                             showMosaicUndo = false
                                             state.setMode(EditorMode.GRAFFITI)
                                         }
+
                                         1 -> {
                                             showColorBar = false
                                             showMosaicUndo = false
                                             stickerLauncher.launch("image/*")
                                         }
+
                                         2 -> {
                                             showColorBar = false
                                             showMosaicUndo = false
                                             showTextSheet = true
                                         }
+
                                         3 -> {
                                             showColorBar = false
                                             showMosaicUndo = false
                                             clipBitmap = state.saveBitmap()
                                             showClipScreen = true
                                         }
+
                                         4 -> {
                                             showColorBar = false
                                             showMosaicUndo = !showMosaicUndo
@@ -314,7 +319,7 @@ fun PictureEditorScreen(
         // 裁剪子页面
         clipBitmap?.let { bmp ->
             if (showClipScreen) {
-                PictureClipScreen(
+                PictureClipContent(
                     bitmap = bmp,
                     viewModel = viewModel,
                     onFinish = { path, uri ->

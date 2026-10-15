@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,9 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import com.example.fragmject.core.ui.R
 
 /**
  * 网页加载进度条：弱化轨道 + 主体进度 + 头部渐变光晕 + 高亮点。
@@ -32,7 +31,7 @@ fun WebProgressBar(
     progress: Float,
     modifier: Modifier = Modifier,
 ) {
-    val progressColor = colorResource(R.color.theme_orange)
+    val progressColor = MaterialTheme.colorScheme.secondary
     // 进度值平滑插值，避免 onProgressChanged 的离散跳变；完成时稍快收尾
     val animatedProgress by animateFloatAsState(
         targetValue = progress,

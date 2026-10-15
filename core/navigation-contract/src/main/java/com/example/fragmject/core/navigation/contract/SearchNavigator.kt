@@ -9,5 +9,5 @@ package com.example.fragmject.core.navigation.contract
 interface SearchNavigator {
 
     /** 打开搜索页并携带关键字。 */
-    fun openSearch(key: String) = Unit
+    fun openSearch(key: String)
 }

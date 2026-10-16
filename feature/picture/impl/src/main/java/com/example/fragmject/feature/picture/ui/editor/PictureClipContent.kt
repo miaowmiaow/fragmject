@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,15 +31,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.image.editor.components.PictureClipCanvas
 import com.example.fragmject.core.image.editor.components.rememberPictureClipState
-import com.example.fragmject.feature.picture.ui.editor.PictureEditorViewModel
 
 @Composable
 fun PictureClipContent(
@@ -58,7 +58,7 @@ fun PictureClipContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AppColors.editorBackground)
     ) {
         // 裁剪画布
         PictureClipCanvas(
@@ -72,7 +72,7 @@ fun PictureClipContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.6f))
+                .background(AppColors.editorBackground.copy(alpha = 0.6f))
                 .windowInsetsPadding(WindowInsets.systemBars)
                 .align(Alignment.TopCenter)
         ) {
@@ -85,21 +85,21 @@ fun PictureClipContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onDismiss) {
-                    Text("取消", color = Color.White, fontSize = 16.sp)
+                    Text("取消", color = AppColors.editorOnBackground, fontSize = 16.sp)
                 }
                 Row {
                     IconButton(onClick = { state.rotate() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.RotateRight,
                             contentDescription = "旋转",
-                            tint = Color.White
+                            tint = AppColors.editorOnBackground
                         )
                     }
                     IconButton(onClick = { state.reset() }) {
                         Icon(
                             Icons.Filled.Refresh,
                             contentDescription = "重置",
-                            tint = Color.White
+                            tint = AppColors.editorOnBackground
                         )
                     }
                 }
@@ -122,7 +122,7 @@ fun PictureClipContent(
                     },
                     enabled = !isSaving
                 ) {
-                    Text("确定", color = Color.White, fontSize = 16.sp)
+                    Text("确定", color = AppColors.editorOnBackground, fontSize = 16.sp)
                 }
             }
         }
@@ -131,14 +131,14 @@ fun PictureClipContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.6f))
+                .background(AppColors.editorBackground.copy(alpha = 0.6f))
                 .windowInsetsPadding(WindowInsets.systemBars)
                 .align(Alignment.BottomCenter)
         ) {
             Text(
                 "拖动边框调整裁剪区域",
                 modifier = Modifier.padding(16.dp),
-                color = Color.White.copy(alpha = 0.6f),
+                color = AppColors.editorOnBackground.copy(alpha = 0.6f),
                 fontSize = 13.sp
             )
         }
@@ -148,13 +148,16 @@ fun PictureClipContent(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                    .background(AppColors.editorBackground.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Color.White)
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        trackColor = MaterialTheme.colorScheme.secondary
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("正在保存...", color = Color.White)
+                    Text("正在保存...", color = AppColors.editorOnBackground)
                 }
             }
         }

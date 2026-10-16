@@ -1,7 +1,6 @@
 package com.example.fragmject.feature.demo.ui.nestedscroll
 
 import android.annotation.SuppressLint
-import androidx.annotation.OptIn
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,9 +33,14 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppColors
-import com.example.fragmject.core.ui.components.SwipeRefreshBox
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.TabBar
+import com.example.fragmject.core.ui.components.contentPhase
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -49,11 +53,12 @@ fun NestedScroll2Screen() {
 
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    val data = mutableListOf<String>().apply {
-        for (i in 0 until 100) {
-            add("item $i")
-        }
+    val data = remember {
+        List(100) { "item $it" }
     }
+    val pagingItems = remember(data) {
+        flowOf(PagingData.from(data))
+    }.collectAsLazyPagingItems()
 
     var boxHeightDp by remember { mutableStateOf(0.dp) }
     val topBarHeightDp = 100.dp
@@ -161,30 +166,32 @@ fun NestedScroll2Screen() {
                     translationY = tabBarHeightPx + (topBarHeightPx * targetPercent.value)
                 },
         ) { _ ->
-            SwipeRefreshBox(
-                items = data,
-                isRefreshing = false,
-                hasMore = false,
-                isFinishing = true,
-                onRefresh = {},
-                onLoad = {},
-                enablePullRefresh = headerFullyExpanded,
-                key = { _, item -> item },
-            ) { _, item ->
-                Row(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = item,
-                        fontSize = 14.sp,
-                        color = AppColors.orange,
-                    )
+            ContentStateBox(
+                phase = pagingItems.contentPhase(),
+                modifier = Modifier.fillMaxSize(),
+                onRetry = { pagingItems.retry() },
+            ) {
+                PagingSwipeRefreshBox(
+                    pagingItems = pagingItems,
+                    modifier = Modifier.fillMaxSize(),
+                    enablePullRefresh = headerFullyExpanded,
+                    key = { it },
+                ) { item ->
+                    Row(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = item,
+                            fontSize = 14.sp,
+                            color = AppColors.orange,
+                        )
+                    }
+                    HorizontalDivider()
                 }
-                HorizontalDivider()
             }
         }
     }

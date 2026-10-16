@@ -35,8 +35,11 @@ import com.example.fragmject.core.ui.utils.AvatarUtils
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.designsystem.AppColors
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.ui.components.TitleBar
 
 @Composable
@@ -68,45 +71,54 @@ fun RankScreen(
             )
         },
     ) { innerPadding ->
-        PagingSwipeRefreshBox(
-            pagingItems = pagingItems,
+        ContentStateBox(
+            phase = pagingItems.contentPhase(),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            key = { it.userId },
-        ) { item ->
-            Row(
+            minShowMillis = NAV_TRANSITION_DURATION_MS,
+            onRetry = { pagingItems.retry() },
+        ) {
+            PagingSwipeRefreshBox(
+                pagingItems = pagingItems,
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = AvatarUtils.avatarResId(item.userId)),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                        .clickable { userNavigator.openUserProfile(item.userId) }
-                            .size(30.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                key = { it.userId },
+            ) { item ->
+                Row(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = AvatarUtils.avatarResId(item.userId)),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable { userNavigator.openUserProfile(item.userId) }
+                                .size(30.dp)
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = item.username,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    }
                     Text(
-                        text = item.username,
+                        text = item.coinCount,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = AppColors.orange,
                     )
                 }
-                Text(
-                    text = item.coinCount,
-                    fontSize = 14.sp,
-                    color = AppColors.orange,
-                )
+                HorizontalDivider()
             }
-            HorizontalDivider()
         }
     }
 }

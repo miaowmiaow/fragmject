@@ -78,7 +78,7 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 |  ├── navigation-runtime                           navigation capability (Navigation 3 type-safe routes)
 |  ├── network                                      network layer (Retrofit + OkHttp)
 |  ├── qrscanner                                    scanning capability (CameraX / ML Kit)
-|  ├── ui                                           UI component library (FeedCard / SwipeRefreshBox etc.)
+|  ├── ui                                           UI component library (FeedCard / PagingSwipeRefreshBox etc.)
 |  └── webview                                      WebView capability (pooling / caching / CookieStore)
 | 
 ├── feature                                      feature modules (each contains api / impl submodules)

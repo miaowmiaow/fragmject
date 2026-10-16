@@ -13,13 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 /**
- * 非列表内容的首屏骨架屏：「标题条 + 通栏条目条」。
+ * 非列表内容的首屏骨架屏：「标题条 + 通栏横条行」。
  *
  * 整屏只创建一个 shimmer 动画（[rememberShimmerProgress]），所有骨架块共享进度并各自带
  * 相位偏移（[shimmerPhaseOf]）保留错落感。
  */
 @Composable
-fun SkeletonScreen(
+fun SkeletonRows(
     modifier: Modifier = Modifier,
     rowCount: Int = 8,
     contentPadding: PaddingValues = PaddingValues(10.dp),

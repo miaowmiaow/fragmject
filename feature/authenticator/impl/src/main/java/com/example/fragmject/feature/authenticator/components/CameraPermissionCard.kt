@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +47,8 @@ fun CameraPermissionCard(
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = AuthenticatorColors.accent,
-                contentColor = Color.White,
+                // accent 是浅色强调色，内容色须用深字浅底的 onAccent（勿用 Color.White，对比度不足）
+                contentColor = AuthenticatorColors.onAccent,
             ),
             modifier = Modifier.fillMaxWidth(),
         ) { Text("授予相机权限") }

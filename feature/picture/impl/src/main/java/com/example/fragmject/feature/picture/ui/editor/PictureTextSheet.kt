@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
+import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.image.editor.model.StickerAttrs
 import com.example.fragmject.feature.picture.utils.ColorUtils
 
@@ -62,7 +63,7 @@ fun PictureTextSheet(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AppColors.editorBackground)
             .windowInsetsPadding(WindowInsets.systemBars)
             .imePadding()
             .padding(16.dp)
@@ -74,7 +75,7 @@ fun PictureTextSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextButton(onClick = onDismiss) {
-                Text("返回", color = Color.White, fontSize = 16.sp)
+                Text("返回", color = AppColors.editorOnBackground, fontSize = 16.sp)
             }
             TextButton(
                 onClick = {
@@ -99,7 +100,7 @@ fun PictureTextSheet(
                 },
                 enabled = text.isNotBlank()
             ) {
-                Text("完成", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("完成", color = AppColors.editorOnBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -124,7 +125,7 @@ fun PictureTextSheet(
                     if (text.isEmpty()) {
                         Text(
                             "请输入文字...",
-                            color = Color.White.copy(alpha = 0.4f),
+                            color = AppColors.editorOnBackground.copy(alpha = 0.4f),
                             fontSize = 24.sp
                         )
                     }
@@ -151,7 +152,7 @@ fun PictureTextSheet(
                         .background(Color(colorInt))
                         .border(
                             if (isSelected) 3.dp else 0.dp,
-                            Color.White,
+                            AppColors.editorOnBackground,
                             CircleShape
                         )
                         .clickable { selectedColorIndex = index }

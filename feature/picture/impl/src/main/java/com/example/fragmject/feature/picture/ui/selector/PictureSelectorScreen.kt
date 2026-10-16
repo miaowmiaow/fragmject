@@ -179,14 +179,14 @@ fun PictureSelectorScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black)
+                    .background(AppColors.editorBackground)
                     .windowInsetsPadding(WindowInsets.systemBars),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     "相册加载失败",
-                    color = Color.White,
+                    color = AppColors.editorOnBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -202,7 +202,7 @@ fun PictureSelectorScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black)
+                    .background(AppColors.editorBackground)
                     .windowInsetsPadding(WindowInsets.systemBars),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -211,12 +211,12 @@ fun PictureSelectorScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回",
-                        tint = Color.White
+                        tint = AppColors.editorOnBackground
                     )
                 }
                 Text(
                     "需要访问您的相册",
-                    color = Color.White,
+                    color = AppColors.editorOnBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -235,7 +235,7 @@ fun PictureSelectorScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black)
+                    .background(AppColors.editorBackground)
                     .windowInsetsPadding(WindowInsets.systemBars)
             ) {
                 // 顶部栏
@@ -252,7 +252,7 @@ fun PictureSelectorScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回",
-                            tint = Color.White
+                            tint = AppColors.editorOnBackground
                         )
                     }
 
@@ -264,14 +264,14 @@ fun PictureSelectorScreen(
                         ) {
                             Text(
                                 currAlbumName.ifEmpty { "相册" },
-                                color = Color.White,
+                                color = AppColors.editorOnBackground,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
                             )
                             Icon(
                                 Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = AppColors.editorOnBackground,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -284,12 +284,12 @@ fun PictureSelectorScreen(
                             albumResult.forEach { album ->
                                 DropdownMenuItem(
                                     colors = MenuDefaults.itemColors(
-                                        textColor = Color.White
+                                        textColor = AppColors.editorOnBackground
                                     ),
                                     text = {
                                         Text(
                                             "${album.name} (${album.size})",
-                                            color = Color.White
+                                            color = AppColors.editorOnBackground
                                         )
                                     },
                                     onClick = {
@@ -346,7 +346,7 @@ fun PictureSelectorScreen(
                             Icon(
                                 Icons.Filled.CameraAlt,
                                 contentDescription = "拍照",
-                                tint = Color.White,
+                                tint = AppColors.editorOnBackground,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
@@ -378,7 +378,7 @@ fun PictureSelectorScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .background(Color.White.copy(alpha = 0.3f))
+                                        .background(AppColors.editorOnBackground.copy(alpha = 0.3f))
                                 )
                             }
 
@@ -395,14 +395,14 @@ fun PictureSelectorScreen(
                                     )
                                     .then(
                                         if (isSelected) Modifier
-                                        else Modifier.border(2.dp, Color.White, CircleShape)
+                                        else Modifier.border(2.dp, AppColors.editorOnBackground, CircleShape)
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (isSelected) {
                                     Text(
                                         selectNum.toString(),
-                                        color = Color.White,
+                                        color = AppColors.editorOnBackground,
                                         fontSize = 12.sp
                                     )
                                 }
@@ -412,13 +412,13 @@ fun PictureSelectorScreen(
                             if (media.longImage() || media.gifImage()) {
                                 Text(
                                     text = if (media.longImage()) "长图" else "动图",
-                                    color = Color.White,
+                                    color = AppColors.editorOnBackground,
                                     fontSize = 10.sp,
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
                                         .padding(4.dp)
                                         .background(
-                                            Color.Black.copy(alpha = 0.5f),
+                                            AppColors.editorBackground.copy(alpha = 0.5f),
                                             RoundedCornerShape(2.dp)
                                         )
                                         .padding(horizontal = 4.dp, vertical = 1.dp)
@@ -436,11 +436,11 @@ fun PictureSelectorScreen(
                 onClick = { onPreview(selectedUris) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(AppColors.editorBackground.copy(alpha = 0.6f))
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .align(Alignment.BottomCenter)
             ) {
-                Text("预览", color = Color.White, fontSize = 14.sp)
+                Text("预览", color = AppColors.editorOnBackground, fontSize = 14.sp)
             }
         }
     }

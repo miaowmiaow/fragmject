@@ -57,13 +57,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.feature.search.impl.R
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
 import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ClearTextField
-import com.example.fragmject.core.ui.components.SkeletonContent
+import com.example.fragmject.core.ui.components.ContentPhase
+import com.example.fragmject.core.ui.components.SkeletonRows
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -83,6 +87,13 @@ fun SearchScreen(
     val isHotKeyLoading by searchViewModel.isHotKeyLoading.collectAsStateWithLifecycle()
     val hotKeyResult by searchViewModel.hotKeyResult.collectAsStateWithLifecycle()
     val searchHistoryResult by searchViewModel.searchHistoryResult.collectAsStateWithLifecycle()
+    val hotKeyError by searchViewModel.hotKeyError.collectAsStateWithLifecycle()
+    val hotKeyPhase = when {
+        hotKeyError.isNotBlank() -> ContentPhase.Error
+        isHotKeyLoading -> ContentPhase.Loading
+        hotKeyResult.isEmpty() -> ContentPhase.Empty
+        else -> ContentPhase.Content
+    }
     val pagingItems = searchViewModel.pagingFlow.collectAsLazyPagingItems()
     val collectInteraction = rememberCollectInteraction(searchViewModel.collectState)
     var searchText by rememberSaveable { mutableStateOf(key) }
@@ -180,9 +191,14 @@ fun SearchScreen(
             }
         },
     ) { innerPadding ->
-        SkeletonContent(isLoading = isHotKeyLoading) {
-            Column(modifier = Modifier.padding(innerPadding)) {
-                if (!isShowingSearchResults) {
+        Column(modifier = Modifier.padding(innerPadding)) {
+            if (!isShowingSearchResults) {
+                ContentStateBox(
+                    phase = hotKeyPhase,
+                    loadingContent = { SkeletonRows(it) },
+                    emptyContent = { },
+                    onRetry = searchViewModel::retryHotKey,
+                ) {
                     Text(
                         text = "大家都在搜",
                         modifier = Modifier.padding(15.dp),
@@ -216,52 +232,59 @@ fun SearchScreen(
                             }
                         }
                     }
-                    if (searchHistoryResult.isNotEmpty()) {
-                        Text(
-                            text = "历史搜索",
-                            modifier = Modifier.padding(15.dp),
-                            fontSize = 16.sp,
-                        )
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(1.dp),
-                        ) {
-                            itemsIndexed(
-                                searchHistoryResult,
-                                key = { _, item -> item.id }
-                            ) { _, item ->
-                                Row(
+                }
+                if (searchHistoryResult.isNotEmpty()) {
+                    Text(
+                        text = "历史搜索",
+                        modifier = Modifier.padding(15.dp),
+                        fontSize = 16.sp,
+                    )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(1.dp),
+                    ) {
+                        itemsIndexed(
+                            searchHistoryResult,
+                            key = { _, item -> item.id }
+                        ) { _, item ->
+                            Row(
+                                modifier = Modifier
+                                    .clickable {
+                                        focusManager.clearFocus()
+                                        searchText = item.value
+                                        searchViewModel.submitSearch(searchText)
+                                    }
+                                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                                    .height(45.dp)
+                                    .padding(horizontal = 15.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = item.value,
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 14.sp,
+                                )
+                                Icon(
+                                    painter = painterResource(R.mipmap.ic_delete),
+                                    contentDescription = null,
                                     modifier = Modifier
                                         .clickable {
-                                            focusManager.clearFocus()
-                                            searchText = item.value
-                                            searchViewModel.submitSearch(searchText)
+                                            searchViewModel.deleteHistory(item)
                                         }
-                                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                                        .height(45.dp)
-                                        .padding(horizontal = 15.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = item.value,
-                                        modifier = Modifier.weight(1f),
-                                        fontSize = 14.sp,
-                                    )
-                                    Icon(
-                                        painter = painterResource(R.mipmap.ic_delete),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .clickable {
-                                                searchViewModel.deleteHistory(item)
-                                            }
-                                            .size(30.dp)
-                                            .padding(10.dp, 5.dp, 0.dp, 5.dp),
-                                    )
-                                }
+                                        .size(30.dp)
+                                        .padding(10.dp, 5.dp, 0.dp, 5.dp),
+                                )
                             }
                         }
                     }
-                } else {
+                }
+            } else {
+                ContentStateBox(
+                    phase = pagingItems.contentPhase(),
+                    modifier = Modifier.fillMaxSize(),
+                    minShowMillis = NAV_TRANSITION_DURATION_MS,
+                    onRetry = { pagingItems.retry() },
+                ) {
                     PagingSwipeRefreshBox(
                         pagingItems = pagingItems,
                         modifier = Modifier.fillMaxSize(),

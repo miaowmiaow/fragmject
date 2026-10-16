@@ -5,7 +5,9 @@ import com.example.fragmject.core.database.dao.TreeDao
 import com.example.fragmject.core.database.model.toDomain
 import com.example.fragmject.core.database.model.toEntity
 import com.example.fragmject.core.model.Tree
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +27,10 @@ class SystemTreeLocalDataSourceImpl @Inject constructor(
     }
 
     override fun observeSystemTree(): Flow<List<Tree>> =
-        treeDao.getByCacheKey(KEY_TREE).map { entities -> entities.map { it.toDomain() } }
+        treeDao.getByCacheKey(KEY_TREE)
+            .map { entities -> entities.map { it.toDomain() } }
+            // toDomain 内含 Gson 反序列化（childrenJson），放后台线程，避免阻塞主线程
+            .flowOn(Dispatchers.Default)
 
     override suspend fun saveSystemTree(items: List<Tree>) {
         treeDao.replaceAll(

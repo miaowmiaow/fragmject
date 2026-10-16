@@ -6,26 +6,20 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.fragmject.core.domain.repository.SearchRepository
-import com.example.fragmject.core.domain.repository.SystemRepository
 import com.example.fragmject.core.domain.result.DomainResult
-import com.example.fragmject.core.domain.usecase.MainHeaderAggregateUseCase
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
-import com.example.fragmject.core.model.Tree
 import com.example.fragmject.feature.home.MainDispatcherRule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * [MainViewModel] 测试：验证 viewModelScope + Dispatchers.Main 被 [MainDispatcherRule]
- * 接管后，init 中的 Room Flow collect 与网络刷新能正确驱动 UiState。
- *
- * 这是 Phase 5 引入 kotlinx-coroutines-test 后解锁的首个 ViewModel 层测试。
+ * [MainViewModel] 测试：热词为 Room 唯一数据源，验证 observe 流驱动 hotKeys，
+ * 以及网络刷新失败时的静默降级（保留缓存、不进入错误态）。
  */
 class MainViewModelTest {
 
@@ -33,80 +27,37 @@ class MainViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun `init - collects hot keys and system tree`() = runTest {
-        val navigationRepo = FakeSystemRepository(trees = listOf(Tree(id = "1", name = "体系")))
+    fun `init - collects hot keys from room`() = runTest {
         val searchRepo = FakeSearchRepository(hotKeys = listOf(HotKey(name = "问答")))
 
-        val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
+        val viewModel = MainViewModel(searchRepo)
 
-        val state = viewModel.uiState.value as MainUiState.Success
-        assertEquals(1, state.treeResult.size)
-        assertEquals("体系", state.treeResult[0].name)
-        assertEquals(1, state.hotKeyResult.size)
-        assertEquals("问答", state.hotKeyResult[0].name)
-        // 刷新完成后 isLoading 应被置为 false
-        assertFalse(state.isLoading)
+        assertEquals(1, viewModel.hotKeys.value.size)
+        assertEquals("问答", viewModel.hotKeys.value[0].name)
     }
 
     @Test
-    fun `init - refresh failure still clears loading`() = runTest {
-        val navigationRepo = FakeSystemRepository(refreshTreeResult = DomainResult.Failure("500", "boom"))
-        val searchRepo = FakeSearchRepository()
-
-        val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
-
-        val state = viewModel.uiState.value as MainUiState.Error
-        assertEquals("boom", state.message)
-        assertFalse(viewModel.uiState.value.isLoading)
-    }
-
-    @Test
-    fun `retry after failure restores unchanged cached data`() = runTest {
-        val navigationRepo = FakeSystemRepository(
-            trees = listOf(Tree(id = "1", name = "体系")),
-            refreshTreeResult = DomainResult.Failure("500", "boom"),
+    fun `init - refresh failure keeps cached hot keys`() = runTest {
+        val searchRepo = FakeSearchRepository(
+            hotKeys = listOf(HotKey(name = "问答")),
+            refreshHotKeyResult = DomainResult.Failure("500", "boom"),
         )
-        val searchRepo = FakeSearchRepository(hotKeys = listOf(HotKey(name = "问答")))
-        val viewModel = MainViewModel(MainHeaderAggregateUseCase(navigationRepo, searchRepo))
-        assertEquals("boom", (viewModel.uiState.value as MainUiState.Error).message)
 
-        navigationRepo.refreshTreeResult = DomainResult.Success(Unit)
-        viewModel.retry()
+        val viewModel = MainViewModel(searchRepo)
 
-        val state = viewModel.uiState.value as MainUiState.Success
-        assertEquals("体系", state.treeResult.single().name)
-        assertEquals("问答", state.hotKeyResult.single().name)
-        assertFalse(state.isLoading)
+        // 刷新失败静默降级：缓存热词保留，不进错误态
+        assertEquals("问答", viewModel.hotKeys.value.single().name)
     }
-}
-
-private class FakeSystemRepository(
-    trees: List<Tree> = emptyList(),
-    var refreshTreeResult: DomainResult<Unit> = DomainResult.Success(Unit),
-) : SystemRepository {
-    private val treeFlow = MutableStateFlow(trees)
-
-    override fun observeSystemTree(): Flow<List<Tree>> = treeFlow
-    override suspend fun refreshSystemTree(): DomainResult<Unit> = refreshTreeResult
-    override fun getSystemPagingData(cid: String): Flow<PagingData<Article>> = Pager(
-        config = PagingConfig(pageSize = 20),
-        pagingSourceFactory = {
-            object : PagingSource<Int, Article>() {
-                override fun getRefreshKey(state: PagingState<Int, Article>): Int? = null
-                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Article> =
-                    LoadResult.Page(emptyList(), prevKey = null, nextKey = null)
-            }
-        },
-    ).flow
 }
 
 private class FakeSearchRepository(
     hotKeys: List<HotKey> = emptyList(),
+    var refreshHotKeyResult: DomainResult<Unit> = DomainResult.Success(Unit),
 ) : SearchRepository {
     private val hotKeyFlow = MutableStateFlow(hotKeys)
 
     override fun observeHotKey(): Flow<List<HotKey>> = hotKeyFlow
-    override suspend fun refreshHotKey(): DomainResult<Unit> = DomainResult.Success(Unit)
+    override suspend fun refreshHotKey(): DomainResult<Unit> = refreshHotKeyResult
     override fun getSearchPagingData(key: String): Flow<PagingData<Article>> = Pager(
         config = PagingConfig(pageSize = 20),
         pagingSourceFactory = {

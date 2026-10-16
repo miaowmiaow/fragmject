@@ -92,7 +92,7 @@
 |  ├── navigation-runtime                           导航能力（Navigation 3 类型安全路由）
 |  ├── network                                      网络层（Retrofit + OkHttp）
 |  ├── qrscanner                                    扫码能力（CameraX / ML Kit）
-|  ├── ui                                           UI 组件库（FeedCard / SwipeRefreshBox 等）
+|  ├── ui                                           UI 组件库（FeedCard / PagingSwipeRefreshBox 等）
 |  └── webview                                      WebView 能力（池化 / 缓存 / CookieStore）
 | 
 ├── feature                                      功能模块层（每个模块均含 api / impl 两个子模块）

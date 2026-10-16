@@ -70,7 +70,10 @@ fun AuthenticatorExportQrScreen(
                             fontSize = 14.sp,
                         )
                     } else {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            trackColor = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
             } else {

@@ -37,7 +37,10 @@ import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.designsystem.AppColors
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.ui.components.CollapsingHeader
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.utils.getScreenWidth
@@ -110,39 +113,48 @@ fun MyCoinScreen(
             }
         },
     ) { innerPadding ->
-        PagingSwipeRefreshBox(
-            pagingItems = pagingItems,
+        ContentStateBox(
+            phase = pagingItems.contentPhase(),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            key = { it.id },
-        ) { item ->
-            Row(
+            minShowMillis = NAV_TRANSITION_DURATION_MS,
+            onRetry = { pagingItems.retry() },
+        ) {
+            PagingSwipeRefreshBox(
+                pagingItems = pagingItems,
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column {
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                key = { it.id },
+            ) { item ->
+                Row(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column {
+                        Text(
+                            text = item.getTitle(),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
+                        Text(
+                            text = item.getTime(),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onTertiary,
+                        )
+                    }
                     Text(
-                        text = item.getTitle(),
+                        text = item.coinCount,
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                    )
-                    Text(
-                        text = item.getTime(),
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onTertiary,
+                        color = AppColors.orange,
                     )
                 }
-                Text(
-                    text = item.coinCount,
-                    fontSize = 14.sp,
-                    color = AppColors.orange,
-                )
+                HorizontalDivider()
             }
-            HorizontalDivider()
         }
     }
 }

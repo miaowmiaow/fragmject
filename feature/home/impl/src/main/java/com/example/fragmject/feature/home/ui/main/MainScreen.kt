@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.home.ui.main
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,7 +36,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -64,7 +62,6 @@ import com.example.fragmject.feature.home.impl.R
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.LoopVerticalPager
 import com.example.fragmject.core.model.HotKey
-import com.example.fragmject.core.model.Tree
 import com.example.fragmject.core.ui.components.BottomNavItem
 import kotlinx.coroutines.launch
 import com.example.fragmject.core.designsystem.AppColors
@@ -83,7 +80,6 @@ import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 private fun MainContent(
     navIndex: Int,
     navItems: List<BottomNavItem>,
-    systemData: List<Tree>,
     homeListState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
@@ -95,7 +91,7 @@ private fun MainContent(
             }
 
             1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
-                NavScreen(systemData = systemData)
+                NavScreen()
             }
 
             2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
@@ -153,8 +149,7 @@ private fun NavigationDrawerContent(
 private fun ContentPane(
     navItems: List<BottomNavItem>,
     navIndex: Int,
-    hotKeyResult: List<HotKey>?,
-    systemData: List<Tree>,
+    hotKeyResult: List<HotKey>,
     homeListState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
@@ -163,7 +158,6 @@ private fun ContentPane(
         MainContent(
             navIndex = navIndex,
             navItems = navItems,
-            systemData = systemData,
             homeListState = homeListState,
             modifier = Modifier.fillMaxSize()
         )
@@ -182,16 +176,8 @@ fun MainScreen(
     detailContent: @Composable (NavKey) -> Unit = { _ -> },
 ) {
     val scope = rememberCoroutineScope()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val hotKeys by viewModel.hotKeys.collectAsStateWithLifecycle()
     val homeListState = rememberLazyListState()
-
-    // 热词/体系树拉取失败时给出反馈：此前 MainUiState.Error 无人消费，失败完全静默。
-    // 这里只做一次性提示，不做自动重试（持续失败会造成重试循环）；重试交给下拉等显式操作。
-    LaunchedEffect(uiState.errorMessage) {
-        if (uiState.errorMessage.isNotBlank()) {
-            Log.w("MainScreen", "header load failed: ${uiState.errorMessage}")
-        }
-    }
 
     var navIndex by rememberSaveable { mutableIntStateOf(0) }
     val navItems = remember {
@@ -215,7 +201,7 @@ fun MainScreen(
     when (windowSizeClass.widthSizeClass) {
         WindowWidthSizeClass.Expanded -> ExpandedMainScreen(
             navItems, navIndex, onNavClick,
-            uiState.hotKeyResult, uiState.treeResult,
+            hotKeys,
             homeListState,
             selectedDetailKey = selectedDetailKey,
             onClearDetail = onClearDetail,
@@ -224,13 +210,13 @@ fun MainScreen(
 
         WindowWidthSizeClass.Medium -> MediumMainScreen(
             navItems, navIndex, onNavClick,
-            uiState.hotKeyResult, uiState.treeResult,
+            hotKeys,
             homeListState,
         )
 
         else -> CompactMainScreen(
             navItems, navIndex, onNavClick,
-            uiState.hotKeyResult, uiState.treeResult,
+            hotKeys,
             homeListState,
         )
     }
@@ -245,8 +231,7 @@ private fun CompactMainScreen(
     navItems: List<BottomNavItem>,
     navIndex: Int,
     onNavClick: (Int) -> Unit,
-    hotKeyResult: List<HotKey>?,
-    systemData: List<Tree>,
+    hotKeyResult: List<HotKey>,
     homeListState: LazyListState,
 ) {
     Scaffold(
@@ -267,7 +252,6 @@ private fun CompactMainScreen(
         MainContent(
             navIndex,
             navItems,
-            systemData,
             homeListState,
             Modifier.padding(innerPadding)
         )
@@ -283,8 +267,7 @@ private fun MediumMainScreen(
     navItems: List<BottomNavItem>,
     navIndex: Int,
     onNavClick: (Int) -> Unit,
-    hotKeyResult: List<HotKey>?,
-    systemData: List<Tree>,
+    hotKeyResult: List<HotKey>,
     homeListState: LazyListState,
 ) {
     Row(modifier = Modifier.fillMaxSize()) {
@@ -301,7 +284,6 @@ private fun MediumMainScreen(
             navItems = navItems,
             navIndex = navIndex,
             hotKeyResult = hotKeyResult,
-            systemData = systemData,
             homeListState = homeListState,
             modifier = Modifier.fillMaxSize(),
         )
@@ -317,8 +299,7 @@ private fun ExpandedMainScreen(
     navItems: List<BottomNavItem>,
     navIndex: Int,
     onNavClick: (Int) -> Unit,
-    hotKeyResult: List<HotKey>?,
-    systemData: List<Tree>,
+    hotKeyResult: List<HotKey>,
     homeListState: LazyListState,
     selectedDetailKey: NavKey?,
     onClearDetail: () -> Unit,
@@ -342,7 +323,6 @@ private fun ExpandedMainScreen(
                     navItems = navItems,
                     navIndex = navIndex,
                     hotKeyResult = hotKeyResult,
-                    systemData = systemData,
                     homeListState = homeListState,
                     modifier = Modifier.weight(0.5f).fillMaxHeight(),
                 )
@@ -360,7 +340,6 @@ private fun ExpandedMainScreen(
                 navItems = navItems,
                 navIndex = navIndex,
                 hotKeyResult = hotKeyResult,
-                systemData = systemData,
                 homeListState = homeListState,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -403,7 +382,7 @@ private fun NavIcon(item: BottomNavItem) {
 
 @Composable
 fun SearchBar(
-    data: List<HotKey>?,
+    data: List<HotKey>,
 ) {
     val searchNavigator = LocalNavigators.current.search
     val collectionNavigator = LocalNavigators.current.collection

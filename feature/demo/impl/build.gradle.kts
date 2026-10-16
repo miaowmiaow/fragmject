@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":core:webview"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.paging.compose)
     // 显式声明：使用 androidx.core.content.ContextCompat / androidx.core.view.*（core-ktx）
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

@@ -5,7 +5,9 @@ import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.model.toDomain
 import com.example.fragmject.core.database.model.toEntity
 import com.example.fragmject.core.model.NavTab
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +27,11 @@ class HomeNavLocalDataSourceImpl @Inject constructor(
     }
 
     override fun observeNavigation(): Flow<List<NavTab>> =
-        homeNavDao.getByCacheKey(KEY_NAV).map { entities -> entities.map { it.toDomain() } }
+        homeNavDao.getByCacheKey(KEY_NAV)
+            .map { entities -> entities.map { it.toDomain() } }
+            // toDomain 内含 Gson 反序列化（articlesJson），放后台线程：
+            // 否则 Room Flow 每次发射都在 viewModelScope 主线程反序列化，阻塞主线程导致掉帧
+            .flowOn(Dispatchers.Default)
 
     override suspend fun saveNavigation(items: List<NavTab>) {
         homeNavDao.replaceAll(

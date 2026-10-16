@@ -351,8 +351,8 @@ private fun ManualForm(
         ) {
             if (uiState.saving) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    trackColor = MaterialTheme.colorScheme.secondary
                 )
             } else {
                 Text(text = "添加账户", fontSize = 15.sp)

@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.fragmject.core.designsystem.LocalWindowSizeClass
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.domain.AuthStatus
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,9 +43,6 @@ import com.example.fragmject.feature.auth.RegisterNavKey
 import com.example.fragmject.feature.home.MainNavKey
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.contract.FlowScopedNavKey
-
-/** 页面转场动画时长 (ms)，与 Compose 过渡动画同步。 */
-private const val NAV_TRANSITION_DURATION_MS = 350
 
 /**
  * 导航图。

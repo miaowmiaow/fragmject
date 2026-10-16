@@ -57,7 +57,7 @@ fun BrowseHistoryScreen(
     val onNavigateUp = LocalOnNavigateUp.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
-    val tabs = listOf("书签", "历史")
+    val tabs = listOf("历史", "书签")
     val pagerState = rememberPagerState { tabs.size }
     Scaffold(
         topBar = {
@@ -89,14 +89,15 @@ fun BrowseHistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                 ) {
                     itemsIndexed(
-                        if (page == 0) uiState.bookmarkResult else uiState.historyResult,
+                        if (page == 0) uiState.historyResult else uiState.bookmarkResult,
                         key = { _, item -> item.id }
                     ) { _, item ->
                         val control = rememberSwipeBoxControl()
                         Row(
                             modifier = Modifier
                                 .clickable {
-                                    if (page == 0) {
+                                    // 仅书签页（page == 1）点击时记录一次浏览：历史页条目本身已是浏览记录
+                                    if (page == 1) {
                                         viewModel.recordBrowseVisit(item.value, item.url)
                                     }
                                     articleNavigator.openArticle(item.url)

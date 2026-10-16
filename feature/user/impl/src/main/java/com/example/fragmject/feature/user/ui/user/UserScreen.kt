@@ -32,10 +32,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.CollapsingHeader
 import com.example.fragmject.core.ui.components.FeedCard
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.rememberCollapsingHeaderState
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
@@ -117,23 +120,32 @@ fun UserScreen(
         },
     ) { innerPadding ->
         key(userId) {
-            PagingSwipeRefreshBox(
-                pagingItems = pagingItems,
+            ContentStateBox(
+                phase = pagingItems.contentPhase(),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                contentPadding = PaddingValues(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                key = { it.id },
-            ) { item ->
-                FeedCard(
-                    data = rememberArticleFeedData(item, collectInteraction.overrides),
-                    onItemClick = { articleNavigator.openArticle(it) },
-                    onUserClick = { userNavigator.openUserProfile(it) },
-                    onFooterClick = { homeNavigator.openSystemTree(it) },
-                    onToggleClick = collectInteraction.onToggleClick,
-                    onCoverClick = { url -> pictureNavigator.openPicturePreview(listOf(url)) },
-                )
+                minShowMillis = NAV_TRANSITION_DURATION_MS,
+                onRetry = { pagingItems.retry() },
+            ) {
+                PagingSwipeRefreshBox(
+                    pagingItems = pagingItems,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    key = { it.id },
+                ) { item ->
+                    FeedCard(
+                        data = rememberArticleFeedData(item, collectInteraction.overrides),
+                        onItemClick = { articleNavigator.openArticle(it) },
+                        onUserClick = { userNavigator.openUserProfile(it) },
+                        onFooterClick = { homeNavigator.openSystemTree(it) },
+                        onToggleClick = collectInteraction.onToggleClick,
+                        onCoverClick = { url -> pictureNavigator.openPicturePreview(listOf(url)) },
+                    )
+                }
             }
         }
     }

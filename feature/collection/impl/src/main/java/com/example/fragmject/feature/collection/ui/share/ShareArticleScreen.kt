@@ -102,7 +102,9 @@ fun ShareArticleScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
     ) { innerPadding ->
-        LoadingContent(uiState.isLoading) {
+        LoadingContent(
+            isLoading = uiState.isLoading,
+        ) {
             Box(modifier = Modifier.padding(innerPadding)) {
                 Column(
                     modifier = Modifier
@@ -178,6 +180,7 @@ fun ShareArticleScreen(
                     Spacer(Modifier.height(20.dp))
                     Button(
                         onClick = { viewModel.submit() },
+                        enabled = !uiState.isLoading,
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .align(Alignment.CenterHorizontally),
@@ -190,7 +193,7 @@ fun ShareArticleScreen(
                         contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
                     ) {
                         Text(
-                            text = "分享",
+                            text = if (uiState.isLoading) "分享中…" else "分享",
                             fontSize = 16.sp
                         )
                     }

@@ -36,6 +36,11 @@ object AppColors {
     // 图片选择/预览：下拉菜单容器底色与图片占位底色（原为 feature/picture/impl 内硬编码值）
     val menuContainer = Color(0xFF2B2B2B)
     val mediaPlaceholder = Color(0xFF333333)
+
+    // 图片编辑器/预览/选择器的沉浸式深色 UI：固定黑底白字，不随明暗主题（图片编辑器惯例）。
+    // 遮罩 / 占位文字 / 选中描边等透明度变体，统一用这两个令牌就地 copy(alpha)。
+    val editorBackground = Color(0xFF000000)
+    val editorOnBackground = Color(0xFFFFFFFF)
 }
 
 val AppDarkColorScheme = darkColorScheme(

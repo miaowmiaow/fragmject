@@ -21,7 +21,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
@@ -72,22 +75,29 @@ fun SystemScreen(
                 val pagingItems = remember(pageCid) {
                     systemViewModel.pagingFlow(pageCid)
                 }.collectAsLazyPagingItems()
-                PagingSwipeRefreshBox(
-                    pagingItems = pagingItems,
+                ContentStateBox(
+                    phase = pagingItems.contentPhase(),
                     modifier = Modifier.fillMaxSize(),
-                    listState = listState,
-                    contentPadding = PaddingValues(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    key = { it.id },
-                ) { item ->
-                    FeedCard(
-                        data = rememberArticleFeedData(item, collectInteraction.overrides),
-                        onItemClick = onArticleClick,
-                        onUserClick = onAuthorClick,
-                        onFooterClick = onChapterClick,
-                        onToggleClick = collectInteraction.onToggleClick,
-                        onCoverClick = onCoverClick,
-                    )
+                    minShowMillis = NAV_TRANSITION_DURATION_MS,
+                    onRetry = { pagingItems.retry() },
+                ) {
+                    PagingSwipeRefreshBox(
+                        pagingItems = pagingItems,
+                        modifier = Modifier.fillMaxSize(),
+                        listState = listState,
+                        contentPadding = PaddingValues(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        key = { it.id },
+                    ) { item ->
+                        FeedCard(
+                            data = rememberArticleFeedData(item, collectInteraction.overrides),
+                            onItemClick = onArticleClick,
+                            onUserClick = onAuthorClick,
+                            onFooterClick = onChapterClick,
+                            onToggleClick = collectInteraction.onToggleClick,
+                            onCoverClick = onCoverClick,
+                        )
+                    }
                 }
             }
         }
@@ -102,13 +112,13 @@ fun SystemScreenPreview() {
 }
 
 /**
- * 在体系树中按 cid 定位：返回 (目标子项下标, 父章节名, 子项列表)。
+ * 在体系树中按 cid 定位：返回 (目标子项下标, 目标子项名, 兄弟子项列表)。
  * 未命中时返回默认 (0, "体系", 空列表)。
  */
 private fun List<Tree>.getTree(cid: String): Triple<Int, String, List<Tree>> {
-    for ((children, _, _, _, name) in this) {
+    for ((children, _, _, _, _) in this) {
         children?.forEachIndexed { index, data ->
-            if (data.id == cid) return Triple(index, name, children.orEmpty())
+            if (data.id == cid) return Triple(index, data.name, children)
         }
     }
     return Triple(0, "体系", emptyList())

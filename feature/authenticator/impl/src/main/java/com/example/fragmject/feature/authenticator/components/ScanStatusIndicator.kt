@@ -51,12 +51,13 @@ fun ScanStatusIndicator(
             modifier = modifier,
         ) {
             StatusBubble(
-                color = MaterialTheme.colorScheme.errorContainer,
+                background = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
                 icon = {
                     Icon(
                         Icons.Default.Error,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondaryContainer,
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.size(40.dp),
                     )
                 },
@@ -73,12 +74,13 @@ fun ScanStatusIndicator(
             modifier = modifier,
         ) {
             StatusBubble(
-                color = MaterialTheme.colorScheme.secondary,
+                background = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
                 icon = {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondaryContainer,
+                        tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(40.dp),
                     )
                 },
@@ -93,19 +95,19 @@ fun ScanStatusIndicator(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                strokeWidth = 3.dp,
-                modifier = Modifier.size(44.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                trackColor = MaterialTheme.colorScheme.secondary
             )
             Spacer(Modifier.height(12.dp))
-            Text("正在处理…", color = Color.White, fontSize = 14.sp)
+            Text("正在处理…", color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
         }
     }
 }
 
 @Composable
 private fun StatusBubble(
-    color: Color,
+    background: Color,
+    contentColor: Color,
     icon: @Composable () -> Unit,
     text: String,
 ) {
@@ -113,10 +115,10 @@ private fun StatusBubble(
         Box(
             modifier = Modifier
                 .size(72.dp)
-                .background(color, CircleShape),
+                .background(background, CircleShape),
             contentAlignment = Alignment.Center,
         ) { icon() }
         Spacer(Modifier.height(12.dp))
-        Text(text = text, color = Color.White, fontSize = 15.sp, textAlign = TextAlign.Center)
+        Text(text = text, color = contentColor, fontSize = 15.sp, textAlign = TextAlign.Center)
     }
 }

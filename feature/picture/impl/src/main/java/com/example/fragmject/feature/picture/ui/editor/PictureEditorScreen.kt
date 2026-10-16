@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -107,7 +108,7 @@ fun PictureEditorScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AppColors.editorBackground)
     ) {
         // 编辑画布
         PictureEditorCanvas(state = state)
@@ -116,7 +117,7 @@ fun PictureEditorScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.6f))
+                .background(AppColors.editorBackground.copy(alpha = 0.6f))
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .align(Alignment.TopCenter)
         ) {
@@ -132,7 +133,7 @@ fun PictureEditorScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回",
-                        tint = Color.White
+                        tint = AppColors.editorOnBackground
                     )
                 }
                 TextButton(
@@ -150,7 +151,7 @@ fun PictureEditorScreen(
                     },
                     enabled = !isSaving
                 ) {
-                    Text("完成", color = Color.White, fontSize = 16.sp)
+                    Text("完成", color = AppColors.editorOnBackground, fontSize = 16.sp)
                 }
             }
         }
@@ -159,7 +160,7 @@ fun PictureEditorScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.6f))
+                .background(AppColors.editorBackground.copy(alpha = 0.6f))
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .align(Alignment.BottomCenter)
         ) {
@@ -179,7 +180,7 @@ fun PictureEditorScreen(
                             Icon(
                                 Icons.AutoMirrored.Filled.Undo,
                                 contentDescription = "撤销",
-                                tint = Color.White
+                                tint = AppColors.editorOnBackground
                             )
                         }
                         ColorUtils.colorful.forEachIndexed { index, colorInt ->
@@ -192,7 +193,7 @@ fun PictureEditorScreen(
                                     .background(Color(colorInt))
                                     .border(
                                         if (isSelected) 3.dp else 0.dp,
-                                        Color.White,
+                                        AppColors.editorOnBackground,
                                         CircleShape
                                     )
                                     .clickable {
@@ -216,7 +217,7 @@ fun PictureEditorScreen(
                             Icon(
                                 Icons.AutoMirrored.Filled.Undo,
                                 contentDescription = "撤销马赛克",
-                                tint = Color.White
+                                tint = AppColors.editorOnBackground
                             )
                         }
                     }
@@ -291,12 +292,12 @@ fun PictureEditorScreen(
                             Icon(
                                 toolIcons[index],
                                 contentDescription = name,
-                                tint = if (isSelected) AppColors.blue else Color.White,
+                                tint = if (isSelected) AppColors.blue else AppColors.editorOnBackground,
                                 modifier = Modifier.size(28.dp)
                             )
                             Text(
                                 name,
-                                color = if (isSelected) AppColors.blue else Color.White,
+                                color = if (isSelected) AppColors.blue else AppColors.editorOnBackground,
                                 fontSize = 11.sp
                             )
                         }
@@ -341,13 +342,16 @@ fun PictureEditorScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                    .background(AppColors.editorBackground.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Color.White)
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        trackColor = MaterialTheme.colorScheme.secondary
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("正在保存...", color = Color.White)
+                    Text("正在保存...", color = AppColors.editorOnBackground)
                 }
             }
         }

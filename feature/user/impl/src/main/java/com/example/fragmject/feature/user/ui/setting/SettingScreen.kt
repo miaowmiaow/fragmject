@@ -124,9 +124,13 @@ fun SettingScreen(
                         Spacer(Modifier.width(5.dp))
                     }
                     HorizontalDivider()
-                    ArrowRightItem("隐私政策") { articleNavigator.openArticle("file:///android_asset/html/privacy_policy.html") }
+                    ArrowRightItem("隐私政策") {
+                        articleNavigator.openArticle("file:///android_asset/html/privacy_policy.html")
+                    }
                     HorizontalDivider()
-                    ArrowRightItem("问题反馈") { articleNavigator.openArticle("https://github.com/miaowmiaow/fragmject/issues") }
+                    ArrowRightItem("问题反馈") {
+                        articleNavigator.openArticle("https://github.com/miaowmiaow/fragmject/issues")
+                    }
                     HorizontalDivider()
                     Row(
                         modifier = Modifier
@@ -156,7 +160,9 @@ fun SettingScreen(
                         )
                     }
                     HorizontalDivider()
-                    ArrowRightItem("关于玩Android") { articleNavigator.openArticle("https://wanandroid.com") }
+                    ArrowRightItem("关于玩Android") {
+                        articleNavigator.openArticle("https://wanandroid.com")
+                    }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.user != null) {
                         Button(

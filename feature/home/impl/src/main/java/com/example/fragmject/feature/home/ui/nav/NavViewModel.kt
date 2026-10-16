@@ -1,55 +1,54 @@
 package com.example.fragmject.feature.home.ui.nav
 
-import androidx.lifecycle.viewModelScope
-import com.example.fragmject.core.model.NavTab
-import com.example.fragmject.core.domain.repository.HomeNavRepository
-import com.example.fragmject.core.domain.result.DomainResult
 import androidx.lifecycle.ViewModel
-import com.example.fragmject.core.ui.utils.updateSuccessFrom
+import androidx.lifecycle.viewModelScope
+import com.example.fragmject.core.domain.repository.HomeNavRepository
+import com.example.fragmject.core.domain.repository.SystemRepository
+import com.example.fragmject.core.model.NavTab
+import com.example.fragmject.core.model.Tree
+import com.example.fragmject.core.ui.utils.RefreshableUiState
+import com.example.fragmject.core.ui.utils.collectAndRefresh
+import com.example.fragmject.core.ui.utils.retryRefresh
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-sealed interface NavUiState {
-    data object Loading : NavUiState
-    data class Success(
-        val navigationResult: List<NavTab> = emptyList(),
-    ) : NavUiState
-    data class Error(
-        val message: String = "",
-    ) : NavUiState
-}
-
-// Screen accessors
-val NavUiState.navigationResult get() = (this as? NavUiState.Success)?.navigationResult ?: emptyList()
-val NavUiState.isLoading get() = this is NavUiState.Loading
-val NavUiState.errorMessage get() = (this as? NavUiState.Error)?.message ?: ""
 
 @HiltViewModel
 class NavViewModel @Inject constructor(
     private val homeNavRepository: HomeNavRepository,
+    private val systemRepository: SystemRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<NavUiState>(NavUiState.Loading)
-    val uiState: StateFlow<NavUiState> = _uiState.asStateFlow()
+    private val _navState =
+        MutableStateFlow<RefreshableUiState<List<NavTab>>>(RefreshableUiState.Loading)
+    val navState: StateFlow<RefreshableUiState<List<NavTab>>> = _navState.asStateFlow()
+
+    private val _treeState =
+        MutableStateFlow<RefreshableUiState<List<Tree>>>(RefreshableUiState.Loading)
+    val treeState: StateFlow<RefreshableUiState<List<Tree>>> = _treeState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            homeNavRepository.observeNavigation().collect { nav ->
-                _uiState.updateSuccessFrom({ NavUiState.Success() }) { state ->
-                    state.copy(navigationResult = nav)
-                }
-            }
-        }
-        viewModelScope.launch {
-            when (val r = homeNavRepository.refreshNavigation()) {
-                is DomainResult.Success -> Unit
-                is DomainResult.Failure ->
-                    _uiState.value = NavUiState.Error(r.message)
-            }
-        }
+        viewModelScope.collectAndRefresh(
+            observe = homeNavRepository.observeNavigation(),
+            refresh = homeNavRepository::refreshNavigation,
+            state = _navState,
+        )
+        viewModelScope.collectAndRefresh(
+            observe = systemRepository.observeSystemTree(),
+            refresh = systemRepository::refreshSystemTree,
+            state = _treeState,
+        )
+    }
+
+    /** 导航链接错误态重试。 */
+    fun retry() {
+        viewModelScope.retryRefresh(homeNavRepository::refreshNavigation, _navState)
+    }
+
+    /** 体系树错误态重试。 */
+    fun retryTree() {
+        viewModelScope.retryRefresh(systemRepository::refreshSystemTree, _treeState)
     }
 }

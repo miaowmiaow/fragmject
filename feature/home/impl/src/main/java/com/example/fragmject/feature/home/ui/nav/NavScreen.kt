@@ -49,16 +49,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.components.SkeletonContent
+import com.example.fragmject.core.ui.components.ContentPhase
+import com.example.fragmject.core.ui.components.ContentStateBox
+import com.example.fragmject.core.ui.components.SkeletonRows
 import com.example.fragmject.core.ui.components.TabBar
-import com.example.fragmject.core.model.Tree
+import com.example.fragmject.core.ui.utils.RefreshableUiState
+import com.example.fragmject.core.ui.utils.dataOrEmpty
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
-fun NavScreen(
-    systemData: List<Tree>,
-) {
+fun NavScreen() {
+    val viewModel: NavViewModel = hiltViewModel()
     val tabs = listOf("导航", "体系")
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState { tabs.size }
@@ -74,11 +76,9 @@ fun NavScreen(
         )
         HorizontalPager(state = pagerState) { page ->
             if (page == 0) {
-                NavLinkContent()
+                NavLinkContent(viewModel)
             } else if (page == 1) {
-                NavSystemContent(
-                    systemData = systemData
-                )
+                NavSystemContent(viewModel)
             }
         }
     }
@@ -86,14 +86,14 @@ fun NavScreen(
 
 @Composable
 fun NavLinkContent(
-    viewModel: NavViewModel = hiltViewModel(),
+    viewModel: NavViewModel,
 ) {
     val navigators = LocalNavigators.current
     val onArticleClick = remember(navigators) { { url: String -> navigators.article.openArticle(url) } }
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.navState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val pagerState = rememberPagerState { uiState.navigationResult.size }
+    val pagerState = rememberPagerState { uiState.dataOrEmpty().size }
     var velocity by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(listState) {
@@ -103,7 +103,17 @@ fun NavLinkContent(
             listState.animateScrollToItem(index)
         }
     }
-    SkeletonContent(uiState.isLoading) {
+    val phase = when (uiState) {
+        is RefreshableUiState.Loading -> ContentPhase.Loading
+        is RefreshableUiState.Error -> ContentPhase.Error
+        is RefreshableUiState.Success ->
+            if (uiState.dataOrEmpty().isEmpty()) ContentPhase.Empty else ContentPhase.Content
+    }
+    ContentStateBox(
+        phase = phase,
+        loadingContent = { SkeletonRows(it) },
+        onRetry = viewModel::retry,
+    ) {
         Row {
             LazyColumn(
                 modifier = Modifier.width(100.dp),
@@ -111,7 +121,7 @@ fun NavLinkContent(
                 verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
                 itemsIndexed(
-                    items = uiState.navigationResult,
+                    items = uiState.dataOrEmpty(),
                     key = { _, item -> item.cid }
                 ) { index, item ->
                     Box(
@@ -137,7 +147,7 @@ fun NavLinkContent(
             }
             VerticalPager(state = pagerState, userScrollEnabled = false) { page ->
                 val gridState = remember(page) { LazyGridState() }
-                val articles = uiState.navigationResult.getOrNull(page)?.articles.orEmpty()
+                val articles = uiState.dataOrEmpty().getOrNull(page)?.articles.orEmpty()
                 // ScrollableDefaults.flingBehavior() 本身是 @Composable（读 LocalDensity），
                 // 无法放进 remember；它仅被下面 remember 缓存的 FlingBehavior 捕获一次，
                 // 后续的每次重组只是多一次分配，不影响已缓存的嵌套滚动行为。
@@ -197,19 +207,28 @@ fun NavLinkContent(
 
 @Composable
 fun NavSystemContent(
-    systemData: List<Tree>,
+    viewModel: NavViewModel,
 ) {
     val navigators = LocalNavigators.current
     val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
     val listState = rememberLazyListState()
-    SkeletonContent(
-        isLoading = systemData.isEmpty(),
+    val treeState by viewModel.treeState.collectAsStateWithLifecycle()
+    val phase = when (treeState) {
+        is RefreshableUiState.Loading -> ContentPhase.Loading
+        is RefreshableUiState.Error -> ContentPhase.Error
+        is RefreshableUiState.Success ->
+            if (treeState.dataOrEmpty().isEmpty()) ContentPhase.Empty else ContentPhase.Content
+    }
+    ContentStateBox(
+        phase = phase,
+        loadingContent = { SkeletonRows(it) },
+        onRetry = viewModel::retryTree,
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = listState
         ) {
-            systemData.forEach { data ->
+            treeState.dataOrEmpty().forEach { data ->
                 stickyHeader {
                     Text(
                         text = data.name,
@@ -255,5 +274,5 @@ fun NavSystemContent(
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)
 @Composable
 fun NavScreenPreview() {
-    AppTheme { NavScreen(systemData = listOf()) }
+    AppTheme { NavScreen() }
 }

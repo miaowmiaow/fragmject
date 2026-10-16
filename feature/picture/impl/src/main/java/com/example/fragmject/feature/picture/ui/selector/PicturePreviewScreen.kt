@@ -116,7 +116,7 @@ fun PicturePreviewScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AppColors.editorBackground)
     ) {
         // 图片滑动区域
         HorizontalPager(
@@ -204,7 +204,7 @@ fun PicturePreviewScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(AppColors.editorBackground.copy(alpha = 0.6f))
                     .windowInsetsPadding(WindowInsets.statusBars)
             ) {
                 Row(
@@ -219,12 +219,12 @@ fun PicturePreviewScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回",
-                            tint = Color.White
+                            tint = AppColors.editorOnBackground
                         )
                     }
                     Text(
                         "${pagerState.currentPage + 1}/${data.size}",
-                        color = Color.White,
+                        color = AppColors.editorOnBackground,
                         fontSize = 16.sp
                     )
                     // 「完成」是选图流程的确认动作；纯看图靠返回箭头关闭，不再显示
@@ -232,7 +232,7 @@ fun PicturePreviewScreen(
                         TextButton(onClick = {
                             onConfirm()
                         }) {
-                            Text("完成", color = Color.White, fontSize = 16.sp)
+                            Text("完成", color = AppColors.editorOnBackground, fontSize = 16.sp)
                         }
                     }
                 }
@@ -248,7 +248,7 @@ fun PicturePreviewScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(AppColors.editorBackground.copy(alpha = 0.6f))
                     .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
                 Column(
@@ -284,7 +284,7 @@ fun PicturePreviewScreen(
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxSize()
-                                                .background(Color.White.copy(alpha = 0.5f))
+                                                .background(AppColors.editorOnBackground.copy(alpha = 0.5f))
                                         )
                                     }
                                 }
@@ -308,10 +308,10 @@ fun PicturePreviewScreen(
                                 Icon(
                                     Icons.Filled.Edit,
                                     contentDescription = "编辑",
-                                    tint = Color.White
+                                    tint = AppColors.editorOnBackground
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("编辑", color = Color.White, fontSize = 14.sp)
+                                Text("编辑", color = AppColors.editorOnBackground, fontSize = 14.sp)
                             }
                         }
 
@@ -329,7 +329,7 @@ fun PicturePreviewScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(24.dp)
-                                        .border(2.dp, Color.White, CircleShape)
+                                        .border(2.dp, AppColors.editorOnBackground, CircleShape)
                                         .then(
                                             if (isSelected) Modifier.background(
                                                 AppColors.blue,
@@ -343,7 +343,7 @@ fun PicturePreviewScreen(
                                         Icon(
                                             Icons.Filled.Check,
                                             contentDescription = null,
-                                            tint = Color.White,
+                                            tint = AppColors.editorOnBackground,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
@@ -351,7 +351,7 @@ fun PicturePreviewScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     if (isSelected) "取消选择" else "选择",
-                                    color = Color.White,
+                                    color = AppColors.editorOnBackground,
                                     fontSize = 14.sp
                                 )
                             }

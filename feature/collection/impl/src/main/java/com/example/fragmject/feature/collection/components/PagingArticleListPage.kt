@@ -6,18 +6,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.domain.CollectState
-import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.core.model.Article
+import com.example.fragmject.core.navigation.contract.LocalNavigators
+import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
+import com.example.fragmject.core.ui.components.ContentStateBox
 import com.example.fragmject.core.ui.components.FeedCard
 import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
+import com.example.fragmject.core.ui.components.TitleBar
+import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
-import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
-import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 
 /**
@@ -44,23 +46,32 @@ fun PagingArticleListPage(
             )
         },
     ) { innerPadding ->
-        PagingSwipeRefreshBox(
-            pagingItems = pagingItems,
+        ContentStateBox(
+            phase = pagingItems.contentPhase(),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            key = { it.id },
-        ) { item ->
-            FeedCard(
-                data = rememberArticleFeedData(item, collectInteraction.overrides),
-                onItemClick = { articleNavigator.openArticle(it) },
-                onUserClick = { userNavigator.openUserProfile(it) },
-                onFooterClick = { homeNavigator.openSystemTree(it) },
-                onToggleClick = collectInteraction.onToggleClick,
-                onCoverClick = { url -> pictureNavigator.openPicturePreview(listOf(url)) },
-            )
+            minShowMillis = NAV_TRANSITION_DURATION_MS,
+            onRetry = { pagingItems.retry() },
+        ) {
+            PagingSwipeRefreshBox(
+                pagingItems = pagingItems,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                key = { it.id },
+            ) { item ->
+                FeedCard(
+                    data = rememberArticleFeedData(item, collectInteraction.overrides),
+                    onItemClick = { articleNavigator.openArticle(it) },
+                    onUserClick = { userNavigator.openUserProfile(it) },
+                    onFooterClick = { homeNavigator.openSystemTree(it) },
+                    onToggleClick = collectInteraction.onToggleClick,
+                    onCoverClick = { url -> pictureNavigator.openPicturePreview(listOf(url)) },
+                )
+            }
         }
     }
 }

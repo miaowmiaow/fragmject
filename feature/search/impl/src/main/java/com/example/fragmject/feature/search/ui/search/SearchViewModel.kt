@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.example.fragmject.core.domain.CollectState
 import com.example.fragmject.core.domain.repository.HistoryRepository
+import com.example.fragmject.core.domain.result.DomainResult
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.model.History
 import com.example.fragmject.core.model.HotKey
@@ -42,6 +43,9 @@ class SearchViewModel @Inject constructor(
     private val _hotKeyResult = MutableStateFlow<List<HotKey>>(emptyList())
     val hotKeyResult: StateFlow<List<HotKey>> = _hotKeyResult.asStateFlow()
 
+    private val _hotKeyError = MutableStateFlow("")
+    val hotKeyError: StateFlow<String> = _hotKeyError.asStateFlow()
+
     private val _isHotKeyLoading = MutableStateFlow(true)
     val isHotKeyLoading: StateFlow<Boolean> = _isHotKeyLoading.asStateFlow()
 
@@ -55,6 +59,28 @@ class SearchViewModel @Inject constructor(
             searchRepository.observeHotKey().collect { hotKeys ->
                 _hotKeyResult.value = hotKeys
                 _isHotKeyLoading.value = false
+            }
+        }
+        viewModelScope.launch {
+            refreshHotKey()
+        }
+    }
+
+    /** 热门搜索错误态重试。 */
+    fun retryHotKey() {
+        viewModelScope.launch {
+            refreshHotKey()
+        }
+    }
+
+    private suspend fun refreshHotKey() {
+        _isHotKeyLoading.value = true
+        _hotKeyError.value = ""
+        when (val r = searchRepository.refreshHotKey()) {
+            is DomainResult.Success -> Unit
+            is DomainResult.Failure -> {
+                _isHotKeyLoading.value = false
+                _hotKeyError.value = r.message
             }
         }
     }

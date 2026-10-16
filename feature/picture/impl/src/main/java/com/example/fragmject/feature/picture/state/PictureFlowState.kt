@@ -34,7 +34,16 @@ class PictureFlowState @Inject constructor(
     private val albumRepository: AlbumRepository,
 ) {
 
+    // 两者只在 Main.immediate 上访问（flowScope 为 Main.immediate，对外方法也在主线程调用），
+    // 因此用普通 HashMap 即可；若将来引入后台写入，必须先换成 ConcurrentHashMap。
     private val mediaMap = HashMap<String, MutableList<MediaItem>>()
+
+    /**
+     * 与 [mediaMap] 同步维护的 uri 索引：避免 [startPreview] 在主线程做
+     * `values.flatten()` + `all.find {}` 的 O(N×M) 查找（5000 图 × 9 张选中 ≈ 45000 次比较）。
+     * 所有 [mediaMap] 的写入/清空处都必须同步维护本索引。
+     */
+    private val mediaIndex = HashMap<String, MediaItem>()
 
     private val flowScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var queryJob: Job? = null
@@ -156,9 +165,9 @@ class PictureFlowState @Inject constructor(
      *   只有确实是空串时才用占位，避免 coil 拿到空 model。
      */
     fun startPreview(uris: List<String>) {
-        val all = mediaMap.values.flatten()
+        // 走 uri 索引直查（O(M)），不再 flatten 全量后线性查找
         _previewSource.value = uris.mapIndexed { index, uriStr ->
-            all.find { it.uri.toString() == uriStr }
+            mediaIndex[uriStr]
                 ?: MediaItem("", uriStr.takeIf { it.isNotBlank() }?.toUri() ?: "empty://preview/$index".toUri())
         }
     }
@@ -171,6 +180,7 @@ class PictureFlowState @Inject constructor(
                 val groups = albumRepository.queryAlbums()
                 if (version != queryVersion) return@launch
                 mediaMap.clear()
+                mediaIndex.clear()
                 // 映射放到 Default：flowScope 是 Main.immediate，而这里要为每张图做一次
                 // Uri.parse + MediaItem 分配（5000 张时是 5000 次），留在主线程会明显卡顿
                 val beansByGroup = withContext(Dispatchers.Default) {
@@ -192,6 +202,8 @@ class PictureFlowState @Inject constructor(
                     val beans = beansByGroup[group.name].orEmpty()
                     totalCount += beans.size
                     mediaMap[group.name] = beans.toMutableList()
+                    // 同步 uri 索引（见 [mediaIndex] 注释：写入点必须与 mediaMap 成对维护）
+                    beans.forEach { item -> mediaIndex[item.uri.toString()] = item }
                     albumData.add(
                         Album(group.name, group.coverUri.toUri(), beans.size.toString())
                     )

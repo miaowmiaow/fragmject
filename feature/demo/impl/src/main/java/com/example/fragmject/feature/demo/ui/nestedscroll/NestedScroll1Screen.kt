@@ -137,11 +137,14 @@ fun NestedScroll1Screen() {
                                         })()
                                     """.trimIndent()
                                 ) { result ->
-                                    val jsonObject = JSONObject(result)
-                                    val width = jsonObject.getInt("width").toFloat()
-                                    val height = jsonObject.getInt("height").toFloat()
-                                    val scaleFactor = safeDivide(width, view.width.toFloat())
-                                    val realHeight = safeDivide(height, scaleFactor)
+                                    // 页面尚未就绪时 evaluateJavascript 会回调 "null"，JSONObject 解析抛
+                                    // JSONException；该回调在主线程且无 try/catch，未保护会直接崩溃。
+                                    val realHeight = runCatching {
+                                        val jsonObject = JSONObject(result)
+                                        val width = jsonObject.getInt("width").toFloat()
+                                        val height = jsonObject.getInt("height").toFloat()
+                                        safeDivide(height, safeDivide(width, view.width.toFloat()))
+                                    }.getOrNull() ?: return@evaluateJavascript
                                     webViewScrollHeight = convertOddToEven(realHeight - view.height)
                                 }
                             }

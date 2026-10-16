@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -101,7 +102,7 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp),
-                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 14.sp),
+                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
                     placeholder = { Text("请输入用户名") },
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                 )
@@ -113,7 +114,7 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp),
-                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 14.sp),
+                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
                     placeholder = { Text("请输入用户密码") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -129,7 +130,7 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp),
-                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 14.sp),
+                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
                     placeholder = { Text("请再次输入密码") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions.Default.copy(

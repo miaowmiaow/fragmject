@@ -454,11 +454,25 @@ private class PooledWebViewClient(
     }
 }
 
+private val ALLOWED_DOWNLOAD_SCHEMES = setOf("http", "https")
+
 private fun handleDownload(context: Context, url: String) {
+    val uri = url.toUri()
+    // URL 来自页面的 DownloadListener，可能是 file:// / content:// / 自定义 scheme；
+    // 直接 ACTION_VIEW 会把本地文件或应用私有内容交给外部 App，故只放行 http(s)。
+    if (uri.scheme?.lowercase() !in ALLOWED_DOWNLOAD_SCHEMES) {
+        Log.w("WebView", "拒绝非 http(s) 下载 URL：$url")
+        return
+    }
     try {
-        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-        intent.addCategory(Intent.CATEGORY_BROWSABLE)
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            // 回调不一定发生在 Activity 上下文，显式 NEW_TASK 避免抛异常
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
         context.startActivity(intent)
+    } catch (e: android.content.ActivityNotFoundException) {
+        Log.e("WebView", "无应用可处理下载链接：$url", e)
     } catch (e: Exception) {
         Log.e("WebView", "setOnDownloadListener: open url failed: $url", e)
     }

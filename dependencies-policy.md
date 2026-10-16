@@ -15,7 +15,6 @@
 | KSP | 2.3.6 | 需与 Kotlin 版本对齐 |
 | Room3 | 3.0.3 | `androidx.room3` 尚处 alpha，API 演进频繁 |
 | Compose BOM | 2026.09.00 | 跟随月度 BOM |
-| Media3 | 1.11.1 | 跟随官方发布 |
 
 ## 2. 升级原则
 
@@ -90,7 +89,7 @@
 需要 Android platform API / 第三方 SDK API？
 ├─ 否 → 直接落在领域层（core:domain）或 UI 层（core:ui / feature impl）
 └─ 是 → 谁消费？
-   ├─ 仅 core 内部（data-repository / network / webview / player）
+   ├─ 仅 core 内部（data-repository / network / webview）
    │     → 实现放 core:android-platform，不建契约
    ├─ 被 feature 消费（绝大多数情况）
    │     → 契约（接口 + 模型）放 core:domain
@@ -111,7 +110,7 @@
 | `feature:*:api` | **仅对外契约**：`NavKey` 路由键、跨 feature 语义 Navigator |
 | `core:domain` | **业务能力端口**：Repository 接口、UseCase、领域结果模型、平台能力契约 |
 | `core:data-repository` | 上述端口的实现（Hilt `@Binds` 绑定） |
-| `core:database` | **例外**：直接实现 `HistoryRepository` / `ScheduleRepository` / `ThemeRepository` 三个 domain 端口（零逻辑链合并，见 §6.6），其余通过 data-contract 本地端口间接实现 |
+| `core:database` | **例外**：直接实现 `HistoryRepository` / `ScheduleRepository` / `ThemeRepository` / `OtpAccountRepository` 四个 domain 端口（零逻辑链合并，见 §6.6），其余通过 data-contract 本地端口间接实现 |
 
 理由：
 
@@ -142,10 +141,16 @@
 | R10 | `feature:*:api` 不得依赖其他 `feature:*:api`（契约层禁横向边；补 Gradle R2/R3 与 Konsist 规则 3 的交叉盲区） |
 | core→core 矩阵 | `CORE_ALLOWED_DEPENDENCIES` 正向声明；`core:ui` 三条边属登记例外，见 §6.6 |
 
+**组合根必须显式声明契约层**：`feature:*:impl` 对自身 api 一律用 `implementation(...)`，**不得用 `api(...)`**；
+`:app` 需要 NavKey 装配导航图，因此同时声明 9 条 `implementation(project(":feature:x:api"))`，
+两类边都在 `APP_ALLOWED_DEPENDENCIES` 内。原因：Gradle 守卫 `buildEdges` 只收集**直接** `ProjectDependency`，
+若 impl 用 `api()` 把契约层传递给 app，白名单对 api 层就形同虚设——app 不声明也能编译，删掉声明也不会被发现。
+降级后「少声明一条即编译失败」，白名单才真正生效。
+
 **B. 源码与 API 回归规则** — `app/src/test/.../ArchitectureTest.kt`，含 Konsist import 检查、公开 WebView 容器参数检查与选择器守卫
 运行：`./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"`
 
-规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、16（feature api 仅依赖导航契约）、17（database 领域端口例外白名单）、**18/19（业务成功码与 `runCatching`）**、**20（导航契约完整接入：方法禁止默认实现 + `Navigators` 字段/`noop()`/app 实现必须齐全）**、**21（`:app` 不得引用数据实现层，白名单登记制）**、**22（`core:designsystem` 不得 import 任何项目内模块，只放颜色/间距/主题）**、**23（`core:ui` 不得下探 data/network/database）**，以及公开 WebView 容器参数回归检查与 `boundary selectors match real files`（防止选择器写错导致规则空转）。
+规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、16（feature api 仅依赖导航契约）、17（database 领域端口例外白名单）、**18/19（业务成功码与 `runCatching`）**、**20（导航契约完整接入：方法禁止默认实现 + `Navigators` 字段/`noop()`/app 实现必须齐全）**、**21（`:app` 不得引用数据实现层，白名单登记制）**、**22（`core:designsystem` 不得 import 任何项目内模块，只放颜色/间距/主题）**、**23（`core:ui` 不得下探 data/network/database）**、**24（`feature:*:impl` 不得硬编码 `Color(0x...)`，见 §6.7）**，以及公开 WebView 容器参数回归检查与 `boundary selectors match real files`（防止选择器写错导致规则空转）。
 
 > Gradle 守卫与 Konsist 互补：`implementation(project(...))` 不产生 import 时 Konsist 感知不到；反之 Gradle 看不到源码内的越界引用。二者必须同时维护。
 
@@ -178,7 +183,10 @@
 约定：
 
 - **新增颜色/间距/圆角一律进 `AppColors` / `AppSpacing`**，组件内不许再出现 `Color(0xFF...)`；
-  已收敛的骨架屏色、下拉刷新底色与提示文字色见 `AppColors.skeleton* / refresh*`。
+  已收敛的骨架屏色、下拉刷新底色与提示文字色见 `AppColors.skeleton* / refresh*`，
+  图片选择器与预览的色值见 `AppColors.menuContainer / mediaPlaceholder`（原为 `feature/picture/impl` 内硬编码）。
+  该约定**有机器守卫**：Konsist 规则 24 禁止 `feature:*:impl` 出现 `Color(0x...)`，
+  仅放行 `*Colors.kt` / `*Theme.kt`（颜色定义处）与 `/feature/demo/`（演示模块）。
 - **组件一律进 `core:ui`**（`TitleBar` / `BackIcon` / `BottomNavItem` / `NightSwitchButton` 已从
   designsystem 迁入）。
 - **业务语义必须参数化**：文案走 `ArticleFeedLabels`，图标走 `FeedCard` 的
@@ -209,7 +217,7 @@ core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）
 ### 6.9 `core:android-platform` 的定位
 
 它是**零依赖的叶子模块**，承载「多方共用的 Android 平台原语」。消费方**只限 core 内部**
-（`data-repository` / `network` / `webview` / `player`）；`app` 与 `feature` 一律经
+（`data-repository` / `network` / `webview`）；`app` 与 `feature` 一律经
 `core:domain` 端口间接使用，不得直接依赖（守卫白名单未声明即失败）。
 
 职责用**包**划分，不按技术类别再拆模块（否则违反 §6.2 门槛）：
@@ -218,39 +226,41 @@ core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）
 |---|---|---|
 | `media/` | `MediaStoreUtils`、`MediaRow`、`BitmapCodec`、`BitmapDecoder`、`UriPathUtils` | data-repository |
 | `file/` | `FileUtils` 门面及其 internal 实现（`FileIOUtils`/`FileSizeUtils`/`FileMimeUtils`） | network、data-repository |
-| `cache/` | `CacheUtils`、`CacheDirs` | network、webview、player、data-repository |
+| `cache/` | `CacheUtils`、`CacheDirs` | network、webview、data-repository |
 | `digest/` | `DigestUtils` | webview |
 | `app/` | `AppCoroutineScope`（进程级协程作用域，Hilt 单例） | data-repository、webview |
 
 **跨模块的隐式契约必须集中定义**：缓存目录名由 `CacheDirs` 统一声明，
-`core:player`（`EXOPLAYER`）、`core:network`（`OKHTTP`）、`core:webview`（`WEB`/`WEB_HTML`）、
+`core:network`（`OKHTTP`）、`core:webview`（`WEB`/`WEB_HTML`）、
 `app`（`COIL`）与 `SystemStorage` 的清理排除表（`PROTECTED`）全部引用同一常量。
 分散硬编码时，任一侧改名不报错但会**删掉正在使用的缓存**。
 
-### 6.10 core 引擎模块（`webview` / `qrscanner` / `image-editor` / `player`）
+### 6.10 core 引擎模块（`webview` / `qrscanner` / `image-editor`）
 
-这四个模块是一类**独立于「共享复用」逻辑之外的落点**，与 `core:ui` / `core:designsystem` 等「通用库」不同：
+这三个模块是一类**独立于「共享复用」逻辑之外的落点**，与 `core:ui` / `core:designsystem` 等「通用库」不同：
 
 | 模块 | 持有的平台能力 / 第三方 SDK |
 |---|---|
 | `core:webview` | `android.webkit.*` 门面 + 池化 + CookieStore |
 | `core:qrscanner` | CameraX / ML Kit |
 | `core:image-editor` | 位图解码（`android-platform`）+ Canvas 自绘编辑 |
-| `core:player` | media3 / ExoPlayer |
+
+> 曾有的 `core:player`（media3 / ExoPlayer）已于 2026-10 移除：播放能力随「视频播放」示例页一并下线，
+> 该能力不再有承载场景，保留一个无消费者的引擎模块只会增加维护面。
 
 **准入条件**（满足其一，且需被 feature 直接调用；否则按 §6.3 走「domain 端口 + data 实现」路径）：
 
-1. 需要 Android platform API 或第三方 SDK API，**且该能力以 UI 形态存在**（画布、相机、播放器等），无法用 domain 端口表达；
+1. 需要 Android platform API 或第三方 SDK API，**且该能力以 UI 形态存在**（画布、相机等），无法用 domain 端口表达；
 2. 该能力若做成 domain 端口，会导致端口签名里出现平台类型（历史上 `MediaEditor` / `ImageHandle` / `ImageSource` 三个端口正是因此被 `core:image-editor` 取代，见 §6.4 注）。
 
 **明确排除一条误判**：**不得以「当前只有 1 个消费者」为由把引擎模块下沉回 feature。**
 引擎化的目的是消灭平台类型泄漏与 domain 端口污染，不是共享复用；消费者数量是结果，不是判据。
-（`core:image-editor` 当前仅 `feature/picture/impl` 消费、`core:player` 仅 `feature/demo/impl` 消费，均属预期。）
+（`core:image-editor` 当前仅 `feature/picture/impl` 消费，属预期。）
 
 约束：
 
 - 引擎可依赖 `core:domain`（如 `image-editor` 用 `MediaRepository` 落盘）与 `core:android-platform`，但**不得反向依赖 feature**；
-- feature 依赖引擎必须走 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 白名单（已含上述四个）；
+- feature 依赖引擎必须走 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 白名单（已含上述三个）；
 - 引擎内部的业务语义（如图片保存结果）只表达「引擎输出」，不含具体业务规则。
 
 ### 6.11 变更 checklist

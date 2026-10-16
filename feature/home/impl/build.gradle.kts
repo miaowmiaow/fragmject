@@ -13,7 +13,10 @@ android {
 }
 
 dependencies {
-    api(project(":feature:home:api"))
+    // 组合根 :app 显式声明 :feature:home:api（见 dependencies-policy.md §6.5）。
+    // 此处用 implementation 而非 api()：否则 api 层会经 impl 传递进入 app，
+    // 使 APP_ALLOWED_DEPENDENCIES 对契约层空转（守卫只看直接边）。
+    implementation(project(":feature:home:api"))
 
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))

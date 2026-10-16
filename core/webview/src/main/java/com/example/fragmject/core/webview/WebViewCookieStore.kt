@@ -30,6 +30,8 @@ import javax.inject.Singleton
  *
  * 相关但不属于本端口的能力：`setAcceptThirdPartyCookies` 需要 android.webkit.WebView 实例，
  * 由 [WebViewPoolManager] 在创建 WebView 时直接设置，避免 WebView 类型进入 domain 契约。
+ * 该开关当前为 **false**：第一方（站内登录态）不受其影响，置 true 只会让第三方页面能携带
+ * 会话 Cookie 向 wanandroid.com 发请求。详见 [WebViewPoolManager.create] 处注释。
  */
 @Singleton
 class WebViewCookieStore @Inject constructor() : CookieStore {

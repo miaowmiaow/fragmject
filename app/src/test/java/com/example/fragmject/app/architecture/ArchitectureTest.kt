@@ -642,6 +642,41 @@ class ArchitectureTest {
             }
     }
 
+    /**
+     * 规则 24：`feature:*:impl` 的 UI 代码不得硬编码颜色字面量。
+     *
+     * 颜色一律进 `AppColors`（dependencies-policy.md §6.7）：散落的 `Color(0xFF...)` 会让主题
+     * 切换与暗色适配失效，且同一色值在多个 feature 重复定义后无法统一调整。2026-10 评审时
+     * `feature/picture/impl` 有 8 处硬编码（`0xFF508CEE` / `0xFF2B2B2B` / `0xFF333333`），
+     * 已收敛为 `AppColors.blue` / `AppColors.menuContainer` / `AppColors.mediaPlaceholder`。
+     *
+     * 放行两类（都是「集中定义」而非「散落使用」）：
+     * - 文件名以 `Colors.kt` / `Theme.kt` 结尾：本身就是颜色定义处（如 `AuthenticatorColors`）；
+     * - `/feature/demo/`：平台 API 演示模块，与规则 13 同理，业务 feature 不得效仿。
+     *
+     * 存量例外（不在本规则扫描范围，但**禁止新增**）：`core:ui` 的 `NightSwitchButton` 是
+     * Canvas 自绘装饰色（太阳/月亮/星空渐变），与主题令牌无关，不适合进 `AppColors`。
+     */
+    @Test
+    fun `feature impl does not hardcode colors`() {
+        val colorLiteral = Regex("Color\\(0x[0-9A-Fa-f]{6,8}\\)")
+        val scanned = productionFiles
+            .filter { it.isFeatureImpl() }
+            .filterNot { it.projectPath.contains("/feature/demo/") }
+            .filterNot {
+                val name = it.projectPath.substringAfterLast('/')
+                name.endsWith("Colors.kt") || name.endsWith("Theme.kt")
+            }
+        assertTrue("feature impl 选择器匹配 0 文件（选择器写错会让本规则空转）", scanned.isNotEmpty())
+        val offenders = scanned
+            .filter { colorLiteral.containsMatchIn(readSource(it)) }
+            .map { it.projectPath }
+        assertTrue(
+            "feature:*:impl 不得硬编码 Color(0x...)（$offenders）——一律进 AppColors，或集中到 *Colors.kt",
+            offenders.isEmpty(),
+        )
+    }
+
     /** 通过项目根目录读取源码文本，兼容 Gradle 以模块目录为工作目录的情况。 */
     private fun readSource(file: KoFileDeclaration): String {
         val root = generateSequence(java.io.File(System.getProperty("user.dir"))) { it.parentFile }

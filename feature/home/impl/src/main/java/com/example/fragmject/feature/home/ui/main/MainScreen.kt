@@ -55,6 +55,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -136,7 +137,7 @@ private fun NavigationDrawerContent(
                         text = item.label,
                         modifier = Modifier.width(IntrinsicSize.Max),
                         fontSize = 13.sp,
-                        lineHeight = 13.sp
+                        lineHeight = 1.4.em
                     )
                 },
             )
@@ -257,7 +258,7 @@ private fun CompactMainScreen(
                         selected = navIndex == index,
                         onClick = { onNavClick(index) },
                         icon = { NavIcon(item) },
-                        label = { Text(item.label, fontSize = 13.sp, lineHeight = 13.sp) },
+                        label = { Text(item.label, fontSize = 13.sp, lineHeight = 1.4.em) },
                     )
                 }
             }
@@ -492,7 +493,7 @@ fun BottomNavigationPreview() {
                     selected = index == 0,
                     onClick = { },
                     icon = { NavIcon(item) },
-                    label = { Text(item.label, fontSize = 13.sp, lineHeight = 13.sp) },
+                    label = { Text(item.label, fontSize = 13.sp, lineHeight = 1.4.em) },
                 )
             }
         }

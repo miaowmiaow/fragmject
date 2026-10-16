@@ -16,6 +16,7 @@ import com.example.fragmject.core.webview.WebViewControl
  * - 按 [injectState] 提供 vconsole 脚本文本，由通用容器执行注入。
  *
  * [injectState] 控制是否注入 vconsole 调试脚本，由调用方（WebScreen）持有该开关状态。
+ * 这是产品化的调试面板（用户在 bottom sheet 里手动开关），release 保留属业务预期，不是残留。
  */
 @Composable
 fun ArticleWebViewContainer(

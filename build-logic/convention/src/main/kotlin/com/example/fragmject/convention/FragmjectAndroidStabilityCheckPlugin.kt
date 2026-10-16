@@ -21,8 +21,8 @@ import org.gradle.api.Project
  *    否则会导致重组被跳过、UI 不更新。已排除示例：
  *    - Coin（open class + var username）
  *    - MyCoin（继承 Coin，间接持有 var username）
- *    - Tree（var childrenSelectPosition）
  *    - CoinRankData（持有 List<Coin>，Coin 含 var username）
+ *    - 注：Tree 原因 var childrenSelectPosition 被排除，该字段（全项目零使用）移除后已收录
  *    - MyCoinData（持有 List<MyCoin>，MyCoin 继承 Coin）
  * 3. 新增 core/model 数据类后，必须同步追加到配置文件，否则会被视为不稳定、造成静默性能退化。
  * 4. 删除/重命名数据类后，必须同步移除配置对应行，否则产生幽灵类（本任务会检测）。

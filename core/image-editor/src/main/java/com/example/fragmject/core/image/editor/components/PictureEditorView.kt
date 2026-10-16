@@ -341,10 +341,16 @@ class PictureEditorState {
         bitmapMatrix.postTranslate(dx, dy)
     }
 
-    /** 释放加载作用域：页面离开组合时调用，避免在途解码协程泄漏。 */
+    /**
+     * 取消在途解码：页面离开组合时调用，避免在途解码协程泄漏。
+     *
+     * 只取消 [loadJob]、**不** cancel [loadScope]：后者 cancel 后不可重启，而本 View 的 state
+     * 会被复用（编辑器 → 预览 → 返回），此后 [initBitmap] 的 launch 会立即被取消，表现为画布空白。
+     * 避免泄漏的目的由 loadJob.cancel() 达成；loadScope 是 view 级作用域，随 view 一起回收。
+     */
     fun release() {
         loadJob?.cancel()
-        loadScope.cancel()
+        loadJob = null
     }
 
     fun initBitmap() {

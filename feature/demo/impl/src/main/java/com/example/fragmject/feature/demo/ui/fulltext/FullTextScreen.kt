@@ -8,10 +8,6 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -34,10 +30,6 @@ fun FullTextScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column {
-            var ellipsis1 by remember { mutableStateOf(false) }
-            var expand1 by remember { mutableStateOf(false) }
-            var ellipsis2 by remember { mutableStateOf(false) }
-            var expand2 by remember { mutableStateOf(false) }
             Box(modifier = Modifier.padding(10.dp)) {
                 EllipsisText(
                     text = buildAnnotatedString {
@@ -47,9 +39,8 @@ fun FullTextScreen() {
                         )
                     },
                     color = MaterialTheme.colorScheme.onPrimary,
-                    backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
-                    maxLines = if (expand1) Int.MAX_VALUE else 1,
+                    maxLines = 1,
                     inlineContent = mapOf(
                         Pair(
                             "icon",
@@ -68,19 +59,7 @@ fun FullTextScreen() {
                             }
                         )
                     ),
-                    onTextLayout = {
-                        ellipsis1 = it.isLineEllipsized(it.lineCount - 1)
-                    },
-                    ellipsisText = if (expand1) {
-                        "...收起"
-                    } else if (ellipsis1) {
-                        "...展开"
-                    } else {
-                        ""
-                    }
-                ) {
-                    expand1 = !expand1
-                }
+                )
             }
             Box(modifier = Modifier.padding(10.dp)) {
                 EllipsisText(
@@ -90,22 +69,9 @@ fun FullTextScreen() {
                         )
                     },
                     color = MaterialTheme.colorScheme.onPrimary,
-                    backgroundColor = MaterialTheme.colorScheme.background,
                     fontSize = 14.sp,
-                    maxLines = if (expand2) Int.MAX_VALUE else 1,
-                    onTextLayout = {
-                        ellipsis2 = it.isLineEllipsized(it.lineCount - 1)
-                    },
-                    ellipsisText = if (expand2) {
-                        "...收起"
-                    } else if (ellipsis2) {
-                        "...展开"
-                    } else {
-                        ""
-                    }
-                ) {
-                    expand2 = !expand2
-                }
+                    maxLines = 1,
+                )
             }
         }
     }

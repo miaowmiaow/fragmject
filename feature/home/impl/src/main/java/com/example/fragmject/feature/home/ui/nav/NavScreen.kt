@@ -138,9 +138,9 @@ fun NavLinkContent(
             VerticalPager(state = pagerState, userScrollEnabled = false) { page ->
                 val gridState = remember(page) { LazyGridState() }
                 val articles = uiState.navigationResult.getOrNull(page)?.articles.orEmpty()
-                // flingBehavior 依赖 gridState/pagerState，用 remember 缓存：
-                // 否则每次重组都会新建 FlingBehavior 实例（含 ScrollableDefaults.flingBehavior()），
-                // 既浪费分配，又会导致嵌套滚动（fling 到相邻页）的状态丢失。
+                // ScrollableDefaults.flingBehavior() 本身是 @Composable（读 LocalDensity），
+                // 无法放进 remember；它仅被下面 remember 缓存的 FlingBehavior 捕获一次，
+                // 后续的每次重组只是多一次分配，不影响已缓存的嵌套滚动行为。
                 val defaultFlingBehavior = ScrollableDefaults.flingBehavior()
                 val flingBehavior = remember(pagerState, gridState) {
                     object : FlingBehavior {

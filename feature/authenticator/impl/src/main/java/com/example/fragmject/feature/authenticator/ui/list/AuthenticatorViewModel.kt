@@ -26,6 +26,9 @@ import kotlin.time.Duration.Companion.milliseconds
 /** 时间推进间隔：既要让倒计时环平滑，又不必每帧重算 HMAC。 */
 private const val TICK_MILLIS = 500L
 
+/** HOTP 与时间无关，缓存步固定为该值即可做到「只算一次」。 */
+private const val HOTP_NO_STEP = -1L
+
 /** 密钥非法（手输时存进了非 Base32）时的占位码，避免 UI 崩溃或显示空串。 */
 private const val INVALID_SECRET_CODE = "------"
 
@@ -66,13 +69,30 @@ class AuthenticatorViewModel @Inject constructor(
     /** 时间漂移（毫秒）；只查一次，UDP 不通或漂移不大时为 null。 */
     private val timeDrift = MutableStateFlow<Long?>(null)
 
+    /**
+     * 验证码缓存：accountId -> (时间步, code)。
+     *
+     * TOTP 的验证码只随「时间步」`now / (period*1000)` 变化，而 tick 是 500ms——多数 tick 结果
+     * 完全相同；HOTP 与当前时间无关（用固定 counter），只需算一次。缓存后 HMAC 次数从
+     * 「账户数 × 2 次/秒」降为「账户数 / 周期」。
+     *
+     * 仅在 Main 线程访问（combine / stateIn 均跑在 viewModelScope 的 Main），无需额外同步。
+     */
+    private val codeCache = HashMap<Long, Pair<Long, String>>()
+
     val uiState: StateFlow<AuthenticatorUiState> = combine(
         repository.observeAll(),
         nowMillis,
         timeDrift,
     ) { accounts, now, drift ->
+        val adjusted = now + (drift ?: 0L)
+        // 账户被删除后清掉对应缓存，避免无界增长
+        if (codeCache.size > accounts.size) {
+            val ids = accounts.mapTo(HashSet()) { it.id }
+            codeCache.keys.retainAll(ids)
+        }
         AuthenticatorUiState.Success(
-            items = accounts.map { it.toItem(now) },
+            items = accounts.map { it.toItem(adjusted) },
             timeDriftMillis = drift?.take { kotlin.math.abs(it) > SntpTimeSource.DRIFT_THRESHOLD_MS },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AuthenticatorUiState.Loading)
@@ -110,14 +130,25 @@ class AuthenticatorViewModel @Inject constructor(
         }
     }
 
-    private fun OtpAccount.toItem(now: Long): OtpCodeItem = OtpCodeItem(
-        account = this,
-        code = codeAt(now),
-        remainingMillis = if (type == OtpType.TOTP) Totp.remainingMillis(now, period) else 0L,
-        periodMillis = period * 1000L,
-    )
+    private fun OtpAccount.toItem(now: Long): OtpCodeItem {
+        // HOTP 与时间无关，用固定步 [HOTP_NO_STEP] 表示「只需算一次」
+        val step = if (type == OtpType.TOTP) now / (period * 1000L) else HOTP_NO_STEP
+        val cached = codeCache[id]
+        val code = if (cached != null && cached.first == step) {
+            cached.second
+        } else {
+            generateCode(now).also { codeCache[id] = step to it }
+        }
+        return OtpCodeItem(
+            account = this,
+            code = code,
+            remainingMillis = if (type == OtpType.TOTP) Totp.remainingMillis(now, period) else 0L,
+            periodMillis = period * 1000L,
+        )
+    }
 
-    private fun OtpAccount.codeAt(now: Long): String {
+    /** 真正执行 HMAC：仅在缓存未命中（时间步跨过 / 首次 / 账户变更）时调用。 */
+    private fun OtpAccount.generateCode(now: Long): String {
         val secretBytes = Base32.decode(secret) ?: return INVALID_SECRET_CODE
         return if (type == OtpType.TOTP) {
             Totp.generate(secretBytes, now, period, digits, algorithm)

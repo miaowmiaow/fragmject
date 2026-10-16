@@ -7,9 +7,14 @@ plugins {
 
 dependencies {
     // Picture API (NavKeys)
-    api(project(":feature:picture:api"))
+    // 组合根 :app 显式声明 :feature:picture:api（见 dependencies-policy.md §6.5）。
+    // 此处用 implementation 而非 api()：否则 api 层会经 impl 传递进入 app，
+    // 使 APP_ALLOWED_DEPENDENCIES 对契约层空转（守卫只看直接边）。
+    implementation(project(":feature:picture:api"))
 
     // Core
+    // designsystem：UI 一律使用 AppColors 设计令牌，不得出现 Color(0xFF...) 字面量（Konsist 规则 24）
+    implementation(project(":core:designsystem"))
     implementation(project(":core:image-editor"))
     implementation(project(":core:domain"))
     implementation(project(":core:navigation-contract"))

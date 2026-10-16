@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.authenticator.model
 
+import androidx.compose.runtime.Immutable
 import com.example.fragmject.core.domain.otp.OtpAccount
 import com.example.fragmject.core.domain.otp.OtpType
 
@@ -10,6 +11,12 @@ import com.example.fragmject.core.domain.otp.OtpType
  * 与 `components`（[com.example.fragmject.feature.authenticator.components.AccountCard]）
  * 都要引用它。若留在 `ui.list`，共享层 `components` 就会反向依赖具体页面包。
  */
+/**
+ * `account` 所在的 [OtpAccount] 位于 core:domain（无 compose 依赖，无法收录进
+ * compose_stability_config.conf），故在此显式标注 [Immutable]：其字段全为 val、实际不可变。
+ * 这样账户列表每 500ms 重建 List 时，内容未变的条目可以跳过重组。
+ */
+@Immutable
 data class OtpCodeItem(
     val account: OtpAccount,
     val code: String,

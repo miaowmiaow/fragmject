@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config xmlns:tools="http://schemas.android.com/tools">
     <!--
-        cleartextTrafficPermitted=true 为有意保留：
-        WebView 需加载 http 明文内容（第三方网页、博客图片等），
-        关闭会破坏网页浏览与图片加载功能。
+        cleartextTrafficPermitted=true 为【业务需要】，不是漏配，勿改为 false：
+
+        1. 文章链接来自第三方站点，域名不可枚举，因此无法用 <domain-config> 白名单收敛——
+           关掉 base-config 等于让所有 http 文章页直接打不开；
+        2. 本项目接口全走 https（config.properties: baseUrl=https://www.wanandroid.com/），
+           本配置对 OkHttp 无影响，只作用于 WebView。
+
+        若确需降低明文面，方向不是收紧本配置，而是在打开 http 页面时给用户「页面未加密」提示。
     -->
     <base-config
         cleartextTrafficPermitted="true"

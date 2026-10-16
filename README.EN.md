@@ -66,27 +66,29 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 |     └── proguard-rules.pro                     code obfuscation config
 | 
 ├── core                                         core layer (foundation, no business dependencies)
-|  ├── android-platform                          platform & process-level utilities (AppScope / BaseContentProvider / File* / CacheUtils / UriPathUtils)
-|  ├── data-contract                             data port contracts (remote/local DataSource + HTTP protocol models)
-|  ├── data-repository                           data implementation (RepositoryImpl / PagingSource / Hilt bindings)
-|  ├── database                                  database (Room 3)
-|  ├── designsystem                              design system (AppTheme / WindowSizeClass / components)
-|  ├── domain                                    domain layer (Repository interfaces + UseCase + DomainResult)
-|  ├── model                                     data models
-|  ├── navigation-contract                       navigation contracts (semantic Navigator, cross-feature decoupling)
-|  ├── navigation-runtime                        navigation capability (Navigation 3 type-safe routes)
-|  ├── network                                   network layer (Retrofit + OkHttp)
-|  ├── player                                    playback capability (Media3)
-|  ├── ui                                        UI component library (FeedCard / SwipeRefreshBox etc.)
-|  └── webview                                   WebView capability
+|  ├── android-platform                             platform & process-level utilities (AppScope / BaseContentProvider / File* / CacheUtils / UriPathUtils)
+|  ├── data-contract                                data port contracts (remote/local DataSource + HTTP protocol models)
+|  ├── data-repository                              data implementation (RepositoryImpl / PagingSource / Hilt bindings)
+|  ├── database                                     database (Room 3)
+|  ├── designsystem                                 design system (AppTheme / WindowSizeClass / colors / spacing, no components)
+|  ├── domain                                       domain layer (Repository interfaces + UseCase + DomainResult)
+|  ├── image-editor                                 image editing engine (canvas / crop / encode / save)
+|  ├── model                                        data models
+|  ├── navigation-contract                          navigation contracts (semantic Navigator, cross-feature decoupling)
+|  ├── navigation-runtime                           navigation capability (Navigation 3 type-safe routes)
+|  ├── network                                      network layer (Retrofit + OkHttp)
+|  ├── qrscanner                                    scanning capability (CameraX / ML Kit)
+|  ├── ui                                           UI component library (FeedCard / SwipeRefreshBox etc.)
+|  └── webview                                      WebView capability (pooling / caching / CookieStore)
 | 
 ├── feature                                      feature modules (each contains api / impl submodules)
-|  ├── article                                   article module (WebView detail / download / playback)
+|  ├── article                                   article module (WebView detail / download)
 |  |  ├── api                                    API layer (NavKey definitions)
 |  |  └── impl                                   implementation layer (Screen / ViewModel)
 |  ├── auth                                      login / signup
+|  ├── authenticator                             OTP (account management / Keystore-encrypted secret)
 |  ├── collection                                favorites / shares
-|  ├── demo                                      component demos (calendar / image picker / drag etc.)
+|  ├── demo                                      component demos (calendar / wheel picker / scanning / nested scroll etc.)
 |  ├── home                                      home (Home / Nav / Project / System / My)
 |  ├── picture                                   picture module (picker / preview / editor)
 |  ├── search                                    search

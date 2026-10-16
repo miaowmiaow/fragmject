@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.feature.picture.state.PictureFlowState
 import kotlinx.coroutines.launch
 
@@ -277,7 +278,7 @@ fun PictureSelectorScreen(
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { flowState.setAlbumMenuExpanded(false) },
-                            containerColor = Color(0xFF2B2B2B),
+                            containerColor = AppColors.menuContainer,
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             albumResult.forEach { album ->
@@ -307,7 +308,7 @@ fun PictureSelectorScreen(
                     ) {
                         Text(
                             if (selectedUris.isEmpty()) "确定" else "确定(${selectedUris.size})",
-                            color = if (selectedUris.isNotEmpty()) Color(0xFF508CEE) else Color.Gray,
+                            color = if (selectedUris.isNotEmpty()) AppColors.blue else Color.Gray,
                             fontSize = 16.sp
                         )
                     }
@@ -327,7 +328,7 @@ fun PictureSelectorScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
-                                .background(Color(0xFF333333))
+                                .background(AppColors.mediaPlaceholder)
                                 .clickable {
                                     if (
                                         ContextCompat.checkSelfPermission(
@@ -389,7 +390,7 @@ fun PictureSelectorScreen(
                                     .size(22.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (isSelected) Color(0xFF508CEE)
+                                        if (isSelected) AppColors.blue
                                         else Color.Transparent
                                     )
                                     .then(

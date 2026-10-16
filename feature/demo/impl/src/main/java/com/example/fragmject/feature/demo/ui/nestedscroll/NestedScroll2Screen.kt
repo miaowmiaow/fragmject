@@ -34,14 +34,12 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.util.UnstableApi
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.ui.components.SwipeRefreshBox
 import com.example.fragmject.core.ui.components.TabBar
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-@OptIn(UnstableApi::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun NestedScroll2Screen() {

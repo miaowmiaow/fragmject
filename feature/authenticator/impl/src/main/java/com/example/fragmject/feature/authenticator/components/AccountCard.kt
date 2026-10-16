@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.example.fragmject.feature.authenticator.model.OtpCodeItem
 
@@ -132,7 +133,7 @@ fun AccountCard(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Medium,
                     fontSize = 26.sp,
-                    lineHeight = 32.sp,
+                    lineHeight = 1.4.em,
                     letterSpacing = 2.sp,
                     color = MaterialTheme.colorScheme.secondary,
                 )

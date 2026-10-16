@@ -5,11 +5,13 @@ plugins {
 }
 
 dependencies {
-    api(project(":feature:demo:api"))
+    // 组合根 :app 显式声明 :feature:demo:api（见 dependencies-policy.md §6.5）。
+    // 此处用 implementation 而非 api()：否则 api 层会经 impl 传递进入 app，
+    // 使 APP_ALLOWED_DEPENDENCIES 对契约层空转（守卫只看直接边）。
+    implementation(project(":feature:demo:api"))
 
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
-    implementation(project(":core:player"))
     implementation(project(":core:domain"))
     implementation(project(":core:navigation-runtime"))
     implementation(project(":core:navigation-contract"))
@@ -28,9 +30,6 @@ dependencies {
 
     // Camera / Barcode
     implementation(project(":core:qrscanner"))
-
-    // Media3
-    implementation(libs.androidx.media3.exoplayer)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines)

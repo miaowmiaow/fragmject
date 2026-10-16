@@ -308,6 +308,18 @@ private val APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(
     ":feature:search:impl",
     ":feature:user:impl",
     ":feature:picture:impl",
+    // 契约层（NavKey）：组合根装配导航图需要，必须显式声明。
+    // 各 impl 对自身 api 已降为 implementation，不再经 api() 传递到这里，
+    // 因此这两组边都会被本白名单真实检查（守卫只收集直接依赖边）。
+    ":feature:article:api",
+    ":feature:authenticator:api",
+    ":feature:auth:api",
+    ":feature:collection:api",
+    ":feature:demo:api",
+    ":feature:home:api",
+    ":feature:search:api",
+    ":feature:user:api",
+    ":feature:picture:api",
 )
 
 /** core 模块间允许的依赖矩阵（正向声明）。未声明的 core→core 边一律失败。 */
@@ -357,7 +369,6 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     // 不得继续下探到 data-repository / network / database。
     ":core:ui" to setOf(":core:designsystem", ":core:model", ":core:domain"),
     ":core:image-editor" to setOf(":core:domain", ":core:android-platform"),
-    ":core:player" to setOf(":core:android-platform"),
     // qrscanner 只依赖 CameraX / ML Kit 等外部 SDK，不依赖其他 core 模块：
     // 这些 SDK 由本引擎独占持有，feature 不得各自引入一份
     ":core:qrscanner" to emptySet(),
@@ -371,16 +382,15 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
  * network / database 一律不在白名单内，防止数据实现层泄漏到 UI 层。
  * 未声明的 feature→core 边一律失败。
  *
- * 白名单里的 :core:webview / :core:qrscanner / :core:image-editor / :core:player 属
+ * 白名单里的 :core:webview / :core:qrscanner / :core:image-editor 属
  * **引擎模块**（dependencies-policy.md §6.10）：它们持有 Android platform API 或第三方 SDK
- * （webkit / CameraX+ML Kit / 位图+Canvas / media3），且以 UI 形态存在，无法用 domain 端口表达，
+ * （webkit / CameraX+ML Kit / 位图+Canvas），且以 UI 形态存在，无法用 domain 端口表达，
  * 因此允许 feature 直接依赖。
  *
  * ⚠️ 判据提醒：**不要用「当前只有 1 个消费者」去否决引擎模块**。引擎化的目的是消灭平台类型泄漏
  * 与 domain 端口污染（历史上的 MediaEditor / ImageHandle / ImageSource 三个端口即因此被
  * :core:image-editor 取代），不是共享复用——消费者数量是结果，不是判据。
- * :core:image-editor 目前仅 picture/impl 消费、:core:player 仅 demo/impl 消费，均属预期，
- * 不要把它们下沉回 feature。
+ * :core:image-editor 目前仅 picture/impl 消费属预期，不要把它下沉回 feature。
  */
 private val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
     ":core:designsystem",
@@ -389,7 +399,6 @@ private val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
     ":core:model",
     ":core:navigation-runtime",
     ":core:navigation-contract",
-    ":core:player",
     ":core:qrscanner",
     ":core:ui",
     ":core:webview",

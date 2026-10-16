@@ -1,5 +1,6 @@
 package com.example.fragmject.core.data.repository
 
+import android.util.Log
 import com.example.fragmject.core.data.contract.local.UserLocalDataSource
 import com.example.fragmject.core.data.contract.model.DataResponse
 import com.example.fragmject.core.data.contract.model.isSuccess
@@ -48,7 +49,7 @@ class UserRepositoryImpl @Inject constructor(
                 readSessionCookies()
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 return@withLock AuthResult.Error("登录状态读取失败，请重试")
             }
             val response = try {
@@ -56,7 +57,7 @@ class UserRepositoryImpl @Inject constructor(
             } catch (e: CancellationException) {
                 clearChangedSession(previousCookies)?.let { e.addSuppressed(it) }
                 throw e
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 val failure = clearChangedSession(previousCookies)
                 return@withLock AuthResult.Error(
                     if (failure == null) "认证请求失败，请稍后重试" else "认证请求失败，本地会话清理失败",
@@ -81,7 +82,7 @@ class UserRepositoryImpl @Inject constructor(
             } catch (e: CancellationException) {
                 clearLocalSession()?.let { e.addSuppressed(it) }
                 throw e
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 val failure = clearLocalSession()
                 AuthResult.Error(
                     if (failure == null) "登录状态保存失败，请重试" else "登录状态保存失败，本地会话清理失败",
@@ -102,12 +103,19 @@ class UserRepositoryImpl @Inject constructor(
             true
         } finally {
             clearLocalSession()?.let { cleanupFailure ->
-                val failure = remoteFailure
-                if (failure is CancellationException) {
-                    failure.addSuppressed(cleanupFailure)
-                } else {
-                    failure?.let { cleanupFailure.addSuppressed(it) }
-                    throw cleanupFailure
+                when (val failure = remoteFailure) {
+                    is CancellationException -> failure.addSuppressed(cleanupFailure)
+                    null -> {
+                        // 远端登出已生效：本地清理失败不能把「成功」翻转成异常，否则 UI 会提示
+                        // 登出失败并诱导用户重复点击（远端会话此时已不存在）。残留的本地用户
+                        // 数据由下次启动的会话校验兜底，故只记录不抛出。
+                        Log.w(TAG, "logout: 远端已登出，但本地会话清理失败", cleanupFailure)
+                    }
+
+                    else -> {
+                        failure.addSuppressed(cleanupFailure)
+                        throw cleanupFailure
+                    }
                 }
             }
         }
@@ -123,7 +131,7 @@ class UserRepositoryImpl @Inject constructor(
         withContext(NonCancellable) {
             val changed = try {
                 readSessionCookies() != previousCookies
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 true
             }
             if (changed) clearLocalSession() else null
@@ -152,6 +160,7 @@ class UserRepositoryImpl @Inject constructor(
     override fun observeCurrentUser(): Flow<User?> = local.observeCurrentUser()
 
     private companion object {
+        const val TAG = "UserRepositoryImpl"
         val SESSION_URLS = listOf("https://wanandroid.com/", "https://www.wanandroid.com/")
     }
 }

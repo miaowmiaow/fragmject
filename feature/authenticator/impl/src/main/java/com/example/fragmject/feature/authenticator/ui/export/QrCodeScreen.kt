@@ -58,6 +58,11 @@ private const val RENDER_CONFIRM_DELAY = 50L
  * 渲染交给 WebView。页面受 CSP 约束（`default-src 'none'`）且不发起网络请求，
  * 因此 TOTP 密钥不会离开设备。
  *
+ * **安全域混用（已知，待治理）**：本页复用 `core:webview` 的**池化** WebView，而池内实例是
+ * 按「任意第三方网页」配置的（JS 开启、混合内容放行）。也就是说，承载 TOTP 密钥的本地页面与
+ * 任意第三方文章页共用同一批实例。当前靠 CSP + 不发起网络请求缓解，但两者安全域本应隔离：
+ * 治理方向是让本地敏感页走「最小权限」配置（关闭 JS、不进 keep-alive 池）。
+ *
  * 渲染走两条互补路径：
  * - [scriptsProvider]：页面加载进度超过 80% 时注入一次，保证首次渲染发生在脚本就绪之后；
  * - `evaluateJavascript`：数据变化时主动重渲染（若页面尚未就绪则无效，由前者兜底）。

@@ -26,7 +26,7 @@
         └──────────────────────────────────────────┘
 ```
 
-### core 模块按职责分组（共 15 个）
+### core 模块按职责分组（共 14 个）
 
 | 类别 | 模块 | 职责 | 可依赖的 core |
 |---|---|---|---|
@@ -37,7 +37,7 @@
 | | `core:database` | KV + Room；**登记例外**：直接实现 4 个 domain 端口 | domain / data-contract / android-platform / model |
 | | `core:network` | OkHttp + Retrofit；`CookieStore` 只注入不实现 | domain / data-contract / android-platform / model |
 | **平台能力** | `core:android-platform` | Android 原语（零依赖叶子，**仅 core 内部消费**） | — |
-| **引擎模块** | `core:webview` / `qrscanner` / `image-editor` / `player` | 平台 UI 能力（详见 §四） | 见矩阵 |
+| **引擎模块** | `core:webview` / `qrscanner` / `image-editor` | 平台 UI 能力（详见 §四） | 见矩阵 |
 | **导航** | `core:navigation-contract` | NavKey 标记、语义 Navigator 接口（纯契约） | — |
 | | `core:navigation-runtime` | 注册机制、DetailPane 渲染、ViewModelStore | — |
 | **设计系统** | `core:designsystem` | 颜色 / 间距 / 主题（**不含组件**） | — |
@@ -54,7 +54,7 @@
 | `feature:*:impl` → `feature:*:impl` / 其他 `api` | ❌ 禁止 | Gradle R2/R3 + 规则 3/4 |
 | `feature:*:api` → `feature:*:impl` / 其他 `api` | ❌ 禁止 | Gradle R6/R10 |
 | `feature:*:api` → `core:*` | 仅 `core:navigation-contract` | Gradle R9 + 规则 16 |
-| `feature:*:impl` → `core:*` | 白名单内（10 个，不含任何数据实现模块） | Gradle R8 |
+| `feature:*:impl` → `core:*` | 白名单内（9 个，不含任何数据实现模块） | Gradle R8 |
 | `core:*` → `feature:*` / `:app` | ❌ 禁止 | Gradle R4/R7 + 规则 5/8 |
 | `core:domain` → 任何数据模块 | ❌ 禁止 | Gradle R1 + 规则 1 |
 | `core:*` → `core:*` | 正向矩阵 `CORE_ALLOWED_DEPENDENCIES`，未声明即失败 | Gradle R-core |
@@ -106,9 +106,11 @@ feature/{name}/impl/.../
 
 ### 引擎模块是一类特殊落点
 
-`core:webview`、`core:qrscanner`、`core:image-editor`、`core:player` 属于**引擎模块**：它们持有 Android platform API 或第三方 SDK，且**以 UI 形态存在**，无法用 domain 端口表达（历史上 `MediaEditor` / `ImageHandle` / `ImageSource` 三个端口正是因签名里出现平台类型而被 `core:image-editor` 取代）。
+`core:webview`、`core:qrscanner`、`core:image-editor` 属于**引擎模块**：它们持有 Android platform API 或第三方 SDK，且**以 UI 形态存在**，无法用 domain 端口表达（历史上 `MediaEditor` / `ImageHandle` / `ImageSource` 三个端口正是因签名里出现平台类型而被 `core:image-editor` 取代）。
 
-> ⚠️ **不要用「当前只有 1 个消费者」去否决引擎模块。** 引擎化的目的是消灭平台类型泄漏与 domain 端口污染，不是共享复用——消费者数量是结果，不是判据。`core:image-editor` 仅 `picture/impl` 消费、`core:player` 仅 `demo/impl` 消费，均属预期。
+> ⚠️ **不要用「当前只有 1 个消费者」去否决引擎模块。** 引擎化的目的是消灭平台类型泄漏与 domain 端口污染，不是共享复用——消费者数量是结果，不是判据。`core:image-editor` 仅 `picture/impl` 消费属预期。
+> 反过来也要注意：这条是「不要因为消费者少而下沉」，**不等于**「即使能力已下线也必须留着模块」——
+> 播放能力随 `core:player` 与「视频播放」示例页一起移除，正属于后者。
 
 ### designsystem 与 ui 的边界
 
@@ -158,6 +160,7 @@ feature/{name}/impl/.../
 - 规则 21：`:app` 不得引用数据实现层（白名单登记制）
 - 规则 22：`core:designsystem` 不得 import 任何项目内模块
 - 规则 23：`core:ui` 不得下探 data / network / database
+- 规则 24：`feature:*:impl` 不得硬编码 `Color(0x...)`（颜色一律进 `AppColors`，或集中到 `*Colors.kt`）
 - 另：`boundary selectors match real files` 防止选择器写错导致规则空转
 
 ## 六、常见误判（本项目踩过的坑）

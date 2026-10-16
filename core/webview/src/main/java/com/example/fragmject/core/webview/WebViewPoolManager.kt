@@ -88,14 +88,22 @@ class WebViewPoolManager @Inject constructor(
         webSettings.displayZoomControls = false
         webSettings.useWideViewPort = true
         webSettings.mediaPlaybackRequiresUserGesture = true
+        // 【业务需要，勿收紧】第三方老博客大量使用 http 图片，改 MIXED_CONTENT_NEVER_ALLOW 会让
+        // https 文章页内的 http 图片全部空白，对阅读器是硬伤。当前档位只放行图片/视频等被动内容，
+        // 脚本 / iframe / XHR 仍被阻断，因此不构成「注入脚本」链路。
         webSettings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null)
-        webView.setRendererPriorityPolicy(
-            WebView.RENDERER_PRIORITY_BOUND,
-            true
-        )
-        // 第三方 Cookie 开关需要 WebView 实例，故留在池内直接设置，不进入 CookieStore 领域契约
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+        webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, true)
+        // 第三方 Cookie 开关需要 WebView 实例，故留在池内直接设置，不进入 CookieStore 领域契约。
+        //
+        // 置 false（平台默认值）：该开关**只作用于第三方上下文**——若页面是 wanandroid 站内页
+        // （第一方），开关与否都不影响登录态；文章页的收藏/历史等能力全走 OkHttp，不经 WebView。
+        // 因此关闭没有任何业务代价。
+        //
+        // 反之为 true 时是本项目唯一成立的会话凭证外泄面：第三方页面虽因域隔离**读不到**
+        // wanandroid 的 Cookie，却可以**携带**它向 wanandroid.com 发请求（CSRF / 凭证外泄）。
+        // 这也是这批 WebView 配置里唯一没有业务依据、属顺手全开的一项；改回 true 前请先给出业务依据。
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false)
         return webView
     }
 
@@ -306,6 +314,10 @@ class WebViewPoolManager @Inject constructor(
      * - 高端（≥512MB）：8 个，峰值约 640MB。
      *
      * 仅在前台内存充裕时才可能占满；一旦触发 onTrimMemory 会立即 trimToSpare/releaseAll 释放。
+     *
+     * 【业务取舍，非疏漏】keep-alive 保的是「返回文章页不重新加载、不丢滚动位置」，这是明确的
+     * 业务收益；8 个是「尽可能多保留」的偏激进取值，不是漏配。若要下调，请按「回看 N 篇内不重载」
+     * 反推，而不是按「看起来太多」随意改。
      */
     private fun calculateKeepAliveCapacity(context: Context): Int {
         val memoryClass =

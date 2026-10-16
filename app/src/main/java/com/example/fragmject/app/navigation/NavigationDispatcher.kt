@@ -1,5 +1,6 @@
 package com.example.fragmject.app.navigation
 
+import android.util.Log
 import androidx.navigation3.runtime.NavKey
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,7 +57,13 @@ class NavigationDispatcher @Inject constructor() {
         if (current != null && !replaying) {
             current.execute(command)
         } else {
-            check(pendingCommands.size < 32) { "Too many navigation commands without an active graph" }
+            // 导航图尚未绑定时命令只能积压，这本身是「图还没准备好」的预期状态，
+            // 不能因达到上限就让调用方崩溃（生产上会变成 IllegalStateException）。
+            // 超限丢弃最旧的一条，保留最近的导航意图。
+            if (pendingCommands.size >= MAX_PENDING_COMMANDS) {
+                pendingCommands.removeFirst()
+                Log.w(TAG, "导航命令积压超过 $MAX_PENDING_COMMANDS 条，已丢弃最旧的一条")
+            }
             pendingCommands.addLast(command)
         }
     }
@@ -84,5 +91,10 @@ class NavigationDispatcher @Inject constructor() {
         return {
             if (binding?.owner === owner) binding = null
         }
+    }
+
+    private companion object {
+        const val TAG = "NavigationDispatcher"
+        const val MAX_PENDING_COMMANDS = 32
     }
 }

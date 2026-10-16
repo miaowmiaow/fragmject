@@ -19,15 +19,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.fragmject.core.designsystem.AppSpacing
@@ -66,6 +69,8 @@ fun FeedCard(
     toggleUncheckedIconRes: Int = R.mipmap.ic_toggle_unchecked,
 ) {
     val toggleResId = if (data.selected) toggleCheckedIconRes else toggleUncheckedIconRes
+    // 缓存 AnnotatedString：buildAnnotatedString 会在每次重组都重新分配一次
+    val descText = remember(data.desc) { AnnotatedString(data.desc) }
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AppSpacing.cardCornerRadius))
@@ -99,7 +104,7 @@ fun FeedCard(
                     color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 12.sp,
+                    lineHeight = 1.4.em,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -107,7 +112,7 @@ fun FeedCard(
                     text = data.date,
                     color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 12.sp,
-                    lineHeight = 12.sp,
+                    lineHeight = 1.4.em,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -128,12 +133,14 @@ fun FeedCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = data.desc,
+                    EllipsisText(
+                        text = descText,
                         color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp,
+                        lineHeight = 1.4.em,
                         maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
+                        // 信息流里展开动画是纯开销：滚动时每个 item 都多一层动画层
+                        animate = false,
                     )
                 } else {
                     Text(
@@ -180,7 +187,7 @@ fun FeedCard(
                         modifier = footModifier.clickable { onFooterClick(data.footerId) },
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         fontSize = 12.sp,
-                        lineHeight = 12.sp,
+                        lineHeight = 1.4.em,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -189,7 +196,7 @@ fun FeedCard(
                     modifier = footModifier.clickable { onFooterClick(data.footerId) },
                     color = MaterialTheme.colorScheme.onTertiary,
                     fontSize = 12.sp,
-                    lineHeight = 12.sp,
+                    lineHeight = 1.4.em,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

@@ -32,6 +32,10 @@ object AppColors {
     // 下拉刷新/上拉加载的容器底色与提示文字色（原为 core:ui 内硬编码值）
     val refreshContainer = Color(0xFF010101)
     val refreshHintText = Color(0xFF999999)
+
+    // 图片选择/预览：下拉菜单容器底色与图片占位底色（原为 feature/picture/impl 内硬编码值）
+    val menuContainer = Color(0xFF2B2B2B)
+    val mediaPlaceholder = Color(0xFF333333)
 }
 
 val AppDarkColorScheme = darkColorScheme(

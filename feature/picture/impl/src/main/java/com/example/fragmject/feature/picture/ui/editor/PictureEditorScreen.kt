@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.image.editor.components.EditorMode
 import com.example.fragmject.core.image.editor.components.PictureEditorCanvas
 import com.example.fragmject.core.image.editor.components.rememberPictureEditorState
@@ -290,12 +291,12 @@ fun PictureEditorScreen(
                             Icon(
                                 toolIcons[index],
                                 contentDescription = name,
-                                tint = if (isSelected) Color(0xFF508CEE) else Color.White,
+                                tint = if (isSelected) AppColors.blue else Color.White,
                                 modifier = Modifier.size(28.dp)
                             )
                             Text(
                                 name,
-                                color = if (isSelected) Color(0xFF508CEE) else Color.White,
+                                color = if (isSelected) AppColors.blue else Color.White,
                                 fontSize = 11.sp
                             )
                         }

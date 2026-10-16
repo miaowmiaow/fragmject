@@ -23,7 +23,7 @@ import javax.inject.Singleton
  * 缓存目录与清理范围等业务规则收敛在此，UI 不再直接接触 CacheUtils：
  * - 下载成品（应用专属外部文件目录）不在缓存目录内，天然不参与清理；
  * - [CacheDirs.PROTECTED] 中的常驻缓存由进程内单例长期持有，清理时必须排除，
- *   否则会破坏 Coil DiskCache / OkHttp 磁盘缓存 / ExoPlayer SimpleCache 的索引与锁。
+ *   否则会破坏 Coil DiskCache / OkHttp 磁盘缓存的索引与锁。
  */
 @Singleton
 class SystemStorageImpl @Inject constructor(

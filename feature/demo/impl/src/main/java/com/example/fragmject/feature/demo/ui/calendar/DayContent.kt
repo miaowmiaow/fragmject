@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.example.fragmject.core.designsystem.AppColors
 
@@ -129,7 +130,7 @@ internal fun DayContent(
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
-                lineHeight = 14.sp,
+                lineHeight = 1.4.em,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
@@ -148,7 +149,7 @@ internal fun DayContent(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
-                    lineHeight = 14.sp,
+                    lineHeight = 1.4.em,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                 )

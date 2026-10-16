@@ -26,7 +26,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -34,54 +33,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
-import com.example.fragmject.feature.demo.ui.animatedcontent.AnimatedContentScreen
+import com.example.fragmject.core.ui.components.TitleBar
 import com.example.fragmject.feature.demo.ui.barcodescanning.BarcodeScanningScreen
 import com.example.fragmject.feature.demo.ui.calendar.CalendarScreen
-import com.example.fragmject.feature.demo.ui.columnsort.ColumnSortScreen
-import com.example.fragmject.feature.demo.ui.datepicker.DatePickerScreen
-import com.example.fragmject.feature.demo.ui.draggable.DraggableScreen
-import com.example.fragmject.feature.demo.ui.dropdownmenu.DropdownMenuScreen
-import com.example.fragmject.feature.demo.ui.exoplayer.ExoPlayerScreen
 import com.example.fragmject.feature.demo.ui.fulltext.FullTextScreen
 import com.example.fragmject.feature.demo.ui.gridselect.GridSelectScreen
-import com.example.fragmject.feature.demo.ui.gridsort.GridSortScreen
 import com.example.fragmject.feature.demo.ui.nestedscroll.NestedScroll1Screen
 import com.example.fragmject.feature.demo.ui.nestedscroll.NestedScroll2Screen
-import com.example.fragmject.feature.demo.ui.permission.PermissionScreen
 import com.example.fragmject.feature.demo.ui.pictureselector.PictureSelectorDemoScreen
-import com.example.fragmject.feature.demo.ui.scrollable.ScrollableScreen
 import com.example.fragmject.feature.demo.ui.swipebox.SwipeBoxScreen
-import com.example.fragmject.feature.demo.ui.transformable.TransformableScreen
 import com.example.fragmject.feature.demo.ui.wheelpicker.WheelPickerScreen
 import kotlinx.coroutines.launch
 
 @Composable
 fun DemoScreen() {
     val onNavigateUp = LocalOnNavigateUp.current
-    var showTitleBar by remember { mutableStateOf(true) }
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val tabs = listOf(
-        "日期控件",
         "日历控件",
         "滚轮控件",
-        "菜单控件",
         "全文控件",
         "侧滑控件",
-        "申请权限",
         "调用相册",
-        "滚动示例",
-        "拖动示例",
-        "多点触控",
-        "动画示例",
-        "列表重排",
-        "网格重排",
         "网格选择",
-        "视频播放",
         "扫码示例",
         "嵌套滚动1",
         "嵌套滚动2",
@@ -89,9 +67,6 @@ fun DemoScreen() {
     var selectedTab by rememberSaveable { mutableStateOf(tabs[0]) }
     Scaffold(
         topBar = {
-            if(!showTitleBar){
-                return@Scaffold
-            }
             TitleBar(
                 title = selectedTab,
                 navigationIcon = {
@@ -140,7 +115,6 @@ fun DemoScreen() {
                             onClick = {
                                 scope.launch { drawerState.close() }
                                 selectedTab = tab
-                                showTitleBar = tabs.indexOf(selectedTab) != 15
                             },
                             modifier = Modifier
                                 .width(200.dp)
@@ -157,25 +131,15 @@ fun DemoScreen() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     when (tabs.indexOf(selectedTab)) {
-                        0 -> DatePickerScreen()
-                        1 -> CalendarScreen()
-                        2 -> WheelPickerScreen()
-                        3 -> DropdownMenuScreen()
-                        4 -> FullTextScreen()
-                        5 -> SwipeBoxScreen()
-                        6 -> PermissionScreen()
-                        7 -> PictureSelectorDemoScreen()
-                        8 -> ScrollableScreen()
-                        9 -> DraggableScreen()
-                        10 -> TransformableScreen()
-                        11 -> AnimatedContentScreen()
-                        12 -> ColumnSortScreen()
-                        13 -> GridSortScreen()
-                        14 -> GridSelectScreen()
-                        15 -> ExoPlayerScreen()
-                        16 -> BarcodeScanningScreen()
-                        17 -> NestedScroll1Screen()
-                        18 -> NestedScroll2Screen()
+                        0 -> CalendarScreen()
+                        1 -> WheelPickerScreen()
+                        2 -> FullTextScreen()
+                        3 -> SwipeBoxScreen()
+                        4 -> PictureSelectorDemoScreen()
+                        5 -> GridSelectScreen()
+                        6 -> BarcodeScanningScreen()
+                        7 -> NestedScroll1Screen()
+                        8 -> NestedScroll2Screen()
                     }
                 }
             }

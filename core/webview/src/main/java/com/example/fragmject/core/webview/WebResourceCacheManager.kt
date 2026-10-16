@@ -42,7 +42,7 @@ class WebResourceCacheManager @Inject constructor(
     companion object {
         private const val TAG = "WebResourceCache"
         private const val DOWNLOAD_TIMEOUT_MS = 8_000L
-        private val WEB_CACHE_DIR = CacheDirs.WEB
+        private const val WEB_CACHE_DIR = CacheDirs.WEB
 
         /**
          * mtime 回写的最小间隔。
@@ -66,7 +66,7 @@ class WebResourceCacheManager @Inject constructor(
         )
 
         /** HTML 主文档独立缓存目录，与静态资源缓存解耦（独立 TTL/上限）。 */
-        private val HTML_CACHE_DIR = CacheDirs.WEB_HTML
+        private const val HTML_CACHE_DIR = CacheDirs.WEB_HTML
 
         /** HTML 缓存文件数上限，超过时按 mtime 淘汰最旧文件。 */
         private const val HTML_CACHE_MAX_FILES = 200
@@ -150,6 +150,11 @@ class WebResourceCacheManager @Inject constructor(
      * 以「URL + Cookie」的哈希作为键：当同一 URL 的内容随登录账号变化时，
      * Cookie 不同则 key 不同，避免切换账号后命中前一账号的旧页面。
      * 无 Cookie 时退化为纯 URL 哈希，保留无身份场景的缓存能力。
+     *
+     * 【设计使然，非刻意缓存登录态】Cookie 进 key 是**正确性**设计（防串号），不是为缓存带身份内容。
+     * 实际命中面很窄：会话 Cookie 只覆盖 wanandroid.com，而文章页绝大多数是第三方域，
+     * key 会退化成纯 URL 哈希。又因 `allowBackup=false`，缓存不会被 ADB 备份导出；
+     * 剩余威胁仅 root / 物理取证，且受 [HTML_HARD_EXPIRE_MS] 限制。
      */
     private fun htmlCacheKey(url: String): String {
         val cookie = cookieStore.getCookie(url).orEmpty()
@@ -187,6 +192,11 @@ class WebResourceCacheManager @Inject constructor(
                 }
                 val mimeType = request.getMimeTypeFromUrl()
                 WebResourceResponse(mimeType, null, file.inputStream()).apply {
+                    // 【业务需要，但实现偏宽】缓存命中时我们重建 WebResourceResponse，原始响应头
+                    // 会丢失；跨域 @font-face 字体要求响应带 CORS 头，缺失即加载失败，故此处补 "*"。
+                    // 代价是 JS / CSS / 图片也一并被放开给页面脚本（fetch 可读、canvas 不被污染）。
+                    // 收窄方向：只对字体类扩展名回显请求 Origin（不回 Allow-Credentials），
+                    // 其余资源不设置该头。改动前需回归「含自定义字体的文章页」字体是否正常。
                     responseHeaders = mapOf("Access-Control-Allow-Origin" to "*")
                 }
             } else {

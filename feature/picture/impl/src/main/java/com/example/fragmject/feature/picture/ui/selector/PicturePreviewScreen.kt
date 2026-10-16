@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.feature.picture.state.PictureFlowState
 import kotlinx.coroutines.launch
 
@@ -267,7 +268,7 @@ fun PicturePreviewScreen(
                                         .size(48.dp)
                                         .border(
                                             2.dp,
-                                            if (isSelected) Color(0xFF508CEE) else Color.Transparent
+                                            if (isSelected) AppColors.blue else Color.Transparent
                                         )
                                         .clickable {
                                             scope.launch { pagerState.animateScrollToPage(index) }
@@ -331,7 +332,7 @@ fun PicturePreviewScreen(
                                         .border(2.dp, Color.White, CircleShape)
                                         .then(
                                             if (isSelected) Modifier.background(
-                                                Color(0xFF508CEE),
+                                                AppColors.blue,
                                                 CircleShape
                                             )
                                             else Modifier

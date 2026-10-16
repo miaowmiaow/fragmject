@@ -32,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -76,7 +77,7 @@ fun CalendarScreen(
                             onValueChange = { text = it },
                             textStyle = TextStyle.Default.copy(
                                 fontSize = 14.sp,
-                                lineHeight = 14.sp
+                                lineHeight = 1.4.em
                             ),
                             placeholder = { Text("创建日程") },
                             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),

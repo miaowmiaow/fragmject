@@ -5,6 +5,11 @@ import android.content.Context
 /**
  * JS 脚本懒加载缓存：避免每次 WebView 加载新页面时都从 assets 中打开/读取/创建 String。
  * 这些脚本在应用生命周期内不变，启动后只读取一次，后续调用零 IO 开销。
+ *
+ * 【业务功能，非调试残留】vConsole 由文章页 bottom sheet 的显式开关控制（`WebScreen` 的
+ * `injectState` + `WebActionSheet` 的切换项），是有意暴露给用户的调试面板，release 包保留属预期。
+ * vConsole 只读取页面 DOM/控制台，不外传数据；若要下线，应改为 `BuildConfig.DEBUG` 门控或
+ * 对用户隐藏入口，而不是直接删除脚本资产。
  */
 object JsInjectCache {
     @Volatile

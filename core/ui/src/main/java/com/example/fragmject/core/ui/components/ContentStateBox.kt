@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
@@ -31,26 +31,19 @@ fun ContentStateBox(
     errorContent: @Composable (Modifier) -> Unit = { ErrorContent(it, onClick = onRetry) },
     content: @Composable () -> Unit,
 ) {
-    // 1) 首次组合（进入页面）至少骨架 minShowMillis，覆盖转场动画。
-    var entryDone by remember { mutableStateOf(minShowMillis <= 0) }
+    // 进入 entry 后至少展示骨架 minShowMillis，覆盖转场动画。
+    // 用 rememberSaveable：由 NavDisplay 的 entry 级 SaveableStateHolder 保留，
+    // 从子页面（如 webview）返回时不重复展示；entry 出栈后清除，下次进入重新展示。
+    var entrySkeletonDone by rememberSaveable { mutableStateOf(minShowMillis <= 0) }
     LaunchedEffect(Unit) {
-        if (!entryDone) {
-            delay(minShowMillis.toLong().milliseconds)
-            entryDone = true
-        }
-    }
-    // 2) 加载结束后，再延迟 minShowMillis 才渲染数据（期间数据准备好也不渲染）。
-    var loadDone by remember { mutableStateOf(phase != ContentPhase.Loading) }
-    LaunchedEffect(phase) {
-        if (phase == ContentPhase.Loading) {
-            loadDone = false
-        } else {
+        if (!entrySkeletonDone) {
             if (minShowMillis > 0) delay(minShowMillis.toLong().milliseconds)
-            loadDone = true
+            entrySkeletonDone = true
         }
     }
     when {
-        !entryDone || !loadDone -> loadingContent(modifier)
+        !entrySkeletonDone -> loadingContent(modifier)
+        phase == ContentPhase.Loading -> loadingContent(modifier)
         phase == ContentPhase.Empty -> emptyContent(modifier)
         phase == ContentPhase.Error -> errorContent(modifier)
         else -> content()

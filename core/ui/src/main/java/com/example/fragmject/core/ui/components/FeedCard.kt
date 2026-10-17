@@ -80,7 +80,11 @@ fun FeedCard(
             .fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(start = AppSpacing.cardHorizontal, top = AppSpacing.cardHorizontal, end = AppSpacing.cardHorizontal),
+            modifier = Modifier.padding(
+                start = AppSpacing.cardHorizontal,
+                top = AppSpacing.cardHorizontal,
+                end = AppSpacing.cardHorizontal
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
@@ -120,7 +124,10 @@ fun FeedCard(
         }
         Spacer(Modifier.size(AppSpacing.cardItemGap))
         Row(
-            modifier = Modifier.padding(start = AppSpacing.cardHorizontal, end = AppSpacing.cardHorizontal),
+            modifier = Modifier.padding(
+                start = AppSpacing.cardHorizontal,
+                end = AppSpacing.cardHorizontal
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -139,6 +146,8 @@ fun FeedCard(
                         fontSize = 14.sp,
                         lineHeight = 1.4.em,
                         maxLines = 3,
+                        // 点击正文跳转详情；点击「...展开/...收起」只切换展开态
+                        onClick = { onItemClick(data.link) },
                         // 信息流里展开动画是纯开销：滚动时每个 item 都多一层动画层
                         animate = false,
                     )
@@ -171,7 +180,11 @@ fun FeedCard(
         }
         Spacer(Modifier.size(AppSpacing.cardSmallGap))
         Row(
-            modifier = Modifier.padding(start = AppSpacing.cardHorizontal, end = AppSpacing.cardHorizontal, bottom = AppSpacing.cardHorizontal),
+            modifier = Modifier.padding(
+                start = AppSpacing.cardHorizontal,
+                end = AppSpacing.cardHorizontal,
+                bottom = AppSpacing.cardHorizontal
+            ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

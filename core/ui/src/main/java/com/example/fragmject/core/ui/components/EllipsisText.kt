@@ -1,8 +1,6 @@
 package com.example.fragmject.core.ui.components
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material3.Text
@@ -11,28 +9,38 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.TextUnit
 import com.example.fragmject.core.designsystem.AppColors
 
 private const val ELLIPSIS_MORE = "...展开"
 private const val ELLIPSIS_COLLAPSE = "...收起"
 
+/** 「展开/收起」后缀的点击标注 tag。 */
+private const val TOGGLE_TAG = "toggle"
+
+/** 正文的点击标注 tag（与后缀点击区分，保留正文点击回调）。 */
+private const val BODY_TAG = "body"
+
 /** 末行腾出后缀宽度时的安全余量，避免「刚好差一点」导致再多一轮布局。 */
 private const val WIDTH_EPSILON = 1f
 
 /**
- * 超出 [maxLines] 时在**末行行尾**接上「...展开」，点击可展开/收起。
+ * 超出 [maxLines] 时在**末行行尾**接上「...展开」，点击「...展开/...收起」展开/收起。
  *
  * **实现方式：文本替换，而不是叠加第二个 Text。**
  * 旧实现是「正文 Text + 用 graphicsLayer 把『...展开』挪到行尾覆盖」，需要反查
@@ -44,9 +52,11 @@ private const val WIDTH_EPSILON = 1f
  * [TextLayoutResult.getLineEnd]；再用 [TextLayoutResult.getHorizontalPosition] 从行尾
  * 往前累加字符宽度，直到腾出 ≥ 后缀宽度的空间。**不需要**对正文做任何 measure。
  *
+ * 点击通过 [LinkAnnotation] 区分区域：正文触发 [onClick]，后缀切换展开态，二者互不干扰。
+ *
  * @param cutAt 仅内部使用：-1 表示未截断；≥0 表示折叠态截断到的字符下标
  * @param animate 展开/收起时是否做尺寸动画；信息流等列表场景建议 false
- * @param onClick 正文点击回调；无论是否截断，点击正文都会先回调它，再切换展开态
+ * @param onClick 正文点击回调；点击「...展开/...收起」只切换展开态，不触发本回调
  */
 @Composable
 fun EllipsisText(
@@ -70,24 +80,48 @@ fun EllipsisText(
     // 源文本/行数/样式变化时重置为「未截断」，重新走一轮判定
     var cutAt by remember(text, maxLines, style) { mutableIntStateOf(-1) }
 
+    // 点击标注：后缀触发展开切换，正文触发外部 onClick，二者互不干扰。
+    // LinkAnnotation 未显式指定样式时会套用默认链接样式（下划线 + 链接色），
+    // 必须显式关闭下划线，正文还要恢复自身颜色。
+    val currentOnClick by rememberUpdatedState(onClick)
+    val toggleLink = remember(ellipsisColor) {
+        LinkAnnotation.Clickable(
+            tag = TOGGLE_TAG,
+            styles = TextLinkStyles(
+                style = SpanStyle(color = ellipsisColor, textDecoration = TextDecoration.None),
+            ),
+            linkInteractionListener = { expand = !expand },
+        )
+    }
+    val bodyLink = remember(color) {
+        LinkAnnotation.Clickable(
+            tag = BODY_TAG,
+            styles = TextLinkStyles(
+                style = SpanStyle(color = color, textDecoration = TextDecoration.None),
+            ),
+            linkInteractionListener = { currentOnClick() },
+        )
+    }
+
     val suffix = if (expand) ELLIPSIS_COLLAPSE else ELLIPSIS_MORE
     // 后缀只有两种取值，测一次即缓存
     val suffixWidth = remember(measurer, style, suffix) {
         measurer.measure(text = suffix, style = style).size.width
     }
 
-    val displayText: AnnotatedString = remember(text, cutAt, expand, suffix, ellipsisColor) {
+    val displayText: AnnotatedString = remember(text, cutAt, expand, suffix, ellipsisColor, color) {
         buildAnnotatedString {
             when {
                 expand -> {
-                    append(text)
-                    withStyle(SpanStyle(color = ellipsisColor)) { append(suffix) }
+                    withLink(bodyLink) { append(text) }
+                    withLink(toggleLink) { append(suffix) }
                 }
 
-                cutAt < 0 -> append(text)
+                cutAt < 0 -> withLink(bodyLink) { append(text) }
+
                 else -> {
-                    append(text.subSequence(0, cutAt))
-                    withStyle(SpanStyle(color = ellipsisColor)) { append(suffix) }
+                    withLink(bodyLink) { append(text.subSequence(0, cutAt)) }
+                    withLink(toggleLink) { append(suffix) }
                 }
             }
         }
@@ -96,16 +130,6 @@ fun EllipsisText(
     Box(modifier = if (animate) Modifier.animateContentSize() else Modifier) {
         Text(
             text = displayText,
-            modifier = Modifier
-                .clickable(
-                    onClick = {
-                        onClick()
-                        // 未截断时没有后缀可点，点击也不该切换展开态
-                        if (expand || cutAt >= 0) expand = !expand
-                    },
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ),
             lineHeight = lineHeight,
             overflow = TextOverflow.Ellipsis,
             maxLines = if (expand) Int.MAX_VALUE else maxLines,
@@ -132,7 +156,7 @@ fun EllipsisText(
                 // 只允许变小：保证单调收敛，不会在两种截断位置间来回抖动
                 if (cutAt !in 0..next) cutAt = next
             },
-            style = style
+            style = style,
         )
     }
 }

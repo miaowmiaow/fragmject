@@ -72,13 +72,10 @@ class MainActivity : ComponentActivity() {
         // 解析冷启动深层链接，得到初始返回栈（热启动深层链接走 onNewIntent → pendingDeepLink）
         val initialBackStack = resolveDeepLinkBackStack(intent)
         setContent {
-            val darkTheme by themeState.darkTheme
-                .collectAsStateWithLifecycle(initialValue = false)
+            val darkTheme by themeState.darkTheme.collectAsStateWithLifecycle(initialValue = false)
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {
-                    CompositionLocalProvider(
-                        LocalNavigators provides navigators,
-                    ) {
+                    CompositionLocalProvider(LocalNavigators provides navigators) {
                         AppNavGraph(
                             navigationDispatcher = navigationDispatcher,
                             navContributors = navContributors,

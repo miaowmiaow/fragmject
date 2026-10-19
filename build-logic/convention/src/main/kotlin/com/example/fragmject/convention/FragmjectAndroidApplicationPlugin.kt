@@ -12,6 +12,7 @@ class FragmjectAndroidApplicationPlugin : Plugin<Project> {
             pluginManager.apply("com.android.application")
 
             val config = FragmjectConfig.load(this)
+            val lintBaseline = file("lint-baseline.xml")
 
             configure<ApplicationExtension> {
                 compileSdk = config.compileSdk
@@ -23,6 +24,7 @@ class FragmjectAndroidApplicationPlugin : Plugin<Project> {
                     sourceCompatibility = JavaVersion.VERSION_21
                     targetCompatibility = JavaVersion.VERSION_21
                 }
+                lint.configureFragmjectLint(lintBaseline)
             }
         }
     }

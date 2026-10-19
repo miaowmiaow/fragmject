@@ -52,20 +52,20 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 
 ## Project Directory Structure
 ```
-├── app                                          app shell module
+├── app                                             app shell module
 |  └── src
 |     └── main
-|     |   ├── assets                             assets (HTML/JS/JSON mock data)
-|     |   └── java                               source code
-|     |      ├── MainActivity.kt                 single Activity
-|     |      ├── FragmjectApplication.kt         Application (Hilt entry)
-|     |      └── AppNavGraph.kt                  navigation graph (Navigation 3 + WindowSizeClass)
+|     |   ├── assets                                assets (HTML/JS/JSON mock data)
+|     |   └── java                                  source code
+|     |      ├── MainActivity.kt                    single Activity
+|     |      ├── FragmjectApplication.kt            Application (Hilt entry)
+|     |      └── AppNavGraph.kt                     navigation graph (Navigation 3 + WindowSizeClass)
 |     |
-|     ├── build.gradle.kts                       module build config
-|     ├── dictionary                             custom obfuscation dictionary
-|     └── proguard-rules.pro                     code obfuscation config
+|     ├── build.gradle.kts                          module build config
+|     ├── dictionary                                custom obfuscation dictionary
+|     └── proguard-rules.pro                        code obfuscation config
 | 
-├── core                                         core layer (foundation, no business dependencies)
+├── core                                            core layer (foundation, no business dependencies)
 |  ├── android-platform                             platform & process-level utilities (AppScope / BaseContentProvider / File* / CacheUtils / UriPathUtils)
 |  ├── data-contract                                data port contracts (remote/local DataSource + HTTP protocol models)
 |  ├── data-repository                              data implementation (RepositoryImpl / PagingSource / Hilt bindings)
@@ -81,38 +81,38 @@ If you prefer a codebase with less abstraction and more straightforward code to 
 |  ├── ui                                           UI component library (FeedCard / PagingSwipeRefreshBox etc.)
 |  └── webview                                      WebView capability (pooling / caching / CookieStore)
 | 
-├── feature                                      feature modules (each contains api / impl submodules)
-|  ├── article                                   article module (WebView detail / download)
-|  |  ├── api                                    API layer (NavKey definitions)
-|  |  └── impl                                   implementation layer (Screen / ViewModel)
-|  ├── auth                                      login / signup
-|  ├── authenticator                             OTP (account management / Keystore-encrypted secret)
-|  ├── collection                                favorites / shares
-|  ├── demo                                      component demos (calendar / wheel picker / scanning / nested scroll etc.)
-|  ├── home                                      home (Home / Nav / Project / System / My)
-|  ├── picture                                   picture module (picker / preview / editor)
-|  ├── search                                    search
-|  └── user                                      user (profile / points / ranking / settings / history)
+├── feature                                         feature modules (each contains api / impl submodules)
+|  ├── article                                      article module (WebView detail / download)
+|  |  ├── api                                       API layer (NavKey definitions)
+|  |  └── impl                                      implementation layer (Screen / ViewModel)
+|  ├── auth                                         login / signup
+|  ├── authenticator                                OTP (account management / Keystore-encrypted secret)
+|  ├── collection                                   favorites / shares
+|  ├── demo                                         component demos (calendar / wheel picker / scanning / nested scroll etc.)
+|  ├── home                                         home (Home / Nav / Project / System / My)
+|  ├── picture                                      picture module (picker / preview / editor)
+|  ├── search                                       search
+|  └── user                                         user (profile / points / ranking / settings / history)
 | 
-├── build-logic                                  build logic (Gradle Convention Plugins)
+├── build-logic                                     build logic (Gradle Convention Plugins)
 |  └── convention
 |     └── src/main/kotlin
-|        ├── FragmjectAndroidApplicationPlugin   application convention plugin
-|        ├── FragmjectAndroidComposePlugin       compose convention plugin
-|        ├── FragmjectKotlinParcelizePlugin      Kotlin Parcelize capability plugin
-|        ├── FragmjectKotlinSerializationPlugin  Kotlin Serialization capability plugin
-|        ├── FragmjectAndroidHiltPlugin          Hilt convention plugin
-|        ├── FragmjectAndroidLibraryPlugin       library convention plugin
-|        ├── FragmjectAndroidDependencyGuardPlugin dependency guard plugin
-|        └── FragmjectAndroidRoomPlugin          Room convention plugin
+|        ├── FragmjectAndroidApplicationPlugin      application convention plugin
+|        ├── FragmjectAndroidComposePlugin          compose convention plugin
+|        ├── FragmjectKotlinParcelizePlugin         Kotlin Parcelize capability plugin
+|        ├── FragmjectKotlinSerializationPlugin     Kotlin Serialization capability plugin
+|        ├── FragmjectAndroidHiltPlugin             Hilt convention plugin
+|        ├── FragmjectAndroidLibraryPlugin          library convention plugin
+|        ├── FragmjectAndroidDependencyGuardPlugin  dependency guard plugin
+|        └── FragmjectAndroidRoomPlugin             Room convention plugin
 |
 ├── gradle
-|  └── libs.versions.toml                        version catalog
+|  └── libs.versions.toml                           version catalog
 |
-├── build.gradle.kts                             project build config
-├── config.properties                            project config
-├── gradle.properties                            gradle config
-└── settings.gradle.kts                          module dependency config
+├── build.gradle.kts                                project build config
+├── config.properties                               project config
+├── gradle.properties                               gradle config
+└── settings.gradle.kts                             module dependency config
 ```
 
 ## Adaptive Layout (WindowSizeClass)

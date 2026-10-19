@@ -1,6 +1,7 @@
 package com.example.fragmject.app
 
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import coil.ComponentRegistry
 import coil.disk.DiskCache
@@ -12,6 +13,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
+import com.example.fragmject.app.security.AppSecurityGuard
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.domain.system.SystemStorage
 // 登记过的架构例外（ArchitectureTest 规则 21 白名单）：app 组合根不应引用数据实现层，
@@ -24,6 +26,36 @@ import javax.inject.Inject
 
 @HiltAndroidApp
 class FragmjectApplication : Application(), ImageLoaderFactory {
+
+    /**
+     * 尽早启动安全防护。
+     *
+     * ============================ 为什么选 attachBaseContext ============================
+     * Application 的启动顺序是：
+     *   attachBaseContext → onCreate → ContentProvider.onCreate → Activity.onCreate
+     *
+     * 安全防护必须在「任何业务代码/第三方 SDK 初始化」之前完成两件事：
+     *   1. ptrace 占坑（先占住 tracer，后续调试器 attach 会失败）；
+     *   2. 首轮检测（判断进程在启动窗口内是否已被附加/注入）。
+     * 放到 onCreate 或更晚，就会给攻击者留出「启动窗口」；放到 ContentProvider 更晚，
+     * 且 Hilt 等框架的 ContentProvider 可能已经做了大量初始化。
+     *
+     * ============================ 为什么这里用 this 是安全的 ============================
+     * [attachBaseContext] 阶段 Application 实例已创建，但 Context 尚未完全 attach。
+     * [AppSecurityGuard.start] 只做两件事会用到 Context：
+     *   - 判断 `context is Application` 以注册 Activity 生命周期回调；
+     *   - 异步签名校验时读取 PackageManager。
+     * 两者都不依赖「资源已 attach」的前提，因此在此时调用是安全的。
+     *
+     * ============================ 代价与跳过 ============================
+     * 首轮检测是**同步**执行的（含 libc CRC 与端口扫描，几十毫秒量级），
+     * 会略微增加冷启动耗时；这是「尽早发现」与「启动速度」之间的有意取舍。
+     * Debug 包会在 [AppSecurityGuard.start] 内部直接返回，不影响本地开发调试。
+     */
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base)
+        AppSecurityGuard.start(this)
+    }
 
     @Inject
     lateinit var webViewPool: WebViewPool

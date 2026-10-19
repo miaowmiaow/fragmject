@@ -66,20 +66,20 @@
 
 ## 项目目录结构
 ```
-├── app                                          app 壳工程
+├── app                                             app 壳工程
 |  └── src
 |     └── main
-|     |   ├── assets                             assets 目录（HTML/JS/JSON 测试数据）
-|     |   └── java                               源码目录
-|     |      ├── MainActivity.kt                 唯一 Activity
-|     |      ├── FragmjectApplication.kt         Application（Hilt 入口）
-|     |      └── AppNavGraph.kt                  导航图（Navigation 3 + WindowSizeClass 自适应）
+|     |   ├── assets                                assets 目录（HTML/JS/JSON 测试数据）
+|     |   └── java                                  源码目录
+|     |      ├── MainActivity.kt                    唯一 Activity
+|     |      ├── FragmjectApplication.kt            Application（Hilt 入口）
+|     |      └── AppNavGraph.kt                     导航图（Navigation 3 + WindowSizeClass 自适应）
 |     |
-|     ├── build.gradle.kts                       模块构建配置
-|     ├── dictionary                             自定义混淆字典
-|     └── proguard-rules.pro                     代码混淆配置文件
+|     ├── build.gradle.kts                          模块构建配置
+|     ├── dictionary                                自定义混淆字典
+|     └── proguard-rules.pro                        代码混淆配置文件
 | 
-├── core                                         核心层（基础能力，不依赖业务）
+├── core                                            核心层（基础能力，不依赖业务）
 |  ├── android-platform                             平台与进程级能力（AppScope / BaseContentProvider / File* / CacheUtils / UriPathUtils）
 |  ├── data-contract                                数据端口契约（remote/local DataSource + HTTP 协议模型）
 |  ├── data-repository                              数据实现（RepositoryImpl / PagingSource / Hilt 绑定）
@@ -95,38 +95,38 @@
 |  ├── ui                                           UI 组件库（FeedCard / PagingSwipeRefreshBox 等）
 |  └── webview                                      WebView 能力（池化 / 缓存 / CookieStore）
 | 
-├── feature                                      功能模块层（每个模块均含 api / impl 两个子模块）
-|  ├── article                                   文章模块（WebView 详情 / 下载）
-|  |  ├── api                                    API 层（NavKey 定义）
-|  |  └── impl                                   实现层（Screen / ViewModel）
-|  ├── auth                                      登录 / 注册
-|  ├── authenticator                             动态口令（OTP 账户管理 / 密钥 Keystore 加密）
-|  ├── collection                                收藏 / 分享
-|  ├── demo                                      组件 Demo（日历 / 滚轮 / 扫码 / 嵌套滚动等）
-|  ├── home                                      首页（Home / Nav / Project / System / My）
-|  ├── picture                                   图片模块（选择器 / 预览 / 编辑器）
-|  ├── search                                    搜索
-|  └── user                                      用户（主页 / 积分 / 排行 / 设置 / 历史）
+├── feature                                         功能模块层（每个模块均含 api / impl 两个子模块）
+|  ├── article                                      文章模块（WebView 详情 / 下载）
+|  |  ├── api                                       API 层（NavKey 定义）
+|  |  └── impl                                      实现层（Screen / ViewModel）
+|  ├── auth                                         登录 / 注册
+|  ├── authenticator                                动态口令（OTP 账户管理 / 密钥 Keystore 加密）
+|  ├── collection                                   收藏 / 分享
+|  ├── demo                                         组件 Demo（日历 / 滚轮 / 扫码 / 嵌套滚动等）
+|  ├── home                                         首页（Home / Nav / Project / System / My）
+|  ├── picture                                      图片模块（选择器 / 预览 / 编辑器）
+|  ├── search                                       搜索
+|  └── user                                         用户（主页 / 积分 / 排行 / 设置 / 历史）
 | 
-├── build-logic                                  构建逻辑（Gradle Convention 插件）
+├── build-logic                                     构建逻辑（Gradle Convention 插件）
 |  └── convention
 |     └── src/main/kotlin
-|        ├── FragmjectAndroidApplicationPlugin   application 约定插件
-|        ├── FragmjectAndroidComposePlugin       compose 约定插件
-|        ├── FragmjectKotlinParcelizePlugin      Kotlin Parcelize 能力插件
-|        ├── FragmjectKotlinSerializationPlugin  Kotlin Serialization 能力插件
-|        ├── FragmjectAndroidHiltPlugin          Hilt 约定插件
-|        ├── FragmjectAndroidLibraryPlugin       library 约定插件
-|        ├── FragmjectAndroidDependencyGuardPlugin dependency 校验插件
-|        └── FragmjectAndroidRoomPlugin          Room 约定插件
+|        ├── FragmjectAndroidApplicationPlugin      application 约定插件
+|        ├── FragmjectAndroidComposePlugin          compose 约定插件
+|        ├── FragmjectKotlinParcelizePlugin         Kotlin Parcelize 能力插件
+|        ├── FragmjectKotlinSerializationPlugin     Kotlin Serialization 能力插件
+|        ├── FragmjectAndroidHiltPlugin             Hilt 约定插件
+|        ├── FragmjectAndroidLibraryPlugin          library 约定插件
+|        ├── FragmjectAndroidDependencyGuardPlugin  dependency 校验插件
+|        └── FragmjectAndroidRoomPlugin             Room 约定插件
 |
 ├── gradle
-|  └── libs.versions.toml                        版本目录（统一依赖管理）
+|  └── libs.versions.toml                           版本目录（统一依赖管理）
 |
-├── build.gradle.kts                             项目构建配置
-├── config.properties                            项目配置
-├── gradle.properties                            gradle 配置
-└── settings.gradle.kts                          项目模块依赖配置
+├── build.gradle.kts                                项目构建配置
+├── config.properties                               项目配置
+├── gradle.properties                               gradle 配置
+└── settings.gradle.kts                             项目模块依赖配置
 ```
 
 ## 大屏自适应（WindowSizeClass）

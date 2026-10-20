@@ -296,36 +296,47 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    fun `logout cookie cleanup failure - still clears user and propagates failure`() = runBlocking {
+    fun `logout cookie cleanup failure - still clears user and keeps remote success`() = runBlocking {
         val local = FakeUserLocalDataSource()
         local.saveUser(User(id = 1, username = "test"))
-        val failure = IOException("cookie cleanup failed")
-        val cookies = FakeSessionCookieStore().apply { clearFailure = failure }
+        val cookies = FakeSessionCookieStore().apply { clearFailure = IOException("cookie cleanup failed") }
         val remote = FakeUserRemoteDataSource(logoutResult = { HttpResponse(errorCode = "0") })
-        try {
-            UserRepositoryImpl(remote, local, cookies).logout()
-            fail("Cleanup failure expected")
-        } catch (e: IOException) {
-            assertSame(failure, e)
-        }
-        assertNull(local.current())
+
+        // 远端登出已生效：本地清理失败不得把「成功」翻转成异常，否则 UI 会提示登出失败、
+        // 诱导用户重复点击（远端会话此时已不存在）。残留数据由下次启动的会话校验兜底。
+        assertTrue(UserRepositoryImpl(remote, local, cookies).logout())
+
+        assertNull("Cookie 清理失败不影响数据库清理", local.current())
         assertEquals(1, cookies.clearCalls)
     }
 
     @Test
-    fun `logout database cleanup failure - still clears cookies and propagates failure`() = runBlocking {
-        val failure = IOException("database cleanup failed")
-        val local = FakeUserLocalDataSource().apply { clearFailure = failure }
+    fun `logout database cleanup failure - still clears cookies and keeps remote success`() = runBlocking {
+        val local = FakeUserLocalDataSource().apply { clearFailure = IOException("database cleanup failed") }
         val cookies = FakeSessionCookieStore()
         val remote = FakeUserRemoteDataSource(logoutResult = { HttpResponse(errorCode = "0") })
+
+        assertTrue(UserRepositoryImpl(remote, local, cookies).logout())
+
+        assertNull("数据库清理失败不影响 Cookie 清理", cookies.session)
+        assertEquals(1, cookies.flushCalls)
+    }
+
+    @Test
+    fun `logout remote failure with cleanup failure - propagates the cleanup failure`() = runBlocking {
+        val cleanupFailure = IOException("local cleanup failed")
+        val local = FakeUserLocalDataSource().apply { clearFailure = cleanupFailure }
+        val cookies = FakeSessionCookieStore()
+        val remote = FakeUserRemoteDataSource(logoutResult = { throw IOException("remote logout failed") })
+
+        // 远端已失败时，本地清理失败必须抛出，让调用方知道会话可能残留
         try {
             UserRepositoryImpl(remote, local, cookies).logout()
             fail("Cleanup failure expected")
         } catch (e: IOException) {
-            assertSame(failure, e)
+            assertSame(cleanupFailure, e)
         }
         assertNull(cookies.session)
-        assertEquals(1, cookies.flushCalls)
     }
 
     @Test

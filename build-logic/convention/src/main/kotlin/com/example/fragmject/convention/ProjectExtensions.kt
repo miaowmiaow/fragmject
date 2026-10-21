@@ -118,7 +118,15 @@ internal fun Project.configureUnitTestCoverage() {
                     "**/*EmptyState*.class",
                     "**/*Colors*.class",
                     "**/*Page*.class",
-                    "**/*NavRegistration*.class",
+                    // 屏幕拆分后新增的纯 UI 文件（只含 @Composable），命名不在上面的后缀里，
+                    // 若不排除会把 Compose 代码算成"未覆盖的逻辑"，让分母虚高、口径失真。
+                    "**/*Grid*.class",
+                    "**/*Strip*.class",
+                    "**/*Section*.class",
+                    "**/*Actions*.class",
+                    "**/*States*.class",
+                    "**/*Row*.class",
+                    "**/*NavContentContributor*.class",
                     "**/*NavModule*.class",
                     "**/MonthPager*.class",
                     "**/CalendarKt.class",

@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
@@ -358,60 +360,99 @@ fun PictureClipCanvas(
     state: PictureClipState,
     modifier: Modifier = Modifier,
 ) {
-    var dragState by remember { mutableStateOf(false) }
-
     Canvas(
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { state.viewSize = it }
-            .pointerInput(Unit) {
-                var prevSpan = 0f
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val changes = event.changes
-
-                        if (changes.size >= 2 && changes.all { it.pressed }) {
-                            // 双指缩放
-                            val p0 = changes[0]
-                            val p1 = changes[1]
-                            val span = hypot(
-                                (p1.position.x - p0.position.x).toDouble(),
-                                (p1.position.y - p0.position.y).toDouble()
-                            ).toFloat()
-                            if (prevSpan > 0f && span > 0f) {
-                                val scaleFactor = span / prevSpan
-                                val focusX = (p0.position.x + p1.position.x) / 2f
-                                val focusY = (p0.position.y + p1.position.y) / 2f
-                                state.handleScale(scaleFactor, focusX, focusY)
-                            }
-                            prevSpan = span
-                            if (!dragState) {
-                                dragState = true
-                            }
-                            changes.forEach { it.consume() }
-                        } else if (changes.any { it.pressed } && !dragState) {
-                            // 手指按下：检测是否在裁剪边框上
-                            dragState = true
-                            state.handleTouchDown(changes.first().position.x, changes.first().position.y)
-                            changes.forEach { it.consume() }
-                        } else if (dragState && changes.all { !it.pressed }) {
-                            // 手指全部抬起
-                            dragState = false
-                            prevSpan = 0f
-                            state.handleTouchUp()
-                            state.finishScaling()
-                            changes.forEach { it.consume() }
-                        } else if (dragState && changes.size == 1 && changes.all { it.pressed }) {
-                            // 单指移动：拖动裁剪边框或平移图片
-                            state.handleTouchMove(changes.first().position.x, changes.first().position.y)
-                            changes.forEach { it.consume() }
-                        }
-                    }
-                }
-            }
+            .pointerInput(Unit) { awaitClipGestures(state) }
     ) {
         state.refreshTrigger
         state.draw(drawContext.canvas)
     }
+}
+
+/** 裁剪手势的跨事件状态（是否在拖动、上一帧双指间距）。 */
+private class ClipGestureTracker {
+    var isDragging = false
+    var previousSpan = 0f
+}
+
+private suspend fun PointerInputScope.awaitClipGestures(state: PictureClipState) {
+    val tracker = ClipGestureTracker()
+    awaitPointerEventScope {
+        while (true) {
+            val changes = awaitPointerEvent().changes
+            when {
+                // 双指缩放
+                changes.size >= 2 && changes.all { it.pressed } ->
+                    scaleBySpan(state, tracker, changes)
+
+                // 手指按下：检测是否在裁剪边框上
+                changes.any { it.pressed } && !tracker.isDragging ->
+                    startClipDrag(state, tracker, changes)
+
+                // 手指全部抬起
+                tracker.isDragging && changes.all { !it.pressed } ->
+                    endClipDrag(state, tracker, changes)
+
+                // 单指移动：拖动裁剪边框或平移图片
+                tracker.isDragging && changes.size == 1 && changes.all { it.pressed } ->
+                    moveClipDrag(state, changes)
+            }
+        }
+    }
+}
+
+private fun scaleBySpan(
+    state: PictureClipState,
+    tracker: ClipGestureTracker,
+    changes: List<PointerInputChange>,
+) {
+    val p0 = changes[0]
+    val p1 = changes[1]
+    val span = hypot(
+        (p1.position.x - p0.position.x).toDouble(),
+        (p1.position.y - p0.position.y).toDouble()
+    ).toFloat()
+    if (tracker.previousSpan > 0f && span > 0f) {
+        state.handleScale(
+            scaleFactor = span / tracker.previousSpan,
+            focusX = (p0.position.x + p1.position.x) / 2f,
+            focusY = (p0.position.y + p1.position.y) / 2f,
+        )
+    }
+    tracker.previousSpan = span
+    tracker.isDragging = true
+    changes.consumeAll()
+}
+
+private fun startClipDrag(
+    state: PictureClipState,
+    tracker: ClipGestureTracker,
+    changes: List<PointerInputChange>,
+) {
+    tracker.isDragging = true
+    state.handleTouchDown(changes.first().position.x, changes.first().position.y)
+    changes.consumeAll()
+}
+
+private fun endClipDrag(
+    state: PictureClipState,
+    tracker: ClipGestureTracker,
+    changes: List<PointerInputChange>,
+) {
+    tracker.isDragging = false
+    tracker.previousSpan = 0f
+    state.handleTouchUp()
+    state.finishScaling()
+    changes.consumeAll()
+}
+
+private fun moveClipDrag(state: PictureClipState, changes: List<PointerInputChange>) {
+    state.handleTouchMove(changes.first().position.x, changes.first().position.y)
+    changes.consumeAll()
+}
+
+private fun List<PointerInputChange>.consumeAll() {
+    forEach { it.consume() }
 }

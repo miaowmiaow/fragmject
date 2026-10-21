@@ -20,35 +20,24 @@ internal fun isSDCardAliveInternal(): Boolean {
 }
 
 internal fun deleteInternal(file: File?) {
-    file?.let {
-        if (it.isDirectory) {
-            it.listFiles()?.let { list ->
-                for (i in list) {
-                    deleteInternal(i)
-                }
-            }
-        } else {
-            it.delete()
-        }
+    if (file == null) return
+    if (!file.isDirectory) {
+        file.delete()
+        return
     }
+    file.listFiles()?.forEach { deleteInternal(it) }
 }
 
 internal fun getSizeInternal(file: File): Long {
-    var size: Long = 0
-    try {
-        file.listFiles()?.apply {
-            for (f in this) {
-                size = if (f.isDirectory) {
-                    size + getSizeInternal(f)
-                } else {
-                    size + f.length()
-                }
-            }
-        }
+    val children = try {
+        file.listFiles()
     } catch (e: Exception) {
         Log.e(TAG, "getSize failed", e)
+        null
+    } ?: return 0
+    return children.sumOf { child ->
+        if (child.isDirectory) getSizeInternal(child) else child.length()
     }
-    return size
 }
 
 internal fun formatSizeInternal(size: Double): String {

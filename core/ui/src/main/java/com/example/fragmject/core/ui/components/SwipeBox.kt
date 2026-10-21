@@ -48,59 +48,30 @@ fun SwipeBox(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val actionWidthPx = with(density) {
-        actionWidth.toPx()
-    }
+    val actionWidthPx = with(density) { actionWidth.toPx() }
     val startWidth = actionWidthPx * startAction.size
-    val startActionSize =
-        if (startFillAction == null) startAction.size else startAction.size + 1 // startAction + startFillAction
     val endWidth = actionWidthPx * endAction.size
-    val endActionSize =
-        if (endFillAction == null) endAction.size else endAction.size + 1 // endAction + endFillAction
+    // 槽位总数 = 普通动作数 + 填充动作（若存在）
+    val startActionSize = startAction.size + if (startFillAction == null) 0 else 1
+    val endActionSize = endAction.size + if (endFillAction == null) 0 else 1
     var contentWidth by remember { mutableFloatStateOf(0f) }
     var contentHeight by remember { mutableFloatStateOf(0f) }
+    val contentHeightDp = with(density) { contentHeight.toDp() }
     val state = remember(startWidth, endWidth, contentWidth) {
         AnchoredDraggableState(
             initialValue = DragAnchors.Center,
-            anchors = DraggableAnchors {
-                DragAnchors.Start at (if (startFillAction != null) actionWidthPx else 0f) + startWidth
-                DragAnchors.StartFill at (if (startFillAction != null) contentWidth else 0f) + startWidth
-                DragAnchors.Center at 0f
-                DragAnchors.End at (if (endFillAction != null) -actionWidthPx else 0f) - endWidth
-                DragAnchors.EndFill at (if (endFillAction != null) -contentWidth else 0f) - endWidth
-            },
+            anchors = swipeBoxAnchors(
+                actionWidthPx = actionWidthPx,
+                startWidth = startWidth,
+                endWidth = endWidth,
+                contentWidth = contentWidth,
+                startFillEnabled = startFillAction != null,
+                endFillEnabled = endFillAction != null,
+            ),
         )
     }
     LaunchedEffect(control, state) {
-        with(control) {
-            handleControlEvents(
-                onStart = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.Start)
-                    }
-                },
-                onStartFill = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.StartFill)
-                    }
-                },
-                onCenter = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.Center)
-                    }
-                },
-                onEnd = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.End)
-                    }
-                },
-                onEndFill = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.EndFill)
-                    }
-                }
-            )
-        }
+        bindSwipeBoxControl(control = control, state = state, scope = scope)
     }
     Box(
         modifier = modifier
@@ -111,106 +82,163 @@ fun SwipeBox(
             .clipToBounds()
     ) {
         startAction.forEachIndexed { index, action ->
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .width(actionWidth)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset <= actionWidthPx * startActionSize) {
-                                (-actionWidthPx + state.offset / startActionSize * (startActionSize - index)).roundToInt()
-                            } else {
-                                (-actionWidthPx * (index + 1) + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                action()
-            }
+            SwipeActionSlot(
+                alignment = Alignment.CenterStart,
+                width = actionWidth,
+                height = contentHeightDp,
+                offsetX = { startActionOffsetX(index, actionWidthPx, startActionSize, state.offset) },
+            ) { action() }
         }
-        startFillAction?.let {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset <= actionWidthPx * startActionSize) {
-                                (-contentWidth + state.offset / startActionSize).roundToInt()
-                            } else {
-                                (-contentWidth - startWidth + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                it()
-            }
+        startFillAction?.let { fill ->
+            SwipeActionSlot(
+                alignment = Alignment.CenterStart,
+                width = null,
+                height = contentHeightDp,
+                offsetX = { startFillOffsetX(contentWidth, startWidth, actionWidthPx, startActionSize, state.offset) },
+            ) { fill() }
         }
         endAction.forEachIndexed { index, action ->
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(actionWidth)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset >= -(actionWidthPx * endActionSize)) {
-                                (actionWidthPx + state.offset / endActionSize * (endActionSize - index)).roundToInt()
-                            } else {
-                                (actionWidthPx * (index + 1) + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                action()
-            }
+            SwipeActionSlot(
+                alignment = Alignment.CenterEnd,
+                width = actionWidth,
+                height = contentHeightDp,
+                offsetX = { endActionOffsetX(index, actionWidthPx, endActionSize, state.offset) },
+            ) { action() }
         }
-        endFillAction?.let {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset >= -(actionWidthPx * endActionSize)) {
-                                (contentWidth + state.offset / endActionSize).roundToInt()
-                            } else {
-                                (contentWidth + endWidth + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                it()
-            }
+        endFillAction?.let { fill ->
+            SwipeActionSlot(
+                alignment = Alignment.CenterEnd,
+                width = null,
+                height = contentHeightDp,
+                offsetX = { endFillOffsetX(contentWidth, endWidth, actionWidthPx, endActionSize, state.offset) },
+            ) { fill() }
         }
-        Box(
-            modifier = Modifier
-                .onSizeChanged {
-                    contentWidth = it.width.toFloat()
-                    contentHeight = it.height.toFloat()
-                }
-                .offset {
-                    IntOffset(
-                        x = state.offset.roundToInt(),
-                        y = 0,
-                    )
-                }
-        ) {
-            content()
-        }
+        SwipeContent(
+            offsetX = { state.offset.roundToInt() },
+            onSizeChanged = { width, height ->
+                contentWidth = width
+                contentHeight = height
+            },
+        ) { content() }
+    }
+}
+
+/** 单个动作槽位：按拖动偏移摆到左右两侧，宽度为 null 表示填充式（跟随内容宽度）。 */
+@Composable
+private fun BoxScope.SwipeActionSlot(
+    alignment: Alignment,
+    width: Dp?,
+    height: Dp,
+    offsetX: () -> Int,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .align(alignment)
+            .then(if (width != null) Modifier.width(width) else Modifier)
+            .height(height)
+            .offset { IntOffset(x = offsetX(), y = 0) }
+    ) {
+        content()
+    }
+}
+
+/** 内容层：跟随拖拽偏移，并把自身尺寸回传给父级计算锚点。 */
+@Composable
+private fun SwipeContent(
+    offsetX: () -> Int,
+    onSizeChanged: (width: Float, height: Float) -> Unit,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .onSizeChanged { onSizeChanged(it.width.toFloat(), it.height.toFloat()) }
+            .offset { IntOffset(x = offsetX(), y = 0) }
+    ) {
+        content()
+    }
+}
+
+/** 拖拽锚点：内容两侧分别留出动作区高度（填充式动作额外留出一格与整屏宽度）。 */
+private fun swipeBoxAnchors(
+    actionWidthPx: Float,
+    startWidth: Float,
+    endWidth: Float,
+    contentWidth: Float,
+    startFillEnabled: Boolean,
+    endFillEnabled: Boolean,
+): DraggableAnchors<DragAnchors> = DraggableAnchors {
+    DragAnchors.Start at (if (startFillEnabled) actionWidthPx else 0f) + startWidth
+    DragAnchors.StartFill at (if (startFillEnabled) contentWidth else 0f) + startWidth
+    DragAnchors.Center at 0f
+    DragAnchors.End at (if (endFillEnabled) -actionWidthPx else 0f) - endWidth
+    DragAnchors.EndFill at (if (endFillEnabled) -contentWidth else 0f) - endWidth
+}
+
+/** 左侧第 [index] 个动作的横向位移。 */
+private fun startActionOffsetX(
+    index: Int,
+    actionWidthPx: Float,
+    startActionSize: Int,
+    offset: Float,
+): Int = if (offset <= actionWidthPx * startActionSize) {
+    (-actionWidthPx + offset / startActionSize * (startActionSize - index)).roundToInt()
+} else {
+    (-actionWidthPx * (index + 1) + offset).roundToInt()
+}
+
+/** 左侧填充动作的横向位移。 */
+private fun startFillOffsetX(
+    contentWidth: Float,
+    startWidth: Float,
+    actionWidthPx: Float,
+    startActionSize: Int,
+    offset: Float,
+): Int = if (offset <= actionWidthPx * startActionSize) {
+    (-contentWidth + offset / startActionSize).roundToInt()
+} else {
+    (-contentWidth - startWidth + offset).roundToInt()
+}
+
+/** 右侧第 [index] 个动作的横向位移。 */
+private fun endActionOffsetX(
+    index: Int,
+    actionWidthPx: Float,
+    endActionSize: Int,
+    offset: Float,
+): Int = if (offset >= -(actionWidthPx * endActionSize)) {
+    (actionWidthPx + offset / endActionSize * (endActionSize - index)).roundToInt()
+} else {
+    (actionWidthPx * (index + 1) + offset).roundToInt()
+}
+
+/** 右侧填充动作的横向位移。 */
+private fun endFillOffsetX(
+    contentWidth: Float,
+    endWidth: Float,
+    actionWidthPx: Float,
+    endActionSize: Int,
+    offset: Float,
+): Int = if (offset >= -(actionWidthPx * endActionSize)) {
+    (contentWidth + offset / endActionSize).roundToInt()
+} else {
+    (contentWidth + endWidth + offset).roundToInt()
+}
+
+/** 把控制器的五个动作接到锚点动画上。 */
+private suspend fun bindSwipeBoxControl(
+    control: SwipeBoxControl,
+    state: AnchoredDraggableState<DragAnchors>,
+    scope: CoroutineScope,
+) {
+    with(control) {
+        handleControlEvents(
+            onStart = { scope.launch { state.animateTo(DragAnchors.Start) } },
+            onStartFill = { scope.launch { state.animateTo(DragAnchors.StartFill) } },
+            onCenter = { scope.launch { state.animateTo(DragAnchors.Center) } },
+            onEnd = { scope.launch { state.animateTo(DragAnchors.End) } },
+            onEndFill = { scope.launch { state.animateTo(DragAnchors.EndFill) } },
+        )
     }
 }
 

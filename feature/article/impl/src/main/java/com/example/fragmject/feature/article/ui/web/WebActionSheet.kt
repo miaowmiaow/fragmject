@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.fragmject.core.model.History
 import com.example.fragmject.feature.article.impl.R
 
 /**
@@ -28,14 +27,15 @@ import com.example.fragmject.feature.article.impl.R
 @Composable
 fun WebActionSheet(
     bottomSheetState: SheetState,
-    bookmark: History?,
-    injectState: Boolean,
+    pageState: WebActionState,
     onReload: () -> Unit,
     onOpenHistory: () -> Unit,
     onToggleBookmark: () -> Unit,
     onToggleInject: () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    val bookmark = pageState.bookmark
+    val injectState = pageState.injectState
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
     BottomSheetScaffold(
         sheetContent = {

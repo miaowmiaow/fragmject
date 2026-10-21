@@ -51,6 +51,14 @@ class MosaicLayer(private val state: PictureEditorState) : ILayer {
         paint.strokeWidth = DEFAULT_PAINT_SIZE / scale
     }
 
+    /** 清空所有马赛克笔画（换源图时调用）。 */
+    fun clear() {
+        paintPaths.clear()
+        redoPaths.clear()
+        path.reset()
+        state.invalidate()
+    }
+
     fun undo(): Boolean {
         if (paintPaths.isNotEmpty()) {
             path.reset()

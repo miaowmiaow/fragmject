@@ -64,69 +64,71 @@ import java.util.zip.ZipFile
      * @param includePortScan 本轮是否执行端口扫描（由调用方按时间降频决定）。
      * @param includeCrc      本轮是否执行 CRC 校验（由调用方按时间降频决定）。
      */
-    internal fun AppSecurityGuard.detectReason(includePortScan: Boolean, includeCrc: Boolean): String? {
-        // 1. native TracerPid（优先，抗 Java hook）。
-        //    >0 才判定命中；-1（读取失败）视为未知，继续后续检测而不是误杀。
+    internal fun AppSecurityGuard.detectReason(includePortScan: Boolean, includeCrc: Boolean): String? =
+        detectDebugReason()
+            ?: detectFridaReason()
+            ?: detectEnvironmentReason(includeCrc)
+            ?: detectPortReason(includePortScan)
+
+    /**
+     * 1-2：调试器检测。
+     * native TracerPid 优先（抗 Java hook），>0 才判定命中；-1（读取失败）视为未知，
+     * 继续后续检测而不是误杀。Java 层 Debug 接口覆盖 Android Studio / jdb 等纯 Java 调试。
+     */
+    private fun AppSecurityGuard.detectDebugReason(): String? {
         if (nativeLoaded) {
             val tracerPid = nativeReadTracerPid()
             if (tracerPid > 0) {
                 return "检测到 Native 调试器附加（TracerPid=$tracerPid）"
             }
         }
-
-        // 2. Java 层调试器（JDWP）：覆盖 Android Studio / jdb 等纯 Java 调试。
-        //    iOS 的 RASP 也有同类能力，这里对应 Android 的 Debug 接口。
         if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) {
             return "检测到 Java 层调试器（JDWP）"
         }
-
-        // 3. native maps Frida 特征（特征串已 XOR 混淆，二进制中无明文）。
-        //    命中任意一个即判定；`linjector` 虽可能与其他工具重名，但结合其它信号足够可疑。
-        if (nativeLoaded && nativeFindFridaInMaps() > 0) {
-            return "检测到 Frida 注入特征（内存映射）"
-        }
-
-        // 4. Frida 特征线程名：覆盖「so 已删除/改名但线程残留」的场景。
-        if (hasFridaThread()) {
-            return "检测到 Frida 特征线程"
-        }
-
-        // 5. Frida 落地文件：覆盖 frida-server 二进制/注入器落在 fd 或 /data/local/tmp 的情况。
-        if (hasFridaFile()) {
-            return "检测到 Frida 落地文件"
-        }
-
-        // 6. 匿名可执行段：对「无文件映射的可执行内存」做通用检测。
-        //    native 返回 -1（读取失败）时 `-1 > 0` 为 false，不会误杀。
-        if (nativeLoaded && nativeCountAnonymousExecSegments() > ANON_EXEC_THRESHOLD) {
-            return "检测到异常匿名可执行内存段（疑似内存注入）"
-        }
-
-        // 7. Root：多信号综合（su 文件 / Magisk 痕迹 / root 管理应用 / maps 注入特征）。
-        //    默认阻断；若业务对 Root 不敏感，可把 ENFORCE_ROOT_DETECTION 置为 false。
-        if (ENFORCE_ROOT_DETECTION && hasRootSignals()) {
-            return "检测到 Root 环境"
-        }
-
-        // 8. 模拟器：Build 多字段 + QEMU 设备节点，Score >= 2 才判定以降低误报。
-        //    若需支持云手机/自动化测试，可把 ENFORCE_EMULATOR_DETECTION 置为 false。
-        if (ENFORCE_EMULATOR_DETECTION && hasEmulatorSignals()) {
-            return "检测到模拟器环境"
-        }
-
-        // 9. libc .text CRC：只在 includeCrc 为 true（30s 降频）时执行。
-        //    返回 1 才是「不一致」；-1（无法校验）不判定，避免误杀。
-        if (includeCrc && nativeLoaded && nativeVerifyLibcTextCrc() == 1) {
-            return "检测到 libc 代码段被篡改（疑似 inline hook）"
-        }
-
-        // 10. 端口扫描：只在 includePortScan 为 true（60s 降频）时执行。
-        //     仅覆盖 frida-server 形态，gadget 注入不会监听端口。
-        if (includePortScan && isFridaPortOpen()) {
-            return "检测到 Frida Server 监听端口（27042-27052）"
-        }
-
         return null
+    }
+
+    /**
+     * 3-6：Frida 与内存注入检测。
+     * maps 特征串已 XOR 混淆（二进制中无明文）；线程名覆盖「so 已删除/改名但线程残留」；
+     * 落地文件覆盖 frida-server 二进制；匿名可执行段对无文件映射的可执行内存做通用检测
+     * （native 返回 -1 时 `-1 > 0` 为 false，不会误杀）。
+     */
+    private fun AppSecurityGuard.detectFridaReason(): String? = when {
+        nativeLoaded && nativeFindFridaInMaps() > 0 ->
+            "检测到 Frida 注入特征（内存映射）"
+
+        hasFridaThread() -> "检测到 Frida 特征线程"
+
+        hasFridaFile() -> "检测到 Frida 落地文件"
+
+        nativeLoaded && nativeCountAnonymousExecSegments() > ANON_EXEC_THRESHOLD ->
+            "检测到异常匿名可执行内存段（疑似内存注入）"
+
+        else -> null
+    }
+
+    /**
+     * 7-9：环境与完整性检测。
+     * Root 多信号综合（su / Magisk / root 管理应用 / maps 注入特征），默认阻断；
+     * 模拟器用 Build 多字段 + QEMU 设备节点，Score >= 2 才判定以降低误报；
+     * libc `.text` CRC 只在 includeCrc 为 true（30s 降频）时执行，返回 1 才是「不一致」。
+     */
+    private fun AppSecurityGuard.detectEnvironmentReason(includeCrc: Boolean): String? = when {
+        ENFORCE_ROOT_DETECTION && hasRootSignals() -> "检测到 Root 环境"
+
+        ENFORCE_EMULATOR_DETECTION && hasEmulatorSignals() -> "检测到模拟器环境"
+
+        includeCrc && nativeLoaded && nativeVerifyLibcTextCrc() == 1 ->
+            "检测到 libc 代码段被篡改（疑似 inline hook）"
+
+        else -> null
+    }
+
+    /** 10：端口扫描，只在 includePortScan 为 true（60s 降频）时执行，仅覆盖 frida-server 形态。 */
+    private fun AppSecurityGuard.detectPortReason(includePortScan: Boolean): String? {
+        if (!includePortScan || !isFridaPortOpen()) return null
+        return "检测到 Frida Server 监听端口（27042-27052）"
     }
     /**
      * 命中后置标记并延迟终止进程。
@@ -355,26 +357,14 @@ import java.util.zip.ZipFile
 
         var score = 0
         if (fingerprint.startsWith("generic") ||
-            fingerprint.contains("unknown") ||
-            fingerprint.contains("emulator") ||
-            fingerprint.contains("vbox") ||
-            fingerprint.contains("genymotion")
+            fingerprint.containsAny("unknown", "emulator", "vbox", "genymotion")
         ) {
             score++
         }
-        if (model.contains("google_sdk") ||
-            model.contains("emulator") ||
-            model.contains("android sdk built for") ||
-            model.contains("droid4x")
-        ) {
+        if (model.containsAny("google_sdk", "emulator", "android sdk built for", "droid4x")) {
             score++
         }
-        if (product.contains("sdk") ||
-            product.contains("google_sdk") ||
-            product.contains("emulator") ||
-            product.contains("simulator") ||
-            product.contains("vbox86p")
-        ) {
+        if (product.containsAny("sdk", "google_sdk", "emulator", "simulator", "vbox86p")) {
             score++
         }
         if (hardware.contains("goldfish") ||
@@ -429,6 +419,17 @@ import java.util.zip.ZipFile
      *
      * @return 解压后的文件；无法解压时返回 null（调用方跳过校验）。
      */
+    /** 从 APK 中取出指定 entry 写到 [target]；entry 不存在时返回 false。 */
+    private fun copyEntryFromApk(apkPath: String, entryName: String, target: File): Boolean {
+        ZipFile(apkPath).use { zip ->
+            val entry = zip.getEntry(entryName) ?: return false
+            zip.getInputStream(entry).use { input ->
+                target.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+        return true
+    }
+
     internal fun AppSecurityGuard.extractSelfSo(context: Context): File? {
         val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: return null
         val entryName = "lib/$abi/libfragmject_security.so"
@@ -449,12 +450,7 @@ import java.util.zip.ZipFile
         }
 
         return try {
-            ZipFile(apkPath).use { zip ->
-                val entry = zip.getEntry(entryName) ?: return null
-                zip.getInputStream(entry).use { input ->
-                    target.outputStream().use { output -> input.copyTo(output) }
-                }
-            }
+            if (!copyEntryFromApk(apkPath, entryName, target)) return null
             keyFile.writeText(cacheKey)
             target
         } catch (e: Exception) {
@@ -489,3 +485,6 @@ import java.util.zip.ZipFile
             false
         }
     }
+
+/** 命中任一关键字即视为可疑特征（模拟器指纹/型号/产品名共用）。 */
+private fun String.containsAny(vararg hints: String): Boolean = hints.any { contains(it) }

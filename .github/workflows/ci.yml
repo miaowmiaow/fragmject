@@ -52,13 +52,12 @@ jobs:
       - name: Unit test coverage gates
         run: ./gradlew verifyUnitTestCoverage --stacktrace
 
-      # lint 策略集中在 build-logic 约定插件（Lint.configureFragmjectLint），
-      # 各模块共用自己的 lint-baseline.xml；此处负责真正执行，避免"配置了但没人跑"。
+      # lint 策略集中在 build-logic 约定插件（Lint.configureFragmjectLint），不使用 baseline；
+      # 此处负责真正执行，避免"配置了但没人跑"。
       - name: Android lint
         run: ./gradlew lintDebug --stacktrace
 
-      # detekt 由根项目统一扫描各模块 main 源码；存量问题已固化到
-      # config/detekt/detekt-baseline.xml（相对路径签名，跨机器有效），仅新增问题阻断。
+      # detekt 由根项目统一扫描各模块 main 源码，不使用 baseline：任何新增违规直接阻断。
       - name: detekt static analysis
         run: ./gradlew detekt --stacktrace
 

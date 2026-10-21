@@ -1,11 +1,13 @@
 package com.example.fragmject.feature.demo.ui.calendar
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.domain.repository.ScheduleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -56,7 +58,11 @@ class CalendarViewModel @Inject constructor(
             _scheduleMap.update { it + (date to updated) }
             try {
                 scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                // 落盘失败（含 Room 的 SQLiteException）必须回滚，类型不收敛以免漏掉真实失败
+                Log.e("CalendarViewModel", "setSchedule failed", e)
                 _scheduleMap.value = previous
             }
         }
@@ -69,7 +75,11 @@ class CalendarViewModel @Inject constructor(
             _scheduleMap.update { it + (date to updated) }
             try {
                 scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                // 落盘失败（含 Room 的 SQLiteException）必须回滚，类型不收敛以免漏掉真实失败
+                Log.e("CalendarViewModel", "setSchedule failed", e)
                 _scheduleMap.value = previous
             }
         }

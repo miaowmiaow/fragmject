@@ -116,8 +116,9 @@ fun SystemScreenPreview() {
  * 未命中时返回默认 (0, "体系", 空列表)。
  */
 private fun List<Tree>.getTree(cid: String): Triple<Int, String, List<Tree>> {
-    for ((children, _, _, _, _) in this) {
-        children?.forEachIndexed { index, data ->
+    forEach { tree ->
+        val children = tree.children ?: return@forEach
+        children.forEachIndexed { index, data ->
             if (data.id == cid) return Triple(index, data.name, children)
         }
     }

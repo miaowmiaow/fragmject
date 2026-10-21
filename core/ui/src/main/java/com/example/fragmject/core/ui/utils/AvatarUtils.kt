@@ -25,7 +25,7 @@ object AvatarUtils {
     fun avatarResId(userId: String): Int {
         return try {
             avatarList[abs(userId.toInt()) % avatarList.size]
-        } catch (e: Exception) {
+        } catch (_: NumberFormatException) {
             R.mipmap.ic_launcher
         }
     }

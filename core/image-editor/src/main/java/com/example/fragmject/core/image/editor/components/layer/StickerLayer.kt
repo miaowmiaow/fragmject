@@ -120,92 +120,92 @@ class StickerLayer(
 
     fun shouldShowDeleteBin(): Boolean = showDeleteBin
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
+    override fun onTouchEvent(event: MotionEvent): Boolean = when (event.actionMasked) {
+        MotionEvent.ACTION_DOWN -> handleActionDown(event)
+        MotionEvent.ACTION_MOVE -> handleActionMove(event)
+        MotionEvent.ACTION_UP -> handleActionUp()
+        else -> false
+    }
+
+    private fun handleActionDown(event: MotionEvent): Boolean {
         if (!isEnabled) return false
-
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                touchTime = System.currentTimeMillis()
-                val pointerId0 = event.getPointerId(0)
-                pointerIndexId0 = event.findPointerIndex(pointerId0)
-                downX = event.x
-                downY = event.y
-                touchTarget = resolveTouchTarget(event.x, event.y)
-                showDeleteBin = touchTarget == TouchTarget.BODY
-                if (!inBorder) {
-                    inBorder = true
-                    state.invalidate()
-                }
-                if (touchTarget == TouchTarget.TRANSFORM) {
-                    transformStartDistance = distanceToCenter(event.x, event.y)
-                    transformStartAngle = angleToCenter(event.x, event.y)
-                }
-                return touchTarget != TouchTarget.NONE
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-                if (pointerIndexId0 == INVALID_POINTER_ID) return false
-                val currX = event.getX(pointerIndexId0)
-                val currY = event.getY(pointerIndexId0)
-                when (touchTarget) {
-                    TouchTarget.BODY -> {
-                        adjustTranslation(currX - downX, currY - downY)
-                        downX = currX
-                        downY = currY
-                    }
-
-                    TouchTarget.TRANSFORM -> {
-                        updateTransform(currX, currY)
-                    }
-
-                    else -> Unit
-                }
-                measureBitmap()
-                state.invalidate()
-                return touchTarget != TouchTarget.NONE
-            }
-
-            MotionEvent.ACTION_UP -> {
-                val isClick = System.currentTimeMillis() - touchTime < 250
-                when (touchTarget) {
-                    TouchTarget.FLIP -> {
-                        toggleFlip()
-                    }
-
-                    TouchTarget.BODY -> {
-                        if (isClick && attrs.description.isNotBlank()) {
-                            listener?.onClick(
-                                StickerAttrs(
-                                    bitmap = attrs.bitmap,
-                                    description = attrs.description,
-                                    rotation = currRotation,
-                                    scale = currScale,
-                                    translateX = currTranslateX,
-                                    translateY = currTranslateY,
-                                    isFlipped = isFlipped,
-                                )
-                            )
-                        }
-                    }
-
-                    else -> Unit
-                }
-                if (currTranslateX == 0f) {
-                    currTranslateX = defaultCenterX()
-                }
-                if (currTranslateY == 0f) {
-                    currTranslateY = defaultCenterY()
-                }
-                clampToViewBounds()
-                measureBitmap()
-                pointerIndexId0 = INVALID_POINTER_ID
-                touchTarget = TouchTarget.NONE
-                showDeleteBin = false
-                state.invalidate()
-                return false
-            }
+        touchTime = System.currentTimeMillis()
+        val pointerId0 = event.getPointerId(0)
+        pointerIndexId0 = event.findPointerIndex(pointerId0)
+        downX = event.x
+        downY = event.y
+        touchTarget = resolveTouchTarget(event.x, event.y)
+        showDeleteBin = touchTarget == TouchTarget.BODY
+        if (!inBorder) {
+            inBorder = true
+            state.invalidate()
         }
+        if (touchTarget == TouchTarget.TRANSFORM) {
+            transformStartDistance = distanceToCenter(event.x, event.y)
+            transformStartAngle = angleToCenter(event.x, event.y)
+        }
+        return touchTarget != TouchTarget.NONE
+    }
+
+    private fun handleActionMove(event: MotionEvent): Boolean {
+        if (!isEnabled) return false
+        if (pointerIndexId0 == INVALID_POINTER_ID) return false
+        val currX = event.getX(pointerIndexId0)
+        val currY = event.getY(pointerIndexId0)
+        when (touchTarget) {
+            TouchTarget.BODY -> {
+                adjustTranslation(currX - downX, currY - downY)
+                downX = currX
+                downY = currY
+            }
+
+            TouchTarget.TRANSFORM -> updateTransform(currX, currY)
+
+            else -> Unit
+        }
+        measureBitmap()
+        state.invalidate()
+        return touchTarget != TouchTarget.NONE
+    }
+
+    private fun handleActionUp(): Boolean {
+        if (!isEnabled) return false
+        val isClick = System.currentTimeMillis() - touchTime < 250
+        when (touchTarget) {
+            TouchTarget.FLIP -> toggleFlip()
+
+            TouchTarget.BODY -> if (isClick) notifyClick()
+
+            else -> Unit
+        }
+        if (currTranslateX == 0f) {
+            currTranslateX = defaultCenterX()
+        }
+        if (currTranslateY == 0f) {
+            currTranslateY = defaultCenterY()
+        }
+        clampToViewBounds()
+        measureBitmap()
+        pointerIndexId0 = INVALID_POINTER_ID
+        touchTarget = TouchTarget.NONE
+        showDeleteBin = false
+        state.invalidate()
         return false
+    }
+
+    private fun notifyClick() {
+        if (attrs.description.isBlank()) return
+        listener?.onClick(
+            StickerAttrs(
+                bitmap = attrs.bitmap,
+                description = attrs.description,
+                rotation = currRotation,
+                scale = currScale,
+                translateX = currTranslateX,
+                translateY = currTranslateY,
+                isFlipped = isFlipped,
+            )
+        )
     }
 
     override fun onSizeChanged(

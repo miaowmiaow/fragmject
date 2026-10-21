@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +65,17 @@ import com.example.fragmject.feature.authenticator.components.EmptyState
 import com.example.fragmject.feature.authenticator.model.OtpCodeItem
 import kotlinx.coroutines.launch
 
+/** 弹窗动作集合：删除确认、详情里的复制/上移/下移与关闭。 */
+@Stable
+private class AuthenticatorDialogActions(
+    val onDelete: (Long) -> Unit,
+    val onMoveUp: (Long) -> Unit,
+    val onMoveDown: (Long) -> Unit,
+    val onCopy: (String) -> Unit,
+    val onDismissDelete: () -> Unit,
+    val onDismissDetail: () -> Unit,
+)
+
 @Composable
 fun AuthenticatorScreen(
     viewModel: AuthenticatorViewModel = hiltViewModel(),
@@ -86,46 +98,28 @@ private fun AuthenticatorScreenContent(
     val snackbarHostState = remember { SnackbarHostState() }
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
-
     var pendingDeleteId by remember { mutableStateOf<Long?>(null) }
     var detailItem by remember { mutableStateOf<OtpCodeItem?>(null) }
-
     val items = uiState.items
-    pendingDeleteId?.let { id ->
-        items.firstOrNull { it.account.id == id }?.let { target ->
-            DeleteConfirmDialog(
-                issuer = target.account.displayIssuer,
-                onConfirm = {
-                    viewModel.delete(id)
-                    pendingDeleteId = null
-                },
-                onDismiss = { pendingDeleteId = null },
-            )
+    val copyToClipboard: (String, String) -> Unit = { text, message ->
+        scope.launch {
+            clipboard.setClipEntry(ClipData.newPlainText(text, text).toClipEntry())
+            snackbarHostState.showSnackbar(message)
         }
     }
-    detailItem?.let { item ->
-        AccountDetailDialog(
-            item = item,
-            canMoveUp = items.firstOrNull()?.account?.id != item.account.id,
-            canMoveDown = items.lastOrNull()?.account?.id != item.account.id,
-            onCopy = { text ->
-                scope.launch {
-                    clipboard.setClipEntry(ClipData.newPlainText(text, text).toClipEntry())
-                    snackbarHostState.showSnackbar("已复制")
-                }
-            },
-            onMoveUp = {
-                viewModel.moveUp(item.account.id)
-                detailItem = null
-            },
-            onMoveDown = {
-                viewModel.moveDown(item.account.id)
-                detailItem = null
-            },
-            onDismiss = { detailItem = null },
-        )
-    }
-
+    AuthenticatorDialogs(
+        pendingDeleteId = pendingDeleteId,
+        detailItem = detailItem,
+        items = items,
+        actions = AuthenticatorDialogActions(
+            onDelete = { id -> viewModel.delete(id); pendingDeleteId = null },
+            onMoveUp = { id -> viewModel.moveUp(id); detailItem = null },
+            onMoveDown = { id -> viewModel.moveDown(id); detailItem = null },
+            onCopy = { text -> copyToClipboard(text, "已复制") },
+            onDismissDelete = { pendingDeleteId = null },
+            onDismissDetail = { detailItem = null },
+        ),
+    )
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         // 顶栏自绘背景并自己处理状态栏 inset（与 core:designsystem 的 TitleBar 同一做法），
@@ -164,57 +158,100 @@ private fun AuthenticatorScreenContent(
                     modifier = Modifier.weight(1f),
                 )
             } else {
-                LazyColumn(
+                AuthenticatorAccountList(
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    itemsIndexed(items, key = { _, item -> item.account.id }) { index, item ->
-                        val dismissState = rememberSwipeToDismissBoxState()
-                        LaunchedEffect(dismissState.currentValue) {
-                            if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-                                pendingDeleteId = item.account.id
-                                dismissState.snapTo(SwipeToDismissBoxValue.Settled)
-                            }
-                        }
-                        SwipeToDismissBox(
-                            state = dismissState,
-                            enableDismissFromStartToEnd = false,
-                            backgroundContent = {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(vertical = 2.dp)
-                                        .alpha(0.85f),
-                                    contentAlignment = Alignment.CenterEnd,
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "删除",
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.padding(end = 24.dp),
-                                    )
-                                }
-                            },
-                        ) {
-                            AccountCard(
-                                item = item,
-                                onCopy = {
-                                    scope.launch {
-                                        clipboard.setClipEntry(ClipData.newPlainText(item.code, item.code).toClipEntry())
-                                        snackbarHostState.showSnackbar("已复制验证码")
-                                    }
-                                },
-                                onLongClick = { detailItem = item },
-                            )
-                        }
-                        if (index == items.lastIndex) {
-                            Spacer(Modifier.height(60.dp))
-                        }
-                    }
-                }
+                    items = items,
+                    onCopy = { item -> copyToClipboard(item.code, "已复制验证码") },
+                    onLongClick = { detailItem = it },
+                    onDeleteRequest = { pendingDeleteId = it },
+                )
             }
         }
+    }
+}
+
+/** 账户列表：左滑露出删除背景，松手即请求确认。 */
+@Composable
+private fun AuthenticatorAccountList(
+    items: List<OtpCodeItem>,
+    onCopy: (OtpCodeItem) -> Unit,
+    onLongClick: (OtpCodeItem) -> Unit,
+    onDeleteRequest: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        itemsIndexed(items, key = { _, item -> item.account.id }) { index, item ->
+            val dismissState = rememberSwipeToDismissBoxState()
+            LaunchedEffect(dismissState.currentValue) {
+                if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                    onDeleteRequest(item.account.id)
+                    dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+                }
+            }
+            SwipeToDismissBox(
+                state = dismissState,
+                enableDismissFromStartToEnd = false,
+                backgroundContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(vertical = 2.dp)
+                            .alpha(0.85f),
+                        contentAlignment = Alignment.CenterEnd,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "删除",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(end = 24.dp),
+                        )
+                    }
+                },
+            ) {
+                AccountCard(
+                    item = item,
+                    onCopy = { onCopy(item) },
+                    onLongClick = { onLongClick(item) },
+                )
+            }
+            if (index == items.lastIndex) {
+                Spacer(Modifier.height(60.dp))
+            }
+        }
+    }
+}
+
+/** 删除确认与账户详情两个弹窗，按当前状态按需展示。 */
+@Composable
+private fun AuthenticatorDialogs(
+    pendingDeleteId: Long?,
+    detailItem: OtpCodeItem?,
+    items: List<OtpCodeItem>,
+    actions: AuthenticatorDialogActions,
+) {
+    pendingDeleteId?.let { id ->
+        items.firstOrNull { it.account.id == id }?.let { target ->
+            DeleteConfirmDialog(
+                issuer = target.account.displayIssuer,
+                onConfirm = { actions.onDelete(id) },
+                onDismiss = actions.onDismissDelete,
+            )
+        }
+    }
+    detailItem?.let { item ->
+        AccountDetailDialog(
+            item = item,
+            canMoveUp = items.firstOrNull()?.account?.id != item.account.id,
+            canMoveDown = items.lastOrNull()?.account?.id != item.account.id,
+            onCopy = actions.onCopy,
+            onMoveUp = { actions.onMoveUp(item.account.id) },
+            onMoveDown = { actions.onMoveDown(item.account.id) },
+            onDismiss = actions.onDismissDetail,
+        )
     }
 }
 
@@ -258,7 +295,8 @@ private fun AccountDetailDialog(
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 DetailRow("密钥（Base32）", item.account.secret, onCopy)
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
-                DetailRow("算法 / 位数 / 周期", "${item.account.algorithm.wireValue} · ${item.account.digits} 位 · ${item.account.period}s", onCopy)
+                val meta = "${item.account.algorithm.wireValue} · ${item.account.digits} 位 · ${item.account.period}s"
+                DetailRow("算法 / 位数 / 周期", meta, onCopy)
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),

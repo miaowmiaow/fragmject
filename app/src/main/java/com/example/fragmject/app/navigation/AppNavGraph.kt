@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,12 +49,23 @@ import com.example.fragmject.core.navigation.runtime.ProvideDetailPaneViewModelS
 import com.example.fragmject.feature.auth.LoginNavKey
 import com.example.fragmject.feature.home.MainNavKey
 
+/** 导航动作集合；各动作均为 `remember` 稳定引用，可直接用于 `DisposableEffect` 绑定。 */
+@Stable
+private class AppNavActions(
+    val placeKey: (NavKey) -> Unit,
+    val navigate: (NavKey) -> Unit,
+    val navigateUp: () -> Unit,
+    val popBackStack: (NavKey) -> Unit,
+)
+
 /**
  * 导航图。
  *
  * 迁移到 Navigation 3：back stack 由 [rememberNavBackStack] 创建，导航动作通过直接操作
  * [NavBackStack]（MutableList）完成，不再依赖 NavController；路由通过 [entryProvider] DSL
  * 映射到 Composable，参数直接通过类型化 key 获取，无需 toRoute()。
+ *
+ * 副作用按职责拆成独立小函数：选图结果清理、登录态暂存放行、深链守卫、导航能力绑定。
  */
 @Composable
 fun AppNavGraph(
@@ -67,14 +80,7 @@ fun AppNavGraph(
 ) {
     val navViewModel: AppNavViewModel = viewModel()
     val authStatus by navViewModel.authStatus.collectAsStateWithLifecycle()
-    // 初始栈中「需登录」「详情面板」两类目标不直接入栈：前者交深链守卫经 navigate 判定，
-    // 后者需等首帧确定 isExpanded 后再经 placeKey 分流（否则大屏会被当成全屏页渲染）。
-    val backStack = rememberNavBackStack(
-        *initialBackStack
-            .filterNot { it is RequiresAuth || it is DetailPaneNavKey }
-            .ifEmpty { listOf(MainNavKey) }
-            .toTypedArray()
-    )
+    val backStack = rememberInitialBackStack(initialBackStack)
 
     // ---- Expanded 列表-详情同屏状态 ----
     val windowSizeClass = LocalWindowSizeClass.current
@@ -82,29 +88,103 @@ fun AppNavGraph(
     // 详情面板选中态：复用 Navigation 3 的 NavKey 反射序列化（与 rememberNavBackStack 同源），
     // 使进程重建后与 backStack 一起恢复，避免「栈恢复了但面板空白」的不一致。
     val selectedDetailKeys = rememberSerializable(
-        serializer = NavBackStackSerializer<NavKey>(NavKeySerializer()),
-    ) { NavBackStack<NavKey>() }
-
-    // ---- 选图结果清理 ----
-    // 图片流程全部退出时清空结果：系统返回键不走选择器的取消回调，
-    // 否则发起方下次进入仍会看到上一次选中的图片。
-    val pictureNavigator = LocalNavigators.current.picture
-    val hasPictureFlow = backStack.any { it is FlowScopedNavKey }
-    // 进入图片流程时清空上一次的选图结果。
-    // 结果只在「确认选择」时写入（PictureNavRegistration.onConfirm），而系统返回/手势返回
-    // 不会走选择器的取消回调。因此在**进入**时清空比在退出时清空更可靠：退出时清空会把
-    // 刚确认的结果一并擦掉（曾表现为「选完图回到发起方却不显示」）。
-    LaunchedEffect(hasPictureFlow) {
-        if (hasPictureFlow) pictureNavigator.clearSelection()
-    }
+        serializer = NavBackStackSerializer(NavKeySerializer()),
+    ) { NavBackStack() }
 
     // ---- 导航动作（直接操作 backStack） ----
-    // 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen
-    // 不会被重组，因此 navigate/placeKey 等 lambda 必须保持稳定引用，内部通过
-    // rememberUpdatedState 读取最新的登录态，避免闭包捕获过期状态。
+    val actions = rememberNavActions(
+        backStack = backStack,
+        navViewModel = navViewModel,
+        selectedDetailKeys = selectedDetailKeys,
+        authStatus = authStatus,
+        isExpanded = isExpanded,
+        onExit = onExit,
+    )
+
+    // ---- 副作用：选图结果清理 / 登录态放行 / 深链守卫 ----
+    val hasPictureFlow = backStack.any { it is FlowScopedNavKey }
+    ClearPictureSelectionOnEnter(
+        hasPictureFlow = hasPictureFlow,
+        clearSelection = LocalNavigators.current.picture::clearSelection,
+    )
+    ConsumeDeferredNavigation(
+        authStatus = authStatus,
+        deferredNavigation = navViewModel.deferredNavigationState,
+        navigate = actions.navigate,
+    )
+    GuardInitialDeepLinks(
+        initialBackStack = initialBackStack,
+        navigate = actions.navigate,
+        placeKey = actions.placeKey,
+    )
+    HandlePendingDeepLink(
+        pendingDeepLink = pendingDeepLink,
+        backStack = backStack,
+        navigate = actions.navigate,
+        placeKey = actions.placeKey,
+        onDeepLinkConsumed = onDeepLinkConsumed,
+    )
+
+    // ---- 绑定导航能力到语义 Navigator ----
+    BindNavigationDispatcher(
+        navigationDispatcher = navigationDispatcher,
+        navViewModel = navViewModel,
+        backStack = backStack,
+        actions = actions,
+    )
+
+    // ---- 统一导航内容注册表 ----
+    // 全屏 entry 与面板 detailContent 共用同一份「NavKey → 渲染器」映射，
+    // 回调作为运行时参数注入：全屏走 navigateUp，面板走 clearDetail。
+    val registry = remember(navContributors) {
+        NavContentRegistry().apply {
+            navContributors.forEach { it.contribute(this) }
+        }
+    }
+    AppNavDisplay(
+        backStack = backStack,
+        registry = registry,
+        detailContent = rememberDetailContent(registry, selectedDetailKeys),
+        selectedDetailKeys = selectedDetailKeys,
+        onBack = actions.navigateUp,
+        modifier = modifier,
+    )
+}
+
+/**
+ * 初始栈的入栈目标：剔除「需登录」「详情面板」两类 key。
+ *
+ * 前者交深链守卫经 navigate 判定，后者需等首帧确定 isExpanded 后再经 placeKey 分流
+ * （否则大屏会被当成全屏页渲染）。
+ */
+@Suppress("SpreadOperator") // rememberNavBackStack 只接受 vararg，无 List 重载
+@Composable
+private fun rememberInitialBackStack(initialBackStack: List<NavKey>): NavBackStack<NavKey> {
+    val initialKeys = initialBackStack
+        .filterNot { it is RequiresAuth || it is DetailPaneNavKey }
+        .ifEmpty { listOf(MainNavKey) }
+        .toTypedArray()
+    return rememberNavBackStack(*initialKeys)
+}
+
+/**
+ * 导航动作。
+ *
+ * 关键：NavDisplay 按 NavKey 缓存 entry 内容，MainNavKey 不变时 MainScreen 不会被重组，
+ * 因此 navigate/placeKey 等 lambda 必须保持稳定引用，内部通过 rememberUpdatedState
+ * 读取最新的登录态与宽屏状态，避免闭包捕获过期值。
+ */
+@Composable
+private fun rememberNavActions(
+    backStack: NavBackStack<NavKey>,
+    navViewModel: AppNavViewModel,
+    selectedDetailKeys: NavBackStack<NavKey>,
+    authStatus: AuthStatus,
+    isExpanded: Boolean,
+    onExit: () -> Unit,
+): AppNavActions {
     val currentAuthStatus by rememberUpdatedState(authStatus)
     val currentIsExpanded by rememberUpdatedState(isExpanded)
-
     // 把 key 落到最终位置（详情面板或全屏栈顶），不涉及登录守卫。
     // navigate 走守卫后调用；onAuthSuccess / 深链以「绕过守卫」的方式直接调用。
     val placeKey: (NavKey) -> Unit = remember {
@@ -117,7 +197,7 @@ fun AppNavGraph(
             }
         }
     }
-
+    // 去重：与栈顶相同的 key 不再入栈，避免「返回一次仍停在同一页」
     val navigate: (NavKey) -> Unit = remember {
         { key ->
             if (key is RequiresAuth && currentAuthStatus == AuthStatus.UNKNOWN) {
@@ -125,9 +205,7 @@ fun AppNavGraph(
             } else if (requiredLoginNavKey(key, currentAuthStatus)) {
                 navViewModel.setPendingRedirect(key)
                 backStack.add(LoginNavKey)
-            } else if (backStack.lastOrNull() == key) {
-                // 去重：与栈顶相同的 key 不再入栈，避免「返回一次仍停在同一页」
-            } else {
+            } else if (backStack.lastOrNull() != key) {
                 placeKey(key)
             }
         }
@@ -157,35 +235,92 @@ fun AppNavGraph(
             }
         }
     }
+    return remember(placeKey, navigate, navigateUp, popBackStack) {
+        AppNavActions(
+            placeKey = placeKey,
+            navigate = navigate,
+            navigateUp = navigateUp,
+            popBackStack = popBackStack,
+        )
+    }
+}
 
-    // ---- 登录态确定后处理暂存的受保护目标 ----
+/**
+ * 图片流程退出期间清空上一次的选图结果。
+ *
+ * 结果只在「确认选择」时写入（PictureNavContentContributor.onConfirm），而系统返回/手势返回
+ * 不会走选择器的取消回调，否则发起方下次进入仍会看到上一次选中的图片。
+ * 在**进入**时清空比在退出时清空更可靠：退出时清空会把刚确认的结果一并擦掉。
+ */
+@Composable
+private fun ClearPictureSelectionOnEnter(
+    hasPictureFlow: Boolean,
+    clearSelection: () -> Unit,
+) {
+    val currentClearSelection by rememberUpdatedState(clearSelection)
+    LaunchedEffect(hasPictureFlow) {
+        if (hasPictureFlow) currentClearSelection()
+    }
+}
+
+/** 登录态确定后放行暂存的受保护目标（未知时先暂存，确定后统一交给 navigate 守卫）。 */
+@Composable
+private fun ConsumeDeferredNavigation(
+    authStatus: AuthStatus,
+    deferredNavigation: MutableState<NavKey?>,
+    navigate: (NavKey) -> Unit,
+) {
+    val currentNavigate by rememberUpdatedState(navigate)
     LaunchedEffect(authStatus) {
         if (authStatus != AuthStatus.UNKNOWN) {
-            navViewModel.deferredNavigationState.value?.let { key ->
-                navViewModel.deferredNavigationState.value = null
-                navigate(key)
+            deferredNavigation.value?.let { key ->
+                deferredNavigation.value = null
+                currentNavigate(key)
             }
         }
     }
+}
 
-    // ---- 深层链接守卫 ----
-    // 受保护目标一律经 navigate：未登录时跳转登录并在成功后回跳，登录态未知时先暂存。
-    // 冷启动：初始栈已剔除受保护目标与详情面板目标，这里只执行一次（rememberSaveable 覆盖
-    // 配置变更与进程重建）。
-    var initialDeepLinkGuarded by rememberSaveable { mutableStateOf(false) }
+/**
+ * 冷启动深链守卫。
+ *
+ * 受保护目标一律经 navigate：未登录时跳转登录并在成功后回跳，登录态未知时先暂存。
+ * 初始栈已剔除受保护目标与详情面板目标，这里只执行一次（rememberSaveable 覆盖配置变更与进程重建）。
+ */
+@Composable
+private fun GuardInitialDeepLinks(
+    initialBackStack: List<NavKey>,
+    navigate: (NavKey) -> Unit,
+    placeKey: (NavKey) -> Unit,
+) {
+    var guarded by rememberSaveable { mutableStateOf(false) }
+    val currentNavigate by rememberUpdatedState(navigate)
+    val currentPlaceKey by rememberUpdatedState(placeKey)
     LaunchedEffect(Unit) {
-        if (!initialDeepLinkGuarded) {
-            initialDeepLinkGuarded = true
-            initialBackStack.dropWhile { it == MainNavKey }.forEach { key ->
-                when {
-                    key is RequiresAuth -> navigate(key)
-                    key is DetailPaneNavKey -> placeKey(key)
-                    // 全屏且无需登录的目标已直接进初始栈，此处无需处理
-                }
+        if (guarded) return@LaunchedEffect
+        guarded = true
+        initialBackStack.dropWhile { it == MainNavKey }.forEach { key ->
+            when (key) {
+                is RequiresAuth -> currentNavigate(key)
+                is DetailPaneNavKey -> currentPlaceKey(key)
+                // 全屏且无需登录的目标已直接进初始栈，此处无需处理
             }
         }
     }
-    // 运行时深层链接（onNewIntent 触发）：首次启动由初始栈处理，此处仅处理后续动态深层链接。
+}
+
+/** 运行时深层链接（onNewIntent 触发）：首次启动由初始栈处理，此处仅处理后续动态深层链接。 */
+@Composable
+private fun HandlePendingDeepLink(
+    pendingDeepLink: DeepLinkRequest?,
+    backStack: NavBackStack<NavKey>,
+    navigate: (NavKey) -> Unit,
+    placeKey: (NavKey) -> Unit,
+    onDeepLinkConsumed: () -> Unit,
+) {
+    val currentNavigate by rememberUpdatedState(navigate)
+    val currentPlaceKey by rememberUpdatedState(placeKey)
+    val currentOnConsumed by rememberUpdatedState(onDeepLinkConsumed)
     LaunchedEffect(pendingDeepLink) {
         val request = pendingDeepLink ?: return@LaunchedEffect
         matchDeepLink(request)?.let { newStack ->
@@ -193,20 +328,26 @@ fun AppNavGraph(
             backStack.clear()
             backStack.add(MainNavKey)
             newStack.dropWhile { it == MainNavKey }.forEach { key ->
-                if (key is RequiresAuth) navigate(key) else placeKey(key)
+                if (key is RequiresAuth) currentNavigate(key) else currentPlaceKey(key)
             }
         }
-        onDeepLinkConsumed()
+        currentOnConsumed()
     }
+}
 
-    // ---- 绑定导航能力到语义 Navigator ----
-    // navigate/navigateUp/popBackStack 均为 remember 稳定引用，内部状态经
-    // rememberUpdatedState 与闭包捕获的稳定 State 读取，故只需绑定一次。
+/** 把导航能力绑定到语义 Navigator；动作引用稳定，故只在 dispatcher 变化时重绑。 */
+@Composable
+private fun BindNavigationDispatcher(
+    navigationDispatcher: NavigationDispatcher,
+    navViewModel: AppNavViewModel,
+    backStack: NavBackStack<NavKey>,
+    actions: AppNavActions,
+) {
     DisposableEffect(navigationDispatcher) {
         val releaseBinding = navigationDispatcher.bind(
-            navigate = navigate,
-            navigateUp = navigateUp,
-            popBackStack = popBackStack,
+            navigate = actions.navigate,
+            navigateUp = actions.navigateUp,
+            popBackStack = actions.popBackStack,
             onAuthSuccess = {
                 val target = navViewModel.consumePendingRedirect()
                 // 连续弹出栈顶的认证页（Login/Register），避免从登录页进注册页回跳后残留
@@ -216,39 +357,46 @@ fun AppNavGraph(
                 if (target != null) {
                     // 登录成功时登录态尚未经 StateFlow→Compose 多跳异步更新，直接 placeKey
                     // 绕过 navigate 的守卫判断，避免被 requiredLoginNavKey 再次拦截形成死循环。
-                    placeKey(target)
+                    actions.placeKey(target)
                 } else {
                     // 无回跳目标：清栈回首页
-                    popBackStack(MainNavKey)
+                    actions.popBackStack(MainNavKey)
                 }
             },
         )
         onDispose { releaseBinding() }
     }
+}
 
-    // ---- 统一导航内容注册表 ----
-    // 全屏 entry 与面板 detailContent 共用同一份「NavKey → 渲染器」映射，
-    // 回调作为运行时参数注入：全屏走 navigateUp，面板走 clearDetail。
-    val registry = remember(navContributors) {
-        NavContentRegistry().apply {
-            navContributors.forEach { it.contribute(this) }
-        }
-    }
-    val detailContent = remember(registry) {
-        val renderer: @Composable (NavKey) -> Unit = { key ->
-            // DetailPane 不在 NavDisplay 内，拿不到 entry 级 ViewModelStore；
-            // 这里按 key 提供一个等价作用域，使两栏模式与单栏行为一致。
-            ProvideDetailPaneViewModelStore(key = key) {
-                CompositionLocalProvider(
-                    LocalOnNavigateUp provides { selectedDetailKeys.clear() },
-                ) {
-                    registry.Render(key)
-                }
+/** 详情面板内容：为面板 key 提供等价的 ViewModelStore 作用域，并接好「返回即清空面板」。 */
+@Composable
+private fun rememberDetailContent(
+    registry: NavContentRegistry,
+    selectedDetailKeys: NavBackStack<NavKey>,
+): @Composable (NavKey) -> Unit = remember(registry) {
+    { key ->
+        // DetailPane 不在 NavDisplay 内，拿不到 entry 级 ViewModelStore；
+        // 这里按 key 提供一个等价作用域，使两栏模式与单栏行为一致。
+        ProvideDetailPaneViewModelStore(key = key) {
+            CompositionLocalProvider(
+                LocalOnNavigateUp provides { selectedDetailKeys.clear() },
+            ) {
+                registry.Render(key)
             }
         }
-        renderer
     }
+}
 
+/** NavDisplay 与详情面板 CompositionLocal 的装配。 */
+@Composable
+private fun AppNavDisplay(
+    backStack: NavBackStack<NavKey>,
+    registry: NavContentRegistry,
+    detailContent: @Composable (NavKey) -> Unit,
+    selectedDetailKeys: NavBackStack<NavKey>,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     CompositionLocalProvider(
         LocalSelectedDetailKey provides selectedDetailKeys.lastOrNull(),
         LocalOnClearDetail provides { selectedDetailKeys.clear() },
@@ -263,7 +411,7 @@ fun AppNavGraph(
             ),
             backStack = backStack,
             // 复用 navigateUp：系统返回键与顶部返回按钮走同一套清理（含登录回跳清理与根栈兜底）
-            onBack = navigateUp,
+            onBack = onBack,
             modifier = modifier,
             transitionSpec = {
                 slideInHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { it } togetherWith
@@ -277,7 +425,7 @@ fun AppNavGraph(
                 registry.forEach { clazz, renderer ->
                     addEntryProvider(clazz) { key ->
                         CompositionLocalProvider(
-                            LocalOnNavigateUp provides navigateUp,
+                            LocalOnNavigateUp provides onBack,
                         ) {
                             renderer(key)
                         }

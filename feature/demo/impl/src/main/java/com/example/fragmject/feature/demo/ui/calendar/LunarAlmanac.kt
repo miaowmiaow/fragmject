@@ -128,18 +128,18 @@ internal object LunarAlmanac {
         val yj1 = "忌:\t"
         val br = "-"
         //String yj0 = "",yj1 = "",br = "-";
-        if (d === "建") jcrjxt = yj0 + LunarTables.YI[0] + br + yj1 + LunarTables.JI[0]
-        if (d === "除") jcrjxt = yj0 + LunarTables.YI[1] + br + yj1 + LunarTables.JI[1]
-        if (d === "满") jcrjxt = yj0 + LunarTables.YI[2] + br + yj1 + LunarTables.JI[2]
-        if (d === "平") jcrjxt = yj0 + LunarTables.YI[3] + br + yj1 + LunarTables.JI[3]
-        if (d === "定") jcrjxt = yj0 + LunarTables.YI[4] + br + yj1 + LunarTables.JI[4]
-        if (d === "执") jcrjxt = yj0 + LunarTables.YI[5] + br + yj1 + LunarTables.JI[5]
-        if (d === "破") jcrjxt = yj0 + LunarTables.YI[6] + br + yj1 + LunarTables.JI[6]
-        if (d === "危") jcrjxt = yj0 + LunarTables.YI[7] + br + yj1 + LunarTables.JI[7]
-        if (d === "成") jcrjxt = yj0 + LunarTables.YI[8] + br + yj1 + LunarTables.JI[8]
-        if (d === "收") jcrjxt = yj0 + LunarTables.YI[9] + br + yj1 + LunarTables.JI[9]
-        if (d === "开") jcrjxt = yj0 + LunarTables.YI[10] + br + yj1 + LunarTables.JI[10]
-        if (d === "闭") jcrjxt = yj0 + LunarTables.YI[11] + br + yj1 + LunarTables.JI[11]
+        if (d == "建") jcrjxt = yj0 + LunarTables.YI[0] + br + yj1 + LunarTables.JI[0]
+        if (d == "除") jcrjxt = yj0 + LunarTables.YI[1] + br + yj1 + LunarTables.JI[1]
+        if (d == "满") jcrjxt = yj0 + LunarTables.YI[2] + br + yj1 + LunarTables.JI[2]
+        if (d == "平") jcrjxt = yj0 + LunarTables.YI[3] + br + yj1 + LunarTables.JI[3]
+        if (d == "定") jcrjxt = yj0 + LunarTables.YI[4] + br + yj1 + LunarTables.JI[4]
+        if (d == "执") jcrjxt = yj0 + LunarTables.YI[5] + br + yj1 + LunarTables.JI[5]
+        if (d == "破") jcrjxt = yj0 + LunarTables.YI[6] + br + yj1 + LunarTables.JI[6]
+        if (d == "危") jcrjxt = yj0 + LunarTables.YI[7] + br + yj1 + LunarTables.JI[7]
+        if (d == "成") jcrjxt = yj0 + LunarTables.YI[8] + br + yj1 + LunarTables.JI[8]
+        if (d == "收") jcrjxt = yj0 + LunarTables.YI[9] + br + yj1 + LunarTables.JI[9]
+        if (d == "开") jcrjxt = yj0 + LunarTables.YI[10] + br + yj1 + LunarTables.JI[10]
+        if (d == "闭") jcrjxt = yj0 + LunarTables.YI[11] + br + yj1 + LunarTables.JI[11]
 
         return jcrjxt
     }
@@ -148,14 +148,30 @@ internal object LunarAlmanac {
      * m:农历月份 1---12
      * dt：农历日
      * */
+    /**
+     * 十二地支相冲（六冲）的 (支1, 支2) 组合；双向成立，故两向都列出。
+     */
+    private val SUI_PO_PAIRS: Set<Pair<Int, Int>> = setOf(
+        0 to 6, 6 to 0, 1 to 7, 7 to 1, 2 to 8, 8 to 2,
+        3 to 9, 9 to 3, 4 to 10, 10 to 4, 5 to 11, 11 to 5,
+    )
+
+    /** 日值上朔：(年支, 日干支数字串)。 */
+    private val SHANG_SUO_DAYS: Set<Pair<Int, String>> = setOf(
+        0 to "911", 1 to "55", 2 to "111", 3 to "75", 4 to "311",
+        5 to "95", 6 to "511", 7 to "15", 8 to "711", 9 to "35",
+    )
+
+    /** 杨公十三忌：(农历月, 农历日)。 */
+    private val YANG_GONG_FORBIDDEN_DAYS: Set<Pair<Int, Int>> = setOf(
+        1 to 13, 2 to 11, 3 to 9, 4 to 7, 5 to 5, 6 to 3,
+        7 to 1, 7 to 29, 8 to 27, 9 to 25, 10 to 23, 11 to 21, 12 to 19,
+    )
+
     internal fun calConv2(yy: Int, mm: Int, dd: Int, y: Int, d: Int, m: Int, dt: Int): String? {
         val dy = d.toString() + "" + dd
 
-        return if ((yy == 0 && dd == 6) || (yy == 6 && dd == 0) || (yy == 1 && dd == 7) ||
-            (yy == 7 && dd == 1) || (yy == 2 && dd == 8) || (yy == 8 && dd == 2) ||
-            (yy == 3 && dd == 9) || (yy == 9 && dd == 3) || (yy == 4 && dd == 10) ||
-            (yy == 10 && dd == 4) || (yy == 5 && dd == 11) || (yy == 11 && dd == 5)
-        ) {
+        return if ((yy to dd) in SUI_PO_PAIRS) {
             /*
                   * 地支共有六对相冲，俗称“六冲”，即：子午相冲、丑未相冲、寅申相冲、卯酉相冲、辰戌相冲、巳亥相冲。
                   * 如当年是甲子年，子为太岁，与子相冲者是午，假如当日是午日，则为岁破，其余的以此类推，即丑年的岁破为未日，
@@ -163,21 +179,11 @@ internal object LunarAlmanac {
                   * 申年的岁破为寅日，酉年的岁破为卯日，戌年的岁破为辰日，亥年的岁破为巳日。
                   * */
             "日值岁破 大事不宜"
-        } else if ((mm == 0 && dd == 6) || (mm == 6 && dd == 0) || (mm == 1 && dd == 7) || (mm == 7 && dd == 1) ||
-            (mm == 2 && dd == 8) || (mm == 8 && dd == 2) || (mm == 3 && dd == 9) || (mm == 9 && dd == 3) ||
-            (mm == 4 && dd == 10) || (mm == 10 && dd == 4) || (mm == 5 && dd == 11) || (mm == 11 && dd == 5)
-        ) {
+        } else if ((mm to dd) in SUI_PO_PAIRS) {
             "日值月破 大事不宜"
-        } else if ((y == 0 && dy === "911") || (y == 1 && dy === "55") || (y == 2 && dy === "111") ||
-            (y == 3 && dy === "75") || (y == 4 && dy === "311") || (y == 5 && dy === "95") ||
-            (y == 6 && dy === "511") || (y == 7 && dy === "15") || (y == 8 && dy === "711") || (y == 9 && dy === "35")
-        ) {
+        } else if ((y to dy) in SHANG_SUO_DAYS) {
             "日值上朔 大事不宜"
-        } else if ((m == 1 && dt == 13) || (m == 2 && dt == 11) || (m == 3 && dt == 9) || (m == 4 && dt == 7) ||
-            (m == 5 && dt == 5) || (m == 6 && dt == 3) || (m == 7 && dt == 1) || (m == 7 && dt == 29) ||
-            (m == 8 && dt == 27) || (m == 9 && dt == 25) || (m == 10 && dt == 23) || (m == 11 && dt == 21) ||
-            (m == 12 && dt == 19)
-        ) {
+        } else if ((m to dt) in YANG_GONG_FORBIDDEN_DAYS) {
             /*
                   * 杨公十三忌   以农历正月十三日始，以后每月提前两天为百事禁忌日
                   * */

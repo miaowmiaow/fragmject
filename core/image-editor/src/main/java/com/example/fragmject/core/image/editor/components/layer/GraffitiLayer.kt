@@ -17,7 +17,6 @@ class GraffitiLayer(private val state: PictureEditorState) : ILayer {
 
     companion object {
         private const val DEFAULT_PAINT_SIZE = 25.0f
-        private const val DEFAULT_ERASER_SIZE = 50.0f
         private const val TOUCH_TOLERANCE = 4f
     }
 
@@ -47,6 +46,14 @@ class GraffitiLayer(private val state: PictureEditorState) : ILayer {
 
     fun setPaintColor(@ColorInt color: Int) {
         paint.color = color
+    }
+
+    /** 清空所有笔画（换源图时调用，避免旧笔画叠加到已合成过它们的新图上）。 */
+    fun clear() {
+        paintPaths.clear()
+        redoPaths.clear()
+        path.reset()
+        state.invalidate()
     }
 
     fun undo(): Boolean {

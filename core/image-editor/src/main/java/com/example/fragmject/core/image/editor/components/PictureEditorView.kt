@@ -10,24 +10,11 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.net.Uri
 import android.view.MotionEvent
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
@@ -44,13 +31,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Stack
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.sqrt
 
 enum class EditorMode { GRAFFITI, MOSAIC, STICKER }
 
@@ -116,7 +101,18 @@ class PictureEditorState {
     fun setBitmapPathOrUri(path: String?, uri: Uri?) {
         this.bitmapPath = path
         this.bitmapUri = uri
+        // 换源图（进入编辑器 / 裁剪回写）时丢弃旧图层：裁剪产物已经把文字、涂鸦、马赛克
+        // 烧进像素，若保留图层会被再叠加一次，表现为「裁剪后文字变成两份」。
+        clearLayers()
         if (viewSize.width > 0) initBitmap()
+    }
+
+    private fun clearLayers() {
+        stickerLayers.clear()
+        stickerLayerIndex = INVALID_ID
+        isBin = false
+        graffitiLayer.clear()
+        mosaicLayer.clear()
     }
 
     fun setMode(mode: EditorMode) {
@@ -214,62 +210,77 @@ class PictureEditorState {
     }
 
     fun handleTouchEvent(event: MotionEvent): Boolean {
-        val layerEvent = MotionEvent.obtain(event)
-        val layerX = (event.x - currTranslateX()) / currScaleX()
-        val layerY = (event.y - currTranslateY()) / currScaleY()
-        layerEvent.setLocation(layerX, layerY)
-
+        val layerEvent = event.toLayerEvent()
         if (stickerLayerIndex == INVALID_ID) {
-            for (index in stickerLayers.indices.reversed()) {
-                if (stickerLayers[index].inStickerBounds(layerEvent.x, layerEvent.y)) {
-                    stickerLayerIndex = index
-                    break
-                }
-            }
-            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                if (stickerLayerIndex != INVALID_ID) {
-                    selectSticker(stickerLayerIndex)
-                } else {
-                    clearStickerSelection()
-                    invalidate()
-                }
+            hitTestStickerLayer(event, layerEvent)
+        }
+        val handled = handleStickerTouch(layerEvent) || handleDrawingTouch(layerEvent)
+        if (!handled) {
+            finishTouchIfReleased(event, layerEvent)
+        }
+        layerEvent.recycle()
+        return handled
+    }
+
+    /** 把视图坐标换算成图层坐标，图层只认识自己的坐标系。 */
+    private fun MotionEvent.toLayerEvent(): MotionEvent = MotionEvent.obtain(this).apply {
+        setLocation(
+            (x - currTranslateX()) / currScaleX(),
+            (y - currTranslateY()) / currScaleY(),
+        )
+    }
+
+    private fun hitTestStickerLayer(event: MotionEvent, layerEvent: MotionEvent) {
+        for (index in stickerLayers.indices.reversed()) {
+            if (stickerLayers[index].inStickerBounds(layerEvent.x, layerEvent.y)) {
+                stickerLayerIndex = index
+                break
             }
         }
-
-        if (stickerLayerIndex != INVALID_ID && stickerLayers[stickerLayerIndex].onTouchEvent(layerEvent)) {
-            isBin = stickerLayers[stickerLayerIndex].shouldShowDeleteBin()
-            if (isBin) {
-                computeBinRectF()
-                val r = if (binRectF.contains(layerX, layerY)) 255 else 0
-                binPaint.setARGB(127, r, 0, 0)
-            }
-            layerEvent.recycle()
+        if (event.actionMasked != MotionEvent.ACTION_DOWN) return
+        if (stickerLayerIndex != INVALID_ID) {
+            selectSticker(stickerLayerIndex)
+        } else {
+            clearStickerSelection()
             invalidate()
-            return true
         }
+    }
 
+    private fun handleStickerTouch(layerEvent: MotionEvent): Boolean {
+        if (stickerLayerIndex == INVALID_ID) return false
+        val sticker = stickerLayers[stickerLayerIndex]
+        if (!sticker.onTouchEvent(layerEvent)) return false
+        isBin = sticker.shouldShowDeleteBin()
+        if (isBin) {
+            computeBinRectF()
+            val r = if (binRectF.contains(layerEvent.x, layerEvent.y)) 255 else 0
+            binPaint.setARGB(127, r, 0, 0)
+        }
+        invalidate()
+        return true
+    }
+
+    private fun handleDrawingTouch(layerEvent: MotionEvent): Boolean {
         if (mosaicLayer.onTouchEvent(layerEvent)) {
             mosaicLayer.setParentScale(currScaleX())
-            layerEvent.recycle()
             invalidate()
             return true
         }
         if (graffitiLayer.onTouchEvent(layerEvent)) {
             graffitiLayer.setParentScale(currScaleX())
-            layerEvent.recycle()
             invalidate()
             return true
         }
-
-        if (event.actionMasked == MotionEvent.ACTION_UP) {
-            if (isBin && stickerLayerIndex != INVALID_ID && binRectF.contains(layerEvent.x, layerEvent.y)) {
-                stickerLayers.remove(stickerLayers[stickerLayerIndex])
-            }
-            isBin = false
-            stickerLayerIndex = INVALID_ID
-        }
-        layerEvent.recycle()
         return false
+    }
+
+    private fun finishTouchIfReleased(event: MotionEvent, layerEvent: MotionEvent) {
+        if (event.actionMasked != MotionEvent.ACTION_UP) return
+        if (isBin && stickerLayerIndex != INVALID_ID && binRectF.contains(layerEvent.x, layerEvent.y)) {
+            stickerLayers.remove(stickerLayers[stickerLayerIndex])
+        }
+        isBin = false
+        stickerLayerIndex = INVALID_ID
     }
 
     fun handleScroll(dx: Float, dy: Float) {

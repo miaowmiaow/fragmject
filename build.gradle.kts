@@ -25,22 +25,21 @@ detekt {
     buildUponDefaultConfig = true
     parallel = true
     config.setFrom(layout.projectDirectory.file("config/detekt/detekt.yml"))
-    baseline = layout.projectDirectory.file("config/detekt/detekt-baseline.xml").asFile
+    // 不使用 baseline：存量问题已全部修掉，规则配置见 detekt.yml，
+    // 新增违规一律阻断（基线文件会让"问题在哪"失去可见性）。
     source.setFrom(
         fileTree(rootDir) {
-            include("*/src/main/java/**/*.kt", "*/src/main/kotlin/**/*.kt")
-            include("*/*/src/main/java/**/*.kt", "*/*/src/main/kotlin/**/*.kt")
+            // 必须用 `**`：Gradle 的 `*` 不跨路径分隔符，写成 `*/*/src/...` 会漏掉
+            // feature/<域>/impl 这类三层模块（曾漏扫 18 个模块）
+            include("**/src/main/java/**/*.kt", "**/src/main/kotlin/**/*.kt")
             exclude("**/build/**", "build-logic/**")
         },
     )
 }
 
-// baseline 与报告统一使用相对路径签名：否则本地（/Users/...）与 CI（/home/runner/...）
-// 的绝对路径不同，会让 baseline 全部失配、CI 直接红。
+// 报告里统一使用相对路径：否则本地（/Users/...）与 CI（/home/runner/...）
+// 的绝对路径不同，定位告警时要额外换算。
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-    basePath = rootDir.absolutePath
-}
-tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
     basePath = rootDir.absolutePath
 }
 

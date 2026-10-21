@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -100,29 +101,11 @@ fun SettingScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .fillMaxWidth()
-                            .height(45.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "深色模式",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                        )
-                        NightSwitchButton(
-                            checked = uiState.darkTheme,
-                            onCheckedChange = {
-                                viewModel.updateDarkTheme(it)
-                            },
-                            modifier = Modifier.size(52.dp, 32.dp)
-                        )
-                        Spacer(Modifier.width(5.dp))
-                    }
+                    SettingSwitchRow(
+                        label = "深色模式",
+                        checked = uiState.darkTheme,
+                        onCheckedChange = viewModel::updateDarkTheme,
+                    )
                     HorizontalDivider()
                     ArrowRightItem("隐私政策") {
                         articleNavigator.openArticle("file:///android_asset/html/privacy_policy.html")
@@ -132,62 +115,108 @@ fun SettingScreen(
                         articleNavigator.openArticle("https://github.com/miaowmiaow/fragmject/issues")
                     }
                     HorizontalDivider()
-                    Row(
-                        modifier = Modifier
-                            .clickable(enabled = !isClearing) {
-                                showDialog = true
-                            }
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .fillMaxWidth()
-                            .height(45.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "清除缓存",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 25.dp, end = 25.dp),
-                            fontSize = 13.sp,
-                        )
-                        Text(
-                            text = if (isClearing) "清理中…" else cacheSize,
-                            fontSize = 13.sp,
-                        )
-                        Image(
-                            painter = painterResource(id = R.mipmap.ic_right),
-                            contentDescription = "",
-                            modifier = Modifier.padding(start = 25.dp, end = 25.dp)
-                        )
-                    }
+                    SettingCacheRow(
+                        cacheSize = cacheSize,
+                        isClearing = isClearing,
+                        onClick = { showDialog = true },
+                    )
                     HorizontalDivider()
                     ArrowRightItem("关于玩Android") {
                         articleNavigator.openArticle("https://wanandroid.com")
                     }
                     Spacer(Modifier.height(20.dp))
                     if (uiState.user != null) {
-                        Button(
-                            onClick = {
-                                viewModel.logout()
-                            },
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            shape = RoundedCornerShape(5.dp),
-                            border = BorderStroke(1.dp, AppColors.theme),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
-                        ) {
-                            Text(
-                                text = "退出登录",
-                                fontSize = 12.sp
-                            )
-                        }
+                        SettingLogoutButton(onClick = viewModel::logout)
                     }
                 }
             }
         }
     )
+}
+
+/** 设置项：左标题 + 右侧开关。 */
+@Composable
+private fun SettingSwitchRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxWidth()
+            .height(45.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SettingRowLabel(label)
+        NightSwitchButton(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.size(52.dp, 32.dp)
+        )
+        Spacer(Modifier.width(5.dp))
+    }
+}
+
+/** 设置项：左标题 + 右侧缓存大小，点击弹确认框。 */
+@Composable
+private fun SettingCacheRow(
+    cacheSize: String,
+    isClearing: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clickable(enabled = !isClearing, onClick = onClick)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxWidth()
+            .height(45.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SettingRowLabel("清除缓存")
+        Text(
+            text = if (isClearing) "清理中…" else cacheSize,
+            fontSize = 13.sp,
+        )
+        Image(
+            painter = painterResource(id = R.mipmap.ic_right),
+            contentDescription = "",
+            modifier = Modifier.padding(start = 25.dp, end = 25.dp)
+        )
+    }
+}
+
+/** 设置项左侧标题，占满剩余宽度。 */
+@Composable
+private fun RowScope.SettingRowLabel(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .weight(1f)
+            .padding(start = 25.dp, end = 25.dp),
+        fontSize = 13.sp,
+    )
+}
+
+/** 退出登录按钮。 */
+@Composable
+private fun SettingLogoutButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(0.8f),
+        shape = RoundedCornerShape(5.dp),
+        border = BorderStroke(1.dp, AppColors.theme),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
+    ) {
+        Text(
+            text = "退出登录",
+            fontSize = 12.sp
+        )
+    }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)

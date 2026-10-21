@@ -536,7 +536,7 @@ class ArchitectureTest {
         }
         assertTrue("契约选择器匹配 0 文件，检查 core/navigation-contract 路径", contracts.size >= 9)
         val locals = readSource(
-            productionFiles.single { it.projectPath.endsWith("/NavigationCompositionLocals.kt") },
+            productionFiles.single { it.projectPath.endsWith("/Navigators.kt") },
         )
         val appNavigators = readSource(
             productionFiles.single { it.projectPath.endsWith("/AppNavigators.kt") },

@@ -179,7 +179,7 @@ feature/{name}/impl/.../
 1. `settings.gradle.kts` 增加 `include(":feature:{name}:api")` 与 `:impl`
 2. api 模块：建 NavKey 路由表；`build.gradle.kts` 只声明 `api(project(":core:navigation-contract"))` + `navigation3.runtime`
 3. impl 模块：按 §三建目录；`build.gradle.kts` 声明 core 白名单内的依赖
-4. `nav/{Name}NavRegistration.kt` 注册渲染器 + `di/` 里 `@IntoSet` 贡献
+4. `nav/{Name}NavContentContributor.kt` 注册渲染器 + `di/` 里 `@IntoSet` 贡献
 5. 仅当**其他 feature 需要跳进来**：在 `core:navigation-contract` 加语义接口，并同步 `Navigators` 字段、`noop()`、`AppNavigators`、`@Binds`（4 处）
 6. `app/build.gradle.kts` 加 `:feature:{name}:impl` 依赖（`APP_ALLOWED_DEPENDENCIES` 同步）
 7. 跑 §五的两条命令 + `./gradlew :app:assembleDebug`

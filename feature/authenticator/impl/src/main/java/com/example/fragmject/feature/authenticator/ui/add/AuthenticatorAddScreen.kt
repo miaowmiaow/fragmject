@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -114,23 +115,14 @@ private fun AuthenticatorAddScreenContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            AnimatedTabBar(
-                selectedTab = if (mode == AddMode.SCAN) 0 else 1,
-                onTabSelected = { mode = if (it == 0) AddMode.SCAN else AddMode.MANUAL },
-                tabs = AddMode.entries.map { it.title },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            AddModeTabs(
+                mode = mode,
+                onModeChange = { mode = it },
             )
             AnimatedContent(
                 targetState = mode,
                 transitionSpec = {
-                    val forward = targetState.ordinal > initialState.ordinal
-                    if (forward) {
-                        (slideInHorizontally(tween(250)) { it } + fadeIn(tween(250))) togetherWith
-                            (slideOutHorizontally(tween(250)) { -it } + fadeOut(tween(200)))
-                    } else {
-                        (slideInHorizontally(tween(250)) { -it } + fadeIn(tween(250))) togetherWith
-                            (slideOutHorizontally(tween(250)) { it } + fadeOut(tween(200)))
-                    }
+                    addModeTransition(targetState.ordinal > initialState.ordinal)
                 },
                 label = "addMode",
                 modifier = Modifier.fillMaxSize(),
@@ -296,30 +288,14 @@ private fun ManualForm(
             },
             singleLine = true,
         )
-        Text(text = "算法", fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
-        Row {
-            OtpAlgorithm.entries.forEach { algorithm ->
-                OptionButton(
-                    text = algorithm.wireValue,
-                    selected = uiState.algorithm == algorithm,
-                    onClick = { viewModel.updateAlgorithm(algorithm) },
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(Modifier.size(5.dp))
-            }
-        }
-        Text(text = "位数", fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
-        Row {
-            listOf(6, 8).forEach { digits ->
-                OptionButton(
-                    text = "$digits 位",
-                    selected = uiState.digits == digits,
-                    onClick = { viewModel.updateDigits(digits) },
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(Modifier.size(5.dp))
-            }
-        }
+        AlgorithmSelector(
+            selected = uiState.algorithm,
+            onSelect = viewModel::updateAlgorithm,
+        )
+        DigitsSelector(
+            digits = uiState.digits,
+            onSelect = viewModel::updateDigits,
+        )
         if (uiState.type == OtpType.TOTP) {
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -338,26 +314,98 @@ private fun ManualForm(
             )
         }
         Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = viewModel::save,
-            enabled = !uiState.saving,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(vertical = 14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ),
-        ) {
-            if (uiState.saving) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    trackColor = MaterialTheme.colorScheme.secondary
-                )
-            } else {
-                Text(text = "添加账户", fontSize = 15.sp)
-            }
-        }
+        ManualFormSubmitButton(saving = uiState.saving, onSave = viewModel::save)
         Spacer(Modifier.height(20.dp))
+    }
+}
+
+/** 扫码 / 手输切换。 */
+@Composable
+private fun AddModeTabs(
+    mode: AddMode,
+    onModeChange: (AddMode) -> Unit,
+) {
+    AnimatedTabBar(
+        selectedTab = if (mode == AddMode.SCAN) 0 else 1,
+        onTabSelected = { onModeChange(if (it == 0) AddMode.SCAN else AddMode.MANUAL) },
+        tabs = AddMode.entries.map { it.title },
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    )
+}
+
+/** 两个方向共用的左右滑动切换动画。 */
+private fun addModeTransition(forward: Boolean): ContentTransform = if (forward) {
+    (slideInHorizontally(tween(250)) { it } + fadeIn(tween(250))) togetherWith
+        (slideOutHorizontally(tween(250)) { -it } + fadeOut(tween(200)))
+} else {
+    (slideInHorizontally(tween(250)) { -it } + fadeIn(tween(250))) togetherWith
+        (slideOutHorizontally(tween(250)) { it } + fadeOut(tween(200)))
+}
+
+/** 算法选择行。 */
+@Composable
+private fun AlgorithmSelector(
+    selected: OtpAlgorithm,
+    onSelect: (OtpAlgorithm) -> Unit,
+) {
+    Text(text = "算法", fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
+    Row {
+        OtpAlgorithm.entries.forEach { algorithm ->
+            OptionButton(
+                text = algorithm.wireValue,
+                selected = selected == algorithm,
+                onClick = { onSelect(algorithm) },
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.size(5.dp))
+        }
+    }
+}
+
+/** 位数选择行。 */
+@Composable
+private fun DigitsSelector(
+    digits: Int,
+    onSelect: (Int) -> Unit,
+) {
+    Text(text = "位数", fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
+    Row {
+        listOf(6, 8).forEach { option ->
+            OptionButton(
+                text = "$option 位",
+                selected = digits == option,
+                onClick = { onSelect(option) },
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.size(5.dp))
+        }
+    }
+}
+
+/** 底部提交按钮，保存中显示进度。 */
+@Composable
+private fun ManualFormSubmitButton(
+    saving: Boolean,
+    onSave: () -> Unit,
+) {
+    Button(
+        onClick = onSave,
+        enabled = !saving,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        contentPadding = PaddingValues(vertical = 14.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+    ) {
+        if (saving) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                trackColor = MaterialTheme.colorScheme.secondary
+            )
+        } else {
+            Text(text = "添加账户", fontSize = 15.sp)
+        }
     }
 }

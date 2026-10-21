@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -24,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,10 +36,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.fragmject.core.model.Article
+import com.example.fragmject.core.model.NavTab
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.ContentPhase
@@ -94,7 +96,6 @@ fun NavLinkContent(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val pagerState = rememberPagerState { uiState.dataOrEmpty().size }
-    var velocity by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(listState) {
         snapshotFlow { pagerState.currentPage }.collectLatest {
@@ -115,93 +116,173 @@ fun NavLinkContent(
         onRetry = viewModel::retry,
     ) {
         Row {
-            LazyColumn(
-                modifier = Modifier.width(100.dp),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(1.dp),
+            NavCategoryColumn(
+                tabs = uiState.dataOrEmpty(),
+                selectedIndex = pagerState.currentPage,
+                listState = listState,
+                onSelect = { index -> scope.launch { pagerState.scrollToPage(index) } },
+            )
+            NavArticlePager(
+                tabs = uiState.dataOrEmpty(),
+                pagerState = pagerState,
+                onArticleClick = onArticleClick,
+            )
+        }
+    }
+}
+
+/** 左侧分类列：点击切换右侧分页，当前页高亮。 */
+@Composable
+private fun NavCategoryColumn(
+    tabs: List<NavTab>,
+    selectedIndex: Int,
+    listState: LazyListState,
+    onSelect: (Int) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.width(100.dp),
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        itemsIndexed(
+            items = tabs,
+            key = { _, item -> item.cid }
+        ) { index, item ->
+            Box(
+                modifier = Modifier
+                    .clickable { onSelect(index) }
+                    .background(
+                        if (index == selectedIndex) {
+                            MaterialTheme.colorScheme.background
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainer
+                        }
+                    )
+                    .fillMaxWidth()
+                    .height(45.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                itemsIndexed(
-                    items = uiState.dataOrEmpty(),
-                    key = { _, item -> item.cid }
-                ) { index, item ->
-                    Box(
-                        modifier = Modifier
-                            .clickable {
-                                scope.launch {
-                                    pagerState.scrollToPage(index)
-                                }
-                            }
-                            .background(if (index == pagerState.currentPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainer)
-                            .fillMaxWidth()
-                            .height(45.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = item.name,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-            VerticalPager(state = pagerState, userScrollEnabled = false) { page ->
-                val gridState = remember(page) { LazyGridState() }
-                val articles = uiState.dataOrEmpty().getOrNull(page)?.articles.orEmpty()
-                // ScrollableDefaults.flingBehavior() 本身是 @Composable（读 LocalDensity），
-                // 无法放进 remember；它仅被下面 remember 缓存的 FlingBehavior 捕获一次，
-                // 后续的每次重组只是多一次分配，不影响已缓存的嵌套滚动行为。
-                val defaultFlingBehavior = ScrollableDefaults.flingBehavior()
-                val flingBehavior = remember(pagerState, gridState) {
-                    object : FlingBehavior {
-                        override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-                            velocity = initialVelocity
-                            if (initialVelocity < -3000 && !gridState.canScrollBackward && pagerState.currentPage > 0) {
-                                pagerState.scrollToPage(pagerState.currentPage - 1)
-                                return initialVelocity
-                            }
-                            if (initialVelocity > 3000 && !gridState.canScrollForward && pagerState.currentPage < pagerState.pageCount - 1) {
-                                pagerState.scrollToPage(pagerState.currentPage + 1)
-                                return initialVelocity
-                            }
-                            return with(defaultFlingBehavior) { performFling(initialVelocity) }
-                        }
-                    }
-                }
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 120.dp),
-                    modifier = Modifier.fillMaxSize(),
-                    state = gridState,
-                    flingBehavior = flingBehavior,
-                    contentPadding = PaddingValues(horizontal = 5.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(
-                        items = articles,
-                        key = { item -> item.link }
-                    ) { item ->
-                        Button(
-                            onClick = { onArticleClick(item.link) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(50),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
-                        ) {
-                            Text(
-                                text = item.title,
-                                fontSize = 14.sp,
-                                maxLines = 1
-                            )
-                        }
-                    }
-                }
+                Text(
+                    text = item.name,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
+    }
+}
+
+/** 右侧分类内容分页：关闭手势翻页，仅由左侧点击或网格滚到边界时切换。 */
+@Composable
+private fun NavArticlePager(
+    tabs: List<NavTab>,
+    pagerState: PagerState,
+    onArticleClick: (String) -> Unit,
+) {
+    VerticalPager(state = pagerState, userScrollEnabled = false) { page ->
+        val gridState = remember(page) { LazyGridState() }
+        NavArticleGrid(
+            articles = tabs.getOrNull(page)?.articles.orEmpty(),
+            gridState = gridState,
+            pagerState = pagerState,
+            onArticleClick = onArticleClick,
+        )
+    }
+}
+
+@Composable
+private fun NavArticleGrid(
+    articles: List<Article>,
+    gridState: LazyGridState,
+    pagerState: PagerState,
+    onArticleClick: (String) -> Unit,
+) {
+    // ScrollableDefaults.flingBehavior() 本身是 @Composable（读 LocalDensity），
+    // 无法放进 remember；它仅被下面 remember 缓存的 FlingBehavior 捕获一次，
+    // 后续的每次重组只是多一次分配，不影响已缓存的嵌套滚动行为。
+    val defaultFlingBehavior = ScrollableDefaults.flingBehavior()
+    val flingBehavior = remember(pagerState, gridState) {
+        EdgePagingFlingBehavior(pagerState, gridState, defaultFlingBehavior)
+    }
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 120.dp),
+        modifier = Modifier.fillMaxSize(),
+        state = gridState,
+        flingBehavior = flingBehavior,
+        contentPadding = PaddingValues(horizontal = 5.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(
+            items = articles,
+            key = { item -> item.link }
+        ) { item ->
+            NavArticleChip(
+                title = item.title,
+                onClick = { onArticleClick(item.link) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun NavArticleChip(
+    title: String,
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(50),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            maxLines = 1
+        )
+    }
+}
+
+/**
+ * 网格滚到边界后的惯性交给分页器：向下到底翻下一页，向上到顶翻上一页。
+ * 未到边界时行为与默认 FlingBehavior 完全一致。
+ */
+private class EdgePagingFlingBehavior(
+    private val pagerState: PagerState,
+    private val gridState: LazyGridState,
+    private val defaultFlingBehavior: FlingBehavior,
+) : FlingBehavior {
+
+    override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        val targetPage = pagerTargetPage(initialVelocity) ?: return with(defaultFlingBehavior) {
+            performFling(initialVelocity)
+        }
+        pagerState.scrollToPage(targetPage)
+        return initialVelocity
+    }
+
+    private fun pagerTargetPage(velocity: Float): Int? = when {
+        velocity < -PAGING_VELOCITY_THRESHOLD &&
+            !gridState.canScrollBackward &&
+            pagerState.currentPage > 0 -> pagerState.currentPage - 1
+
+        velocity > PAGING_VELOCITY_THRESHOLD &&
+            !gridState.canScrollForward &&
+            pagerState.currentPage < pagerState.pageCount - 1 -> pagerState.currentPage + 1
+
+        else -> null
+    }
+
+    private companion object {
+        /** 触底翻页的最小速度，避免轻扫误切分类。 */
+        const val PAGING_VELOCITY_THRESHOLD = 3000f
     }
 }
 

@@ -33,17 +33,30 @@ class BrowseHistoryViewModelTest {
     }
 
     @Test
-    fun `paired emissions update both lists`() = runTest {
+    fun `bookmark emission alone refreshes the bookmark list`() = runTest {
+        val bookmarks = MutableStateFlow(listOf(History(id = 1, key = "k1", value = "旧书签")))
+        val history = MutableStateFlow(listOf(History(id = 2, key = "k2", value = "记录")))
+        val viewModel = BrowseHistoryViewModel(FakeHistoryRepository(bookmarks, history))
+
+        // 只收藏/取消收藏：浏览记录流不发射，历史列表保留上一次的值
+        bookmarks.value = listOf(History(id = 4, key = "k4", value = "新书签"))
+
+        assertEquals(4L, viewModel.uiState.value.bookmarkResult.single().id)
+        assertEquals(2L, viewModel.uiState.value.historyResult.single().id)
+    }
+
+    @Test
+    fun `history emission alone refreshes the history list`() = runTest {
         val bookmarks = MutableStateFlow(listOf(History(id = 1, key = "k1", value = "书签")))
         val history = MutableStateFlow(listOf(History(id = 2, key = "k2", value = "旧记录")))
         val viewModel = BrowseHistoryViewModel(FakeHistoryRepository(bookmarks, history))
 
-        // zip 按对配对：只有两条流都重发时才会产生新的组合值
-        bookmarks.value = listOf(History(id = 4, key = "k4", value = "新书签"))
+        // 对应「记录一次浏览」：只有浏览记录表变了。
+        // 旧实现用 zip，单侧发射不会产生组合值，这条断言会失败。
         history.value = listOf(History(id = 3, key = "k3", value = "新记录"))
 
         assertEquals(3L, viewModel.uiState.value.historyResult.single().id)
-        assertEquals(4L, viewModel.uiState.value.bookmarkResult.single().id)
+        assertEquals(1L, viewModel.uiState.value.bookmarkResult.single().id)
     }
 
     @Test

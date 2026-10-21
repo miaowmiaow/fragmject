@@ -4,6 +4,14 @@ plugins {
     id("fragmject.android.hilt")
 }
 
+android {
+    testOptions {
+        // CalendarViewModel 在落盘失败分支调用 android.util.Log.e，JVM 单测默认会抛
+        // "Method not mocked"；让 android.jar 的 mock 方法返回默认值（与 feature:home:impl 一致）。
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
 dependencies {
     // 组合根 :app 显式声明 :feature:demo:api（见 dependencies-policy.md §6.5）。
     // 此处用 implementation 而非 api()：否则 api 层会经 impl 传递进入 app，

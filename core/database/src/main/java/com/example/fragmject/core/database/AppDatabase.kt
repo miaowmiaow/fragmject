@@ -216,7 +216,8 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 executeSql(
                     connection,
-                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_project_tree_cache_key_projectId` ON `project_tree` (`cache_key`, `projectId`)"
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_project_tree_cache_key_projectId` " +
+                        "ON `project_tree` (`cache_key`, `projectId`)"
                 )
                 executeSql(
                     connection,
@@ -349,9 +350,10 @@ abstract class AppDatabase : RoomDatabase() {
 
         /** 构建数据库实例（由 Hilt DatabaseModule 调用并持有单例）。 */
         fun build(context: Context): AppDatabase {
-            return Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
-                .addMigrations(*MIGRATIONS)
-                .build()
+            val builder = Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
+            // Room 只提供 vararg 重载，逐个注册以免 `*MIGRATIONS` 展开
+            MIGRATIONS.forEach { builder.addMigrations(it) }
+            return builder.build()
         }
 
     }

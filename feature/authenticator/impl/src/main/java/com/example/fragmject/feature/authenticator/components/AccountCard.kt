@@ -80,64 +80,87 @@ fun AccountCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                if (item.isTimeBased) {
-                    val progress = (item.remainingMillis.toFloat() / item.periodMillis).coerceIn(0f, 1f)
-                    CountdownRing(progress = progress, sizeDp = 48, strokeWidth = 4f)
-                }
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(
-                            color = AuthenticatorColors.brandColor(item.account.displayIssuer),
-                            shape = CircleShape,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = item.account.displayIssuer.firstOrNull()?.toString() ?: "?",
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                }
-            }
-
+            AccountAvatar(item = item)
             Spacer(Modifier.width(16.dp))
-
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = item.account.displayIssuer,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                )
-                if (item.account.accountName.isNotBlank()) {
-                    Text(
-                        text = item.account.accountName,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1,
-                    )
-                }
-            }
-
-            AnimatedContent(
-                targetState = item.displayCode,
-                transitionSpec = {
-                    (fadeIn(tween(200)) + scaleIn(tween(200), initialScale = 0.9f)) togetherWith
-                        (fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.9f))
-                },
-                label = "code",
-            ) { code ->
-                Text(
-                    text = code,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 26.sp,
-                    lineHeight = 1.4.em,
-                    letterSpacing = 2.sp,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
+            AccountLabels(
+                issuer = item.account.displayIssuer,
+                accountName = item.account.accountName,
+                modifier = Modifier.weight(1f),
+            )
+            AnimatedCode(code = item.displayCode)
         }
+    }
+}
+
+/** 左侧品牌色头像 + TOTP 倒计时环。 */
+@Composable
+private fun AccountAvatar(item: OtpCodeItem) {
+    Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+        if (item.isTimeBased) {
+            val progress = (item.remainingMillis.toFloat() / item.periodMillis).coerceIn(0f, 1f)
+            CountdownRing(progress = progress, sizeDp = 48, strokeWidth = 4f)
+        }
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(
+                    color = AuthenticatorColors.brandColor(item.account.displayIssuer),
+                    shape = CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = item.account.displayIssuer.firstOrNull()?.toString() ?: "?",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+            )
+        }
+    }
+}
+
+/** 发行方 + 账户名。 */
+@Composable
+private fun AccountLabels(
+    issuer: String,
+    accountName: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        Text(
+            text = issuer,
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1,
+        )
+        if (accountName.isNotBlank()) {
+            Text(
+                text = accountName,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+/** 大号验证码，换码时淡入淡出 + 轻微缩放。 */
+@Composable
+private fun AnimatedCode(code: String) {
+    AnimatedContent(
+        targetState = code,
+        transitionSpec = {
+            (fadeIn(tween(200)) + scaleIn(tween(200), initialScale = 0.9f)) togetherWith
+                (fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.9f))
+        },
+        label = "code",
+    ) { value ->
+        Text(
+            text = value,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Medium,
+            fontSize = 26.sp,
+            lineHeight = 1.4.em,
+            letterSpacing = 2.sp,
+            color = MaterialTheme.colorScheme.secondary,
+        )
     }
 }

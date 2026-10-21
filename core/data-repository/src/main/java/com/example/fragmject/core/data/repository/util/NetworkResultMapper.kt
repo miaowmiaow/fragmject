@@ -1,5 +1,6 @@
 package com.example.fragmject.core.data.repository.util
 
+import android.util.Log
 import com.example.fragmject.core.data.contract.model.ApiCode
 import com.example.fragmject.core.data.contract.model.DataResponse
 import com.example.fragmject.core.data.contract.model.HttpResponse
@@ -57,6 +58,7 @@ suspend fun <T, R> fetchAsDomainResult(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            Log.e("NetworkResultMapper", "onSuccess mapping failed", e)
             DomainResult.Failure(
                 code = DomainResult.ERROR_UNKNOWN,
                 message = "数据处理失败，请重试",
@@ -83,6 +85,7 @@ suspend fun fetchAsSimpleResult(
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
+        Log.e("NetworkResultMapper", "call failed: $failureMessage", e)
         return SimpleResult(success = false, message = failureMessage)
     }
     return if (resp.isSuccess) {

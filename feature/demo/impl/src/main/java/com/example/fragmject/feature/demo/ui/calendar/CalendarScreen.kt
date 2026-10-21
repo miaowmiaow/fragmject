@@ -48,74 +48,9 @@ fun CalendarScreen(
 ) {
     val scheduleMap by viewModel.scheduleMap.collectAsStateWithLifecycle()
     val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
+    val calendarState = rememberCalendarState()
+    var openDialog by remember { mutableStateOf(false) }
     Box(contentAlignment = Alignment.BottomEnd) {
-        val calendarState = rememberCalendarState()
-        var openDialog by remember { mutableStateOf(false) }
-        var text by rememberSaveable { mutableStateOf("") }
-        if (openDialog) {
-            Dialog(onDismissRequest = { openDialog = false }) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardColors(
-                        containerColor = AppColors.theme,
-                        contentColor = AppColors.theme,
-                        disabledContainerColor = AppColors.orange,
-                        disabledContentColor = AppColors.orange,
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        WhiteTextField(
-                            value = text,
-                            onValueChange = { text = it },
-                            textStyle = TextStyle.Default.copy(
-                                fontSize = 14.sp,
-                                lineHeight = 1.4.em
-                            ),
-                            placeholder = { Text("创建日程") },
-                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(16.dp)
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                        ) {
-                            TextButton(
-                                onClick = { openDialog = false },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = "取消",
-                                    fontSize = 14.sp,
-                                )
-                            }
-                            TextButton(
-                                onClick = {
-                                    selectedDate?.let { viewModel.addSchedule(it, text) }
-                                    openDialog = false
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = "确定",
-                                    fontSize = 14.sp,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
         Calendar(
             state = calendarState,
             modifier = Modifier.padding(vertical = 15.dp),
@@ -127,26 +62,107 @@ fun CalendarScreen(
                 // no-op：日期选中事件占位回调
             }
         )
-        Button(
-            onClick = {
-                openDialog = true
+        AddScheduleButton(onClick = { openDialog = true })
+    }
+    if (openDialog) {
+        AddScheduleDialog(
+            onDismiss = { openDialog = false },
+            onConfirm = { text ->
+                selectedDate?.let { viewModel.addSchedule(it, text) }
+                openDialog = false
             },
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = AppColors.orange,
-                contentColor = Color.White
-            ),
-            elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-            contentPadding = PaddingValues(15.dp),
+        )
+    }
+}
+
+/** 新建日程弹窗：输入文本后回传，取消/确认都只负责关闭。 */
+@Composable
+private fun AddScheduleDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var text by rememberSaveable { mutableStateOf("") }
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
             modifier = Modifier
-                .padding(15.dp)
-                .size(55.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.mipmap.ic_add),
-                contentDescription = null
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardColors(
+                containerColor = AppColors.theme,
+                contentColor = AppColors.theme,
+                disabledContainerColor = AppColors.orange,
+                disabledContentColor = AppColors.orange,
             )
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                WhiteTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    textStyle = TextStyle.Default.copy(
+                        fontSize = 14.sp,
+                        lineHeight = 1.4.em
+                    ),
+                    placeholder = { Text("创建日程") },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(16.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "取消",
+                            fontSize = 14.sp,
+                        )
+                    }
+                    TextButton(
+                        onClick = { onConfirm(text) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "确定",
+                            fontSize = 14.sp,
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+/** 右下角的新建日程悬浮按钮。 */
+@Composable
+private fun AddScheduleButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        shape = RoundedCornerShape(50),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = AppColors.orange,
+            contentColor = Color.White
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+        contentPadding = PaddingValues(15.dp),
+        modifier = Modifier
+            .padding(15.dp)
+            .size(55.dp)
+    ) {
+        Icon(
+            painter = painterResource(R.mipmap.ic_add),
+            contentDescription = null
+        )
     }
 }
 

@@ -10,7 +10,7 @@ import kotlin.random.Random
  *
  * 与绘制代码分开：调色/数值改动频率高，独立成文件避免在 800 行的绘制逻辑里翻找。
  */
-internal const val perDistance = 0.2f
+internal const val PER_DISTANCE = 0.2f
 
 internal val lightBackgroundColor = listOf(
     Color(0xFF1565C0),
@@ -42,7 +42,7 @@ internal fun offsetColor(
     colorStart: Color,
     colorEnd: Color,
     progress: Float,
-    perDistance: Float = 0.2f
+    perDistance: Float = PER_DISTANCE
 ): Color {
     val offsetColor = if (progress < perDistance) {
         0f

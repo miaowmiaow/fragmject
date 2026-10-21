@@ -10,9 +10,6 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-/** 首屏内容四态，互斥。 */
-enum class ContentPhase { Loading, Empty, Error, Content }
-
 /**
  * 首屏内容状态容器：统一承载加载（骨架屏）/空/错误三态 + 内容态。
  *

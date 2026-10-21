@@ -14,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -28,20 +27,6 @@ import com.example.fragmject.core.designsystem.AppColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-
-/**
- * 折叠头部状态：封装「头部高度动画 + 嵌套滚动连接」，
- * 供需要折叠头部的页面（MyCoinScreen / UserScreen 等）复用。
- */
-@Stable
-class CollapsingHeaderState(
-    val titleBarSize: Dp,
-    val targetHeight: Dp,
-    val titleBarSizePx: Float,
-    val targetHeightPx: Float,
-    val targetPercent: Animatable<Float, AnimationVector1D>,
-    val nestedScrollConnection: NestedScrollConnection,
-)
 
 /**
  * 创建折叠头部状态。默认标题栏 45dp、目标展开高度 100dp。

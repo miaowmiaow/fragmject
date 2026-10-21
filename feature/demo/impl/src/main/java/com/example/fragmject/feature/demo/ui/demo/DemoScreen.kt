@@ -47,103 +47,134 @@ import com.example.fragmject.feature.demo.ui.swipebox.SwipeBoxScreen
 import com.example.fragmject.feature.demo.ui.wheelpicker.WheelPickerScreen
 import kotlinx.coroutines.launch
 
+/** Demo 页签：抽屉顺序即内容分支下标。 */
+private val DEMO_TABS = listOf(
+    "日历控件",
+    "滚轮控件",
+    "全文控件",
+    "侧滑控件",
+    "调用相册",
+    "网格选择",
+    "扫码示例",
+    "嵌套滚动1",
+    "嵌套滚动2",
+)
+
 @Composable
 fun DemoScreen() {
     val onNavigateUp = LocalOnNavigateUp.current
     val drawerState = rememberDrawerState(DrawerValue.Open)
     val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
-    val tabs = listOf(
-        "日历控件",
-        "滚轮控件",
-        "全文控件",
-        "侧滑控件",
-        "调用相册",
-        "网格选择",
-        "扫码示例",
-        "嵌套滚动1",
-        "嵌套滚动2",
-    )
-    var selectedTab by rememberSaveable { mutableStateOf(tabs[0]) }
+    var selectedTab by rememberSaveable { mutableStateOf(DEMO_TABS.first()) }
     Scaffold(
         topBar = {
-            TitleBar(
+            DemoTopBar(
                 title = selectedTab,
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) {
-                                    drawerState.open()
-                                } else {
-                                    drawerState.close()
-                                }
-                            }
+                onToggleDrawer = {
+                    scope.launch {
+                        if (drawerState.isClosed) {
+                            drawerState.open()
+                        } else {
+                            drawerState.close()
                         }
-                    ) {
-                        Icon(
-                            Icons.Default.Menu,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
                     }
                 },
-                actions = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
+                onClose = onNavigateUp,
             )
         },
     ) { innerPadding ->
         ModalNavigationDrawer(
             drawerContent = {
-                ModalDrawerSheet(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .verticalScroll(scrollState)
-                ) {
-                    Spacer(Modifier.height(12.dp))
-                    tabs.forEach { tab ->
-                        NavigationDrawerItem(
-                            label = { Text(tab) },
-                            selected = tab == selectedTab,
-                            onClick = {
-                                scope.launch { drawerState.close() }
-                                selectedTab = tab
-                            },
-                            modifier = Modifier
-                                .width(200.dp)
-                                .padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )
-                    }
-                }
+                DemoDrawerContent(
+                    tabs = DEMO_TABS,
+                    selectedTab = selectedTab,
+                    onSelect = { tab ->
+                        scope.launch { drawerState.close() }
+                        selectedTab = tab
+                    },
+                )
             },
             drawerState = drawerState,
             modifier = Modifier.padding(innerPadding),
-            content = {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    when (tabs.indexOf(selectedTab)) {
-                        0 -> CalendarScreen()
-                        1 -> WheelPickerScreen()
-                        2 -> FullTextScreen()
-                        3 -> SwipeBoxScreen()
-                        4 -> PictureSelectorDemoScreen()
-                        5 -> GridSelectScreen()
-                        6 -> BarcodeScanningScreen()
-                        7 -> NestedScroll1Screen()
-                        8 -> NestedScroll2Screen()
-                    }
-                }
-            }
+            content = { DemoContent(selectedTab = selectedTab) },
         )
+    }
+}
+
+/** 顶栏：左侧抽屉开关，右侧关闭示例页。 */
+@Composable
+private fun DemoTopBar(
+    title: String,
+    onToggleDrawer: () -> Unit,
+    onClose: () -> Unit,
+) {
+    TitleBar(
+        title = title,
+        navigationIcon = {
+            IconButton(onClick = onToggleDrawer) {
+                Icon(
+                    Icons.Default.Menu,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = onClose) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    )
+}
+
+/** 抽屉里的示例列表。 */
+@Composable
+private fun DemoDrawerContent(
+    tabs: List<String>,
+    selectedTab: String,
+    onSelect: (String) -> Unit,
+) {
+    ModalDrawerSheet(
+        modifier = Modifier
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(Modifier.height(12.dp))
+        tabs.forEach { tab ->
+            NavigationDrawerItem(
+                label = { Text(tab) },
+                selected = tab == selectedTab,
+                onClick = { onSelect(tab) },
+                modifier = Modifier
+                    .width(200.dp)
+                    .padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+        }
+    }
+}
+
+/** 当前页签对应的示例内容。 */
+@Composable
+private fun DemoContent(selectedTab: String) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        when (DEMO_TABS.indexOf(selectedTab)) {
+            0 -> CalendarScreen()
+            1 -> WheelPickerScreen()
+            2 -> FullTextScreen()
+            3 -> SwipeBoxScreen()
+            4 -> PictureSelectorDemoScreen()
+            5 -> GridSelectScreen()
+            6 -> BarcodeScanningScreen()
+            7 -> NestedScroll1Screen()
+            8 -> NestedScroll2Screen()
+        }
     }
 }
 

@@ -8,8 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.zip
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,9 +27,17 @@ class BrowseHistoryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            historyRepo.observeBookmarks().zip(historyRepo.observeBrowseHistory()) { b, h ->
-                _uiState.update { it.copy(bookmarkResult = b, historyResult = h) }
-            }.collect {}
+            // 必须用 combine 而不是 zip：书签与浏览记录来自两张表，写入时只会有一条流发射。
+            // zip 按「第 N 个值配第 N 个值」配对，单条流单独发射不会产生新组合值，
+            // 表现为「记录了一条浏览历史，列表却不刷新」。combine 会把最新值与本侧旧值重组。
+            combine(
+                historyRepo.observeBookmarks(),
+                historyRepo.observeBrowseHistory(),
+            ) { bookmarks, history ->
+                BrowseHistoryUiState(bookmarkResult = bookmarks, historyResult = history)
+            }.collect { state ->
+                _uiState.value = state
+            }
         }
     }
 

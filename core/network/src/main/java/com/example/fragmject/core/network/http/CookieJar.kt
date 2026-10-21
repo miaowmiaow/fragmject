@@ -19,21 +19,12 @@ class CookieJar @Inject constructor(
 
     // Http 发送请求前回调，Request 中设置 Cookie
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
-        val cookieList: MutableList<Cookie> = ArrayList()
         // CookieStore.getCookie() 期望完整 URL（含 scheme），传 host 在部分系统上可能取不到 Cookie
-        store.getCookie(url.toString())?.let { cookiesStr ->
-            if (cookiesStr.isNotEmpty()) {
-                // 用字符重载而非 ";" .toRegex()：toRegex() 每次都会 Pattern.compile，
-                // 而 loadForRequest 是 OkHttp 每请求必调的回调
-                val cookies = cookiesStr.split(';')
-                for (cookie in cookies) {
-                    Cookie.parse(url, cookie.trim())?.apply {
-                        cookieList.add(this)
-                    }
-                }
-            }
-        }
-        return cookieList
+        val cookiesStr = store.getCookie(url.toString()).orEmpty()
+        if (cookiesStr.isEmpty()) return emptyList()
+        // 用字符重载而非 ";" .toRegex()：toRegex() 每次都会 Pattern.compile，
+        // 而 loadForRequest 是 OkHttp 每请求必调的回调
+        return cookiesStr.split(';').mapNotNull { Cookie.parse(url, it.trim()) }
     }
 
     // Http 请求结束，Response 中有 Cookie 时候回调
@@ -46,14 +37,13 @@ class CookieJar @Inject constructor(
             }
         } catch (e: Exception) {
             writeFailure = e
-            throw e
-        } finally {
-            try {
-                store.flush()
-            } catch (e: Exception) {
-                val failure = writeFailure
-                if (failure == null) throw e else failure.addSuppressed(e)
-            }
         }
+        try {
+            store.flush()
+        } catch (e: Exception) {
+            // flush 失败并入首个失败：既保留写入异常，也不丢持久化异常
+            if (writeFailure == null) writeFailure = e else writeFailure.addSuppressed(e)
+        }
+        writeFailure?.let { throw it }
     }
 }

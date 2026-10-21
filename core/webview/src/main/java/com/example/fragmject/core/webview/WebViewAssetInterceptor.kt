@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import java.io.IOException
 
 /**
  * WebView 本地 assets 资源拦截器。
@@ -37,7 +38,7 @@ object WebViewAssetInterceptor {
             WebResourceResponse(mimeType, null, encoding).apply {
                 responseHeaders = mapOf("Access-Control-Allow-Origin" to "*")
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e(TAG, "assetsResourceRequest failed: ${request.url}", e)
             null
         }

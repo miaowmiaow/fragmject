@@ -62,48 +62,84 @@ class WebViewCookieStore @Inject constructor() : CookieStore {
     override suspend fun clearSession(): Unit = withContext(Dispatchers.IO) {
         synchronized(writeLock) {
             val paths = sessionPaths.toList()
-            val names = linkedSetOf<String>()
-            for (host in SESSION_HOSTS) {
-                for (path in paths) {
-                    cookieManager.getCookie("https://$host$path")
-                        ?.split(';')
-                        ?.mapNotNullTo(names) { it.substringBefore('=').trim().takeIf(String::isNotEmpty) }
-                }
-            }
-            var failure: Exception? = null
-            for (host in SESSION_HOSTS) {
-                for (path in paths) {
-                    for (name in names) {
-                        val expired = "$name=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=$path; Secure; HttpOnly"
-                        val domains = listOf(null, "wanandroid.com") +
-                            if (host == "www.wanandroid.com") listOf(host) else emptyList()
-                        for (domain in domains) {
-                            try {
-                                writeCookie("https://$host$path", expired + (domain?.let { "; Domain=$it" } ?: ""))
-                            } catch (e: Exception) {
-                                val previous = failure
-                                if (previous == null) failure = e else previous.addSuppressed(e)
-                            }
-                        }
-                    }
-                }
-            }
-            try {
-                cookieManager.flush()
-            } catch (e: Exception) {
-                val previous = failure
-                if (previous == null) failure = e else previous.addSuppressed(e)
-            }
+            val names = collectSessionCookieNames(paths)
+            // 先逐个过期，再统一 flush；任一环节失败都保留首个异常，其余挂 suppressed。
+            var failure = expireSessionCookies(paths, names)
+            flushCookies()?.let { failure = failure.record(it) }
             failure?.let { throw it }
-            for (host in SESSION_HOSTS) {
-                for (path in paths) {
-                    if (!cookieManager.getCookie("https://$host$path").isNullOrBlank()) {
-                        throw IOException("业务会话 Cookie 清理未完成")
-                    }
+            verifySessionCleared(paths)
+        }
+    }
+
+    private fun collectSessionCookieNames(paths: List<String>): Set<String> {
+        val names = linkedSetOf<String>()
+        for (host in SESSION_HOSTS) {
+            for (path in paths) {
+                cookieManager.getCookie("https://$host$path")
+                    ?.split(';')
+                    ?.mapNotNullTo(names) { it.substringBefore('=').trim().takeIf(String::isNotEmpty) }
+            }
+        }
+        return names
+    }
+
+    private fun expireSessionCookies(paths: List<String>, names: Set<String>): Exception? {
+        var failure: Exception? = null
+        for (host in SESSION_HOSTS) {
+            for (path in paths) {
+                for (name in names) {
+                    failure = expireCookieForDomains(host, path, name, failure)
+                }
+            }
+        }
+        return failure
+    }
+
+    /** 同一域名可能以「无 Domain」「主域」「www 子域」三种形态各存一份，逐个过期。 */
+    private fun expireCookieForDomains(
+        host: String,
+        path: String,
+        name: String,
+        failure: Exception?,
+    ): Exception? {
+        var current = failure
+        val expired = "$name=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=$path; Secure; HttpOnly"
+        val domains = listOf(null, "wanandroid.com") +
+            if (host == "www.wanandroid.com") listOf(host) else emptyList()
+        for (domain in domains) {
+            try {
+                writeCookie("https://$host$path", expired + (domain?.let { "; Domain=$it" } ?: ""))
+            } catch (e: IOException) {
+                current = current.record(e)
+            } catch (e: IllegalStateException) {
+                current = current.record(e)
+            }
+        }
+        return current
+    }
+
+    private fun flushCookies(): Exception? = try {
+        cookieManager.flush()
+        null
+    } catch (e: IOException) {
+        e
+    } catch (e: IllegalStateException) {
+        e
+    }
+
+    private fun verifySessionCleared(paths: List<String>) {
+        for (host in SESSION_HOSTS) {
+            for (path in paths) {
+                if (!cookieManager.getCookie("https://$host$path").isNullOrBlank()) {
+                    throw IOException("业务会话 Cookie 清理未完成")
                 }
             }
         }
     }
+
+    /** 首个失败作为主因保留，后续失败挂到 suppressed，避免丢失任一异常。 */
+    private fun Exception?.record(failure: Exception): Exception =
+        this?.apply { addSuppressed(failure) } ?: failure
 
     private fun rememberPaths(url: String, value: String) {
         val uri = runCatching { URI(url) }.getOrNull() ?: return
@@ -118,6 +154,16 @@ class WebViewCookieStore @Inject constructor() : CookieStore {
     }
 
     private fun writeCookie(url: String, value: String) {
+        performWrite(url, value)?.let { throw it }
+    }
+
+    /**
+     * 执行一次 Cookie 写入并等待确认。
+     *
+     * 返回需要向上抛出的异常，null 表示写入已被系统接受；把"抛"集中到调用处，
+     * 避免同一函数出现多个出口异常类型。
+     */
+    private fun performWrite(url: String, value: String): Exception? {
         val done = CountDownLatch(1)
         var accepted = false
         var failure: Exception? = null
@@ -129,27 +175,30 @@ class WebViewCookieStore @Inject constructor() : CookieStore {
                         accepted = it
                         done.countDown()
                     }
-                } catch (e: Exception) {
+                } catch (e: IOException) {
+                    failure = e
+                    done.countDown()
+                } catch (e: IllegalStateException) {
                     failure = e
                     done.countDown()
                 }
             }
         }
-        if (!mainHandler.post(write)) throw IOException("Cookie 写入提交失败")
+        if (!mainHandler.post(write)) return IOException("Cookie 写入提交失败")
         try {
             if (!done.await(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 abandoned.set(true)
                 mainHandler.removeCallbacks(write)
-                throw IOException("Cookie 写入确认超时")
+                return IOException("Cookie 写入确认超时")
             }
         } catch (e: InterruptedException) {
             abandoned.set(true)
             mainHandler.removeCallbacks(write)
             Thread.currentThread().interrupt()
-            throw IOException("Cookie 写入等待被中断", e)
+            return IOException("Cookie 写入等待被中断", e)
         }
-        failure?.let { throw it }
-        if (!accepted) throw IOException("Cookie 写入被拒绝")
+        failure?.let { return it }
+        return if (accepted) null else IOException("Cookie 写入被拒绝")
     }
 
     private fun requireBackgroundThread() {

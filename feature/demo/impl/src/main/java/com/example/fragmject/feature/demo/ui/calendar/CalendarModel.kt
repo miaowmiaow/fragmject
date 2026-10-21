@@ -54,7 +54,7 @@ class CalendarModel(
                 var cellIndex = 0
                 for (week in 0 until weeksInMonth) {
                     val data = mutableListOf<CalendarDate>()
-                    for (dayIndex in 0 until DAYS_IN_WEEK) {
+                    repeat(DAYS_IN_WEEK) {
                         if (cellIndex < firstDayOfMonth) {
                             val lastMonth = localDate.minusMonths(1)
                             val daysInLastMonth = lastMonth.lengthOfMonth()

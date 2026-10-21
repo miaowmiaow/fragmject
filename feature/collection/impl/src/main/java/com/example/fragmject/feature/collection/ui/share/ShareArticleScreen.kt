@@ -3,6 +3,7 @@ package com.example.fragmject.feature.collection.ui.share
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,16 +39,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.fragmject.feature.collection.impl.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.ClearTextField
 import com.example.fragmject.core.ui.components.LoadingContent
-import kotlinx.coroutines.launch
 import com.example.fragmject.core.ui.components.TitleBar
+import com.example.fragmject.feature.collection.impl.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun ShareArticleScreen(
@@ -74,37 +75,24 @@ fun ShareArticleScreen(
             onNavigateUp()
         }
     }
+    val openLink: () -> Unit = {
+        if (linkText.isBlank()) {
+            scope.launch { snackbarHostState.showSnackbar("文章链接不能为空") }
+        } else {
+            articleNavigator.openArticle(linkText)
+        }
+    }
     Scaffold(
         topBar = {
             TitleBar(
                 title = "分享文章",
                 onNavigateUp = onNavigateUp,
-                actions = {
-                    IconButton(
-                        onClick = {
-                            if (linkText.isBlank()) {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("文章链接不能为空")
-                                }
-                                return@IconButton
-                            }
-                            articleNavigator.openArticle(linkText)
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.mipmap.ic_browser),
-                            contentDescription = null,
-                            modifier = Modifier.padding(8.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                })
+                actions = { ShareOpenLinkAction(onClick = openLink) },
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
     ) { innerPadding ->
-        LoadingContent(
-            isLoading = uiState.isLoading,
-        ) {
+        LoadingContent(isLoading = uiState.isLoading) {
             Box(modifier = Modifier.padding(innerPadding)) {
                 Column(
                     modifier = Modifier
@@ -112,64 +100,20 @@ fun ShareArticleScreen(
                         .padding(horizontal = 15.dp)
                         .verticalScroll(scrollState),
                 ) {
-                    Text(
-                        text = "文章标题",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                    )
-                    Spacer(Modifier.height(15.dp))
-                    ClearTextField(
+                    ShareInputField(
+                        label = "文章标题",
+                        placeholder = "请输入文章标题",
                         value = titleText,
-                        onValueChange = { viewModel.updateTitle(it) },
+                        onValueChange = viewModel::updateTitle,
                         onClear = { viewModel.updateTitle("") },
-                        modifier = Modifier.height(45.dp),
-                        textStyle = TextStyle.Default.copy(
-                            fontSize = 14.sp,
-                            background = Color.Transparent,
-                        ),
-                        placeholder = {
-                            Text(
-                                text = "请输入文章标题",
-                                fontSize = 14.sp,
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next
-                        ),
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        ),
                     )
                     Spacer(Modifier.height(15.dp))
-                    Text(
-                        text = "文章链接",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                    )
-                    Spacer(Modifier.height(15.dp))
-                    ClearTextField(
+                    ShareInputField(
+                        label = "文章链接",
+                        placeholder = "请输入文章链接",
                         value = linkText,
-                        onValueChange = { viewModel.updateLink(it) },
+                        onValueChange = viewModel::updateLink,
                         onClear = { viewModel.updateLink("") },
-                        modifier = Modifier.height(45.dp),
-                        textStyle = TextStyle.Default.copy(
-                            fontSize = 14.sp,
-                            background = Color.Transparent,
-                        ),
-                        placeholder = {
-                            Text(
-                                text = "请输入文章链接",
-                                fontSize = 14.sp,
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next
-                        ),
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        ),
                     )
                     Spacer(Modifier.height(15.dp))
                     Text(
@@ -178,51 +122,114 @@ fun ShareArticleScreen(
                         fontSize = 12.sp,
                     )
                     Spacer(Modifier.height(20.dp))
-                    Button(
-                        onClick = { viewModel.submit() },
-                        enabled = !uiState.isLoading,
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .align(Alignment.CenterHorizontally),
-                        shape = RoundedCornerShape(5.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
-                    ) {
-                        Text(
-                            text = if (uiState.isLoading) "分享中…" else "分享",
-                            fontSize = 16.sp
-                        )
-                    }
+                    ShareSubmitButton(isLoading = uiState.isLoading, onClick = viewModel::submit)
                     Spacer(Modifier.weight(1f))
-                    Text(
-                        text = "1. 只要是任何好文都可以分享哈，并不一定要是原创！投递的文章会进入广场 tab;",
-                        fontSize = 12.sp,
-                    )
-                    Text(
-                        text = "2. CSDN，掘金，简书等官方博客站点会直接通过，不需要审核;",
-                        fontSize = 12.sp,
-                    )
-                    Text(
-                        text = "3. 其他个人站点会进入审核阶段，不要投递任何无效链接，否则可能会对你的账号产生一定影响;",
-                        fontSize = 12.sp,
-                    )
-                    Text(
-                        text = "4. 如果你发现错误，可以提交日志，让我们一起使网站变得更好。",
-                        fontSize = 12.sp,
-                    )
-                    Text(
-                        text = "5. 由于本站为个人开发与维护，会尽力保证24小时内审核，当然有可能哪天太累，会延期，请保持佛系...",
-                        fontSize = 12.sp,
-                    )
+                    ShareArticleNotice()
                 }
             }
         }
     }
+}
 
+/** 标题/链接共用的输入行：标签 + 可清除输入框。 */
+@Composable
+private fun ShareInputField(
+    label: String,
+    placeholder: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    onClear: () -> Unit,
+) {
+    Text(
+        text = label,
+        fontSize = 14.sp,
+    )
+    Spacer(Modifier.height(15.dp))
+    ClearTextField(
+        value = value,
+        onValueChange = onValueChange,
+        onClear = onClear,
+        modifier = Modifier.height(45.dp),
+        textStyle = TextStyle.Default.copy(
+            fontSize = 14.sp,
+            background = Color.Transparent,
+        ),
+        placeholder = {
+            Text(
+                text = placeholder,
+                fontSize = 14.sp,
+            )
+        },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Next
+        ),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+    )
+}
+
+/** 右上角「预览链接」按钮。 */
+@Composable
+private fun ShareOpenLinkAction(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painter = painterResource(R.mipmap.ic_browser),
+            contentDescription = null,
+            modifier = Modifier.padding(8.dp),
+            tint = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}
+
+/** 底部提交按钮；`align` 需要 ColumnScope 接收者。 */
+@Composable
+private fun ColumnScope.ShareSubmitButton(isLoading: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        enabled = !isLoading,
+        modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .align(Alignment.CenterHorizontally),
+        shape = RoundedCornerShape(5.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        contentPadding = PaddingValues(0.dp, 15.dp, 0.dp, 15.dp)
+    ) {
+        Text(
+            text = if (isLoading) "分享中…" else "分享",
+            fontSize = 16.sp
+        )
+    }
+}
+
+/** 底部投稿说明。 */
+@Composable
+private fun ShareArticleNotice() {
+    Text(
+        text = "1. 只要是任何好文都可以分享哈，并不一定要是原创！投递的文章会进入广场 tab;",
+        fontSize = 12.sp,
+    )
+    Text(
+        text = "2. CSDN，掘金，简书等官方博客站点会直接通过，不需要审核;",
+        fontSize = 12.sp,
+    )
+    Text(
+        text = "3. 其他个人站点会进入审核阶段，不要投递任何无效链接，否则可能会对你的账号产生一定影响;",
+        fontSize = 12.sp,
+    )
+    Text(
+        text = "4. 如果你发现错误，可以提交日志，让我们一起使网站变得更好。",
+        fontSize = 12.sp,
+    )
+    Text(
+        text = "5. 由于本站为个人开发与维护，会尽力保证24小时内审核，当然有可能哪天太累，会延期，请保持佛系...",
+        fontSize = 12.sp,
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)

@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -50,11 +51,25 @@ fun PictureClipContent(
     val state = rememberPictureClipState()
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
     LaunchedEffect(bitmap) {
         state.setBitmap(bitmap)
     }
-
+    val onConfirm: () -> Unit = {
+        if (!isSaving) {
+            val saved = state.saveBitmap()
+            if (saved == null) {
+                Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
+            } else {
+                viewModel.save(
+                    saveAction = { viewModel.saveBitmap { saved } },
+                    onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
+                    onError = {
+                        Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -67,98 +82,107 @@ fun PictureClipContent(
                 .fillMaxSize()
                 .padding(top = 90.dp, bottom = 140.dp)
         )
+        ClipTopBar(
+            isSaving = isSaving,
+            onDismiss = onDismiss,
+            onRotate = { state.rotate() },
+            onReset = { state.reset() },
+            onConfirm = onConfirm,
+        )
+        ClipBottomHint()
+        ClipSavingOverlay(visible = isSaving)
+    }
+}
 
-        // 顶部工具栏
-        Box(
+/** 顶部工具栏：取消 / 旋转 / 重置 / 确定。 */
+@Composable
+private fun BoxScope.ClipTopBar(
+    isSaving: Boolean,
+    onDismiss: () -> Unit,
+    onRotate: () -> Unit,
+    onReset: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppColors.editorBackground.copy(alpha = 0.6f))
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .align(Alignment.TopCenter)
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AppColors.editorBackground.copy(alpha = 0.6f))
-                .windowInsetsPadding(WindowInsets.systemBars)
-                .align(Alignment.TopCenter)
+                .height(45.dp)
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onDismiss) {
-                    Text("取消", color = AppColors.editorOnBackground, fontSize = 16.sp)
+            TextButton(onClick = onDismiss) {
+                Text("取消", color = AppColors.editorOnBackground, fontSize = 16.sp)
+            }
+            Row {
+                IconButton(onClick = onRotate) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.RotateRight,
+                        contentDescription = "旋转",
+                        tint = AppColors.editorOnBackground
+                    )
                 }
-                Row {
-                    IconButton(onClick = { state.rotate() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.RotateRight,
-                            contentDescription = "旋转",
-                            tint = AppColors.editorOnBackground
-                        )
-                    }
-                    IconButton(onClick = { state.reset() }) {
-                        Icon(
-                            Icons.Filled.Refresh,
-                            contentDescription = "重置",
-                            tint = AppColors.editorOnBackground
-                        )
-                    }
-                }
-                TextButton(
-                    onClick = {
-                        if (!isSaving) {
-                            val bitmap = state.saveBitmap()
-                            if (bitmap == null) {
-                                Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
-                            } else {
-                                viewModel.save(
-                                    saveAction = { viewModel.saveBitmap { bitmap } },
-                                    onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
-                                    onError = {
-                                        Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
-                                    },
-                                )
-                            }
-                        }
-                    },
-                    enabled = !isSaving
-                ) {
-                    Text("确定", color = AppColors.editorOnBackground, fontSize = 16.sp)
+                IconButton(onClick = onReset) {
+                    Icon(
+                        Icons.Filled.Refresh,
+                        contentDescription = "重置",
+                        tint = AppColors.editorOnBackground
+                    )
                 }
             }
+            TextButton(
+                onClick = onConfirm,
+                enabled = !isSaving
+            ) {
+                Text("确定", color = AppColors.editorOnBackground, fontSize = 16.sp)
+            }
         }
+    }
+}
 
-        // 底部操作提示
+/** 底部操作提示。 */
+@Composable
+private fun BoxScope.ClipBottomHint() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppColors.editorBackground.copy(alpha = 0.6f))
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .align(Alignment.BottomCenter)
+    ) {
+        Text(
+            "拖动边框调整裁剪区域",
+            modifier = Modifier.padding(16.dp),
+            color = AppColors.editorOnBackground.copy(alpha = 0.6f),
+            fontSize = 13.sp
+        )
+    }
+}
+
+/** 保存中遮罩。 */
+@Composable
+private fun ClipSavingOverlay(visible: Boolean) {
+    AnimatedVisibility(visible = visible) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(AppColors.editorBackground.copy(alpha = 0.6f))
-                .windowInsetsPadding(WindowInsets.systemBars)
-                .align(Alignment.BottomCenter)
+                .fillMaxSize()
+                .background(AppColors.editorBackground.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                "拖动边框调整裁剪区域",
-                modifier = Modifier.padding(16.dp),
-                color = AppColors.editorOnBackground.copy(alpha = 0.6f),
-                fontSize = 13.sp
-            )
-        }
-
-        // 保存中遮罩
-        AnimatedVisibility(visible = isSaving) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(AppColors.editorBackground.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        trackColor = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("正在保存...", color = AppColors.editorOnBackground)
-                }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    trackColor = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("正在保存...", color = AppColors.editorOnBackground)
             }
         }
     }

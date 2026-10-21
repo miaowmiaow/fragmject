@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -55,11 +56,9 @@ fun PictureTextSheet(
     var text by remember { mutableStateOf(attrs?.description ?: "") }
     var selectedColorIndex by remember { mutableIntStateOf(0) }
     val focusRequester = remember { FocusRequester() }
-
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,98 +67,134 @@ fun PictureTextSheet(
             .imePadding()
             .padding(16.dp)
     ) {
-        // 顶部栏
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(onClick = onDismiss) {
-                Text("返回", color = AppColors.editorOnBackground, fontSize = 16.sp)
-            }
-            TextButton(
-                onClick = {
-                    val paint = Paint().apply {
-                        isAntiAlias = true
-                        color = ColorUtils.colorful[selectedColorIndex]
-                        textSize = 72f
-                        typeface = Typeface.DEFAULT_BOLD
-                    }
-                    val textWidth = paint.measureText(text)
-                    val fm = paint.fontMetrics
-                    val textHeight = fm.descent - fm.ascent
-                    val padding = 24f
-                    val bmp = createBitmap(
-                        (textWidth + padding * 2).toInt().coerceAtLeast(1),
-                        (textHeight + padding * 2).toInt().coerceAtLeast(1)
-                    )
-                    val canvas = Canvas(bmp)
-                    canvas.drawText(text, padding, -fm.ascent + padding, paint)
-                    val stickerAttrs = StickerAttrs(bmp, description = text)
-                    onFinish(stickerAttrs)
-                },
-                enabled = text.isNotBlank()
-            ) {
-                Text("完成", color = AppColors.editorOnBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // 文本输入区
-        BasicTextField(
-            value = text,
-            onValueChange = { text = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .focusRequester(focusRequester)
-                .background(Color.Transparent),
-            textStyle = TextStyle(
-                color = Color(ColorUtils.colorful[selectedColorIndex]),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Medium
-            ),
-            decorationBox = { innerTextField ->
-                Box {
-                    if (text.isEmpty()) {
-                        Text(
-                            "请输入文字...",
-                            color = AppColors.editorOnBackground.copy(alpha = 0.4f),
-                            fontSize = 24.sp
-                        )
-                    }
-                    innerTextField()
-                }
-            }
+        TextSheetTopBar(
+            canConfirm = text.isNotBlank(),
+            onDismiss = onDismiss,
+            onConfirm = { onFinish(buildTextSticker(text, selectedColorIndex)) },
         )
-
+        Spacer(modifier = Modifier.height(32.dp))
+        TextInputField(
+            text = text,
+            colorIndex = selectedColorIndex,
+            focusRequester = focusRequester,
+            onValueChange = { text = it },
+        )
         Spacer(modifier = Modifier.height(24.dp))
-
-        // 颜色选择器
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ColorUtils.colorful.forEachIndexed { index, colorInt ->
-                val isSelected = index == selectedColorIndex
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 6.dp)
-                        .size(if (isSelected) 40.dp else 32.dp)
-                        .clip(CircleShape)
-                        .background(Color(colorInt))
-                        .border(
-                            if (isSelected) 3.dp else 0.dp,
-                            AppColors.editorOnBackground,
-                            CircleShape
-                        )
-                        .clickable { selectedColorIndex = index }
-                )
-            }
-        }
-
+        ColorPickerRow(
+            selectedIndex = selectedColorIndex,
+            onSelect = { selectedColorIndex = it },
+        )
         Spacer(modifier = Modifier.height(48.dp))
     }
+}
+
+/** 顶部栏：返回 / 完成（无文字时不可点）。 */
+@Composable
+private fun TextSheetTopBar(
+    canConfirm: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(onClick = onDismiss) {
+            Text("返回", color = AppColors.editorOnBackground, fontSize = 16.sp)
+        }
+        TextButton(
+            onClick = onConfirm,
+            enabled = canConfirm
+        ) {
+            Text("完成", color = AppColors.editorOnBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+/** 文字输入区，占满剩余高度，带占位提示。 */
+@Composable
+private fun ColumnScope.TextInputField(
+    text: String,
+    colorIndex: Int,
+    focusRequester: FocusRequester,
+    onValueChange: (String) -> Unit,
+) {
+    BasicTextField(
+        value = text,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)
+            .focusRequester(focusRequester)
+            .background(Color.Transparent),
+        textStyle = TextStyle(
+            color = Color(ColorUtils.colorful[colorIndex]),
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Medium
+        ),
+        decorationBox = { innerTextField ->
+            Box {
+                if (text.isEmpty()) {
+                    Text(
+                        "请输入文字...",
+                        color = AppColors.editorOnBackground.copy(alpha = 0.4f),
+                        fontSize = 24.sp
+                    )
+                }
+                innerTextField()
+            }
+        }
+    )
+}
+
+/** 颜色选择器：选中项放大并描边。 */
+@Composable
+private fun ColorPickerRow(
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ColorUtils.colorful.forEachIndexed { index, colorInt ->
+            val isSelected = index == selectedIndex
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 6.dp)
+                    .size(if (isSelected) 40.dp else 32.dp)
+                    .clip(CircleShape)
+                    .background(Color(colorInt))
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        AppColors.editorOnBackground,
+                        CircleShape
+                    )
+                    .clickable { onSelect(index) }
+            )
+        }
+    }
+}
+
+/** 把输入文字按当前颜色渲染成透明底 bitmap 贴图。 */
+private fun buildTextSticker(text: String, colorIndex: Int): StickerAttrs {
+    val paint = Paint().apply {
+        isAntiAlias = true
+        color = ColorUtils.colorful[colorIndex]
+        textSize = 72f
+        typeface = Typeface.DEFAULT_BOLD
+    }
+    val textWidth = paint.measureText(text)
+    val fm = paint.fontMetrics
+    val textHeight = fm.descent - fm.ascent
+    val padding = 24f
+    val bmp = createBitmap(
+        (textWidth + padding * 2).toInt().coerceAtLeast(1),
+        (textHeight + padding * 2).toInt().coerceAtLeast(1)
+    )
+    val canvas = Canvas(bmp)
+    canvas.drawText(text, padding, -fm.ascent + padding, paint)
+    return StickerAttrs(bmp, description = text)
 }

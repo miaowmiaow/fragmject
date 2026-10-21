@@ -71,13 +71,10 @@ fun Calendar(
         MonthPager(
             state = state,
             model = model,
-            monthModePagerState = monthModePagerState,
-            weekModePagerState = weekModePagerState,
+            pagerStates = CalendarPagerStates(monthModePagerState, weekModePagerState),
             scheduleMap = scheduleMap,
             selectedDate = selectedDate,
-            onSelectDate = onSelectDate,
-            onRemoveSchedule = onRemoveSchedule,
-            onSelectedDateChange = onSelectedDateChange,
+            callbacks = CalendarDateCallbacks(onSelectDate, onRemoveSchedule, onSelectedDateChange),
         )
     }
 }
@@ -90,7 +87,7 @@ class CalendarState {
 @Composable
 fun rememberCalendarState(): CalendarState = remember { CalendarState() }
 
-internal const val YearInRow = 3
+internal const val YEAR_IN_ROW = 3
 internal val YearHeight = 45.dp
 internal val WeekDayHeight = 45.dp
 internal val WeekHeight = 70.dp

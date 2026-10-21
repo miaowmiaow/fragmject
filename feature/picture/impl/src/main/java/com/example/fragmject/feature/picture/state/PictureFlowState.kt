@@ -45,6 +45,14 @@ class PictureFlowState @Inject constructor(
      */
     private val mediaIndex = HashMap<String, MediaItem>()
 
+    /**
+     * 编辑保存后的 uri 替换表（旧 uri → 新 uri）。
+     *
+     * 预览页返回栈重建时会用 NavKey 里的**原始** uri 再次调用 [startPreview]，
+     * 若不留这张表，重新解析出的仍是编辑前的图片，表现为「编辑完成回到预览还是原图」。
+     */
+    private val uriReplacements = HashMap<String, String>()
+
     private val flowScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var queryJob: Job? = null
     private var queryVersion = 0
@@ -131,6 +139,8 @@ class PictureFlowState @Inject constructor(
         }
         _selectedUris.value = _selectedUris.value.map { if (it == oldStr) newStr else it }
         _selectedUriSet.value = _selectedUriSet.value.map { if (it == oldStr) newStr else it }.toSet()
+        // 记录替换关系：预览页若因返回栈重建而重新 startPreview，也能解析到新图
+        uriReplacements[oldStr] = newStr
         // 同步更新预览快照，使编辑保存后返回预览页仍显示新图
         _previewSource.value = _previewSource.value.map { item ->
             if (item.uri.toString() == oldStr) item.clone().apply { uri = newUri } else item
@@ -166,7 +176,9 @@ class PictureFlowState @Inject constructor(
      */
     fun startPreview(uris: List<String>) {
         // 走 uri 索引直查（O(M)），不再 flatten 全量后线性查找
-        _previewSource.value = uris.mapIndexed { index, uriStr ->
+        _previewSource.value = uris.mapIndexed { index, rawUri ->
+            // 已被编辑替换过的 uri 先换成新地址，否则返回预览时会解析回旧图
+            val uriStr = uriReplacements[rawUri] ?: rawUri
             mediaIndex[uriStr]
                 ?: MediaItem("", uriStr.takeIf { it.isNotBlank() }?.toUri() ?: "empty://preview/$index".toUri())
         }

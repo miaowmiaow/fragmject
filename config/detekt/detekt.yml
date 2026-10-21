@@ -25,6 +25,16 @@ naming:
   FunctionNaming:
     active: false
 
+exceptions:
+  # 本工程把「Android 框架边界统一兜底 + 日志 + 降级」作为明确架构约定：
+  # ContentResolver / MediaStore / WebView / CookieManager / Room / 文件 IO 在不同 ROM
+  # 与系统版本上抛出的异常类型并不统一（IO 异常与未检运行时异常混杂），收窄类型
+  # 只会让本应降级的失败穿透崩溃，无法带来实际收益。实测把 24 处收窄到具体类型后，
+  # detekt 仍把 RuntimeException / NPE 判为过宽，只有 6 处能真正收敛。
+  # 真正保护质量的是 SwallowedException（禁止吞掉异常不记录），该规则保持开启。
+  TooGenericExceptionCaught:
+    active: false
+
 style:
   # Compose 里数值密集（尺寸/权重/动画时长），强制常量只会降低可读性
   MagicNumber:

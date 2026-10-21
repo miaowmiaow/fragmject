@@ -54,86 +54,143 @@ internal fun YearPicker(
     monthModePagerState: PagerState,
 ) {
     val isWeekMode = mode == CalendarMode.Week
-    val year = if (isWeekMode) {
-        model.yearByWeekModeIndex(weekModePagerState.currentPage)
-    } else {
-        model.startYear() + monthModePagerState.currentPage / 12
-    }
-    val month = if (isWeekMode) {
-        model.monthByWeekModeIndex(weekModePagerState.currentPage)
-    } else {
-        monthModePagerState.currentPage % 12 + 1
-    }
+    val weekPage = weekModePagerState.currentPage
+    val monthPage = monthModePagerState.currentPage
+    val year = currentYear(isWeekMode, model, weekPage, monthPage)
+    val month = currentMonth(isWeekMode, model, weekPage, monthPage)
     Column {
         var visible by remember { mutableStateOf(false) }
-        TextButton(
-            onClick = { visible = !visible },
-            modifier = Modifier.height(YearHeight),
-            shape = CircleShape,
-        ) {
-            Text(
-                text = "${year}年${month}月",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Icon(
-                Icons.Filled.ArrowDropDown,
-                contentDescription = "",
-                Modifier.rotate(if (visible) 180f else 0f),
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
+        YearPickerHeader(year, month, visible) { visible = !visible }
         AnimatedVisibility(
             visible = visible,
             modifier = Modifier.clipToBounds(),
             enter = expandVertically() + fadeIn(initialAlpha = 0.6f),
             exit = shrinkVertically() + fadeOut()
         ) {
-            val scope = rememberCoroutineScope()
-            val lazyGridState = rememberLazyGridState(
-                initialFirstVisibleItemIndex = max(0, year - model.startYear() - YearInRow)
+            YearPickerGrid(
+                year = year,
+                model = model,
+                onYearSelected = { localYear ->
+                    if (isWeekMode) {
+                        weekModePagerState.scrollToPage(model.weekModeIndexByDate(localYear, month))
+                    } else {
+                        monthModePagerState.scrollToPage((localYear - model.startYear()) * 12 + month - 1)
+                    }
+                },
+                onDismiss = { visible = false },
             )
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(YearInRow),
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .semantics {
-                        verticalScrollAxisRange = ScrollAxisRange(value = { 0f }, maxValue = { 0f })
-                    },
-                state = lazyGridState,
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                items(model.lastYear() - model.startYear()) {
-                    val localYear = it + model.startYear()
-                    Text(
-                        text = localYear.toString(),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .clickable {
-                                scope.launch {
-                                    if (isWeekMode) {
-                                        val page = model.weekModeIndexByDate(localYear, month)
-                                        weekModePagerState.scrollToPage(page)
-                                    } else {
-                                        val page = it * 12 + month - 1
-                                        monthModePagerState.scrollToPage(page)
-                                    }
-                                }
-                                visible = false
-                            }
-                            .background(
-                                if (localYear == year) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent,
-                                RoundedCornerShape(50)
-                            ),
-                        color = if (localYear == year) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
         }
     }
+}
+
+/** 当前展示的年份：周模式取周 Pager 页码对应年份，月模式按页码换算。 */
+private fun currentYear(
+    isWeekMode: Boolean,
+    model: CalendarModel,
+    weekPage: Int,
+    monthPage: Int,
+): Int = if (isWeekMode) {
+    model.yearByWeekModeIndex(weekPage)
+} else {
+    model.startYear() + monthPage / 12
+}
+
+/** 当前展示的月份：周模式取周 Pager 页码对应月份，月模式按页码换算。 */
+private fun currentMonth(
+    isWeekMode: Boolean,
+    model: CalendarModel,
+    weekPage: Int,
+    monthPage: Int,
+): Int = if (isWeekMode) model.monthByWeekModeIndex(weekPage) else monthPage % 12 + 1
+
+/** 顶部“xxxx年xx月”标题与展开箭头。 */
+@Composable
+private fun YearPickerHeader(
+    year: Int,
+    month: Int,
+    visible: Boolean,
+    onToggle: () -> Unit,
+) {
+    TextButton(
+        onClick = onToggle,
+        modifier = Modifier.height(YearHeight),
+        shape = CircleShape,
+    ) {
+        Text(
+            text = "${year}年${month}月",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        Icon(
+            Icons.Filled.ArrowDropDown,
+            contentDescription = "",
+            Modifier.rotate(if (visible) 180f else 0f),
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+
+/** 展开后的年份网格；点击某年滚动到该年同名月份并收起。 */
+@Composable
+private fun YearPickerGrid(
+    year: Int,
+    model: CalendarModel,
+    onYearSelected: suspend (year: Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val lazyGridState = rememberLazyGridState(
+        initialFirstVisibleItemIndex = max(0, year - model.startYear() - YEAR_IN_ROW)
+    )
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(YEAR_IN_ROW),
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .semantics {
+                verticalScrollAxisRange = ScrollAxisRange(value = { 0f }, maxValue = { 0f })
+            },
+        state = lazyGridState,
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        items(model.lastYear() - model.startYear()) {
+            val localYear = it + model.startYear()
+            YearCell(
+                localYear = localYear,
+                isCurrent = localYear == year,
+                onClick = {
+                    scope.launch { onYearSelected(localYear) }
+                    onDismiss()
+                },
+            )
+        }
+    }
+}
+
+/** 单个年份格子，当前年份高亮。 */
+@Composable
+private fun YearCell(
+    localYear: Int,
+    isCurrent: Boolean,
+    onClick: () -> Unit,
+) {
+    Text(
+        text = localYear.toString(),
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .clickable(onClick = onClick)
+            .background(
+                if (isCurrent) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent,
+                RoundedCornerShape(50)
+            ),
+        color = if (isCurrent) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onPrimary
+        },
+        fontSize = 18.sp,
+        textAlign = TextAlign.Center
+    )
 }

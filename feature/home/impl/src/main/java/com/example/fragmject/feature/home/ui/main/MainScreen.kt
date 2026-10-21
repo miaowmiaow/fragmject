@@ -201,27 +201,19 @@ fun MainScreen(
 
     val windowSizeClass = LocalWindowSizeClass.current
 
+    val paneSpec = MainPaneSpec(navItems, navIndex, hotKeys, homeListState)
     when (windowSizeClass.widthSizeClass) {
         WindowWidthSizeClass.Expanded -> ExpandedMainScreen(
-            navItems, navIndex, onNavClick,
-            hotKeys,
-            homeListState,
+            spec = paneSpec,
+            onNavClick = onNavClick,
             selectedDetailKey = selectedDetailKey,
             onClearDetail = onClearDetail,
             detailContent = detailContent,
         )
 
-        WindowWidthSizeClass.Medium -> MediumMainScreen(
-            navItems, navIndex, onNavClick,
-            hotKeys,
-            homeListState,
-        )
+        WindowWidthSizeClass.Medium -> MediumMainScreen(paneSpec, onNavClick)
 
-        else -> CompactMainScreen(
-            navItems, navIndex, onNavClick,
-            hotKeys,
-            homeListState,
-        )
+        else -> CompactMainScreen(paneSpec, onNavClick)
     }
 }
 
@@ -231,12 +223,13 @@ fun MainScreen(
 
 @Composable
 private fun CompactMainScreen(
-    navItems: List<BottomNavItem>,
-    navIndex: Int,
+    spec: MainPaneSpec,
     onNavClick: (Int) -> Unit,
-    hotKeyResult: List<HotKey>,
-    homeListState: LazyListState,
 ) {
+    val navItems = spec.navItems
+    val navIndex = spec.navIndex
+    val hotKeyResult = spec.hotKeyResult
+    val homeListState = spec.homeListState
     Scaffold(
         topBar = {
             SearchBar(
@@ -272,12 +265,13 @@ private fun CompactMainScreen(
 
 @Composable
 private fun MediumMainScreen(
-    navItems: List<BottomNavItem>,
-    navIndex: Int,
+    spec: MainPaneSpec,
     onNavClick: (Int) -> Unit,
-    hotKeyResult: List<HotKey>,
-    homeListState: LazyListState,
 ) {
+    val navItems = spec.navItems
+    val navIndex = spec.navIndex
+    val hotKeyResult = spec.hotKeyResult
+    val homeListState = spec.homeListState
     Row(modifier = Modifier.fillMaxSize()) {
         Surface(
             modifier = Modifier
@@ -304,15 +298,16 @@ private fun MediumMainScreen(
 
 @Composable
 private fun ExpandedMainScreen(
-    navItems: List<BottomNavItem>,
-    navIndex: Int,
+    spec: MainPaneSpec,
     onNavClick: (Int) -> Unit,
-    hotKeyResult: List<HotKey>,
-    homeListState: LazyListState,
     selectedDetailKey: NavKey?,
     onClearDetail: () -> Unit,
     detailContent: @Composable (NavKey) -> Unit,
 ) {
+    val navItems = spec.navItems
+    val navIndex = spec.navIndex
+    val hotKeyResult = spec.hotKeyResult
+    val homeListState = spec.homeListState
     PermanentNavigationDrawer(
         drawerContent = {
             Surface(

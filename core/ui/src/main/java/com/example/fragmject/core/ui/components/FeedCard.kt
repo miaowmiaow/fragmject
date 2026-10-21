@@ -68,9 +68,6 @@ fun FeedCard(
     toggleCheckedIconRes: Int = R.mipmap.ic_toggle_checked,
     toggleUncheckedIconRes: Int = R.mipmap.ic_toggle_unchecked,
 ) {
-    val toggleResId = if (data.selected) toggleCheckedIconRes else toggleUncheckedIconRes
-    // 缓存 AnnotatedString：buildAnnotatedString 会在每次重组都重新分配一次
-    val descText = remember(data.desc) { AnnotatedString(data.desc) }
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AppSpacing.cardCornerRadius))
@@ -79,149 +76,184 @@ fun FeedCard(
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.padding(
-                start = AppSpacing.cardHorizontal,
-                top = AppSpacing.cardHorizontal,
-                end = AppSpacing.cardHorizontal
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = data.avatarResId),
-                contentDescription = null,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onUserClick(data.userId) }
-                    .size(AppSpacing.avatarSize),
-                contentScale = ContentScale.Crop
-            )
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .wrapContentHeight()
-                    .padding(start = AppSpacing.cardItemGap, end = AppSpacing.cardItemGap),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = data.displayName,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 1.4.em,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = data.date,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    fontSize = 12.sp,
-                    lineHeight = 1.4.em,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
+        FeedCardHeader(data = data, onUserClick = onUserClick)
         Spacer(Modifier.size(AppSpacing.cardItemGap))
-        Row(
-            modifier = Modifier.padding(
-                start = AppSpacing.cardHorizontal,
-                end = AppSpacing.cardHorizontal
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                if (data.desc.isNotBlank()) {
-                    Text(
-                        text = data.title,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    EllipsisText(
-                        text = descText,
-                        color = MaterialTheme.colorScheme.onSecondary,
-                        fontSize = 14.sp,
-                        lineHeight = 1.4.em,
-                        maxLines = 3,
-                        // 点击正文跳转详情；点击「...展开/...收起」只切换展开态
-                        onClick = { onItemClick(data.link) },
-                        // 信息流里展开动画是纯开销：滚动时每个 item 都多一层动画层
-                        animate = false,
-                    )
-                } else {
-                    Text(
-                        text = data.title,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 4,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-            if (data.coverUrl.isNotBlank()) {
-                // 内层 clickable 会先于卡片主体的 clickable 消费事件，
-                // 因此点封面走 onCoverClick、点卡片其余区域仍走 onItemClick。
-                AsyncImage(
-                    model = data.coverUrl,
-                    contentDescription = "封面",
-                    modifier = Modifier
-                        .width(AppSpacing.thumbnailWidth)
-                        .padding(start = AppSpacing.cardItemGap)
-                        .aspectRatio(2f / 3f)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { onCoverClick(data.coverUrl) },
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
+        FeedCardBody(data = data, onItemClick = onItemClick, onCoverClick = onCoverClick)
         Spacer(Modifier.size(AppSpacing.cardSmallGap))
-        Row(
-            modifier = Modifier.padding(
-                start = AppSpacing.cardHorizontal,
-                end = AppSpacing.cardHorizontal,
-                bottom = AppSpacing.cardHorizontal
-            ),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        FeedCardFooter(
+            data = data,
+            toggleResId = if (data.selected) toggleCheckedIconRes else toggleUncheckedIconRes,
+            onFooterClick = onFooterClick,
+            onToggleClick = onToggleClick,
+        )
+    }
+}
+
+/** 卡片头部：头像 + 昵称 + 时间。 */
+@Composable
+private fun FeedCardHeader(
+    data: FeedCardUIState,
+    onUserClick: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier.padding(
+            start = AppSpacing.cardHorizontal,
+            top = AppSpacing.cardHorizontal,
+            end = AppSpacing.cardHorizontal
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = data.avatarResId),
+            contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onUserClick(data.userId) }
+                .size(AppSpacing.avatarSize),
+            contentScale = ContentScale.Crop
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .wrapContentHeight()
+                .padding(start = AppSpacing.cardItemGap, end = AppSpacing.cardItemGap),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            val footModifier = Modifier.wrapContentHeight()
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = AppSpacing.cardFooterEndPadding)
-            ) {
-                data.footerBadges.forEach { badge ->
-                    Text(
-                        text = "${badge.text}  ",
-                        modifier = footModifier.clickable { onFooterClick(data.footerId) },
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        fontSize = 12.sp,
-                        lineHeight = 1.4.em,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Text(
-                    text = data.footerText,
-                    modifier = footModifier.clickable { onFooterClick(data.footerId) },
-                    color = MaterialTheme.colorScheme.onTertiary,
-                    fontSize = 12.sp,
-                    lineHeight = 1.4.em,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Image(
-                painter = painterResource(id = toggleResId),
-                contentDescription = "",
-                modifier = footModifier
-                    .height(AppSpacing.buttonSmallHeight)
-                    .clickable { onToggleClick(data.id, !data.selected) })
+            Text(
+                text = data.displayName,
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 1.4.em,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = data.date,
+                color = MaterialTheme.colorScheme.onSecondary,
+                fontSize = 12.sp,
+                lineHeight = 1.4.em,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
 
+/** 卡片主体：标题 + 描述/正文 + 右侧封面。 */
+@Composable
+private fun FeedCardBody(
+    data: FeedCardUIState,
+    onItemClick: (String) -> Unit,
+    onCoverClick: (String) -> Unit,
+) {
+    // 缓存 AnnotatedString：buildAnnotatedString 会在每次重组都重新分配一次
+    val descText = remember(data.desc) { AnnotatedString(data.desc) }
+    Row(
+        modifier = Modifier.padding(
+            start = AppSpacing.cardHorizontal,
+            end = AppSpacing.cardHorizontal
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            if (data.desc.isNotBlank()) {
+                Text(
+                    text = data.title,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                EllipsisText(
+                    text = descText,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 14.sp,
+                    lineHeight = 1.4.em,
+                    maxLines = 3,
+                    // 点击正文跳转详情；点击「...展开/...收起」只切换展开态
+                    onClick = { onItemClick(data.link) },
+                    // 信息流里展开动画是纯开销：滚动时每个 item 都多一层动画层
+                    animate = false,
+                )
+            } else {
+                Text(
+                    text = data.title,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        if (data.coverUrl.isNotBlank()) {
+            // 内层 clickable 会先于卡片主体的 clickable 消费事件，
+            // 因此点封面走 onCoverClick、点卡片其余区域仍走 onItemClick。
+            AsyncImage(
+                model = data.coverUrl,
+                contentDescription = "封面",
+                modifier = Modifier
+                    .width(AppSpacing.thumbnailWidth)
+                    .padding(start = AppSpacing.cardItemGap)
+                    .aspectRatio(2f / 3f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .clickable { onCoverClick(data.coverUrl) },
+                contentScale = ContentScale.Crop
+            )
+        }
+    }
+}
 
+/** 卡片底部：角标 + 底部信息 + 选中切换按钮。 */
+@Composable
+private fun FeedCardFooter(
+    data: FeedCardUIState,
+    toggleResId: Int,
+    onFooterClick: (String) -> Unit,
+    onToggleClick: (String, Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.padding(
+            start = AppSpacing.cardHorizontal,
+            end = AppSpacing.cardHorizontal,
+            bottom = AppSpacing.cardHorizontal
+        ),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val footModifier = Modifier.wrapContentHeight()
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = AppSpacing.cardFooterEndPadding)
+        ) {
+            data.footerBadges.forEach { badge ->
+                Text(
+                    text = "${badge.text}  ",
+                    modifier = footModifier.clickable { onFooterClick(data.footerId) },
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontSize = 12.sp,
+                    lineHeight = 1.4.em,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                text = data.footerText,
+                modifier = footModifier.clickable { onFooterClick(data.footerId) },
+                color = MaterialTheme.colorScheme.onTertiary,
+                fontSize = 12.sp,
+                lineHeight = 1.4.em,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Image(
+            painter = painterResource(id = toggleResId),
+            contentDescription = "",
+            modifier = footModifier
+                .height(AppSpacing.buttonSmallHeight)
+                .clickable { onToggleClick(data.id, !data.selected) })
+    }
+}

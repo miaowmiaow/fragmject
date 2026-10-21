@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 sealed interface SettingUiState {
@@ -99,7 +100,7 @@ class SettingViewModel @Inject constructor(
                 _events.send(if (success) SettingEvent.LogoutSucceeded else SettingEvent.LogoutFailed)
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 Log.e(TAG, "logout failed", e)
                 _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it }
                 _events.send(SettingEvent.LogoutFailed)

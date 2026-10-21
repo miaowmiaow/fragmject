@@ -113,11 +113,10 @@ internal class PooledWebViewClient(
     ): Boolean {
         if (view == null || request == null) return false
         val requestUrl = request.url.toString()
-        if (request.hasGesture()
-            && !request.isRedirect
-            && URLUtil.isNetworkUrl(requestUrl)
-            && requestUrl != callbacks.url
-        ) {
+        val isUserNavigation = request.hasGesture() &&
+            !request.isRedirect &&
+            URLUtil.isNetworkUrl(requestUrl)
+        if (isUserNavigation && requestUrl != callbacks.url) {
             callbacks.shouldOverrideUrl(requestUrl)
             return true
         }

@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.fragmject.core.database.KVDatabase
 import com.example.fragmject.core.database.model.JsonConverters
 import com.example.fragmject.core.domain.repository.ScheduleRepository
+import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,7 +33,7 @@ class ScheduleLocalDataSourceImpl @Inject constructor(
             val json = kvDatabase.getValue("${SCHEDULE_KEY_PREFIX}_${year}_${month}_${day}")
             val parsed: List<String>? = gson.fromJson(json, scheduleListType)
             parsed?.let { ArrayList(it) } ?: ArrayList()
-        } catch (e: Exception) {
+        } catch (e: JsonParseException) {
             Log.e("ScheduleLocalDataSourceImpl", "getSchedule failed", e)
             ArrayList()
         }

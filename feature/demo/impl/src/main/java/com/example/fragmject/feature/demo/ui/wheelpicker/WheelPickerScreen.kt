@@ -34,6 +34,10 @@ import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.ui.components.WheelPicker
 import kotlinx.coroutines.launch
 
+/** 时/分可选值：两位补零，滚轮里只展示字符串。 */
+private val HOURS = (0..23).map { it.toString().padStart(2, '0') }
+private val MINUTES = (0..59).map { it.toString().padStart(2, '0') }
+
 @Composable
 fun WheelPickerScreen() {
     val hour = remember { mutableStateOf("") }
@@ -43,118 +47,141 @@ fun WheelPickerScreen() {
     SnackbarHost(hostState = snackState, Modifier)
     Column {
         Box(modifier = Modifier.weight(1f))
+        WheelPickerActionBar(
+            onCancel = { },
+            onConfirm = {
+                snackScope.launch {
+                    snackState.showSnackbar(
+                        "Selected date timestamp: ${hour.value} / ${minute.value}"
+                    )
+                }
+            },
+        )
+        HorizontalDivider()
+        TimeWheelPickerPanel(
+            onHourSelect = { hour.value = it },
+            onMinuteSelect = { minute.value = it },
+        )
+    }
+}
+
+/** 底部操作栏：取消 / 确定。 */
+@Composable
+private fun WheelPickerActionBar(
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Row(
+        Modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        WheelPickerActionButton(
+            label = "取消",
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            borderColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            onClick = onCancel,
+        )
+        Spacer(Modifier.weight(1f))
+        WheelPickerActionButton(
+            label = "确定",
+            containerColor = MaterialTheme.colorScheme.onSurface,
+            borderColor = MaterialTheme.colorScheme.onSurface,
+            onClick = onConfirm,
+        )
+    }
+}
+
+/** 操作栏按钮：两枚按钮仅配色不同。 */
+@Composable
+private fun WheelPickerActionButton(
+    label: String,
+    containerColor: Color,
+    borderColor: Color,
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .width(50.dp)
+            .height(25.dp),
+        shape = RoundedCornerShape(5.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
+        border = BorderStroke(1.dp, borderColor),
+        contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
+    ) {
+        Text(text = label, fontSize = 13.sp)
+    }
+}
+
+/** 时/分双滚轮 + 上下白色遮罩。 */
+@Composable
+private fun TimeWheelPickerPanel(
+    onHourSelect: (String) -> Unit,
+    onMinuteSelect: (String) -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxWidth()
+            .padding(16.dp),
+    ) {
         Row(
             Modifier
-                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .height(175.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Button(
-                onClick = { },
-                modifier = Modifier
-                    .width(50.dp)
-                    .height(25.dp),
-                shape = RoundedCornerShape(5.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    contentColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHigh),
-                contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
+            val pickerModifier = Modifier
+                .width(70.dp)
+                .height(175.dp)
+            WheelPicker(
+                data = HOURS,
+                selectIndex = 0,
+                visibleCount = 5,
+                modifier = pickerModifier,
+                onSelect = { _, item -> onHourSelect(item) }
             ) {
-                Text(text = "取消", fontSize = 13.sp)
+                Text(text = it, fontSize = 14.sp)
             }
-            Spacer(Modifier.weight(1f))
-            Button(
-                onClick = {
-                    snackScope.launch {
-                        snackState.showSnackbar(
-                            "Selected date timestamp: ${hour.value} / ${minute.value}"
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .width(50.dp)
-                    .height(25.dp),
-                shape = RoundedCornerShape(5.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onSurface,
-                    contentColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
-                contentPadding = PaddingValues(5.dp, 3.dp, 5.dp, 3.dp)
+            Text(text = "/", fontSize = 15.sp)
+            WheelPicker(
+                data = MINUTES,
+                selectIndex = 0,
+                visibleCount = 5,
+                modifier = pickerModifier,
+                onSelect = { _, item -> onMinuteSelect(item) }
             ) {
-                Text(text = "确定", fontSize = 13.sp)
+                Text(text = it, fontSize = 14.sp)
             }
         }
-        HorizontalDivider()
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+        WheelPickerMask()
+    }
+}
+
+/** 上下渐隐遮罩：中间留出 30dp 的选中条。 */
+@Composable
+private fun WheelPickerMask() {
+    Column(Modifier.height(175.dp)) {
+        val whiteMaskModifier = Modifier
+            .background(Color(0xBBFFFFFF))
+            .fillMaxWidth()
+            .weight(1f)
+        Spacer(whiteMaskModifier)
+        Spacer(
+            Modifier
+                .background(Color(0x1B000000), RoundedCornerShape(5.dp))
                 .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(175.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                val pickerModifier = Modifier
-                    .width(70.dp)
-                    .height(175.dp)
-                WheelPicker(
-                    data = (0..23).map { it.toString().padStart(2, '0') },
-                    selectIndex = 0,
-                    visibleCount = 5,
-                    modifier = pickerModifier,
-                    onSelect = { _, item ->
-                        hour.value = item
-                    }
-                ) {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp
-                    )
-                }
-                Text(
-                    text = "/",
-                    fontSize = 15.sp
-                )
-                WheelPicker(
-                    data = (0..59).map { it.toString().padStart(2, '0') },
-                    selectIndex = 0,
-                    visibleCount = 5,
-                    modifier = pickerModifier,
-                    onSelect = { _, item ->
-                        minute.value = item
-                    }
-                ) {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-            Column(Modifier.height(175.dp)) {
-                val whiteMaskModifier = Modifier
-                    .background(Color(0xBBFFFFFF))
-                    .fillMaxWidth()
-                    .weight(1f)
-                Spacer(whiteMaskModifier)
-                Spacer(
-                    Modifier
-                        .background(Color(0x1B000000), RoundedCornerShape(5.dp))
-                        .fillMaxWidth()
-                        .height(30.dp)
-                )
-                Spacer(whiteMaskModifier)
-            }
-        }
+                .height(30.dp)
+        )
+        Spacer(whiteMaskModifier)
     }
 }
 

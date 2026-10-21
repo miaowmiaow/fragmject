@@ -40,7 +40,7 @@ object MyCollectNavKey : RequiresAuth, DetailPaneNavKey
 ### 第 2 步：impl 模块注册渲染器（NavContentContributor）
 
 ```kotlin
-// feature/collection/impl/.../nav/CollectionNavRegistration.kt
+// feature/collection/impl/.../nav/CollectionNavContentContributor.kt
 object CollectionNavContentContributor : NavContentContributor {
     override fun contribute(registry: NavContentRegistry) {
         registry.register<MyCollectNavKey> { navKey ->
@@ -76,7 +76,7 @@ interface CollectionNavigator {
 }
 ```
 
-同时在 `NavigationCompositionLocals.kt` 的 `Navigators` 聚合体与 `noop()` 中补充 `collection` 字段
+同时在 `Navigators.kt` 的 `Navigators` 聚合体与 `noop()` 中补充 `collection` 字段
 （字段漏加编译器发现不了，由 `ArchitectureTest` 规则 20 兜底）。
 
 新增一个语义动作共需改 4 处：接口 → `Navigators` 字段 → `noop()` 空实现 → `AppXxxNavigator`，

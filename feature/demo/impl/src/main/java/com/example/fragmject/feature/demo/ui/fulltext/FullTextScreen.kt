@@ -35,7 +35,8 @@ fun FullTextScreen() {
                     text = buildAnnotatedString {
                         appendInlineContent("icon")
                         append(
-                            "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。"
+                            "壬戌之秋1，七月既望2，苏子与客泛舟游于赤壁之下。清风徐来3，水波不兴4。" +
+                                "举酒属客5，诵明月之诗6，歌窈窕之章7。少焉8，月出于东山之上，徘徊于斗牛之间9。"
                         )
                     },
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -65,7 +66,8 @@ fun FullTextScreen() {
                 EllipsisText(
                     text = buildAnnotatedString {
                         append(
-                            "I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation."
+                            "I am happy to join with you today in what will go down in history " +
+                                "as the greatest demonstration for freedom in the history of our nation."
                         )
                     },
                     color = MaterialTheme.colorScheme.onPrimary,

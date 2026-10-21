@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.demo.model
 
-import android.util.Log
 import com.example.fragmject.core.ui.R
 
 class Photo(
@@ -16,14 +15,7 @@ class Photo(
     )
 
     fun getAvatarRes(): Int {
-        var index = 0
-        try {
-            if (id >= 0) {
-                index = id % 6
-            }
-        } catch (e: Exception) {
-            Log.e("GridSelectScreen", "getAvatarRes: id=$id failed", e)
-        }
+        val index = if (id >= 0) id % 6 else 0
         return avatarList[index]
     }
 }

@@ -31,26 +31,28 @@ private fun bytesToHexString(src: ByteArray?): String {
     return sb.toString()
 }
 
+/** 文件头魔数 → MIME 的有序映射；顺序即优先级，首个前缀命中即返回。 */
+private val HEAD_CODE_MIME_TYPES: List<Pair<String, String>> = listOf(
+    "FFD8FF" to "image/jpeg",
+    "89504E" to "image/png",
+    "474946" to "image/gif",
+    "524946" to "image/webp",
+    "49492A00" to "image/tiff",
+    "424D" to "image/bmp",
+    "3C3F786D6C" to "application/xml",
+    "68746D6C3E" to "text/html",
+    "255044462D312E" to "application/pdf",
+    "504B0304" to "application/zip",
+    "52617221" to "application/rar",
+    "57415645" to "audio/x-wav",
+    "41564920" to "video/x-msvideo",
+    "2E524D46" to "application/vnd.rn-realmedia",
+    "000001B" to "video/mpeg",
+)
+
 internal fun parseHeadCodeInternal(headCode: String): String {
     val head = headCode.uppercase(Locale.getDefault())
-    return when {
-        head.startsWith("FFD8FF") -> "image/jpeg"
-        head.startsWith("89504E") -> "image/png"
-        head.startsWith("474946") -> "image/gif"
-        head.startsWith("524946") -> "image/webp"
-        head.startsWith("49492A00") -> "image/tiff"
-        head.startsWith("424D") -> "image/bmp"
-        head.startsWith("3C3F786D6C") -> "application/xml"
-        head.startsWith("68746D6C3E") -> "text/html"
-        head.startsWith("255044462D312E") -> "application/pdf"
-        head.startsWith("504B0304") -> "application/zip"
-        head.startsWith("52617221") -> "application/rar"
-        head.startsWith("57415645") -> "audio/x-wav"
-        head.startsWith("41564920") -> "video/x-msvideo"
-        head.startsWith("2E524D46") -> "application/vnd.rn-realmedia"
-        head.startsWith("000001B") -> "video/mpeg"
-        else -> "*/*"
-    }
+    return HEAD_CODE_MIME_TYPES.firstOrNull { (magic, _) -> head.startsWith(magic) }?.second ?: "*/*"
 }
 
 internal fun readFileHeadStringInternal(file: File): String {

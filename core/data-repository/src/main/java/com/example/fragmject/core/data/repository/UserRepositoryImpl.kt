@@ -58,67 +58,67 @@ class UserRepositoryImpl @Inject constructor(
                 clearChangedSession(previousCookies)?.let { e.addSuppressed(it) }
                 throw e
             } catch (_: Exception) {
-                val failure = clearChangedSession(previousCookies)
                 return@withLock AuthResult.Error(
-                    if (failure == null) "认证请求失败，请稍后重试" else "认证请求失败，本地会话清理失败",
+                    withCleanupFailure("认证请求失败，请稍后重试", clearChangedSession(previousCookies)),
                 )
             }
             if (!response.isSuccess) {
-                val failure = clearChangedSession(previousCookies)
                 return@withLock AuthResult.Error(
-                    if (failure == null) response.errorMsg else "${response.errorMsg}，本地会话清理失败",
+                    withCleanupFailure(response.errorMsg, clearChangedSession(previousCookies)),
                 )
             }
-            val user = response.data
-            if (user == null) {
-                val failure = clearLocalSession()
-                return@withLock AuthResult.Error(
-                    if (failure == null) "用户信息获取失败" else "用户信息获取失败，本地会话清理失败",
-                )
-            }
-            try {
-                local.saveUser(user)
-                AuthResult.Success(response.errorMsg)
-            } catch (e: CancellationException) {
-                clearLocalSession()?.let { e.addSuppressed(it) }
-                throw e
-            } catch (_: Exception) {
-                val failure = clearLocalSession()
-                AuthResult.Error(
-                    if (failure == null) "登录状态保存失败，请重试" else "登录状态保存失败，本地会话清理失败",
-                )
-            }
+            saveAuthenticatedUser(response)
         }
+
+    /** 认证成功后持久化用户；写库失败与取消都要清掉本地会话，避免半登录状态。 */
+    private suspend fun saveAuthenticatedUser(response: DataResponse<User>): AuthResult {
+        val user = response.data
+        if (user == null) {
+            return AuthResult.Error(withCleanupFailure("用户信息获取失败", clearLocalSession()))
+        }
+        return try {
+            local.saveUser(user)
+            AuthResult.Success(response.errorMsg)
+        } catch (e: CancellationException) {
+            clearLocalSession()?.let { e.addSuppressed(it) }
+            throw e
+        } catch (_: Exception) {
+            AuthResult.Error(withCleanupFailure("登录状态保存失败，请重试", clearLocalSession()))
+        }
+    }
+
+    /** 清理失败不改变主因，只在用户可见文案后追加提示。 */
+    private fun withCleanupFailure(message: String, failure: Exception?): String =
+        if (failure == null) message else "$message，本地会话清理失败"
 
     override suspend fun logout(): Boolean = sessionMutex.withLock {
         var remoteFailure: Exception? = null
         try {
             remote.logout()
-            true
         } catch (e: CancellationException) {
             remoteFailure = e
-            throw e
         } catch (e: Exception) {
             remoteFailure = e
-            true
-        } finally {
-            clearLocalSession()?.let { cleanupFailure ->
-                when (val failure = remoteFailure) {
-                    is CancellationException -> failure.addSuppressed(cleanupFailure)
-                    null -> {
-                        // 远端登出已生效：本地清理失败不能把「成功」翻转成异常，否则 UI 会提示
-                        // 登出失败并诱导用户重复点击（远端会话此时已不存在）。残留的本地用户
-                        // 数据由下次启动的会话校验兜底，故只记录不抛出。
-                        Log.w(TAG, "logout: 远端已登出，但本地会话清理失败", cleanupFailure)
-                    }
-
-                    else -> {
-                        failure.addSuppressed(cleanupFailure)
-                        throw cleanupFailure
-                    }
-                }
-            }
         }
+
+        // 本地清理不再放在 finally 里抛异常：异常只在上面的 try 结束后统一抛出，
+        // 优先级保持原样 —— 取消信号 > 远端异常 > 成功。
+        val cleanupFailure = clearLocalSession()
+        (remoteFailure as? CancellationException)?.let { cancellation ->
+            cleanupFailure?.let { cancellation.addSuppressed(it) }
+            throw cancellation
+        }
+        if (cleanupFailure != null && remoteFailure != null) {
+            remoteFailure.addSuppressed(cleanupFailure)
+            throw cleanupFailure
+        }
+        if (cleanupFailure != null) {
+            // 远端登出已生效：本地清理失败不能把「成功」翻转成异常，否则 UI 会提示
+            // 登出失败并诱导用户重复点击（远端会话此时已不存在）。残留的本地用户
+            // 数据由下次启动的会话校验兜底，故只记录不抛出。
+            Log.w(TAG, "logout: 远端已登出，但本地会话清理失败", cleanupFailure)
+        }
+        true
     }
 
     // 仅比较已知业务根 Cookie；CookieManager 不暴露完整属性，不能安全恢复旧 Cookie。

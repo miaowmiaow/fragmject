@@ -37,6 +37,7 @@ import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.feature.auth.components.AccountForm
+import com.example.fragmject.feature.auth.components.AccountFormTexts
 
 @Composable
 fun LoginScreen(
@@ -72,11 +73,13 @@ fun LoginScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             AccountForm(
-                title = "Welcome",
-                subtitle = "玩Android",
-                buttonText = "登录",
-                bottomLinkText = "去注册",
-                isLoading = isLoading,
+                texts = AccountFormTexts(
+                    title = "Welcome",
+                    subtitle = "玩Android",
+                    buttonText = "登录",
+                    bottomLinkText = "去注册",
+                    isLoading = isLoading,
+                ),
                 onBack = onNavigateUp,
                 onSubmit = { viewModel.login(usernameText, passwordText) },
                 onBottomLinkClick = { authNavigator.openRegister() },

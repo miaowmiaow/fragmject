@@ -7,6 +7,7 @@ import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.SQLiteException
 import com.example.fragmject.core.database.dao.KVDao
 import com.example.fragmject.core.database.model.KVEntity
 import kotlinx.coroutines.flow.Flow
@@ -50,13 +51,14 @@ abstract class KVDatabase : RoomDatabase() {
 
         /** 构建数据库实例（由 Hilt DatabaseModule 调用并持有单例）。 */
         fun build(context: Context): KVDatabase {
-            return Room.databaseBuilder(
+            val builder = Room.databaseBuilder(
                 context,
                 KVDatabase::class.java,
                 "kv_database"
             )
-                .addMigrations(*MIGRATIONS)
-                .build()
+            // Room 只提供 vararg 重载，逐个注册以免 `*MIGRATIONS` 展开
+            MIGRATIONS.forEach { builder.addMigrations(it) }
+            return builder.build()
         }
 
     }
@@ -67,7 +69,7 @@ abstract class KVDatabase : RoomDatabase() {
             // 不再需要先 find 再 write 的分支，从根本上消除并发竞态。
             val id = kvDao().insert(KVEntity(id = 0, key = key, value = value))
             id > -1
-        } catch (e: Exception) {
+        } catch (e: SQLiteException) {
             Log.e("KVDatabase", "setValue failed: key=$key", e)
             false
         }
@@ -76,7 +78,7 @@ abstract class KVDatabase : RoomDatabase() {
     suspend fun getValue(key: String): String {
         return try {
             kvDao().findByKey(key)?.value ?: ""
-        } catch (e: Exception) {
+        } catch (e: SQLiteException) {
             Log.e("KVDatabase", "getValue failed: key=$key", e)
             ""
         }

@@ -1,9 +1,9 @@
 package com.example.fragmject.feature.demo.ui.calendar
 
 import android.util.Log
-import java.text.ParseException
+import java.time.DateTimeException
+import java.time.LocalDate
 import java.util.Calendar
-import java.util.Date
 
 fun getLunarDate(year: Int, month: Int, day: Int): LunarDate {
     return LunarUtils.getLunarDate(year, month, day)
@@ -62,20 +62,25 @@ object LunarUtils {
         else 30
     }
 
-    // ====== 传回农历 y年的生肖
+    /**
+     * 传回两个公历日期相差的天数（[bY]-[bM]-[bD] 到 [nY]-[nM]-[nD]，后者更早则为负）。
+     *
+     * 用 [LocalDate] 而不是共享的 `SimpleDateFormat`：
+     * - `SimpleDateFormat` 不是线程安全的，放在 object 里被并发调用会解析出错；
+     * - 按「毫秒差 / 一天」计算会受夏令时影响（DST 切换当天是 23 或 25 小时），跨 DST 会差 1 天；
+     *   [LocalDate.toEpochDay] 是纯日历日序，与时区/夏令时无关。
+     *
+     * 任一日期非法（如 2 月 30 日）时返回 0，保持调用方「算不出来就不换算」的既有约定。
+     */
     fun getDaysOfTwoDate(bY: Int, bM: Int, bD: Int, nY: Int, nM: Int, nD: Int): Int {
-        var baseDate: Date? = null
-        var nowaday: Date? = null
-        try {
-            baseDate = LunarTables.CHINESE_DATE_FORMAT.parse(bY.toString() + "年" + bM + "月" + bD + "日")
-            nowaday = LunarTables.CHINESE_DATE_FORMAT.parse(nY.toString() + "年" + nM + "月" + nD + "日")
-        } catch (e: ParseException) {
-            Log.e("LunarUtils", "getDaysOfTwoDate parse failed", e)
+        return try {
+            val base = LocalDate.of(bY, bM, bD)
+            val now = LocalDate.of(nY, nM, nD)
+            (now.toEpochDay() - base.toEpochDay()).toInt()
+        } catch (e: DateTimeException) {
+            Log.e("LunarUtils", "getDaysOfTwoDate invalid date", e)
+            0
         }
-        // 求出相差的天数；任一日期解析失败则返回 0，避免 NPE
-        val base = baseDate ?: return 0
-        val now = nowaday ?: return 0
-        return ((now.time - base.time) / 86400000L).toInt()
     }
 
     /* 农历lunYear年lunMonth月lunDay日
@@ -119,49 +124,50 @@ object LunarUtils {
      * 返回格式为20140506（int）
      * */
     fun getLunarDateInt(year: Int, month: Int, day: Int): Int {
-        val lYear: Int
-        val lMonth: Int
-        val lDay: Int
-        var daysOfYear = 0
-        // 求出和1900年1月31日相差的天数
-        //year =1908;
-        //month = 3;
-        //day =3;
+        // lDateInt 编码：yyyymmdd，如 20240315
+        val (lYear, offsetInYear) = resolveLunarYear(year, month, day)
+        val (lMonth, lDay) = resolveLunarMonthDay(lYear, offsetInYear)
+        return lYear * 10000 + lMonth * 100 + lDay
+    }
+
+    /**
+     * 从 1900-01-31 起逐年扣减农历年天数，得到农历年份与当年剩余天数。
+     */
+    private fun resolveLunarYear(year: Int, month: Int, day: Int): Pair<Int, Int> {
+        // 与 1900 年 1 月 31 日相差的天数
         var offset = getDaysOfTwoDate(1900, 1, 31, year, month, day)
-        // 用offset减去每农历年的天数
-        // 计算当天是农历第几天
-        // i最终结果是农历的年份
-        // offset是当年的第几天
+        var daysOfYear = 0
         var iYear = 1900
         while (iYear < 2100 && offset > 0) {
             daysOfYear = yearDays(iYear)
             offset -= daysOfYear
             iYear++
         }
-
+        // 多减了一年（跨年边界）需要退回
         if (offset < 0) {
             offset += daysOfYear
             iYear--
         }
-        // 农历年份
-        lYear = iYear
+        return iYear to offset
+    }
 
-        val leapMonth = leapMonth(iYear) // 闰哪个月,1-12
+    /**
+     * 用当年剩余天数逐月扣减，得到农历月与日；闰月按 [leapMonth] 插入并做两次边界校正。
+     */
+    private fun resolveLunarMonthDay(lYear: Int, offsetInYear: Int): Pair<Int, Int> {
+        var offset = offsetInYear
+        val leapMonth = leapMonth(lYear) // 闰哪个月,1-12
         var leap = false
-
-
-        // 用当年的天数offset,逐个减去每月（农历）的天数，求出当天是本月的第几天
         var iMonth = 1
         var daysOfMonth = 0
-        iMonth = 1
         while (iMonth < 13 && offset > 0) {
-            // 闰月
             if (leapMonth > 0 && iMonth == (leapMonth + 1) && !leap) {
+                // 进入闰月：重复上一个月的序号
                 --iMonth
                 leap = true
-                daysOfMonth = leapDays(iYear)
+                daysOfMonth = leapDays(lYear)
             } else {
-                daysOfMonth = monthDays(iYear, iMonth)
+                daysOfMonth = monthDays(lYear, iMonth)
             }
             // 解除闰月
             if (leap && iMonth == (leapMonth + 1)) leap = false
@@ -169,7 +175,7 @@ object LunarUtils {
             offset -= daysOfMonth
             iMonth++
         }
-        // offset为0时，并且刚才计算的月份是闰月，要校正
+        // offset 为 0 且刚好落在闰月：校正月份归属
         if (offset == 0 && leapMonth > 0 && iMonth == leapMonth + 1) {
             if (leap) {
                 leap = false
@@ -178,14 +184,12 @@ object LunarUtils {
                 --iMonth
             }
         }
-        // offset小于0时，也要校正
+        // offset 小于 0：回退到上一个月
         if (offset < 0) {
             offset += daysOfMonth
             --iMonth
         }
-        lMonth = iMonth
-        lDay = offset + 1
-        return lYear * 10000 + lMonth * 100 + lDay
+        return iMonth to (offset + 1)
     }
 
 
@@ -213,6 +217,16 @@ object LunarUtils {
         return lY + " " + animalsYear(animalsYear) + " " + lM + lD
     }
 
+    /** 农历换算的支撑区间：1900-01-31 起、2100 年止，区间外不换算。 */
+    private fun isOutOfSupportedRange(year: Int, month: Int, day: Int): Boolean =
+        year < 1900 || (year == 1900 && month == 1 && day < 31) || year > 2100
+
+    /** 公历大小月：除 2 月外固定 31 天的月份。 */
+    private val LONG_MONTHS: Set<Int> = setOf(1, 3, 5, 7, 8, 10, 12)
+
+    private fun isLeapYear(year: Int): Boolean =
+        (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+
     /**
      * 传出y年m月d日对应的农历. yearCyl3:农历年与1864的相差数 ? monCyl4:从1900年1月31日以来,闰月数
      * dayCyl5:与1900年1月31日相差的天数,再加40 ?
@@ -222,7 +236,7 @@ object LunarUtils {
      * @return
      */
     fun getLunarDate(year: Int, month: Int, day: Int): LunarDate {
-        if (year < 1900 || (year == 1900 && month == 1 && day < 31) || year > 2100) {
+        if (isOutOfSupportedRange(year, month, day)) {
             return LunarDate(year, month, day, "", "", "", "")
         }
         //农历节假日
@@ -249,8 +263,9 @@ object LunarUtils {
         } else {
             year - 1
         }
-        //农历节假日
+        //农历节假日；除夕没有固定「月日」键，按腊月最后一天单独推导
         val lunarFestival = LunarTables.LUNAR_FESTIVAL[lMonthStr + lDayStr]
+            ?: newYearEveIfAny(lYear, lMonth, lDay)
         val sMonth = month.toString().padStart(2, '0')
         val sDay = day.toString().padStart(2, '0')
         //公历节假日
@@ -276,13 +291,26 @@ object LunarUtils {
         )
     }
 
+    /**
+     * 除夕判定：当天为农历年的最后一天，即「次日是正月初一」。
+     *
+     * 不能用固定的 `"1230"` 键：腊月大月才是三十，小月只有廿九，写死会漏掉一半年份
+     * （例如 2022 年除夕是腊月廿九）。腊月是农历年的最后一个月，因此
+     * 「当天是腊月最后一天」与「次日是正月初一」等价，用当月天数判定即可，
+     * 无需再多跑一次公历→农历换算。
+     *
+     * 1900-2100 的数据表（[LunarTables.LUNAR_INFO]）中不存在闰腊月（闰月表里 12 从未标闰，
+     * 最近一次闰腊月是 1574 年），故这里不必叠加闰月天数。
+     */
+    private fun newYearEveIfAny(lYear: Int, lMonth: Int, lDay: Int): String? =
+        if (lMonth == 12 && lDay == monthDays(lYear, 12)) "除夕" else null
+
     fun getDaysOfMonth(year: Int, month: Int): Int { //返回公历year年month月的当月总天数
-        if (month == 2) {
-            return (if (((year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0))) 29 else 28)
-        } else if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
-            return 31
+        return when {
+            month == 2 -> if (isLeapYear(year)) 29 else 28
+            month in LONG_MONTHS -> 31
+            else -> 30
         }
-        return 30
     }
 
     /*输入

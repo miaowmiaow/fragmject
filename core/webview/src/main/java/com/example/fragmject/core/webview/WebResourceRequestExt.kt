@@ -1,31 +1,21 @@
 package com.example.fragmject.core.webview
 
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.webkit.WebResourceRequest
 
-private const val TAG = "WebResourceRequestExt"
+/**
+ * 从 URL 提取文件扩展名（小写）。
+ *
+ * 不使用 try/catch：`MimeTypeMap.getFileExtensionFromUrl` 对非法 URL 返回空串、不抛异常，
+ * 原先的兜底 catch 是死代码，只会让异常面看起来比实际更宽。
+ */
+internal fun WebResourceRequest.getExtensionFromUrl(): String =
+    MimeTypeMap.getFileExtensionFromUrl(url.toString())
 
-/** 从 URL 提取文件扩展名（小写）。 */
-internal fun WebResourceRequest.getExtensionFromUrl(): String {
-    return try {
-        MimeTypeMap.getFileExtensionFromUrl(url.toString())
-    } catch (e: Exception) {
-        Log.e(TAG, "getExtensionFromUrl failed: $url", e)
-        ""
+/** 从 URL 推断 MIME 类型；无法识别时统一回落为通配类型（星号斜杠星号）。 */
+internal fun WebResourceRequest.getMimeTypeFromUrl(): String =
+    when (val extension = getExtensionFromUrl()) {
+        "", "null", "*/*" -> "*/*"
+        "json" -> "application/json"
+        else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
     }
-}
-
-/** 从 URL 推断 MIME 类型。 */
-internal fun WebResourceRequest.getMimeTypeFromUrl(): String {
-    return try {
-        when (val extension = getExtensionFromUrl()) {
-            "", "null", "*/*" -> "*/*"
-            "json" -> "application/json"
-            else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
-        }
-    } catch (e: Exception) {
-        Log.e(TAG, "getMimeTypeFromUrl failed: $url", e)
-        "*/*"
-    }
-}

@@ -25,7 +25,7 @@ object AuthenticatorNavContentContributor : NavContentContributor {
         registry.register<AuthenticatorAddNavKey> { AuthenticatorAddScreen() }
         registry.register<AuthenticatorTransferNavKey> { AuthenticatorTransferScreen() }
         registry.register<AuthenticatorExportQrNavKey> { navKey ->
-            // 入参变化时重建页面状态（与 ArticleNavRegistration 同款处理）
+            // 入参变化时重建页面状态（与 ArticleNavContentContributor 同款处理）
             key(navKey.ids.joinToString(), navKey.batch) {
                 AuthenticatorExportQrScreen(ids = navKey.ids, batch = navKey.batch)
             }

@@ -32,13 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.core.ui.components.WhiteTextField
 import com.example.fragmject.feature.auth.components.AccountForm
+import com.example.fragmject.feature.auth.components.AccountFormTexts
 
 @Composable
 fun RegisterScreen(
@@ -70,24 +71,23 @@ fun RegisterScreen(
     var usernameText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     var againPasswordText by rememberSaveable { mutableStateOf("") }
+    val submit: () -> Unit = {
+        viewModel.register(usernameText, passwordText, againPasswordText)
+    }
     Scaffold(
         modifier = Modifier.imePadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             AccountForm(
-                title = "Create",
-                subtitle = "Account",
-                buttonText = "注册",
-                bottomLinkText = "去登录",
-                isLoading = isLoading,
+                texts = AccountFormTexts(
+                    title = "Create",
+                    subtitle = "Account",
+                    buttonText = "注册",
+                    bottomLinkText = "去登录",
+                    isLoading = isLoading,
+                ),
                 onBack = onNavigateUp,
-                onSubmit = {
-                    viewModel.register(
-                        usernameText,
-                        passwordText,
-                        againPasswordText
-                    )
-                },
+                onSubmit = submit,
                 onBottomLinkClick = {
                     if (context is ComponentActivity) {
                         context.onBackPressedDispatcher.onBackPressed()
@@ -95,59 +95,77 @@ fun RegisterScreen(
                 },
                 contentPadding = innerPadding,
             ) {
-                WhiteTextField(
-                    value = usernameText,
-                    onValueChange = { usernameText = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp),
-                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
-                    placeholder = { Text("请输入用户名") },
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                )
-                Spacer(Modifier.height(15.dp))
-                WhiteTextField(
-                    value = passwordText,
-                    onValueChange = { passwordText = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp),
-                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
-                    placeholder = { Text("请输入用户密码") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next
-                    ),
-                )
-                Spacer(Modifier.height(15.dp))
-                WhiteTextField(
-                    value = againPasswordText,
-                    onValueChange = { againPasswordText = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 20.dp),
-                    textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
-                    placeholder = { Text("请再次输入密码") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Go
-                    ),
-                    keyboardActions = KeyboardActions(onGo = {
-                        viewModel.register(
-                            usernameText,
-                            passwordText,
-                            againPasswordText
-                        )
+                RegisterFields(
+                    username = usernameText,
+                    password = passwordText,
+                    againPassword = againPasswordText,
+                    onUsernameChange = { usernameText = it },
+                    onPasswordChange = { passwordText = it },
+                    onAgainPasswordChange = { againPasswordText = it },
+                    onSubmit = {
+                        submit()
                         keyboardController?.hide()
-                    }),
+                    },
                 )
             }
         }
+    )
+}
+
+/** 用户名 / 密码 / 确认密码三项输入。 */
+@Composable
+private fun RegisterFields(
+    username: String,
+    password: String,
+    againPassword: String,
+    onUsernameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onAgainPasswordChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) {
+    WhiteTextField(
+        value = username,
+        onValueChange = onUsernameChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 20.dp),
+        textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
+        placeholder = { Text("请输入用户名") },
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+    )
+    Spacer(Modifier.height(15.dp))
+    WhiteTextField(
+        value = password,
+        onValueChange = onPasswordChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 20.dp),
+        textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
+        placeholder = { Text("请输入用户密码") },
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Next
+        ),
+    )
+    Spacer(Modifier.height(15.dp))
+    WhiteTextField(
+        value = againPassword,
+        onValueChange = onAgainPasswordChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 20.dp),
+        textStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 1.4.em),
+        placeholder = { Text("请再次输入密码") },
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Go
+        ),
+        keyboardActions = KeyboardActions(onGo = { onSubmit() }),
     )
 }
 

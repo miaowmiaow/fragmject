@@ -24,13 +24,13 @@ import androidx.compose.ui.zIndex
 internal fun WeekContent(
     items: MutableList<MutableList<CalendarDate>>,
     selectedWeek: Int,
-    weekModeHeight: Float,
-    monthModeHeight: Float,
-    monthFillModeHeight: Float,
+    heights: WeekContentHeights,
     isMonthFillMode: Boolean,
     offsetProvider: () -> Float,
     itemContent: @Composable LazyGridItemScope.(item: CalendarDate) -> Unit
 ) {
+    // 解构后保持函数体与拆分前逐行一致，避免大范围改名
+    val (weekModeHeight, monthModeHeight, monthFillModeHeight) = heights
     val density = LocalDensity.current
     items.forEachIndexed { index, week ->
         var zIndex = 0f

@@ -1,8 +1,5 @@
 package com.example.fragmject.feature.demo.ui.calendar
 
-import java.text.SimpleDateFormat
-import java.util.Locale
-
 /**
  * 农历算法使用的静态数据表。
  *
@@ -10,8 +7,6 @@ import java.util.Locale
  * 仅本模块内部使用，故声明为 internal。
  */
 internal object LunarTables {
-
-    val CHINESE_DATE_FORMAT = SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA)
 
     val CHINESE_NUMBER = arrayOf(
         "正", "二", "三", "四", "五", "六", "七", "八", "九", "十", "冬", "腊"
@@ -42,6 +37,8 @@ internal object LunarTables {
     )
 
     // 农历部分假日
+    // 除夕不在此表：它没有固定「月日」键（腊月可能是廿九或三十），
+    // 由 LunarUtils 按「腊月最后一天」推导，见 isLunarNewYearEve。
     val LUNAR_FESTIVAL = mapOf(
         "0101" to "春节",
         "0115" to "元宵节",
@@ -53,7 +50,6 @@ internal object LunarTables {
         "1208" to "腊八节",
         "1222" to "北小年",
         "1223" to "南小年",
-        "0100" to "除夕"
     )
 
     // 公历部分节假日

@@ -1,6 +1,7 @@
 package com.example.fragmject.core.data.repository.paging
 
 import androidx.paging.PagingSource
+import com.example.fragmject.core.android.platform.app.AppCoroutineScope
 import com.example.fragmject.core.data.contract.model.DataResponse
 import com.example.fragmject.core.data.contract.model.HttpResponse
 import com.example.fragmject.core.data.contract.remote.ArticleRemoteDataSource
@@ -174,6 +175,22 @@ class NetworkPagingSourcesTest {
         }
     }
 
+    @Test
+    fun `home source serves the prefetched first page and bypasses prefetch for later pages`() = runBlocking {
+        val remote = FakePagingRemote()
+        val prefetcher = HomeFirstPagePrefetcher(remote, AppCoroutineScope())
+        prefetcher.warmUp()
+
+        val first = requirePage("home prefetch", load(HomePagingSource(remote, prefetcher)))
+        assertEquals(listOf(remote.article), first.data)
+        assertEquals("第一页应消费预取，不应额外请求", 1, remote.requestCount)
+
+        val next = requirePage("home page 1", load(HomePagingSource(remote, prefetcher), key = 1))
+        assertEquals(listOf(remote.article), next.data)
+        assertEquals(Request("home", 1), remote.lastRequest)
+        assertEquals("后续分页必须走网络", 2, remote.requestCount)
+    }
+
     private suspend fun load(source: PagingSource<Int, *>, key: Int? = null) =
         source.load(
             PagingSource.LoadParams.Refresh(
@@ -250,9 +267,11 @@ private class FakePagingRemote : ArticleRemoteDataSource, CommonRemoteDataSource
     var missingShareArticles = false
     var requestFailure: Exception? = null
     var lastRequest: Request? = null
+    var requestCount = 0
 
     private fun <T> respond(request: Request, data: T): DataResponse<T> {
         lastRequest = request
+        requestCount++
         requestFailure?.let { throw it }
         return DataResponse(
             data = if (nullData) null else data,

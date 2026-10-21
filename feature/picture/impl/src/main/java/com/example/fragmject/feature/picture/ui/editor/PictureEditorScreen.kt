@@ -140,7 +140,7 @@ fun PictureEditorScreen(
                     onClick = {
                         if (!isSaving) {
                             viewModel.save(
-                                produce = { state.saveBitmap() },
+                                saveAction = { viewModel.saveBitmap { state.saveBitmap() } },
                                 onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
                                 onError = {
                                     Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT)

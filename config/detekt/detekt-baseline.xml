@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:PictureEditorCanvas.kt$!handled &amp;&amp; wasPressed &amp;&amp; allPressed &amp;&amp; changes.size == prevCount</ID>
+    <ID>ComplexCondition:SecurityDetectors.kt$fingerprint.startsWith("generic") || fingerprint.contains("unknown") || fingerprint.contains("emulator") || fingerprint.contains("vbox") || fingerprint.contains("genymotion")</ID>
+    <ID>ComplexCondition:SecurityDetectors.kt$model.contains("google_sdk") || model.contains("emulator") || model.contains("android sdk built for") || model.contains("droid4x")</ID>
+    <ID>ComplexCondition:SecurityDetectors.kt$product.contains("sdk") || product.contains("google_sdk") || product.contains("emulator") || product.contains("simulator") || product.contains("vbox86p")</ID>
+    <ID>ComplexCondition:WebViewClients.kt$PooledWebViewClient$request.hasGesture() &amp;&amp; !request.isRedirect &amp;&amp; URLUtil.isNetworkUrl(requestUrl) &amp;&amp; requestUrl != callbacks.url</ID>
+    <ID>CyclomaticComplexMethod:AppNavGraph.kt$@Composable fun AppNavGraph( navigationDispatcher: NavigationDispatcher, navContributors: Set&lt;NavContentContributor&gt;, modifier: Modifier = Modifier, initialBackStack: List&lt;NavKey&gt; = listOf(MainNavKey), pendingDeepLink: DeepLinkRequest? = null, onDeepLinkConsumed: () -&gt; Unit = {}, /** 栈内仅剩首页时的返回出口（交由 Activity 结束/退到后台）。 */ onExit: () -&gt; Unit = {}, )</ID>
+    <ID>CyclomaticComplexMethod:FileMimeUtils.kt$internal fun parseHeadCodeInternal(headCode: String): String</ID>
+    <ID>CyclomaticComplexMethod:PictureClipView.kt$@Composable fun PictureClipCanvas( state: PictureClipState, modifier: Modifier = Modifier, )</ID>
+    <ID>CyclomaticComplexMethod:PictureEditorCanvas.kt$@Composable fun PictureEditorCanvas( state: PictureEditorState, modifier: Modifier = Modifier, )</ID>
+    <ID>CyclomaticComplexMethod:PictureEditorView.kt$PictureEditorState$fun handleTouchEvent(event: MotionEvent): Boolean</ID>
+    <ID>CyclomaticComplexMethod:SecurityDetectors.kt$internal fun AppSecurityGuard.detectReason(includePortScan: Boolean, includeCrc: Boolean): String?</ID>
+    <ID>CyclomaticComplexMethod:SecurityDetectors.kt$internal fun AppSecurityGuard.hasEmulatorSignals(): Boolean</ID>
+    <ID>CyclomaticComplexMethod:StickerLayer.kt$StickerLayer$override fun onTouchEvent(event: MotionEvent): Boolean</ID>
+    <ID>CyclomaticComplexMethod:SwipeBox.kt$@Composable fun SwipeBox( actionWidth: Dp, modifier: Modifier = Modifier, control: SwipeBoxControl = rememberSwipeBoxControl(), startAction: List&lt;@Composable BoxScope.() -&gt; Unit&gt; = listOf(), startFillAction: (@Composable BoxScope.() -&gt; Unit)? = null, endAction: List&lt;@Composable BoxScope.() -&gt; Unit&gt; = listOf(), endFillAction: (@Composable BoxScope.() -&gt; Unit)? = null, content: @Composable BoxScope.() -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:UserRepositoryImpl.kt$UserRepositoryImpl$private suspend fun authenticate(request: suspend () -&gt; DataResponse&lt;User&gt;): AuthResult</ID>
+    <ID>CyclomaticComplexMethod:WebViewContainer.kt$@Composable fun WebViewContainer( modifier: Modifier = Modifier, url: String, control: WebViewControl, onTitle: (String?) -&gt; Unit = {}, onCustomView: (View?) -&gt; Unit = {}, shouldOverrideUrl: (String) -&gt; Unit = {}, scriptsProvider: () -&gt; List&lt;String&gt; = { emptyList() }, onLongPressImage: ((String?) -&gt; Unit)? = null, )</ID>
+    <ID>CyclomaticComplexMethod:WebViewCookieStore.kt$WebViewCookieStore$override suspend fun clearSession(): Unit</ID>
+    <ID>LongMethod:AppNavGraph.kt$@Composable fun AppNavGraph( navigationDispatcher: NavigationDispatcher, navContributors: Set&lt;NavContentContributor&gt;, modifier: Modifier = Modifier, initialBackStack: List&lt;NavKey&gt; = listOf(MainNavKey), pendingDeepLink: DeepLinkRequest? = null, onDeepLinkConsumed: () -&gt; Unit = {}, /** 栈内仅剩首页时的返回出口（交由 Activity 结束/退到后台）。 */ onExit: () -&gt; Unit = {}, )</ID>
+    <ID>LongMethod:FeedCard.kt$@Composable fun FeedCard( data: FeedCardUIState, modifier: Modifier = Modifier, onItemClick: (String) -&gt; Unit = {}, onUserClick: (String) -&gt; Unit = {}, onFooterClick: (String) -&gt; Unit = {}, onToggleClick: (String, Boolean) -&gt; Unit = { _, _ -&gt; }, onCoverClick: (String) -&gt; Unit = {}, toggleCheckedIconRes: Int = R.mipmap.ic_toggle_checked, toggleUncheckedIconRes: Int = R.mipmap.ic_toggle_unchecked, )</ID>
+    <ID>LongMethod:NightSwitchSky.kt$@Composable fun Cloud( progress: Float, canvasWidth: Dp, canvasHeight: Dp, canvasRadius: Dp, infiniteTransition: InfiniteTransition, )</ID>
+    <ID>LongMethod:NightSwitchSky.kt$@Composable fun Sky( progress: Float, canvasWidth: Dp, canvasHeight: Dp, canvasRadius: Dp, infiniteTransition: InfiniteTransition, )</ID>
+    <ID>LongMethod:NightSwitchSunMoon.kt$@Composable fun Moon( progress: Float = 1f, reversal: Boolean = false, canvasHeight: Dp, canvasRadius: Dp, starRadius: Dp, moveDistance: Dp, infiniteTransition: InfiniteTransition, )</ID>
+    <ID>LongMethod:NightSwitchSunMoon.kt$@Composable fun Sun( progress: Float = 0f, reversal: Boolean = false, canvasHeight: Dp, canvasRadius: Dp, starRadius: Dp, moveDistance: Dp, infiniteTransition: InfiniteTransition, )</ID>
+    <ID>LongMethod:PictureEditorCanvas.kt$@Composable fun PictureEditorCanvas( state: PictureEditorState, modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:StickerLayer.kt$StickerLayer$override fun onTouchEvent(event: MotionEvent): Boolean</ID>
+    <ID>LongMethod:SwipeBox.kt$@Composable fun SwipeBox( actionWidth: Dp, modifier: Modifier = Modifier, control: SwipeBoxControl = rememberSwipeBoxControl(), startAction: List&lt;@Composable BoxScope.() -&gt; Unit&gt; = listOf(), startFillAction: (@Composable BoxScope.() -&gt; Unit)? = null, endAction: List&lt;@Composable BoxScope.() -&gt; Unit&gt; = listOf(), endFillAction: (@Composable BoxScope.() -&gt; Unit)? = null, content: @Composable BoxScope.() -&gt; Unit )</ID>
+    <ID>LongMethod:WebViewContainer.kt$@Composable fun WebViewContainer( modifier: Modifier = Modifier, url: String, control: WebViewControl, onTitle: (String?) -&gt; Unit = {}, onCustomView: (View?) -&gt; Unit = {}, shouldOverrideUrl: (String) -&gt; Unit = {}, scriptsProvider: () -&gt; List&lt;String&gt; = { emptyList() }, onLongPressImage: ((String?) -&gt; Unit)? = null, )</ID>
+    <ID>MatchingDeclarationName:ArticleFeedMapper.kt$ArticleFeedLabels</ID>
+    <ID>MatchingDeclarationName:CollapsingHeader.kt$CollapsingHeaderState</ID>
+    <ID>MatchingDeclarationName:ContentStateBox.kt$ContentPhase</ID>
+    <ID>MatchingDeclarationName:NavigationCompositionLocals.kt$Navigators</ID>
+    <ID>MatchingDeclarationName:Project.kt$ProjectTree</ID>
+    <ID>MaxLineLength:AppDatabase.kt$AppDatabase.Companion.&lt;no name provided&gt;$"CREATE UNIQUE INDEX IF NOT EXISTS `index_project_tree_cache_key_projectId` ON `project_tree` (`cache_key`, `projectId`)"</ID>
+    <ID>MaxLineLength:NightSwitchSky.kt$(canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f + (buttonHeight.toPx() - (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f) * nightStar.y.floatValue</ID>
+    <ID>MaxLineLength:NightSwitchSky.kt$(canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f + (canvasWidth.toPx() / 2f - (canvasHeight.toPx() - starRadius.toPx() * 2f) / 2f) * nightStar.x.floatValue</ID>
+    <ID>MaxLineLength:NightSwitchSky.kt$size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + cloudShadowOffsetY.toPx() * shadowOffsetY[i] + size.height / 2f * 0.05f * animationOffsetY</ID>
+    <ID>MaxLineLength:NightSwitchSky.kt$size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + size.height / 2f * 0.04f * animationOffsetY</ID>
+    <ID>MaxLineLength:NightSwitchSky.kt$size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() - baseOffsetX.toPx() * shadowOffsetX[i] + size.width * 0.05f * animationOffsetX</ID>
+    <ID>NestedBlockDepth:BitmapDecoder.kt$fun Context.getBitmapFromUri(uri: Uri, targetWidth: Int = 0): Bitmap?</ID>
+    <ID>NestedBlockDepth:CookieJar.kt$CookieJar$override fun loadForRequest(url: HttpUrl): List&lt;Cookie&gt;</ID>
+    <ID>NestedBlockDepth:FileSizeUtils.kt$internal fun deleteInternal(file: File?)</ID>
+    <ID>NestedBlockDepth:FileSizeUtils.kt$internal fun getSizeInternal(file: File): Long</ID>
+    <ID>NestedBlockDepth:SecurityDetectors.kt$internal fun AppSecurityGuard.extractSelfSo(context: Context): File?</ID>
+    <ID>SpreadOperator:AppDatabase.kt$AppDatabase.Companion$(*MIGRATIONS)</ID>
+    <ID>SpreadOperator:AppNavGraph.kt$( *initialBackStack .filterNot { it is RequiresAuth || it is DetailPaneNavKey } .ifEmpty { listOf(MainNavKey) } .toTypedArray() )</ID>
+    <ID>SpreadOperator:KVDatabase.kt$KVDatabase.Companion$(*MIGRATIONS)</ID>
+    <ID>SwallowedException:AvatarUtils.kt$AvatarUtils$e: Exception</ID>
+    <ID>SwallowedException:NetworkResultMapper.kt$e: Exception</ID>
+    <ID>ThrowingExceptionFromFinally:CookieJar.kt$CookieJar$throw e</ID>
+    <ID>ThrowingExceptionFromFinally:UserRepositoryImpl.kt$UserRepositoryImpl$throw cleanupFailure</ID>
+    <ID>ThrowsCount:WebViewCookieStore.kt$WebViewCookieStore$private fun writeCookie(url: String, value: String)</ID>
+    <ID>TooGenericExceptionCaught:AvatarUtils.kt$AvatarUtils$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:BasePagingSource.kt$BasePagingSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:BitmapDecoder.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CookieJar.kt$CookieJar$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FileIOUtils.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FileMimeUtils.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:FileSizeUtils.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:KVDatabase.kt$KVDatabase$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MediaSaveGuard.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MediaSaveGuard.kt$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MediaStoreUtils.kt$MediaStoreUtils$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:NetworkResultMapper.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OkHttpFileDownloader.kt$OkHttpFileDownloader$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ScheduleLocalDataSourceImpl.kt$ScheduleLocalDataSourceImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SecurityDetectors.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SystemStorageImpl.kt$SystemStorageImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:UserRepositoryImpl.kt$UserRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebResourceCacheManager.kt$WebResourceCacheManager$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebResourceRequestExt.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebViewAssetInterceptor.kt$WebViewAssetInterceptor$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebViewClients.kt$PooledWebViewClient$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebViewCookieStore.kt$WebViewCookieStore$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebViewPermissions.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebViewPoolManager.kt$WebViewPoolManager$e: Exception</ID>
+    <ID>TopLevelPropertyNaming:NightSwitchStyle.kt$/** * NightSwitchButton 的配色与几何常量。 * * 与绘制代码分开：调色/数值改动频率高，独立成文件避免在 800 行的绘制逻辑里翻找。 */ internal const val perDistance = 0.2f</ID>
+    <ID>UnusedPrivateProperty:GraffitiLayer.kt$GraffitiLayer.Companion$private const val DEFAULT_ERASER_SIZE = 50.0f</ID>
+  </CurrentIssues>
+</SmellBaseline>

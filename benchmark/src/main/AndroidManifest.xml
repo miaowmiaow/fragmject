@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    测试模块清单：没有 Activity / 权限 / 组件。
+    包名由 build.gradle.kts 的 namespace 提供，AGP 会补齐 instrumentation 节点。
+-->
+<manifest />

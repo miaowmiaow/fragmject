@@ -9,7 +9,9 @@ import com.example.fragmject.core.domain.otp.OtpType
 import com.example.fragmject.core.domain.otp.Totp
 import com.example.fragmject.core.domain.repository.OtpAccountRepository
 import com.example.fragmject.feature.authenticator.model.OtpCodeItem
-import com.example.fragmject.feature.authenticator.utils.SntpTimeSource
+import com.example.fragmject.feature.authenticator.utils.Clock
+import com.example.fragmject.feature.authenticator.utils.DRIFT_THRESHOLD_MS
+import com.example.fragmject.feature.authenticator.utils.TimeOffsetProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -60,11 +62,13 @@ val AuthenticatorUiState.timeDriftMillis: Long
 @HiltViewModel
 class AuthenticatorViewModel @Inject constructor(
     private val repository: OtpAccountRepository,
+    private val clock: Clock,
+    private val timeOffsetProvider: TimeOffsetProvider,
 ) : ViewModel() {
 
     /** 持续推进的当前时间，驱动验证码刷新与倒计时。 */
     private val nowMillis: StateFlow<Long> = tickerFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), System.currentTimeMillis())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), clock.nowMillis())
 
     /** 时间漂移（毫秒）；只查一次，UDP 不通或漂移不大时为 null。 */
     private val timeDrift = MutableStateFlow<Long?>(null)
@@ -93,7 +97,7 @@ class AuthenticatorViewModel @Inject constructor(
         }
         AuthenticatorUiState.Success(
             items = accounts.map { it.toItem(adjusted) },
-            timeDriftMillis = drift?.take { kotlin.math.abs(it) > SntpTimeSource.DRIFT_THRESHOLD_MS },
+            timeDriftMillis = drift?.take { kotlin.math.abs(it) > DRIFT_THRESHOLD_MS },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AuthenticatorUiState.Loading)
 
@@ -113,7 +117,7 @@ class AuthenticatorViewModel @Inject constructor(
 
     private fun checkTimeDrift() {
         viewModelScope.launch {
-            timeDrift.value = SntpTimeSource.queryOffsetMillis()
+            timeDrift.value = timeOffsetProvider.offsetMillis()
         }
     }
 
@@ -159,7 +163,7 @@ class AuthenticatorViewModel @Inject constructor(
 
     private fun tickerFlow(): Flow<Long> = flow {
         while (true) {
-            emit(System.currentTimeMillis())
+            emit(clock.nowMillis())
             delay(TICK_MILLIS.milliseconds)
         }
     }

@@ -81,11 +81,15 @@ private fun rememberLoopPagerState(pageCount: Int): LoopPagerState {
  * 旧实现使用 [java.util.Timer] 固定周期 + 每次 `coroutineScope.launch { animateScrollToPage(...) }`，
  * 在低端机或动画时长 > 1 秒时上一帧动画未结束下一次就进来了，两次 animate 同时争抢
  * 同一 [PagerState]，表现为"热词偶尔跳变 / 撕裂"。
+ *
+ * [enabled] 为 false 时整个驱动循环被取消（而不是跳过单轮），调用方据此在「用户正向
+ * 列表滚动」等场景暂停轮播：避免自动动画与手势争抢同一帧预算，也让帧耗时测量不被
+ * 无关动画污染。重新启用会重置 [LOOP_AUTO_SCROLL_INTERVAL_MS] 的计时，不会立刻跳页。
  */
 @Composable
-private fun AutoLoopScrollEffect(pagerState: PagerState, pageCount: Int) {
-    LaunchedEffect(pagerState, pageCount) {
-        if (pageCount <= 1) return@LaunchedEffect
+private fun AutoLoopScrollEffect(pagerState: PagerState, pageCount: Int, enabled: Boolean) {
+    LaunchedEffect(pagerState, pageCount, enabled) {
+        if (!enabled || pageCount <= 1) return@LaunchedEffect
         while (isActive) {
             delay(LOOP_AUTO_SCROLL_INTERVAL_MS.milliseconds)
             // 用户正在拖动 / 上一次动画未结束时，本轮跳过，避免抢占。
@@ -105,6 +109,7 @@ fun <T> LoopHorizontalPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     indicator: Boolean = false,
+    autoScrollEnabled: Boolean = true,
     content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
     if (data.isNullOrEmpty()) {
@@ -112,7 +117,11 @@ fun <T> LoopHorizontalPager(
     }
     val pageCount = data.size
     val (pagerState, startIndex) = rememberLoopPagerState(pageCount)
-    AutoLoopScrollEffect(pagerState = pagerState, pageCount = pageCount)
+    AutoLoopScrollEffect(
+        pagerState = pagerState,
+        pageCount = pageCount,
+        enabled = autoScrollEnabled,
+    )
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -164,6 +173,7 @@ fun <T> LoopVerticalPager(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     indicator: Boolean = false,
     userScrollEnabled: Boolean = true,
+    autoScrollEnabled: Boolean = true,
     content: @Composable (page: Int, pageOffset: Float, item: T) -> Unit,
 ) {
     if (data.isNullOrEmpty()) {
@@ -171,7 +181,11 @@ fun <T> LoopVerticalPager(
     }
     val pageCount = data.size
     val (pagerState, startIndex) = rememberLoopPagerState(pageCount)
-    AutoLoopScrollEffect(pagerState = pagerState, pageCount = pageCount)
+    AutoLoopScrollEffect(
+        pagerState = pagerState,
+        pageCount = pageCount,
+        enabled = autoScrollEnabled,
+    )
     Box(
         modifier = Modifier
             .fillMaxSize()

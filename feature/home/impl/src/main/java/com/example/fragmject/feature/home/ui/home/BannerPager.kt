@@ -22,6 +22,7 @@ fun <T> BannerPager(
     data: List<T>?,
     pathMapping: (T) -> String,
     modifier: Modifier = Modifier,
+    autoScrollEnabled: Boolean = true,
     onClick: (index: Int, item: T) -> Unit
 ) {
     if (data.isNullOrEmpty()) {
@@ -35,7 +36,8 @@ fun <T> BannerPager(
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = 24.dp),
         data = data,
-        indicator = true
+        indicator = true,
+        autoScrollEnabled = autoScrollEnabled,
     ) { page, pageOffset, item ->
         AsyncImage(
             model = imageUrls[page],

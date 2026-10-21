@@ -68,6 +68,7 @@ private class FakeHomeRepository(
     private val topArticles: DomainResult<List<Article>> = DomainResult.Success(emptyList()),
 ) : HomeRepository {
     override fun getHomePagingData(): Flow<PagingData<Article>> = flowOf(PagingData.empty())
+    override fun warmUpFirstPage() = Unit
     override suspend fun fetchHomeBanners(): DomainResult<List<Banner>> = banners
     override suspend fun fetchTopArticles(): DomainResult<List<Article>> = topArticles
 }

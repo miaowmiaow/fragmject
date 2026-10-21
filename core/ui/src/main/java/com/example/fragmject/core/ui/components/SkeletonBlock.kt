@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
@@ -74,7 +73,7 @@ internal fun SkeletonBlock(
         modifier = modifier
             .clip(shape)
             .background(baseColor)
-            .then(shimmerModifier(shimmerProgress, shimmerPhase))
+            .shimmerModifier(shimmerProgress, shimmerPhase)
     )
 }
 
@@ -85,7 +84,7 @@ internal fun SkeletonBlock(
  * 既不重复也不聚集，视觉上呈自然的错落扫光，且对同一索引恒定（不会随重组抖动）。
  */
 internal fun shimmerPhaseOf(index: Int): Float =
-    ((index * 0.6180339887f) % 1f) * 2f
+    ((index * 0.618034f) % 1f) * 2f
 
 /** shimmer 高光色：react-loading-skeleton 官方默认配色（统一收在 [AppColors]）。 */
 internal val ShimmerHighlightDark = AppColors.skeletonHighlightDark
@@ -104,13 +103,13 @@ internal val ShimmerHighlightLight = AppColors.skeletonHighlightLight
  * 折叠发生在光带完全移出块外（两侧均为 base 色）的位置，因此回绕不可见。
  */
 @Composable
-internal fun shimmerModifier(progress: () -> Float, phase: Float = 0f): Modifier {
+internal fun Modifier.shimmerModifier(progress: () -> Float, phase: Float = 0f): Modifier {
     val baseColor = if (isDarkTheme()) SkeletonBaseDark else SkeletonBaseLight
     val highlightColor = if (isDarkTheme()) ShimmerHighlightDark else ShimmerHighlightLight
     val colors = remember(baseColor, highlightColor) {
         listOf(baseColor, highlightColor, baseColor)
     }
-    return Modifier.drawWithContent {
+    return this.drawWithContent {
         drawContent()
         val shifted = (progress() + 1f + phase) % 2f - 1f
         val shift = shifted * size.width

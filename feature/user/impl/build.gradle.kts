@@ -4,6 +4,14 @@ plugins {
     id("fragmject.android.hilt")
 }
 
+android {
+    testOptions {
+        // SettingViewModel#logout 的异常分支会调用 android.util.Log.e；JVM 单测默认
+        // 对该类 android.jar 方法抛 "Method not mocked"，Log 无副作用，返回默认值即可。
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
 dependencies {
     // 组合根 :app 显式声明 :feature:user:api（见 dependencies-policy.md §6.5）。
     // 此处用 implementation 而非 api()：否则 api 层会经 impl 传递进入 app，
@@ -26,4 +34,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
 
     testImplementation(libs.junit)
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.kotlinx.coroutines.test)
 }

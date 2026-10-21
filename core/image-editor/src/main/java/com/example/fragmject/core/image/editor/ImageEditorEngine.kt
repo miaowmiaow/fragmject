@@ -20,26 +20,39 @@ data class SaveResult(val path: String, val uri: String)
 /**
  * 图片编辑引擎：对外提供「位图加载 + 编辑保存」闭环能力。
  *
- * feature 只与本引擎交互，返回 [SaveResult]（含相册 uri）；不再直接接触
- * 平台解码（android-platform）或数据实现（data-repository）的任何类型。
- *
- * 有意不做接口分离：引擎暴露 android.graphics.Bitmap，接口无法进入 domain；
- * 且仅 feature:picture 消费、暂无 fake 注入需求，故以具体类提供。
+ * 以接口暴露是为了让 feature 侧可注入替身（T-14）：`Bitmap` 无法在 JVM 单测中构造，
+ * 具体实现 [DefaultImageEditorEngine] 依赖 `Context` 与平台解码，测试只能通过 fake 绕开。
  */
-@Singleton
-class ImageEditorEngine @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val saveCoordinator: ImageSaveCoordinator,
-) {
+interface ImageEditorEngine {
 
     /** 保存进度 0f~1f，供 UI 显示「保存中」。 */
-    val saveProgress: Flow<Float> = saveCoordinator.saveProgress
+    val saveProgress: Flow<Float>
 
     /**
      * 按来源加载位图（path 与 uri 二选一，优先 path），在 IO 线程解码。
      * 解码失败或尺寸 ≤ 1 的位图一律视为无效，返回 null。
      */
-    suspend fun loadBitmap(path: String?, uri: String?, targetWidth: Int = 0): Bitmap? =
+    suspend fun loadBitmap(path: String?, uri: String?, targetWidth: Int = 0): Bitmap?
+
+    /** 保存位图；成功返回 [SaveResult]，失败返回 null。 */
+    suspend fun save(bitmap: Bitmap): SaveResult?
+}
+
+/**
+ * 默认实现：解码走 android-platform，落盘走 [ImageSaveCoordinator]。
+ *
+ * feature 只与 [ImageEditorEngine] 接口交互，不直接接触平台解码
+ * （android-platform）或数据实现（data-repository）的任何类型。
+ */
+@Singleton
+class DefaultImageEditorEngine @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val saveCoordinator: ImageSaveCoordinator,
+) : ImageEditorEngine {
+
+    override val saveProgress: Flow<Float> = saveCoordinator.saveProgress
+
+    override suspend fun loadBitmap(path: String?, uri: String?, targetWidth: Int): Bitmap? =
         withContext(Dispatchers.IO) {
             val bitmap = when {
                 path != null -> context.getBitmapFromPath(path, targetWidth)
@@ -49,6 +62,5 @@ class ImageEditorEngine @Inject constructor(
             bitmap?.takeIf { it.width > 1 && it.height > 1 }
         }
 
-    /** 保存位图；成功返回 [SaveResult]，失败返回 null。 */
-    suspend fun save(bitmap: Bitmap): SaveResult? = saveCoordinator.save(bitmap)
+    override suspend fun save(bitmap: Bitmap): SaveResult? = saveCoordinator.save(bitmap)
 }

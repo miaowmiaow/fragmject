@@ -223,6 +223,18 @@
 -if interface * { @retrofit2.http.* <methods>; }
 -keep,allowobfuscation interface * extends <1>
 
+# 远端数据源契约（data-contract）不能参与接口合并。
+# 这些接口是 retrofit.create() 的返回类型：契约被合并进 internal Service 接口后，
+# 调用点的 checkcast 会被 R8 判定为必然失败并优化成 `throw new ClassCastException()`，
+# 表现为 release 包启动即崩（NetworkModule.provideUserRemoteDataSource）。
+-keep interface com.example.fragmject.core.data.contract.remote.** { *; }
+
+# Retrofit 服务接口（core:network 的 internal Service）必须整体保留。
+# 接口方法经动态 Proxy 调用，R8 看不到调用关系；上面的 allowshrinking 规则会把这些
+# 带 @GET/@POST 的覆写方法裁掉，运行时 Retrofit 只能解析到 data-contract 父接口里
+# 无注解的方法，抛 "HTTP method annotation is required ... for method XxxRemoteDataSource.yyy"。
+-keep,allowobfuscation interface com.example.fragmject.core.network.service.** { *; }
+
 # With R8 full mode generic signatures are stripped for classes that are not
 # kept. Suspend functions are wrapped in continuations where the type argument
 # is used.

@@ -33,6 +33,8 @@ dependencyResolutionManagement {
 rootProject.name = "fragmject"
 
 include(":app")
+// Macrobenchmark / Baseline Profile 采集模块：只跑仪器测试，不参与生产打包
+include(":benchmark")
 include(":core:android-platform")
 include(":core:data-repository")
 include(":core:data-contract")
@@ -45,6 +47,7 @@ include(":core:navigation-runtime")
 include(":core:navigation-contract")
 include(":core:network")
 include(":core:qrscanner")
+include(":core:testing")
 include(":core:ui")
 include(":core:webview")
 include(":feature:article:api")

@@ -26,6 +26,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Robolectric 的 android-all 运行时（约 150MB）默认下载到 ~/.m2，不在 Gradle 缓存内；
+      # 不缓存会导致每次 CI 都重新拉取。
+      - name: Cache Robolectric runtime
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-4.16
+
       - name: Architecture guards and unit tests
         run: >
           ./gradlew
@@ -33,6 +41,30 @@ jobs:
           verifyComposeStabilityConfig
           testDebugUnitTest
           --stacktrace
+
+      # AGP 9 已移除内置覆盖率任务，覆盖率由 build-logic 里的 JaCoCo 配置提供，
+      # 报告落在各模块 build/reports/jacoco/unitTestCoverageReport/。
+      - name: Unit test coverage report
+        run: ./gradlew unitTestCoverageReport --stacktrace
+
+      # 门槛按"逻辑层"口径：Compose UI 与生成类已在 classDirectories 中排除。
+      # feature 逻辑层 50%、core:data-repository 55%、core:domain 80%。
+      - name: Unit test coverage gates
+        run: ./gradlew verifyUnitTestCoverage --stacktrace
+
+      # lint 策略集中在 build-logic 约定插件（Lint.configureFragmjectLint），
+      # 各模块共用自己的 lint-baseline.xml；此处负责真正执行，避免"配置了但没人跑"。
+      - name: Android lint
+        run: ./gradlew lintDebug --stacktrace
+
+      # detekt 由根项目统一扫描各模块 main 源码；存量问题已固化到
+      # config/detekt/detekt-baseline.xml（相对路径签名，跨机器有效），仅新增问题阻断。
+      - name: detekt static analysis
+        run: ./gradlew detekt --stacktrace
+
+      # 单测不覆盖资源合并、R8、NDK 编译与签名，打包链路必须单独验证。
+      - name: Assemble debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload test reports
         if: failure()
@@ -42,4 +74,31 @@ jobs:
           path: |
             **/build/reports/tests/
             build/reports/problems/
+          if-no-files-found: ignore
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: '**/build/reports/jacoco/**'
+          if-no-files-found: ignore
+
+      - name: Upload lint reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: |
+            **/build/reports/lint-results-*.html
+            **/build/reports/lint-results-*.xml
+            **/build/reports/lint-results-*.txt
+          if-no-files-found: ignore
+
+      - name: Upload detekt reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-reports
+          path: build/reports/detekt/
           if-no-files-found: ignore

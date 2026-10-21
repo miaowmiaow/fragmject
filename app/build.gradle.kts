@@ -5,6 +5,9 @@ plugins {
     id("fragmject.android.application")
     id("fragmject.android.compose")
     id("fragmject.android.hilt")
+    // consumer 侧：提供 :app:generateBaselineProfile，并把生成的 profile 落到
+    // app/src/<variant>/generated/baselineProfiles，由 AGP 在打包时编译进 APK
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 val configProperties = loadConfigProperties()
@@ -157,6 +160,14 @@ dependencies {
     implementation(libs.okhttp)
 
     implementation(libs.hilt.lifecycle.viewmodel.compose)
+
+    // API 26–27 没有安装期 profile 编译，需 ProfileInstaller 在本机异步 dexopt；
+    // API 28+ 由系统在安装时直接消费 APK 内的 baseline profile，此依赖不参与该路径。
+    implementation(libs.androidx.profileinstaller)
+
+    // Baseline Profile 采集入口：只在 generateBaselineProfile 时驱动 :benchmark 跑仪器测试，
+    // 不进入任何运行时 / 打包产物（见 dependencies-policy 的测试模块说明）
+    baselineProfile(project(":benchmark"))
 
     testImplementation(libs.junit)
     testImplementation(libs.konsist)

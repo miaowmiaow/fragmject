@@ -9,6 +9,9 @@ android {
         // JVM 单测默认对该类 android.jar 方法抛 "Method not mocked"。Log 仅打日志、无副作用，
         // 让 mock 方法返回默认值即可（与 feature/home/impl 的处理保持一致）。
         unitTests.isReturnDefaultValues = true
+        // Robolectric 需要合并后的资源与 manifest 才能启动 Application；
+        // 只有相册/媒体两个平台耦合实现使用（T-07）。
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -22,4 +25,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // 平台耦合实现（AlbumRepositoryImpl / MediaRepositoryImpl）需要真实 ContentResolver 语义
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
 }

@@ -168,6 +168,7 @@
 | 新增引擎模块 `core:qrscanner` | `settings.gradle.kts` + 守卫矩阵 | §6.2 门槛 + §6.10 引擎类别：CameraX / ML Kit 为第三方 SDK 需集中持有；扫码属平台相关 UI 能力，且需被 demo 与 Authenticator 复用（feature 之间不得互相依赖），必须有共享落点 |
 | `core:ui` 依赖 `core:model` / `core:domain` | 守卫矩阵注释 + Konsist 规则 23 | `ArticleFeedMapper`（Article → FeedCardUIState）与 `CollectInteraction`（CollectState）需要这两个零 Android 依赖的契约层；此前仅依赖 designsystem 导致 4 个 feature 各复制一份映射。**限定条件**：只允许这三条边，业务文案与图标必须参数化可覆盖（`ArticleFeedLabels` / `FeedCard` 的 `toggleCheckedIconRes`），且不得下探 data/network/database（规则 23） |
 | `:app` 的 `FragmjectApplication` import `core.network.di.ImageOkHttpClient` | 规则 21 白名单 `APP_DATA_IMPORT_ALLOWLIST` | Coil 需要「图片专用」OkHttpClient 的 qualifier。彻底消除需把 ImageLoader 装配下沉到同时可见 coil 与 network 的 core 模块，属独立重构 |
+| `:benchmark` 不参与 Gradle 依赖方向校验 | 守卫 `TEST_ONLY_MODULES` | `com.android.test` 模块经 `baselineProfile` 配置被 `:app` 驱动，又经 `targetProjectPath` 反向持有 `:app` 的 testedApk，这条边既非运行期依赖，也会被环检测误判成 `:app ↔ :benchmark`。测试模块不产出生产代码，方向校验对其无意义 |
 
 新增例外时同步改 Gradle 矩阵与 Konsist 规则，并在本表登记；**任何例外都应能回答「为什么不用契约」。**
 

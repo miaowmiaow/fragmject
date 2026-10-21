@@ -16,6 +16,14 @@ interface HomeRepository {
     /** 首页文章分页数据流（page 从 0 开始，纯网络）。 */
     fun getHomePagingData(): Flow<PagingData<Article>>
 
+    /**
+     * 预取首页第一页，供进程启动早期与 Activity 启动并行发出。
+     *
+     * 幂等：实现应保证重复调用不会重复发起请求；不支持预取的实现可直接空实现。
+     * 预取失败不影响后续 [getHomePagingData] 的首次加载语义。
+     */
+    fun warmUpFirstPage()
+
     /** 拉取首页 banner（轮播图）。 */
     suspend fun fetchHomeBanners(): DomainResult<List<Banner>>
 

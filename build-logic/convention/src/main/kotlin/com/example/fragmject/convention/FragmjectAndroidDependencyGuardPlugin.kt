@@ -50,6 +50,9 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
     private fun buildEdges(root: Project): Map<String, Set<String>> {
         val edges = mutableMapOf<String, Set<String>>()
         for (sub in root.subprojects) {
+            // 测试专用模块不在生产依赖图里：它只经 baselineProfile 配置被 generateBaselineProfile 驱动，
+            // 且 com.android.test 会以 testedApk 形式反向指向 :app（会被环检测误判）
+            if (sub.path in TEST_ONLY_MODULES) continue
             val projectDeps = mutableSetOf<String>()
             for (config in sub.configurations) {
                 val name = config.name
@@ -59,7 +62,7 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
                     continue
                 }
                 for (dependency in config.allDependencies) {
-                    if (dependency is ProjectDependency) {
+                    if (dependency is ProjectDependency && dependency.path !in TEST_ONLY_MODULES) {
                         projectDeps.add(dependency.path)
                     }
                 }
@@ -109,6 +112,7 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
     private fun collectImplicitExternalDeps(root: Project): List<String> {
         val violations = mutableListOf<String>()
         for (sub in root.subprojects) {
+            if (sub.path in TEST_ONLY_MODULES) continue
             val mainSrc = File(sub.projectDir, "src/main")
             if (!mainSrc.exists()) continue
 
@@ -280,6 +284,16 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
         return cycles.distinct()
     }
 }
+
+/**
+ * 只用于仪器测试、不进入生产依赖图的模块。
+ *
+ * `:benchmark` 是 `com.android.test` 模块：app 通过 `baselineProfile` 配置驱动它跑
+ * `generateBaselineProfile`，它又通过 `targetProjectPath` 反向持有 :app 的 testedApk。
+ * 这条边既不是运行期依赖，也会被环检测误判成 `:app -> :benchmark -> :app`，
+ * 因此整条边（两个方向）都不参与方向校验。
+ */
+private val TEST_ONLY_MODULES: Set<String> = setOf(":benchmark")
 
 /**
  * app 组合根允许依赖的模块白名单（正向声明）。

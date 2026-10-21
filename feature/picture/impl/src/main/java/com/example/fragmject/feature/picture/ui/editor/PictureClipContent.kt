@@ -111,7 +111,7 @@ fun PictureClipContent(
                                 Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
                             } else {
                                 viewModel.save(
-                                    produce = { bitmap },
+                                    saveAction = { viewModel.saveBitmap { bitmap } },
                                     onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
                                     onError = {
                                         Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()

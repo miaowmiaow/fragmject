@@ -7,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 
 /**
  * 将 [WindowSizeClass] 注入 Compose 树，供所有子组件按需读取。
@@ -41,14 +41,21 @@ val WindowSizeClass.isExpanded get() = widthSizeClass == WindowWidthSizeClass.Ex
  * }
  * ```
  */
+// rememberXxx 是 Compose 的工厂函数命名约定，不适用「Composable 返回 Unit 需大写开头」规则。
+@Suppress("ComposableNaming")
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun rememberWindowSizeClass(content: @Composable () -> Unit) {
-    val config = LocalConfiguration.current
-    val windowSizeClass = remember(config.screenWidthDp, config.screenHeightDp) {
-        WindowSizeClass.calculateFromSize(
-            DpSize(config.screenWidthDp.dp, config.screenHeightDp.dp)
-        )
+    // 用 LocalWindowInfo.containerSize 而非 LocalConfiguration.screenWidthDp：
+    // 分屏/自由窗口下 Configuration 可能滞后，containerSize 反映本窗口当前可用尺寸。
+    val containerSize = LocalWindowInfo.current.containerSize
+    val density = LocalDensity.current
+    val windowSizeClass = remember(containerSize, density) {
+        with(density) {
+            WindowSizeClass.calculateFromSize(
+                DpSize(containerSize.width.toDp(), containerSize.height.toDp())
+            )
+        }
     }
     CompositionLocalProvider(
         LocalWindowSizeClass provides windowSizeClass

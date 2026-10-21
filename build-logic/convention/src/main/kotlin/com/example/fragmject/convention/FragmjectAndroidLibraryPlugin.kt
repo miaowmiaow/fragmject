@@ -10,7 +10,6 @@ class FragmjectAndroidLibraryPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("com.android.library")
         val config = FragmjectConfig.load(this)
-        val lintBaseline = file("lint-baseline.xml")
 
         configure<LibraryExtension> {
             namespace = defaultNamespace()
@@ -20,7 +19,9 @@ class FragmjectAndroidLibraryPlugin : Plugin<Project> {
                 sourceCompatibility = JavaVersion.VERSION_21
                 targetCompatibility = JavaVersion.VERSION_21
             }
-            lint.configureFragmjectLint(lintBaseline)
+            lint.configureFragmjectLint()
         }
+
+        configureUnitTestCoverage()
     }
 }

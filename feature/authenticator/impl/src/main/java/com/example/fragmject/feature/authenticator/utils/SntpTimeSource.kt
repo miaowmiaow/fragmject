@@ -26,9 +26,6 @@ object SntpTimeSource {
     /** NTP 纪元（1900）与 Unix 纪元（1970）之间的秒数差。 */
     private const val NTP_TO_UNIX_OFFSET_SECONDS = 2_208_988_800L
 
-    /** 视为「明显漂移」的阈值。 */
-    const val DRIFT_THRESHOLD_MS = 30_000L
-
     /**
      * 查询 NTP 服务器，返回「设备时间 − 标准时间」的偏移毫秒数
      * （正数 = 设备慢了；负数 = 设备快了）。失败返回 null。

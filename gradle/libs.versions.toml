@@ -1,16 +1,36 @@
+# ============================================================================
+# 版本策略（升级前先读这里）
+#
+# 1. 本工程刻意跟随前沿版本，但**联动升级**必须同一次提交完成：
+#    AGP / Kotlin / KSP / Compose Compiler 之间存在编译期强绑定，
+#    单独抬其中一个会得到难以定位的 KSP 或 Compose 编译器错误。
+# 2. 每次升级按三步验证，缺一步不算完成：
+#    ./gradlew testDebugUnitTest        # 单测 + 27 条架构规则
+#    ./gradlew assembleDebug            # 资源合并 / NDK / 签名链路
+#    真机冒烟：登录、列表分页、WebView、扫码、图片编辑、安全检测
+# 3. 不要为了"最新"而升级；有明确收益（修复、性能、API 需求）才动版本。
+# 4. 升级 PR 描述里附上三步验证结论，便于回溯是哪次升级引入了问题。
+# ============================================================================
+
 [versions]
 androidGradlePlugin = "9.4.1"
 activity = "1.13.0"
+androidxBaselineProfile = "1.5.0"
+androidxBenchmark = "1.5.0"
 androidxCamera = "1.6.2"
 androidxComposeBom = "2026.09.00"
 androidxCoreKtx = "1.19.1"
 androidxCoreSplashscreen = "1.2.0"
 androidxLifecycle = "2.11.0"
 androidxNavigation3 = "1.2.0"
+androidxProfileInstaller = "1.4.1"
+androidxTestCore = "1.7.0"
 androidxTestExtJunit = "1.3.0"
 androidxTestRunner = "1.7.0"
+androidxUiautomator = "2.4.0"
 barcodeScanning = "17.3.0"
 coil = "2.7.0"
+detekt = "1.23.8"
 gson = "2.14.0"
 hilt = "2.60.1"
 androidxHilt = "1.4.0"
@@ -22,6 +42,7 @@ ksp = "2.3.6"
 okhttp = "5.5.0"
 paging = "3.5.3"
 retrofit = "3.0.0"
+robolectric = "4.16"
 room3 = "3.0.3"
 
 [libraries]
@@ -34,6 +55,7 @@ androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycl
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "androidxCamera" }
 androidx-camera-mlkit = { group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "androidxCamera" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
+androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "androidxBenchmark" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-material-icon-core = { group = "androidx.compose.material", name = "material-icons-core" }
@@ -53,18 +75,22 @@ androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "androidxProfileInstaller" }
 androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3" }
 androidx-room3-gradle-plugin = { group = "androidx.room3", name = "room3-gradle-plugin", version.ref = "room3" }
 androidx-room3-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room3" }
 androidx-room3-testing = { group = "androidx.room3", name = "room3-testing", version.ref = "room3" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
+androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "androidxUiautomator" }
 barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "barcodeScanning" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" }
 coil-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 coil-video = { group = "io.coil-kt", name = "coil-video", version.ref = "coil" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
@@ -88,6 +114,9 @@ retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
+androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxBaselineProfile" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }

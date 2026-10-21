@@ -154,7 +154,10 @@ private fun ContentPane(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        SearchBar(data = hotKeyResult)
+        SearchBar(
+            data = hotKeyResult,
+            autoScrollEnabled = !homeListState.isScrollInProgress,
+        )
         MainContent(
             navIndex = navIndex,
             navItems = navItems,
@@ -235,7 +238,12 @@ private fun CompactMainScreen(
     homeListState: LazyListState,
 ) {
     Scaffold(
-        topBar = { SearchBar(data = hotKeyResult) },
+        topBar = {
+            SearchBar(
+                data = hotKeyResult,
+                autoScrollEnabled = !homeListState.isScrollInProgress,
+            )
+        },
         bottomBar = {
             NavigationBar(modifier = Modifier.shadow(5.dp)) {
                 navItems.forEachIndexed { index, item ->
@@ -383,6 +391,7 @@ private fun NavIcon(item: BottomNavItem) {
 @Composable
 fun SearchBar(
     data: List<HotKey>,
+    autoScrollEnabled: Boolean = true,
 ) {
     val searchNavigator = LocalNavigators.current.search
     val collectionNavigator = LocalNavigators.current.collection
@@ -411,7 +420,11 @@ fun SearchBar(
                 modifier = Modifier.padding(10.dp, 5.dp, 0.dp, 5.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
             )
-            LoopVerticalPager(data = data, userScrollEnabled = false) { _, _, item ->
+            LoopVerticalPager(
+                data = data,
+                userScrollEnabled = false,
+                autoScrollEnabled = autoScrollEnabled,
+            ) { _, _, item ->
                 Box(
                     modifier = Modifier
                         .clickable { searchNavigator.openSearch(item.name) }

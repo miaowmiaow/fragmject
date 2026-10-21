@@ -419,6 +419,38 @@ Calendar(
 )
 ```
 
+## 本地复现 CI
+
+CI 执行的全部步骤都能在本地跑，排查失败时按顺序执行：
+
+```bash
+# 需要 JDK 21+；macOS 上可直接用 Android Studio 自带的 JBR
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+
+# 1. 依赖方向守卫 + Compose 稳定性检查
+./gradlew verifyModuleDependencies verifyComposeStabilityConfig
+
+# 2. 单元测试（含 app 模块的 27 条架构规则）
+./gradlew testDebugUnitTest
+
+# 3. 覆盖率（AGP 9 已移除内置能力，由 build-logic 的 JaCoCo 配置提供）
+./gradlew unitTestCoverageReport
+# 报告：<module>/build/reports/jacoco/unitTestCoverageReport/html/index.html
+
+# 4. Lint（无 baseline：新增 error 会阻断，warning 只报告）
+./gradlew lintDebug
+# 报告：<module>/build/reports/lint-results-debug.html
+
+# 5. 打包链路（资源合并 / R8 / NDK / 签名）
+./gradlew assembleDebug
+```
+
+排障提示：
+
+- `Unable to locate a Java Runtime` → `JAVA_HOME` 未设置，见上面第一行。
+- Lint 报 `Aborting build since new baseline file was created` → 该模块被配置了 baseline 但文件不存在。本工程已统一不使用 baseline，出现该提示说明有新模块误配，检查 `build-logic` 的 lint 约定。
+- 覆盖率报告为空或 0% → 检查 AGP 升级后 Kotlin 编译产物路径是否变化（见 `ProjectExtensions.configureUnitTestCoverage` 里的注释）。
+
 ## 主要开源库
 - [coil-kt/coil](https://github.com/coil-kt/coil)
 - [google/gson](https://github.com/google/gson)

@@ -1,0 +1,40 @@
+# detekt 规则配置。
+#
+# 策略与 lint 一致：不做"每模块一份基线"，优先用低噪音规则集 + 少量有意关闭，
+# 让 `./gradlew detekt` 在存量代码上可执行、新增问题可暴露。
+# 默认规则集通过 buildUponDefaultConfig = true 继承，这里只覆盖差异项。
+build:
+  maxIssues: 0
+
+complexity:
+  LongMethod:
+    threshold: 80
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    thresholdInFiles: 50
+    thresholdInClasses: 50
+    thresholdInInterfaces: 50
+    thresholdInObjects: 50
+    thresholdInEnums: 50
+
+naming:
+  # Compose 组合函数按约定首字母大写，与 Kotlin 函数命名规则冲突，属规则误报
+  FunctionNaming:
+    active: false
+
+style:
+  # Compose 里数值密集（尺寸/权重/动画时长），强制常量只会降低可读性
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    maxLineLength: 140
+    excludeCommentStatements: true
+  # 守卫式早返回是本工程通用写法，强制"单出口"反而降低可读性
+  ReturnCount:
+    active: false
+  # 行尾换行属格式化工具职责，不适合作为静态分析阻断项
+  NewLineAtEndOfFile:
+    active: false

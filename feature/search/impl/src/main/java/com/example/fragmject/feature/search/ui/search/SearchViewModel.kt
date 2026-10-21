@@ -77,7 +77,9 @@ class SearchViewModel @Inject constructor(
         _isHotKeyLoading.value = true
         _hotKeyError.value = ""
         when (val r = searchRepository.refreshHotKey()) {
-            is DomainResult.Success -> Unit
+            // 成功也必须显式收尾：生产实现靠 Room 写入后再次推送 hotKeys 来关闭 loading，
+            // 但"刷新成功且数据未变"时不会重发，只靠 observe 收尾会让热搜区永久转圈。
+            is DomainResult.Success -> _isHotKeyLoading.value = false
             is DomainResult.Failure -> {
                 _isHotKeyLoading.value = false
                 _hotKeyError.value = r.message

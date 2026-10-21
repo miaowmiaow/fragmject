@@ -679,7 +679,7 @@ class ArchitectureTest {
 
     /** 通过项目根目录读取源码文本，兼容 Gradle 以模块目录为工作目录的情况。 */
     private fun readSource(file: KoFileDeclaration): String {
-        val root = generateSequence(java.io.File(System.getProperty("user.dir"))) { it.parentFile }
+        val root = generateSequence(java.io.File(System.getProperty("user.dir") ?: ".")) { it.parentFile }
             .first { java.io.File(it, "settings.gradle.kts").isFile }
         return java.io.File(root, file.projectPath.removePrefix("/")).readText()
     }
@@ -742,6 +742,37 @@ class ArchitectureTest {
         return hasImport { imp ->
             imp.name.startsWith(prefix) && imp.name.split(".").size > 6
         }
+    }
+
+    /**
+     * 规则 28：单个生产文件不得超过 [MAX_FILE_LINES] 行。
+     *
+     * 登记这条规则的由来：T-05 一次性拆了 5 个 500~1053 行的文件，若没有守卫，
+     * 它们会在几次迭代后重新膨胀。阈值取 500，与当次拆分目标一致；
+     * 拆分时不留 baseline/白名单，超了就是超了。
+     *
+     * 为什么用 `text.lines().size` 而不是声明数量：超长文件的典型成因是注释、KDoc 与
+     * 常量表堆积，声明数并不随之增长。
+     */
+    @Test
+    fun `production files stay under five hundred lines`() {
+        val oversized = productionFiles
+            .map { it to it.text.lines().size }
+            .filter { (_, lines) -> lines > MAX_FILE_LINES }
+            .map { (file, lines) -> "${file.projectPath.orEmpty()} ($lines 行)" }
+
+        assertTrue(
+            buildString {
+                appendLine("以下生产文件超过 $MAX_FILE_LINES 行，请按职责拆分：")
+                oversized.forEach { appendLine("  - $it") }
+            },
+            oversized.isEmpty(),
+        )
+    }
+
+    private companion object {
+        /** 单文件行数上限，见规则 28。 */
+        const val MAX_FILE_LINES = 500
     }
 
 }

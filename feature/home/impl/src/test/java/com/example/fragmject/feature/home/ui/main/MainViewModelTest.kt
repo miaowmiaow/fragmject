@@ -9,7 +9,7 @@ import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.result.DomainResult
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.HotKey
-import com.example.fragmject.feature.home.MainDispatcherRule
+import com.example.fragmject.core.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest

@@ -3,6 +3,7 @@ package com.example.fragmject.core.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingData
 import com.example.fragmject.core.data.repository.paging.DEFAULT_PAGING_CONFIG
+import com.example.fragmject.core.data.repository.paging.HomeFirstPagePrefetcher
 import com.example.fragmject.core.data.repository.paging.HomePagingSource
 import com.example.fragmject.core.data.repository.util.fetchAsDomainResult
 import com.example.fragmject.core.domain.repository.HomeRepository
@@ -24,12 +25,17 @@ import javax.inject.Singleton
 @Singleton
 class HomeRepositoryImpl @Inject constructor(
     private val remote: ArticleRemoteDataSource,
+    private val firstPagePrefetcher: HomeFirstPagePrefetcher,
 ) : HomeRepository {
 
     override fun getHomePagingData(): Flow<PagingData<Article>> = Pager(
         config = DEFAULT_PAGING_CONFIG,
-        pagingSourceFactory = { HomePagingSource(remote) },
+        pagingSourceFactory = { HomePagingSource(remote, firstPagePrefetcher) },
     ).flow
+
+    override fun warmUpFirstPage() {
+        firstPagePrefetcher.warmUp()
+    }
 
     override suspend fun fetchHomeBanners(): DomainResult<List<Banner>> =
         fetchAsDomainResult(call = { remote.fetchBannerList() }) { it.data.orEmpty() }

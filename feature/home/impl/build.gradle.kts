@@ -5,6 +5,11 @@ plugins {
 }
 
 android {
+    defaultConfig {
+        // Compose UI 测试（androidTest）依赖 AndroidJUnitRunner：默认 InstrumentationTestRunner
+        // 不认识 @Test，会报 "No tests found"。
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
     testOptions {
         // ViewModel 内调用 android.util.Log 时，JVM 单测默认会抛 "Method not mocked"；
         // 让 android.jar 的 mock 方法返回默认值（Log 为无副作用日志，可安全忽略）。
@@ -38,4 +43,11 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(project(":core:testing"))
     testImplementation(libs.kotlinx.coroutines.test)
+
+    // Compose UI 测试装在设备上用，不在 JVM 单测里跑
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

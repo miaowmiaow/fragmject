@@ -387,6 +387,10 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     // 这些 SDK 由本引擎独占持有，feature 不得各自引入一份
     ":core:qrscanner" to emptySet(),
     ":core:webview" to setOf(":core:android-platform", ":core:domain"),
+    // 测试工具模块：认证用例的共享 fake 需要领域端口类型（AuthGateway / UserRepository / CookieStore），
+    // 故单向前置依赖 domain。本模块只被各模块 testImplementation 消费，不进生产包；
+    // 反向依赖（domain/test 之外的模块依赖它）由「仅测试配置」的约定约束。
+    ":core:testing" to setOf(":core:domain"),
 )
 
 /**

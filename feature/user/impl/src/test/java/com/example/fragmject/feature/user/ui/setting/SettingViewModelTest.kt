@@ -1,11 +1,13 @@
 package com.example.fragmject.feature.user.ui.setting
 
 import com.example.fragmject.core.domain.repository.ThemeRepository
-import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.domain.result.SimpleResult
 import com.example.fragmject.core.domain.system.SystemStorage
-import com.example.fragmject.core.model.User
+import com.example.fragmject.core.domain.usecase.AuthSessionCoordinator
+import com.example.fragmject.core.domain.usecase.LogoutUseCase
+import com.example.fragmject.core.testing.FakeAuthGateway
+import com.example.fragmject.core.testing.FakeCookieStore
+import com.example.fragmject.core.testing.FakeUserRepository
 import com.example.fragmject.core.testing.MainDispatcherRule
 import java.io.File
 import java.io.IOException
@@ -21,9 +23,10 @@ import org.junit.Test
 /**
  * [SettingViewModel] 测试：登出与清缓存的事件出口。
  *
- * 登出有三条分支必须区分：成功 / 仓储返回 false / 仓储抛异常。
- * 后两条都要落到 [SettingEvent.LogoutFailed]，且**必须退出 Loading 态**，
- * 否则设置页会永久转圈（这是纯 UI 断言覆盖不到的 ViewModel 责任）。
+ * 登出编排上移到 domain 后，ViewModel 只需区分两种结果：
+ * - 用例返回 true（含「远端失败但本地已清理」）→ [SettingEvent.LogoutSucceeded]；
+ * - 用例抛异常（远端与本地清理都失败）→ [SettingEvent.LogoutFailed]。
+ * 两条都**必须退出 Loading 态**，否则设置页会永久转圈。
  */
 class SettingViewModelTest {
 
@@ -32,7 +35,7 @@ class SettingViewModelTest {
 
     @Test
     fun `logout success - emits LogoutSucceeded and leaves loading`() = runTest {
-        val viewModel = createViewModel(FakeUserRepository(logoutResult = { true }))
+        val viewModel = createViewModel()
 
         viewModel.logout()
 
@@ -41,20 +44,21 @@ class SettingViewModelTest {
     }
 
     @Test
-    fun `logout rejected by repository - emits LogoutFailed`() = runTest {
-        val viewModel = createViewModel(FakeUserRepository(logoutResult = { false }))
+    fun `logout remote failure with local cleanup - still reports success`() = runTest {
+        val gateway = FakeAuthGateway().apply { logoutFailure = IOException("offline") }
+        val viewModel = createViewModel(gateway = gateway)
 
         viewModel.logout()
 
-        assertEquals(SettingEvent.LogoutFailed, viewModel.events.first())
+        assertEquals(SettingEvent.LogoutSucceeded, viewModel.events.first())
         assertFalse(viewModel.uiState.value.isLoading)
     }
 
     @Test
     fun `logout exception - emits LogoutFailed and restores state`() = runTest {
-        val viewModel = createViewModel(
-            FakeUserRepository(logoutResult = { throw IOException("local cleanup failed") }),
-        )
+        val gateway = FakeAuthGateway().apply { logoutFailure = IOException("offline") }
+        val cookies = FakeCookieStore().apply { clearFailure = IOException("local cleanup failed") }
+        val viewModel = createViewModel(gateway = gateway, cookies = cookies)
 
         viewModel.logout()
 
@@ -65,7 +69,7 @@ class SettingViewModelTest {
     @Test
     fun `clear cache failure - emits CacheClearFailed with storage message`() = runTest {
         val storage = FakeSystemStorage(clearResult = SimpleResult(success = false, message = "缓存目录不可写"))
-        val viewModel = createViewModel(FakeUserRepository(), storage)
+        val viewModel = createViewModel(storage = storage)
 
         viewModel.clearCache()
 
@@ -73,26 +77,15 @@ class SettingViewModelTest {
     }
 
     private fun createViewModel(
-        userRepo: UserRepository,
+        gateway: FakeAuthGateway = FakeAuthGateway(),
+        cookies: FakeCookieStore = FakeCookieStore(),
         storage: SystemStorage = FakeSystemStorage(),
-    ): SettingViewModel = SettingViewModel(userRepo, FakeThemeRepository(), storage)
-}
-
-private class FakeUserRepository(
-    private val logoutResult: suspend () -> Boolean = { true },
-) : UserRepository {
-
-    override suspend fun login(username: String, password: String): AuthResult =
-        AuthResult.Error("unused in this test")
-
-    override suspend fun register(username: String, password: String, repassword: String): AuthResult =
-        AuthResult.Error("unused in this test")
-
-    override suspend fun logout(): Boolean = logoutResult()
-
-    override suspend fun saveUser(user: User) = Unit
-
-    override fun observeCurrentUser(): Flow<User?> = MutableStateFlow(null)
+    ): SettingViewModel = SettingViewModel(
+        userRepo = FakeUserRepository(),
+        logoutUseCase = LogoutUseCase(gateway, AuthSessionCoordinator(cookies, FakeUserRepository())),
+        themeRepo = FakeThemeRepository(),
+        systemStorage = storage,
+    )
 }
 
 private class FakeThemeRepository : ThemeRepository {

@@ -26,7 +26,7 @@
         └──────────────────────────────────────────┘
 ```
 
-### core 模块按职责分组（共 14 个）
+### core 模块按职责分组（共 15 个）
 
 | 类别 | 模块 | 职责 | 可依赖的 core |
 |---|---|---|---|
@@ -42,8 +42,25 @@
 | | `core:navigation-runtime` | 注册机制、DetailPane 渲染、ViewModelStore | — |
 | **设计系统** | `core:designsystem` | 颜色 / 间距 / 主题（**不含组件**） | — |
 | **通用 UI** | `core:ui` | 通用 Compose 组件（含业务 UI 映射，登记例外） | designsystem / model / domain |
+| **测试工具** | `core:testing` | 共享测试 fake 与 JUnit 规则（仅 `testImplementation` 消费，不进生产包） | domain（fake 需要端口类型） |
 
 > `core:ui` 依赖 `model` / `domain` 是**登记过的例外**：`ArticleFeedMapper`、`CollectInteraction` 需要这两个零 Android 依赖的契约层（此前仅依赖 designsystem 时，4 个 feature 各复制了一份映射）。限定：只此三条边，且业务文案/图标必须参数化可覆盖，不得下探 data/network/database（规则 23）。
+>
+> 公开签名白名单：`core:ui` 对外暴露的类型只允许是 `Article`/`Banner` 等 model、`*State` 与 `DomainResult` 一类结果类型；**不得**把 `repository` / `usecase` 类型带进组件签名（新增导出类型需在此登记）。
+
+### 认证链路的分层落点（2026-10 调整）
+
+原先 `UserRepositoryImpl` 一处 165 行，同时承担 transport、Cookie 快照/回滚、落库与登出策略，
+业务编排埋在数据层、只能带 Room + CookieStore 一起测。现拆成三段，每段只做一件事：
+
+| 角色 | 落点 | 职责 |
+|---|---|---|
+| `AuthGateway` | `core:domain` 端口 / `core:data-repository` 的 `AuthGatewayImpl` | 发请求 + 把 `DataResponse` 翻译成 `AuthExchange`；不写库、不清 Cookie、不持锁 |
+| `AuthSessionCoordinator` | `core:domain/usecase` | Cookie 快照/回滚、落库时机、登出异常优先级（会话不变量都在这里） |
+| `UserRepository` | `core:domain` 端口 / `UserRepositoryImpl` | 仅 observe / save / clear 三个存储原子操作 |
+
+判断新代码归属：出现「失败要回滚」「写完要清理」「先后顺序有讲究」→ 属于 `usecase`；
+只是读写一个数据源 → 留在 Repository。
 
 ## 二、依赖方向（谁能依赖谁）
 
@@ -152,7 +169,7 @@ feature/{name}/impl/.../
 - 规则 12：feature 不得依赖数据平台与数据实现
 - 规则 13：`android.webkit.*` 仅限 `core:webview`
 - 规则 14：feature 内必须用 `hiltViewModel()`
-- 规则 15：`CookieStore` 实现仅限 `core:webview`
+- 规则 15：`CookieStore` 实现仅限 `core:webview`（`core:testing` 的 `FakeCookieStore` 只被 `testImplementation` 引用，作为测试替身豁免）
 - 规则 16：`feature:*:api` 仅依赖导航契约
 - 规则 17：`core:database` 只允许实现白名单内的 domain 端口
 - 规则 18/19：业务成功码只能经 `ApiCode` 判断；`data-repository` 不得用 `runCatching`

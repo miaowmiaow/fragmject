@@ -1,39 +1,26 @@
 package com.example.fragmject.feature.home.ui.home
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.view.View
 import android.view.ViewTreeObserver
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.ui.components.ContentPhase
-import com.example.fragmject.core.ui.components.ContentStateBox
-import com.example.fragmject.core.ui.components.FeedCard
-import com.example.fragmject.core.ui.components.PagingSwipeRefreshBox
 import com.example.fragmject.core.ui.components.contentPhase
 import com.example.fragmject.core.ui.components.rememberCollectInteraction
-import com.example.fragmject.core.ui.mapper.rememberArticleFeedData
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -60,64 +47,25 @@ fun HomeScreen(
     // 首屏「可用」时刻：骨架屏（Loading）不算，空态/错误态/内容态都视为首屏已绘制完成。
     // 上报后 Macrobenchmark 才有 timeToFullDisplay，否则首页优化的收益无法量化对比。
     ReportFullyDrawnWhen(phase != ContentPhase.Loading)
-    ContentStateBox(
+    HomeFeedContent(
+        pagingItems = pagingItems,
         phase = phase,
-        modifier = Modifier.fillMaxSize(),
-        onRetry = { pagingItems.retry() },
-    ) {
-        PagingSwipeRefreshBox(
-            pagingItems = pagingItems,
-            modifier = Modifier.fillMaxSize(),
+        spec = HomeFeedSpec(
+            banners = banners,
+            topArticles = topArticles,
+            hasHeaderError = headerError != null,
             listState = listState,
-            onRefresh = viewModel::loadHeader,
-            contentPadding = PaddingValues(top = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            key = { it.id },
-            headerContent = {
-                if (banners.isNotEmpty()) {
-                    item(key = "banner") {
-                        BannerPager(
-                            data = banners,
-                            pathMapping = { it.imagePath },
-                            // 用户正在滑动列表时暂停自动轮播：两条独立动画同时抢帧预算会
-                            // 放大掉帧，也让 scrollHome 的帧指标混入与滚动手势无关的帧。
-                            autoScrollEnabled = !listState.isScrollInProgress,
-                            onClick = { _, banner -> onArticleClick(banner.url) }
-                        )
-                    }
-                } else if (headerError != null) {
-                    // 头部失败且列表可见时给出提示：整页失败/空态已由 ContentStateBox
-                    // 覆盖，这里只补「列表正常、头部静默失败」这一情形
-                    item(key = "header_error") {
-                        TextButton(onClick = viewModel::loadHeader) {
-                            Text("头部内容加载失败，点击重试")
-                        }
-                    }
-                }
-                items(topArticles, key = { "top_${it.id}" }) { article ->
-                    FeedCard(
-                        data = rememberArticleFeedData(article, collectInteraction.overrides),
-                        modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                        onItemClick = onArticleClick,
-                        onUserClick = onAuthorClick,
-                        onFooterClick = onChapterClick,
-                        onToggleClick = collectInteraction.onToggleClick,
-                        onCoverClick = onCoverClick,
-                    )
-                }
-            },
-        ) { item ->
-            FeedCard(
-                data = rememberArticleFeedData(item, collectInteraction.overrides),
-                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                onItemClick = onArticleClick,
-                onUserClick = onAuthorClick,
-                onFooterClick = onChapterClick,
-                onToggleClick = collectInteraction.onToggleClick,
-                onCoverClick = onCoverClick,
-            )
-        }
-    }
+            collectInteraction = collectInteraction,
+        ),
+        actions = HomeFeedActions(
+            onArticleClick = onArticleClick,
+            onAuthorClick = onAuthorClick,
+            onChapterClick = onChapterClick,
+            onCoverClick = onCoverClick,
+            onRetry = { pagingItems.retry() },
+            onRefreshHeader = viewModel::loadHeader,
+        ),
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF0F0F0)

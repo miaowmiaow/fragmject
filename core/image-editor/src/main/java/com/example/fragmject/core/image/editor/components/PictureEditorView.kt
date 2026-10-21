@@ -371,10 +371,14 @@ class PictureEditorState {
         // 串行加载：新尺寸到来时取消上一次解码，避免旧位图覆盖新结果
         loadJob?.cancel()
         loadJob = loadScope.launch {
+            // 先取快照再解码：两者都是可变属性，直接判空后用 `!!` 会在协程恢复时
+            // 重新读属性，既拿不到智能转换也不保证是同一个值。
+            val path = bitmapPath
+            val uri = bitmapUri
             val bitmap = withContext(Dispatchers.IO) {
                 when {
-                    bitmapPath != null -> context.getBitmapFromPath(bitmapPath!!, w)
-                    bitmapUri != null -> context.getBitmapFromUri(bitmapUri!!, w)
+                    path != null -> context.getBitmapFromPath(path, w)
+                    uri != null -> context.getBitmapFromUri(uri, w)
                     else -> null
                 }
             } ?: return@launch

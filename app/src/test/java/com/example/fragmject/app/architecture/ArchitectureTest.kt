@@ -334,12 +334,15 @@ class ArchitectureTest {
      * 并造成 WebView 与 OkHttp 两个会话真相源。
      *
      * 只扫描 main 源集：测试里的 Fake 实现（CookieJarTest）不受约束。
+     * core:testing 虽属 main 源集，但只被各模块 testImplementation 引用、不进生产包，
+     * 其共享的 FakeCookieStore 是测试替身而非生产实现，故同样排除。
      */
     @Test
     fun `cookie store implementation only in core webview`() {
         productionFiles
             .filter { it.projectPath.contains("/core/") }
             .filterNot { it.projectPath.contains("/core/webview/") }
+            .filterNot { it.projectPath.contains("/core/testing/") }
             .assertFalse(
                 additionalMessage = "CookieStore 实现只允许出现在 core:webview（唯一实现 WebViewCookieStore），其他 core 模块只允许注入使用",
             ) { file ->

@@ -17,16 +17,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 class AuthStateImplTest {
 
     private class FakeUserRepository(private val users: Flow<User?>) : UserRepository {
-        override suspend fun login(username: String, password: String): AuthResult = error("unused")
-        override suspend fun register(username: String, password: String, repassword: String): AuthResult =
-            error("unused")
-
-        override suspend fun logout(): Boolean = error("unused")
         override suspend fun saveUser(user: User) = error("unused")
+        override suspend fun clearUser() = error("unused")
         override fun observeCurrentUser(): Flow<User?> = users
     }
 
@@ -40,7 +37,7 @@ class AuthStateImplTest {
     }
 
     private suspend fun AuthStateImpl.resolved(): AuthStatus =
-        withTimeout(5_000) { status.first { it != AuthStatus.UNKNOWN } }
+        withTimeout(5_000.milliseconds) { status.first { it != AuthStatus.UNKNOWN } }
 
     @Test
     fun `status stays unknown until the local user is read`() {

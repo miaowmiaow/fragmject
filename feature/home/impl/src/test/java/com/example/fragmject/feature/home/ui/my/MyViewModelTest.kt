@@ -1,11 +1,9 @@
 package com.example.fragmject.feature.home.ui.my
 
-import com.example.fragmject.core.domain.repository.UserRepository
-import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.model.User
+import com.example.fragmject.core.testing.FakeUserRepository
 import com.example.fragmject.core.testing.MainDispatcherRule
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
@@ -52,14 +50,4 @@ class MyViewModelTest {
         assertEquals(0L, viewModel.uiState.value.user.id)
         assertEquals("", viewModel.uiState.value.user.username)
     }
-}
-
-private class FakeUserRepository(private val users: Flow<User?>) : UserRepository {
-    override suspend fun login(username: String, password: String): AuthResult = AuthResult.Error("未实现")
-    override suspend fun register(username: String, password: String, repassword: String): AuthResult =
-        AuthResult.Error("未实现")
-
-    override suspend fun logout(): Boolean = false
-    override suspend fun saveUser(user: User) = Unit
-    override fun observeCurrentUser(): Flow<User?> = users
 }

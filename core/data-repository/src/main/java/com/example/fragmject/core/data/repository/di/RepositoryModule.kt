@@ -1,5 +1,6 @@
 package com.example.fragmject.core.data.repository.di
 
+import com.example.fragmject.core.data.repository.AuthGatewayImpl
 import com.example.fragmject.core.data.repository.AuthStateImpl
 import com.example.fragmject.core.data.repository.AlbumRepositoryImpl
 import com.example.fragmject.core.data.repository.system.SystemStorageImpl
@@ -19,6 +20,7 @@ import com.example.fragmject.core.data.repository.UserCenterRepositoryImpl
 import com.example.fragmject.core.data.repository.UserRepositoryImpl
 import com.example.fragmject.core.domain.AuthState
 import com.example.fragmject.core.domain.CollectState
+import com.example.fragmject.core.domain.auth.AuthGateway
 import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.domain.system.SystemStorage
 import com.example.fragmject.core.domain.repository.AlbumRepository
@@ -53,6 +55,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthGateway(impl: AuthGatewayImpl): AuthGateway
 
     @Binds
     @Singleton

@@ -1,0 +1,66 @@
+name: Instrumented Tests
+
+# 为什么单独一个 workflow：
+# 1. instrumentation 测试要跑模拟器，单轮 15~25 分钟，放进 PR 流水线会拖慢每次提交；
+# 2. 模拟器上的稳定性受宿主机与镜像影响，先以「每周 + 手动」跑，观察一段时间稳定后再
+#    决定是否提到 pull_request 上。
+on:
+  workflow_dispatch:
+  schedule:
+    # 每周一 02:00（UTC+8）跑一次：DB 迁移与 Keystore 这类测试长期不跑会静默腐烂
+    - cron: "0 18 * * 0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instrumented-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # GitHub 的 Linux runner 默认拿不到 /dev/kvm 权限，不放开会退化成纯软件模拟，
+      # 一轮测试能跑上 40 分钟。
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # 覆盖全部带 androidTest 的模块：
+      # - core:database        Room 迁移（old→new schema 的可读性）
+      # - core:android-platform Keystore 加解密
+      # - feature:home:impl    首页 Compose UI（空态/点击/滚到底翻页）
+      - name: Run instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: >-
+            -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+            -camera-back none -camera-front none
+          script: ./gradlew connectedDebugAndroidTest --stacktrace
+
+      - name: Upload instrumented reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumented-reports
+          path: |
+            **/build/reports/androidTests/**
+            **/build/outputs/androidTest-results/**

@@ -14,22 +14,24 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # 固定镜像标签：ubuntu-latest 自 2026-10 起迁往 Ubuntu 26。CI 是唯一验证入口，
+    # 让它能被镜像升级悄悄改红/改绿，等于放弃「本地能过 = CI 能过」的可复现性。
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       # Robolectric 的 android-all 运行时（约 150MB）默认下载到 ~/.m2，不在 Gradle 缓存内；
       # 不缓存会导致每次 CI 都重新拉取。
       - name: Cache Robolectric runtime
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository/org/robolectric
           key: robolectric-${{ runner.os }}-4.16
@@ -48,7 +50,8 @@ jobs:
         run: ./gradlew unitTestCoverageReport --stacktrace
 
       # 门槛按"逻辑层"口径：Compose UI 与生成类已在 classDirectories 中排除。
-      # feature 逻辑层 50%、core:data-repository 55%、core:domain 80%。
+      # feature 逻辑层 50%、core:data-repository 65%、core:domain 82%、core:network 28%
+      # （2026-10-27 按实测水平重校，含 core:network 首次纳入；定标规则见 build.gradle.kts）。
       - name: Unit test coverage gates
         run: ./gradlew verifyUnitTestCoverage --stacktrace
 
@@ -67,7 +70,7 @@ jobs:
 
       - name: Upload test reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-reports
           path: |
@@ -77,7 +80,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-reports
           path: '**/build/reports/jacoco/**'
@@ -85,7 +88,7 @@ jobs:
 
       - name: Upload lint reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lint-reports
           path: |
@@ -96,7 +99,7 @@ jobs:
 
       - name: Upload detekt reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: detekt-reports
           path: build/reports/detekt/

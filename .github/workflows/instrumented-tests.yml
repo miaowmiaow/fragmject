@@ -59,15 +59,14 @@ jobs:
           emulator-options: >-
             -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
             -camera-back none -camera-front none
-          script: |
-            ./gradlew \
-              :core:database:connectedDebugAndroidTest \
-              :core:android-platform:connectedDebugAndroidTest \
-              :feature:home:impl:connectedDebugAndroidTest \
-              --stacktrace --continue
-            status=$?
-            adb logcat -d -v threadtime > logcat.txt 2>/dev/null || true
-            exit $status
+          # 坑：android-emulator-runner 会把整块 script 压成一行再交给 sh，
+          # 因此这里必须写成「单行 + 分号」，不能用反斜杠续行，也不能依赖多行独立执行。
+          # 反斜杠续行会被当成独立参数传给 Gradle，报
+          # "Task '\' not found in root project"（已踩过：run 40465548591，模拟器启动成功后卡在参数解析，
+          # 连带 logcat.txt 也没生成）。
+          # 用 if/else 而不是 `cmd; rc=$?`：若 shell 带 set -e，失败后会在取 $? 之前就退出。
+          script: >-
+            if ./gradlew :core:database:connectedDebugAndroidTest :core:android-platform:connectedDebugAndroidTest :feature:home:impl:connectedDebugAndroidTest --stacktrace --continue; then rc=0; else rc=1; fi; adb logcat -d -v threadtime > logcat.txt 2>/dev/null || true; exit $rc
 
       - name: Upload instrumented reports
         if: always()

@@ -13,9 +13,16 @@ on:
 permissions:
   contents: read
 
+# 队列策略：
+# - 不用 ${github.ref} 区分：schedule 与 workflow_dispatch 都落在 master，过去用 ref 分组
+#   会让手动触发把正在跑的定时任务直接取消（2026-10-25 那轮就是这样在启动 78 秒后被 cancel，
+#   日志里只剩 "sh exit code 1"，看不出任何测试信息）。
+# - cancel-in-progress: false：新触发排队而不是取消在跑的，宁可多等也不丢结果。
+# - 定时任务可能排队长达数小时甚至被取消，判断结果请以 run 的 conclusion 为准；
+#   需要立刻要结果时用 workflow_dispatch 手动触发。
 concurrency:
-  group: instrumented-${{ github.ref }}
-  cancel-in-progress: true
+  group: instrumented-tests
+  cancel-in-progress: false
 
 jobs:
   emulator:

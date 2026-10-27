@@ -36,6 +36,18 @@ jobs:
           path: ~/.m2/repository/org/robolectric
           key: robolectric-${{ runner.os }}-4.16
 
+      # 凭据入库兜底：仓库曾把 GitHub PAT 写进 remote URL，一旦同样的手法写进代码/脚本/文档
+      # 就会跟着 fork 与 PR 一起扩散。这里只扫工作区（git 历史由 gitleaks 一类工具负责），
+      # 零依赖、秒级返回，放在最前面失败最快。
+      # 白名单说明：keystore.properties / keystore.key 是测试专用签名材料，有意入库，不匹配本规则。
+      - name: Scan for credentials
+        run: |
+          if grep -rInE "gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----" \
+              --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build --exclude-dir=.idea . ; then
+            echo "::error::发现疑似凭据，请从文件与 remote URL 中移除后再提交"
+            exit 1
+          fi
+
       - name: Architecture guards and unit tests
         run: >
           ./gradlew

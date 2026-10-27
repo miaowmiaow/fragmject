@@ -41,7 +41,7 @@ jobs:
         run: ./gradlew :app:assembleRelease --stacktrace
 
       - name: Upload release APK
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-apk-${{ steps.version.outputs.name }}
           path: app/build/outputs/apk/release/*.apk
@@ -50,7 +50,7 @@ jobs:
 
       # R8 mapping 必须与 APK 同版本归档：线上崩溃栈只有配合它才能还原。
       - name: Upload R8 mapping
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: r8-mapping-${{ steps.version.outputs.name }}
           path: app/build/outputs/mapping/release/mapping.txt
@@ -59,7 +59,7 @@ jobs:
 
       - name: Upload build reports
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-build-reports
           path: |

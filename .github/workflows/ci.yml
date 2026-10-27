@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload test reports
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test-reports
           path: |
@@ -92,7 +92,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-reports
           path: '**/build/reports/jacoco/**'
@@ -100,7 +100,7 @@ jobs:
 
       - name: Upload lint reports
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: lint-reports
           path: |
@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload detekt reports
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: detekt-reports
           path: build/reports/detekt/

@@ -1,5 +1,15 @@
 package com.example.fragmject.core.model
 
+/**
+ * 文章分页信封（服务端 wire 形状）。
+ *
+ * 与 [Article] 同属**共享协议模型**：单层落点，不做 DTO / 领域模型 / UI 模型三套拆分。
+ * 决策与约束依据见 `docs/adr/0001-shared-protocol-model.md`；UI 侧的差异化模型由
+ * `core:ui` 的 `ArticleFeedMapper`（[Article] → `FeedCardUIState`）承担。
+ *
+ * 不要在本类旁新增 `ArticleDataDto` 一类的变体：`ArchitectureTest` 规则 29 会拦截，
+ * 且 `core:domain` 只能依赖 `core:model`，拆出 DTO 会让 7 个领域端口签名断裂。
+ */
 data class ArticleData(
     val curPage: String = "",
     val datas: List<Article>? = null,

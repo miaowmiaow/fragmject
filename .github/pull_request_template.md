@@ -8,6 +8,7 @@
 - [ ] `./gradlew detekt` 通过
 - [ ] `./gradlew verifyUnitTestCoverage` 通过（需先跑 `unitTestCoverageReport`）
 - [ ] 涉及 UI 的改动已在真机或模拟器上自测
+- [ ] 涉及模型分层（新增 `*Dto` / 实体 / mapper 层）时，已对照 [`docs/adr/0001-shared-protocol-model.md`](docs/adr/0001-shared-protocol-model.md) §5 的触发条件并附证据
 
 ## 依赖升级（仅升级 PR 填写）
 

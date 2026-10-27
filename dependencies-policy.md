@@ -52,7 +52,7 @@
 - **结果类型选型**（新增端口按此选，不再新造）：带数据的查询/刷新用 `DomainResult`；无数据写操作（分享、收藏、下载、清缓存）用 `SimpleResult`；登录/注册用 `AuthResult`；媒体保存用 `MediaSaveResult`。网络调用统一经 `fetchAsDomainResult` / `fetchAsSimpleResult`，不在仓库里手写 try/catch；`core:data-repository` 不得使用 `runCatching`（会吞掉协程取消，`ArchitectureTest` 规则 19 守卫），也不得对外暴露 `kotlin.Result`。
 - 「失败可降级为无数据」的读取（如用户积分）约定为：失败返回 `null`，由 UI 展示默认值；业务失败即使携带 data 也不视为有效数据。
 - `core:domain` 源码不依赖 Android framework 类型，但当前仍使用 Android library 插件，并公开接受 `PagingData` 耦合；不等同于完全技术无关的领域核心。
-- `core:model` 当前包含共享协议模型；仅在接口变化或业务约束需要时分离 DTO/领域模型/UI 模型，不机械增加三套映射。
+- `core:model` 是**共享协议模型**的唯一落点；DTO / 领域模型 / UI 模型三套拆分已被 [ADR-0001](docs/adr/0001-shared-protocol-model.md) 定案否决（`core:domain` 只能依赖 `core:model`，拆分必然产生双份同构模型）。重启条件与举证要求见该 ADR §5/§6，**评审中不再重复论证**；试图新增 `*Dto` 会被 `ArchitectureTest` 规则 29 拦截。
 - 平台相关 UI 引擎保留在对应 core 模块。WebView 对业务层只提供脚本文本、图片长按等语义能力，不通过公开容器回调暴露原生 WebView。
 - 显式退出以本地用户与业务 Cookie 清理完成为成功；远端退出尽力执行。服务端 `-1001` 的全局失效、跨账户状态清理与 Cookie 过期检测尚未统一，不能把本地用户存在等同于服务端会话有效。
 - 导航图绑定必须有所有权并在组合退出时释放。登录回跳与详情目标保留至 Activity 配置变更，不承诺进程死亡恢复。

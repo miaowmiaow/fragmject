@@ -19,17 +19,19 @@ concurrency:
 
 jobs:
   emulator:
-    runs-on: ubuntu-latest
+    # 固定镜像标签：ubuntu-latest 自 2026-10 起迁往 Ubuntu 26，跑模拟器时内核 / KVM / GPU
+    # 差异会直接表现为「昨天还绿、今天全红」，固定版本可让每周任务不随镜像漂移。
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       # GitHub 的 Linux runner 默认拿不到 /dev/kvm 权限，不放开会退化成纯软件模拟，
       # 一轮测试能跑上 40 分钟。
@@ -40,10 +42,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # 覆盖全部带 androidTest 的模块：
-      # - core:database        Room 迁移（old→new schema 的可读性）
-      # - core:android-platform Keystore 加解密
-      # - feature:home:impl    首页 Compose UI（空态/点击/滚到底翻页）
+      # 显式列出要跑的三个模块，**不要**用根级 `connectedDebugAndroidTest`：
+      # 根级会把 :benchmark 一并展开（com.android.test + experimentalProperties.self-instrumenting
+      # + targetProjectPath=:app），宏基准与 Baseline Profile 在 CI 模拟器上既慢又不可归因，
+      # 失败信息只有 "The process '/usr/bin/sh' failed with exit code 1"，看不出是哪个测试挂的。
+      #
+      # --continue：单模块失败后继续跑其余模块，一次 CI 拿全部失败项，避免「修一个冒一个」。
+      # logcat：报告只写断言结果，崩溃 / ANR / 权限 / 时序问题必须看 logcat；模拟器销毁前抓一份。
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -54,13 +59,22 @@ jobs:
           emulator-options: >-
             -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
             -camera-back none -camera-front none
-          script: ./gradlew connectedDebugAndroidTest --stacktrace
+          script: |
+            ./gradlew \
+              :core:database:connectedDebugAndroidTest \
+              :core:android-platform:connectedDebugAndroidTest \
+              :feature:home:impl:connectedDebugAndroidTest \
+              --stacktrace --continue
+            status=$?
+            adb logcat -d -v threadtime > logcat.txt 2>/dev/null || true
+            exit $status
 
       - name: Upload instrumented reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: instrumented-reports
           path: |
             **/build/reports/androidTests/**
             **/build/outputs/androidTest-results/**
+            logcat.txt

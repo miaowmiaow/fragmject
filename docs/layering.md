@@ -47,6 +47,8 @@
 > `core:ui` 依赖 `model` / `domain` 是**登记过的例外**：`ArticleFeedMapper`、`CollectInteraction` 需要这两个零 Android 依赖的契约层（此前仅依赖 designsystem 时，4 个 feature 各复制了一份映射）。限定：只此三条边，且业务文案/图标必须参数化可覆盖，不得下探 data/network/database（规则 23）。
 >
 > 公开签名白名单：`core:ui` 对外暴露的类型只允许是 `Article`/`Banner` 等 model、`*State` 与 `DomainResult` 一类结果类型；**不得**把 `repository` / `usecase` 类型带进组件签名（新增导出类型需在此登记）。
+>
+> **模型分层已定案**：`core:model` 是共享协议模型唯一落点，不拆 DTO / 领域模型 / UI 模型（UI 侧只保留 `FeedCardUIState` 这一层）。依据、被否决方案与重启触发条件见 [ADR-0001](./adr/0001-shared-protocol-model.md)；守卫为 `ArchitectureTest` 规则 29，评审不再重复论证。
 
 ### 认证链路的分层落点（2026-10 调整）
 
@@ -178,6 +180,9 @@ feature/{name}/impl/.../
 - 规则 22：`core:designsystem` 不得 import 任何项目内模块
 - 规则 23：`core:ui` 不得下探 data / network / database
 - 规则 24：`feature:*:impl` 不得硬编码 `Color(0x...)`（颜色一律进 `AppColors`，或集中到 `*Colors.kt`）
+- 规则 28：单个生产文件不超过 500 行
+- 规则 29：禁止新增 `*Dto` / `*DTO` 类（ADR-0001：`core:model` 为共享协议模型唯一落点）
+- 规则 30：`core:model` 之外不得声明同名模型类（拦「原样复制」，与规则 29 拦「加后缀」互补）
 - 另：`boundary selectors match real files` 防止选择器写错导致规则空转
 
 ## 六、常见误判（本项目踩过的坑）

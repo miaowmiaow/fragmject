@@ -29,7 +29,6 @@ class AppNavViewModel @Inject constructor(
 
     /** 需要登录时暂存的待回跳目标（登录成功后回跳）。 */
     private val _pendingRedirect = mutableStateOf<NavKey?>(null)
-    internal val pendingRedirect: NavKey? get() = _pendingRedirect.value
 
     internal fun setPendingRedirect(key: NavKey) {
         _pendingRedirect.value = key

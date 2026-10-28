@@ -1,9 +1,7 @@
 package com.example.fragmject.app.security
 
-import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
@@ -51,7 +49,7 @@ import com.example.fragmject.app.BuildConfig
  * ```
  *
  * ============================ 阻断策略 ============================
- * 命中后先置 [isBlocked] 标记（供 UI 读取并提示），等待 [BLOCK_GRACE_MS] 后终止进程。
+ * 命中后先置 [isBlocked] 标记（供 UI 读取并提示），等待 [SecurityPolicy.BLOCK_GRACE_MS] 后终止进程。
  * 宽限窗口只用于「让用户看到提示」，不会削弱阻断效果：
  * 终止动作优先由 native `SIGKILL` 完成，即使 Java 层被 hook 也无法取消。
  *
@@ -86,105 +84,6 @@ import com.example.fragmject.app.BuildConfig
 object AppSecurityGuard {
 
     const val TAG = "AppSecurityGuard"
-
-    /**
-     * Baseline Profile 采集专用变体名。
-     *
-     * 由 `androidx.baselineprofile` 插件创建（`nonMinifiedRelease`），不对外发布。
-     * 该变体下跳过运行时检测：模拟器 ART/JIT 会产生匿名可执行段，命中
-     * [ANON_EXEC_THRESHOLD] 后进程在 1.2s 内被 SIGKILL，采集必然失败。
-     */
-    private const val COLLECTION_BUILD_TYPE = "nonMinifiedRelease"
-
-    /**
-     * 首轮检测与「回前台」后的轮询间隔。
-     *
-     * 取 1s 的原因：调试器/Frida 往往在应用刚启动或切回前台时附加，
-     * 这个窗口需要高频率覆盖；随后由退避机制逐步拉长，避免长期耗电。
-     */
-    private const val INITIAL_INTERVAL_MS = 1_000L
-
-    /**
-     * 轮询间隔上限。
-     *
-     * 60s 是「及时性」与「耗电」的折中：即使攻击者在应用长时间驻留后才附加，
-     * 最迟也能在一分钟内发现，同时避免后台长期高频唤醒 CPU。
-     */
-    private const val MAX_INTERVAL_MS = 60_000L
-
-    /**
-     * 连续多少轮「未命中」后把间隔翻倍。
-     *
-     * 取 3 的原因：连续几轮干净通常说明当前环境稳定，可以开始退避；
-     * 太小（如 1）会让间隔增长过快，漏掉「刚附加」的瞬间。
-     */
-    private const val CLEAN_ROUNDS_TO_BACKOFF = 3
-
-    /**
-     * 端口扫描的独立降频间隔。
-     *
-     * 端口扫描是重量级操作（每个端口都要建一次 socket，最坏 11 次连接），
-     * 因此不能跟着 1s 的轮询节奏跑，单独限制为最多每 60s 一次。
-     */
-    private const val PORT_SCAN_INTERVAL_MS = 60_000L
-
-    /**
-     * libc `.text` CRC 校验的降频间隔。
-     *
-     * CRC 需要把 libc 的数 MB 代码段读两遍并计算，单次耗时虽在毫秒级，
-     * 但没必要每轮都做；30s 一次足以发现「运行中才挂上的 inline hook」。
-     */
-    private const val CRC_CHECK_INTERVAL_MS = 30_000L
-
-    /**
-     * 命中后到终止进程的宽限时间。
-     *
-     * 仅用于让 UI 有机会展示 [blockingMessage]；终止动作本身不可取消。
-     * 取值不宜过长：窗口越长，攻击者可利用的时间越多。
-     */
-    const val BLOCK_GRACE_MS = 1_200L
-
-    /**
-     * 匿名可执行段容忍阈值。
-     *
-     * 正常环境下，除 ART JIT、vdso 等白名单段外，不应存在「无对应文件却可执行」的内存，
-     * 因此默认 0（发现即判定）。但不同 ROM/ART 实现可能产生少量合法匿名可执行段，
-     * 若真机出现误杀，可放宽到 1~2；不要设得过宽，否则会漏掉「少量匿名段」的注入。
-     */
-    const val ANON_EXEC_THRESHOLD = 0
-
-    /**
-     * 预期 APK 签名 SHA-256（大写十六进制）。
-     *
-     * 默认留空表示**不启用**签名校验：
-     * - 未配置时若强行校验，会导致所有安装包（包括自己的 Release）被误杀；
-     * - 项目里同时存在 debug/release 签名，硬编码单一值也容易出错。
-     *
-     * 启用方式（二选一）：
-     * 1. 用 `keytool -list -v -keystore <your.jks>` 取 SHA256，去掉冒号后填入；
-     * 2. 由构建脚本在 release 构建时通过 BuildConfig 注入（更适合多环境）。
-     *
-     * 注意：只校验「当前包名的签名证书」，不能防御「用同一证书签名的改包」；
-     * 多签名 APK 需要改为逐一比对，本项目未启用该场景。
-     */
-    const val EXPECTED_SIGNATURE_SHA256 = ""
-
-    /**
-     * 是否把 Root 作为阻断项。
-     *
-     * 误报来源：部分定制 ROM / 工程机自带 su，但用户并无恶意。
-     * 若业务对 Root 不敏感（如普通内容类应用），可置为 false，仅保留日志。
-     */
-    const val ENFORCE_ROOT_DETECTION = true
-
-    /**
-     * 是否把模拟器作为阻断项。
-     *
-     * 误报来源：云手机、投屏、自动化测试环境。
-     * 若业务需要支持云游戏/自动化，可置为 false。
-     */
-    const val ENFORCE_EMULATOR_DETECTION = true
-
 
     // ========================================================================
     // native 能力
@@ -235,7 +134,7 @@ object AppSecurityGuard {
 
     /** 当前轮询间隔，随退避机制动态调整。 */
     @Volatile
-    private var currentIntervalMs = INITIAL_INTERVAL_MS
+    private var currentIntervalMs = SecurityPolicy.INITIAL_INTERVAL_MS
 
     /** 距离上次退避已连续干净的轮数。 */
     @Volatile
@@ -296,8 +195,8 @@ object AppSecurityGuard {
         // 模拟器 ART/JIT 的匿名可执行段会命中 anon-exec 检测，进程在启动 1.2s 内被 SIGKILL，
         // 导致 Macrobenchmark 拿不到运行中的被测进程、Baseline Profile 无法采集。
         // 该变体不参与发布；debug 之外的其它变体（含 release / benchmarkRelease）仍启用守卫。
-        if (BuildConfig.BUILD_TYPE == COLLECTION_BUILD_TYPE) {
-            Log.i(TAG, "security guard skipped for $COLLECTION_BUILD_TYPE (Baseline Profile collection)")
+        if (BuildConfig.BUILD_TYPE == SecurityPolicy.collectionBuildType) {
+            Log.i(TAG, "security guard skipped for ${SecurityPolicy.collectionBuildType} (Baseline Profile collection)")
             return
         }
         if (started) return
@@ -363,7 +262,7 @@ object AppSecurityGuard {
         // 只有拿到 Application 且在主线程时，才能安全注册 Activity 生命周期回调；
         // 其它 Context 或子线程调用时跳过前后台联动，轮询仍会常驻。
         if (context is Application && onMainThread) {
-            registerLifecycle(context)
+            AppSecurityLifecycle.register(context, ::onForeground, ::onBackground)
         }
 
         handler.removeCallbacks(checkTask)
@@ -381,7 +280,7 @@ object AppSecurityGuard {
     fun onForeground() {
         if (!started) return
         consecutiveCleanRounds = 0
-        currentIntervalMs = INITIAL_INTERVAL_MS
+        currentIntervalMs = SecurityPolicy.INITIAL_INTERVAL_MS
         lastPortScanMs = 0L
         handler.removeCallbacks(checkTask)
         handler.post(checkTask)
@@ -417,44 +316,6 @@ object AppSecurityGuard {
     fun blockingMessage(): String = blockReason ?: "检测到异常运行环境，应用即将关闭"
 
     /**
-     * 用 Activity 生命周期统计前后台，注册前后台联动。
-     *
-     * 为什么不用 ProcessLifecycleOwner：需要额外引入 lifecycle-process 依赖；
-     * 本项目是单 Activity 架构，用 ActivityLifecycleCallbacks 统计 started 数量
-     * 已经足够，且不增加依赖。
-     *
-     * 判定规则：第一个 Activity onStart 视为进入前台；最后一个 onStop 视为进入后台。
-     * 用计数器而不是布尔值，是为了正确处理 Activity 切换（A.stop 先于 B.start 的情况）。
-     */
-    private fun registerLifecycle(app: Application) {
-        app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
-            private var startedActivities = 0
-
-            override fun onActivityStarted(activity: Activity) {
-                if (startedActivities == 0) {
-                    onForeground()
-                }
-                startedActivities++
-            }
-
-            override fun onActivityStopped(activity: Activity) {
-                startedActivities--
-                if (startedActivities <= 0) {
-                    startedActivities = 0
-                    onBackground()
-                }
-            }
-
-            // 其余回调与前后台判定无关，保持空实现。
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
-            override fun onActivityResumed(activity: Activity) = Unit
-            override fun onActivityPaused(activity: Activity) = Unit
-            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
-            override fun onActivityDestroyed(activity: Activity) = Unit
-        })
-    }
-
-    /**
      * 轮询任务。
      *
      * 每轮：
@@ -471,10 +332,10 @@ object AppSecurityGuard {
 
             // 用「时间差」而不是「轮数」控制重量级检测频率：
             // 轮询间隔会随退避变化，按时间判断才能保证「最多每 60s / 30s 一次」。
-            val portScanDue = (now - lastPortScanMs >= PORT_SCAN_INTERVAL_MS).also {
+            val portScanDue = (now - lastPortScanMs >= SecurityPolicy.PORT_SCAN_INTERVAL_MS).also {
                 if (it) lastPortScanMs = now
             }
-            val crcCheckDue = (now - lastCrcCheckMs >= CRC_CHECK_INTERVAL_MS).also {
+            val crcCheckDue = (now - lastCrcCheckMs >= SecurityPolicy.CRC_CHECK_INTERVAL_MS).also {
                 if (it) lastCrcCheckMs = now
             }
 
@@ -487,9 +348,9 @@ object AppSecurityGuard {
             // 指数退避：连续干净后逐步拉长间隔（1s → 2s → 4s … → 60s 封顶）。
             // 一旦命中会重置（见 block/onForeground），保证异常时恢复高频。
             consecutiveCleanRounds++
-            if (consecutiveCleanRounds >= CLEAN_ROUNDS_TO_BACKOFF) {
+            if (consecutiveCleanRounds >= SecurityPolicy.CLEAN_ROUNDS_TO_BACKOFF) {
                 consecutiveCleanRounds = 0
-                currentIntervalMs = minOf(currentIntervalMs * 2, MAX_INTERVAL_MS)
+                currentIntervalMs = minOf(currentIntervalMs * 2, SecurityPolicy.MAX_INTERVAL_MS)
             }
             handler.postDelayed(this, currentIntervalMs)
         }

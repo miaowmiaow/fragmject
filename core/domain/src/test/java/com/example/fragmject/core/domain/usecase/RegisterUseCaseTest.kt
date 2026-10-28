@@ -2,6 +2,9 @@ package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.result.AuthExchange
 import com.example.fragmject.core.domain.result.AuthResult
+import com.example.fragmject.core.testing.FakeAuthGateway
+import com.example.fragmject.core.testing.FakeCookieStore
+import com.example.fragmject.core.testing.FakeUserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -18,7 +21,7 @@ class RegisterUseCaseTest {
         val result = registerUseCase(gateway)("   ", "password", "password")
 
         assertEquals(AuthResult.Error("用户名不能为空"), result)
-        assertEquals(0, gateway.registerCalls)
+        assertEquals(0, gateway.registerCallCount)
     }
 
     @Test
@@ -28,7 +31,7 @@ class RegisterUseCaseTest {
         val result = registerUseCase(gateway)("alice", " ", " ")
 
         assertEquals(AuthResult.Error("密码不能为空"), result)
-        assertEquals(0, gateway.registerCalls)
+        assertEquals(0, gateway.registerCallCount)
     }
 
     @Test
@@ -38,7 +41,7 @@ class RegisterUseCaseTest {
         val result = registerUseCase(gateway)("alice", "password", "  ")
 
         assertEquals(AuthResult.Error("确认密码不能为空"), result)
-        assertEquals(0, gateway.registerCalls)
+        assertEquals(0, gateway.registerCallCount)
     }
 
     @Test
@@ -48,7 +51,7 @@ class RegisterUseCaseTest {
         val result = registerUseCase(gateway)("alice", "password", "password2")
 
         assertEquals(AuthResult.Error("两次密码不一样"), result)
-        assertEquals(0, gateway.registerCalls)
+        assertEquals(0, gateway.registerCallCount)
     }
 
     @Test
@@ -58,13 +61,15 @@ class RegisterUseCaseTest {
         val result = registerUseCase(gateway)("alice", "password", "password")
 
         assertEquals(AuthResult.Success("注册成功"), result)
-        assertEquals(1, gateway.registerCalls)
+        assertEquals(1, gateway.registerCallCount)
         assertEquals(listOf("alice", "password", "password"), gateway.lastArguments)
     }
 
     @Test
     fun `gateway failure is passed through unchanged`() = runTest {
-        val gateway = FakeAuthGateway(registerHandler = { AuthExchange.Failure("用户名已存在") })
+        val gateway = FakeAuthGateway().apply {
+            registerHandler = { AuthExchange.Failure("用户名已存在") }
+        }
 
         val result = registerUseCase(gateway)("alice", "password", "password")
 

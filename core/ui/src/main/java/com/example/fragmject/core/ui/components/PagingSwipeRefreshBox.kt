@@ -132,13 +132,13 @@ fun <T : Any> PagingSwipeRefreshBox(
     }
 }
 
-/** 从 [LazyPagingItems] 推导首屏内容四态。 */
-fun <T : Any> LazyPagingItems<T>.contentPhase(): ContentPhase = when (loadState.refresh) {
-    is LoadState.Loading if itemCount == 0 -> ContentPhase.Loading
-    is LoadState.Error if itemCount == 0 -> ContentPhase.Error
-    is LoadState.NotLoading if itemCount == 0 -> ContentPhase.Empty
-    else -> ContentPhase.Content
-}
+/**
+ * 从 [LazyPagingItems] 推导首屏内容四态。
+ *
+ * 判定逻辑（含「首帧不算空态」的原因）见 [contentPhaseOf]，这里只做转发。
+ */
+fun <T : Any> LazyPagingItems<T>.contentPhase(): ContentPhase =
+    contentPhaseOf(loadState, itemCount)
 
 /**
  * Paging 底部追加态指示器。

@@ -19,7 +19,7 @@ import javax.net.ssl.SSLContext
 /**
  * OkHttpClient 构建器（无静态状态，可注入、可替换）。
  *
- * 取代原 [OkUtils] 的 object + @Volatile 静态缓存：
+ * 取代原 `OkUtils` 的 object + @Volatile 静态缓存（该类已移除）：
  * - 不再持有可变静态状态与「配置变更后失效」逻辑（原 setSslConfig 为死代码）；
  * - CookieJar 由外部注入，便于单测与替换；
  * - SSL 配置作为构建方法的可选参数传入（默认 null = 系统默认校验），不进入 DI 图，
@@ -29,7 +29,8 @@ import javax.net.ssl.SSLContext
  */
 @Singleton
 class OkHttpClients internal constructor(
-    private val cacheFactory: () -> Cache,
+    /** 仅在属性初始化器里消费（[sharedCache]），故不作为属性持有。 */
+    cacheFactory: () -> Cache,
     private val cookieJar: CookieJar,
 ) {
     @Inject

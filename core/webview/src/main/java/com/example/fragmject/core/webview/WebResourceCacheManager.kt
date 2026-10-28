@@ -340,7 +340,7 @@ class WebResourceCacheManager @Inject constructor(
      * 组装异步缓存下载的请求头。
      *
      * - 透传 [WebResourceRequest.requestHeaders]（含 User-Agent / Accept 等）；
-     * - 从 [CookieManager] 显式补充 Cookie，与 OkHttp 的 CookieJar 形成双保险；
+     * - 从 [android.webkit.CookieManager] 显式补充 Cookie，与 OkHttp 的 CookieJar 形成双保险；
      * - 透传 [referer]（防盗链站点需要），WebView 的 requestHeaders 通常不含 Referer。
      */
     private fun buildDownloadHeaders(

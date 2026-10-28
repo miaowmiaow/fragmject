@@ -10,9 +10,6 @@ import android.os.Build
 import android.os.Environment
 import android.os.FileUtils as OsFileUtils
 import android.provider.MediaStore
-import android.provider.MediaStore.MediaColumns.DISPLAY_NAME
-import android.provider.MediaStore.MediaColumns.MIME_TYPE
-import android.provider.MediaStore.MediaColumns.RELATIVE_PATH
 import android.util.Log
 import com.example.fragmject.core.android.platform.file.FileUtils
 import androidx.core.net.toUri
@@ -140,9 +137,9 @@ object MediaStoreUtils {
             val mimeType = FileUtils.getFileMimeType(file)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val values = ContentValues().apply {
-                    put(DISPLAY_NAME, file.name)
-                    put(MIME_TYPE, mimeType)
-                    put(RELATIVE_PATH, relativePath)
+                    put(MediaStore.Images.ImageColumns.DISPLAY_NAME, file.name)
+                    put(MediaStore.Images.ImageColumns.MIME_TYPE, mimeType)
+                    put(MediaStore.Images.ImageColumns.RELATIVE_PATH, relativePath)
                 }
                 val uri = context.contentResolver.insert(collection, values)
                 if (uri == null) {
@@ -184,10 +181,10 @@ object MediaStoreUtils {
         val pictureName = "${System.currentTimeMillis()}.jpg"
         return try {
             val values = ContentValues().apply {
-                put(DISPLAY_NAME, pictureName)
-                put(MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.ImageColumns.DISPLAY_NAME, pictureName)
+                put(MediaStore.Images.ImageColumns.MIME_TYPE, "image/jpeg")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                    put(MediaStore.Images.ImageColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                     put(MediaStore.MediaColumns.IS_PENDING, 1)
                 }
             }

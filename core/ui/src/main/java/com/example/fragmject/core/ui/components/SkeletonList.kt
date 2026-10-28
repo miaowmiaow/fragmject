@@ -20,10 +20,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
 /** 每张骨架卡的骨架块数量，用于把卡索引展开成全局块索引。 */
 private const val SLOTS_PER_CARD = 5
+
+/** 骨架屏的测试标记：骨架屏无文案，UI 测试只能靠标记断言「确实在加载」。 */
+const val SKELETON_LIST_TAG = "content_state_skeleton"
 
 /**
  * 首屏加载骨架屏：以灰块模拟列表结构，替代「转圈 + 空白」。
@@ -40,7 +44,9 @@ fun SkeletonList(
 ) {
     val shimmerProgress = rememberShimmerProgress()
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(SKELETON_LIST_TAG),
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {

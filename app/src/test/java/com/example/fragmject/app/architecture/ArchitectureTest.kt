@@ -302,7 +302,7 @@ class ArchitectureTest {
     /**
      * 规则 14：feature 内创建 ViewModel 必须使用 `hiltViewModel()`。
      *
-     * 项目已接入 entry 级 ViewModelStore（[rememberViewModelStoreNavEntryDecorator]），
+     * 项目已接入 entry 级 ViewModelStore（`rememberViewModelStoreNavEntryDecorator`），
      * 单栏页面的 ViewModel 随 NavEntry 出栈清除；entry owner 不带 Hilt 工厂，
      * 使用 lifecycle 的 `viewModel()` 会导致注入失败或退化成 Activity 作用域。
      *

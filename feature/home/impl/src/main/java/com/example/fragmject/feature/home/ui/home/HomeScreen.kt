@@ -46,6 +46,8 @@ fun HomeScreen(
     val phase = pagingItems.contentPhase()
     // 首屏「可用」时刻：骨架屏（Loading）不算，空态/错误态/内容态都视为首屏已绘制完成。
     // 上报后 Macrobenchmark 才有 timeToFullDisplay，否则首页优化的收益无法量化对比。
+    // 依赖前提：contentPhase() 在首帧（尚未开始加载）返回 Loading 而不是 Empty，
+    // 否则上报会发生在「空态」上，timeToFullDisplay 量的就不是内容可用时刻。
     ReportFullyDrawnWhen(phase != ContentPhase.Loading)
     HomeFeedContent(
         pagingItems = pagingItems,

@@ -20,4 +20,8 @@ dependencies {
     api(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // 认证相关的共享 fake（FakeAuthGateway / FakeCookieStore / FakeUserRepository）只在
+    // core:testing 保留一份，domain 的用例测试直接复用，避免同一端口两套替身并行漂移。
+    // 方向不产生环：core:testing(main) → core:domain(main)，这里是 domain 的 test 配置。
+    testImplementation(project(":core:testing"))
 }

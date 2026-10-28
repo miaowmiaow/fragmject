@@ -34,21 +34,31 @@ class NavViewModel @Inject constructor(
             observe = homeNavRepository.observeNavigation(),
             refresh = homeNavRepository::refreshNavigation,
             state = _navState,
+            isEmpty = { it.isEmpty() },
         )
         viewModelScope.collectAndRefresh(
             observe = systemRepository.observeSystemTree(),
             refresh = systemRepository::refreshSystemTree,
             state = _treeState,
+            isEmpty = { it.isEmpty() },
         )
     }
 
     /** 导航链接错误态重试。 */
     fun retry() {
-        viewModelScope.retryRefresh(homeNavRepository::refreshNavigation, _navState)
+        viewModelScope.retryRefresh(
+            observe = homeNavRepository.observeNavigation(),
+            refresh = homeNavRepository::refreshNavigation,
+            state = _navState,
+        )
     }
 
     /** 体系树错误态重试。 */
     fun retryTree() {
-        viewModelScope.retryRefresh(systemRepository::refreshSystemTree, _treeState)
+        viewModelScope.retryRefresh(
+            observe = systemRepository.observeSystemTree(),
+            refresh = systemRepository::refreshSystemTree,
+            state = _treeState,
+        )
     }
 }

@@ -3,6 +3,8 @@ package com.example.fragmject.core.domain.usecase
 import com.example.fragmject.core.domain.result.AuthExchange
 import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.model.User
+import com.example.fragmject.core.testing.FakeCookieStore
+import com.example.fragmject.core.testing.FakeUserRepository
 import java.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred

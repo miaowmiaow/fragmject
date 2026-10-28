@@ -11,7 +11,7 @@ import androidx.compose.runtime.setValue
 /**
  * 底部工具栏的本地 UI 状态：当前选中工具、颜色栏与马赛克撤销入口的显隐。
  *
- * 单独成类是为了让 [EditorToolbar] 自己管理展开态，同时保留「文字/裁剪完成后
+ * 单独成类是为了让 [EditorToolbarController] 自己管理展开态，同时保留「文字/裁剪完成后
  * 取消选中」这一跨组件重置能力（[resetSelection]）。
  */
 @Stable

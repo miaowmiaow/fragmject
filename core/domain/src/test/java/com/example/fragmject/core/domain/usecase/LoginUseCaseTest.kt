@@ -1,6 +1,9 @@
 package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.result.AuthResult
+import com.example.fragmject.core.testing.FakeAuthGateway
+import com.example.fragmject.core.testing.FakeCookieStore
+import com.example.fragmject.core.testing.FakeUserRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -17,7 +20,7 @@ class LoginUseCaseTest {
         val result = loginUseCase(gateway)("   ", "password")
 
         assertEquals(AuthResult.Error("用户名不能为空"), result)
-        assertEquals(0, gateway.loginCalls)
+        assertEquals(0, gateway.loginCallCount)
     }
 
     @Test
@@ -27,7 +30,7 @@ class LoginUseCaseTest {
         val result = loginUseCase(gateway)("alice", "")
 
         assertEquals(AuthResult.Error("密码不能为空"), result)
-        assertEquals(0, gateway.loginCalls)
+        assertEquals(0, gateway.loginCallCount)
     }
 
     @Test
@@ -37,7 +40,7 @@ class LoginUseCaseTest {
         val result = loginUseCase(gateway)("alice", "secret")
 
         assertEquals(AuthResult.Success("登录成功"), result)
-        assertEquals(1, gateway.loginCalls)
+        assertEquals(1, gateway.loginCallCount)
         assertEquals(listOf("alice", "secret"), gateway.lastArguments)
     }
 

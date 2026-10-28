@@ -51,11 +51,10 @@ import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.NavTab
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.designsystem.AppTheme
-import com.example.fragmject.core.ui.components.ContentPhase
 import com.example.fragmject.core.ui.components.ContentStateBox
 import com.example.fragmject.core.ui.components.SkeletonRows
 import com.example.fragmject.core.ui.components.TabBar
-import com.example.fragmject.core.ui.utils.RefreshableUiState
+import com.example.fragmject.core.ui.components.refreshablePhaseOf
 import com.example.fragmject.core.ui.utils.dataOrEmpty
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -104,12 +103,7 @@ fun NavLinkContent(
             listState.animateScrollToItem(index)
         }
     }
-    val phase = when (uiState) {
-        is RefreshableUiState.Loading -> ContentPhase.Loading
-        is RefreshableUiState.Error -> ContentPhase.Error
-        is RefreshableUiState.Success ->
-            if (uiState.dataOrEmpty().isEmpty()) ContentPhase.Empty else ContentPhase.Content
-    }
+    val phase = refreshablePhaseOf(uiState) { it.isEmpty() }
     ContentStateBox(
         phase = phase,
         loadingContent = { SkeletonRows(it) },
@@ -294,12 +288,7 @@ fun NavSystemContent(
     val onChapterClick = remember(navigators) { { cid: String -> navigators.home.openSystemTree(cid) } }
     val listState = rememberLazyListState()
     val treeState by viewModel.treeState.collectAsStateWithLifecycle()
-    val phase = when (treeState) {
-        is RefreshableUiState.Loading -> ContentPhase.Loading
-        is RefreshableUiState.Error -> ContentPhase.Error
-        is RefreshableUiState.Success ->
-            if (treeState.dataOrEmpty().isEmpty()) ContentPhase.Empty else ContentPhase.Content
-    }
+    val phase = refreshablePhaseOf(treeState) { it.isEmpty() }
     ContentStateBox(
         phase = phase,
         loadingContent = { SkeletonRows(it) },

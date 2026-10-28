@@ -27,10 +27,15 @@ class ProjectTreeViewModel @Inject constructor(
             observe = repo.observeProjectTree(),
             refresh = repo::refreshProjectTree,
             state = _uiState,
+            isEmpty = { it.isEmpty() },
         )
     }
 
     fun refresh() {
-        viewModelScope.retryRefresh(repo::refreshProjectTree, _uiState)
+        viewModelScope.retryRefresh(
+            observe = repo.observeProjectTree(),
+            refresh = repo::refreshProjectTree,
+            state = _uiState,
+        )
     }
 }

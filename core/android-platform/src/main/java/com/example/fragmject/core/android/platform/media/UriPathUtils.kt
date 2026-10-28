@@ -10,7 +10,7 @@ import androidx.core.net.toUri
 /**
  * URI → 文件路径 转换工具。
  *
- * 从 [BitmapUtils] 中拆出，属于纯数据路径操作，不依赖 Bitmap/UI。
+ * 从 `BitmapUtils` 中拆出（该类已按职责拆分、不再存在），属于纯数据路径操作，不依赖 Bitmap/UI。
  * 供 data 层媒体存储（MediaStoreUtils）等模块直接引用此文件。
  */
 fun Context.getBitmapPathFromUri(uri: Uri): String {

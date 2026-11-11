@@ -426,6 +426,8 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 
 ### H6 DEX 最小壳（条件立项 / 15~20 人日）
 
+> 交付与运维（开关、产物、上线检查清单、排障、回滚）见 [`dex-shell-handover.md`](./dex-shell-handover.md)。
+
 **触发条件**（满足任一才开工）：线上确认出现二次打包分发；渠道投诉异常签名包；出现明确的"去广告改包"传播。
 
 **S0 实测（2026-11-11，已完成第一步）**：

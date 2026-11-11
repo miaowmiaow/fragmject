@@ -23,5 +23,7 @@ class FragmjectAndroidLibraryPlugin : Plugin<Project> {
         }
 
         configureUnitTestCoverage()
+        // H2 字符串加密：与 application 侧同一套开关与白名单
+        configureStringFogForLibrary()
     }
 }

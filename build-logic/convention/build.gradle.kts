@@ -22,6 +22,10 @@ dependencies {
     compileOnly(libs.gradle)
     compileOnly(libs.kotlin.gradle.plugin)
     compileOnly(libs.kotlin.compose.gradle.plugin)
+    // 字符串加密插桩：ASM 只在构建期使用，不进入任何运行时 classpath
+    // tree API（MethodNode / InsnList）是独立构件 asm-tree，只依赖 asm 会缺包
+    implementation(libs.asm)
+    implementation(libs.asm.tree)
 }
 
 gradlePlugin {

@@ -27,6 +27,10 @@ class FragmjectAndroidApplicationPlugin : Plugin<Project> {
             }
 
             configureUnitTestCoverage()
+            // H2 字符串加密：默认关闭，`-PenableStringFog=true` 时对 release/debug 全部变体插桩
+            configureStringFogForApplication()
+            // H4 资源混淆：默认关闭，`-PenableResObf=true` 时在 packageRelease 之后处理产物
+            configureResourceObfuscation()
         }
     }
 }

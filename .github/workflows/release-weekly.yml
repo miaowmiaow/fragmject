@@ -37,14 +37,27 @@ jobs:
         id: version
         run: echo "name=$(grep -E '^versionName=' config.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
 
-      - name: Assemble release APK
-        run: ./gradlew :app:assembleRelease --stacktrace
+      # 加固开关必须在这里显式打开：默认关闭是为了不影响本地调试构建，
+      # 但发布产物必须带上字符串加密（H2）与资源混淆（H4）。
+      - name: Assemble release APK (hardened)
+        run: ./gradlew :app:assembleRelease -PenableStringFog=true -PenableResObf=true --stacktrace
+
+      # 资源混淆产物是**重新签名**的（aapt2 optimize 之后必须重签），
+      # 这里校验签名有效且证书与 H1 期望一致，避免发布一个装不上的包。
+      - name: Verify hardened APK signature
+        run: |
+          set -euo pipefail
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          APK=app/build/outputs/apk/release/app-release-resobf.apk
+          test -f "$APK"
+          "$BT/apksigner" verify --print-certs "$APK"
+          "$BT/zipalign" -c -p 4 "$APK"
 
       - name: Upload release APK
         uses: actions/upload-artifact@v6
         with:
           name: release-apk-${{ steps.version.outputs.name }}
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/release/app-release-resobf.apk
           retention-days: 90
           if-no-files-found: error
 

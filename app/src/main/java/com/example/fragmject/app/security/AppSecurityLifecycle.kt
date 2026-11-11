@@ -5,11 +5,11 @@ import android.app.Application
 import android.os.Bundle
 
 /**
- * 前后台联动的注册逻辑：把 Activity 生命周期翻译成 [AppSecurityGuard.onForeground] / [AppSecurityGuard.onBackground] 回调。
+ * 前后台联动的注册逻辑：把 Activity 生命周期翻译成 [SecurityGuard.onForeground] / [SecurityGuard.onBackground] 回调。
  *
- * 为什么从 [AppSecurityGuard] 里分出：
+ * 为什么独立：
  * 它只依赖「Application + 两个回调」，与检测策略、native 能力、轮询调度都无耦合，
- * 是最干净的一块；分出后 [AppSecurityGuard] 只负责「何时检测、命中后怎么办」。
+ * 是最干净的一块；分出后 [SecurityEngine] 只负责「何时检测、命中后怎么办」。
  *
  * 为什么不用 ProcessLifecycleOwner：需要额外引入 lifecycle-process 依赖；
  * 本项目是单 Activity 架构，用 ActivityLifecycleCallbacks 统计 started 数量

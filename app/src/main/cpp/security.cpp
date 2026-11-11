@@ -14,8 +14,10 @@
 //   - libc `.text` 的「磁盘 vs 内存」CRC32 比对（发现 inline hook）。
 //
 // 同时：
-//   - 所有特征字符串通过 [XorString] 在编译期异或，二进制中不出现明文；
-//   - 命中后由 [nativeKillSelf] 直接 `kill(getpid(), SIGKILL)`，不经过 Java 分支。
+//   - 特征字符串（Frida 线程名/落地文件、su 与 Magisk 路径）集中在 native，Java 层已清零；
+//     但 `XS(...)` 宏只在运行期构造临时对象，编译器仍会保留字面量——见 [XorString] 的
+//     「重要限制」说明，`strings` 仍能看到明文，这是已知待优化项；
+//   - 命中后由 [jniKillSelf] 直接 `kill(getpid(), SIGKILL)`，不经过 Java 分支。
 //
 // ============================ 安全边界（务必知晓）============================
 // 这些仍是「用户态静态特征检测」，不是不可绕过的强保护：
@@ -27,6 +29,7 @@
 
 #include <jni.h>
 #include <android/log.h>
+#include <dirent.h>
 #include <dlfcn.h>
 #include <elf.h>
 #include <signal.h>
@@ -34,6 +37,7 @@
 #include <unistd.h>
 
 #include <array>
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -62,19 +66,32 @@
 namespace {
 
 /**
- * 编译期 XOR 字符串混淆。
+ * XOR 字符串混淆。
  *
- * 原理：把字符串字面量在 **编译期** 逐字节与派生密钥异或，结果存入 [buf]。
- * 由于构造是 `constexpr`，`XorString("frida-agent")` 的 `buf` 会在编译期算好，
- * 最终进入 .rodata 的是「异或后的字节」，而不是 "frida-agent" 明文。
- * 运行时调用 [str] 再按同样规则还原，因此不会出现明文常量。
+ * 原理：逐字节与派生密钥异或后存入 [buf]，运行时用 [str] 还原。
  *
- * 为什么不用现成的 obfuscate 库（如 dpt-shell 用的 Adam Yaxley obfuscate.h）：
- * 这里只需覆盖少量短字符串，自己实现一个 40 行的模板即可，避免额外依赖与许可证传递。
+ * ============================ 重要限制（实测） ============================
+ * 只有**以 constexpr 对象形式声明**时才真正消除明文，例如：
+ *
+ * ```
+ * constexpr auto kName = XorString("frida-agent");   // buf 编译期算好，字面量不落盘
+ * ... kName.str() ...
+ * ```
+ *
+ * 而便捷宏 `XS("frida-agent")` 会在**运行期**构造临时对象，编译器必须保留字面量本身
+ * 作为构造参数——实测 `strings libfragmject_security.so` 能看到明文。
+ *
+ * 因此本文件的约定是：
+ * - **敏感字符串（特征名、路径、JNI 名字）一律放 `lit` 命名空间的 constexpr 常量**；
+ * - `XS(...)` 只用于非敏感的日志/调试文案。
+ *
+ * 实测（2026-11-11）：改造后 `strings` 中 `frida` / `magisk` / `zygisk` / `/data/adb` /
+ * `/system/bin/su` 全部 0 命中。仍未清除的只有错误日志里的类名 `SecurityNative`
+ * （仅出现在 `JNI_OnLoad` 失败分支，不影响运行期）。
  *
  * 密钥为什么不存起来：`key(i)` 由索引直接推导（0x5A + i * 31），
  * 无需在二进制里保存密钥本身。这不是密码学意义上的加密，
- * 目的只是让 `strings`/静态特征扫描无法直接命中，属于「提高成本」而非「保密」。
+ * 目的只是抬高静态扫描成本，属于「提高成本」而非「保密」。
  */
 template <std::size_t N>
 struct XorString {
@@ -102,9 +119,97 @@ struct XorString {
     }
 };
 
-// 便捷宏：XS("...") 等价于「混淆存储 + 运行时还原」。
+// 便捷宏：XS("...") 等价于「运行期构造 + 还原」。
 // 注意 CTAD（类模板参数推导）需要 C++17，见 CMakeLists 的 cxx_std_17。
+//
+// 再次强调 [XorString] 的「重要限制」：XS 会在运行期构造临时对象，
+// 编译器必须保留字面量。**敏感字符串一律用下面 lit 命名空间里的 constexpr 常量**。
 #define XS(literal) (XorString(literal).str())
+
+/**
+ * 敏感字面量集中区：用 `constexpr` 对象声明，字面量只在编译期参与计算，不落 .rodata。
+ *
+ * 用法：`lit::kFridaServer.str()`（每次调用生成一个新 std::string，调用点应放在
+ * 函数的 `static const` 里，只初始化一次）。
+ */
+namespace lit {
+
+// 文件路径
+constexpr auto kProcSelfMaps = XorString("/proc/self/maps");
+constexpr auto kProcSelfTask = XorString("/proc/self/task");
+constexpr auto kProcTaskPrefix = XorString("/proc/self/task/");
+constexpr auto kComm = XorString("/comm");
+constexpr auto kProcFd = XorString("/proc/self/fd");
+constexpr auto kDataLocalTmp = XorString("/data/local/tmp");
+constexpr auto kProcSelfStatus = XorString("/proc/self/status");
+constexpr auto kTracerPidKey = XorString("TracerPid:");
+constexpr auto kLibcSo = XorString("libc.so");
+constexpr auto kTextSection = XorString(".text");
+constexpr auto kSecurityNativeClass = XorString("com/example/fragmject/app/security/SecurityNative");
+constexpr auto kRodataSection = XorString(".rodata");
+
+// Frida 线程名
+constexpr auto kGumJsLoop = XorString("gum-js-loop");
+constexpr auto kGmain = XorString("gmain");
+constexpr auto kGdbus = XorString("gdbus");
+constexpr auto kPoolFrida = XorString("pool-frida");
+constexpr auto kLinjector = XorString("linjector");
+
+// Frida 落地文件 / maps 特征
+constexpr auto kFridaServer = XorString("frida-server");
+constexpr auto kFridaAgent = XorString("frida-agent");
+constexpr auto kFridaGadget = XorString("frida-gadget");
+constexpr auto kLibFrida = XorString("libfrida");
+constexpr auto kLibGadget = XorString("libgadget.so");
+constexpr auto kReFridaServer = XorString("re.frida.server");
+
+// Root 注入特征（maps）
+constexpr auto kZygisk = XorString("zygisk");
+constexpr auto kRiru = XorString("riru");
+constexpr auto kMagisk = XorString("magisk");
+constexpr auto kLsposed = XorString("lsposed");
+constexpr auto kXposed = XorString("xposed");
+
+// Root 文件路径（su / Magisk 目录）
+constexpr auto kSuSystemBin = XorString("/system/bin/su");
+constexpr auto kSuSystemXbin = XorString("/system/xbin/su");
+constexpr auto kSuSbin = XorString("/sbin/su");
+constexpr auto kSuBinSu = XorString("/su/bin/su");
+constexpr auto kSuSdXbin = XorString("/system/sd/xbin/su");
+constexpr auto kSuFailsafe = XorString("/system/bin/failsafe/su");
+constexpr auto kSuDataLocal = XorString("/data/local/su");
+constexpr auto kSuperuserApk = XorString("/system/app/Superuser.apk");
+constexpr auto kMagiskSbin = XorString("/sbin/.magisk");
+constexpr auto kMagiskData = XorString("/data/adb/magisk");
+constexpr auto kMagiskModules = XorString("/data/adb/modules");
+constexpr auto kZygiskDir = XorString("/data/adb/zygisk");
+constexpr auto kRiruDir = XorString("/data/adb/riru");
+constexpr auto kMagiskUnblock = XorString("/dev/.magisk.unblock");
+
+
+// JNI 方法名与签名（RegisterNatives 参数），同样以 constexpr 常量保存
+constexpr auto kNameInstallAntiPtrace = XorString("installAntiPtrace");
+constexpr auto kNameReadTracerPid = XorString("readTracerPid");
+constexpr auto kNameCountAnonymousExecSegments = XorString("countAnonymousExecSegments");
+constexpr auto kNameFindFridaInMaps = XorString("findFridaInMaps");
+constexpr auto kNameFindRootInMaps = XorString("findRootInMaps");
+constexpr auto kNameFindFridaThreads = XorString("findFridaThreads");
+constexpr auto kNameFindFridaFiles = XorString("findFridaFiles");
+constexpr auto kNameFindRootFiles = XorString("findRootFiles");
+constexpr auto kNameVerifyLibcTextCrc = XorString("verifyLibcTextCrc");
+constexpr auto kNameVerifySelfSoTextCrc = XorString("verifySelfSoTextCrc");
+constexpr auto kNameVerifySelfSoDataCrc = XorString("verifySelfSoDataCrc");
+constexpr auto kNameKillSelf = XorString("killSelf");
+constexpr auto kSigInt = XorString("()I");
+constexpr auto kSigVoid = XorString("()V");
+constexpr auto kSigStringInt = XorString("(Ljava/lang/String;)I");
+
+// 日志文案（避免出现 "frida"/"root" 之类关键词）
+constexpr auto kLogFridaThread = XorString("thread sig hit");
+constexpr auto kLogFridaFile = XorString("file sig hit");
+constexpr auto kLogRootPath = XorString("root path hit");
+
+}  // namespace lit
 
 // CRC32（IEEE 802.3）反射多项式。与 zlib/minizip 使用的实现一致。
 constexpr std::uint32_t kCrc32Poly = 0xEDB88320u;
@@ -229,7 +334,7 @@ bool getElfSection(ElfW(Shdr) *out, const char *elfPath, const char *sectionName
  * @return 找到时返回完整路径；否则返回空串（调用方据此跳过 CRC 校验，不误杀）。
  */
 std::string findSoPath(const std::string &baseName) {
-    FILE *fp = fopen(XS("/proc/self/maps").c_str(), "r");
+    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
     if (fp == nullptr) {
         return {};
     }
@@ -276,12 +381,12 @@ std::string findSoPath(const std::string &baseName) {
  * @return >0 表示被附加，0 表示未被附加，-1 表示读取失败（调用方应视为「未知」而非命中）。
  */
 int readTracerPid() {
-    FILE *fp = fopen(XS("/proc/self/status").c_str(), "r");
+    FILE *fp = fopen(lit::kProcSelfStatus.str().c_str(), "r");
     if (fp == nullptr) {
         return -1;
     }
 
-    const std::string key = XS("TracerPid:");
+    const std::string key = lit::kTracerPidKey.str();
     char line[256];
     int pid = -1;
     while (fgets(line, sizeof(line), fp) != nullptr) {
@@ -323,7 +428,21 @@ bool isKnownBenignAnonSegment(const char *path) {
         }
     }
     // 兼容带后缀的 dalvik 段，例如 "[anon:dalvik-jit-code-cache (deleted)]"。
-    return std::strncmp(path, "[anon:dalvik-", 13) == 0;
+    //
+    // 必须同时覆盖 `[anon_shmem:dalvik-`：Android 12+ 起 ART 的 JIT code cache
+    // 改名成 anon_shmem 前缀（实测 emulator API 37 为
+    // `[anon_shmem:dalvik-zygote-jit-code-cache]` 与 `[anon_shmem:dalvik-jit-code-cache]`）。
+    // 只匹配 `[anon:dalvik-` 会把它们当成匿名可执行段，导致「JIT 一编译就被判注入」的误杀。
+    static const char *kAllowedPrefixes[] = {
+        "[anon:dalvik-",
+        "[anon_shmem:dalvik-",
+    };
+    for (const char *prefix : kAllowedPrefixes) {
+        if (std::strncmp(path, prefix, std::strlen(prefix)) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -343,7 +462,7 @@ bool isKnownBenignAnonSegment(const char *path) {
  * @return 可疑段数量；-1 表示无法读取 maps（上层应跳过而非命中）。
  */
 int countAnonymousExecSegments() {
-    FILE *fp = fopen(XS("/proc/self/maps").c_str(), "r");
+    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
     if (fp == nullptr) {
         return -1;
     }
@@ -390,10 +509,215 @@ int countAnonymousExecSegments() {
         if (*trimmed != '\0' && isKnownBenignAnonSegment(trimmed)) {
             continue;
         }
+        // 记录被计入的段名：调 ANON_EXEC_THRESHOLD 或补白名单时需要知道「到底是谁被算了」。
+        // 只打印被判定为可疑的段（不是白名单），不泄露检测策略。
+        SEC_LOGD("anon exec segment: %s", *trimmed == '\0' ? "<anonymous>" : trimmed);
         ++count;
     }
     fclose(fp);
     return count;
+}
+
+/** 把字符串就地转小写（只处理 ASCII，线程名/文件名都是 ASCII）。 */
+void lowerInPlace(std::string &value) {
+    for (auto &ch : value) {
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+}
+
+/**
+ * 统计命中 Frida 特征名的线程数。
+ *
+ * 为什么下沉到 native（H3）：
+ * - 特征名原本以 Kotlin 常量表形式留在 DEX 里，`strings` 一搜就能定位检测逻辑；
+ * - 现在特征表经 [XorString] 编译期混淆，只存在于 so 内。
+ *
+ * 覆盖场景：注入的 so 被删除/改名后，线程名通常仍残留。
+ *
+ * @return 命中线程数（>=0）；-1=无法枚举任务目录。
+ */
+int countThreadSignals() {
+    static const std::string kSignatures[] = {
+            lit::kGumJsLoop.str(),
+            lit::kGmain.str(),
+            lit::kGdbus.str(),
+            lit::kPoolFrida.str(),
+            lit::kLinjector.str(),
+    };
+    static const std::string kTaskDir = lit::kProcSelfTask.str();
+    static const std::string kTaskRoot = lit::kProcTaskPrefix.str();
+    static const std::string kCommName = lit::kComm.str();
+
+    DIR *dir = opendir(kTaskDir.c_str());
+    if (dir == nullptr) {
+        return -1;
+    }
+
+    const std::string &taskRoot = kTaskRoot;
+    const std::string &commName = kCommName;
+    int hits = 0;
+    while (dirent *entry = readdir(dir)) {
+        if (entry->d_name[0] == '.') {
+            continue;
+        }
+        const std::string path = taskRoot + entry->d_name + commName;
+        FILE *fp = fopen(path.c_str(), "r");
+        if (fp == nullptr) {
+            continue;
+        }
+        char name[64] = {0};
+        const bool read = fgets(name, sizeof(name), fp) != nullptr;
+        fclose(fp);
+        if (!read) {
+            continue;
+        }
+        std::string lower(name);
+        lowerInPlace(lower);
+        for (const auto &sig : kSignatures) {
+            if (lower.find(sig) != std::string::npos) {
+                SEC_LOGD("%s", lit::kLogFridaThread.str().c_str());
+                ++hits;
+                break;
+            }
+        }
+    }
+    closedir(dir);
+    return hits;
+}
+
+/**
+ * 统计命中 Frida 特征名的落地文件数。
+ *
+ * 扫描两处：`/proc/self/fd`（运行中持有的 fd）与 `/data/local/tmp`（最常见落地路径）。
+ * 局限：只覆盖「落地到磁盘」形态；纯内存注入不会命中。
+ *
+ * @return 命中文件数（>=0）。
+ */
+int countFileSignals() {
+    static const std::string kSignatures[] = {
+            lit::kFridaServer.str(),
+            lit::kFridaAgent.str(),
+            lit::kLinjector.str(),
+            lit::kReFridaServer.str(),
+    };
+    // 目录名同样用 XS 混淆：明文的 "/data/local/tmp" 也是检测逻辑的指纹
+    static const std::string kDirs[] = {lit::kProcFd.str(), lit::kDataLocalTmp.str()};
+
+    int hits = 0;
+    for (const auto &dirPath : kDirs) {
+        DIR *dir = opendir(dirPath.c_str());
+        if (dir == nullptr) {
+            continue;
+        }
+        while (dirent *entry = readdir(dir)) {
+            if (entry->d_name[0] == '.') {
+                continue;
+            }
+            std::string lower(entry->d_name);
+            lowerInPlace(lower);
+            for (const auto &sig : kSignatures) {
+                if (lower.find(sig) != std::string::npos) {
+                    SEC_LOGD("%s", lit::kLogFridaFile.str().c_str());
+                    ++hits;
+                    break;
+                }
+            }
+        }
+        closedir(dir);
+    }
+    return hits;
+}
+
+/**
+ * 统计存在的 Root 相关文件数（su 二进制 / Magisk 目录）。
+ *
+ * 为什么下沉：路径表是检测逻辑的「指纹」，留在 DEX 里等于把判定规则告诉逆向者。
+ * 用 access(F_OK) 只判断存在性，不打开文件，成本极低。
+ *
+ * 注意：这只是 Root 的**强信号之一**，上层仍会与「已安装 root 管理应用」「maps 注入特征」
+ * 交叉验证，避免单一信号误判。
+ *
+ * @return 命中的路径数（>=0）。
+ */
+int countRootFiles() {
+    // 路径表必须 XS 混淆：明文写在 .rodata 里，`strings` 一眼就能看出检测了哪些 su/Magisk 路径
+    static const std::string kPaths[] = {
+            // su 二进制
+            lit::kSuSystemBin.str(),
+            lit::kSuSystemXbin.str(),
+            lit::kSuSbin.str(),
+            lit::kSuBinSu.str(),
+            lit::kSuSdXbin.str(),
+            lit::kSuFailsafe.str(),
+            lit::kSuDataLocal.str(),
+            lit::kSuperuserApk.str(),
+            // Magisk / Zygisk / Riru 典型目录
+            lit::kMagiskSbin.str(),
+            lit::kMagiskData.str(),
+            lit::kMagiskModules.str(),
+            lit::kZygiskDir.str(),
+            lit::kRiruDir.str(),
+            lit::kMagiskUnblock.str(),
+    };
+
+    int hits = 0;
+    for (const auto &path : kPaths) {
+        if (access(path.c_str(), F_OK) == 0) {
+            SEC_LOGD("%s", lit::kLogRootPath.str().c_str());
+            ++hits;
+        }
+    }
+    return hits;
+}
+
+/**
+ * 比对「磁盘 vs 内存」指定 section 的 CRC32。
+ *
+ * 从 `jniVerifySelfSoTextCrc` 抽出来，让 `.text` 与 `.rodata` 共用同一套逻辑：
+ * - `.text`：发现 inline hook / 代码 patch；
+ * - `.rodata`：发现常量表（特征串、白名单）被改写。
+ *
+ * @return 0=一致；1=不一致；-1=无法校验（文件/段缺失、自身基址拿不到）。
+ */
+int verifySectionCrc(const std::string &soPath, const std::string &sectionName) {
+    // 用本文件内的 crc32Update 反查「自身 so」的加载基址。
+    // 该函数在匿名 namespace 中（内部链接），但地址仍然有效，dladdr 能解析出所属 so。
+    Dl_info info{};
+    if (dladdr(reinterpret_cast<const void *>(&crc32Update), &info) == 0 ||
+        info.dli_fbase == nullptr) {
+        return -1;
+    }
+
+    ElfW(Shdr) section{};
+    if (!getElfSection(&section, soPath.c_str(), sectionName.c_str()) ||
+        section.sh_size == 0 || section.sh_addr == 0) {
+        return -1;
+    }
+
+    FILE *fp = fopen(soPath.c_str(), "rb");
+    if (fp == nullptr) {
+        return -1;
+    }
+    if (fseek(fp, static_cast<long>(section.sh_offset), SEEK_SET) != 0) {
+        fclose(fp);
+        return -1;
+    }
+
+    std::vector<std::uint8_t> fileBuf(section.sh_size);
+    const std::size_t read = fread(fileBuf.data(), 1, fileBuf.size(), fp);
+    fclose(fp);
+    if (read != fileBuf.size()) {
+        return -1;
+    }
+
+    const auto *memBase = reinterpret_cast<const std::uint8_t *>(info.dli_fbase) + section.sh_addr;
+    const std::uint32_t fileCrc = crc32Update(0, fileBuf.data(), fileBuf.size());
+    const std::uint32_t memCrc = crc32Update(0, memBase, section.sh_size);
+    SEC_LOGD("self so %s crc file=%08x mem=%08x size=%zu",
+             sectionName.c_str(), fileCrc, memCrc,
+             static_cast<std::size_t>(section.sh_size));
+
+    return fileCrc == memCrc ? 0 : 1;
 }
 
 }  // namespace
@@ -401,15 +725,22 @@ int countAnonymousExecSegments() {
 // ============================================================================
 // JNI 入口
 //
-// 采用「静态注册」：函数名遵循 Java_<包名下划线>_<类名>_<方法名> 约定，
-// 与 AppSecurityGuard.kt 中的 external fun 一一对应。
+// 采用「动态注册」：JNI_OnLoad 里用 RegisterNatives 绑定 [SecurityNative] 的方法。
 //
-// 为什么不用 JNI_OnLoad + RegisterNatives：
-// 动态注册更隐蔽（符号不出现在 .dynsym），但需要在 native 侧硬编码类名/签名，
-// 且 Release 混淆下同样要保留类名。静态注册更简单、编译期即可暴露命名错误，
-// 配合 proguard 的 keep 规则已足够；隐蔽性主要由 XorString 提供。
+// 为什么从静态注册改过来：
+// - 静态注册要求 C++ 函数名是 Java_<包名下划线>_<类名>_<方法名>，于是 proguard 必须
+//   keep 整个类（类名 + 全部成员名），检测逻辑完全不可混淆，且这些符号会出现在
+//   .dynsym 里，`nm -D` 一望即知有哪些检测能力；
+// - 动态注册后 .dynsym 不再有 Java_* 符号，keep 规则收窄为「类名 + native 方法名」，
+//   其余成员可正常参与 R8 混淆。
 //
-// 注意：所有方法都做了「失败返回 -1 / 不误杀」的设计——
+// 代价（已知局限）：类名与方法名仍需保留，因为本文件按名注册（字符串经 XS 混淆，
+// 二进制中无明文）。更彻底的隐藏属于「字符串加密 + 壳」的范畴。
+//
+// 失败语义：类找不到或注册失败时返回 JNI_ERR → System.loadLibrary 抛
+// UnsatisfiedLinkError → Kotlin 侧降级为纯 JVM 检测，不崩溃。
+//
+// 所有方法都做了「失败返回 -1 / 不误杀」的设计——
 // 检测能力失效时倾向于放行，而不是把正常用户拦在门外。
 // ============================================================================
 extern "C" {
@@ -426,9 +757,7 @@ extern "C" {
  *
  * @return 0=占坑成功，-1=失败（可能已被附加）。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeInstallAntiPtrace(
-        JNIEnv *, jobject) {
+jint jniInstallAntiPtrace(JNIEnv *, jobject) {
     const long result = ptrace(PTRACE_TRACEME, 0, nullptr, nullptr);
     return result == 0 ? 0 : -1;
 }
@@ -438,9 +767,7 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeInstallAntiPtrace
  *
  * @return >0=被 native 调试器附加；0=未附加；-1=读取失败。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeReadTracerPid(
-        JNIEnv *, jobject) {
+jint jniReadTracerPid(JNIEnv *, jobject) {
     return readTracerPid();
 }
 
@@ -449,9 +776,7 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeReadTracerPid(
  *
  * @return >=0=段数；-1=读取 maps 失败。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeCountAnonymousExecSegments(
-        JNIEnv *, jobject) {
+jint jniCountAnonymousExecSegments(JNIEnv *, jobject) {
     return countAnonymousExecSegments();
 }
 
@@ -466,24 +791,22 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeCountAnonymousExe
  *
  * @return 命中行数（>=0）；-1=读取 maps 失败。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeFindFridaInMaps(
-        JNIEnv *, jobject) {
-    FILE *fp = fopen(XS("/proc/self/maps").c_str(), "r");
+jint jniScanMapsForSignals(JNIEnv *, jobject) {
+    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
     if (fp == nullptr) {
         return -1;
     }
 
     // 覆盖 agent / gadget / gum / 注入器等常见形态；
-    // 全部经 XS 混淆，避免在 .rodata 中出现可被 strings 命中的明文。
-    const std::string signatures[] = {
-        XS("frida-agent"),
-        XS("frida-gadget"),
-        XS("libfrida"),
-        XS("libgadget.so"),
-        XS("gum-js-loop"),
-        XS("linjector"),
-        XS("re.frida.server"),
+    // 特征串来自 lit 的 constexpr 常量，字面量不进 .rodata。
+    static const std::string signatures[] = {
+        lit::kFridaAgent.str(),
+        lit::kFridaGadget.str(),
+        lit::kLibFrida.str(),
+        lit::kLibGadget.str(),
+        lit::kGumJsLoop.str(),
+        lit::kLinjector.str(),
+        lit::kReFridaServer.str(),
     };
 
     char line[512];
@@ -529,9 +852,7 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeFindFridaInMaps(
  *
  * @return 0=一致（通过）；1=不一致（疑似 inline hook）；-1=无法校验（跳过，不误杀）。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeVerifyLibcTextCrc(
-        JNIEnv *, jobject) {
+jint jniVerifyLibcTextCrc(JNIEnv *, jobject) {
     // 用 libc 里的 fopen 反查所属模块，得到 libc 基址与路径。
     Dl_info info{};
     if (dladdr(reinterpret_cast<const void *>(&fopen), &info) == 0 || info.dli_fbase == nullptr) {
@@ -539,7 +860,7 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeVerifyLibcTextCrc
     }
 
     // dladdr 一般返回绝对路径；若为相对路径则回退到 maps 反查。
-    const std::string libcName = XS("libc.so");
+    const std::string libcName = lit::kLibcSo.str();
     std::string libcPath;
     if (info.dli_fname != nullptr) {
         if (info.dli_fname[0] == '/') {
@@ -556,7 +877,7 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeVerifyLibcTextCrc
     }
 
     // 从磁盘 ELF 取 .text 的 offset/addr/size。
-    const std::string textName = XS(".text");
+    const std::string textName = lit::kTextSection.str();
     ElfW(Shdr) textSection{};
     if (!getElfSection(&textSection, libcPath.c_str(), textName.c_str()) ||
         textSection.sh_size == 0 || textSection.sh_addr == 0) {
@@ -604,20 +925,18 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeVerifyLibcTextCrc
  *
  * @return 命中行数（>=0）；-1=读取 maps 失败。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeFindRootInMaps(
-        JNIEnv *, jobject) {
-    FILE *fp = fopen(XS("/proc/self/maps").c_str(), "r");
+jint jniFindRootInMaps(JNIEnv *, jobject) {
+    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
     if (fp == nullptr) {
         return -1;
     }
 
-    const std::string signatures[] = {
-        XS("zygisk"),
-        XS("riru"),
-        XS("magisk"),
-        XS("lsposed"),
-        XS("xposed"),
+    static const std::string signatures[] = {
+        lit::kZygisk.str(),
+        lit::kRiru.str(),
+        lit::kMagisk.str(),
+        lit::kLsposed.str(),
+        lit::kXposed.str(),
     };
 
     char line[512];
@@ -663,62 +982,60 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeFindRootInMaps(
  * @param selfSoPath Kotlin 侧从 APK 解压出的自身 so 文件路径。
  * @return 0=一致；1=不一致（疑似自身代码被改写）；-1=无法校验。
  */
-JNIEXPORT jint JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeVerifySelfSoTextCrc(
-        JNIEnv *env, jobject, jstring selfSoPath) {
+jint jniVerifySelfSoTextCrc(JNIEnv *env, jobject, jstring selfSoPath) {
     if (selfSoPath == nullptr) {
         return -1;
     }
-
     const char *rawPath = env->GetStringUTFChars(selfSoPath, nullptr);
     if (rawPath == nullptr) {
         return -1;
     }
-    std::string soPath(rawPath);
+    const std::string soPath(rawPath);
     env->ReleaseStringUTFChars(selfSoPath, rawPath);
     if (soPath.empty()) {
         return -1;
     }
+    return verifySectionCrc(soPath, lit::kTextSection.str());
+}
 
-    // 用本文件内的 crc32Update 反查「自身 so」的加载基址。
-    // 该函数在匿名 namespace 中（内部链接），但地址仍然有效，dladdr 能解析出所属 so。
-    Dl_info info{};
-    if (dladdr(reinterpret_cast<const void *>(&crc32Update), &info) == 0 ||
-        info.dli_fbase == nullptr) {
+/**
+ * 校验自身 so 的 `.rodata`（H3 新增）。
+ *
+ * 为什么补这一段：常量表（特征串、白名单、阈值）都在 .rodata 里，
+ * 只校验 .text 的话，攻击者改常量表即可让检测「合法地」失效。
+ *
+ * @param selfSoPath Kotlin 侧从 APK 解压出的自身 so 文件路径。
+ * @return 0=一致；1=不一致（常量表被改写）；-1=无法校验（跳过，不误杀）。
+ */
+jint jniVerifySelfSoDataCrc(JNIEnv *env, jobject, jstring selfSoPath) {
+    if (selfSoPath == nullptr) {
         return -1;
     }
-
-    const std::string textName = XS(".text");
-    ElfW(Shdr) textSection{};
-    if (!getElfSection(&textSection, soPath.c_str(), textName.c_str()) ||
-        textSection.sh_size == 0 || textSection.sh_addr == 0) {
+    const char *rawPath = env->GetStringUTFChars(selfSoPath, nullptr);
+    if (rawPath == nullptr) {
         return -1;
     }
-
-    FILE *fp = fopen(soPath.c_str(), "rb");
-    if (fp == nullptr) {
+    const std::string soPath(rawPath);
+    env->ReleaseStringUTFChars(selfSoPath, rawPath);
+    if (soPath.empty()) {
         return -1;
     }
-    if (fseek(fp, static_cast<long>(textSection.sh_offset), SEEK_SET) != 0) {
-        fclose(fp);
-        return -1;
-    }
+    return verifySectionCrc(soPath, lit::kRodataSection.str());
+}
 
-    std::vector<std::uint8_t> fileBuf(textSection.sh_size);
-    const std::size_t read = fread(fileBuf.data(), 1, fileBuf.size(), fp);
-    fclose(fp);
-    if (read != fileBuf.size()) {
-        return -1;
-    }
+/** Frida 特征线程数；-1=无法枚举。 */
+jint jniCountThreadSignals(JNIEnv *, jobject) {
+    return countThreadSignals();
+}
 
-    const auto *memBase =
-            reinterpret_cast<const std::uint8_t *>(info.dli_fbase) + textSection.sh_addr;
-    const std::uint32_t fileCrc = crc32Update(0, fileBuf.data(), fileBuf.size());
-    const std::uint32_t memCrc = crc32Update(0, memBase, textSection.sh_size);
-    SEC_LOGD("self so .text crc file=%08x mem=%08x size=%zu",
-             fileCrc, memCrc, static_cast<std::size_t>(textSection.sh_size));
+/** Frida 落地文件数。 */
+jint jniCountFileSignals(JNIEnv *, jobject) {
+    return countFileSignals();
+}
 
-    return fileCrc == memCrc ? 0 : 1;
+/** Root 相关文件数（su / Magisk 目录）。 */
+jint jniFindRootFiles(JNIEnv *, jobject) {
+    return countRootFiles();
 }
 
 /**
@@ -732,11 +1049,98 @@ Java_com_example_fragmject_app_security_AppSecurityGuard_nativeVerifySelfSoTextC
  * 延迟窗口用于让 UI 展示提示（更友好），且不削弱阻断效果——
  * 终止动作最终仍由 native 完成。
  */
-JNIEXPORT void JNICALL
-Java_com_example_fragmject_app_security_AppSecurityGuard_nativeKillSelf(
-        JNIEnv *, jobject) {
-    SEC_LOGW("nativeKillSelf invoked");
+void jniKillSelf(JNIEnv *, jobject) {
+    SEC_LOGW("jniKillSelf invoked");
     kill(getpid(), SIGKILL);
+}
+
+/**
+ * 动态注册表：`id` 只用于本文件内部与 Kotlin 侧注释对齐，不参与运行时匹配。
+ *
+ * 方法名与签名必须与 [SecurityNative] 的 `external fun` 完全一致；
+ * R8 下由 `-keepclasseswithmembernames` 保名。
+ */
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
+    JNIEnv *env = nullptr;
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK || env == nullptr) {
+        return JNI_ERR;
+    }
+
+    // 类名与方法名同样用 XS 混淆，二进制里不出现明文字符串。
+    // 必须与 Kotlin 侧 SecurityNative 的包名/类名一致（R8 keep 保证不被重命名）。
+    static const std::string className = lit::kSecurityNativeClass.str();
+    jclass clazz = env->FindClass(className.c_str());
+    if (clazz == nullptr) {
+        // 类找不到通常意味着 keep 规则失效或包名被改：清掉挂起异常再返回
+        env->ExceptionClear();
+        SEC_LOGW("JNI_OnLoad: SecurityNative class not found");
+        return JNI_ERR;
+    }
+
+    // 方法名/签名需要在注册期间保持稳定地址，故用 static 存储。
+    static const std::string nameInstallAntiPtrace = lit::kNameInstallAntiPtrace.str();
+    static const std::string nameReadTracerPid = lit::kNameReadTracerPid.str();
+    static const std::string nameCountAnonymousExecSegments = lit::kNameCountAnonymousExecSegments.str();
+    static const std::string nameFindFridaInMaps = lit::kNameFindFridaInMaps.str();
+    static const std::string nameFindRootInMaps = lit::kNameFindRootInMaps.str();
+    static const std::string nameVerifyLibcTextCrc = lit::kNameVerifyLibcTextCrc.str();
+    static const std::string nameVerifySelfSoTextCrc = lit::kNameVerifySelfSoTextCrc.str();
+    static const std::string nameVerifySelfSoDataCrc = lit::kNameVerifySelfSoDataCrc.str();
+    static const std::string nameFindFridaThreads = lit::kNameFindFridaThreads.str();
+    static const std::string nameFindFridaFiles = lit::kNameFindFridaFiles.str();
+    static const std::string nameFindRootFiles = lit::kNameFindRootFiles.str();
+    static const std::string nameKillSelf = lit::kNameKillSelf.str();
+    static const std::string sigNoArg = lit::kSigInt.str();
+    static const std::string sigNoArgVoid = lit::kSigVoid.str();
+    static const std::string sigStringArg = lit::kSigStringInt.str();
+
+    const JNINativeMethod methods[] = {
+            {const_cast<char *>(nameInstallAntiPtrace.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniInstallAntiPtrace)},
+            {const_cast<char *>(nameReadTracerPid.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniReadTracerPid)},
+            {const_cast<char *>(nameCountAnonymousExecSegments.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniCountAnonymousExecSegments)},
+            {const_cast<char *>(nameFindFridaInMaps.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniScanMapsForSignals)},
+            {const_cast<char *>(nameFindRootInMaps.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniFindRootInMaps)},
+            {const_cast<char *>(nameVerifyLibcTextCrc.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniVerifyLibcTextCrc)},
+            {const_cast<char *>(nameVerifySelfSoTextCrc.c_str()),
+             const_cast<char *>(sigStringArg.c_str()),
+             reinterpret_cast<void *>(jniVerifySelfSoTextCrc)},
+            {const_cast<char *>(nameVerifySelfSoDataCrc.c_str()),
+             const_cast<char *>(sigStringArg.c_str()),
+             reinterpret_cast<void *>(jniVerifySelfSoDataCrc)},
+            {const_cast<char *>(nameFindFridaThreads.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniCountThreadSignals)},
+            {const_cast<char *>(nameFindFridaFiles.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniCountFileSignals)},
+            {const_cast<char *>(nameFindRootFiles.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniFindRootFiles)},
+            {const_cast<char *>(nameKillSelf.c_str()),
+             const_cast<char *>(sigNoArgVoid.c_str()),
+             reinterpret_cast<void *>(jniKillSelf)},
+    };
+
+    const auto count = static_cast<jint>(sizeof(methods) / sizeof(methods[0]));
+    if (env->RegisterNatives(clazz, methods, count) != JNI_OK) {
+        env->ExceptionClear();
+        SEC_LOGW("JNI_OnLoad: RegisterNatives failed");
+        return JNI_ERR;
+    }
+    SEC_LOGD("JNI_OnLoad: registered %d methods", count);
+    return JNI_VERSION_1_6;
 }
 
 }  // extern "C"

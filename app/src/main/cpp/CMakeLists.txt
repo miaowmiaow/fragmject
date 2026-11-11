@@ -22,8 +22,10 @@ add_library(fragmject_security SHARED security.cpp)
 target_compile_features(fragmject_security PRIVATE cxx_std_17)
 
 # -O2：CRC32 与 maps 扫描在启动路径上执行，需要足够优化；
-# -Wall：保留常用告警，便于尽早发现未使用变量/类型转换等问题。
-target_compile_options(fragmject_security PRIVATE -O2 -Wall)
+# -Wall：保留常用告警，便于尽早发现未使用变量/类型转换等问题；
+# -fvisibility=hidden：动态注册后，jniXxx 实现函数不必出现在 .dynsym 里，
+#   只保留 JNI_OnLoad 一个对外符号（它带 JNIEXPORT）。这是动态注册的主要收益之一。
+target_compile_options(fragmject_security PRIVATE -O2 -Wall -fvisibility=hidden)
 
 # log：__android_log_print 依赖 liblog。
 # dl：dladdr 依赖 libdl（bionic 中单独成库）。

@@ -291,23 +291,23 @@
 -keepclassmembers class kotlinx.serialization.internal.** { *; }
 -dontwarn kotlinx.serialization.**
 
-# ---- 应用安全防护（JNI 静态注册）----
+# ---- 应用安全防护（JNI 动态注册）----
 #
-# security.cpp 使用「静态注册」，JNI 符号名由以下三部分拼成：
-#   Java_<包名，点替换为下划线>_<类名>_<方法名>
-# 例如：
-#   Java_com_example_fragmject_app_security_AppSecurityGuard_nativeReadTracerPid
+# security.cpp 使用「JNI_OnLoad + RegisterNatives」动态注册：C++ 侧按名查找
+# SecurityNative 并注册方法，因此 **类名与方法名** 必须保留；其余成员（状态、调度、
+# 日志文案）可以正常参与混淆。
 #
-# 这意味着 R8 一旦重命名「类名」或「native 方法名」，运行时就会找不到对应符号，
-# 抛 UnsatisfiedLinkError；虽然 AppSecurityGuard 会降级为纯 JVM 检测、不会崩溃，
-# 但 TracerPid / maps / 匿名段 / CRC 这些 native 能力会全部失效，防护强度明显下降。
+# 为什么不能更激进（连方法名一起混淆）：注册发生在 native，Kotlin 侧的 `external fun`
+# 名字就是注册名。想彻底隐藏方法名，需要改成「由 Kotlin 运行时把当前方法名传给 native」，
+# 那属于壳/字符串加密的范畴，本阶段不做。
 #
-# 因此这里 keep 整个类（类名 + 所有成员名）。
-#
-# 权衡：keep 整个类会让检测逻辑本身不被混淆，降低了静态逆向难度。
-# 若需要更强的隐蔽性，可改为在 JNI_OnLoad 中 RegisterNatives 动态注册：
-#   - 好处：native 方法名可任意，符号不出现在 .dynsym；
-#   - 代价：仍需 keep 类名（JNI 要按类名查找），且需在 native 侧硬编码方法签名，
-#           维护成本更高。
-# 本项目选择「简单可靠 + 字符串混淆」的组合，暂不引入动态注册。
--keep class com.example.fragmject.app.security.AppSecurityGuard { *; }
+# 如果这里 keep 失效：FindClass / RegisterNatives 失败 → JNI_OnLoad 返回 JNI_ERR →
+# System.loadLibrary 抛 UnsatisfiedLinkError → Kotlin 侧降级为纯 JVM 检测（不崩溃，
+# 但 TracerPid / maps / 匿名段 / CRC 全部失效）。
+-keepclasseswithmembernames class com.example.fragmject.app.security.SecurityNative {
+    native <methods>;
+}
+
+# 公开入口与配置：保持可读的名字，便于崩溃栈与接入方排查。
+-keep class com.example.fragmject.app.security.SecurityGuard { public *; }
+-keep class com.example.fragmject.app.security.SecurityConfig { *; }

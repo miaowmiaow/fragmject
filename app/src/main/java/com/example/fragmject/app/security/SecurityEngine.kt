@@ -1,0 +1,346 @@
+package com.example.fragmject.app.security
+
+import android.app.Application
+import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
+import android.os.Process
+import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+/**
+ * 检测引擎：负责「何时检测、命中后怎么办」，不负责「怎么判定」。
+ *
+ * 判定逻辑在 [detectHit] 及两个 Checks 文件；入口与生命周期在 [SecurityGuard]。
+ *
+ * ============================ 状态作用域 ============================
+ * 所有可变状态都是进程级 @Volatile 字段，没有持久化：
+ * - 配置变更（切换前后台、退避）用运行时字段即可；
+ * - 进程死亡后登录态与检测状态都会重新初始化，暂存没有意义。
+ *
+ * 用 HandlerThread 而不是裸 Thread：需要「延迟执行 + 可取消重排」的轮询语义
+ * （`postDelayed` / `removeCallbacks`），`onBackground` 时要能立即取消下一轮。
+ */
+internal class SecurityEngine(
+    private val config: SecurityConfig,
+    private val facts: SecurityFacts,
+    private val native: NativeChecks,
+) {
+
+    /** 是否已经启动，防止重复注册轮询与生命周期回调。 */
+    @Volatile
+    private var started = false
+
+    /** 是否已命中阻断。置位后不再重复处理，直到进程被终止。 */
+    @Volatile
+    var blocked = false
+        private set
+
+    /** 命中原因，用于 UI 提示与日志排查。 */
+    @Volatile
+    var blockReason: String? = null
+        private set
+
+    /** 当前轮询间隔，随退避机制动态调整。 */
+    @Volatile
+    private var currentIntervalMs = config.initialIntervalMs
+
+    /** 距离上次退避已连续干净的轮数。 */
+    @Volatile
+    private var consecutiveCleanRounds = 0
+
+    /** 上次端口扫描时间戳，用于按时间降频。 */
+    @Volatile
+    private var lastPortScanMs = 0L
+
+    /** 上次 CRC 校验时间戳，用于按时间降频。 */
+    @Volatile
+    private var lastCrcCheckMs = 0L
+
+    /** 上一轮的 WARN 原因：同一原因不重复记录，避免每秒一条刷屏。 */
+    @Volatile
+    private var lastWarnReason: String? = null
+
+    /**
+     * 最近命中的环形缓冲（最多 [MAX_EVENTS] 条）。
+     *
+     * 为什么不用日志代替：release 会裁剪 `Log.v/d/i/w`，用户反馈误杀时拿不到任何证据；
+     * 内存里留一小段历史，配合 [SecurityGuard.securityEvents] 导出，是成本最低的可观测性。
+     */
+    private val eventLock = Any()
+    private val recentEvents = ArrayDeque<Event>()
+
+    /** 后台检测线程：仅在真正启动后才创建，Debug / 跳过变体不产生任何开销。 */
+    private val handler by lazy {
+        val thread = HandlerThread("AppSec-Check")
+        thread.start()
+        Handler(thread.looper)
+    }
+
+    /**
+     * 启动检测。应在 `Application.attachBaseContext` 中（经 [SecurityGuard.install]）调用。
+     *
+     * 执行顺序及原因：
+     * 1. 可调试包直接返回：避免影响本地开发（断点、Frida 调试自身）；
+     * 2. 跳过采集变体：见 [SecurityConfig.skipBuildTypes] 的说明；
+     * 3. native 占坑 ptrace：必须早于任何可能被附加的时机；
+     * 4. 首轮**同步**轻量检测：在进入应用主流程前判断「启动前是否已被附加/注入」；
+     * 5. 异步完整性校验：签名与 so 在进程生命周期内不变，只需一次；
+     * 6. 注册生命周期回调 + 启动轮询：覆盖运行期新附加的情况。
+     *
+     * 首轮有意**不**执行 CRC 与端口扫描：端口扫描最坏 11 × 50ms 超时会拖慢冷启动，
+     * CRC 需要读数 MB 数据。两者由后台轮询第一次执行立即补上（`lastXxxMs` 初值为 0，
+     * 首轮必然 due），所以不会漏掉「启动前已被 inline hook」的场景。
+     */
+    fun start(context: Context) {
+        if (isDebuggableApp(context)) return
+        if (config.buildType in config.skipBuildTypes) {
+            Log.i(SecurityGuard.TAG, "security guard skipped for ${config.buildType} (collection build type)")
+            return
+        }
+        if (started) return
+        started = true
+
+        // native 库在跳过判定**之后**才加载：debug 包与采集变体不应产生任何 so 加载开销。
+        // 加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
+        native.load()
+
+        // start() 的契约是「主线程调用」：
+        // - 唯一调用点 Application.attachBaseContext 由 ActivityThread 在主线程执行；
+        // - registerActivityLifecycleCallbacks 的回调派发依赖主线程 Looper，
+        //   从子线程注册属于未定义行为。
+        // 这里做防御性检查：非主线程调用只记日志并跳过生命周期注册，轮询仍会启动。
+        val onMainThread = Looper.myLooper() == Looper.getMainLooper()
+        if (!onMainThread) {
+            Log.w(SecurityGuard.TAG, "install() should be called on the main thread, lifecycle link skipped")
+        }
+
+        // 最早时机占坑 ptrace，杜绝后续调试器附加。
+        // 失败不直接判定为「被调试」：部分 ROM 的 ptrace 策略会导致正常进程也失败，
+        // 这里只记录日志，真正判定仍交给 TracerPid 检测。
+        if (native.available && native.installAntiPtrace() != 0) {
+            Log.w(SecurityGuard.TAG, "ptrace self-trace failed (already attached?)")
+        }
+
+        val firstHit = detectHit(facts, native, config, includePortScan = false, includeCrc = false)
+        if (firstHit != null) {
+            // 只有 CRITICAL 才终止；WARN（Root / 模拟器默认）记录后继续正常启动流程，
+            // 否则一次环境特征就会让应用在启动阶段闪退。
+            if (firstHit.severity == Severity.CRITICAL) {
+                block(firstHit)
+                return
+            }
+            warn(firstHit)
+        }
+
+        // 完整性校验在进程生命周期内基本不变，只需做一次；全部放后台线程，
+        // 避免 PackageManager 查询、APK 解压与摘要计算占用启动主线程。
+        startOneShotIntegrityChecks()
+
+        // 只有拿到 Application 且在主线程时，才能安全注册 Activity 生命周期回调；
+        // 其它 Context 或子线程调用时跳过前后台联动，轮询仍会常驻。
+        if (context is Application && onMainThread) {
+            AppSecurityLifecycle.register(context, ::onForeground, ::onBackground)
+        }
+
+        handler.removeCallbacks(checkTask)
+        handler.post(checkTask)
+    }
+
+    /**
+     * 进入前台：立即全量检测一次，并把退避重置为最短间隔。
+     *
+     * 为什么需要：用户切回前台是「调试器/Frida 新附加」的高发窗口，
+     * 如果沿用后台的长间隔（可能已退避到上限），会错过这个窗口。
+     * 这里同时把 lastPortScanMs 归零，强制下一轮重做端口扫描。
+     */
+    fun onForeground() {
+        if (!started) return
+        consecutiveCleanRounds = 0
+        currentIntervalMs = config.initialIntervalMs
+        lastPortScanMs = 0L
+        handler.removeCallbacks(checkTask)
+        handler.post(checkTask)
+    }
+
+    /**
+     * 最近命中的事件（最多 [MAX_EVENTS] 条，时间正序）。
+     *
+     * 供宿主在「用户反馈异常」时导出，或接入自建上报；不要在 UI 主循环里高频调用。
+     */
+    fun recentEvents(): List<String> = synchronized(eventLock) {
+        val format = SimpleDateFormat("HH:mm:ss", Locale.US)
+        recentEvents.map { "${format.format(Date(it.at))} ${it.hit.severity} ${it.hit.reason}" }
+    }
+
+    /**
+     * 进入后台：暂停轮询。
+     *
+     * 进程在后台时用户不可见，继续高频检测只会耗电/发热；
+     * 回到前台会通过 [onForeground] 立即恢复。
+     */
+    fun onBackground() {
+        if (!started) return
+        // 离开前台时清掉 WARN 去重：用户切回来若环境仍异常，会再记录一条，
+        // 便于复现「只有切回前台才出现」的问题；放在这里而不是 onForeground，
+        // 是为了避免启动阶段 start() 与首次 onForeground 各记一次造成重复。
+        lastWarnReason = null
+        handler.removeCallbacks(checkTask)
+    }
+
+    /**
+     * 命中后置标记并延迟终止进程。
+     *
+     * 为什么延迟：给 UI 一个展示 [SecurityGuard.blockingMessage] 的窗口，避免「莫名闪退」。
+     * 为什么延迟不削弱安全性：
+     * - 终止动作优先由 native `SIGKILL` 完成，Java 层 hook 无法取消；
+     * - 延迟固定且很短（默认 1.2s），攻击者拿不到有意义的操作窗口；
+     * - 命中后不再排下一轮检测，避免在「已被控制的环境」里继续跑逻辑。
+     *
+     * 用 compare-and-set 语义（先判断再置位）保证并发调用只处理一次：
+     * 该方法可能同时被轮询线程与签名线程调用。
+     */
+    fun block(hit: SecurityHit) {
+        if (blocked) return
+        blocked = true
+        blockReason = hit.reason
+        // 用 Log.e 而不是 Log.w：release 的 proguard 规则把 Log.v/d/i/w 全部当作无副作用裁剪掉了，
+        // 用 w 会导致「线上误杀时没有任何日志」，排查无从下手。e 不在裁剪列表内。
+        Log.e(SecurityGuard.TAG, "security check hit: ${hit.reason}")
+        record(hit)
+        config.onHit?.invoke(hit)
+
+        handler.postDelayed({
+            // 优先 native SIGKILL（不可捕获/不可 hook）；native 不可用时退回 Java kill。
+            if (native.available) {
+                native.killSelf()
+            }
+            Process.killProcess(Process.myPid())
+        }, config.blockGraceMs)
+    }
+
+    /**
+     * WARN 级命中：只记录、不终止。
+     *
+     * 去重：同一原因只在「首次出现」和「回前台」时记录一次，
+     * 否则按 1s 轮询会产生每秒一条的噪音（也掩盖了真正攻击特征的日志）。
+     */
+    fun warn(hit: SecurityHit) {
+        if (lastWarnReason == hit.reason) return
+        lastWarnReason = hit.reason
+        Log.e(SecurityGuard.TAG, "security warn: ${hit.reason}")
+        record(hit)
+        config.onHit?.invoke(hit)
+    }
+
+    /** 写入环形缓冲；满则丢最旧的一条。 */
+    private fun record(hit: SecurityHit) {
+        synchronized(eventLock) {
+            if (recentEvents.size >= MAX_EVENTS) {
+                recentEvents.removeFirst()
+            }
+            recentEvents.addLast(Event(System.currentTimeMillis(), hit))
+        }
+    }
+
+    /** 环形缓冲元素：时间戳 + 命中。 */
+    private data class Event(val at: Long, val hit: SecurityHit)
+
+    private companion object {
+        /** 环形缓冲上限：够定位最近一次误杀，又不会常驻占内存。 */
+        const val MAX_EVENTS = 20
+    }
+
+    /**
+     * 轮询任务。
+     *
+     * 每轮：
+     * 1. 按时间决定本轮是否执行「重量级检测」（端口扫描 / CRC）；
+     * 2. 执行轻量检测；
+     * 3. CRITICAL 命中则 [block] 并停止轮询（进程即将被终止，不必再排下一轮）；
+     *    WARN 命中只 [warn] 记录，继续按退避排下一轮；
+     * 4. 未命中则按退避策略排下一轮。
+     *
+     * 注意：CRITICAL 命中后直接 return，不调用 postDelayed，避免终止前又跑一轮。
+     */
+    private val checkTask = object : Runnable {
+        override fun run() {
+            val now = System.currentTimeMillis()
+
+            // 用「时间差」而不是「轮数」控制重量级检测频率：
+            // 轮询间隔会随退避变化，按时间判断才能保证「最多每 N 秒一次」。
+            val portScanDue = (now - lastPortScanMs >= config.portScanIntervalMs).also {
+                if (it) lastPortScanMs = now
+            }
+            val crcCheckDue = (now - lastCrcCheckMs >= config.crcCheckIntervalMs).also {
+                if (it) lastCrcCheckMs = now
+            }
+
+            val hit = detectHit(facts, native, config, includePortScan = portScanDue, includeCrc = crcCheckDue)
+            if (hit != null) {
+                if (hit.severity == Severity.CRITICAL) {
+                    block(hit)
+                    return
+                }
+                warn(hit)
+            }
+
+            // 指数退避：连续干净后逐步拉长间隔（1s → 2s → 4s … → 上限封顶）。
+            // 一旦命中会重置（见 block/onForeground），保证异常时恢复高频。
+            consecutiveCleanRounds++
+            if (consecutiveCleanRounds >= config.cleanRoundsToBackoff) {
+                consecutiveCleanRounds = 0
+                currentIntervalMs = minOf(currentIntervalMs * 2, config.maxIntervalMs)
+            }
+            handler.postDelayed(this, currentIntervalMs)
+        }
+    }
+
+    /**
+     * 一次性完整性校验：签名 + so `.text` + so `.rodata` + 资源基线。
+     *
+     * 拆成独立方法的两个原因：
+     * - `start()` 已经承担跳过判定、native 加载、首轮检测、生命周期注册，
+     *   再塞四个分支会超过 detekt 的圈复杂度阈值（15）；
+     * - 四项都是「进程生命周期内只做一次」的同类工作，放一起便于按需增删。
+     */
+    private fun startOneShotIntegrityChecks() {
+        Thread {
+            val hit = firstIntegrityFailure()
+            if (hit != null) {
+                block(hit)
+            }
+        }.start()
+    }
+
+    /** 按固定顺序返回第一处完整性失败；全部通过返回 null。 */
+    private fun firstIntegrityFailure(): SecurityHit? = when {
+        !verifySignature(facts, config) ->
+            SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL)
+
+        !verifySelfSoIntegrity(facts, native) ->
+            SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL)
+
+        // 第二道独立校验：`.rodata`（常量表）。与上一项互不替代，patch 任何一处仍会被另一处抓到
+        !verifySelfSoDataIntegrity(facts, native) ->
+            SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL)
+
+        !verifyResourceIntegrity(facts, config) ->
+            SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL)
+
+        else -> null
+    }
+
+    /**
+     * 可调试判定：读 `ApplicationInfo.FLAG_DEBUGGABLE`，而不是宿主的 `BuildConfig.DEBUG`。
+     *
+     * 这是库化的关键一步——库模块读不到宿主的 BuildConfig，
+     * 而该 flag 由打包时的 buildType 决定，语义与 `BuildConfig.DEBUG` 等价。
+     */
+    private fun isDebuggableApp(context: Context): Boolean =
+        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+}

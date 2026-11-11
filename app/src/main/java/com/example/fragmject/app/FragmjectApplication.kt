@@ -13,7 +13,8 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
-import com.example.fragmject.app.security.AppSecurityGuard
+import com.example.fragmject.app.security.SecurityConfig
+import com.example.fragmject.app.security.SecurityGuard
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.domain.system.SystemStorage
 // 登记过的架构例外（ArchitectureTest 规则 21 白名单）：app 组合根不应引用数据实现层，
@@ -42,19 +43,32 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
      *
      * ============================ 为什么这里用 this 是安全的 ============================
      * [attachBaseContext] 阶段 Application 实例已创建，但 Context 尚未完全 attach。
-     * [AppSecurityGuard.start] 只做两件事会用到 Context：
+     * [SecurityGuard.install] 只做两件事会用到 Context：
      *   - 判断 `context is Application` 以注册 Activity 生命周期回调；
      *   - 异步签名校验时读取 PackageManager。
      * 两者都不依赖「资源已 attach」的前提，因此在此时调用是安全的。
      *
      * ============================ 代价与跳过 ============================
-     * 首轮检测是**同步**执行的（含 libc CRC 与端口扫描，几十毫秒量级），
-     * 会略微增加冷启动耗时；这是「尽早发现」与「启动速度」之间的有意取舍。
-     * Debug 包会在 [AppSecurityGuard.start] 内部直接返回，不影响本地开发调试。
+     * 首轮检测是**同步**执行的（几十毫秒量级），会略微增加冷启动耗时；
+     * 这是「尽早发现」与「启动速度」之间的有意取舍。
+     * 可调试包会在引擎内部直接返回（读 `FLAG_DEBUGGABLE`），不影响本地开发调试。
+     *
+     * ============================ 为什么把 buildType / 签名摘要传进去 ============================
+     * 库侧刻意不读宿主的 `BuildConfig`（库模块的 BuildConfig 属于库自己）。
+     * - `buildType`：采集变体（`nonMinifiedRelease`）需要在 `SecurityConfig.skipBuildTypes` 里被跳过；
+     * - `expectedSignatureSha256`：由 `app/build.gradle.kts` 在构建期从签名 keystore 算出并注入
+     *   `BuildConfig.EXPECTED_SIG_SHA256`，这里是「期望值」进入运行期的唯一入口。
+     *   摘要为空串时签名校验不启用（见 `SecurityIntegrityChecks.verifySignature`）。
      */
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
-        AppSecurityGuard.start(this)
+        SecurityGuard.install(
+            this,
+            SecurityConfig(
+                buildType = BuildConfig.BUILD_TYPE,
+                expectedSignatureSha256 = BuildConfig.EXPECTED_SIG_SHA256.toDigestSet(),
+            ),
+        )
     }
 
     @Inject
@@ -133,3 +147,12 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
     }
 
 }
+
+/**
+ * 把构建期注入的摘要串（逗号分隔，兼容多渠道重签）拆成集合。
+ *
+ * 空串 → 空集合 → [SecurityConfig.expectedSignatureSha256] 为空 → 签名校验不启用。
+ * 这一步刻意放在组合根：库只管「按集合比对」，不关心摘要从哪来。
+ */
+private fun String.toDigestSet(): Set<String> =
+    split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()

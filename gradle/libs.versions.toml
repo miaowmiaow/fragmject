@@ -13,7 +13,7 @@
 # ============================================================================
 
 [versions]
-androidGradlePlugin = "9.4.1"
+androidGradlePlugin = "9.5.1"
 activity = "1.13.0"
 androidxBaselineProfile = "1.5.0"
 androidxBenchmark = "1.5.0"
@@ -22,16 +22,16 @@ androidxComposeBom = "2026.09.00"
 androidxCoreKtx = "1.19.1"
 androidxCoreSplashscreen = "1.2.0"
 androidxLifecycle = "2.11.0"
-androidxNavigation3 = "1.2.0"
+androidxNavigation3 = "1.2.1"
 androidxProfileInstaller = "1.4.1"
 androidxTestCore = "1.7.0"
 androidxTestExtJunit = "1.3.0"
 androidxTestRunner = "1.7.0"
-androidxUiautomator = "2.4.0"
+androidxUiautomator = "2.4.1"
 barcodeScanning = "17.3.0"
 coil = "2.7.0"
 detekt = "1.23.8"
-gson = "2.14.0"
+gson = "2.15.0"
 hilt = "2.60.1"
 androidxHilt = "1.4.0"
 junit = "4.13.2"
@@ -39,13 +39,14 @@ kotlin = "2.4.21"
 konsist = "0.18.1"
 kotlinxCoroutines = "1.11.0"
 ksp = "2.3.6"
-okhttp = "5.5.0"
+okhttp = "5.5.1"
 paging = "3.5.3"
 retrofit = "3.0.0"
-robolectric = "4.16"
+robolectric = "4.17"
 room3 = "3.0.3"
 
 [libraries]
+asm-tree = { group = "org.ow2.asm", name = "asm-tree", version.ref = "asm" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }

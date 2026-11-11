@@ -38,18 +38,42 @@ jobs:
         run: echo "name=$(grep -E '^versionName=' config.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
 
       # 加固开关必须在这里显式打开：默认关闭是为了不影响本地调试构建，
-      # 但发布产物必须带上字符串加密（H2）与资源混淆（H4）。
+      # 但发布产物必须带上字符串加密（H2）、资源混淆（H4）与 DEX 壳（H6）。
+      # 三者可叠加：资源混淆与打壳在构建图里已串行（resobf → shell）。
       - name: Assemble release APK (hardened)
-        run: ./gradlew :app:assembleRelease -PenableStringFog=true -PenableResObf=true --stacktrace
+        run: |
+          ./gradlew :app:assembleRelease \
+            -PenableStringFog=true \
+            -PenableResObf=true \
+            -PenableDexShell=true \
+            --stacktrace
 
-      # 资源混淆产物是**重新签名**的（aapt2 optimize 之后必须重签），
-      # 这里校验签名有效且证书与 H1 期望一致，避免发布一个装不上的包。
-      - name: Verify hardened APK signature
+      # 开壳后**只有 app-release-shell.apk 可发布**：
+      # app-release.apk / app-release-resobf.apk 的 manifest 已指向 StubApplication，
+      # 但里面没有壳 dex，装上必然启动即崩。这里先做结构与签名校验。
+      - name: Verify hardened APK
         run: |
           set -euo pipefail
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          APK=app/build/outputs/apk/release/app-release-resobf.apk
+          APK=app/build/outputs/apk/release/app-release-shell.apk
           test -f "$APK"
+
+          # 清单只导出一次：`unzip -l | grep -q` 在 pipefail 下会因 SIGPIPE 返回 141
+          # （grep 提前退出导致 unzip 被中断），造成假失败。实测踩到。
+          unzip -l "$APK" > "$RUNNER_TEMP/apk-listing.txt"
+
+          # 1) 结构：业务 dex 必须已被抽走（只剩 10KB 级壳 dex），并存在加密载荷
+          grep -qE "assets/payload/dex-0\.bin" "$RUNNER_TEMP/apk-listing.txt"
+          grep -qE "assets/payload/sum\.txt" "$RUNNER_TEMP/apk-listing.txt"
+          ! grep -q "classes2.dex" "$RUNNER_TEMP/apk-listing.txt" || { echo "业务 dex 未被抽走"; exit 1; }
+          DEX_SIZE=$(awk '$4=="classes.dex"{print $1}' "$RUNNER_TEMP/apk-listing.txt")
+          test -n "$DEX_SIZE" || { echo "找不到 classes.dex"; exit 1; }
+          test "$DEX_SIZE" -lt 100000 || { echo "壳 dex 体积异常：$DEX_SIZE"; exit 1; }
+
+          # 2) 资源混淆已生效（短路径）
+          grep -qE "res/[A-Za-z]{2}$" "$RUNNER_TEMP/apk-listing.txt"
+
+          # 3) 签名与对齐：证书必须与 H1 期望一致，否则装上也活不过 1.2s
           "$BT/apksigner" verify --print-certs "$APK"
           "$BT/zipalign" -c -p 4 "$APK"
 
@@ -57,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: release-apk-${{ steps.version.outputs.name }}
-          path: app/build/outputs/apk/release/app-release-resobf.apk
+          path: app/build/outputs/apk/release/app-release-shell.apk
           retention-days: 90
           if-no-files-found: error
 

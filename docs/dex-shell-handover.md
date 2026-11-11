@@ -39,6 +39,10 @@
 
 产物路径：`app/build/outputs/apk/release/app-release-shell.apk`
 
+**CI**：`.github/workflows/release-weekly.yml` 已开启全部三个开关（字符串加密 + 资源混淆 + 打壳），
+上传的 artifact 就是 `app-release-shell.apk`，并在上传前校验：载荷存在、业务 dex 已抽走
+（`classes.dex < 100 KB` 且无 `classes2.dex`）、资源短路径生效、签名证书与对齐。
+
 ---
 
 ## 三、构建图（改这些地方前先看）

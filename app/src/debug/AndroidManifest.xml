@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  S0 探针（仅 debug 变体）：验证 DEX 壳的两项前置能力，不影响 release。
+
+  用 ContentProvider 而不是改 MainActivity 的原因：
+  Android 会在 Application.onCreate 之前创建 ContentProvider，
+  这正是壳需要完成 classloader 替换的时间窗（真实壳也必须在此时序生效）。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <provider
+            android:name="com.example.fragmject.app.devtools.ShellProbeProvider"
+            android:authorities="com.example.fragment.project.shellprobe"
+            android:exported="false"
+            android:enabled="true" />
+    </application>
+
+</manifest>

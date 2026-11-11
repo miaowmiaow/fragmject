@@ -428,6 +428,36 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 
 **触发条件**（满足任一才开工）：线上确认出现二次打包分发；渠道投诉异常签名包；出现明确的"去广告改包"传播。
 
+**S0 实测（2026-11-11，已完成第一步）**：
+
+探针 `app/src/debug/.../devtools/ShellProbeProvider.kt`（仅 debug 变体，用 ContentProvider 复刻
+「Application.onCreate 之前」的时序），真机 PGEM10 / Android 16（API 36）与模拟器
+sdk_gphone16k_arm64 / Android 17（API 37，16 KB page）双端各跑一次：
+
+| 检查项 | 真机 API 36 | 模拟器 API 37（16 KB） | 说明 |
+|---|---|---|---|
+| `InMemoryDexClassLoader` 从内存字节构造 | ✅ | ✅ | 壳的加载器基础；16 KB 页设备无障碍 |
+| 用该 loader 解析真实类 | ✅ 7/7 | ✅ 7/7 | 覆盖 app / core / feature 三类包 |
+| `ActivityThread.mBoundApplication` 反射 | ✅ 可读 | ✅ 可读 | hidden API 未被封禁 |
+| `LoadedApk.mClassLoader` 读取 | ✅ `PathClassLoader` | ✅ `PathClassLoader` | |
+| `LoadedApk.mClassLoader` **替换**并还原 | ✅ 替换/还原均成功 | ✅ | 替换后进程未异常 |
+| 真实 `FragmjectApplication` 经 payload loader 类加载 | ✅ | ✅ | Hilt 生成的父类在类加载期初始化，未抛异常 |
+| 真实 Application 构造（第二个实例，仅验证构造链） | ✅ | ✅ | 不等价于 Hilt 组件创建 |
+| `ActivityThread.mInitialApplication` 可读 | ✅ | ✅ | 壳最终要替换它 |
+
+结论（S0 第一步）：**两个最大疑点已排除** —— 16 KB 页设备上内存 dex 可用；Android 16/17 上
+`mClassLoader` 仍可反射替换。
+
+**S0 剩余未验证项（决定 H6 能否继续）**：
+1. **真壳时序**：stub 在 `attachBaseContext` 内替换 classloader 后，系统 `makeApplication` 是否
+   使用新 loader 实例化真实 Application（必须真正重打包才能验证）；
+2. **Hilt 组件创建**：`Hilt_*` 要求「系统托管的 Application 实例」实现 `GeneratedComponentManager`，
+   探针里的第二个实例只验证了构造链，未验证组件创建；
+3. **ContentProvider 时序**：`androidx.startup`（ProfileInstaller）在 classloader 被替换后的表现。
+
+**建议**：进入 S1（最小壳打包链路，3~5 人日）——`:shell` 模块 + 抽 dex/加密/塞回/改 manifest/重签
+的 Gradle 任务，只验证「能启动 + Hilt 正常」，不做反脱壳加固。
+
 **S0 可行性验证（2~3 人日，先做，失败即终止）**：
 - 写最小 demo：`StubApplication` + `InMemoryDexClassLoader` + 反射替换 `LoadedApk.mClassLoader`；
 - 在 Android 8 / 12 / 14 / 16 真机验证；同时验证 Hilt `@HiltAndroidApp` 正常初始化；

@@ -154,7 +154,7 @@ class ShellProbeProvider : ContentProvider() {
         /** 覆盖 core / feature / app 的若干类，任一枚命中即可证明 loader 能定义类。 */
         val CANDIDATES = listOf(
             "com.example.fragmject.app.MainActivity",
-            "com.example.fragmject.app.security.SecurityGuard",
+            "com.example.security.SecurityGuard",
             "com.example.fragmject.core.model.Article",
             "com.example.fragmject.core.network.http.OkHttpClients",
             "com.example.fragmject.feature.home.ui.home.HomeScreenKt",

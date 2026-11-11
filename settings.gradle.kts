@@ -38,6 +38,8 @@ include(":benchmark")
 // DEX 壳的壳代码（H6/S1）：纯 Java、零依赖，只作为构建产物被打进 APK，
 // **不进入任何 runtime classpath**（:app 不依赖它，避免壳类混进业务 dex）
 include(":shell")
+// 运行期安全防护库（可独立交付给其他项目）
+include(":security")
 include(":core:android-platform")
 include(":core:data-repository")
 include(":core:data-contract")

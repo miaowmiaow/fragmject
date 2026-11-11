@@ -3,6 +3,7 @@
 > 面向：发布负责人、值班同学、后续维护者。
 > 能力演进与实测明细见 [`hardening-assessment.md`](./hardening-assessment.md) 的 H6 小节；本文只讲**怎么用、怎么验、怎么回滚、出事怎么查**。
 > 最后验证：2026-11-11，Android 16（真机 PGEM10 / API 36）与 Android 17（模拟器 / API 37 / 16 KB page）。
+> 2026-11-11 起，安全库已从 `:app` 搬到顶层 **`:security`** 模块（`com.example.security`，so 名 `libappsecurity.so`）。
 
 ---
 
@@ -51,10 +52,9 @@
 :shell:assembleRelease            （纯 Java 壳模块，零依赖）
         │
         ▼
-:app:generateShellDex             d8 → shell.dex + shell_crc.h（CRC 常量）
+:app:generateShellDex             d8 → shell.dex（+ 打印 CRC 供日志核对）
         │                          ↑ preReleaseBuild / buildCMakeRelease 依赖它
         ▼
-:app:externalNativeBuild          security.cpp 用 __has_include 读入 SHELL_DEX_CRC
         │
         ▼
 :app:packageRelease               app-release.apk（manifest 已指向 StubApplication）
@@ -71,7 +71,7 @@
 2. 资源混淆与打壳**已串行**（打壳消费 resobf 产物）。并行处理同一个 `app-release.apk` 会产出
    「manifest 指向壳、但没有壳 dex」的坏包；
 3. 改了 `:shell` 代码后 CRC 会变，`generateShellDex` 会自动重算，无需手工同步；
-4. 改过 CMake 参数后若发现运行时 `shell dex check=-1`（校验没生效），删 `app/.cxx` 重新配置。
+4. native 已迁到 `:security/src/main/cpp`，改 CMake/so 名请看 `security/build.gradle.kts`。
 
 ---
 
@@ -83,7 +83,7 @@
        ├─ 读 assets/payload/dex-*.bin
        ├─ 校验 payload 整体 SHA-256（对应 assets/payload/sum.txt）      ← 校验 1
        ├─ 建 InMemoryDexClassLoader（先 XOR 还原，再 inflate）
-       ├─ 校验自身 classes.dex 的 CRC32（常量在 so 里）                 ← 校验 2
+       ├─ 校验自身 classes.dex 的 CRC32（期望值在 assets/payload/shell.txt） ← 校验 2
        ├─ 反射替换 LoadedApk.mClassLoader
        ├─ 用 payload loader 实例化真实 Application
        ├─ 替换 LoadedApk.mApplication / ActivityThread.mInitialApplication
@@ -133,7 +133,7 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
    adb install -r $APK
    adb logcat -c && adb shell am start -n com.example.fragment.project/com.example.fragmject.app.MainActivity
    adb logcat -d -s DexShell:V FragmjectSecurity:V
-   # 期望：payload sum ok (N chunks) / shell dex check=0 / registered 13 methods
+   # 期望：shell dex check ok / payload sum ok (N chunks) / registered 12 methods
    ```
 7. **冒烟 8 项**：首页列表与分页、登录与自动登录、收藏、搜索历史、WebView 详情、扫码、
    图片编辑、深链跳转（Nav3 typed routes）；
@@ -160,11 +160,10 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
 | 日志 | 原因 | 处理 |
 |---|---|---|
 | `payload sum mismatch: payload modified` | payload 被替换/打包不一致 | 重新出包；检查是否有其他任务改过 `assets/payload` |
-| `shell dex crc mismatch: actual=… expected=…` | 壳 dex 被替换，或 `shell_crc.h` 与打包 dex 不是同一次生成 | 删 `app/build/generated/shell` 重新构建 |
-| `shell dex check=-1` | native 没读到 `shell_crc.h`（CMake 缓存旧配置） | 删 `app/.cxx` 重新配置 |
-| `shell dex check error: java.lang.ClassNotFoundException` | 校验被放到了 payload loader 之前 | 已修复；若复现说明代码被回退 |
-| `JNI_OnLoad: RegisterNatives failed` | R8 裁掉了只在壳里反射调用的 native 方法 | 检查 `proguard-rules.pro` 里 `SecurityNative` 的 `-keepclassmembers { native <methods>; }` |
-| `load fragmject_security failed, fallback to JVM checks` | so 不在预期路径（普通包不会出现） | 壳包内正常应能加载；若出现，检查 APK 内 `lib/<abi>/libfragmject_security.so` 是否被压缩（必须 STORED） |
+| `shell dex crc mismatch: actual=… expected=…` | 壳 dex 被替换，或 `shell.txt` 与打包 dex 不是同一次生成 | 删 `app/build/generated/shell` 重新构建 |
+| `no shell.txt, shell dex check skipped` | 打包任务没写入壳清单（旧产物） | 重新出包；确认 `packShellRelease` 跑过 |
+| `JNI_OnLoad: RegisterNatives failed` | R8 裁掉了只在 native 侧按名注册的方法 | 检查 `:security/consumer-rules.pro` 的 `-keepclassmembers … SecurityNative { native <methods>; }` 是否被删 |
+| `load appsecurity failed, fallback to JVM checks` | so 不在预期路径（普通包不会出现） | 壳包内正常应能加载；若出现，检查 APK 内 `lib/<abi>/libappsecurity.so` 是否被压缩（必须 STORED） |
 | `Module with the Main dispatcher is missing` | `InMemoryDexClassLoader` 的 parent 用了 systemClassLoader | parent 必须是系统原本的 `PathClassLoader`（提供 `META-INF/services` 资源） |
 | `Hilt Activity must be attached to an @HiltAndroidApp Application` | `mInitialApplication` 在 `makeApplication` 之后被系统覆盖 | 已在 `StubApplication.onCreate` 二次替换；复现说明该逻辑被删 |
 | 启动直接 `ClassNotFoundException: com.google.mlkit…` | 壳安装失败后进程继续跑（fail-closed 的表现） | 看前面第一条 `shell install failed` 的真实原因 |
@@ -184,9 +183,10 @@ adb shell pidof com.example.fragment.project
 1. **AGP / R8 / aapt2 升级后必须重跑**「打壳构建 + 装机冒烟」。历史踩坑：
    `-keepclasseswithmembernames` 不阻止裁剪（native 方法被删 → RegisterNatives 失败）、
    proguard 注释只认 `#`、AGP 9 的 `FramesComputationMode` 枚举改名；
-2. **不要改这几个 keep 规则**（都在 `app/proguard-rules.pro`）：
-   - `-keepclassmembers … SecurityNative { <init>(String,String); public boolean load(); native <methods>; }`
-   - `-keepclassmembers class * extends android.app.Application { <init>(); }`（壳反射实例化真实 Application）；
+2. **keep 规则分两处**：
+   - 安全库的规则在 `:security/consumer-rules.pro`（随 AAR 自动合并，宿主不用写）；
+   - App 自身只剩一条 `-keepclassmembers class * extends android.app.Application { <init>(); }`
+     （壳反射实例化真实 Application，R8 看不到调用点）；
 3. `:shell` 模块必须保持**纯 Java、零依赖**：引入 Kotlin stdlib 会让壳 dex 膨胀数十倍；
    且 `:app` 不能依赖它（壳类一旦进业务 dex，壳就失效了）；
 4. `minSdk` 必须 ≥ 26（`InMemoryDexClassLoader`）；
@@ -214,7 +214,7 @@ adb shell pidof com.example.fragment.project
 | 载荷分片 | 2 片（约 1.8 MB + 1.8 MB 压缩后） |
 | 壳包 vs 常规包体积 | +36.7 KB（+0.3%） |
 | 冷启动（模拟器，5 次中位数） | 常规 933 ms / 壳包 984 ms（+51 ms，+5.5%） |
-| 正常启动日志 | `payload sum ok (2 chunks)` / `shell dex check=0` / `registered 13 methods` |
+| 正常启动日志 | `shell dex check ok` / `payload sum ok (2 chunks)` / `registered 12 methods` |
 | payload 篡改 | `payload sum mismatch` → 进程崩溃（fail-closed） |
 | 壳 dex 篡改 | `shell dex crc mismatch: actual=97e55d8f expected=38ee772d` → 崩溃 |
 | 回滚（壳包 → 常规包） | 同签名覆盖安装成功，数据保留 |

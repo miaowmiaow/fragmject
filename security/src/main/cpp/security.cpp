@@ -36,15 +36,6 @@
 #include <sys/ptrace.h>
 #include <unistd.h>
 
-// 壳 dex 的 CRC 常量：由 build-logic 的 generateShellDex 在编译前生成。
-// 未开壳（-PenableDexShell 关闭）时该头文件不存在，校验自动降级为「不启用」。
-#if __has_include("shell_crc.h")
-#include "shell_crc.h"
-#define SHELL_DEX_CRC_AVAILABLE 1
-#else
-#define SHELL_DEX_CRC_AVAILABLE 0
-#endif
-
 #include <array>
 #include <cctype>
 #include <cstddef>
@@ -88,7 +79,7 @@ namespace {
  * ```
  *
  * 而便捷宏 `XS("frida-agent")` 会在**运行期**构造临时对象，编译器必须保留字面量本身
- * 作为构造参数——实测 `strings libfragmject_security.so` 能看到明文。
+ * 作为构造参数——实测 `strings libappsecurity.so` 能看到明文。
  *
  * 因此本文件的约定是：
  * - **敏感字符串（特征名、路径、JNI 名字）一律放 `lit` 命名空间的 constexpr 常量**；
@@ -154,7 +145,7 @@ constexpr auto kProcSelfStatus = XorString("/proc/self/status");
 constexpr auto kTracerPidKey = XorString("TracerPid:");
 constexpr auto kLibcSo = XorString("libc.so");
 constexpr auto kTextSection = XorString(".text");
-constexpr auto kSecurityNativeClass = XorString("com/example/fragmject/app/security/SecurityNative");
+constexpr auto kSecurityNativeClass = XorString("com/example/security/SecurityNative");
 constexpr auto kRodataSection = XorString(".rodata");
 
 // Frida 线程名
@@ -208,12 +199,10 @@ constexpr auto kNameFindRootFiles = XorString("findRootFiles");
 constexpr auto kNameVerifyLibcTextCrc = XorString("verifyLibcTextCrc");
 constexpr auto kNameVerifySelfSoTextCrc = XorString("verifySelfSoTextCrc");
 constexpr auto kNameVerifySelfSoDataCrc = XorString("verifySelfSoDataCrc");
-constexpr auto kNameVerifyShellDexCrc = XorString("verifyShellDexCrc");
 constexpr auto kNameKillSelf = XorString("killSelf");
 constexpr auto kSigInt = XorString("()I");
 constexpr auto kSigVoid = XorString("()V");
 constexpr auto kSigStringInt = XorString("(Ljava/lang/String;)I");
-constexpr auto kSigIntInt = XorString("(I)I");
 
 // 日志文案（避免出现 "frida"/"root" 之类关键词）
 constexpr auto kLogFridaThread = XorString("thread sig hit");
@@ -969,12 +958,12 @@ jint jniFindRootInMaps(JNIEnv *, jobject) {
  *
  * ============================ 为什么要单独校验自身 so ============================
  * nativeVerifyLibcTextCrc 只能发现「libc 被 inline hook」；但攻击者也可能直接
- * 改写 libfragmject_security.so 自身的 .text（例如把 detectReason 的关键分支
+ * 改写 libappsecurity.so 自身的 .text（例如把 detectReason 的关键分支
  * patch 成空操作），这类攻击不会碰 libc，libc CRC 检测不到。
  * 因此需要把「安全组件自身」也纳入完整性校验。
  *
  * ============================ 磁盘内容从哪来 ============================
- * so 打包在 APK 的 `lib/<abi>/libfragmject_security.so` 中，native 无法直接
+ * so 打包在 APK 的 `lib/<abi>/libappsecurity.so` 中，native 无法直接
  * fopen APK 内的 zip 条目；因此由 Kotlin 侧：
  *   1. 用 ZipFile 从 APK 解压该条目到应用私有目录（带缓存）；
  *   2. 把解压后的文件路径传进来。
@@ -1032,35 +1021,6 @@ jint jniVerifySelfSoDataCrc(JNIEnv *env, jobject, jstring selfSoPath) {
         return -1;
     }
     return verifySectionCrc(soPath, lit::kRodataSection.str());
-}
-
-/**
- * 校验壳 dex 的 CRC32（H6/S2：壳自身完整性）。
- *
- * 为什么期望值放 native 而不是 assets：壳 dex 若被替换，攻击者可以顺手改掉任何
- * 放在 assets 里的期望值；把常量编译进 so 后，要绕过就必须同时改 so，
- * 而改 so 会撞上 `.text/.rodata` 自校验与 APK 签名校验。
- *
- * 局限（如实记录）：
- * - 只防「替换/篡改壳 dex」，不防「直接删掉这次调用」——要防后者得靠 native 侧主动检测；
- * - CRC32 非密码学哈希，理论上可构造碰撞。
- *
- * @param crc 壳侧对自身 classes.dex 计算的 CRC32（低 32 位）
- * @return 0=一致；1=不一致（壳被替换）；-1=未启用（构建时没打壳）
- */
-jint jniVerifyShellDexCrc(JNIEnv *, jobject, jint crc) {
-#if SHELL_DEX_CRC_AVAILABLE
-    const auto actual = static_cast<std::uint32_t>(crc);
-    const auto expected = static_cast<std::uint32_t>(SHELL_DEX_CRC);
-    if (actual != expected) {
-        SEC_LOGW("shell dex crc mismatch: actual=%08x expected=%08x", actual, expected);
-        return 1;
-    }
-    return 0;
-#else
-    (void) crc;
-    return -1;
-#endif
 }
 
 /** Frida 特征线程数；-1=无法枚举。 */
@@ -1126,7 +1086,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     static const std::string nameVerifyLibcTextCrc = lit::kNameVerifyLibcTextCrc.str();
     static const std::string nameVerifySelfSoTextCrc = lit::kNameVerifySelfSoTextCrc.str();
     static const std::string nameVerifySelfSoDataCrc = lit::kNameVerifySelfSoDataCrc.str();
-    static const std::string nameVerifyShellDexCrc = lit::kNameVerifyShellDexCrc.str();
     static const std::string nameFindFridaThreads = lit::kNameFindFridaThreads.str();
     static const std::string nameFindFridaFiles = lit::kNameFindFridaFiles.str();
     static const std::string nameFindRootFiles = lit::kNameFindRootFiles.str();
@@ -1134,7 +1093,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     static const std::string sigNoArg = lit::kSigInt.str();
     static const std::string sigNoArgVoid = lit::kSigVoid.str();
     static const std::string sigStringArg = lit::kSigStringInt.str();
-    static const std::string sigIntArg = lit::kSigIntInt.str();
 
     const JNINativeMethod methods[] = {
             {const_cast<char *>(nameInstallAntiPtrace.c_str()),
@@ -1167,9 +1125,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
             {const_cast<char *>(nameFindFridaFiles.c_str()),
              const_cast<char *>(sigNoArg.c_str()),
              reinterpret_cast<void *>(jniCountFileSignals)},
-            {const_cast<char *>(nameVerifyShellDexCrc.c_str()),
-             const_cast<char *>(sigIntArg.c_str()),
-             reinterpret_cast<void *>(jniVerifyShellDexCrc)},
             {const_cast<char *>(nameFindRootFiles.c_str()),
              const_cast<char *>(sigNoArg.c_str()),
              reinterpret_cast<void *>(jniFindRootFiles)},

@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 // Kotlin 侧仅保留「必须由 Java 使用」的两张表；其余特征表已下沉 native（H3）。
 //

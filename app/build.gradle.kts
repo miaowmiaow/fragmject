@@ -62,31 +62,8 @@ val expectedSigSha256: String = signingCertSha256()
 android {
     namespace = "com.example.fragmject.app"
 
-    // ========================================================================
-    // 安全防护 native 层：编译 app/src/main/cpp 下的 libfragmject_security.so。
-    //
-    // 该 so 负责：ptrace 占坑、TracerPid、匿名可执行段统计、libc .text CRC32、
-    // Frida maps 特征（编译期 XOR 混淆）、native SIGKILL。
-    //
-    // 为什么要显式指定 ndkVersion：
-    // - AGP 有默认 NDK 版本，若与本地安装版本不一致会触发额外下载或直接失败；
-    // - 本工程在 NDK 28 上验证通过（该版本 <elf.h> 未提供 ElfW，已在 security.cpp 内自行补齐）；
-    // - CI / 协作开发时必须与此处保持一致，否则 native 编译结果不可复现。
-    // 升级 SDK/NDK 后，同步修改此处与 CMakeLists 的 cmake_minimum_required。
-    //
-    // 注意：native 只为 buildTypes 中 abiFilters 声明的 ABI 编译
-    // （当前 release 为 arm64-v8a，debug 额外包含 x86）。
-    // ========================================================================
-    ndkVersion = "28.2.13676358"
-    externalNativeBuild {
-        cmake {
-            // 指向独立的小型 CMake 工程，只产出一个 so；
-            // 不把安全代码混进其它模块，便于单独审计与按需裁剪。
-            path = file("src/main/cpp/CMakeLists.txt")
-            // 与 CMakeLists 的 cmake_minimum_required 保持一致（本机安装 3.22.1）。
-            version = "3.22.1"
-        }
-    }
+    // 安全防护的 native（libappsecurity.so）随 :security 模块编译，app 只负责打包与 ABI 过滤，
+    // 因此这里不再有 ndkVersion / externalNativeBuild（升级 NDK 请改 :security/build.gradle.kts）。
 
     defaultConfig {
         applicationId = configProperties.getProperty("applicationId")
@@ -107,14 +84,6 @@ android {
         } else {
             "com.example.fragmject.app.FragmjectApplication"
         }
-        // 壳 dex 的 CRC 头文件目录（由 build-logic 的 generateShellDex 生成）。
-        // 未开壳时该目录不存在，CMakeLists 用 if(DEFINED) 保护，不影响普通构建。
-        externalNativeBuild {
-            cmake {
-                arguments += "-DSHELL_GEN_DIR=${layout.buildDirectory.get().asFile.absolutePath}/generated/shell"
-            }
-        }
-
         // 运行期签名校验的期望值：空串 = 不启用（见 SecurityIntegrityChecks.verifySignature）。
         // 多渠道重签时可在值里用逗号分隔多个证书摘要（宿主侧 SecurityConfig 按逗号拆分）。
         buildConfigField("String", "EXPECTED_SIG_SHA256", "\"$expectedSigSha256\"")
@@ -170,6 +139,8 @@ dependencies {
     // 依赖守卫 APP_ALLOWED_DEPENDENCIES 已不再放行此边
     // data-repository / database：app 源码零 import，仅因其中 @Module/@InstallIn 需进入
     // Hilt SingletonComponent 而声明（组合根聚合），勿删
+    // 运行期安全防护库（H7 阶段二：已从 app/security 搬到顶层 :security）
+    implementation(project(":security"))
     implementation(project(":core:data-repository"))
     implementation(project(":core:database"))
     implementation(project(":core:designsystem"))

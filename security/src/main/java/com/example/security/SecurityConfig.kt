@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 /**
  * 运行时安全防护配置。

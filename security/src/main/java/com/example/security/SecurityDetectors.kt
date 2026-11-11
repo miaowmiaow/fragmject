@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 /**
  * 安全检测的**编排层**：检测顺序、短路逻辑与严重级别判定。

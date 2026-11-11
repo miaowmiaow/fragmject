@@ -13,8 +13,8 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
-import com.example.fragmject.app.security.SecurityConfig
-import com.example.fragmject.app.security.SecurityGuard
+import com.example.security.SecurityConfig
+import com.example.security.SecurityGuard
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.domain.system.SystemStorage
 // 登记过的架构例外（ArchitectureTest 规则 21 白名单）：app 组合根不应引用数据实现层，

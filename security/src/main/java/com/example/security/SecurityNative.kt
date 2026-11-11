@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 import android.os.Build
 import android.util.Log
@@ -56,8 +56,6 @@ internal interface NativeChecks {
     /** 自身 so 的 `.rodata` 校验（常量表是否被改写）。 */
     fun verifySelfSoDataCrc(selfSoPath: String): Int
 
-    /** 壳 dex 的 CRC32 校验；-1=未启用（非壳构建）。见 `StubApplication`。 */
-    fun verifyShellDexCrc(crc: Int): Int
 
     fun killSelf()
 }
@@ -158,12 +156,11 @@ internal class SecurityNative(
 
     external override fun verifySelfSoDataCrc(selfSoPath: String): Int
 
-    external override fun verifyShellDexCrc(crc: Int): Int
 
     external override fun killSelf()
 
     private companion object {
-        /** 与 `CMakeLists.txt` 的 `add_library(fragmject_security ...)` 对应。 */
-        const val LIB_NAME = "fragmject_security"
+        /** 与 `CMakeLists.txt` 的 `add_library(appsecurity ...)` 对应。 */
+        const val LIB_NAME = "appsecurity"
     }
 }

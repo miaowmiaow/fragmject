@@ -728,13 +728,34 @@ security check hit: 检测到异常匿名可执行内存段（2 段，阈值 0�
 命中原因同时带上「实际段数 + 阈值」，如 `（2 段，阈值 0）`。
 复测：同一环境不再命中匿名段，改由正确的「检测到模拟器环境」阻断。
 
-### 9.6 阶段二待办（搬家）
+### 9.6 阶段二搬家（已完成，2026-11-11）
 
-1. 新建顶层 `:security`（`namespace = com.example.security`），搬 `Security*` 与 `cpp/`；
-2. 同时把包名与 so 名中性化（`libfragmject_security.so` → 中性名），
-   并同步 `JNI_OnLoad` 里的类名、`extractSelfSo` 的 entry 名、so 缓存键名；
-3. 补 `consumer-rules.pro`（keep `SecurityNative` 的 native 方法 + 公开 API）；
-4. 补 `maven-publish`、README（ABI / 16 KB page size / 签名配置说明）与最小示例；
-5. `:app` 改为 `implementation(project(":security"))`，并在
-   `FragmjectAndroidDependencyGuardPlugin.APP_ALLOWED_DEPENDENCIES` 增加一行。
+| 项 | 结果 |
+|---|---|
+| 新模块 | 顶层 `:security`（`com.android.library`，`namespace = com.example.security`） |
+| 源码迁移 | 11 个 Kotlin 文件 `app/.../app/security/` → `security/src/main/java/com/example/security/`（`git mv` 保留历史） |
+| native 迁移 | `security.cpp` + `CMakeLists.txt` → `security/src/main/cpp/`，so 名 `libfragmject_security.so` → **`libappsecurity.so`**，target 名同步 |
+| 包名中性化 | `com.example.fragmject.app.security` → `com.example.security`；JNI 注册的类名、`extractSelfSo` 的 entry 名、so 缓存键名一并更新 |
+| R8 规则 | 迁到 `security/consumer-rules.pro`（随 AAR 合并）；`app/proguard-rules.pro` 只保留 App 自身的 `Application <init>()` 规则 |
+| 宿主接入 | `:app` 改为 `implementation(project(":security"))`；`APP_ALLOWED_DEPENDENCIES` 增加 `":security"` |
+| 单测 | `SecurityDetectorsTest`（24 例）随代码迁到 `:security/src/test`，通过 |
+| 发布 | **按决策不做 `maven-publish`**：当前只有本仓库一个消费者，先在仓库内用 `project(":security")`；真有外部项目时再加约 10 行配置 |
+
+**搬家导致的架构调整（重要）**：H6 的「壳 dex CRC 常量编译进 so」方案被替换。
+原因：so 现在属于**可复用库**，库里不该内置某个宿主 App 的壳 dex 摘要（否则每个接入方都要改库源码重新编译）。
+现在改为：打包任务把壳 dex 的 CRC32 写进 `assets/payload/shell.txt`，壳启动时读取并比对。
+
+- 代价：锚点从「native 常量」降级为「与载荷同包内的清单」，仍属**同信任域**校验；
+- 影响：仍能拦住「只替换 classes.dex、其余照抄」的粗糙改包（实测仍会 `shell dex crc mismatch` 并 fail-closed）；
+- 真正的锚仍是 H1 的签名校验；该取舍已写进交付说明与 `StubApplication` 注释。
+
+**验证（迁移后）**：
+
+| 场景 | 结果 |
+|---|---|
+| `:security` 单测 24 例 + `ArchitectureTest` 30 例 + `detekt` | ✅ |
+| debug 包 | 线程 0、日志 0（`FLAG_DEBUGGABLE` 跳过逻辑未受搬家影响） |
+| 常规 release | 启动正常，APK 内含 `lib/arm64-v8a/libappsecurity.so` |
+| 壳包（三开关） | 模拟器与真机均可启动：`shell dex check ok` / `payload sum ok` / `registered 12 methods` / `security warn`（模拟器） |
+| 壳 dex 篡改（追加 1 字节） | `shell dex crc mismatch: actual=51af34c5 expected=7e5e8f17` → fail-closed |
 

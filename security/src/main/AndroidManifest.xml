@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  库不声明任何组件：所有能力由宿主通过 SecurityGuard.install() 主动接入。
+  刻意不提供 ContentProvider / androidx.startup 初始化器——
+  安全组件不应在宿主不知情的情况下自动启动。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

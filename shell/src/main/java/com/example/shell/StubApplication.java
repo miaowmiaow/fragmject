@@ -111,6 +111,8 @@ public class StubApplication extends Application {
     // ------------------------------------------------------------------
 
     private void install(Context base) throws Exception {
+        verifyShellDex();
+
         ByteBuffer[] payload = readPayloads(base);
         Log.i(TAG, "payload chunks=" + payload.length);
 
@@ -120,12 +122,6 @@ public class StubApplication extends Application {
         // kotlinx-coroutines-android 的 MainDispatcherFactory 找不到，抛
         // “Module with the Main dispatcher is missing”。
         ClassLoader payloadLoader = new InMemoryDexClassLoader(payload, getClassLoader());
-
-        // 壳自校验放在 payload loader 之后：SecurityNative 属于业务 dex，
-        // 此时用壳自己的 classloader 找不到它（实测 ClassNotFoundException）。
-        // 这一步只创建 loader 并校验 CRC，不执行任何业务代码，顺序上是安全的。
-        verifyShellDex(payloadLoader);
-
         Class<?> realClass = Class.forName(REAL_APPLICATION, true, payloadLoader);
         Log.i(TAG, "real application class loaded: " + realClass.getName());
 
@@ -147,41 +143,32 @@ public class StubApplication extends Application {
     }
 
     /**
-     * 校验壳 dex 自身（H6/S2）：算自己 `classes.dex` 的 CRC32，交给 native 与编译期常量比对。
+     * 校验壳 dex 自身（H6/S2）。
      *
-     * 为什么期望值不在 assets：壳 dex 被替换时，攻击者可以顺手改掉任何放在 APK 里的期望值；
-     * 常量在 so 里时，绕过要同时改 so，而改 so 会撞上 `.text/.rodata` 自校验与签名校验。
+     * 期望值放在 `assets/payload/shell.txt`（打包任务写入），与业务载荷同一个信任域；
+     * **不是**强锚点——真正的锚是 H1 的签名校验。这里的作用是让「只替换 classes.dex、
+     * 顺手保留其余文件」这类粗糙改包直接失效（否则壳被换掉后连检测都不存在了）。
      *
-     * 降级策略（与其它检测一致）：so 加载失败 → 只告警、不阻断启动；
-     * 但「校验跑起来且不一致」→ 直接抛异常（fail-closed）。
+     * 失败语义：不一致直接抛异常（fail-closed），不加载业务代码。
      */
-    private void verifyShellDex(ClassLoader payloadLoader) {
+    private void verifyShellDex() {
         try {
-            String apk = getApplicationInfo().sourceDir;
-            int crc = crcOfEntry(apk, "classes.dex");
-
-            Class<?> nativeClass = Class.forName(
-                    "com.example.fragmject.app.security.SecurityNative", true, payloadLoader);
-            Object bridge = nativeClass
-                    .getDeclaredConstructor(String.class, String.class)
-                    .newInstance(getApplicationInfo().nativeLibraryDir, apk);
-            Object loaded = nativeClass.getDeclaredMethod("load").invoke(bridge);
-            if (!Boolean.TRUE.equals(loaded)) {
-                Log.w(TAG, "native unavailable, shell dex check skipped");
+            byte[] expectedRaw = readAsset(this, "payload/shell.txt");
+            if (expectedRaw == null) {
+                Log.w(TAG, "no shell.txt, shell dex check skipped");
                 return;
             }
-            Object result = nativeClass
-                    .getDeclaredMethod("verifyShellDexCrc", int.class)
-                    .invoke(bridge, crc);
-            int code = result instanceof Integer ? (Integer) result : -1;
-            if (code == 1) {
+            String expected = new String(expectedRaw, StandardCharsets.UTF_8).trim().toLowerCase();
+            int actual = crcOfEntry(getApplicationInfo().sourceDir, "classes.dex");
+            String actualHex = String.format("%08x", actual & 0xFFFFFFFFL);
+            if (!actualHex.equals(expected)) {
+                Log.e(TAG, "shell dex crc mismatch: actual=" + actualHex + " expected=" + expected);
                 throw new IllegalStateException("shell dex integrity check failed");
             }
-            Log.i(TAG, "shell dex check=" + code);
+            Log.i(TAG, "shell dex check ok");
         } catch (IllegalStateException e) {
             throw e;
         } catch (Throwable t) {
-            // 反射失败（类名被改、方法缺失）不阻断：这类问题应由签名校验兜底
             Log.w(TAG, "shell dex check error: " + t.getClass().getName());
         }
     }

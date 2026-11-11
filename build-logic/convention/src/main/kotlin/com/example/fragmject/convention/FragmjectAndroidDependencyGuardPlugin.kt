@@ -303,6 +303,8 @@ private val TEST_ONLY_MODULES: Set<String> = setOf(":benchmark")
  * 未声明的 app→x 边一律失败，防止引入不必要的聚合依赖。
  */
 private val APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(
+    // 运行期安全防护库：独立交付能力，不从 :core 走
+    ":security",
     // 不含 :core:android-platform：平台模块只被 core 内部消费，
     // app 与 feature 一律经 core:domain 端口间接使用（未声明即失败，等价于一条反向规则）
     ":core:data-repository",

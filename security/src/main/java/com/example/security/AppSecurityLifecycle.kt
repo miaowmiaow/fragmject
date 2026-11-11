@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 import android.app.Activity
 import android.app.Application

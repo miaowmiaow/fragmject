@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 import android.util.Log
 import java.io.File
@@ -42,7 +42,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
  * 自身 so 完整性校验。
  *
  * 流程：
- * 1. 用 [extractSelfSo] 从 APK 解压 `lib/<abi>/libfragmject_security.so` 到私有目录；
+ * 1. 用 [extractSelfSo] 从 APK 解压 `lib/<abi>/libappsecurity.so` 到私有目录；
  * 2. 交给 native 比对「磁盘 .text」与「内存 .text」的 CRC32。
  *
  * 失败降级原则：
@@ -120,11 +120,11 @@ internal fun verifyResourceIntegrity(facts: SecurityFacts, config: SecurityConfi
 private fun String.normalizeSha256(): String =
     replace(":", "").trim().uppercase(Locale.US)
 
-/** 与 CMake 产物名一致（`libfragmject_security.so`）。 */
-private const val SELF_SO_NAME = "libfragmject_security.so"
+/** 与 CMake 产物名一致（`libappsecurity.so`）。 */
+private const val SELF_SO_NAME = "libappsecurity.so"
 
 /** so 解压缓存键文件名。 */
-private const val SELF_SO_KEY_FILE = "libfragmject_security.key"
+private const val SELF_SO_KEY_FILE = "libappsecurity.key"
 
 /** `verifySelfSoTextCrc` 返回 1 表示「磁盘与内存不一致」。 */
 private const val CRC_MISMATCH = 1

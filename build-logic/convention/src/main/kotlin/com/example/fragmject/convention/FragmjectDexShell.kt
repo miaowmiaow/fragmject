@@ -89,10 +89,7 @@ internal fun Project.configureDexShell() {
     }
     tasks.matching { it.name == "assembleRelease" }.configureEach { finalizedBy(packTask) }
 
-    // 让 release 的 native 构建依赖生成的头文件（生成目录通过 -DSHELL_GEN_DIR 传给 CMake）
-    tasks.matching {
-        it.name == "preReleaseBuild" || it.name.startsWith("buildCMakeRelease")
-    }.configureEach { dependsOn(generateTask) }
+    // 打壳前必须有壳 dex（pack 任务已显式依赖 generateTask）
 }
 
 /** 开关名：`-PenableDexShell=true`。 */
@@ -193,6 +190,18 @@ abstract class PackShellTask : DefaultTask() {
                 }
                 val sum = digest.digest().joinToString("") { "%02x".format(it) }
                 writeEntry(out, "assets/payload/sum.txt", sum.toByteArray(Charsets.UTF_8))
+
+                // 壳 dex 自己的 CRC32：壳启动时读取并比对（防随手替换壳代码）。
+                // 注意这是**同信任域**的校验（清单与壳 dex 同在 APK 内），
+                // 真正的锚是 H1 的签名校验；这里只提高「顺手改包」的成本。
+                val shellCrc = java.util.zip.CRC32()
+                    .apply { update(shellDex.readBytes()) }
+                    .value
+                writeEntry(
+                    out,
+                    "assets/payload/shell.txt",
+                    "%08x".format(shellCrc).toByteArray(Charsets.UTF_8),
+                )
                 writeEntry(out, "classes.dex", shellDex.readBytes())
             }
             return dexNames.size
@@ -348,15 +357,10 @@ abstract class GenerateShellDexTask : DefaultTask() {
         check(dex.exists()) { "d8 未产出 classes.dex" }
         dex.copyTo(File(out, "shell.dex"), overwrite = true)
 
+        // 壳 dex 的 CRC 由打包任务写进 assets/payload/shell.txt（壳自己校验）。
+        // 刻意不再注入 native：so 已搬到可复用的 :security 库，
+        // 库里不该内置「某个宿主 App 的壳 dex 摘要」。
         val crc = java.util.zip.CRC32().apply { update(dex.readBytes()) }.value
-        val header = buildString {
-            appendLine("// 由 generateShellDex 任务生成，请勿手改。")
-            appendLine("#pragma once")
-            append("""#define SHELL_DEX_CRC 0x""")
-            append("%08x".format(crc))
-            appendLine("u")
-        }
-        File(out, "shell_crc.h").writeText(header)
         logger.lifecycle("壳 dex ${dex.length()} B，CRC=0x%08x".format(crc))
     }
 

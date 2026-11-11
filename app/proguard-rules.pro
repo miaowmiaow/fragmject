@@ -291,39 +291,8 @@
 -keepclassmembers class kotlinx.serialization.internal.** { *; }
 -dontwarn kotlinx.serialization.**
 
-# ---- 应用安全防护（JNI 动态注册）----
-#
-# security.cpp 使用「JNI_OnLoad + RegisterNatives」动态注册：C++ 侧按名查找
-# SecurityNative 并注册方法，因此 **类名与方法名** 必须保留；其余成员（状态、调度、
-# 日志文案）可以正常参与混淆。
-#
-# 为什么不能更激进（连方法名一起混淆）：注册发生在 native，Kotlin 侧的 `external fun`
-# 名字就是注册名。想彻底隐藏方法名，需要改成「由 Kotlin 运行时把当前方法名传给 native」，
-# 那属于壳/字符串加密的范畴，本阶段不做。
-#
-# 如果这里 keep 失效：FindClass / RegisterNatives 失败 → JNI_OnLoad 返回 JNI_ERR →
-# System.loadLibrary 抛 UnsatisfiedLinkError → Kotlin 侧降级为纯 JVM 检测（不崩溃，
-# 但 TracerPid / maps / 匿名段 / CRC 全部失效）。
--keepclasseswithmembernames class com.example.fragmject.app.security.SecurityNative {
-    native <methods>;
-}
-
-# DEX 壳（H6/S2）：壳用自己的 classloader 之外的方式（payload loader + 反射）调用
-# SecurityNative 做「壳 dex 自校验」，因此构造器与 load() 的名字必须保留；
-# 否则反射会抛 NoSuchMethodException（实测），自校验静默失效。
--keepclassmembers class com.example.fragmject.app.security.SecurityNative {
-    <init>(java.lang.String, java.lang.String);
-    public boolean load();
-    # 关键：verifyShellDexCrc 只在壳里通过反射调用，Kotlin 侧没有调用点。
-    # -keepclasseswithmembernames 只是「保名」不阻止裁剪，R8 会把它删掉 →
-    # RegisterNatives 失败（实测日志：JNI_OnLoad: RegisterNatives failed）。
-    # 这里用禁止裁剪的 -keepclassmembers 兜住。
-    native <methods>;
-}
-
-# 公开入口与配置：保持可读的名字，便于崩溃栈与接入方排查。
--keep class com.example.fragmject.app.security.SecurityGuard { public *; }
--keep class com.example.fragmject.app.security.SecurityConfig { *; }
+# ---- 应用安全防护 ----
+# 相关 keep 规则已随代码迁到 :security/consumer-rules.pro（由库自带，宿主无需维护）。
 
 # ---- DEX 壳（H6/S1）----
 # 开壳时 manifest 的 android:name 指向 StubApplication，真实 Application 改由壳反射实例化。

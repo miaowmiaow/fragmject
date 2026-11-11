@@ -1,4 +1,4 @@
-package com.example.fragmject.app.security
+package com.example.security
 
 /**
  * 环境类检测项：Frida（线程 / 文件 / 端口）、Root 信号、可调试构建、模拟器特征。

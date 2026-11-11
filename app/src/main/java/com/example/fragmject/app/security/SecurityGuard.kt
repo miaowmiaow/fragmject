@@ -68,7 +68,15 @@ object SecurityGuard {
             val facts = AndroidSecurityFacts(appContext)
             // 这里刻意**不**加载 native：debug 包与被跳过的变体不应产生 so 加载开销，
             // 加载动作由 SecurityEngine.start() 在跳过判定之后执行。
-            engine = SecurityEngine(config, facts, SecurityNative()).also { it.start(context) }
+            engine = SecurityEngine(
+                config = config,
+                facts = facts,
+                // 壳场景下 System.loadLibrary 找不到 APK 内的 so，需要目录/APK 路径兜底
+                native = SecurityNative(
+                    nativeLibraryDir = appContext.applicationInfo.nativeLibraryDir,
+                    apkPath = appContext.applicationInfo.sourceDir,
+                ),
+            ).also { it.start(context) }
         }
     }
 

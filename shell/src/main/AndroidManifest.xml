@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 壳模块不声明任何组件：壳类由 :app 的 manifest 以 ${applicationName} 占位符指向。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

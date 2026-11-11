@@ -31,6 +31,8 @@ class FragmjectAndroidApplicationPlugin : Plugin<Project> {
             configureStringFogForApplication()
             // H4 资源混淆：默认关闭，`-PenableResObf=true` 时在 packageRelease 之后处理产物
             configureResourceObfuscation()
+            // H6/S1 DEX 壳：默认关闭，`-PenableDexShell=true` 时注册 packShellRelease
+            configureDexShell()
         }
     }
 }

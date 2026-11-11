@@ -35,6 +35,9 @@ rootProject.name = "fragmject"
 include(":app")
 // Macrobenchmark / Baseline Profile 采集模块：只跑仪器测试，不参与生产打包
 include(":benchmark")
+// DEX 壳的壳代码（H6/S1）：纯 Java、零依赖，只作为构建产物被打进 APK，
+// **不进入任何 runtime classpath**（:app 不依赖它，避免壳类混进业务 dex）
+include(":shell")
 include(":core:android-platform")
 include(":core:data-repository")
 include(":core:data-contract")

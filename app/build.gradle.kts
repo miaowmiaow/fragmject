@@ -14,6 +14,13 @@ plugins {
 
 val configProperties = loadConfigProperties()
 
+/**
+ * DEX 壳开关（H6/S1）：打开后 manifest 的 android:name 指向壳类，
+ * 同时 build-logic 会注册 packShellRelease 把产物打成壳。
+ * 两者必须成对出现，否则会得到「manifest 指向不存在的类」的包。
+ */
+val dexShellEnabled = providers.gradleProperty("enableDexShell").map(String::toBoolean).getOrElse(false)
+
 val keystoreFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
     if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) }
@@ -94,6 +101,12 @@ android {
         // 单渠道无 flavor/dimension：manifest 占位符直接收敛到 defaultConfig
         manifestPlaceholders["app_channel_value"] = "free"
         manifestPlaceholders["app_name_value"] = "玩Android"
+        // Application 入口：默认是真实实现；开壳时替换为壳类（壳类由 shell dex 提供）
+        manifestPlaceholders["applicationName"] = if (dexShellEnabled) {
+            "com.example.shell.StubApplication"
+        } else {
+            "com.example.fragmject.app.FragmjectApplication"
+        }
         // 运行期签名校验的期望值：空串 = 不启用（见 SecurityIntegrityChecks.verifySignature）。
         // 多渠道重签时可在值里用逗号分隔多个证书摘要（宿主侧 SecurityConfig 按逗号拆分）。
         buildConfigField("String", "EXPECTED_SIG_SHA256", "\"$expectedSigSha256\"")

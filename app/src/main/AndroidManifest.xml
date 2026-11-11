@@ -25,7 +25,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <application
-        android:name="com.example.fragmject.app.FragmjectApplication"
+        android:name="${applicationName}"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"

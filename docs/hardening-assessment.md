@@ -203,12 +203,12 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 | **H3** | SO 加固（常量下沉 + 完整性扩展） | SO 保护 | 4 | 3 | 5 人日 | 无（与 H2 可并行） | **已完成（2026-11-11）** |
 | **H4** | 资源混淆（aapt2 路径缩短后处理） | 资源保护（替代 assets 加密） | 3 | 3 | 4 人日 | H1（重签必须同证书） | **已完成（2026-11-11）** |
 | **H5** | 环境检测分级处置 + 误报观测 | 运行环境安全 | 3 | 2 | 3 人日 | 无 | **已完成（2026-11-11）** |
-| **H6** | DEX 最小壳（不含 VMP） | DEX 保护 | 2 | 5 | 15~20 人日 | H1、H3 | **条件立项（先做 S0 验证）** |
+| **H6** | DEX 最小壳（不含 VMP） | DEX 保护 | 2 | 5 | 15~20 人日 | H1、H3 | **S0+S1 已验证可做（最小壳跑通）；S2 待触发** |
 | **H7** | 库化前置改造（阶段一） | 交付形态 | 4 | 2 | 2 人日 | 无 | **已完成（见 §九）** |
 | — | 数据文件加密 | 数据保护 | 1.5 | 2 | — | — | 不立项 |
 | — | assets 资源加密 | 资源保护 | 1 | 2 | — | — | 不立项 |
 
-合计立项投入：约 **20 人日**（不含 H6 条件项）。**H1~H5 与 H7 全部完成**；仅剩条件项 H6（DEX 壳，需触发条件）。
+合计立项投入：约 **20 人日**（不含 H6）。**H1~H5、H7 完成；H6 的 S0/S1 也已完成**（最小壳在 Android 16/17 跑通），S2 工程化待触发。
 
 ---
 
@@ -448,15 +448,42 @@ sdk_gphone16k_arm64 / Android 17（API 37，16 KB page）双端各跑一次：
 结论（S0 第一步）：**两个最大疑点已排除** —— 16 KB 页设备上内存 dex 可用；Android 16/17 上
 `mClassLoader` 仍可反射替换。
 
-**S0 剩余未验证项（决定 H6 能否继续）**：
-1. **真壳时序**：stub 在 `attachBaseContext` 内替换 classloader 后，系统 `makeApplication` 是否
-   使用新 loader 实例化真实 Application（必须真正重打包才能验证）；
-2. **Hilt 组件创建**：`Hilt_*` 要求「系统托管的 Application 实例」实现 `GeneratedComponentManager`，
-   探针里的第二个实例只验证了构造链，未验证组件创建；
-3. **ContentProvider 时序**：`androidx.startup`（ProfileInstaller）在 classloader 被替换后的表现。
+**S1 最小壳（2026-11-11，已完成并跑通）**：
 
-**建议**：进入 S1（最小壳打包链路，3~5 人日）——`:shell` 模块 + 抽 dex/加密/塞回/改 manifest/重签
-的 Gradle 任务，只验证「能启动 + Hilt 正常」，不做反脱壳加固。
+新增 `:shell`（纯 Java、零依赖）与 `packShellRelease` 打包任务，链路为：
+抽 `classes*.dex` → XOR 混淆写入 `assets/payload/dex-<n>.bin` → 删除原 dex →
+塞入壳 `classes.dex` → `zipalign -p 4` → 同证书重签。
+manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符，开壳时构建期替换为
+`com.example.shell.StubApplication`。
+
+| 检查点 | 实测 | 结论 |
+|---|---|---|
+| 壳包结构 | 唯一 `classes.dex` 仅 **6.4 KB**；业务 dex 变成 2 个载荷分片 | ✅ |
+| 载荷是否可读 | `strings assets/payload/*.bin \| grep wanandroid` = **0** | ✅ 不能直接 jadx |
+| 真机（PGEM10 / API 36） | 启动 735ms、进程存活、crash 0 | ✅ |
+| 模拟器（API 37 / 16KB） | 启动 1343ms、首页完整渲染（Banner/列表/底部导航） | ✅ |
+| Hilt 初始化 | `real application onCreate done`，Activity 正常注入 | ✅ |
+| 安全模块在壳内可用 | `JNI_OnLoad: registered 12 methods`、双段 CRC 一致、`security warn` 正常 | ✅ |
+| 签名校验 | 重签后与 H1 期望摘要一致，`check hit` = 0 | ✅ |
+
+过程中修掉 4 个真实问题（都值得记住）：
+
+| 现象 | 根因 | 处理 |
+|---|---|---|
+| `NoSuchMethodException: FragmjectApplication.<init>` | manifest 改指 stub 后，R8 看不到真实 Application 的实例化点，裁掉了无参构造 | proguard 增加 `-keepclassmembers class * extends android.app.Application { <init>(); }` |
+| `UnsatisfiedLinkError: couldn't find libfragmject_security.so` | 业务 dex 由 `InMemoryDexClassLoader` 加载，它没有 APK 的 native 搜索路径 | `SecurityNative.load()` 增加 `nativeLibraryDir` 与 `apk!/lib/<abi>/` 兜底 |
+| `Hilt Activity must be attached to an @HiltAndroidApp Application. Found: StubApplication` | 系统在 `makeApplication` 返回后会执行 `mInitialApplication = <stub>`，把壳在 `attachBaseContext` 里的替换覆盖掉 | 在 `StubApplication.onCreate` 再替换一次 `LoadedApk.mApplication` / `mInitialApplication` |
+| `Module with the Main dispatcher is missing` | parent 用了 `systemClassLoader`，`ServiceLoader` 找不到 APK 里的 `META-INF/services` | parent 改为系统原本的 `PathClassLoader`（只提供资源，类仍从 payload 解析） |
+
+**仍未做（完整 H6 / S2 范围）**：
+1. 载荷分片策略与多 dex 的启动耗时优化（当前 2 片一次性全解）；
+2. 反 dump（内存 dex 仍是可 dump 的，壳只挡静态分析）；
+3. 壳自身完整性校验、与 H1/H3 的联动（如壳被替换的检测）；
+4. 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
+5. 体积/启动的严谨 A/B（当前样本只够证明「能跑」）。
+
+**结论**：H6 的技术可行性已被 S1 证伪风险 → **证实可做**（Android 16/17 双端跑通），
+剩余工作是工程化与对抗加固。是否继续投入取决于是否真的出现二次打包分发。
 
 **S0 可行性验证（2~3 人日，先做，失败即终止）**：
 - 写最小 demo：`StubApplication` + `InMemoryDexClassLoader` + 反射替换 `LoadedApk.mClassLoader`；

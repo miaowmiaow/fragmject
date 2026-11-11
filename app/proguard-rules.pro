@@ -311,3 +311,11 @@
 # 公开入口与配置：保持可读的名字，便于崩溃栈与接入方排查。
 -keep class com.example.fragmject.app.security.SecurityGuard { public *; }
 -keep class com.example.fragmject.app.security.SecurityConfig { *; }
+
+# ---- DEX 壳（H6/S1）----
+# 开壳时 manifest 的 android:name 指向 StubApplication，真实 Application 改由壳反射实例化。
+# R8 看不到这个调用点，会连无参构造一起裁掉，导致
+# `NoSuchMethodException: FragmjectApplication.<init> []`（实测）。
+-keepclassmembers class * extends android.app.Application {
+    <init>();
+}

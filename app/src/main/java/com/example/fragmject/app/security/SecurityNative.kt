@@ -1,6 +1,8 @@
 package com.example.fragmject.app.security
 
+import android.os.Build
 import android.util.Log
+import java.io.File
 
 /**
  * native 能力抽象：把 JNI 调用收成接口，便于在纯 JVM 单测里替换为假实现。
@@ -76,7 +78,12 @@ internal interface NativeChecks {
  * 失败语义：`JNI_OnLoad` 返回 `JNI_ERR` 时 `System.loadLibrary` 抛 `UnsatisfiedLinkError`，
  * 由 [load] 捕获并置 `available = false`，后续检测自动走 JVM 降级路径。
  */
-internal class SecurityNative : NativeChecks {
+internal class SecurityNative(
+    /** 系统解压后的 native 目录（`applicationInfo.nativeLibraryDir`）；壳场景下用于兜底加载。 */
+    private val nativeLibraryDir: String? = null,
+    /** APK 路径，壳场景可从 APK 内直接 dlopen（`apk!/lib/abi/xxx.so`）。 */
+    private val apkPath: String? = null,
+) : NativeChecks {
 
     @Volatile
     override var available: Boolean = false
@@ -89,16 +96,40 @@ internal class SecurityNative : NativeChecks {
      */
     override fun load(): Boolean {
         if (available) return true
-        return try {
+        val byName = runCatching {
             System.loadLibrary(LIB_NAME)
-            available = true
             true
-        } catch (e: UnsatisfiedLinkError) {
-            // 不阻断启动：TracerPid/maps/匿名段/CRC 失效，但 JVM 侧检测仍可用。
+        }.getOrElse { false }
+
+        // 兜底：DEX 壳下业务 dex 由 InMemoryDexClassLoader 加载，它没有 APK 的 native 搜索路径，
+        // System.loadLibrary 必然失败；此时按绝对路径/APK 内路径直接 dlopen。
+        val loaded = byName || loadByPath()
+        available = loaded
+        if (!loaded) {
             // 用 Log.e：release 会裁剪 v/d/i/w，降级状态必须在线上可见。
-            Log.e(SecurityGuard.TAG, "load $LIB_NAME failed, fallback to JVM checks", e)
-            false
+            Log.e(SecurityGuard.TAG, "load $LIB_NAME failed, fallback to JVM checks")
         }
+        return loaded
+    }
+
+    /** 依次尝试 `nativeLibraryDir/libX.so` 与 `apk!/lib/<abi>/libX.so`。 */
+    private fun loadByPath(): Boolean {
+        val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
+        val candidates = buildList {
+            nativeLibraryDir?.let { add(File(it, "lib$LIB_NAME.so").absolutePath) }
+            apkPath?.let { add("$it!/lib/$abi/lib$LIB_NAME.so") }
+        }
+        for (path in candidates) {
+            val ok = runCatching {
+                System.load(path)
+                true
+            }.getOrElse { false }
+            if (ok) {
+                Log.i(SecurityGuard.TAG, "loaded $LIB_NAME via $path")
+                return true
+            }
+        }
+        return false
     }
 
     external override fun installAntiPtrace(): Int

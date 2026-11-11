@@ -1,0 +1,225 @@
+package com.example.shell;
+
+import android.app.Application;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.util.Log;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import dalvik.system.InMemoryDexClassLoader;
+
+/**
+ * DEX 壳的 stub（H6 / S1 最小实现）。
+ *
+ * ============================ 运行流程 ============================
+ * 系统按 manifest 的 `android:name` 实例化本类（此时业务 dex 已被打包器加密进 assets）：
+ *
+ * 1. `attachBaseContext`：读出 `assets/payload/dex-*.bin` → 解密 → `InMemoryDexClassLoader`；
+ * 2. 反射替换 `LoadedApk.mClassLoader`，让后续类解析（含 ContentProvider）走 payload loader；
+ * 3. 用 payload loader 实例化真实 Application，并替换 `LoadedApk.mApplication` 与
+ *    `ActivityThread.mInitialApplication`——Hilt 要求「系统托管的实例」提供
+ *    `GeneratedComponentManager`，只换 loader 不够；
+ * 4. 把 `base` 交给真实 Application（`attachBaseContext`），`onCreate` 由本类在
+ *    系统回调时转发；
+ * 5. 其余生命周期回调（onTrimMemory / onLowMemory / onConfigurationChanged）一并转发。
+ *
+ * ============================ 已知边界（S1） ============================
+ * - 只做「能启动 + Hilt 正常」，不做 DEX 分片、反 dump、二次校验；
+ * - 载荷用固定 XOR 混淆（非加密），密钥与打包任务一致；
+ * - 依赖 hidden API 反射，Android 版本升级需复验（S0 已在 API 36/37 验证字段可写）。
+ */
+public class StubApplication extends Application {
+
+    private static final String TAG = "DexShell";
+
+    /** 真实 Application 的全限定名（与 :app 保持一致）。 */
+    private static final String REAL_APPLICATION = "com.example.fragmject.app.FragmjectApplication";
+
+    /** 与打包任务一致的 XOR 密钥基值。 */
+    private static final int XOR_BASE = 0x5A;
+
+    private Application real;
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        try {
+            install(base);
+        } catch (Throwable t) {
+            // 壳安装失败必须记录下来：此时业务代码尚未加载，任何异常都会表现为「启动即闪退」
+            Log.e(TAG, "shell install failed", t);
+        }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (real == null) {
+            return;
+        }
+        // 关键时序：系统在 makeApplication 返回后会执行 `mInitialApplication = <stub>`，
+        // 把我们在 attachBaseContext 里做的替换覆盖掉；LoadedApk.mApplication 同理。
+        // 因此必须在 onCreate（系统赋值之后）再换一次，否则 Activity 拿到的仍是 stub，
+        // Hilt 会抛 “Hilt Activity must be attached to an @HiltAndroidApp Application”。
+        swapApplicationReferences();
+        try {
+            real.onCreate();
+            Log.i(TAG, "real application onCreate done");
+        } catch (Throwable t) {
+            Log.e(TAG, "real application onCreate failed", t);
+        }
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (real != null) {
+            real.onTrimMemory(level);
+        }
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (real != null) {
+            real.onLowMemory();
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (real != null) {
+            real.onConfigurationChanged(newConfig);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // 安装流程
+    // ------------------------------------------------------------------
+
+    private void install(Context base) throws Exception {
+        ByteBuffer[] payload = readPayloads(base);
+        Log.i(TAG, "payload chunks=" + payload.length);
+
+        // parent 必须是「系统原本给应用的那个 PathClassLoader」，不是 systemClassLoader：
+        // 业务 dex 已从 APK 移除，parent 只负责提供 **资源**（如 META-INF/services 里的
+        // ServiceLoader 声明），类解析会落到 payload 上。用 systemClassLoader 会导致
+        // kotlinx-coroutines-android 的 MainDispatcherFactory 找不到，抛
+        // “Module with the Main dispatcher is missing”。
+        ClassLoader payloadLoader = new InMemoryDexClassLoader(payload, getClassLoader());
+        Class<?> realClass = Class.forName(REAL_APPLICATION, true, payloadLoader);
+        Log.i(TAG, "real application class loaded: " + realClass.getName());
+
+        Object instance = realClass.getDeclaredConstructor().newInstance();
+        real = (Application) instance;
+
+        // 顺序很重要：先换 loader（后续按名解析走 payload），再换 application 引用，
+        // 最后才让真实 Application 执行 attachBaseContext。
+        Object loadedApk = loadedApk();
+        setField(loadedApk, "mClassLoader", payloadLoader);
+        swapApplicationReferences();
+        Log.i(TAG, "classloader & application references swapped");
+
+        Method attach = Class.forName("android.content.ContextWrapper")
+                .getDeclaredMethod("attachBaseContext", Context.class);
+        attach.setAccessible(true);
+        attach.invoke(real, base);
+        Log.i(TAG, "real attachBaseContext done");
+    }
+
+    /** 把 `LoadedApk.mApplication` 与 `ActivityThread.mInitialApplication` 指向真实实例。 */
+    private void swapApplicationReferences() {
+        if (real == null) {
+            return;
+        }
+        try {
+            setField(loadedApk(), "mApplication", real);
+            setField(activityThread(), "mInitialApplication", real);
+        } catch (Throwable t) {
+            Log.w(TAG, "swap application references failed: " + t.getClass().getName());
+        }
+    }
+
+    /** 读取并解密全部载荷分片（`assets/payload/dex-<n>.bin`，从 0 开始连续）。 */
+    private static ByteBuffer[] readPayloads(Context context) throws IOException {
+        List<ByteBuffer> buffers = new ArrayList<>();
+        for (int index = 0; ; index++) {
+            byte[] raw = readAsset(context, "payload/dex-" + index + ".bin");
+            if (raw == null) {
+                break;
+            }
+            buffers.add(ByteBuffer.wrap(decode(raw)));
+        }
+        if (buffers.isEmpty()) {
+            throw new IOException("no payload found in assets/payload");
+        }
+        return buffers.toArray(new ByteBuffer[0]);
+    }
+
+    private static byte[] readAsset(Context context, String name) {
+        try (InputStream input = context.getAssets().open(name)) {
+            ByteArrayOutputStream output = new ByteArrayOutputStream(Math.max(8192, input.available()));
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) > 0) {
+                output.write(buffer, 0, read);
+            }
+            return output.toByteArray();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /** 与打包任务对应的可逆混淆（不是密码学加密，只阻止 `unzip` 后直接 jadx）。 */
+    private static byte[] decode(byte[] data) {
+        byte[] out = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            out[i] = (byte) (data[i] ^ (XOR_BASE + i));
+        }
+        return out;
+    }
+
+    // ------------------------------------------------------------------
+    // 反射工具
+    // ------------------------------------------------------------------
+
+    private static Object activityThread() throws Exception {
+        Class<?> clazz = Class.forName("android.app.ActivityThread");
+        Method current = clazz.getDeclaredMethod("currentActivityThread");
+        current.setAccessible(true);
+        return current.invoke(null);
+    }
+
+    private static Object loadedApk() throws Exception {
+        Object thread = activityThread();
+        Object boundApp = readField(thread, "mBoundApplication");
+        return readField(boundApp, "info");
+    }
+
+    private static Object readField(Object target, String name) throws Exception {
+        Field field = target.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(target);
+    }
+
+    private static void setField(Object target, String name, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (Throwable t) {
+            // 字段在部分版本可能不存在（例如 mApplication 被改名），不阻断安装流程，
+            // 但需要留痕：Hilt 若因此失败，日志里能看到是哪一步没生效。
+            Log.w(TAG, "setField failed: " + name + " (" + t.getClass().getName() + ")");
+        }
+    }
+}

@@ -16,7 +16,7 @@
 androidGradlePlugin = "9.5.1"
 activity = "1.13.0"
 # 字符串加密插桩用（build-logic 内部依赖，不进运行时 classpath）
-asm = "9.9"
+asm = "9.11.1"
 androidxBaselineProfile = "1.5.0"
 androidxBenchmark = "1.5.0"
 androidxCamera = "1.6.2"

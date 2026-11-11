@@ -1,6 +1,27 @@
+import com.example.fragmject.convention.loadConfigProperties
+import java.util.Properties
+
 plugins {
     id("com.android.library")
 }
+
+/**
+ * 配置来源与 `:app` 一致：根目录 `config.properties`（唯一事实来源）。
+ *
+ * 但本模块同时要满足「可被拷到其他工程单独构建」，所以：
+ * - 读取失败（文件不存在）不抛错，退回空 Properties；
+ * - 每个字段都有内置默认值，缺键时用默认值，不硬失败。
+ *
+ * 这样在本仓库里改 `compileSdkVersion` / `minSdkVersion` / `ndkVersion` / `cmakeVersion`
+ * 一处即可同时作用于 `:app` 与 `:security`，不会再出现两边版本漂移。
+ */
+val buildSettings: Properties = runCatching { loadConfigProperties() }.getOrElse { Properties() }
+
+fun configInt(key: String, fallback: Int): Int =
+    buildSettings.getProperty(key)?.toIntOrNull() ?: fallback
+
+fun configString(key: String, fallback: String): String =
+    buildSettings.getProperty(key)?.takeIf { it.isNotBlank() } ?: fallback
 
 /**
  * 运行期安全防护库（从 `:app` 搬出，供其他项目复用）。
@@ -18,14 +39,15 @@ plugins {
  */
 android {
     namespace = "com.example.security"
-    compileSdk = 37
+    // 来自 config.properties（:app 用同一份），缺键时回退到内置默认值
+    compileSdk = configInt("compileSdkVersion", 37)
 
-    // 与 :app 保持一致：升级 NDK 时两处一起改（app 侧只为打包，native 编译在这里）
-    ndkVersion = "28.2.13676358"
+    // native 编译在这里发生；版本同样取自 config.properties，与 SDK 版本一起维护
+    ndkVersion = configString("ndkVersion", "28.2.13676358")
 
     defaultConfig {
-        // InMemoryDexClassLoader 需要 API 26+
-        minSdk = 26
+        // InMemoryDexClassLoader 需要 API 26+（config.properties 里也是 26）
+        minSdk = configInt("minSdkVersion", 26)
         // 宿主 R8 会重命名 JNI 类与公开 API，规则必须由库自带
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -38,7 +60,8 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+            // 与本地安装版本保持一致，覆盖在 config.properties 的 cmakeVersion
+            version = configString("cmakeVersion", "3.22.1")
         }
     }
 

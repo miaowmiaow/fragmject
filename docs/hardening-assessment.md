@@ -739,6 +739,7 @@ security check hit: 检测到异常匿名可执行内存段（2 段，阈值 0�
 | R8 规则 | 迁到 `security/consumer-rules.pro`（随 AAR 合并）；`app/proguard-rules.pro` 只保留 App 自身的 `Application <init>()` 规则 |
 | 宿主接入 | `:app` 改为 `implementation(project(":security"))`；`APP_ALLOWED_DEPENDENCIES` 增加 `":security"` |
 | 单测 | `SecurityDetectorsTest`（24 例）随代码迁到 `:security/src/test`，通过 |
+| 配置来源 | `:security/build.gradle.kts` 的 `compileSdk` / `minSdk` / `ndkVersion` / `cmakeVersion` 统一读取根目录 `config.properties`（与 `:app` 同源），缺键时回退内置默认值，保证模块可单独拷走构建 |
 | 发布 | **按决策不做 `maven-publish`**：当前只有本仓库一个消费者，先在仓库内用 `project(":security")`；真有外部项目时再加约 10 行配置 |
 
 **搬家导致的架构调整（重要）**：H6 的「壳 dex CRC 常量编译进 so」方案被替换。

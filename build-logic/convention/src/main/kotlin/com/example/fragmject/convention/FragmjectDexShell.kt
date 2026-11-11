@@ -8,6 +8,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.register
@@ -54,20 +55,38 @@ internal fun Project.configureDexShell() {
     val shelledApk = layout.buildDirectory.file("outputs/apk/release/app-release-shell.apk")
     val platformJarName = "android-${config.compileSdk}"
 
+    val shellGenDir = layout.buildDirectory.dir("generated/shell")
+
+    // 壳 dex 必须**先**产出：native 侧要把它的 CRC 作为编译期常量写进 so，
+    // 而 so 又是在打包 APK 之前编译的。顺序错了就变成「校验一个还没生成的 dex」。
+    val generateTask = tasks.register<GenerateShellDexTask>("generateShellDex") {
+        group = "build"
+        description = "d8 编译壳 dex，并生成 native 侧期望的 CRC 头文件"
+        shellAarFile.set(shellAar)
+        sdkDir.set(sdkDirectory)
+        platformJarDirName.set(platformJarName)
+        outputDir.set(shellGenDir)
+        dependsOn(shellProject.tasks.named("assembleRelease"))
+    }
+
     val packTask = tasks.register<PackShellTask>("packShellRelease") {
         group = "build"
         description = "把 release APK 打成 DEX 壳（H6/S1）"
         inputApk.set(releaseApk)
-        shellAarFile.set(shellAar)
+        shellDexFile.set(shellGenDir.map { it.file("shell.dex") })
         sdkDir.set(sdkDirectory)
-        platformJarDirName.set(platformJarName)
         signingPropertiesFile.set(rootProject.layout.projectDirectory.file("keystore.properties"))
         signingBaseDir.set(baseDir)
         outputApk.set(shelledApk)
         dependsOn(tasks.named("packageRelease"))
-        dependsOn(shellProject.tasks.named("assembleRelease"))
+        dependsOn(generateTask)
     }
     tasks.matching { it.name == "assembleRelease" }.configureEach { finalizedBy(packTask) }
+
+    // 让 release 的 native 构建依赖生成的头文件（生成目录通过 -DSHELL_GEN_DIR 传给 CMake）
+    tasks.matching {
+        it.name == "preReleaseBuild" || it.name.startsWith("buildCMakeRelease")
+    }.configureEach { dependsOn(generateTask) }
 }
 
 /** 开关名：`-PenableDexShell=true`。 */
@@ -81,15 +100,13 @@ abstract class PackShellTask : DefaultTask() {
     @get:InputFile
     abstract val inputApk: RegularFileProperty
 
+    /** 由 [GenerateShellDexTask] 产出的壳 dex（与打进 APK 的字节完全一致，CRC 才对得上）。 */
     @get:InputFile
-    abstract val shellAarFile: RegularFileProperty
+    abstract val shellDexFile: RegularFileProperty
 
-    /** SDK 根目录，用于定位 platforms/android-XX/android.jar 与 build-tools 下的工具。 */
+    /** SDK 根目录（定位 zipalign / apksigner）。 */
     @get:InputDirectory
     abstract val sdkDir: DirectoryProperty
-
-    @get:Input
-    abstract val platformJarDirName: Property<String>
 
     @get:InputFile
     abstract val signingPropertiesFile: RegularFileProperty
@@ -107,31 +124,10 @@ abstract class PackShellTask : DefaultTask() {
     fun run() {
         val work = temporaryDir.apply { deleteRecursively(); mkdirs() }
         val tools = resolveBuildTools()
-        // 平台目录名不一定是 android-<sdk>（本地实测为 android-37.0），因此优先精确匹配，
-        // 否则退回版本号最大的那个平台：d8 只需要一个 API 级别的 android.jar。
-        val androidJar = resolveAndroidJar()
-        logger.lifecycle("android.jar：${androidJar.absolutePath}")
+        val shellDex = shellDexFile.get().asFile
+        check(shellDex.exists()) { "缺少壳 dex：${shellDex.absolutePath}（先运行 generateShellDex）" }
 
-        // 1. 壳 AAR → classes.jar → d8 → classes.dex
-        val shellJar = File(work, "shell-classes.jar")
-        extractClassesJar(shellAarFile.get().asFile, shellJar)
-        val dexOut = File(work, "shell-dex").apply { mkdirs() }
-        exec.exec {
-            commandLine(
-                File(tools, "d8").absolutePath,
-                "--lib", androidJar.absolutePath,
-                "--min-api", "26",
-                "--output", dexOut.absolutePath,
-                shellJar.absolutePath,
-            )
-            standardOutput = java.io.ByteArrayOutputStream()
-            errorOutput = java.io.ByteArrayOutputStream()
-        }
-        val shellDex = File(dexOut, "classes.dex")
-        check(shellDex.exists()) { "d8 未产出 classes.dex" }
-        logger.lifecycle("壳 dex 大小：${shellDex.length()} B")
-
-        // 2. 重排 zip：原 dex 换成加密载荷 + 壳 dex
+        // 重排 zip：原 dex 换成加密载荷 + 壳 dex
         val rebuilt = File(work, "rebuilt.apk")
         val payloadCount = repack(inputApk.get().asFile, shellDex, rebuilt)
         logger.lifecycle("载荷分片：$payloadCount 个")
@@ -161,14 +157,6 @@ abstract class PackShellTask : DefaultTask() {
 
         outputApk.get().asFile.apply { parentFile?.mkdirs() }.also { signed.copyTo(it, overwrite = true) }
         logger.lifecycle("DEX 壳完成：${outputApk.get().asFile.absolutePath}")
-    }
-
-    /** 从 AAR 里取出 `classes.jar`。 */
-    private fun extractClassesJar(aar: File, target: File) {
-        ZipFile(aar).use { zip ->
-            val entry = zip.getEntry("classes.jar") ?: error("AAR 内没有 classes.jar：${aar.absolutePath}")
-            zip.getInputStream(entry).use { input -> target.outputStream().use { input.copyTo(it) } }
-        }
     }
 
     /** @return 载荷分片数量。 */
@@ -263,19 +251,6 @@ abstract class PackShellTask : DefaultTask() {
         out.closeEntry()
     }
 
-    /** 定位 android.jar：优先 `android-<compileSdk>`，否则取版本号最大的平台。 */
-    private fun resolveAndroidJar(): File {
-        val platforms = sdkDir.get().asFile.resolve("platforms").listFiles()
-            ?.filter { it.isDirectory && File(it, "android.jar").exists() }
-            .orEmpty()
-        val exact = platforms.firstOrNull { it.name == "android-${platformJarDirName.get()}" }
-        val chosen = exact ?: platforms.maxByOrNull {
-            it.name.filter(Char::isDigit).toIntOrNull() ?: 0
-        }
-        checkNotNull(chosen) { "找不到任何 android.jar（platforms 目录为空）" }
-        return File(chosen, "android.jar")
-    }
-
     private fun resolveBuildTools(): File =
         sdkDir.get().asFile.resolve("build-tools").listFiles()
             ?.filter { it.isDirectory && File(it, "d8").exists() }
@@ -309,4 +284,97 @@ abstract class PackShellTask : DefaultTask() {
         val uppercaseSignaturePrefixes = listOf(".SF", ".RSA", ".DSA", ".EC", ".MF")
         const val XOR_BASE = 0x5A
     }
+}
+
+/**
+ * 生成壳 dex，并把它的 CRC32 写成 C 头文件（供 native 编译期使用）。
+ *
+ * 为什么单独一个任务：
+ * - 壳 dex 的 CRC 必须作为**编译期常量**进入 so，才能在运行时校验「壳代码有没有被替换」；
+ * - 而 so 是在 APK 打包之前编译的，所以壳 dex 必须比 native 构建更早产出。
+ *
+ * 输出两个文件：
+ * - `shell.dex`：打包任务原样塞进 APK（必须与算 CRC 的字节完全一致）；
+ * - `shell_crc.h`：`#define SHELL_DEX_CRC 0x????????`，由 `security.cpp` include。
+ */
+abstract class GenerateShellDexTask : DefaultTask() {
+
+    @get:InputFile
+    abstract val shellAarFile: RegularFileProperty
+
+    /** SDK 根目录（定位 android.jar 与 build-tools）。 */
+    @get:InputDirectory
+    abstract val sdkDir: DirectoryProperty
+
+    @get:Input
+    abstract val platformJarDirName: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:Inject
+    abstract val exec: ExecOperations
+
+    @TaskAction
+    fun run() {
+        val out = outputDir.get().asFile.apply { mkdirs() }
+        val work = temporaryDir.apply { deleteRecursively(); mkdirs() }
+        val tools = resolveBuildTools()
+        val androidJar = resolveAndroidJar()
+
+        val shellJar = File(work, "shell-classes.jar")
+        extractClassesJar(shellAarFile.get().asFile, shellJar)
+
+        val dexOut = File(work, "shell-dex").apply { mkdirs() }
+        exec.exec {
+            commandLine(
+                File(tools, "d8").absolutePath,
+                "--lib", androidJar.absolutePath,
+                "--min-api", "26",
+                "--output", dexOut.absolutePath,
+                shellJar.absolutePath,
+            )
+            standardOutput = java.io.ByteArrayOutputStream()
+            errorOutput = java.io.ByteArrayOutputStream()
+        }
+
+        val dex = File(dexOut, "classes.dex")
+        check(dex.exists()) { "d8 未产出 classes.dex" }
+        dex.copyTo(File(out, "shell.dex"), overwrite = true)
+
+        val crc = java.util.zip.CRC32().apply { update(dex.readBytes()) }.value
+        val header = buildString {
+            appendLine("// 由 generateShellDex 任务生成，请勿手改。")
+            appendLine("#pragma once")
+            append("""#define SHELL_DEX_CRC 0x""")
+            append("%08x".format(crc))
+            appendLine("u")
+        }
+        File(out, "shell_crc.h").writeText(header)
+        logger.lifecycle("壳 dex ${dex.length()} B，CRC=0x%08x".format(crc))
+    }
+
+    private fun extractClassesJar(aar: File, target: File) {
+        ZipFile(aar).use { zip ->
+            val entry = zip.getEntry("classes.jar") ?: error("AAR 内没有 classes.jar：${aar.absolutePath}")
+            zip.getInputStream(entry).use { input -> target.outputStream().use { input.copyTo(it) } }
+        }
+    }
+
+    /** 平台目录名不一定是 `android-<sdk>`（本地实测为 `android-37.0`），优先精确匹配再退回最大版本。 */
+    private fun resolveAndroidJar(): File {
+        val platforms = sdkDir.get().asFile.resolve("platforms").listFiles()
+            ?.filter { it.isDirectory && File(it, "android.jar").exists() }
+            .orEmpty()
+        val exact = platforms.firstOrNull { it.name == "android-${platformJarDirName.get()}" }
+        val chosen = exact ?: platforms.maxByOrNull { it.name.filter(Char::isDigit).toIntOrNull() ?: 0 }
+        checkNotNull(chosen) { "找不到任何 android.jar（platforms 目录为空）" }
+        return File(chosen, "android.jar")
+    }
+
+    private fun resolveBuildTools(): File =
+        sdkDir.get().asFile.resolve("build-tools").listFiles()
+            ?.filter { it.isDirectory && File(it, "d8").exists() }
+            ?.maxByOrNull { it.name }
+            ?: error("未找到 build-tools（需要 d8）")
 }

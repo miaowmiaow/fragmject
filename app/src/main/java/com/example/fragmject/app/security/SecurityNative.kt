@@ -56,6 +56,9 @@ internal interface NativeChecks {
     /** 自身 so 的 `.rodata` 校验（常量表是否被改写）。 */
     fun verifySelfSoDataCrc(selfSoPath: String): Int
 
+    /** 壳 dex 的 CRC32 校验；-1=未启用（非壳构建）。见 `StubApplication`。 */
+    fun verifyShellDexCrc(crc: Int): Int
+
     fun killSelf()
 }
 
@@ -120,14 +123,15 @@ internal class SecurityNative(
             apkPath?.let { add("$it!/lib/$abi/lib$LIB_NAME.so") }
         }
         for (path in candidates) {
-            val ok = runCatching {
+            val failure = runCatching {
                 System.load(path)
-                true
-            }.getOrElse { false }
-            if (ok) {
+            }.exceptionOrNull()
+            if (failure == null) {
                 Log.i(SecurityGuard.TAG, "loaded $LIB_NAME via $path")
                 return true
             }
+            // 逐条记录失败原因：壳场景下「哪条路径不通」是排查加载问题的唯一线索
+            Log.w(SecurityGuard.TAG, "load failed: $path (${failure.javaClass.simpleName})")
         }
         return false
     }
@@ -153,6 +157,8 @@ internal class SecurityNative(
     external override fun verifySelfSoTextCrc(selfSoPath: String): Int
 
     external override fun verifySelfSoDataCrc(selfSoPath: String): Int
+
+    external override fun verifyShellDexCrc(crc: Int): Int
 
     external override fun killSelf()
 

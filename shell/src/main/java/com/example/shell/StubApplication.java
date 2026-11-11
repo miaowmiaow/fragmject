@@ -14,6 +14,7 @@ import java.security.MessageDigest;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.zip.CRC32;
 import java.util.zip.Inflater;
 import java.util.List;
 
@@ -119,6 +120,12 @@ public class StubApplication extends Application {
         // kotlinx-coroutines-android 的 MainDispatcherFactory 找不到，抛
         // “Module with the Main dispatcher is missing”。
         ClassLoader payloadLoader = new InMemoryDexClassLoader(payload, getClassLoader());
+
+        // 壳自校验放在 payload loader 之后：SecurityNative 属于业务 dex，
+        // 此时用壳自己的 classloader 找不到它（实测 ClassNotFoundException）。
+        // 这一步只创建 loader 并校验 CRC，不执行任何业务代码，顺序上是安全的。
+        verifyShellDex(payloadLoader);
+
         Class<?> realClass = Class.forName(REAL_APPLICATION, true, payloadLoader);
         Log.i(TAG, "real application class loaded: " + realClass.getName());
 
@@ -137,6 +144,65 @@ public class StubApplication extends Application {
         attach.setAccessible(true);
         attach.invoke(real, base);
         Log.i(TAG, "real attachBaseContext done");
+    }
+
+    /**
+     * 校验壳 dex 自身（H6/S2）：算自己 `classes.dex` 的 CRC32，交给 native 与编译期常量比对。
+     *
+     * 为什么期望值不在 assets：壳 dex 被替换时，攻击者可以顺手改掉任何放在 APK 里的期望值；
+     * 常量在 so 里时，绕过要同时改 so，而改 so 会撞上 `.text/.rodata` 自校验与签名校验。
+     *
+     * 降级策略（与其它检测一致）：so 加载失败 → 只告警、不阻断启动；
+     * 但「校验跑起来且不一致」→ 直接抛异常（fail-closed）。
+     */
+    private void verifyShellDex(ClassLoader payloadLoader) {
+        try {
+            String apk = getApplicationInfo().sourceDir;
+            int crc = crcOfEntry(apk, "classes.dex");
+
+            Class<?> nativeClass = Class.forName(
+                    "com.example.fragmject.app.security.SecurityNative", true, payloadLoader);
+            Object bridge = nativeClass
+                    .getDeclaredConstructor(String.class, String.class)
+                    .newInstance(getApplicationInfo().nativeLibraryDir, apk);
+            Object loaded = nativeClass.getDeclaredMethod("load").invoke(bridge);
+            if (!Boolean.TRUE.equals(loaded)) {
+                Log.w(TAG, "native unavailable, shell dex check skipped");
+                return;
+            }
+            Object result = nativeClass
+                    .getDeclaredMethod("verifyShellDexCrc", int.class)
+                    .invoke(bridge, crc);
+            int code = result instanceof Integer ? (Integer) result : -1;
+            if (code == 1) {
+                throw new IllegalStateException("shell dex integrity check failed");
+            }
+            Log.i(TAG, "shell dex check=" + code);
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Throwable t) {
+            // 反射失败（类名被改、方法缺失）不阻断：这类问题应由签名校验兜底
+            Log.w(TAG, "shell dex check error: " + t.getClass().getName());
+        }
+    }
+
+    /** 计算 APK 内某个 entry 的 CRC32（低 32 位）。 */
+    private static int crcOfEntry(String apkPath, String entryName) throws Exception {
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(apkPath)) {
+            java.util.zip.ZipEntry entry = zip.getEntry(entryName);
+            if (entry == null) {
+                throw new IllegalStateException("missing " + entryName);
+            }
+            CRC32 crc = new CRC32();
+            try (InputStream input = zip.getInputStream(entry)) {
+                byte[] buffer = new byte[64 * 1024];
+                int read;
+                while ((read = input.read(buffer)) > 0) {
+                    crc.update(buffer, 0, read);
+                }
+            }
+            return (int) crc.getValue();
+        }
     }
 
     /** 把 `LoadedApk.mApplication` 与 `ActivityThread.mInitialApplication` 指向真实实例。 */

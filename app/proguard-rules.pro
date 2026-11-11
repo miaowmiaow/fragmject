@@ -308,6 +308,19 @@
     native <methods>;
 }
 
+# DEX 壳（H6/S2）：壳用自己的 classloader 之外的方式（payload loader + 反射）调用
+# SecurityNative 做「壳 dex 自校验」，因此构造器与 load() 的名字必须保留；
+# 否则反射会抛 NoSuchMethodException（实测），自校验静默失效。
+-keepclassmembers class com.example.fragmject.app.security.SecurityNative {
+    <init>(java.lang.String, java.lang.String);
+    public boolean load();
+    # 关键：verifyShellDexCrc 只在壳里通过反射调用，Kotlin 侧没有调用点。
+    # -keepclasseswithmembernames 只是「保名」不阻止裁剪，R8 会把它删掉 →
+    # RegisterNatives 失败（实测日志：JNI_OnLoad: RegisterNatives failed）。
+    # 这里用禁止裁剪的 -keepclassmembers 兜住。
+    native <methods>;
+}
+
 # 公开入口与配置：保持可读的名字，便于崩溃栈与接入方排查。
 -keep class com.example.fragmject.app.security.SecurityGuard { public *; }
 -keep class com.example.fragmject.app.security.SecurityConfig { *; }

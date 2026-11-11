@@ -27,6 +27,12 @@ target_compile_features(fragmject_security PRIVATE cxx_std_17)
 #   只保留 JNI_OnLoad 一个对外符号（它带 JNIEXPORT）。这是动态注册的主要收益之一。
 target_compile_options(fragmject_security PRIVATE -O2 -Wall -fvisibility=hidden)
 
+# 壳 dex 的 CRC 头（可选）：由 build-logic 的 generateShellDex 生成。
+# 未开壳时目录不存在，security.cpp 用 __has_include 保护，校验自动降级为「不启用」。
+if(DEFINED SHELL_GEN_DIR)
+    include_directories(${SHELL_GEN_DIR})
+endif()
+
 # log：__android_log_print 依赖 liblog。
 # dl：dladdr 依赖 libdl（bionic 中单独成库）。
 find_library(log-lib log)

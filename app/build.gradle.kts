@@ -107,6 +107,14 @@ android {
         } else {
             "com.example.fragmject.app.FragmjectApplication"
         }
+        // 壳 dex 的 CRC 头文件目录（由 build-logic 的 generateShellDex 生成）。
+        // 未开壳时该目录不存在，CMakeLists 用 if(DEFINED) 保护，不影响普通构建。
+        externalNativeBuild {
+            cmake {
+                arguments += "-DSHELL_GEN_DIR=${layout.buildDirectory.get().asFile.absolutePath}/generated/shell"
+            }
+        }
+
         // 运行期签名校验的期望值：空串 = 不启用（见 SecurityIntegrityChecks.verifySignature）。
         // 多渠道重签时可在值里用逗号分隔多个证书摘要（宿主侧 SecurityConfig 按逗号拆分）。
         buildConfigField("String", "EXPECTED_SIG_SHA256", "\"$expectedSigSha256\"")

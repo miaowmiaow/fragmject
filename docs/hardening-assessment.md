@@ -489,9 +489,39 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
    常规包 **933 ms** / 壳包 **984 ms**，增量 **+51 ms（+5.5%）**，在立项时设定的
    「冷启动增量 < 150 ms」门槛内。
 
+**S2 第二阶段（2026-11-11，已完成）：壳 dex 自校验**
+
+此前唯一没有完整性保护的就是壳自己。做法是**把期望值锚定在 native**：
+
+1. 新增 `generateShellDex` 任务：d8 产出壳 dex 后，把它整包的 **CRC32 写成 C 头文件**
+   （`shell_crc.h`），并在构建图上排在 native 编译之前（`preReleaseBuild` 依赖它）；
+2. `security.cpp` 用 `__has_include` 引入该常量，新增 JNI `verifyShellDexCrc(int)`；
+   头文件缺失（未打壳）时返回 `-1`，即「不启用」，不影响普通构建；
+3. 壳启动时（payload loader 建好之后）算自己 `classes.dex` 的 CRC32，通过反射调用
+   `SecurityNative.verifyShellDexCrc(crc)`；返回 `1` 直接抛异常（fail-closed）。
+
+为什么期望值不放 assets：壳 dex 被替换时，攻击者可以顺手改掉任何放在 APK 里的期望值；
+常量在 so 里就必须同时改 so，而改 so 会撞上 `.text/.rodata` 自校验与 APK 签名校验。
+
+实测：
+
+| 场景 | 日志 | 结果 |
+|---|---|---|
+| 正常壳包 | `shell dex check=0`、`payload sum ok` | ✅ 启动正常 |
+| `classes.dex` 追加 1 字节（CRC 变化、dex 仍可加载）并重签 | `FragmjectSecurity: shell dex crc mismatch: actual=97e55d8f expected=38ee772d` → `IllegalStateException: shell dex integrity check failed` | ✅ 进程崩溃（fail-closed） |
+| 未打壳的常规包 | `verifyShellDexCrc` 返回 `-1` | ✅ 不启用、零影响 |
+
+实现过程踩了 4 个坑（都记在代码注释里）：
+
+| 现象 | 根因 | 处理 |
+|---|---|---|
+| `ClassNotFoundException: SecurityNative` | 校验放在了 payload loader 之前，壳自己的 classloader 只有壳 dex | 改到 loader 创建之后，`Class.forName(..., payloadLoader)` |
+| `JNI_OnLoad: RegisterNatives failed` | `-keepclasseswithmembernames` 只「保名」不阻止裁剪，反射调用的 native 方法被 R8 删了 | 改用禁止裁剪的 `-keepclassmembers ... { native <methods>; }` |
+| 构建失败（proguard 解析） | proguard 注释只能用 `#` | 改注释写法 |
+| `shell dex check=-1`（校验没生效） | CMake 参数新增后旧 `.cxx` 缓存未失效，头文件没进 include 路径 | 清 `app/.cxx` 重新配置 |
+
 **S2 剩余（仍未做）**：
 - 反 dump（内存 dex 仍可被 Frida/BlackDex 脱，壳只挡静态分析）；
-- 壳 dex 自身的完整性校验（当前只校验载荷，壳代码替换不在覆盖范围）；
 - 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
 - 更细的分片策略（当前 2 片一次性解压，>20MB dex 时需改按需加载）。
 

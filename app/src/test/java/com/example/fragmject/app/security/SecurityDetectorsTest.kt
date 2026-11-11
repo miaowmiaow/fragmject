@@ -329,5 +329,7 @@ private class FakeNative(override var available: Boolean = true) : NativeChecks 
 
     override fun verifySelfSoDataCrc(selfSoPath: String): Int = selfSoCrc
 
+    override fun verifyShellDexCrc(crc: Int): Int = -1
+
     override fun killSelf() = Unit
 }

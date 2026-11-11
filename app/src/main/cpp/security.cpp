@@ -36,6 +36,15 @@
 #include <sys/ptrace.h>
 #include <unistd.h>
 
+// 壳 dex 的 CRC 常量：由 build-logic 的 generateShellDex 在编译前生成。
+// 未开壳（-PenableDexShell 关闭）时该头文件不存在，校验自动降级为「不启用」。
+#if __has_include("shell_crc.h")
+#include "shell_crc.h"
+#define SHELL_DEX_CRC_AVAILABLE 1
+#else
+#define SHELL_DEX_CRC_AVAILABLE 0
+#endif
+
 #include <array>
 #include <cctype>
 #include <cstddef>
@@ -199,10 +208,12 @@ constexpr auto kNameFindRootFiles = XorString("findRootFiles");
 constexpr auto kNameVerifyLibcTextCrc = XorString("verifyLibcTextCrc");
 constexpr auto kNameVerifySelfSoTextCrc = XorString("verifySelfSoTextCrc");
 constexpr auto kNameVerifySelfSoDataCrc = XorString("verifySelfSoDataCrc");
+constexpr auto kNameVerifyShellDexCrc = XorString("verifyShellDexCrc");
 constexpr auto kNameKillSelf = XorString("killSelf");
 constexpr auto kSigInt = XorString("()I");
 constexpr auto kSigVoid = XorString("()V");
 constexpr auto kSigStringInt = XorString("(Ljava/lang/String;)I");
+constexpr auto kSigIntInt = XorString("(I)I");
 
 // 日志文案（避免出现 "frida"/"root" 之类关键词）
 constexpr auto kLogFridaThread = XorString("thread sig hit");
@@ -1023,6 +1034,35 @@ jint jniVerifySelfSoDataCrc(JNIEnv *env, jobject, jstring selfSoPath) {
     return verifySectionCrc(soPath, lit::kRodataSection.str());
 }
 
+/**
+ * 校验壳 dex 的 CRC32（H6/S2：壳自身完整性）。
+ *
+ * 为什么期望值放 native 而不是 assets：壳 dex 若被替换，攻击者可以顺手改掉任何
+ * 放在 assets 里的期望值；把常量编译进 so 后，要绕过就必须同时改 so，
+ * 而改 so 会撞上 `.text/.rodata` 自校验与 APK 签名校验。
+ *
+ * 局限（如实记录）：
+ * - 只防「替换/篡改壳 dex」，不防「直接删掉这次调用」——要防后者得靠 native 侧主动检测；
+ * - CRC32 非密码学哈希，理论上可构造碰撞。
+ *
+ * @param crc 壳侧对自身 classes.dex 计算的 CRC32（低 32 位）
+ * @return 0=一致；1=不一致（壳被替换）；-1=未启用（构建时没打壳）
+ */
+jint jniVerifyShellDexCrc(JNIEnv *, jobject, jint crc) {
+#if SHELL_DEX_CRC_AVAILABLE
+    const auto actual = static_cast<std::uint32_t>(crc);
+    const auto expected = static_cast<std::uint32_t>(SHELL_DEX_CRC);
+    if (actual != expected) {
+        SEC_LOGW("shell dex crc mismatch: actual=%08x expected=%08x", actual, expected);
+        return 1;
+    }
+    return 0;
+#else
+    (void) crc;
+    return -1;
+#endif
+}
+
 /** Frida 特征线程数；-1=无法枚举。 */
 jint jniCountThreadSignals(JNIEnv *, jobject) {
     return countThreadSignals();
@@ -1086,6 +1126,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     static const std::string nameVerifyLibcTextCrc = lit::kNameVerifyLibcTextCrc.str();
     static const std::string nameVerifySelfSoTextCrc = lit::kNameVerifySelfSoTextCrc.str();
     static const std::string nameVerifySelfSoDataCrc = lit::kNameVerifySelfSoDataCrc.str();
+    static const std::string nameVerifyShellDexCrc = lit::kNameVerifyShellDexCrc.str();
     static const std::string nameFindFridaThreads = lit::kNameFindFridaThreads.str();
     static const std::string nameFindFridaFiles = lit::kNameFindFridaFiles.str();
     static const std::string nameFindRootFiles = lit::kNameFindRootFiles.str();
@@ -1093,6 +1134,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     static const std::string sigNoArg = lit::kSigInt.str();
     static const std::string sigNoArgVoid = lit::kSigVoid.str();
     static const std::string sigStringArg = lit::kSigStringInt.str();
+    static const std::string sigIntArg = lit::kSigIntInt.str();
 
     const JNINativeMethod methods[] = {
             {const_cast<char *>(nameInstallAntiPtrace.c_str()),
@@ -1125,6 +1167,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
             {const_cast<char *>(nameFindFridaFiles.c_str()),
              const_cast<char *>(sigNoArg.c_str()),
              reinterpret_cast<void *>(jniCountFileSignals)},
+            {const_cast<char *>(nameVerifyShellDexCrc.c_str()),
+             const_cast<char *>(sigIntArg.c_str()),
+             reinterpret_cast<void *>(jniVerifyShellDexCrc)},
             {const_cast<char *>(nameFindRootFiles.c_str()),
              const_cast<char *>(sigNoArg.c_str()),
              reinterpret_cast<void *>(jniFindRootFiles)},

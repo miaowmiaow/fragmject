@@ -475,6 +475,26 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 | `Hilt Activity must be attached to an @HiltAndroidApp Application. Found: StubApplication` | 系统在 `makeApplication` 返回后会执行 `mInitialApplication = <stub>`，把壳在 `attachBaseContext` 里的替换覆盖掉 | 在 `StubApplication.onCreate` 再替换一次 `LoadedApk.mApplication` / `mInitialApplication` |
 | `Module with the Main dispatcher is missing` | parent 用了 `systemClassLoader`，`ServiceLoader` 找不到 APK 里的 `META-INF/services` | parent 改为系统原本的 `PathClassLoader`（只提供资源，类仍从 payload 解析） |
 
+**S2 第一阶段（2026-11-11，已完成）**：
+
+1. **载荷完整性校验（fail-closed）**：打包时对全部密文载荷算 SHA-256 写入
+   `assets/payload/sum.txt`，壳启动先比对再解密；不一致直接抛异常、不再加载业务代码。
+   实测：翻转 `dex-0.bin` 一个字节并重签安装后，日志
+   `payload sum mismatch: payload modified` → `IllegalStateException: payload integrity check failed`
+   → 进程起不来（后续 provider 初始化因类缺失必然失败）。这正是期望行为。
+2. **体积回归修复**：初版是「先 XOR 再让 zip 压缩」，XOR 把数据变成高熵，zip 完全压不动，
+   壳包从 11.70 MB 涨到 **15.20 MB（+30%）**。改为 **deflate → XOR → STORED** 后
+   `11.70 MB → 11.74 MB`，只 **+36.7 KB（+0.3%）**。
+3. **启动开销 A/B（模拟器 API 37，各 5 次冷启动取中位数）**：
+   常规包 **933 ms** / 壳包 **984 ms**，增量 **+51 ms（+5.5%）**，在立项时设定的
+   「冷启动增量 < 150 ms」门槛内。
+
+**S2 剩余（仍未做）**：
+- 反 dump（内存 dex 仍可被 Frida/BlackDex 脱，壳只挡静态分析）；
+- 壳 dex 自身的完整性校验（当前只校验载荷，壳代码替换不在覆盖范围）；
+- 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
+- 更细的分片策略（当前 2 片一次性解压，>20MB dex 时需改按需加载）。
+
 **仍未做（完整 H6 / S2 范围）**：
 1. 载荷分片策略与多 dex 的启动耗时优化（当前 2 片一次性全解）；
 2. 反 dump（内存 dex 仍是可 dump 的，壳只挡静态分析）；

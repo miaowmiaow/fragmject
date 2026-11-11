@@ -9,9 +9,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.zip.Inflater;
 import java.util.List;
 
 import dalvik.system.InMemoryDexClassLoader;
@@ -149,20 +152,57 @@ public class StubApplication extends Application {
         }
     }
 
-    /** 读取并解密全部载荷分片（`assets/payload/dex-<n>.bin`，从 0 开始连续）。 */
-    private static ByteBuffer[] readPayloads(Context context) throws IOException {
-        List<ByteBuffer> buffers = new ArrayList<>();
+    /**
+     * 读取、校验并解密全部载荷分片（`assets/payload/dex-<n>.bin`，从 0 开始连续）。
+     *
+     * 先对**密文**算整体 SHA-256 与 `assets/payload/sum.txt` 比对，再解密：
+     * - 摘要错了说明 payload 被替换（打包器与壳是同一次构建产出的，正常不会不匹配）；
+     * - 失败时抛异常向上冒泡 → 壳不加载业务代码 → 应用启动即失败（fail-closed），
+     *   而不是"跳过校验继续跑"。
+     */
+    private static ByteBuffer[] readPayloads(Context context) throws Exception {
+        List<byte[]> chunks = new ArrayList<>();
         for (int index = 0; ; index++) {
             byte[] raw = readAsset(context, "payload/dex-" + index + ".bin");
             if (raw == null) {
                 break;
             }
-            buffers.add(ByteBuffer.wrap(decode(raw)));
+            chunks.add(raw);
         }
-        if (buffers.isEmpty()) {
+        if (chunks.isEmpty()) {
             throw new IOException("no payload found in assets/payload");
         }
+        verifyPayloadSum(context, chunks);
+
+        List<ByteBuffer> buffers = new ArrayList<>(chunks.size());
+        for (byte[] chunk : chunks) {
+            // 与打包任务相反的顺序：先 XOR 还原，再 inflate 得到原始 dex
+            buffers.add(ByteBuffer.wrap(inflate(decode(chunk))));
+        }
         return buffers.toArray(new ByteBuffer[0]);
+    }
+
+    /** 校验 payload 整体 SHA-256；不一致直接抛异常（fail-closed）。 */
+    private static void verifyPayloadSum(Context context, List<byte[]> chunks) throws Exception {
+        byte[] expectedRaw = readAsset(context, "payload/sum.txt");
+        if (expectedRaw == null) {
+            throw new IOException("missing payload/sum.txt");
+        }
+        String expected = new String(expectedRaw, StandardCharsets.UTF_8).trim().toLowerCase();
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        for (byte[] chunk : chunks) {
+            digest.update(chunk);
+        }
+        byte[] hashed = digest.digest();
+        StringBuilder actual = new StringBuilder(hashed.length * 2);
+        for (byte value : hashed) {
+            actual.append(String.format("%02x", value & 0xFF));
+        }
+        if (!actual.toString().equals(expected)) {
+            Log.e(TAG, "payload sum mismatch: payload modified");
+            throw new IllegalStateException("payload integrity check failed");
+        }
+        Log.i(TAG, "payload sum ok (" + chunks.size() + " chunks)");
     }
 
     private static byte[] readAsset(Context context, String name) {
@@ -177,6 +217,26 @@ public class StubApplication extends Application {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    /** 与打包任务的 deflate 对应：载荷是「先压缩再混淆」的，需先解码再解压。 */
+    private static byte[] inflate(byte[] compressed) throws Exception {
+        Inflater inflater = new Inflater();
+        inflater.setInput(compressed);
+        ByteArrayOutputStream out = new ByteArrayOutputStream(compressed.length * 3);
+        byte[] buffer = new byte[64 * 1024];
+        while (!inflater.finished()) {
+            int read = inflater.inflate(buffer);
+            if (read == 0) {
+                if (inflater.needsInput() || inflater.needsDictionary()) {
+                    break;
+                }
+            } else {
+                out.write(buffer, 0, read);
+            }
+        }
+        inflater.end();
+        return out.toByteArray();
     }
 
     /** 与打包任务对应的可逆混淆（不是密码学加密，只阻止 `unzip` 后直接 jadx）。 */

@@ -24,21 +24,66 @@
 
 ## 二、开关与产物（先看这一节，选错产物会得到装不上的包）
 
-| 目标 | 命令 | 产物 | 可发布 |
+### 2.1 场景 → 完整命令 → 产物
+
+所有命令都在**仓库根目录**执行，产物统一落在 `app/build/outputs/apk/release/`。
+
+| 场景 | 完整命令 | 产物文件 | 可发布 |
 |---|---|---|---|
-| 常规 release | `./gradlew :app:assembleRelease` | `app-release.apk` | ✅ |
-| 加字符串加密 | `... -PenableStringFog=true` | `app-release.apk` | ✅ |
-| 加资源混淆 | `... -PenableResObf=true` | `app-release-resobf.apk` | ✅ |
-| **打壳** | `... -PenableDexShell=true` | `app-release-shell.apk` | ✅ **只有它** |
-| 壳 + 资源混淆 | `... -PenableDexShell=true -PenableResObf=true` | `app-release-shell.apk`（已含短资源路径） | ✅ |
-| 三项全开 | `... -PenableDexShell=true -PenableResObf=true -PenableStringFog=true` | `app-release-shell.apk` | ✅ |
+| 常规 release（无加固） | `./gradlew :app:assembleRelease` | `app-release.apk` | ✅ |
+| 仅字符串加密 | `./gradlew :app:assembleRelease -PenableStringFog=true` | `app-release.apk` | ✅ |
+| 仅资源混淆 | `./gradlew :app:assembleRelease -PenableResObf=true` | `app-release-resobf.apk` | ✅ |
+| 仅打壳 | `./gradlew :app:assembleRelease -PenableDexShell=true` | `app-release-shell.apk` | ✅（**只发它**） |
+| 壳 + 资源混淆 | `./gradlew :app:assembleRelease -PenableDexShell=true -PenableResObf=true` | `app-release-shell.apk` | ✅（**只发它**） |
+| 三项全开（= CI 配置） | `./gradlew :app:assembleRelease -PenableStringFog=true -PenableResObf=true -PenableDexShell=true` | `app-release-shell.apk` | ✅（**只发它**） |
+
+### 2.2 发布用的完整命令（可直接复制）
+
+```bash
+cd /path/to/fragmject
+
+# 全量加固（字符串加密 + 资源混淆 + DEX 壳）
+./gradlew :app:assembleRelease \
+  -PenableStringFog=true \
+  -PenableResObf=true \
+  -PenableDexShell=true
+
+# 产物（只有这一个可以上传）
+ls -l app/build/outputs/apk/release/app-release-shell.apk
+```
+
+需要**干净产物**（改了壳代码、或怀疑增量缓存有问题）时加 `clean`：
+
+```bash
+./gradlew clean :app:assembleRelease \
+  -PenableStringFog=true -PenableResObf=true -PenableDexShell=true
+```
+
+壳相关构建缓存异常时，额外清掉 CMake 与壳 dex 生成目录：
+
+```bash
+rm -rf app/.cxx app/build/generated/shell
+./gradlew :app:assembleRelease -PenableDexShell=true
+```
+
+### 2.3 可选参数
+
+| 参数 | 作用 | 默认 |
+|---|---|---|
+| `-PstringFogKey=<int>` | 字符串加密密钥（同一次构建内所有类共用），换版本时可轮换 | `0x5A3C` |
+
+```bash
+# 指定密钥（十进制；示例 4660 == 0x1234）
+./gradlew :app:assembleRelease -PenableStringFog=true -PstringFogKey=4660
+```
+
+签名摘要（H1）**没有开关**：构建期从 `keystore.properties` 自动计算并注入
+`BuildConfig.EXPECTED_SIG_SHA256`，release 恒开。
 
 > ⚠️ **开壳后 `app-release.apk` 与 `app-release-resobf.apk` 不可发布**：它们的 manifest 已被替换为
 > `com.example.shell.StubApplication`，但里面没有壳 dex，装上必然启动即崩。
 > 这是「manifest 占位符 + 后处理打壳」的必然结果——只要构建时带了 `-PenableDexShell`，
 > 唯一有效产物就是 `app-release-shell.apk`。
-
-产物路径：`app/build/outputs/apk/release/app-release-shell.apk`
 
 **CI**：`.github/workflows/release-weekly.yml` 已开启全部三个开关（字符串加密 + 资源混淆 + 打壳），
 上传的 artifact 就是 `app-release-shell.apk`，并在上传前校验：载荷存在、业务 dex 已抽走

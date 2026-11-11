@@ -69,16 +69,22 @@ internal fun Project.configureDexShell() {
         dependsOn(shellProject.tasks.named("assembleRelease"))
     }
 
+    // 与资源混淆叠加时**必须串行**：资源混淆会重排 zip 并重签，若两者并行处理
+    // 同一个 app-release.apk，会产出「manifest 指向壳类但没有壳 dex」的坏包（实测）。
+    // 因此开壳时优先消费 resobf 产物，并在任务图上显式依赖它。
+    val resObfEnabled = providers.gradleProperty("enableResObf").map(String::toBoolean).getOrElse(false)
+    val obfApk = layout.buildDirectory.file("outputs/apk/release/app-release-resobf.apk")
+
     val packTask = tasks.register<PackShellTask>("packShellRelease") {
         group = "build"
         description = "把 release APK 打成 DEX 壳（H6/S1）"
-        inputApk.set(releaseApk)
+        inputApk.set(if (resObfEnabled) obfApk else releaseApk)
         shellDexFile.set(shellGenDir.map { it.file("shell.dex") })
         sdkDir.set(sdkDirectory)
         signingPropertiesFile.set(rootProject.layout.projectDirectory.file("keystore.properties"))
         signingBaseDir.set(baseDir)
         outputApk.set(shelledApk)
-        dependsOn(tasks.named("packageRelease"))
+        dependsOn(tasks.named(if (resObfEnabled) "obfuscateReleaseResources" else "packageRelease"))
         dependsOn(generateTask)
     }
     tasks.matching { it.name == "assembleRelease" }.configureEach { finalizedBy(packTask) }

@@ -2,6 +2,19 @@ package com.example.fragmject.app
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.example.security.SecurityGuard
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -58,10 +71,15 @@ class MainActivity : ComponentActivity() {
         //    连 timeToInitialDisplay 都拿不到）。
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        // 安全库命中阻断时，进程会在 blockGraceMs（默认 1.2s）后被 native SIGKILL。
+        // 这里不再搭建业务 UI（避免 1.2s 内闪现半截首页），改为展示明确的关闭提示，
+        // 让用户知道「不是闪退，是被安全策略终止」。
+        val securityBlocked = SecurityGuard.isBlocked()
+        val blockMessage = SecurityGuard.blockingMessage()
         // 仅从桌面图标（MAIN/LAUNCHER）冷启动时预热首页首屏：深链直接落详情页的冷启动
         // 不会消费首页数据，预热只会白跑一次请求。必须放在 super.onCreate 之后，
         // 因为 Hilt 的 Activity 字段注入在父类 onCreate 内完成。
-        if (intent.isLauncherStart()) {
+        if (intent.isLauncherStart() && !securityBlocked) {
             homeRepository.warmUpFirstPage()
         }
         enableEdgeToEdge()
@@ -69,6 +87,12 @@ class MainActivity : ComponentActivity() {
         val initialBackStack = resolveDeepLinkBackStack(intent)
         setContent {
             val darkTheme by themeState.darkTheme.collectAsStateWithLifecycle(initialValue = false)
+            if (securityBlocked) {
+                AppTheme(window = window, darkTheme = darkTheme) {
+                    SecurityBlockedScreen(blockMessage)
+                }
+                return@setContent
+            }
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {
                     CompositionLocalProvider(LocalNavigators provides navigators) {
@@ -87,7 +111,10 @@ class MainActivity : ComponentActivity() {
             }
         }
         // WebView 预创建（内部已在主线程 IdleHandler 中执行，不阻塞首帧）
-        webViewPool.prepare(applicationContext)
+        // 阻断时跳过：进程即将被终止，预创建只会拖慢提示页首帧
+        if (!securityBlocked) {
+            webViewPool.prepare(applicationContext)
+        }
         // 仅在 Debug 构建中启用 WebView 调试，避免在 Release 包暴露调试接口
         if (BuildConfig.DEBUG) {
             webViewPool.setDebuggingEnabled(true)
@@ -98,6 +125,34 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingDeepLink.value = intent.data?.let { DeepLinkRequest(uri = it) }
+    }
+}
+
+/**
+ * 安全命中提示页。
+ *
+ * 为什么不做成二次确认或「继续使用」按钮：命中级别是 CRITICAL，进程会在 1.2s 内被
+ * native SIGKILL，给用户操作只会造成「点了没反应」的错觉。这里只陈述原因。
+ *
+ * 文案取自 [SecurityGuard.blockingMessage]（例：「APK 签名异常，应用即将关闭」）。
+ */
+@Composable
+private fun SecurityBlockedScreen(message: String) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(text = "安全提示", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = message,
+                modifier = Modifier.padding(top = 12.dp),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

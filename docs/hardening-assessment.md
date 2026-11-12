@@ -1001,7 +1001,43 @@ F 组随即命中。覆盖范围限于**精确同名**文件；带版本号的�
 
 
 
-### 10.11 门禁与验证
+### 10.11 安装侧与宿主 UI（2026-11-12）
+
+**1) 版本降级安装验证**
+
+| 场景 | 结果 |
+|---|---|
+| 已装 `versionCode=160`，覆盖安装 `versionCode=159` 的同签名包 | `INSTALL_FAILED_VERSION_DOWNGRADE: Update version code 159 is older than current 160` ✅ |
+| 拒绝后旧包状态 | `versionCode=160` 未变、启动正常（2753ms）、进程存活 ✅ |
+
+配合此前的改签实验，系统侧三种拦截都已验证：**签名不一致 / 版本降级 / 覆盖安装**（同签名同版本可覆盖）。
+注意：系统只拦「覆盖安装」；卸载后重装改签包系统会放行 —— 这正是应用内 H1 存在的意义。
+
+**2) 命中提示页（本次补齐的宿主缺口）**
+
+之前命中后只是 1.2s 后闪退，用户无法区分「崩溃」与「被安全策略终止」。现在 `MainActivity`
+在 `onCreate` 最前面读 `SecurityGuard.isBlocked()`，命中时：
+
+- **不搭建业务 UI**（避免 1.2s 内闪现半截首页），直接渲染「安全提示 + 具体原因」；
+- 跳过首页数据预热与 WebView 预创建（进程即将终止，预热是浪费）。
+
+实测（端口命中触发，无需重装）：截图显示居中的「安全提示 / 检测到 Frida Server 监听端口（27042-27052）」，
+同时日志 `security check hit: [injection.port]`，进程在 1.2s 后被 native kill。
+正常启动时 `isBlocked()` 为 false，首页照常渲染（已对照截图确认）。
+
+**3) 16 KB 对齐核查（顺带结论）**
+
+装过 gadget 探针包后，系统弹过「This app isn't 16 KB compatible」。核查当前正式包内全部 so：
+
+| 库 | LOAD 对齐 |
+|---|---|
+| `libappsecurity.so` | `0x4000`（16 KB）✅ |
+| `libbarhopper_v3.so` / `libimage_processing_util_jni.so` / `libsurface_util_jni.so` / `libandroidx.graphics.path.so` | 均 `0x4000` ✅ |
+
+结论：**不是真问题**。弹窗是探针包（含未对齐的 `libgadget.so` 与非 ELF 的 `libgadget.config.so`）安装时
+留下的缓存判定，勾选「Don't Show Again」或卸载重装即消失。正式包全部对齐。
+
+### 10.12 门禁与验证
 
 | 项 | 结果 |
 |---|---|

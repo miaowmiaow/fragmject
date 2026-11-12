@@ -820,7 +820,29 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 第三条是关键：**改壳 dex 用正式证书重签可以骗过 H1，但骗不过壳自己的 CRC 校验**；
 反过来改签包（壳 dex 不动）骗不过 H1。两者覆盖面互补。
 
-### 10.5 门禁与验证
+### 10.5 壳包版本矩阵（2026-11-12，arm64 模拟器 + 真机）
+
+用同一份 `app-release-shell.apk` 在 4 个版本的 arm64 模拟器上跑，验证壳链路与安全库不依赖新系统特性：
+
+| 设备 | 系统 | 壳结构 | 关键日志 | 结果 |
+|---|---|---|---|---|
+| api26（google_apis arm64） | Android 8.0 | ✅ | `shell dex check ok` / `payload sum ok (2 chunks)` / `registered 12 methods` | ✅ 进程存活；命中 `Root 环境` 为 **WARN**（该镜像 userdebug 自带 su），未误杀 |
+| api28 | Android 9 | ✅ | 同上 | ✅ 进程存活；`模拟器环境` 为 WARN |
+| api31 | Android 12 | ✅ | 同上 | ✅ 进程存活；warn=1 / hit=0 |
+| api34 | Android 14 | ✅ | 同上 | ✅ 进程存活；warn=2 / hit=0，首页完整渲染 |
+| PGEM10（真机） | Android 16 | ✅ | 同上 + 双段 CRC 一致 | ✅ |
+| sdk_gphone16k（模拟器） | Android 17 / 16 KB | ✅ | 同上 | ✅ |
+
+结论：
+
+1. **API 26 即可跑通**（`InMemoryDexClassLoader` 与 hidden API 反射在 8.0 上都可用），说明壳不依赖新系统特性；
+2. 4 个版本均 **crash=0、hit=0**，未被安全库误判为改包，说明 H1 的构建期摘要注入在旧系统上同样成立；
+3. 旧镜像的 `Root 环境` 命中再次验证 H5 分级：环境类信号只告警、不终止。
+
+**局限**（如实记录）：本机为 Apple Silicon，只能跑 arm64-v8a 镜像，**x86_64 ABI 未覆盖**；
+另 API 26/28 的 google_apis 镜像较老，部分系统 UI 行为与真机有差异，本表只证明「壳与安全库能跑」。
+
+### 10.6 门禁与验证
 
 | 项 | 结果 |
 |---|---|

@@ -684,6 +684,17 @@ int countFileSignals() {
     for (const auto &dirPath : kDirs) {
         DIR *dir = opendir(dirPath.c_str());
         if (dir == nullptr) {
+            // Android 10+ 的 /data/local/tmp 对应用是 `--x`（可穿越、不可列目录），
+            // opendir 必然失败。此时退化为「按已知文件名 stat 探测」——
+            // 目录的 x 位允许解析具体路径，所以这条兜底在真机上有效（实测）。
+            // 覆盖范围：精确同名文件；带版本号的文件名（frida-server-17.x-...）不在此列。
+            for (const auto &sig : kSignatures) {
+                const std::string probe = dirPath + "/" + sig;
+                if (access(probe.c_str(), F_OK) == 0) {
+                    SEC_LOGD("%s", lit::kLogFridaFile.str().c_str());
+                    ++hits;
+                }
+            }
             continue;
         }
         while (dirent *entry = readdir(dir)) {

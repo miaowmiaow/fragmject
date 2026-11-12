@@ -981,8 +981,26 @@ adb logcat -s DexShell:V AppSecurity:V | grep -E "gadget|check hit|jniKillSelf"
 ./gradlew :app:assembleRelease -PenableDexShell=true
 ```
 
-**仍未覆盖**：`frida-server` 形态（需 root 设备）——端口扫描（27042-27052）与落地文件名检测
-目前只有代码与降级逻辑，尚无真实命中证据。
+**frida-server 形态的两条检测（无需 root，同日补验）**
+
+| 组 | 构造 | 实测 | 结果 |
+|---|---|---|---|
+| D | `adb reverse tcp:27042 tcp:27042`（在**设备回环**开监听，等价 frida-server 默认端口） | `security check hit: [injection.port] 检测到 Frida Server 监听端口（27042-27052）` → `jniKillSelf invoked` | ✅ 命中到 kill **1.25 s** |
+| E | 对照组：`adb reverse tcp:27060`（扫描范围之外） | `check hit` = 0，进程存活 | ✅ 不误报 |
+| F | `/data/local/tmp/frida-server`（同名替身文件，`echo x >` 即可） | `file sig hit` → `[injection.frida_file]` → `jniKillSelf invoked` | ✅ 命中到 kill **1.23 s** |
+| G | 删除该文件后重启 | `check hit` = 0，仅 `warn: [env.emulator]` | ✅ 零误报 |
+
+**顺带修掉一个真缺陷**：`countFileSignals()` 原先用 `opendir("/data/local/tmp")` 遍历，
+但 Android 10+ 该目录对应用是 `--x`（可穿越、**不可列目录**），`opendir` 必然返回 null →
+**这条检测在现代系统上等于永远不生效**（F 组第一次跑就是 0 命中，才暴露出来）。
+现改为：列不了目录时退化为对已知文件名做 `access()` 探测（目录的 x 位允许解析具体路径），
+F 组随即命中。覆盖范围限于**精确同名**文件；带版本号的名字（`frida-server-17.x-android-arm64`）
+仍不覆盖，需要用户改名或后续加前缀匹配。
+
+**仍未覆盖**：真实 `frida-server` 进程（需 root 设备）。端口扫描与落地文件两条分支已用替身验证，
+但「root 下 frida-server 常驻 + 以非常规端口/改名运行」的组合仍缺真机证据。
+
+
 
 ### 10.11 门禁与验证
 

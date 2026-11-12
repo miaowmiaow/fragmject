@@ -29,3 +29,5 @@ build/
 .idea/CopilotChatTabs.xml
 # Gradle 自动生成的 daemon JVM 判据（含本机下载地址，不入库）
 gradle/gradle-daemon-jvm.properties
+# Frida Gadget 探针（24 MB 二进制，仅本地测试用，不入库）
+tools/frida-gadget/

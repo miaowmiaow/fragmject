@@ -9,6 +9,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.register
@@ -84,6 +85,8 @@ internal fun Project.configureDexShell() {
         signingPropertiesFile.set(rootProject.layout.projectDirectory.file("keystore.properties"))
         signingBaseDir.set(baseDir)
         outputApk.set(shelledApk)
+        gadgetProbe.set(providers.gradleProperty("enableGadgetProbe").map(String::toBoolean).getOrElse(false))
+        gadgetDir.set(rootProject.layout.projectDirectory.dir("tools/frida-gadget"))
         dependsOn(tasks.named(if (resObfEnabled) "obfuscateReleaseResources" else "packageRelease"))
         dependsOn(generateTask)
     }
@@ -116,6 +119,15 @@ abstract class PackShellTask : DefaultTask() {
 
     @get:Input
     abstract val signingBaseDir: Property<String>
+
+    /** 是否打入 Frida Gadget 探针（`-PenableGadgetProbe=true`，仅测试包）。 */
+    @get:Input
+    abstract val gadgetProbe: Property<Boolean>
+
+    /** 探针 so 所在目录（仓库内 `tools/frida-gadget`，不入库）。 */
+    @get:InputDirectory
+    @get:Optional
+    abstract val gadgetDir: DirectoryProperty
 
     @get:OutputFile
     abstract val outputApk: RegularFileProperty
@@ -202,6 +214,26 @@ abstract class PackShellTask : DefaultTask() {
                     "assets/payload/shell.txt",
                     "%08x".format(shellCrc).toByteArray(Charsets.UTF_8),
                 )
+                // Frida Gadget 探针（仅测试包）：把 gadget 作为 lib/arm64-v8a/libgadget.so 塞进 APK，
+                // 并写 marker 让壳启动后 loadLibrary("gadget")。生产构建不会带任何一项。
+                if (gadgetProbe.get()) {
+                    val dir = gadgetDir.orNull?.asFile
+                        ?: error("启用 gadget 探针但未提供 gadgetDir（默认 tools/frida-gadget）")
+                    val so = File(dir, "lib/arm64-v8a/libgadget.so")
+                    check(so.exists()) {
+                        "缺少 gadget：${so.absolutePath}；先下载 frida-gadget-<ver>-android-arm64.so 并改名"
+                    }
+                    writeStored(out, "lib/arm64-v8a/libgadget.so", so.readBytes())
+                    // 配置里 on_load=resume：否则 gadget 会阻塞在「等待客户端连接」上
+                    val config = File(dir, "lib/arm64-v8a/libgadget.config.so")
+                    if (config.exists()) {
+                        writeStored(out, "lib/arm64-v8a/libgadget.config.so", config.readBytes())
+                    } else {
+                        logger.warn("[shell] 缺少 libgadget.config.so，gadget 可能阻塞启动")
+                    }
+                    writeEntry(out, "assets/payload/gadget.txt", "1".toByteArray(Charsets.UTF_8))
+                }
+
                 writeEntry(out, "classes.dex", shellDex.readBytes())
             }
             return dexNames.size

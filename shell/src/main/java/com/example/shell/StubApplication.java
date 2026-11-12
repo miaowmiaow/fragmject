@@ -140,6 +140,34 @@ public class StubApplication extends Application {
         attach.setAccessible(true);
         attach.invoke(real, base);
         Log.i(TAG, "real attachBaseContext done");
+
+        // 仅测试包：受控加载 Frida Gadget，用于验证安全库的注入检测（默认不启用）。
+        // 放在真实 Application.attachBaseContext 之后，确保 SecurityGuard 已经启动、
+        // 检测线程已在跑——否则 gadget 可能先于检测就位，测不出「运行期被发现」。
+        maybeLoadGadgetProbe(base);
+    }
+
+    /**
+     * 加载 Frida Gadget 探针（**只存在于测试包**）。
+     *
+     * 触发条件：APK 内存在 `assets/payload/gadget.txt`（由 `-PenableGadgetProbe=true` 写入）。
+     * 生产包不会带这个资产，因此这段代码永远不会执行。
+     *
+     * 为什么用资产当开关而不是 BuildConfig：`:shell` 是纯 Java、零依赖模块，
+     * 不引用 :app 的 BuildConfig；用「资产是否存在」判断最简单，也不会被 R8 影响。
+     *
+     * 加载失败不阻断启动：探针只是为了造出「注入」现场，失败时应用照常运行。
+     */
+    private void maybeLoadGadgetProbe(Context base) {
+        try {
+            if (readAsset(base, "payload/gadget.txt") == null) {
+                return;
+            }
+            System.loadLibrary("gadget");
+            Log.w(TAG, "gadget probe loaded (test build only)");
+        } catch (Throwable t) {
+            Log.w(TAG, "gadget probe load failed: " + t.getClass().getSimpleName());
+        }
     }
 
     /**

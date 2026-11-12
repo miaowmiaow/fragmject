@@ -938,7 +938,53 @@ Delivery / 插件化），而不是在壳内按 dex 分片。
 **证据保留**：崩溃栈、分片解析耗时均来自模拟器 API 37 实测；实现已回退，避免留下默认关闭
 但一开就崩的开关。
 
-### 10.10 门禁与验证
+### 10.10 Frida 注入检测实测（无 root，2026-11-12）
+
+真机（ColorOS）无法解锁 bootloader，装不了 frida-server。改用**无 root 的 Gadget 方案**验证注入检测：
+
+**方法**（可复现）
+
+1. 从 `frida/frida` releases 取 `frida-gadget-17.2.17-android-arm64.so`，改名 `libgadget.so`
+   放 `tools/frida-gadget/lib/arm64-v8a/`（已 gitignore，24 MB 不入库）；
+2. 配 `libgadget.config.so`：`"interaction": {"type":"listen","address":"127.0.0.1","port":27042,"on_load":"resume"}`
+   —— 没有 `on_load: resume` 时 gadget 会阻塞在「等待客户端连接」，测不出运行期检测；
+3. 壳内新增受控分支：`assets/payload/gadget.txt` 存在时 `System.loadLibrary("gadget")`，
+   位置在**真实 Application.attachBaseContext 之后**（保证 SecurityGuard 已启动、检测线程已在跑）；
+4. 打包参数 `-PenableGadgetProbe=true`：把 gadget so/config 塞进 APK 并写 marker。
+   生产构建不带该参数，APK 内不会出现任何 gadget 文件。
+
+**三组实测（模拟器 API 37 / arm64）**
+
+| 组 | 条件 | 实测日志 | 结果 |
+|---|---|---|---|
+| A | gadget + 全检测项（默认配置） | `gadget probe loaded` → `libc .text crc file=f0ff0ebf mem=74b4fdfb` → `security check hit: [integrity.libc_crc]` → `jniKillSelf invoked` | ✅ gadget 会 hook libc，**CRC 先命中**；终止耗时 **1.24 s** |
+| B | gadget + 关闭 `LIB_CRC`（只留注入类检测） | `gadget probe loaded`（16.217）→ `thread sig hit` ×3 → `security check hit: [injection.frida_thread]`（16.280）→ `jniKillSelf invoked`（17.481） | ✅ 加载到命中 **63 ms**，命中到 kill **1.20 s** |
+| C | 不带探针的正式壳包 | 仅 `security warn: [env.emulator]`，`check hit` 计数 **0**，进程存活 | ✅ **零误报** |
+
+**结论**
+
+1. 两道独立检测都能抓到真实 Frida Gadget：注入类（线程名）与完整性类（libc 内联 hook），
+   并且都走 `block()` → native `SIGKILL`，实测 1.20~1.24 s 内进程消失；
+2. `INJECTION` 的 maps 检查按 `injectionScanIntervalMs`（默认 5 s）降频，所以**首次命中通常是线程名**；
+   若未被击杀，下一次 maps 扫描会补上 `injection.frida_maps`（同一进程两处信号）；
+3. 探针代码只在测试包生效（资产开关 + 打包参数），正式包 `grep gadget` = 0，且 `check hit` = 0。
+
+**复现命令**
+
+```bash
+# 造注入现场（仅测试）
+./gradlew :app:assembleRelease -PenableDexShell=true -PenableGadgetProbe=true
+adb install -r app/build/outputs/apk/release/app-release-shell.apk
+adb logcat -s DexShell:V AppSecurity:V | grep -E "gadget|check hit|jniKillSelf"
+
+# 正式包（无探针）
+./gradlew :app:assembleRelease -PenableDexShell=true
+```
+
+**仍未覆盖**：`frida-server` 形态（需 root 设备）——端口扫描（27042-27052）与落地文件名检测
+目前只有代码与降级逻辑，尚无真实命中证据。
+
+### 10.11 门禁与验证
 
 | 项 | 结果 |
 |---|---|

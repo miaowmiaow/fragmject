@@ -1129,6 +1129,26 @@ CRC 完全看不出来。
 | 无劫持 | 开启 PLT 检查 | `plt check: slots=17 hooks=0`，无命中，进程存活 ✅ |
 | GOT 探针 | `-PselfGotProbe=true`：把 `ptrace` 的 GOT 表项改成本库函数地址 | `plt slot mismatch: ptrace actual=0x…34ea0 expected=0x…1a14` → `hooks=1` → `[integrity.plt_hook]` → kill **1.2 s** ✅ |
 
+**误报矩阵（决定「能否默认开启」的唯一依据）**
+
+测试开关：`-PenablePltCheck=true`（写入 `BuildConfig.ENABLE_PLT_CHECK`，宿主据此传
+`checks = SecurityCheck.ALL`；正式产物恒为 `DEFAULT`，不执行该检测）。
+
+| 环境 | 系统 | 结果 |
+|---|---|---|
+| api26 模拟器（arm64） | Android 8.0 | `slots=17 hooks=0` ✅ |
+| api34 模拟器（arm64） | Android 14 | `slots=17 hooks=0` ✅ |
+| sdk_gphone16k（arm64 / 16 KB） | Android 17 | `slots=17 hooks=0` ✅ |
+| PGEM10 真机（**OEM ROM**） | Android 16 | `slots=17 hooks=0` ✅ |
+
+四档（含 OEM ROM）零误报，`slots=17` 也完全一致（说明导入表结构稳定）。
+**但仍然保持默认关闭**：四台设备不等于全体 ROM，一次误报就是「用户启动即被杀」；
+接入方在自己的机型矩阵验证后再开，成本只一行配置。
+
+**矩阵集成**：`scripts/verify-shell-apk.sh` 新增条件断言——日志里出现
+`plt check: slots=… hooks=…` 时要求 `hooks=0`（解析不可用则跳过，不算失败）；
+CI 矩阵构建带 `-PenablePltCheck=true`，等于每次回归都自动跑这条断言。
+
 **过程中踩的坑**：首次运行直接 `SIGSEGV`（fault addr `0x136c0`）——bionic 给出的
 `DT_*` 在不同版本上可能是「绝对地址」也可能是「相对基址的偏移」，把偏移当指针解引用就崩。
 现在统一归一化（`value < base → base + value`）并加边界校验，越界一律 fail-open 返回 `-1`。
@@ -1160,6 +1180,11 @@ CRC 完全看不出来。
 覆盖「未达阈值 / 达到阈值 / 已降级不重复 / 阈值为 0」。
 
 **库单测总数**：30（检测）+ 10（策略/事件）= **40 例**。
+
+> 2026-11-12 拆分：`SecurityEngine` 涨到 605 行触发架构守卫（单文件 <500），
+> 抽出 `SecurityEventRecorder`（记录/分发/回调隔离）、`DetectionHealth`（健康度与降级）、
+> `SecurityStartup`（反 dump 与诊断输出）、`firstIntegrityFailure`（并入 IntegrityChecks），
+> 引擎回到 **497 行**，对外行为不变（冒烟脚本全绿）。
 
 ### 10.15 门禁与验证
 

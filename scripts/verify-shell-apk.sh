@@ -6,7 +6,7 @@
 #   scripts/verify-shell-apk.sh [APK 路径] [adb 序列号]
 #
 # 默认 APK：app/build/outputs/apk/release/app-release-shell.apk
-# 默认设备：$ANDROID_SERIAL，未设置则由 adb 自行选择（仅一台设备时）。
+# 默认设备：${ANDROID_SERIAL}，未设置则由 adb 自行选择（仅一台设备时）。
 #
 # 为什么写成脚本而不是内联在 CI 里：本地（arm64 模拟器）与 CI（x86_64 模拟器）
 # 需要跑**完全相同**的断言；脚本化之后两边命令一致，改一处即可。
@@ -62,8 +62,9 @@ sleep 10
 
 echo "== 4/4 断言 =="
 "${ADB[@]}" logcat -d -s DexShell:V AppSecurity:V FragmjectSecurity:V > "$LOGDIR/security.txt" 2>&1 || true
-for expect in "shell dex check ok" "payload sum ok" "registered 13 methods" "process hardened"; do
-  grep -q "$expect" "$LOGDIR/security.txt" || fail "日志缺少「$expect」"
+# 期望值用正则：JNI 注册个数会随能力增加（13 → 14），写死数字会让脚本随功能变化而假失败
+for expect in "shell dex check ok" "payload sum ok" "registered [0-9]+ methods" "process hardened"; do
+  grep -qE "$expect" "$LOGDIR/security.txt" || fail "日志缺少「${expect}」"
   echo "   $expect ✅"
 done
 
@@ -75,5 +76,17 @@ if grep -q "check hit" "$LOGDIR/security.txt"; then
   fail "出现意料之外的命中（误杀）：$(grep "check hit" "$LOGDIR/security.txt" | head -1)"
 fi
 echo "   no check hit ✅"
+
+# PLT/GOT 检测只在 -PenablePltCheck=true 的构建里开启；开启时断言「没有被劫持」。
+# 不同系统版本上 dyn 段解析可能失败（native 返回 -1、不打这行日志），因此这里是
+# 「有则必须 hooks=0」的条件断言，而不是强制存在。
+if grep -q "plt check: slots=" "$LOGDIR/security.txt"; then
+  PLT=$(grep -o "plt check: slots=[0-9]* hooks=[0-9]*" "$LOGDIR/security.txt" | tail -1)
+  HOOKS=$(echo "$PLT" | sed 's/.*hooks=//')
+  test "$HOOKS" = "0" || fail "PLT/GOT 检测报告 $HOOKS 处劫持（需确认是误报还是真被 hook）：$PLT"
+  echo "   plt hooks=0 ✅（${PLT}）"
+else
+  echo "   plt check 未执行（该构建未开启或 native 解析不可用，跳过）"
+fi
 
 echo "✅ 壳包冒烟通过：${APK}"

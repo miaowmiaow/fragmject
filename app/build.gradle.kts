@@ -67,6 +67,13 @@ android {
         } else {
             "com.example.fragmject.app.FragmjectApplication"
         }
+        // 矩阵测试专用：打开 PLT/GOT 检测（默认关，见 SecurityCheck.PLT_HOOK 的说明）。
+        // 只在 -PenablePltCheck=true 时为 true，正式产物恒为 false。
+        buildConfigField(
+            "boolean",
+            "ENABLE_PLT_CHECK",
+            providers.gradleProperty("enablePltCheck").map(String::toBoolean).getOrElse(false).toString(),
+        )
         // 签名期望值由 `fragmject.security.config` 插件注入 BuildConfig.EXPECTED_SIG_SHA256；
         // 取不到证书时注入空串（运行期 = 不启用签名校验），构建不会失败。
     }

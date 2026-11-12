@@ -13,6 +13,7 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
+import com.example.security.SecurityCheck
 import com.example.security.SecurityConfig
 import com.example.security.SecurityGuard
 import com.example.fragmject.core.webview.WebViewPool
@@ -68,6 +69,13 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
             SecurityConfig(
                 // 只有「编译期就知道是 debug 包」时才允许跳过全部检测。
                 // 不能用库自己读的 FLAG_DEBUGGABLE：那是 manifest 属性，改一行就能关掉整条链。
+                // PLT/GOT 检测默认关闭（误报会直接杀用户）；矩阵构建用 -PenablePltCheck=true 打开，
+                // 目的是在 4 个系统版本上拿「hooks=0」的数据，作为能否默认开启的依据。
+                checks = if (BuildConfig.ENABLE_PLT_CHECK) {
+                    SecurityCheck.ALL
+                } else {
+                    SecurityCheck.DEFAULT
+                },
                 debugBypass = BuildConfig.DEBUG,
                 buildType = BuildConfig.BUILD_TYPE,
                 expectedSignatureSha256 = BuildConfig.EXPECTED_SIG_SHA256.toDigestSet(),

@@ -129,3 +129,31 @@ private const val SELF_SO_KEY_FILE = "libappsecurity.key"
 
 /** `verifySelfSoTextCrc` 返回 1 表示「磁盘与内存不一致」。 */
 private const val CRC_MISMATCH = 1
+
+/**
+ * 按固定顺序返回第一处完整性失败；全部通过返回 null。
+ *
+ * 自身 so 只解压一次（`extractSelfSo` 内部有缓存，但两次调用仍会重复做
+ * `exists` + 读 key 文件的 IO），这里提取一次给两个校验复用。
+ */
+internal fun firstIntegrityFailure(
+facts: SecurityFacts,
+native: NativeChecks,
+config: SecurityConfig,
+): SecurityHit? {
+    val soFile = if (native.available) extractSelfSo(facts) else null
+
+    return when {
+        !verifySelfSoIntegrity(native, soFile) ->
+            SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL, code = "integrity.self_so")
+
+        // 第二道独立校验：`.rodata`（常量表）。与上一项互不替代，patch 任何一处仍会被另一处抓到
+        !verifySelfSoDataIntegrity(native, soFile) ->
+            SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL, code = "integrity.self_so_data")
+
+        !verifyResourceIntegrity(facts, config) ->
+            SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL, code = "integrity.resource")
+
+        else -> null
+    }
+}

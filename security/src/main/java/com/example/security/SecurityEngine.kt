@@ -82,32 +82,18 @@ internal class SecurityEngine(
     @Volatile
     private var lastInjectionScanMs = 0L
 
-    /** 检测逻辑连续异常次数（用于降级）。 */
-    @Volatile
-    private var consecutiveFailures = 0
+    /** 事件记录与分发（环形缓冲 / sink / 回调异常隔离）。 */
+    private val recorder = SecurityEventRecorder(config)
 
-    /**
-     * 是否已降级为「只上报、不阻断」。
-     *
-     * 触发条件：检测过程连续抛异常达到 [SecurityConfig.maxConsecutiveFailures]。
-     * 设计取向：宁可漏杀，不可误杀 —— 检测自身故障时继续按命中杀人，风险高于收益。
-     */
-    @Volatile
-    var degraded = false
-        private set
+    /** 健康度与自动降级（连续失败达阈值后只上报、不阻断）。 */
+    private val health = DetectionHealth(config.maxConsecutiveFailures)
+
+    /** 是否已降级为「只上报、不阻断」；见 [DetectionHealth]。 */
+    val degraded: Boolean get() = health.degraded
 
     /** 上一轮的 WARN 去重键（见 [SecurityHit.dedupeKey]）；同一键不重复记录。 */
     @Volatile
     private var lastWarnKey: String? = null
-
-    /**
-     * 最近命中的环形缓冲（最多 [MAX_EVENTS] 条）。
-     *
-     * 为什么不用日志代替：release 会裁剪 `Log.v/d/i/w`，用户反馈误杀时拿不到任何证据；
-     * 内存里留一小段历史，配合 [SecurityGuard.securityEvents] 导出，是成本最低的可观测性。
-     */
-    private val eventLock = Any()
-    private val recentEvents = ArrayDeque<SecurityEvent>()
 
     /**
      * 后台检测线程：仅在真正启动后才创建，Debug / 跳过变体不产生任何开销。
@@ -173,11 +159,11 @@ internal class SecurityEngine(
         native.load()
 
         // 反 dump（可做部分）：尽早执行——越早把 /proc 权限收紧，暴露窗口越小
-        applyAntiDump()
+        applyAntiDump(config, native)
 
         // 诊断模式：把「启用了什么、native 是否可用、签名是否已配置」打出来，
         // 这是接入方排查「为什么没生效」最快的一条线索。
-        logDiagnostics()
+        logDiagnostics(config, native)
 
         // start() 的契约是「主线程调用」：
         // - 唯一调用点 Application.attachBaseContext 由 ActivityThread 在主线程执行；
@@ -227,16 +213,15 @@ internal class SecurityEngine(
      * 连续异常才说明检测链路真的坏了。降级时发一条 WARN 事件，宿主上报后能发现。
      */
     private fun onDetectionFailure(cause: Throwable) {
-        consecutiveFailures++
+        val justDegraded = health.onFailure()
         Log.e(
             SecurityGuard.TAG,
-            "detection failed (${consecutiveFailures}/${config.maxConsecutiveFailures}): " +
+            "detection failed (${health.failureCount}/${config.maxConsecutiveFailures}): " +
                 cause.javaClass.simpleName,
         )
-        if (shouldDegrade(consecutiveFailures, config.maxConsecutiveFailures, degraded)) {
-            degraded = true
+        if (justDegraded) {
             Log.e(SecurityGuard.TAG, "detection degraded to report-only (no blocking)")
-            record(
+            recorder.record(
                 SecurityHit(
                     reason = "安全检测异常，已降级为只上报（不再阻断）",
                     severity = Severity.WARN,
@@ -247,44 +232,9 @@ internal class SecurityEngine(
     }
 
     /** 一次成功检测会清零连续失败计数（偶发异常不应累积成降级）。 */
-    private fun onDetectionSuccess() {
-        if (consecutiveFailures != 0) {
-            consecutiveFailures = 0
-        }
-    }
+    private fun onDetectionSuccess() = health.onSuccess()
 
-    /**
-     * 诊断模式输出（默认关）。
-     *
-     * 用 `Log.e` 而不是 `Log.i`：release 会裁剪 v/d/i/w，诊断信息恰恰要在 release 包里可见。
-     * 内容只含「配置与能力状态」，不含用户数据。
-     */
-    private fun logDiagnostics() {
-        if (!config.diagnosticMode) return
-        Log.e(
-            SecurityGuard.TAG,
-            "security diag: checks=${config.checks.joinToString(",") { it.name }} " +
-                "native=${native.available} antiDump=${config.antiDump} " +
-                "signature=${config.expectedSignatureSha256.isNotEmpty()} " +
-                "buildType=${config.buildType.ifEmpty { "<unset>" }}",
-        )
-    }
 
-    /**
-     * 反 dump 的可做部分：收紧 `/proc` 可读性 + 禁 core dump。
-     *
-     * 拆成独立方法的原因有二：
-     * - `start()` 已经超过 15 的圈复杂度阈值（detekt 会拒绝）；
-     * - 这是「一次性动作」，与检测/调度不是同一类逻辑，独立更易读。
-     *
-     * 失败只告警：被 seccomp 拦截或厂商 ROM 限制时，不能因此阻断启动。
-     */
-    private fun applyAntiDump() {
-        if (!config.antiDump || !native.available) return
-        if (native.hardenProcess() != 0) {
-            Log.w(SecurityGuard.TAG, "hardenProcess failed (PR_SET_DUMPABLE), anti-dump degraded")
-        }
-    }
 
     /**
      * 停止检测并释放检测线程（供 [SecurityGuard.uninstall] 使用）。
@@ -319,23 +269,16 @@ internal class SecurityEngine(
         handler.post(checkTask)
     }
 
-    /**
-     * 最近命中的事件（最多 [MAX_EVENTS] 条，时间正序）。
-     *
-     * 供宿主在「用户反馈异常」时导出，或接入自建上报；不要在 UI 主循环里高频调用。
-     */
-    fun recentEvents(): List<String> = synchronized(eventLock) {
-        val format = SimpleDateFormat("HH:mm:ss", Locale.US)
-        recentEvents.map { "${format.format(Date(it.timestampMillis))} ${it.severity} ${it.reason}" }
-    }
+    /** 最近命中的事件（字符串，时间正序；展示/导出用）。 */
+    fun recentEvents(): List<String> = recorder.recentEvents()
 
     /**
-     * 最近的安全事件（结构化，时间正序，最多 [MAX_EVENTS] 条）。
+     * 最近的安全事件（结构化，时间正序）。
      *
      * 与 [recentEvents] 的区别：这里给的是带稳定 `code` 的对象，适合接入上报；
-     * 上面的字符串版只用于展示/导出给用户。
+     * 上面那个是给人看的字符串。
      */
-    fun events(): List<SecurityEvent> = synchronized(eventLock) { recentEvents.toList() }
+    fun events(): List<SecurityEvent> = recorder.events()
 
     /**
      * 进入后台：暂停轮询。
@@ -415,35 +358,7 @@ internal class SecurityEngine(
      * 回调在这里统一触发（[block] 与 [warn] 都走这条路径），保证宿主无论从哪个入口
      * 收到事件，拿到的东西都与 [events] 里的一致。
      */
-    private fun record(hit: SecurityHit) {
-        val event = SecurityEvent(
-            code = hit.code,
-            reason = hit.reason,
-            severity = hit.severity,
-            timestampMillis = System.currentTimeMillis(),
-        )
-        synchronized(eventLock) {
-            if (recentEvents.size >= MAX_EVENTS) {
-                recentEvents.removeFirst()
-            }
-            recentEvents.addLast(event)
-        }
-        // 对象出口：适合接入既有上报通道；异常不得影响检测主流程
-        val sink = config.sink
-        if (sink != null) {
-            runCatching { sink.emit(event) }
-                .onFailure { Log.w(SecurityGuard.TAG, "event sink failed: ${it.javaClass.simpleName}") }
-        }
-        // 新接口：带稳定 code，适合直接上报
-        config.onEvent?.invoke(event)
-        // 旧接口：保持兼容（两者同时配置会各收一次，注释里已说明）
-        config.onHit?.invoke(hit)
-    }
-
-    private companion object {
-        /** 环形缓冲上限：够定位最近一次误杀，又不会常驻占内存。 */
-        const val MAX_EVENTS = 20
-    }
+    private fun record(hit: SecurityHit) = recorder.record(hit)
 
     /**
      * 轮询任务。
@@ -529,7 +444,7 @@ internal class SecurityEngine(
      */
     private fun startOneShotIntegrityChecks() {
         Thread {
-            val hit = runCatching { firstIntegrityFailure() }
+            val hit = runCatching { firstIntegrityFailure(facts, native, config) }
                 .onFailure { onDetectionFailure(it) }
                 .onSuccess { onDetectionSuccess() }
                 .getOrNull()
@@ -539,29 +454,6 @@ internal class SecurityEngine(
         }.start()
     }
 
-    /**
-     * 按固定顺序返回第一处完整性失败；全部通过返回 null。
-     *
-     * 自身 so 只解压一次（`extractSelfSo` 内部有缓存，但两次调用仍会重复做
-     * `exists` + 读 key 文件的 IO），这里提取一次给两个校验复用。
-     */
-    private fun firstIntegrityFailure(): SecurityHit? {
-        val soFile = if (native.available) extractSelfSo(facts) else null
-
-        return when {
-            !verifySelfSoIntegrity(native, soFile) ->
-                SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL, code = "integrity.self_so")
-
-            // 第二道独立校验：`.rodata`（常量表）。与上一项互不替代，patch 任何一处仍会被另一处抓到
-            !verifySelfSoDataIntegrity(native, soFile) ->
-                SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL, code = "integrity.self_so_data")
-
-            !verifyResourceIntegrity(facts, config) ->
-                SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL, code = "integrity.resource")
-
-            else -> null
-        }
-    }
 
     /**
      * 是否是可调试应用（读 `ApplicationInfo.FLAG_DEBUGGABLE`）。

@@ -57,6 +57,7 @@ jobs:
           ./gradlew :app:assembleRelease \
             -PenableDexShell=true \
             -PmatrixAbi=x86_64 \
+            -PenablePltCheck=true \
             --stacktrace
 
       - name: Smoke test on emulator

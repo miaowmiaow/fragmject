@@ -131,6 +131,15 @@ object SecurityGuard {
     @JvmStatic
     fun events(): List<SecurityEvent> = engine?.events().orEmpty()
 
+    /**
+     * 是否已降级为「只上报、不阻断」。
+     *
+     * 触发条件：检测过程连续异常达到 [SecurityConfig.maxConsecutiveFailures]。
+     * 宿主可据此在设置页/工单里说明「本次保护能力降级」，便于排查误杀与漏杀。
+     */
+    @JvmStatic
+    fun isDegraded(): Boolean = engine?.degraded == true
+
     /** 进入前台：立即检测一次并重置退避（由生命周期回调调用）。 */
     @JvmStatic
     fun onForeground() {

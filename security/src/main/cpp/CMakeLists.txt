@@ -43,3 +43,8 @@ endif()
 if(SELF_RWX_PROBE)
     target_compile_definitions(appsecurity PRIVATE SELF_RWX_PROBE)
 endif()
+
+# 测试用：改写一个 GOT 表项（模拟 GOT 劫持），验证 PLT 检测分支
+if(SELF_GOT_PROBE)
+    target_compile_definitions(appsecurity PRIVATE SELF_GOT_PROBE)
+endif()

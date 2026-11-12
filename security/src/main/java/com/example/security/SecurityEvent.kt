@@ -32,4 +32,48 @@ data class SecurityEvent(
     val severity: Severity,
     val timestampMillis: Long,
     val detail: Map<String, String> = emptyMap(),
-)
+) {
+    /**
+     * 序列化为单行 JSON（手写，不引依赖）。
+     *
+     * 为什么库自己序列化：宿主的上报通道各不相同（埋点 SDK / 自建 HTTP / 本地落盘），
+     * 让每个接入方各写一遍转义逻辑，早晚会在「原因里带引号」这种地方翻车。
+     * 字段顺序固定（code/reason/severity/timestamp/detail），便于服务端按列解析。
+     */
+    fun toJson(): String = buildString(160) {
+        append("{\"code\":\"")
+        append(code.escapeJson())
+        append("\",\"reason\":\"")
+        append(reason.escapeJson())
+        append("\",\"severity\":\"")
+        append(severity.name)
+        append("\",\"timestamp\":")
+        append(timestampMillis)
+        if (detail.isNotEmpty()) {
+            append(",\"detail\":{")
+            var first = true
+            for ((key, value) in detail) {
+                if (!first) append(',')
+                first = false
+                append('"').append(key.escapeJson()).append("\":\"")
+                append(value.escapeJson()).append('"')
+            }
+            append('}')
+        }
+        append('}')
+    }
+}
+
+/** JSON 字符串转义：只处理 JSON 必需的最小集合，控制字符统一转 \uXXXX。 */
+private fun String.escapeJson(): String = buildString(length + 8) {
+    for (ch in this@escapeJson) {
+        when (ch) {
+            '"' -> append("\\\"")
+            '\\' -> append("\\\\")
+            '\n' -> append("\\n")
+            '\r' -> append("\\r")
+            '\t' -> append("\\t")
+            else -> if (ch < ' ') append("\\u%04x".format(ch.code)) else append(ch)
+        }
+    }
+}

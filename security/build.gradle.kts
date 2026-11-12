@@ -58,6 +58,14 @@ android {
                 }
             }
         }
+        // 测试开关：改写一个 GOT 表项，验证 PLT 劫持检测
+        if (providers.gradleProperty("selfGotProbe").map(String::toBoolean).getOrElse(false)) {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DSELF_GOT_PROBE=ON"
+                }
+            }
+        }
         // 测试开关：把 .text 首页置为 RWX，验证「可写可执行映射」检测
         if (providers.gradleProperty("selfRwxProbe").map(String::toBoolean).getOrElse(false)) {
             externalNativeBuild {
@@ -121,13 +129,30 @@ object PublicApiDumper {
                 val entry = zip.getEntry("classes.jar") ?: error("AAR 内没有 classes.jar：$aar")
                 zip.getInputStream(entry).use { input -> classesJar.outputStream().use { input.copyTo(it) } }
             }
-            // 只导出 public 签名；R 类与合成类不参与基线（随实现变化，不是契约）
+            // 只导出**对外契约**的签名。
+            //
+            // 为什么用白名单而不是「排除 R 类」：Kotlin 的 `internal` 在字节码层面仍是 public，
+            // javap 会把 NativeChecks / BuildValues 这类内部类型也当成 API —— 结果是
+            // 内部实现一改基线就抖动，反而掩盖真正的破坏性变更。
+            // 新增对外类型时必须同步这里（这本身就是一次「有意识公开」的动作）。
+            val publicApiTypes = setOf(
+                "com.example.security.SecurityGuard",
+                "com.example.security.SecurityConfig",
+                "com.example.security.SecurityHit",
+                "com.example.security.SecurityEvent",
+                "com.example.security.Severity",
+                "com.example.security.Action",
+                "com.example.security.SecurityCheck",
+                "com.example.security.SecurityEventSink",
+                "com.example.security.ThrottledEventSink",
+                "com.example.security.FilteredEventSink",
+            )
             val classNames = ZipFile(classesJar).use { zip ->
                 zip.entries().asSequence()
                     .map { it.name }
                     .filter { it.endsWith(".class") }
                     .map { it.removeSuffix(".class").replace('/', '.') }
-                    .filterNot { it.startsWith("com.example.security.R") || it.contains("\$r8\$") }
+                    .filter { it in publicApiTypes }
                     .sorted()
                     .toList()
             }

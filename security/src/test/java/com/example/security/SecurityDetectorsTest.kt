@@ -205,6 +205,36 @@ class SecurityDetectorsTest {
     }
 
     @Test
+    fun `默认不启用 PLT_HOOK 检测`() {
+        val native = FakeNative().apply { pltHooks = 3 }
+
+        // 默认 checks 不含 PLT_HOOK：即使 native 报劫持也不命中
+        assertNull(detectHit(FakeFacts(), native, SecurityConfig(), false, true))
+    }
+
+    @Test
+    fun `启用 PLT_HOOK 后劫持命中`() {
+        val native = FakeNative().apply { pltHooks = 3 }
+        val config = SecurityConfig(checks = SecurityCheck.ALL)
+
+        val hit = detectHit(FakeFacts(), native, config, false, true)
+
+        assertEquals("integrity.plt_hook", hit?.code)
+    }
+
+    @Test
+    fun `PLT 检查未到期或无法解析时放行`() {
+        val native = FakeNative().apply { pltHooks = 3 }
+        val config = SecurityConfig(checks = SecurityCheck.ALL)
+
+        // includeCrc=false：本轮不做该检查
+        assertNull(detectHit(FakeFacts(), native, config, false, false))
+        // 无法解析（-1）：放行
+        native.pltHooks = -1
+        assertNull(detectHit(FakeFacts(), native, config, false, true))
+    }
+
+    @Test
     fun `干净环境不命中`() {
         assertNull(detectHit(FakeFacts(), FakeNative(), SecurityConfig(), true, true))
     }
@@ -335,6 +365,7 @@ private class FakeNative(override var available: Boolean = true) : NativeChecks 
     var anonymousSegments = 0
     var libcCrc = 0
     var selfSoCrc = 0
+    var pltHooks = 0
 
     override fun load(): Boolean = available
 
@@ -355,6 +386,8 @@ private class FakeNative(override var available: Boolean = true) : NativeChecks 
     override fun findRootFiles(): Int = rootFiles
 
     override fun hardenProcess(): Int = 0
+
+    override fun countPltHooks(): Int = pltHooks
 
     override fun verifyLibcTextCrc(): Int = libcCrc
 

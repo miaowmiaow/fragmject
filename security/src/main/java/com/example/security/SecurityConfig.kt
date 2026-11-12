@@ -30,7 +30,7 @@ data class SecurityConfig @JvmOverloads constructor(
      * `checks = setOf(SecurityCheck.DEBUGGER, SecurityCheck.LIB_CRC)`。
      * 注意：裁掉的维度**不会产生事件**，也不会执行对应 native 调用（省开销）。
      */
-    val checks: Set<SecurityCheck> = SecurityCheck.ALL,
+    val checks: Set<SecurityCheck> = SecurityCheck.DEFAULT,
     /** 总开关：false 时 [SecurityGuard.install] 直接返回，不建线程、不注册回调。 */
     val enabled: Boolean = true,
     /**
@@ -114,6 +114,20 @@ data class SecurityConfig @JvmOverloads constructor(
      * 与 [onHit] 的区别：这个带稳定 `code`，适合直接上报风控。
      */
     val onEvent: ((SecurityEvent) -> Unit)? = null,
+    /**
+     * 事件出口（对象形式，适合接入既有上报通道）。
+     *
+     * 与 [onEvent] 同时配置时两者都会收到；由检测线程调用，实现方需保证线程安全。
+     */
+    val sink: SecurityEventSink? = null,
+    /**
+     * 连续异常多少次后进入「降级模式」（只记录、不再阻断）。
+     *
+     * 目的：宁可漏杀，不可误杀。检测逻辑或 native 在特定 ROM 上抛异常时，
+     * 若继续按「命中即杀」执行，可能把正常用户挡在门外；降级后只上报不阻断。
+     * 设为 0 或负数表示**不降级**（保持原有语义）。
+     */
+    val maxConsecutiveFailures: Int = 3,
     /**
      * 兼容回调（旧接口）：只给 [SecurityHit]，没有稳定 code。
      *

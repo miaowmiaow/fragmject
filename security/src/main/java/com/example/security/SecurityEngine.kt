@@ -82,6 +82,20 @@ internal class SecurityEngine(
     @Volatile
     private var lastInjectionScanMs = 0L
 
+    /** 检测逻辑连续异常次数（用于降级）。 */
+    @Volatile
+    private var consecutiveFailures = 0
+
+    /**
+     * 是否已降级为「只上报、不阻断」。
+     *
+     * 触发条件：检测过程连续抛异常达到 [SecurityConfig.maxConsecutiveFailures]。
+     * 设计取向：宁可漏杀，不可误杀 —— 检测自身故障时继续按命中杀人，风险高于收益。
+     */
+    @Volatile
+    var degraded = false
+        private set
+
     /** 上一轮的 WARN 去重键（见 [SecurityHit.dedupeKey]）；同一键不重复记录。 */
     @Volatile
     private var lastWarnKey: String? = null
@@ -207,6 +221,39 @@ internal class SecurityEngine(
     }
 
     /**
+     * 检测过程抛异常：累计次数，达到阈值后降级为「只上报」。
+     *
+     * 为什么不用「异常即放行」了事：单次异常可能只是偶发（如 native 读取被打断），
+     * 连续异常才说明检测链路真的坏了。降级时发一条 WARN 事件，宿主上报后能发现。
+     */
+    private fun onDetectionFailure(cause: Throwable) {
+        consecutiveFailures++
+        Log.e(
+            SecurityGuard.TAG,
+            "detection failed (${consecutiveFailures}/${config.maxConsecutiveFailures}): " +
+                cause.javaClass.simpleName,
+        )
+        if (shouldDegrade(consecutiveFailures, config.maxConsecutiveFailures, degraded)) {
+            degraded = true
+            Log.e(SecurityGuard.TAG, "detection degraded to report-only (no blocking)")
+            record(
+                SecurityHit(
+                    reason = "安全检测异常，已降级为只上报（不再阻断）",
+                    severity = Severity.WARN,
+                    code = "internal.degraded",
+                ),
+            )
+        }
+    }
+
+    /** 一次成功检测会清零连续失败计数（偶发异常不应累积成降级）。 */
+    private fun onDetectionSuccess() {
+        if (consecutiveFailures != 0) {
+            consecutiveFailures = 0
+        }
+    }
+
+    /**
      * 诊断模式输出（默认关）。
      *
      * 用 `Log.e` 而不是 `Log.i`：release 会裁剪 v/d/i/w，诊断信息恰恰要在 release 包里可见。
@@ -321,6 +368,11 @@ internal class SecurityEngine(
      * 该方法可能同时被轮询线程与完整性校验线程调用。
      */
     fun block(hit: SecurityHit) {
+        // 降级模式下只记录、不阻断：检测链路自身已不可信，不能拿它决定用户生死
+        if (degraded) {
+            warn(hit)
+            return
+        }
         if (!blockedFlag.compareAndSet(false, true)) return
         blockReason = hit.reason
         // 用 Log.e 而不是 Log.w：release 的 proguard 规则把 Log.v/d/i/w 全部当作无副作用裁剪掉了，
@@ -376,6 +428,12 @@ internal class SecurityEngine(
             }
             recentEvents.addLast(event)
         }
+        // 对象出口：适合接入既有上报通道；异常不得影响检测主流程
+        val sink = config.sink
+        if (sink != null) {
+            runCatching { sink.emit(event) }
+                .onFailure { Log.w(SecurityGuard.TAG, "event sink failed: ${it.javaClass.simpleName}") }
+        }
         // 新接口：带稳定 code，适合直接上报
         config.onEvent?.invoke(event)
         // 旧接口：保持兼容（两者同时配置会各收一次，注释里已说明）
@@ -415,14 +473,18 @@ internal class SecurityEngine(
             }
 
             val startedNs = if (config.diagnosticMode) System.nanoTime() else 0L
-            val hit = detectHit(
-                facts = facts,
-                native = native,
-                config = config,
-                includePortScan = portScanDue,
-                includeCrc = crcCheckDue,
-                includeInjectionScan = injectionScanDue,
-            )
+            val hit = runCatching {
+                detectHit(
+                    facts = facts,
+                    native = native,
+                    config = config,
+                    includePortScan = portScanDue,
+                    includeCrc = crcCheckDue,
+                    includeInjectionScan = injectionScanDue,
+                )
+            }.onFailure { onDetectionFailure(it) }
+                .onSuccess { onDetectionSuccess() }
+                .getOrNull()
             if (config.diagnosticMode) {
                 // 性能基线：诊断模式下打印单轮耗时（含 port/crc 的那一轮会明显更久）
                 val costMs = (System.nanoTime() - startedNs) / 1_000_000.0
@@ -467,7 +529,10 @@ internal class SecurityEngine(
      */
     private fun startOneShotIntegrityChecks() {
         Thread {
-            val hit = firstIntegrityFailure()
+            val hit = runCatching { firstIntegrityFailure() }
+                .onFailure { onDetectionFailure(it) }
+                .onSuccess { onDetectionSuccess() }
+                .getOrNull()
             if (hit != null) {
                 block(hit)
             }
@@ -509,6 +574,19 @@ internal class SecurityEngine(
     private fun isDebuggableApp(context: Context): Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 }
+
+/**
+ * 是否应当降级为「只上报」。
+ *
+ * 抽成纯函数的原因：[SecurityEngine] 依赖 Handler/Looper，无法在 JVM 里构造；
+ * 而「连续失败达到阈值才降级」这条规则是安全语义的关键，必须有单测兜住。
+ *
+ * @param failures 当前连续失败次数
+ * @param limit 阈值；<=0 表示不降级（保持原有「命中即阻断」语义）
+ * @param alreadyDegraded 已降级则不重复触发（避免重复事件）
+ */
+internal fun shouldDegrade(failures: Int, limit: Int, alreadyDegraded: Boolean): Boolean =
+    limit > 0 && failures >= limit && !alreadyDegraded
 
 /**
  * 退避策略：连续干净达到 [SecurityConfig.cleanRoundsToBackoff] 轮后把间隔翻倍，上限封顶。

@@ -60,6 +60,13 @@ internal interface NativeChecks {
      */
     fun hardenProcess(): Int
 
+    /**
+     * GOT/PLT 劫持检测：比对导入函数指针与 [dlsym] 结果。
+     *
+     * @return 被劫持条目数（0=干净）；-1=无法解析（不启用，放行）
+     */
+    fun countPltHooks(): Int
+
     fun verifyLibcTextCrc(): Int
 
     fun verifySelfSoTextCrc(selfSoPath: String): Int
@@ -168,6 +175,8 @@ internal class SecurityNative(
     external override fun findRootFiles(): Int
 
     external override fun hardenProcess(): Int
+
+    external override fun countPltHooks(): Int
 
     external override fun verifyLibcTextCrc(): Int
 

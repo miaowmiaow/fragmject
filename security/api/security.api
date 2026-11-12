@@ -8,107 +8,33 @@ public final class com.example.security.Action extends java.lang.Enum<com.exampl
   public static kotlin.enums.EnumEntries<com.example.security.Action> getEntries();
 }
 
-Compiled from "SecurityFacts.kt"
-public final class com.example.security.AndroidSecurityFacts implements com.example.security.SecurityFacts {
-  public com.example.security.AndroidSecurityFacts(android.content.Context);
-  public boolean isDebuggerConnected();
-  public boolean waitingForDebugger();
-  public boolean exists(java.lang.String);
-  public java.lang.String readText(java.lang.String);
-  public com.example.security.BuildValues buildValues();
-  public boolean isPackageInstalled(java.lang.String);
-  public boolean isPortOpen(int, int);
-  public java.util.List<java.lang.String> packageSignatureSha256();
-  public java.lang.String apkPath();
-  public java.lang.String cacheDirPath();
-  public long lastUpdateTimeMillis();
-  public java.lang.String supportedAbi();
-  public boolean copyApkEntry(java.lang.String, java.lang.String);
-  public java.lang.String apkEntrySha256(java.lang.String);
-}
-
-Compiled from "AppSecurityLifecycle.kt"
-public final class com.example.security.AppSecurityLifecycle {
-  public static final com.example.security.AppSecurityLifecycle INSTANCE;
-  public final void register(android.app.Application, kotlin.jvm.functions.Function0<kotlin.Unit>, kotlin.jvm.functions.Function0<kotlin.Unit>);
-}
-
-Compiled from "AppSecurityLifecycle.kt"
-public final class com.example.security.AppSecurityLifecycle$register$1 implements android.app.Application$ActivityLifecycleCallbacks {
-  public void onActivityStarted(android.app.Activity);
-  public void onActivityStopped(android.app.Activity);
-  public void onActivityCreated(android.app.Activity, android.os.Bundle);
-  public void onActivityResumed(android.app.Activity);
-  public void onActivityPaused(android.app.Activity);
-  public void onActivitySaveInstanceState(android.app.Activity, android.os.Bundle);
-  public void onActivityDestroyed(android.app.Activity);
-}
-
-Compiled from "SecurityFacts.kt"
-public final class com.example.security.BuildValues {
-  public com.example.security.BuildValues(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
-  public final java.lang.String getFingerprint();
-  public final java.lang.String getModel();
-  public final java.lang.String getProduct();
-  public final java.lang.String getHardware();
-  public final java.lang.String getBrand();
-  public final java.lang.String getManufacturer();
-  public final java.lang.String component1();
-  public final java.lang.String component2();
-  public final java.lang.String component3();
-  public final java.lang.String component4();
-  public final java.lang.String component5();
-  public final java.lang.String component6();
-  public final com.example.security.BuildValues copy(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String);
-  public static com.example.security.BuildValues copy$default(com.example.security.BuildValues, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, int, java.lang.Object);
-  public java.lang.String toString();
-  public int hashCode();
-  public boolean equals(java.lang.Object);
-}
-
-Compiled from "SecurityNative.kt"
-public interface com.example.security.NativeChecks {
-  public abstract boolean getAvailable();
-  public abstract boolean load();
-  public abstract int installAntiPtrace();
-  public abstract int readTracerPid();
-  public abstract int countAnonymousExecSegments();
-  public abstract int findFridaInMaps();
-  public abstract int findRootInMaps();
-  public abstract int findFridaThreads();
-  public abstract int findFridaFiles();
-  public abstract int findRootFiles();
-  public abstract int hardenProcess();
-  public abstract int verifyLibcTextCrc();
-  public abstract int verifySelfSoTextCrc(java.lang.String);
-  public abstract int verifySelfSoDataCrc(java.lang.String);
-  public abstract void killSelf();
+Compiled from "SecurityEventSink.kt"
+public final class com.example.security.FilteredEventSink implements com.example.security.SecurityEventSink {
+  public com.example.security.FilteredEventSink(com.example.security.SecurityEventSink, java.util.Set<java.lang.String>);
+  public void emit(com.example.security.SecurityEvent);
 }
 
 Compiled from "SecurityCheck.kt"
 public final class com.example.security.SecurityCheck extends java.lang.Enum<com.example.security.SecurityCheck> {
   public static final com.example.security.SecurityCheck$Companion Companion;
   public static final java.util.Set<com.example.security.SecurityCheck> ALL;
+  public static final java.util.Set<com.example.security.SecurityCheck> DEFAULT;
   public static final com.example.security.SecurityCheck DEBUGGER;
   public static final com.example.security.SecurityCheck INJECTION;
   public static final com.example.security.SecurityCheck LIB_CRC;
   public static final com.example.security.SecurityCheck PORT_SCAN;
   public static final com.example.security.SecurityCheck ROOT;
   public static final com.example.security.SecurityCheck EMULATOR;
+  public static final com.example.security.SecurityCheck PLT_HOOK;
   public static com.example.security.SecurityCheck[] values();
   public static com.example.security.SecurityCheck valueOf(java.lang.String);
   public static kotlin.enums.EnumEntries<com.example.security.SecurityCheck> getEntries();
 }
 
-Compiled from "SecurityCheck.kt"
-public final class com.example.security.SecurityCheck$Companion {
-  public com.example.security.SecurityCheck$Companion(kotlin.jvm.internal.DefaultConstructorMarker);
-}
-
 Compiled from "SecurityConfig.kt"
 public final class com.example.security.SecurityConfig {
-  public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, kotlin.jvm.functions.Function1<? super com.example.security.SecurityHit, kotlin.Unit>, boolean);
-  public com.example.security.SecurityConfig(java.util.Set, boolean, boolean, java.lang.String, java.util.Set, java.util.Set, java.util.Map, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1, kotlin.jvm.functions.Function1, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, com.example.security.SecurityEventSink, int, kotlin.jvm.functions.Function1<? super com.example.security.SecurityHit, kotlin.Unit>, boolean);
+  public com.example.security.SecurityConfig(java.util.Set, boolean, boolean, java.lang.String, java.util.Set, java.util.Set, java.util.Map, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1, com.example.security.SecurityEventSink, int, kotlin.jvm.functions.Function1, boolean, int, kotlin.jvm.internal.DefaultConstructorMarker);
   public final java.util.Set<com.example.security.SecurityCheck> getChecks();
   public final boolean getEnabled();
   public final boolean getDebugBypass();
@@ -128,6 +54,8 @@ public final class com.example.security.SecurityConfig {
   public final long getCrcCheckIntervalMs();
   public final long getBlockGraceMs();
   public final kotlin.jvm.functions.Function1<com.example.security.SecurityEvent, kotlin.Unit> getOnEvent();
+  public final com.example.security.SecurityEventSink getSink();
+  public final int getMaxConsecutiveFailures();
   public final kotlin.jvm.functions.Function1<com.example.security.SecurityHit, kotlin.Unit> getOnHit();
   public final boolean getDiagnosticMode();
   public final java.util.Set<com.example.security.SecurityCheck> component1();
@@ -149,14 +77,18 @@ public final class com.example.security.SecurityConfig {
   public final long component17();
   public final long component18();
   public final kotlin.jvm.functions.Function1<com.example.security.SecurityEvent, kotlin.Unit> component19();
-  public final kotlin.jvm.functions.Function1<com.example.security.SecurityHit, kotlin.Unit> component20();
-  public final boolean component21();
-  public final com.example.security.SecurityConfig copy(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, kotlin.jvm.functions.Function1<? super com.example.security.SecurityHit, kotlin.Unit>, boolean);
-  public static com.example.security.SecurityConfig copy$default(com.example.security.SecurityConfig, java.util.Set, boolean, boolean, java.lang.String, java.util.Set, java.util.Set, java.util.Map, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1, kotlin.jvm.functions.Function1, boolean, int, java.lang.Object);
+  public final com.example.security.SecurityEventSink component20();
+  public final int component21();
+  public final kotlin.jvm.functions.Function1<com.example.security.SecurityHit, kotlin.Unit> component22();
+  public final boolean component23();
+  public final com.example.security.SecurityConfig copy(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, com.example.security.SecurityEventSink, int, kotlin.jvm.functions.Function1<? super com.example.security.SecurityHit, kotlin.Unit>, boolean);
+  public static com.example.security.SecurityConfig copy$default(com.example.security.SecurityConfig, java.util.Set, boolean, boolean, java.lang.String, java.util.Set, java.util.Set, java.util.Map, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1, com.example.security.SecurityEventSink, int, kotlin.jvm.functions.Function1, boolean, int, java.lang.Object);
   public java.lang.String toString();
   public int hashCode();
   public boolean equals(java.lang.Object);
-  public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, kotlin.jvm.functions.Function1<? super com.example.security.SecurityHit, kotlin.Unit>);
+  public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, com.example.security.SecurityEventSink, int, kotlin.jvm.functions.Function1<? super com.example.security.SecurityHit, kotlin.Unit>);
+  public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, com.example.security.SecurityEventSink, int);
+  public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>, com.example.security.SecurityEventSink);
   public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long, kotlin.jvm.functions.Function1<? super com.example.security.SecurityEvent, kotlin.Unit>);
   public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long, long);
   public com.example.security.SecurityConfig(java.util.Set<? extends com.example.security.SecurityCheck>, boolean, boolean, java.lang.String, java.util.Set<java.lang.String>, java.util.Set<java.lang.String>, java.util.Map<java.lang.String, java.lang.String>, boolean, int, com.example.security.Action, com.example.security.Action, long, long, int, long, long, long);
@@ -179,87 +111,6 @@ public final class com.example.security.SecurityConfig {
   public com.example.security.SecurityConfig();
 }
 
-Compiled from "SecurityDetectors.kt"
-public final class com.example.security.SecurityDetectorsKt {
-  public static final com.example.security.SecurityHit detectHit(com.example.security.SecurityFacts, com.example.security.NativeChecks, com.example.security.SecurityConfig, boolean, boolean, boolean);
-  public static com.example.security.SecurityHit detectHit$default(com.example.security.SecurityFacts, com.example.security.NativeChecks, com.example.security.SecurityConfig, boolean, boolean, boolean, int, java.lang.Object);
-  public static final com.example.security.SecurityHit detectDebugHit(com.example.security.SecurityFacts, com.example.security.NativeChecks);
-  public static final com.example.security.SecurityHit detectFridaHit(com.example.security.NativeChecks, com.example.security.SecurityConfig, boolean);
-  public static com.example.security.SecurityHit detectFridaHit$default(com.example.security.NativeChecks, com.example.security.SecurityConfig, boolean, int, java.lang.Object);
-  public static final com.example.security.SecurityHit detectIntegrityHit(com.example.security.NativeChecks, boolean);
-  public static final com.example.security.SecurityHit detectPortHit(com.example.security.SecurityFacts, boolean);
-  public static final com.example.security.SecurityHit detectEnvironmentHit(com.example.security.SecurityFacts, com.example.security.NativeChecks, com.example.security.SecurityConfig);
-}
-
-Compiled from "SecurityEngine.kt"
-public final class com.example.security.SecurityEngine {
-  public static final int MAX_EVENTS;
-  public com.example.security.SecurityEngine(com.example.security.SecurityConfig, com.example.security.SecurityFacts, com.example.security.NativeChecks);
-  public final boolean getBlocked();
-  public final java.lang.String getBlockReason();
-  public final void start(android.content.Context);
-  public final void stop();
-  public final void onForeground();
-  public final java.util.List<java.lang.String> recentEvents();
-  public final java.util.List<com.example.security.SecurityEvent> events();
-  public final void onBackground();
-  public final void block(com.example.security.SecurityHit);
-  public final void warn(com.example.security.SecurityHit);
-  public static final long access$getLastPortScanMs$p(com.example.security.SecurityEngine);
-  public static final com.example.security.SecurityConfig access$getConfig$p(com.example.security.SecurityEngine);
-  public static final void access$setLastPortScanMs$p(com.example.security.SecurityEngine, long);
-  public static final long access$getLastCrcCheckMs$p(com.example.security.SecurityEngine);
-  public static final void access$setLastCrcCheckMs$p(com.example.security.SecurityEngine, long);
-  public static final long access$getLastInjectionScanMs$p(com.example.security.SecurityEngine);
-  public static final void access$setLastInjectionScanMs$p(com.example.security.SecurityEngine, long);
-  public static final com.example.security.SecurityFacts access$getFacts$p(com.example.security.SecurityEngine);
-  public static final com.example.security.NativeChecks access$getNative$p(com.example.security.SecurityEngine);
-  public static final int access$getConsecutiveCleanRounds$p(com.example.security.SecurityEngine);
-  public static final void access$setConsecutiveCleanRounds$p(com.example.security.SecurityEngine, int);
-  public static final void access$setCurrentIntervalMs$p(com.example.security.SecurityEngine, long);
-  public static final long access$getCurrentIntervalMs$p(com.example.security.SecurityEngine);
-  public static final boolean access$getActive$p(com.example.security.SecurityEngine);
-  public static final android.os.Handler access$getHandler(com.example.security.SecurityEngine);
-}
-
-Compiled from "SecurityEngine.kt"
-final class com.example.security.SecurityEngine$Companion {
-  public com.example.security.SecurityEngine$Companion(kotlin.jvm.internal.DefaultConstructorMarker);
-}
-
-Compiled from "SecurityEngine.kt"
-public final class com.example.security.SecurityEngine$checkTask$1 implements java.lang.Runnable {
-  public void run();
-}
-
-Compiled from "SecurityEngine.kt"
-final class com.example.security.SecurityEngine$start$1 extends kotlin.jvm.internal.FunctionReferenceImpl implements kotlin.jvm.functions.Function0<kotlin.Unit> {
-  public final void invoke();
-  public java.lang.Object invoke();
-}
-
-Compiled from "SecurityEngine.kt"
-final class com.example.security.SecurityEngine$start$2 extends kotlin.jvm.internal.FunctionReferenceImpl implements kotlin.jvm.functions.Function0<kotlin.Unit> {
-  public final void invoke();
-  public java.lang.Object invoke();
-}
-
-Compiled from "SecurityEngine.kt"
-public final class com.example.security.SecurityEngineKt {
-  public static final long nextIntervalMs(long, int, com.example.security.SecurityConfig);
-}
-
-Compiled from "SecurityEnvironmentChecks.kt"
-public final class com.example.security.SecurityEnvironmentChecksKt {
-  public static final boolean hasFridaThread(com.example.security.NativeChecks);
-  public static final boolean hasFridaFile(com.example.security.NativeChecks);
-  public static final boolean isFridaPortOpen(com.example.security.SecurityFacts);
-  public static final boolean hasRootSignals(com.example.security.SecurityFacts, com.example.security.NativeChecks);
-  public static final boolean hasRootManagementApp(com.example.security.SecurityFacts);
-  public static final boolean isDebuggableBuild(com.example.security.SecurityFacts);
-  public static final boolean hasEmulatorSignals(com.example.security.SecurityFacts);
-}
-
 Compiled from "SecurityEvent.kt"
 public final class com.example.security.SecurityEvent {
   public com.example.security.SecurityEvent(java.lang.String, java.lang.String, com.example.security.Severity, long, java.util.Map<java.lang.String, java.lang.String>);
@@ -269,6 +120,7 @@ public final class com.example.security.SecurityEvent {
   public final com.example.security.Severity getSeverity();
   public final long getTimestampMillis();
   public final java.util.Map<java.lang.String, java.lang.String> getDetail();
+  public final java.lang.String toJson();
   public final java.lang.String component1();
   public final java.lang.String component2();
   public final com.example.security.Severity component3();
@@ -281,27 +133,9 @@ public final class com.example.security.SecurityEvent {
   public boolean equals(java.lang.Object);
 }
 
-Compiled from "SecurityFacts.kt"
-public interface com.example.security.SecurityFacts {
-  public abstract boolean isDebuggerConnected();
-  public abstract boolean waitingForDebugger();
-  public abstract boolean exists(java.lang.String);
-  public abstract java.lang.String readText(java.lang.String);
-  public abstract com.example.security.BuildValues buildValues();
-  public abstract boolean isPackageInstalled(java.lang.String);
-  public abstract boolean isPortOpen(int, int);
-  public abstract java.util.List<java.lang.String> packageSignatureSha256();
-  public abstract java.lang.String apkPath();
-  public abstract java.lang.String cacheDirPath();
-  public abstract long lastUpdateTimeMillis();
-  public abstract java.lang.String supportedAbi();
-  public abstract boolean copyApkEntry(java.lang.String, java.lang.String);
-  public abstract java.lang.String apkEntrySha256(java.lang.String);
-}
-
-Compiled from "SecurityFacts.kt"
-public final class com.example.security.SecurityFactsKt {
-  public static final java.lang.String digestHex(byte[], java.lang.String);
+Compiled from "SecurityEventSink.kt"
+public interface com.example.security.SecurityEventSink {
+  public abstract void emit(com.example.security.SecurityEvent);
 }
 
 Compiled from "SecurityGuard.kt"
@@ -315,6 +149,7 @@ public final class com.example.security.SecurityGuard {
   public static final java.lang.String blockingMessage();
   public static final java.util.List<java.lang.String> securityEvents();
   public static final java.util.List<com.example.security.SecurityEvent> events();
+  public static final boolean isDegraded();
   public static final void onForeground();
   public static final void onBackground();
   public static final void install(android.content.Context);
@@ -338,49 +173,6 @@ public final class com.example.security.SecurityHit {
   public boolean equals(java.lang.Object);
 }
 
-Compiled from "SecurityIntegrityChecks.kt"
-public final class com.example.security.SecurityIntegrityChecksKt {
-  public static final boolean verifySignature(com.example.security.SecurityFacts, com.example.security.SecurityConfig);
-  public static final boolean verifySelfSoIntegrity(com.example.security.NativeChecks, java.io.File);
-  public static final boolean verifySelfSoDataIntegrity(com.example.security.NativeChecks, java.io.File);
-  public static final java.io.File extractSelfSo(com.example.security.SecurityFacts);
-  public static final boolean verifyResourceIntegrity(com.example.security.SecurityFacts, com.example.security.SecurityConfig);
-}
-
-Compiled from "SecurityNative.kt"
-public final class com.example.security.SecurityNative implements com.example.security.NativeChecks {
-  public static final java.lang.String LIB_NAME;
-  public com.example.security.SecurityNative(java.lang.String, java.lang.String);
-  public com.example.security.SecurityNative(java.lang.String, java.lang.String, int, kotlin.jvm.internal.DefaultConstructorMarker);
-  public boolean getAvailable();
-  public boolean load();
-  public native int installAntiPtrace();
-  public native int readTracerPid();
-  public native int countAnonymousExecSegments();
-  public native int findFridaInMaps();
-  public native int findRootInMaps();
-  public native int findFridaThreads();
-  public native int findFridaFiles();
-  public native int findRootFiles();
-  public native int hardenProcess();
-  public native int verifyLibcTextCrc();
-  public native int verifySelfSoTextCrc(java.lang.String);
-  public native int verifySelfSoDataCrc(java.lang.String);
-  public native void killSelf();
-  public com.example.security.SecurityNative();
-}
-
-Compiled from "SecurityNative.kt"
-final class com.example.security.SecurityNative$Companion {
-  public com.example.security.SecurityNative$Companion(kotlin.jvm.internal.DefaultConstructorMarker);
-}
-
-Compiled from "SecuritySignatures.kt"
-public final class com.example.security.SecuritySignaturesKt {
-  public static final int[] getFRIDA_PORTS();
-  public static final java.util.List<java.lang.String> getROOT_APP_PACKAGES();
-}
-
 Compiled from "SecurityHit.kt"
 public final class com.example.security.Severity extends java.lang.Enum<com.example.security.Severity> {
   public static final com.example.security.Severity WARN;
@@ -388,4 +180,11 @@ public final class com.example.security.Severity extends java.lang.Enum<com.exam
   public static com.example.security.Severity[] values();
   public static com.example.security.Severity valueOf(java.lang.String);
   public static kotlin.enums.EnumEntries<com.example.security.Severity> getEntries();
+}
+
+Compiled from "SecurityEventSink.kt"
+public final class com.example.security.ThrottledEventSink implements com.example.security.SecurityEventSink {
+  public com.example.security.ThrottledEventSink(com.example.security.SecurityEventSink, int, long);
+  public com.example.security.ThrottledEventSink(com.example.security.SecurityEventSink, int, long, int, kotlin.jvm.internal.DefaultConstructorMarker);
+  public void emit(com.example.security.SecurityEvent);
 }

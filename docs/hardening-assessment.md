@@ -1106,7 +1106,62 @@ F 组随即命中。覆盖范围限于**精确同名**文件；带版本号的�
 2. RWX 只抓「放宽权限后未恢复」的 hook；hook 完成后恢复成 r-x 则抓不到（这是 inline hook 的固有难点）；
 3. 只校验自身 so；`libc` 仍由既有的 `.text` CRC 覆盖（同一套逻辑，未改）。
 
-### 10.14 门禁与验证
+### 10.14 库能力补强：GOT 校验 / 事件出口 / 自动降级（2026-11-12）
+
+#### 1）GOT / PLT 劫持检测（默认关闭）
+
+**动机**：逐页 CRC 只覆盖「代码段被改」。而最常见的另一类 hook 是**改数据**：
+把本次 so 的导入函数指针表（GOT）里 `fopen` 改指到自己的实现 —— 代码段一个字节都没动，
+CRC 完全看不出来。
+
+**实现**：`dl_iterate_phdr` 取本模块 `PT_DYNAMIC` → 从 `DT_SYMTAB/DT_STRTAB/DT_JMPREL/DT_RELA`
+（运行期地址）遍历重定位项 → 对白名单里的**安全敏感导入**（`fopen/open/opendir/kill/prctl/ptrace/dladdr/dlsym/...`，共 22 个）
+比对 `GOT 表项` 与 `dlsym(RTLD_DEFAULT, name)`，不一致即劫持。
+
+**默认不启用**（`SecurityCheck.PLT_HOOK` 不在 `SecurityCheck.DEFAULT` 里）：
+不同 ROM 对 IFUNC/符号版本处理有差异，误报代价是直接杀用户。宿主在自己的机型矩阵验证后可
+用 `checks = SecurityCheck.ALL` 打开。
+
+**实测**
+
+| 组 | 构造 | 结果 |
+|---|---|---|
+| 无劫持 | 开启 PLT 检查 | `plt check: slots=17 hooks=0`，无命中，进程存活 ✅ |
+| GOT 探针 | `-PselfGotProbe=true`：把 `ptrace` 的 GOT 表项改成本库函数地址 | `plt slot mismatch: ptrace actual=0x…34ea0 expected=0x…1a14` → `hooks=1` → `[integrity.plt_hook]` → kill **1.2 s** ✅ |
+
+**过程中踩的坑**：首次运行直接 `SIGSEGV`（fault addr `0x136c0`）——bionic 给出的
+`DT_*` 在不同版本上可能是「绝对地址」也可能是「相对基址的偏移」，把偏移当指针解引用就崩。
+现在统一归一化（`value < base → base + value`）并加边界校验，越界一律 fail-open 返回 `-1`。
+
+#### 2）事件出口（序列化 + 限流 + 过滤）
+
+| 新增 | 作用 |
+|---|---|
+| `SecurityEvent.toJson()` | 手写单行 JSON（固定字段顺序、转义引号/换行/控制字符），宿主不用自己拼 |
+| `SecurityEventSink` | 对象形式的出口，适合接入既有上报通道（与 `onEvent` 回调并存） |
+| `SecurityConfig.sink` | 配置入口；出口抛异常只告警，不影响检测主流程 |
+| `ThrottledEventSink` | 滑动窗口限流（默认 20 条/分钟），防异常环境下把宿主接口打挂 |
+| `FilteredEventSink` | 按 `code` 过滤（例如只上报篡改类） |
+
+#### 3）自动降级（fail-safe）
+
+| 项 | 说明 |
+|---|---|
+| 规则 | 检测过程**连续**抛异常达到 `SecurityConfig.maxConsecutiveFailures`（默认 3）→ 降级为「只上报、不阻断」 |
+| 语义 | 降级后 `block()` 自动退化为 `warn()`；同时发一条 `internal.degraded` 事件供宿主上报 |
+| 恢复 | 一次成功检测即清零连续失败计数（偶发异常不会累积成降级） |
+| 查询 | `SecurityGuard.isDegraded()` |
+| 关闭 | `maxConsecutiveFailures = 0` 表示不降级（显式要求「命中即阻断」的宿主） |
+
+设计取向写死在代码注释里：**宁可漏杀，不可误杀**——检测链路自身不可信时，
+继续用它决定用户生死，风险高于收益。
+
+**单测**：`shouldDegrade()` 抽成纯函数（引擎依赖 Handler/Looper，无法直接构造），
+覆盖「未达阈值 / 达到阈值 / 已降级不重复 / 阈值为 0」。
+
+**库单测总数**：30（检测）+ 10（策略/事件）= **40 例**。
+
+### 10.15 门禁与验证
 
 | 项 | 结果 |
 |---|---|

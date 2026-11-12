@@ -58,6 +58,9 @@ internal fun detectHit(
     if (SecurityCheck.LIB_CRC in config.checks) {
         detectIntegrityHit(native, includeCrc)?.let { return it }
     }
+    if (SecurityCheck.PLT_HOOK in config.checks) {
+        detectPltHookHit(native, includeCrc)?.let { return it }
+    }
     if (SecurityCheck.PORT_SCAN in config.checks) {
         detectPortHit(facts, includePortScan)?.let { return it }
     }
@@ -131,6 +134,28 @@ internal fun detectIntegrityHit(native: NativeChecks, includeCrc: Boolean): Secu
         "检测到 libc 代码段被篡改（疑似 inline hook）",
         Severity.CRITICAL,
         code = "integrity.libc_crc",
+    )
+}
+
+/**
+ * GOT/PLT 劫持（CRITICAL）：导入函数指针被改写，代码段本身没变，逐页 CRC 抓不到。
+ *
+ * 与 libc CRC 共用同一个降频开关 [includeCrc]（默认 30 s）：两者都是「读表 + 比对」，
+ * 每轮都跑没有额外收益，反而增加稳态开销。
+ *
+ * 默认不启用（[SecurityCheck.PLT_HOOK] 不在 [SecurityCheck.DEFAULT] 里），
+ * 原因见该枚举值的注释：符号解析差异会带来误报，必须先在自己的机型矩阵验证。
+ */
+internal fun detectPltHookHit(native: NativeChecks, includeCrc: Boolean): SecurityHit? {
+    if (!includeCrc) return null
+    if (!native.available) return null
+    val hooks = native.countPltHooks()
+    // 0=干净；-1=无法解析（放行）；>0=被劫持
+    if (hooks <= 0) return null
+    return SecurityHit(
+        reason = "检测到导入函数被劫持（${hooks} 处）",
+        severity = Severity.CRITICAL,
+        code = "integrity.plt_hook",
     )
 }
 

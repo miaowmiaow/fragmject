@@ -56,6 +56,87 @@ class SecurityPolicyTest {
     }
 
     @Test
+    fun `连续失败达到阈值才降级`() {
+        assertFalse(shouldDegrade(failures = 1, limit = 3, alreadyDegraded = false))
+        assertFalse(shouldDegrade(failures = 2, limit = 3, alreadyDegraded = false))
+        assertTrue(shouldDegrade(failures = 3, limit = 3, alreadyDegraded = false))
+        // 已降级不重复触发（避免重复上报 / 重复日志）
+        assertFalse(shouldDegrade(failures = 5, limit = 3, alreadyDegraded = true))
+        // limit <= 0：不降级（显式要求「命中即阻断」的宿主）
+        assertFalse(shouldDegrade(failures = 99, limit = 0, alreadyDegraded = false))
+    }
+
+    @Test
+    fun `事件序列化为单行 JSON 且正确转义`() {
+        val event = SecurityEvent(
+            code = "injection.anon_segment",
+            reason = "检测到 \"异常\" 段\n换行",
+            severity = Severity.CRITICAL,
+            timestampMillis = 1700000000000L,
+            detail = mapOf("segments" to "2", "threshold" to "1"),
+        )
+
+        val json = event.toJson()
+
+        assertEquals(
+            "{\"code\":\"injection.anon_segment\"," +
+                "\"reason\":\"检测到 \\\"异常\\\" 段\\n换行\"," +
+                "\"severity\":\"CRITICAL\"," +
+                "\"timestamp\":1700000000000," +
+                "\"detail\":{\"segments\":\"2\",\"threshold\":\"1\"}}",
+            json,
+        )
+        // 单行：JSON 里不应出现裸换行（必须是转义后的 \n）
+        assertFalse(json.contains('\n'))
+    }
+
+    @Test
+    fun `限流出口在窗口内丢弃超额事件`() {
+        val received = mutableListOf<SecurityEvent>()
+        val sink = ThrottledEventSink(
+            delegate = object : SecurityEventSink {
+                override fun emit(event: SecurityEvent) {
+                    received += event
+                }
+            },
+            maxEventsPerWindow = 2,
+            windowMs = 1_000L,
+        )
+
+        repeat(5) { index -> sink.emit(eventAt(index * 100L)) }
+        assertEquals(2, received.size)
+
+        // 窗口滑过后重新放行
+        sink.emit(eventAt(2_000L))
+        assertEquals(3, received.size)
+    }
+
+    @Test
+    fun `过滤出口只放行指定 code`() {
+        val received = mutableListOf<String>()
+        val sink = FilteredEventSink(
+            delegate = object : SecurityEventSink {
+                override fun emit(event: SecurityEvent) {
+                    received += event.code
+                }
+            },
+            codes = setOf("integrity.signature"),
+        )
+
+        sink.emit(eventAt(0L, code = "env.root"))
+        sink.emit(eventAt(1L, code = "integrity.signature"))
+
+        assertEquals(listOf("integrity.signature"), received)
+    }
+
+    private fun eventAt(millis: Long, code: String = "env.root") = SecurityEvent(
+        code = code,
+        reason = "测试",
+        severity = Severity.WARN,
+        timestampMillis = millis,
+    )
+
+    @Test
     fun `默认配置不跳过检测且匿名段阈值留出容忍度`() {
         val config = SecurityConfig()
 
@@ -67,8 +148,9 @@ class SecurityPolicyTest {
         assertEquals(emptySet<String>(), config.expectedSignatureSha256)
         // 反 dump 默认开启：收紧 /proc 权限是「做比不做好」的动作，且有配置可回滚
         assertTrue(config.antiDump)
-        // 检测项默认全开：老接入方不传 checks 时行为不变
-        assertEquals(SecurityCheck.ALL, config.checks)
+        // 检测项默认启用 DEFAULT（= 全部 - PLT_HOOK）：PLT 检测因误报风险默认关
+        assertEquals(SecurityCheck.DEFAULT, config.checks)
+        assertFalse(SecurityCheck.PLT_HOOK in config.checks)
         // 诊断模式默认关：避免线上多打日志
         assertFalse(config.diagnosticMode)
     }

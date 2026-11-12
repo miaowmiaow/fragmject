@@ -35,11 +35,29 @@ enum class SecurityCheck {
 
     /** 模拟器环境（处置级别由 [SecurityConfig.emulatorAction] 决定）。 */
     EMULATOR,
+
+    /**
+     * GOT/PLT 劫持检测（导入函数指针被改写）。
+     *
+     * **默认不启用**：不同厂商 ROM / 不同 Android 版本对 IFUNC、符号版本的处理有差异，
+     * 若默认开，误报会直接杀正常用户。接入方在自有设备矩阵验证通过后再显式启用
+     * （`checks = SecurityCheck.ALL`）。
+     */
+    PLT_HOOK,
     ;
 
     companion object {
-        /** 默认全开：不传 `checks` 的老调用点行为不变。 */
+        /** 全部维度（含需要显式开启的 [PLT_HOOK]）。 */
         @JvmField
         val ALL: Set<SecurityCheck> = entries.toSet()
+
+        /**
+         * 默认启用集合：全部 减去 [PLT_HOOK]。
+         *
+         * 为什么 PLT_HOOK 默认关：它对「符号解析差异」敏感（IFUNC / 厂商私有实现），
+         * 一旦误报就是直接杀用户；必须先在自己的机型矩阵验证再开。
+         */
+        @JvmField
+        val DEFAULT: Set<SecurityCheck> = ALL - PLT_HOOK
     }
 }

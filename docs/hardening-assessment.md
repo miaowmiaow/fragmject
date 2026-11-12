@@ -526,10 +526,10 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 - 反 dump 的**可做部分已实现**（见 §10.7：`PR_SET_DUMPABLE=0` + 禁 core dump），
   但 **root 下的 ptrace 脱壳仍挡不住**（BlackDex / FRIDA-DEXDump 照样能 dump 内存）；
 - 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
-- 更细的分片策略（当前 2 片一次性解压，>20MB dex 时需改按需加载）。
+- ~~更细的分片策略~~ → **已评估并否决**（见 §10.9：跨 ClassLoader 会导致 R8 产物 IllegalAccessError）；
 
 **仍未做（完整 H6 / S2 范围）**：
-1. 载荷分片策略与多 dex 的启动耗时优化（当前 2 片一次性全解）；
+1. ~~载荷分片按需加载~~ → 已实现并实测否决（见 §10.9）；
 2. 反 dump（非 root 路径已堵、core 已禁；**root ptrace 仍可脱**，见 §10.7）；
 3. 壳自身完整性校验、与 H1/H3 的联动（如壳被替换的检测）；
 4. 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
@@ -888,7 +888,7 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 **顺带**：用这次注入产生的**真实崩溃**跑了 retrace，`attachBaseContext(SourceFile:53)` →
 `attachBaseContext(FragmjectApplication.kt:77)`，说明 §10.6 的还原链路在真实数据上可用。
 
-**仍未做**：内存中 dex 的分片/按需解密（减少一次性暴露窗口）、对 root 脱壳的对抗（属 SO 加壳范畴，成本高收益低）。
+**仍未做**：内存中 dex 的分片/按需解密（已评估否决，见 §10.9）、对 root 脱壳的对抗（属 SO 加壳范畴，成本高收益低）。
 
 ### 10.8 库化改造（对外交付准备，2026-11-12）
 
@@ -908,7 +908,37 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 **未做（按决定暂缓）**：`maven-publish` 与对外 README（等库完全验证后再做）；
 CI 版本矩阵（需先给 release 打开 x86_64 ABI，当前只有 arm64 变体，可先在本地 AVD 跑）。
 
-### 10.9 门禁与验证
+### 10.9 载荷按需加载：已实现并实测否决（2026-11-12）
+
+**动机**：当前 2 个分片在启动时一次性全解（明文 8.7 MB 常驻 + 一次解压）。理论上「按需」
+可以省内存、省启动、缩小明文暴露窗口。
+
+**实现**（已回退，结论保留）：每个分片一个 `InMemoryDexClassLoader`，父指向自定义
+`LazyPayloadClassLoader`；分片 loader 首次被用到时才解压。为避免 `loadClass` 递归，
+用反射直接调 `ClassLoader#findClass`（只查本 loader 的 dex）。这是 Android 上唯一能做到
+「真按需」的结构——`InMemoryDexClassLoader` 本身只接受一次性 `ByteBuffer[]`。
+
+**实测结果：不可行，且更差。**
+
+| 检查点 | 结果 |
+|---|---|
+| 功能正确性 | ❌ 启动 ~1.5s 后崩溃：`java.lang.IllegalAccessError: Field 'gg2.result' is inaccessible to class 'at2'`——两个类原本同属一个 classloader（同一运行时包），拆分后变成两个运行时包，R8 产物里的包级访问直接失效 |
+| 启动耗时 | ❌ 更慢：分片 0 解析 **203 ms**、分片 1 **450 ms**（每个 `InMemoryDexClassLoader` 都要独立解析一次 dex），而 eager 是单次 4.1 MB 读取 + 一次构造 |
+| 内存收益 | ❌ 无：Hilt + Compose 启动阶段就把两个分片都用上了，没有「未使用分片」可省 |
+
+**根因**：R8/ART 的访问检查以「运行时包 = 包名 + ClassLoader」为界。R8 默认假设全应用
+只有一个 classloader（`-allowaccessmodification` 只是把能放宽的放宽，不能覆盖所有成员），
+一旦按 dex 拆分 loader，跨分片的包级/受保护访问必然失败。这也是所有「DEX 分片加载」方案
+在 R8 产物上的共同障碍。
+
+**结论**：**不做**。当前 eager 方案（单 loader + 一次性解压）是正确解；
+若将来单 dex > 20 MB 导致启动/内存问题，正确方向是「按 feature 做动态加载」（Play Feature
+Delivery / 插件化），而不是在壳内按 dex 分片。
+
+**证据保留**：崩溃栈、分片解析耗时均来自模拟器 API 37 实测；实现已回退，避免留下默认关闭
+但一开就崩的开关。
+
+### 10.10 门禁与验证
 
 | 项 | 结果 |
 |---|---|

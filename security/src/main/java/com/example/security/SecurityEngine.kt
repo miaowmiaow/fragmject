@@ -154,13 +154,8 @@ internal class SecurityEngine(
         //    加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
         native.load()
 
-        // 反 dump（可做部分）：尽早执行——越早把 /proc 权限收紧，暴露窗口越小。
-        // 失败只告警：被 seccomp 拦截或厂商 ROM 限制时不能因此阻断启动。
-        if (config.antiDump && native.available) {
-            if (native.hardenProcess() != 0) {
-                Log.w(SecurityGuard.TAG, "hardenProcess failed (PR_SET_DUMPABLE), anti-dump degraded")
-            }
-        }
+        // 反 dump（可做部分）：尽早执行——越早把 /proc 权限收紧，暴露窗口越小
+        applyAntiDump()
 
         // start() 的契约是「主线程调用」：
         // - 唯一调用点 Application.attachBaseContext 由 ActivityThread 在主线程执行；
@@ -201,6 +196,22 @@ internal class SecurityEngine(
 
         handler.removeCallbacks(checkTask)
         handler.post(checkTask)
+    }
+
+    /**
+     * 反 dump 的可做部分：收紧 `/proc` 可读性 + 禁 core dump。
+     *
+     * 拆成独立方法的原因有二：
+     * - `start()` 已经超过 15 的圈复杂度阈值（detekt 会拒绝）；
+     * - 这是「一次性动作」，与检测/调度不是同一类逻辑，独立更易读。
+     *
+     * 失败只告警：被 seccomp 拦截或厂商 ROM 限制时，不能因此阻断启动。
+     */
+    private fun applyAntiDump() {
+        if (!config.antiDump || !native.available) return
+        if (native.hardenProcess() != 0) {
+            Log.w(SecurityGuard.TAG, "hardenProcess failed (PR_SET_DUMPABLE), anti-dump degraded")
+        }
     }
 
     /**

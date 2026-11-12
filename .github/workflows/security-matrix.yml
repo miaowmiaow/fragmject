@@ -41,6 +41,16 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      # compileSdk=37 对应的平台包在 SDK 仓库里是预览命名（本地实测为 android-37.0），
+      # runner 上默认镜像不一定带。这里容错预装，缺失时交给 AGP 自动下载。
+      - name: Pre-install SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          yes | "$SDKMANAGER" "platforms;android-37.0" "build-tools;37.0.0" >/dev/null 2>&1 || true
+          yes | "$SDKMANAGER" "platforms;android-37"    "build-tools;36.0.0" >/dev/null 2>&1 || true
+          ls "$ANDROID_HOME/platforms" | tail -3
+
       # 只出 x86_64：默认产物仍是 arm64-v8a，矩阵构建用 -PmatrixAbi 覆盖
       - name: Assemble x86_64 shell APK
         run: |

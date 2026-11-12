@@ -842,7 +842,26 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 **局限**（如实记录）：本机为 Apple Silicon，只能跑 arm64-v8a 镜像，**x86_64 ABI 未覆盖**；
 另 API 26/28 的 google_apis 镜像较老，部分系统 UI 行为与真机有差异，本表只证明「壳与安全库能跑」。
 
-### 10.6 门禁与验证
+### 10.6 崩溃栈还原（2026-11-12）
+
+壳包的「崩溃栈不可读」是**工具问题**，不是壳的副作用：业务 dex 就是 R8 输出，只是被加密搬运，
+`outputs/mapping/release/mapping.txt` 直接适用。
+
+新增 `:app:retraceReleaseCrash` 任务（`build-logic/.../FragmjectCrashRetrace.kt`）：
+定位 build-tools 的 `d8.jar` → 调用 `com.android.tools.r8.retrace.Retrace` → 结果落
+`outputs/retrace/release-retraced.txt`。
+
+实测（真实 mapping + 真实混淆帧）：
+
+| 输入 | 输出 |
+|---|---|
+| `at wy0.<init>(SourceFile:3)` | `at com.example.fragmject.app.DaggerFragmjectApplication_HiltComponents_SingletonC$ActivityCImpl.<init>(DaggerFragmjectApplication_HiltComponents_SingletonC.java:562)` |
+
+同时验证了「壳自身的帧无需还原」（`StubApplication.onCreate(StubApplication.java:96)` 原样通过）。
+
+使用方式与注意事项见 `dex-shell-handover.md` 的「七点五、崩溃栈还原」。
+
+### 10.7 门禁与验证
 
 | 项 | 结果 |
 |---|---|

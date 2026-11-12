@@ -33,6 +33,8 @@ class FragmjectAndroidApplicationPlugin : Plugin<Project> {
             configureResourceObfuscation()
             // H6/S1 DEX 壳：默认关闭，`-PenableDexShell=true` 时注册 packShellRelease
             configureDexShell()
+            // 崩溃栈还原：`./gradlew :app:retraceReleaseCrash`（用 mapping 把混淆栈还原）
+            configureCrashRetrace()
         }
     }
 }

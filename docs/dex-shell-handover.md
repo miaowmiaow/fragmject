@@ -226,6 +226,53 @@ adb shell pidof com.example.fragment.project
 
 ---
 
+## 七点五、崩溃栈还原（壳包与常规包通用）
+
+壳包崩溃时，业务代码的帧长这样（R8 混淆后的类名 + `SourceFile`）：
+
+```
+java.lang.RuntimeException: ...
+	at wy0.<init>(SourceFile:3)
+```
+
+**这不是壳导致的**——常规包同样如此，只是需要 mapping 还原。已内置任务：
+
+```bash
+# 1) 抓崩溃栈（壳包用 `-b crash`，不要只抓 main）
+adb logcat -d -b crash > app/build/outputs/crash/stack.txt
+
+# 2) 还原（mapping 与崩溃包必须是同一次构建）
+./gradlew :app:retraceReleaseCrash
+
+# 3) 输出位置
+#    app/build/outputs/retrace/release-retraced.txt
+```
+
+还原效果（本机实测，同一份真实 mapping）：
+
+```
+# 还原前
+	at wy0.<init>(SourceFile:3)
+
+# 还原后
+	at com.example.fragmject.app.DaggerFragmjectApplication_HiltComponents_SingletonC$ActivityCImpl.<init>(DaggerFragmjectApplication_HiltComponents_SingletonC.java:562)
+```
+
+要点：
+
+| 事项 | 说明 |
+|---|---|
+| mapping 对应关系 | 壳包的业务 dex **就是** R8 输出（只是被加密搬运），所以 `outputs/mapping/release/mapping.txt` 直接适用，不需要额外的壳 mapping |
+| 壳自身的帧 | `com.example.shell.StubApplication` 不参与 R8（纯 Java、零依赖），栈里本来就是可读的，无需还原 |
+| 自定义栈文件 | `./gradlew :app:retraceReleaseCrash -Pstack=/tmp/other.txt` |
+| 还原为空 | 说明栈里的类名不来自这份 mapping（多见于「拿线上崩溃配本地新包」），确认版本后再试 |
+| 归档 | CI 已把 `mapping.txt` 与壳包一起归档，**必须同版本取用** |
+
+实现位置：`build-logic/.../FragmjectCrashRetrace.kt`，调用 build-tools 自带的
+`d8.jar` 内的 `com.android.tools.r8.retrace.Retrace`（与构建期 R8 同源，不引入新依赖）。
+
+---
+
 ## 八、维护须知
 
 1. **AGP / R8 / aapt2 升级后必须重跑**「打壳构建 + 装机冒烟」。历史踩坑：

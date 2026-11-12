@@ -34,7 +34,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.m2/repository/org/robolectric
-          key: robolectric-${{ runner.os }}-4.16
+          key: robolectric-${{ runner.os }}-4.17
 
       # 凭据入库兜底：仓库曾把 GitHub PAT 写进 remote URL，一旦同样的手法写进代码/脚本/文档
       # 就会跟着 fork 与 PR 一起扩散。这里只扫工作区（git 历史由 gitleaks 一类工具负责），
@@ -48,13 +48,19 @@ jobs:
             exit 1
           fi
 
-      - name: Architecture guards and unit tests
+      # 守卫任务与单测拆开两步：verifyModuleDependencies 需要遍历全部子项目依赖图，
+      # 声明了 notCompatibleWithConfigurationCache —— 与单测同一次调用会让整个配置缓存条目被丢弃
+      # （CI 日志里的「Configuration cache entry discarded with 1 problem」就是这个）。
+      # 拆开后：守卫那步照旧全量配置，单测这步能命中/写入缓存。
+      - name: Architecture guards
         run: >
           ./gradlew
           verifyModuleDependencies
           verifyComposeStabilityConfig
-          testDebugUnitTest
           --stacktrace
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
 
       # AGP 9 已移除内置覆盖率任务，覆盖率由 build-logic 里的 JaCoCo 配置提供，
       # 报告落在各模块 build/reports/jacoco/unitTestCoverageReport/。

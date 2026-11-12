@@ -1186,7 +1186,45 @@ CI 矩阵构建带 `-PenablePltCheck=true`，等于每次回归都自动跑这�
 > `SecurityStartup`（反 dump 与诊断输出）、`firstIntegrityFailure`（并入 IntegrityChecks），
 > 引擎回到 **497 行**，对外行为不变（冒烟脚本全绿）。
 
-### 10.15 门禁与验证
+### 10.15 CI 单测失败的修复：Robolectric 与 JDK 强封装（2026-11-12）
+
+**现象**：CI 的 `Architecture guards and unit tests` 失败，`:core:data-repository` 5 个用例全红，
+堆栈完全不指向业务代码：
+
+```
+java.lang.RuntimeException: Failed to interact with raw FileDescriptor internals; perhaps JRE has changed?
+  at org.robolectric.interceptors.AndroidInterceptors$FileDescriptorInterceptor.setInt
+  at com.android.internal.os.ApplicationSharedMemory.create
+  at AndroidTestEnvironment.setUpApplicationState
+Caused by: java.lang.IllegalAccessException: ... cannot access class jdk.internal.access.SharedSecrets
+  (in module java.base) because module java.base does not export jdk.internal.access to unnamed module
+```
+
+**根因**：Robolectric 4.17 通过 `jdk.internal.access.SharedSecrets` 读写 `java.io.FileDescriptor.fd`
+（Android 14+ 的 `ApplicationSharedMemory` 走这条路），JDK 16+ 默认拒绝跨模块访问。
+
+**踩坑**：第一反应是加 `--add-opens java.base/java.io`（最常见的建议），**加了仍然失败** ——
+这里需要的是 `--add-exports jdk.internal.access`（opens 只放开反射，exports 才允许直接引用类型），
+两条都补上才通。
+
+**修复**：约定插件新增 `configureUnitTestJvmArgs()`（`FragmjectUnitTestJvmArgs.kt`），
+在 application / library 插件里统一调用，给所有 `Test` 任务加：
+
+- `--add-opens`：`java.lang` / `java.lang.reflect` / `java.lang.invoke` / `java.io` / `java.net` /
+  `java.nio` / `java.text` / `java.time` / `java.util` / `java.util.concurrent` / `sun.nio.ch`
+- `--add-exports`：`jdk.internal.access` / `jdk.internal.misc` / `sun.nio.ch` / `sun.security.action`
+
+放在约定插件而不是单个模块，是为了新模块自动继承，避免再踩一次。
+
+**顺带**：CI 把「守卫任务」与「单测」拆成两步——`verifyModuleDependencies` 需遍历全部子项目依赖图，
+声明了 `notCompatibleWithConfigurationCache`，与单测同一次调用会让整个配置缓存条目被丢弃
+（日志里的 `Configuration cache entry discarded with 1 problem`）；拆开后单测这步能命中缓存。
+另把 Robolectric 缓存键从 `4.16` 更正为 `4.17`。
+
+**验证**：本地跑 CI 的完整命令 → `BUILD SUCCESSFUL`（3m46s），`:core:data-repository` 全绿，
+`:security` 40 例、`:app` 架构测试 30 例均通过。
+
+### 10.16 门禁与验证
 
 | 项 | 结果 |
 |---|---|

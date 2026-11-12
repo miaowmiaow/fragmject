@@ -35,6 +35,8 @@ class FragmjectAndroidApplicationPlugin : Plugin<Project> {
             configureDexShell()
             // 崩溃栈还原：`./gradlew :app:retraceReleaseCrash`（用 mapping 把混淆栈还原）
             configureCrashRetrace()
+            // JVM 单测：Robolectric 需要 JDK 强封装的 --add-opens（否则 setUpApplicationState 直接失败）
+            configureUnitTestJvmArgs()
         }
     }
 }

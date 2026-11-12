@@ -38,8 +38,13 @@ import android.content.Context
  */
 object SecurityGuard {
 
-    /** 日志 TAG：沿用历史值，便于线上日志按既有过滤条件检索。 */
-    const val TAG = "AppSecurityGuard"
+    /**
+     * 日志 TAG。
+     *
+     * 历史值曾是 `AppSecurityGuard`（改造前的类名）；库化后统一为 `AppSecurity`，
+     * 与包名/模块名一致。线上日志过滤条件需同步更新（`adb logcat -s AppSecurity`）。
+     */
+    const val TAG = "AppSecurity"
 
     /** 未命中时的兜底提示：让调用方无需判空。 */
     private const val DEFAULT_BLOCK_MESSAGE = "检测到异常运行环境，应用即将关闭"
@@ -77,6 +82,21 @@ object SecurityGuard {
                     apkPath = appContext.applicationInfo.sourceDir,
                 ),
             ).also { it.start(context) }
+        }
+    }
+
+    /**
+     * 卸载防护：停止轮询、释放检测线程，并清空单例。
+     *
+     * 使用场景：宿主在测试里需要「干净重启」、或做多用户切换时的显式清理。
+     * 注意：已注册的 Activity 生命周期回调无法反注册（Platform 限制），
+     * 但引擎已被清空，回调变为空操作；重复 [install] 会重新注册，不影响正确性。
+     */
+    @JvmStatic
+    fun uninstall() {
+        synchronized(lock) {
+            engine?.stop()
+            engine = null
         }
     }
 

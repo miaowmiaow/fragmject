@@ -760,3 +760,62 @@ security check hit: 检测到异常匿名可执行内存段（2 段，阈值 0�
 | 壳包（三开关） | 模拟器与真机均可启动：`shell dex check ok` / `payload sum ok` / `registered 12 methods` / `security warn`（模拟器） |
 | 壳 dex 篡改（追加 1 字节） | `shell dex crc mismatch: actual=51af34c5 expected=7e5e8f17` → fail-closed |
 
+## 十、2026-11-12 安全评审与缺陷修复
+
+对 `:security` 做了一次完整评审（12 个 Kotlin 文件 + 1146 行 cpp + 构建配置 + 单测），
+发现 1 个 P0、4 个 P1、8 个 P2，本次已全部修复。
+
+### 10.1 P0：`FLAG_DEBUGGABLE` 曾可绕过整条防护链
+
+**缺陷**：`SecurityEngine.start()` 第一行就是 `if (isDebuggableApp(context)) return`，
+位置在 native 加载、首轮检测、**签名校验之前**。而 `FLAG_DEBUGGABLE` 来自 manifest 的
+`android:debuggable`——用 `apktool` 改一行 XML 再重签，所有检测（含 H1）全部失效。
+
+**修复**：
+- `SecurityConfig` 新增 `debugBypass`，**只接受宿主编译期传入的 `BuildConfig.DEBUG`**；
+- 生产包（`debugBypass=false`）**先同步验签**，再把「却带 debuggable 标记」判为改包并阻断；
+- manifest 属性从此只用于「篡改判定」，不再用于「跳过检测」。
+
+**实测**（模拟器，BuildConfig.DEBUG=false 而 manifest 置 `debuggable=true`）：
+
+```
+E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包）
+5s 后 pid → 空（进程已终止）
+```
+
+正常包回归：仅 `E AppSecurity: security warn: 检测到模拟器环境`，进程存活，冷启动 1335ms。
+
+### 10.2 P1 修复（4 条）
+
+| 问题 | 修复 |
+|---|---|
+| `block()` 先判断后赋值，并发下 `onHit` 回调两次、重复调度 kill | 改用 `AtomicBoolean.compareAndSet` |
+| `warn()` 用含运行期数字的文案做去重键（段数一变就重复刷屏） | 新增 `SecurityHit.dedupeKey`（截断到全角括号） |
+| `onBackground()` 与正在执行的一轮竞态，后台仍会继续轮询（耗电） | 新增 `active` 标志，`checkTask` 排下一轮前判断 |
+| `block()` 中 `native.killSelf()` 抛异常会导致 `Process.killProcess` 不执行（杀不掉） | `try/finally` 保证 Java 兜底必然执行 |
+
+### 10.3 P2 修复（8 条）
+
+| 项 | 处理 |
+|---|---|
+| 一轮检测读 3 次 `/proc/self/maps` | native 增加 100ms 短时快照，三个检测共用一次读取 |
+| `anonExecThreshold` 默认 0 偏激进（曾因 ART JIT 误杀） | 默认改为 **1**（大于才判定），KDoc 写明取舍 |
+| `SecurityEngine` 零单测 | 抽出纯函数 `nextIntervalMs`，新增 `SecurityPolicyTest` 6 例（退避/上限/去重键/默认值） |
+| `SecurityConfig` 参数多、`buildType` 易漏传 | 本次未做分组（会破坏宿主调用点）；`debugBypass` 的 KDoc 明确要求宿主传值 |
+| 缺 `uninstall()` | 新增 `SecurityGuard.uninstall()` + `SecurityEngine.stop()`（停轮询、退线程、清单例） |
+| `extractSelfSo` 在 text/data 两次调用重复 IO | 改为调用方提取一次，两个校验复用同一 `File` |
+| lint 1 条 `UnsafeDynamicallyLoadedCode` | 在 `loadByPath` 上 `@SuppressLint` 并说明路径来源，lint 现为 **0 issue** |
+| `TAG` 仍是历史值 `AppSecurityGuard` | 统一为 **`AppSecurity`**（日志过滤命令同步更新；历史实测记录保留旧值） |
+
+### 10.4 门禁与验证
+
+| 项 | 结果 |
+|---|---|
+| `:security:testDebugUnitTest` | **30 例**（Detectors 24 + Policy 6）全绿 |
+| `:app:testDebugUnitTest`（含架构测试） | 通过 |
+| `detekt` | 通过 |
+| `:security:lintDebug` | **0 issue**（原 1 条 informational 已抑制） |
+| 模拟器冒烟 | 正常包只告警不阻断；debuggable 改包 5s 内被终止 |
+
+> 说明：更早章节里的 `AppSecurityGuard: ...` 日志片段是当时的真实输出，保留原样；
+> 2026-11-12 起 TAG 为 `AppSecurity`。

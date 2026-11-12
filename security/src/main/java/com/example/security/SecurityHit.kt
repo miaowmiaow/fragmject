@@ -21,7 +21,16 @@ data class SecurityHit(
     val reason: String,
     /** 严重级别；决定是否终止进程。 */
     val severity: Severity,
-)
+) {
+    /**
+     * 去重键：用于 WARN 级日志去重（同一问题只记一次）。
+     *
+     * 不能直接用 [reason]：部分原因里嵌入了运行期数字，
+     * 例如「异常匿名可执行内存段（2 段，阈值 1）」——段数一变去重就失效、日志重新刷屏。
+     * 这里截断到全角左括号之前，得到与数字无关的稳定键。
+     */
+    val dedupeKey: String get() = reason.substringBefore('（')
+}
 
 /** 命中级别。 */
 enum class Severity {

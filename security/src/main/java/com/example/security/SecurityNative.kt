@@ -1,5 +1,6 @@
 package com.example.security
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import java.io.File
@@ -113,7 +114,13 @@ internal class SecurityNative(
         return loaded
     }
 
-    /** 依次尝试 `nativeLibraryDir/libX.so` 与 `apk!/lib/<abi>/libX.so`。 */
+    /**
+     * 依次尝试 `nativeLibraryDir/libX.so` 与 `apk!/lib/<abi>/libX.so`。
+     *
+     * 抑制 `UnsafeDynamicallyLoadedCode`：这里的路径完全由本应用 APK 推导
+     * （`applicationInfo` 提供），不含外部输入，是 DEX 壳场景下的必要兜底。
+     */
+    @SuppressLint("UnsafeDynamicallyLoadedCode")
     private fun loadByPath(): Boolean {
         val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
         val candidates = buildList {

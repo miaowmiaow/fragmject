@@ -49,10 +49,12 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
  * - native 未加载 → 跳过（无从校验）；
  * - 解压失败（APK 结构异常/无该 ABI）→ 跳过，不误杀；
  * - native 返回 -1（无法校验）→ 跳过；只有返回 1（不一致）才判定失败。
+ *
+ * @param soFile 由调用方通过 [extractSelfSo] 提取一次后传入（两道校验复用同一份文件，
+ *   避免重复 `exists` + 读 key 文件的 IO）。null 表示解压失败，按降级处理。
  */
-internal fun verifySelfSoIntegrity(facts: SecurityFacts, native: NativeChecks): Boolean {
-    if (!native.available) return true
-    val soFile = extractSelfSo(facts) ?: return true
+internal fun verifySelfSoIntegrity(native: NativeChecks, soFile: File?): Boolean {
+    if (!native.available || soFile == null) return true
     return native.verifySelfSoTextCrc(soFile.absolutePath) != CRC_MISMATCH
 }
 
@@ -65,9 +67,8 @@ internal fun verifySelfSoIntegrity(facts: SecurityFacts, native: NativeChecks): 
  * 与 [verifySelfSoIntegrity] 完全独立：两者各判各的，任一处不一致即阻断，
  * 避免「patch 一处校验点即可全绕过」。
  */
-internal fun verifySelfSoDataIntegrity(facts: SecurityFacts, native: NativeChecks): Boolean {
-    if (!native.available) return true
-    val soFile = extractSelfSo(facts) ?: return true
+internal fun verifySelfSoDataIntegrity(native: NativeChecks, soFile: File?): Boolean {
+    if (!native.available || soFile == null) return true
     return native.verifySelfSoDataCrc(soFile.absolutePath) != CRC_MISMATCH
 }
 

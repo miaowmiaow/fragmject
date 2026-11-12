@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import java.io.File
 import org.junit.Test
 
 /**
@@ -231,9 +232,12 @@ class SecurityDetectorsTest {
 
     @Test
     fun `native 不可用时跳过自身 so 校验`() {
-        assertTrue(verifySelfSoIntegrity(FakeFacts(), FakeNative(available = false)))
+        val soFile = File("dummy.so")
+        assertTrue(verifySelfSoIntegrity(FakeNative(available = false), soFile))
         // .rodata 是第二道独立校验，降级语义必须一致
-        assertTrue(verifySelfSoDataIntegrity(FakeFacts(), FakeNative(available = false)))
+        assertTrue(verifySelfSoDataIntegrity(FakeNative(available = false), soFile))
+        // 解压失败（soFile == null）同样按降级放行
+        assertTrue(verifySelfSoIntegrity(FakeNative(available = true), null))
     }
 
     private companion object {

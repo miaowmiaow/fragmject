@@ -43,6 +43,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <string>
 #include <vector>
 
@@ -461,15 +462,86 @@ bool isKnownBenignAnonSegment(const char *path) {
  *
  * @return 可疑段数量；-1 表示无法读取 maps（上层应跳过而非命中）。
  */
-int countAnonymousExecSegments() {
+/** 单调时钟毫秒（只用于短时缓存窗口，不受系统时间调整影响）。 */
+long long monotonicMs() {
+    timespec ts{};
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return static_cast<long long>(ts.tv_sec) * 1000 + ts.tv_nsec / 1000000;
+}
+
+/**
+ * `/proc/self/maps` 的短时快照。
+ *
+ * 一轮检测里三个函数（Frida 特征 / 匿名可执行段 / Root 注入特征）各读一遍整份 maps，
+ * 属于重复 IO（大进程 maps 可达数千行）。缓存一个很短的窗口，
+ * 让同一轮检测只读一次；窗口足够小，不会漏掉「运行期新附加」。
+ *
+ * @return 快照内容；读取失败返回空串。
+ */
+const std::string &mapsSnapshot() {
+    // 100ms：一次 detectHit 内三个调用紧邻，远小于轮询间隔（最短 1s）
+    constexpr long long kCacheWindowMs = 100;
+    static std::string snapshot;
+    static long long cachedAtMs = 0;
+
+    const long long now = monotonicMs();
+    if (!snapshot.empty() && now - cachedAtMs <= kCacheWindowMs) {
+        return snapshot;
+    }
+
     FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
     if (fp == nullptr) {
+        snapshot.clear();
+        cachedAtMs = 0;
+        return snapshot;
+    }
+    snapshot.clear();
+    char line[1024];
+    while (fgets(line, sizeof(line), fp) != nullptr) {
+        snapshot.append(line);
+    }
+    fclose(fp);
+    cachedAtMs = now;
+    return snapshot;
+}
+
+/**
+ * 按行遍历 maps 快照。
+ *
+ * 回调收到「以 '\0' 结尾的单行内容」，便于沿用 `sscanf` / `strstr`。
+ * 快照本身不被修改（每次遍历拷一份局部 buffer），因此可安全复用。
+ */
+template <typename Fn>
+void forEachMapsLine(const std::string &snapshot, Fn &&fn) {
+    if (snapshot.empty()) {
+        return;
+    }
+    std::vector<char> buffer(snapshot.begin(), snapshot.end());
+    buffer.push_back('\0');
+
+    char *cursor = buffer.data();
+    char *const end = buffer.data() + buffer.size();
+    while (cursor < end && *cursor != '\0') {
+        char *newline = std::strchr(cursor, '\n');
+        if (newline != nullptr) {
+            *newline = '\0';
+        }
+        fn(cursor);
+        if (newline == nullptr) {
+            break;
+        }
+        cursor = newline + 1;
+    }
+}
+
+int countAnonymousExecSegments() {
+    const std::string &maps = mapsSnapshot();
+    if (maps.empty()) {
         return -1;
     }
 
-    char line[512];
     int count = 0;
-    while (fgets(line, sizeof(line), fp) != nullptr) {
+    forEachMapsLine(maps, [&count](const char *line) {
         // maps 行字段：start-end perms offset dev inode path
         unsigned long start = 0;
         unsigned long end = 0;
@@ -492,8 +564,9 @@ int countAnonymousExecSegments() {
             path
         );
         // 至少要有 6 个字段，且第 3 个权限字符为 'x'（rwxp/r-xp 等）。
+        // 注意：这里是 lambda 体，跳过当前行用 return（不能用 continue）。
         if (fields < 6 || perms[2] != 'x') {
-            continue;
+            return;
         }
 
         // 去掉 path 前导空白（%[^\n] 会保留空格）。
@@ -504,17 +577,16 @@ int countAnonymousExecSegments() {
 
         // 文件映射不可疑（以 '/' 开头）；已知合法匿名段跳过；其余（含纯匿名段）计入。
         if (*trimmed == '/') {
-            continue;
+            return;
         }
         if (*trimmed != '\0' && isKnownBenignAnonSegment(trimmed)) {
-            continue;
+            return;
         }
         // 记录被计入的段名：调 ANON_EXEC_THRESHOLD 或补白名单时需要知道「到底是谁被算了」。
         // 只打印被判定为可疑的段（不是白名单），不泄露检测策略。
         SEC_LOGD("anon exec segment: %s", *trimmed == '\0' ? "<anonymous>" : trimmed);
         ++count;
-    }
-    fclose(fp);
+    });
     return count;
 }
 
@@ -792,8 +864,8 @@ jint jniCountAnonymousExecSegments(JNIEnv *, jobject) {
  * @return 命中行数（>=0）；-1=读取 maps 失败。
  */
 jint jniScanMapsForSignals(JNIEnv *, jobject) {
-    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
-    if (fp == nullptr) {
+    const std::string &maps = mapsSnapshot();
+    if (maps.empty()) {
         return -1;
     }
 
@@ -809,17 +881,15 @@ jint jniScanMapsForSignals(JNIEnv *, jobject) {
         lit::kReFridaServer.str(),
     };
 
-    char line[512];
     int hits = 0;
-    while (fgets(line, sizeof(line), fp) != nullptr) {
+    forEachMapsLine(maps, [&hits](const char *line) {
         for (const auto &sig : signatures) {
             if (std::strstr(line, sig.c_str()) != nullptr) {
                 ++hits;
                 break;
             }
         }
-    }
-    fclose(fp);
+    });
     return hits;
 }
 
@@ -926,8 +996,8 @@ jint jniVerifyLibcTextCrc(JNIEnv *, jobject) {
  * @return 命中行数（>=0）；-1=读取 maps 失败。
  */
 jint jniFindRootInMaps(JNIEnv *, jobject) {
-    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
-    if (fp == nullptr) {
+    const std::string &maps = mapsSnapshot();
+    if (maps.empty()) {
         return -1;
     }
 
@@ -939,17 +1009,15 @@ jint jniFindRootInMaps(JNIEnv *, jobject) {
         lit::kXposed.str(),
     };
 
-    char line[512];
     int hits = 0;
-    while (fgets(line, sizeof(line), fp) != nullptr) {
+    forEachMapsLine(maps, [&hits](const char *line) {
         for (const auto &sig : signatures) {
             if (std::strstr(line, sig.c_str()) != nullptr) {
                 ++hits;
                 break;
             }
         }
-    }
-    fclose(fp);
+    });
     return hits;
 }
 

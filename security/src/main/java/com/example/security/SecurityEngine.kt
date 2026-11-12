@@ -11,6 +11,7 @@ import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 检测引擎：负责「何时检测、命中后怎么办」，不负责「怎么判定」。
@@ -35,10 +36,26 @@ internal class SecurityEngine(
     @Volatile
     private var started = false
 
-    /** 是否已命中阻断。置位后不再重复处理，直到进程被终止。 */
+    /**
+     * 轮询是否处于「活跃」状态（前台且未被 stop）。
+     *
+     * 单独一个标志而不是只依赖 `removeCallbacks`：任务可能正在执行，
+     * 此时 `removeCallbacks` 对它无效，执行完仍会 `postDelayed` → 后台继续轮询（耗电）。
+     */
     @Volatile
-    var blocked = false
-        private set
+    private var active = false
+
+    /**
+     * 是否已命中阻断。
+     *
+     * 用 [AtomicBoolean] 而不是 `@Volatile Boolean` + 先判断后赋值：
+     * 该方法会被轮询线程与完整性校验线程同时调用，二者可能同时通过检查，
+     * 导致 [SecurityConfig.onHit] 回调两次、重复调度终止。
+     */
+    private val blockedFlag = AtomicBoolean(false)
+
+    /** 是否已命中阻断。置位后不再重复处理，直到进程被终止。 */
+    val blocked: Boolean get() = blockedFlag.get()
 
     /** 命中原因，用于 UI 提示与日志排查。 */
     @Volatile
@@ -61,9 +78,9 @@ internal class SecurityEngine(
     @Volatile
     private var lastCrcCheckMs = 0L
 
-    /** 上一轮的 WARN 原因：同一原因不重复记录，避免每秒一条刷屏。 */
+    /** 上一轮的 WARN 去重键（见 [SecurityHit.dedupeKey]）；同一键不重复记录。 */
     @Volatile
-    private var lastWarnReason: String? = null
+    private var lastWarnKey: String? = null
 
     /**
      * 最近命中的环形缓冲（最多 [MAX_EVENTS] 条）。
@@ -74,39 +91,67 @@ internal class SecurityEngine(
     private val eventLock = Any()
     private val recentEvents = ArrayDeque<Event>()
 
-    /** 后台检测线程：仅在真正启动后才创建，Debug / 跳过变体不产生任何开销。 */
-    private val handler by lazy {
+    /**
+     * 后台检测线程：仅在真正启动后才创建，Debug / 跳过变体不产生任何开销。
+     *
+     * 用 lazy 持有而不是直接 `by lazy`：`stop()` 需要判断「线程是否真的创建过」，
+     * 避免为一个从未启动的引擎创建线程再退出。
+     */
+    private val handlerHolder = lazy {
         val thread = HandlerThread("AppSec-Check")
         thread.start()
         Handler(thread.looper)
     }
 
+    private val handler: Handler get() = handlerHolder.value
+
     /**
      * 启动检测。应在 `Application.attachBaseContext` 中（经 [SecurityGuard.install]）调用。
      *
      * 执行顺序及原因：
-     * 1. 可调试包直接返回：避免影响本地开发（断点、Frida 调试自身）；
+     * 1. `debugBypass`（宿主编译期声明是 debug 包）→ 直接返回，只影响本地开发；
      * 2. 跳过采集变体：见 [SecurityConfig.skipBuildTypes] 的说明；
-     * 3. native 占坑 ptrace：必须早于任何可能被附加的时机；
-     * 4. 首轮**同步**轻量检测：在进入应用主流程前判断「启动前是否已被附加/注入」；
-     * 5. 异步完整性校验：签名与 so 在进程生命周期内不变，只需一次；
-     * 6. 注册生命周期回调 + 启动轮询：覆盖运行期新附加的情况。
+     * 3. **先验签**：签名校验必须早于任何跳过判定，否则改一行 manifest 就能把整条链关掉；
+     * 4. 生产包却带 `debuggable` 标记 → 判为改包并阻断（见 [isDebuggableApp]）；
+     * 5. native 占坑 ptrace：必须早于任何可能被附加的时机；
+     * 6. 首轮**同步**轻量检测：在进入应用主流程前判断「启动前是否已被附加/注入」；
+     * 7. 异步完整性校验：so `.text` / `.rodata` 与资源基线只需一次；
+     * 8. 注册生命周期回调 + 启动轮询：覆盖运行期新附加的情况。
      *
      * 首轮有意**不**执行 CRC 与端口扫描：端口扫描最坏 11 × 50ms 超时会拖慢冷启动，
      * CRC 需要读数 MB 数据。两者由后台轮询第一次执行立即补上（`lastXxxMs` 初值为 0，
      * 首轮必然 due），所以不会漏掉「启动前已被 inline hook」的场景。
      */
     fun start(context: Context) {
-        if (isDebuggableApp(context)) return
+        // 1) 编译期声明的 debug 包：整条链跳过
+        if (config.debugBypass) {
+            Log.i(SecurityGuard.TAG, "security guard skipped (debugBypass)")
+            return
+        }
+        // 2) 采集变体（buildType 由宿主注入，属可信输入）
         if (config.buildType in config.skipBuildTypes) {
             Log.i(SecurityGuard.TAG, "security guard skipped for ${config.buildType} (collection build type)")
             return
         }
         if (started) return
         started = true
+        active = true
 
-        // native 库在跳过判定**之后**才加载：debug 包与采集变体不应产生任何 so 加载开销。
-        // 加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
+        // 3) 先验签：未配置期望摘要时立即返回 true，不产生开销；
+        //    配置了则是一次 PackageManager 查询（毫秒级），换「无法用 manifest 绕过」是值得的。
+        if (!verifySignature(facts, config)) {
+            block(SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL))
+            return
+        }
+
+        // 4) 生产包被标记为可调试：manifest 被改过（apktool 常干的事），直接阻断
+        if (isDebuggableApp(context)) {
+            block(SecurityHit("生产包被标记为可调试（疑似改包）", Severity.CRITICAL))
+            return
+        }
+
+        // 5) native 库在跳过判定**之后**才加载：debug 包与采集变体不应产生任何 so 加载开销。
+        //    加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
         native.load()
 
         // start() 的契约是「主线程调用」：
@@ -137,18 +182,33 @@ internal class SecurityEngine(
             warn(firstHit)
         }
 
-        // 完整性校验在进程生命周期内基本不变，只需做一次；全部放后台线程，
-        // 避免 PackageManager 查询、APK 解压与摘要计算占用启动主线程。
+        // 6) 一次性完整性校验（签名已在第 3 步同步完成，这里只剩 so 与资源）
         startOneShotIntegrityChecks()
 
-        // 只有拿到 Application 且在主线程时，才能安全注册 Activity 生命周期回调；
-        // 其它 Context 或子线程调用时跳过前后台联动，轮询仍会常驻。
+        // 7) 只有拿到 Application 且在主线程时，才能安全注册 Activity 生命周期回调；
+        //    其它 Context 或子线程调用时跳过前后台联动，轮询仍会常驻。
         if (context is Application && onMainThread) {
             AppSecurityLifecycle.register(context, ::onForeground, ::onBackground)
         }
 
         handler.removeCallbacks(checkTask)
         handler.post(checkTask)
+    }
+
+    /**
+     * 停止检测并释放检测线程（供 [SecurityGuard.uninstall] 使用）。
+     *
+     * 注意：已注册的 Activity 生命周期回调无法反注册（Application 不提供移除 API），
+     * 但回调只会转到「已置空」的引擎，表现为空操作。
+     */
+    fun stop() {
+        active = false
+        started = false
+        lastWarnKey = null
+        if (handlerHolder.isInitialized()) {
+            handler.removeCallbacksAndMessages(null)
+            handler.looper.quitSafely()
+        }
     }
 
     /**
@@ -160,6 +220,7 @@ internal class SecurityEngine(
      */
     fun onForeground() {
         if (!started) return
+        active = true
         consecutiveCleanRounds = 0
         currentIntervalMs = config.initialIntervalMs
         lastPortScanMs = 0L
@@ -185,10 +246,13 @@ internal class SecurityEngine(
      */
     fun onBackground() {
         if (!started) return
+        // 只置标志 + 取消排队：正在执行的这一轮可能在 `active` 置 false 之后才结束，
+        // 由 [checkTask] 自己判断是否继续排队（见该方法末尾）。
+        active = false
         // 离开前台时清掉 WARN 去重：用户切回来若环境仍异常，会再记录一条，
         // 便于复现「只有切回前台才出现」的问题；放在这里而不是 onForeground，
         // 是为了避免启动阶段 start() 与首次 onForeground 各记一次造成重复。
-        lastWarnReason = null
+        lastWarnKey = null
         handler.removeCallbacks(checkTask)
     }
 
@@ -201,12 +265,11 @@ internal class SecurityEngine(
      * - 延迟固定且很短（默认 1.2s），攻击者拿不到有意义的操作窗口；
      * - 命中后不再排下一轮检测，避免在「已被控制的环境」里继续跑逻辑。
      *
-     * 用 compare-and-set 语义（先判断再置位）保证并发调用只处理一次：
-     * 该方法可能同时被轮询线程与签名线程调用。
+     * 并发安全：用 [blockedFlag] 的 CAS 保证「只处理一次」——
+     * 该方法可能同时被轮询线程与完整性校验线程调用。
      */
     fun block(hit: SecurityHit) {
-        if (blocked) return
-        blocked = true
+        if (!blockedFlag.compareAndSet(false, true)) return
         blockReason = hit.reason
         // 用 Log.e 而不是 Log.w：release 的 proguard 规则把 Log.v/d/i/w 全部当作无副作用裁剪掉了，
         // 用 w 会导致「线上误杀时没有任何日志」，排查无从下手。e 不在裁剪列表内。
@@ -215,23 +278,30 @@ internal class SecurityEngine(
         config.onHit?.invoke(hit)
 
         handler.postDelayed({
-            // 优先 native SIGKILL（不可捕获/不可 hook）；native 不可用时退回 Java kill。
-            if (native.available) {
-                native.killSelf()
+            // 先 native SIGKILL（不可捕获/不可 hook），无论它成功与否都必须执行 Java 兜底：
+            // 之前缺 try/finally，一旦 JNI 抛异常（so 被替换、方法被裁剪），进程就杀不掉。
+            try {
+                if (native.available) {
+                    native.killSelf()
+                }
+            } catch (t: Throwable) {
+                Log.e(SecurityGuard.TAG, "native kill failed, fallback to Process.killProcess", t)
+            } finally {
+                Process.killProcess(Process.myPid())
             }
-            Process.killProcess(Process.myPid())
         }, config.blockGraceMs)
     }
 
     /**
      * WARN 级命中：只记录、不终止。
      *
-     * 去重：同一原因只在「首次出现」和「回前台」时记录一次，
+     * 去重：同一问题只在「首次出现」和「回前台」时记录一次，
      * 否则按 1s 轮询会产生每秒一条的噪音（也掩盖了真正攻击特征的日志）。
+     * 去重键用 [SecurityHit.dedupeKey]（已去掉运行期数字），避免段数变化导致重复刷屏。
      */
     fun warn(hit: SecurityHit) {
-        if (lastWarnReason == hit.reason) return
-        lastWarnReason = hit.reason
+        if (lastWarnKey == hit.dedupeKey) return
+        lastWarnKey = hit.dedupeKey
         Log.e(SecurityGuard.TAG, "security warn: ${hit.reason}")
         record(hit)
         config.onHit?.invoke(hit)
@@ -263,9 +333,7 @@ internal class SecurityEngine(
      * 2. 执行轻量检测；
      * 3. CRITICAL 命中则 [block] 并停止轮询（进程即将被终止，不必再排下一轮）；
      *    WARN 命中只 [warn] 记录，继续按退避排下一轮；
-     * 4. 未命中则按退避策略排下一轮。
-     *
-     * 注意：CRITICAL 命中后直接 return，不调用 postDelayed，避免终止前又跑一轮。
+     * 4. 未命中则按退避策略排下一轮；`active == false`（已切后台/已 stop）时不再排。
      */
     private val checkTask = object : Runnable {
         override fun run() {
@@ -290,23 +358,29 @@ internal class SecurityEngine(
             }
 
             // 指数退避：连续干净后逐步拉长间隔（1s → 2s → 4s … → 上限封顶）。
-            // 一旦命中会重置（见 block/onForeground），保证异常时恢复高频。
             consecutiveCleanRounds++
+            currentIntervalMs = nextIntervalMs(currentIntervalMs, consecutiveCleanRounds, config)
             if (consecutiveCleanRounds >= config.cleanRoundsToBackoff) {
                 consecutiveCleanRounds = 0
-                currentIntervalMs = minOf(currentIntervalMs * 2, config.maxIntervalMs)
             }
-            handler.postDelayed(this, currentIntervalMs)
+
+            // 关键：本轮执行期间可能已切到后台（或 stop），此时不能再排下一轮，
+            // 否则 removeCallbacks 之后又会被自己重新排上，后台持续耗电。
+            if (active) {
+                handler.postDelayed(this, currentIntervalMs)
+            }
         }
     }
 
     /**
-     * 一次性完整性校验：签名 + so `.text` + so `.rodata` + 资源基线。
+     * 一次性完整性校验：so `.text` + so `.rodata` + 资源基线。
+     *
+     * 签名校验不在这里——它已前移到 [start] 的同步路径（必须早于任何跳过判定）。
      *
      * 拆成独立方法的两个原因：
      * - `start()` 已经承担跳过判定、native 加载、首轮检测、生命周期注册，
-     *   再塞四个分支会超过 detekt 的圈复杂度阈值（15）；
-     * - 四项都是「进程生命周期内只做一次」的同类工作，放一起便于按需增删。
+     *   再塞多个分支会超过 detekt 的圈复杂度阈值；
+     * - 这几项都是「进程生命周期内只做一次」的同类工作，放一起便于按需增删。
      */
     private fun startOneShotIntegrityChecks() {
         Thread {
@@ -317,30 +391,54 @@ internal class SecurityEngine(
         }.start()
     }
 
-    /** 按固定顺序返回第一处完整性失败；全部通过返回 null。 */
-    private fun firstIntegrityFailure(): SecurityHit? = when {
-        !verifySignature(facts, config) ->
-            SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL)
+    /**
+     * 按固定顺序返回第一处完整性失败；全部通过返回 null。
+     *
+     * 自身 so 只解压一次（`extractSelfSo` 内部有缓存，但两次调用仍会重复做
+     * `exists` + 读 key 文件的 IO），这里提取一次给两个校验复用。
+     */
+    private fun firstIntegrityFailure(): SecurityHit? {
+        val soFile = if (native.available) extractSelfSo(facts) else null
 
-        !verifySelfSoIntegrity(facts, native) ->
-            SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL)
+        return when {
+            !verifySelfSoIntegrity(native, soFile) ->
+                SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL)
 
-        // 第二道独立校验：`.rodata`（常量表）。与上一项互不替代，patch 任何一处仍会被另一处抓到
-        !verifySelfSoDataIntegrity(facts, native) ->
-            SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL)
+            // 第二道独立校验：`.rodata`（常量表）。与上一项互不替代，patch 任何一处仍会被另一处抓到
+            !verifySelfSoDataIntegrity(native, soFile) ->
+                SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL)
 
-        !verifyResourceIntegrity(facts, config) ->
-            SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL)
+            !verifyResourceIntegrity(facts, config) ->
+                SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL)
 
-        else -> null
+            else -> null
+        }
     }
 
     /**
-     * 可调试判定：读 `ApplicationInfo.FLAG_DEBUGGABLE`，而不是宿主的 `BuildConfig.DEBUG`。
+     * 是否是可调试应用（读 `ApplicationInfo.FLAG_DEBUGGABLE`）。
      *
-     * 这是库化的关键一步——库模块读不到宿主的 BuildConfig，
-     * 而该 flag 由打包时的 buildType 决定，语义与 `BuildConfig.DEBUG` 等价。
+     * 注意：这个标志由 manifest 的 `android:debuggable` 决定，**攻击者可以改**。
+     * 因此它只用于「生产包被改成 debuggable」的**篡改判定**，
+     * 绝不能作为「跳过全部检测」的依据——后者只看宿主编译期传入的
+     * [SecurityConfig.debugBypass]。
      */
     private fun isDebuggableApp(context: Context): Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 }
+
+/**
+ * 退避策略：连续干净达到 [SecurityConfig.cleanRoundsToBackoff] 轮后把间隔翻倍，上限封顶。
+ *
+ * 抽成顶层纯函数是为了能在 JVM 单测里覆盖（[SecurityEngine] 本身依赖 Handler/Looper）。
+ *
+ * @param currentMs 当前间隔
+ * @param cleanRounds 本轮结束后的连续干净轮数（已自增）
+ * @param config 配置（提供阈值与上限）
+ */
+internal fun nextIntervalMs(currentMs: Long, cleanRounds: Int, config: SecurityConfig): Long =
+    if (cleanRounds >= config.cleanRoundsToBackoff) {
+        minOf(currentMs * 2, config.maxIntervalMs)
+    } else {
+        currentMs
+    }

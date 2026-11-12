@@ -144,7 +144,7 @@ rm -rf app/.cxx app/build/generated/shell
 |---|---|---|
 | payload 摘要 | `DexShell: payload sum mismatch: payload modified` | payload 被替换 → 不加载 |
 | 壳 dex CRC | `FragmjectSecurity: shell dex crc mismatch: actual=… expected=…` | 壳代码被替换 → 不加载 |
-| APK 签名（H1） | `AppSecurityGuard: security check hit: APK 签名异常` | 整包被重签 → 1.2s 后终止 |
+| APK 签名（H1） | `AppSecurity: security check hit: APK 签名异常` | 整包被重签 → 1.2s 后终止 |
 
 ---
 
@@ -216,7 +216,7 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
 常用命令：
 
 ```bash
-adb logcat -d -s DexShell:V FragmjectSecurity:V AppSecurityGuard:E
+adb logcat -d -s DexShell:V FragmjectSecurity:V AppSecurity:E
 adb logcat -d -b crash | head -40
 adb shell pidof com.example.fragment.project
 ```

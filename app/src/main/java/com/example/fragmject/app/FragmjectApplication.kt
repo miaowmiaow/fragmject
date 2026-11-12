@@ -55,6 +55,7 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
      *
      * ============================ 为什么把 buildType / 签名摘要传进去 ============================
      * 库侧刻意不读宿主的 `BuildConfig`（库模块的 BuildConfig 属于库自己）。
+     * - `debugBypass`：编译期声明 debug 包，库据此跳过全部检测（生产包恒为 false）；
      * - `buildType`：采集变体（`nonMinifiedRelease`）需要在 `SecurityConfig.skipBuildTypes` 里被跳过；
      * - `expectedSignatureSha256`：由 `app/build.gradle.kts` 在构建期从签名 keystore 算出并注入
      *   `BuildConfig.EXPECTED_SIG_SHA256`，这里是「期望值」进入运行期的唯一入口。
@@ -65,6 +66,9 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
         SecurityGuard.install(
             this,
             SecurityConfig(
+                // 只有「编译期就知道是 debug 包」时才允许跳过全部检测。
+                // 不能用库自己读的 FLAG_DEBUGGABLE：那是 manifest 属性，改一行就能关掉整条链。
+                debugBypass = BuildConfig.DEBUG,
                 buildType = BuildConfig.BUILD_TYPE,
                 expectedSignatureSha256 = BuildConfig.EXPECTED_SIG_SHA256.toDigestSet(),
             ),

@@ -25,6 +25,15 @@ package com.example.security
 data class SecurityConfig(
     /** 总开关：false 时 [SecurityGuard.install] 直接返回，不建线程、不注册回调。 */
     val enabled: Boolean = true,
+    /**
+     * 是否允许「可调试包直接跳过全部检测」。
+     *
+     * **必须由宿主传 `BuildConfig.DEBUG`**，不要用库自己读的 `FLAG_DEBUGGABLE` 决定：
+     * `android:debuggable` 是 manifest 属性，用 `apktool` 改一行就能把整条防护链关掉
+     * （签名校验也在链上）。只有当「宿主在编译期就声明这是 debug 包」时才跳过，
+     * 生产包传 false —— 此时即使 manifest 被改成 debuggable，也会被判为篡改并阻断。
+     */
+    val debugBypass: Boolean = false,
     /** 宿主构建类型，仅用于与 [skipBuildTypes] 比对。 */
     val buildType: String = "",
     /** 需要跳过防护的构建类型。 */
@@ -33,8 +42,14 @@ data class SecurityConfig(
     val expectedSignatureSha256: Set<String> = emptySet(),
     /** 关键资源 SHA-256 基线（APK entry 路径 -> 摘要）；空 = 不校验。 */
     val expectedResourceSha256: Map<String, String> = emptyMap(),
-    /** 匿名可执行段容忍阈值；0 = 发现即判定。 */
-    val anonExecThreshold: Int = 0,
+    /**
+     * 匿名可执行段容忍阈值：命中数 **大于** 该值才判定。
+     *
+     * 默认 1 而不是 0：ART / 厂商运行时可能映射非 dalvik 命名的可执行匿名段
+     * （曾因 `[anon_shmem:dalvik-...]` 未进白名单而误杀），留 1 段容忍可显著降低误报。
+     * 高对抗场景可设 0（发现即判定），代价是特定 ROM 上可能误杀。
+     */
+    val anonExecThreshold: Int = 1,
     /**
      * Root 检测的处置方式。
      *

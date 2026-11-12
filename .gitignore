@@ -27,3 +27,5 @@ build/
 # IDE 本地对话历史（体积极大，不应入库）
 .idea/CopilotChatHistory.xml
 .idea/CopilotChatTabs.xml
+# Gradle 自动生成的 daemon JVM 判据（含本机下载地址，不入库）
+gradle/gradle-daemon-jvm.properties

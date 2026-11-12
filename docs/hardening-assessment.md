@@ -1065,7 +1065,48 @@ F 组随即命中。覆盖范围限于**精确同名**文件；带版本号的�
 **尚未覆盖**：x86_64 的真实运行结果要等 CI 首次跑（本地跑不了 x86 镜像）；
 以及 32 位 ABI（`armeabi-v7a` / `x86`）不在矩阵内 —— 库 AAR 里虽然有这些 so，但 app 未打包。
 
-### 10.13 门禁与验证
+### 10.13 SO 代码段保护加强：逐页 CRC + RWX 检测（2026-11-12）
+
+**为什么加强**：原实现是「整段 `.text` 算一次 CRC32」，只能回答「变没变」，
+无法定位、也无法抵御「构造整段 CRC 碰撞」。对照 XopProtector 等工具，这是静态防护最实在的缺口，
+而它不需要改动加载流程 —— 只在现有校验上升级。
+
+**改动**
+
+| 项 | 之前 | 现在 |
+|---|---|---|
+| 粒度 | 整段一次 CRC | **逐页 CRC**（页大小取 `sysconf(_SC_PAGESIZE)`，16 KB 设备自动 16 KB） |
+| 诊断 | 只打 file/mem 两个 CRC | `pages=12 mismatched=1 first=0x2c000`：直接指出**哪一页**被改 |
+| 映射权限 | 无 | 检查 `.text` 首地址所在映射是否 **可写+可执行**（inline hook 放宽权限未恢复会命中） |
+
+**过程中发现并修掉两个「死代码」**
+
+| # | 现象 | 根因 | 修法 |
+|---|---|---|---|
+| 1 | RWX 探针把页改成 rwx，检测**一次都没触发** | 原逻辑按文件名在 `/proc/self/maps` 里找 `libappsecurity.so`；但 Android 10+ 默认 `extractNativeLibs=false`，so 直接从 **APK 内 mmap**（路径是 `.../base.apk`），永远匹配不到 | 改为「按代码地址查所属映射」：解析 maps 的 `start-end perms`，找到覆盖该地址的区间看权限 |
+| 2 | 修完上面仍不触发 | 检查看的是 `crc32Update` 所在页，而探针改的是被校验 section 的首地址，两者不是同一页 | 检查目标改为**被校验 section 的首地址**（`memBase`） |
+
+> 这两个 bug 与昨天的 `/data/local/tmp` `opendir` 失效属于同一类：**"看起来有、实际永远不成立"**。
+> 结论：安全检测必须有「故意触发」的验证手段，否则死代码会一直躺在那里。
+
+**实测（模拟器 API 37 / 16 KB 页）**
+
+| 组 | 构造 | 日志 | 结果 |
+|---|---|---|---|
+| 正常 | 正式构建 | `self so .text pages=12 mismatched=0` / `.rodata pages=1` | ✅ 无命中，进程存活 |
+| 自篡改 | `-PselfTamperProbe=true`：翻转 `.text` 最后一字节后恢复权限 | `self tamper probe: flipped last byte` → `mismatched=1 first=0x2c000` → `[integrity.self_so]` → `jniKillSelf` | ✅ 定位到第 11 页（16 KB × 11），命中到 kill **1.2 s** |
+| RWX | `-PselfRwxProbe=true`：把 `.text` 首页设为 rwx 且**不改内容** | `mismatched=0` 但 `has writable+executable mapping` → `[integrity.self_so]` → kill | ✅ 证明**两条分支独立**（内容没变也能抓） |
+
+**探针不会进生产包**：两个探针都由编译期宏（`SELF_TAMPER_PROBE` / `SELF_RWX_PROBE`）控制，
+正式构建 `strings libappsecurity.so | grep "self tamper probe"` = **0**。
+
+**局限（如实）**
+
+1. CRC32 非密码学哈希，理论上可构造逐页碰撞；真正的锚仍是签名校验与 native 侧判定；
+2. RWX 只抓「放宽权限后未恢复」的 hook；hook 完成后恢复成 r-x 则抓不到（这是 inline hook 的固有难点）；
+3. 只校验自身 so；`libc` 仍由既有的 `.text` CRC 覆盖（同一套逻辑，未改）。
+
+### 10.14 门禁与验证
 
 | 项 | 结果 |
 |---|---|

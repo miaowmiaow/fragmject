@@ -32,3 +32,14 @@ target_compile_options(appsecurity PRIVATE -O2 -Wall -fvisibility=hidden)
 # dl：dladdr 依赖 libdl（bionic 中单独成库）。
 find_library(log-lib log)
 target_link_libraries(appsecurity ${log-lib} dl)
+
+# 测试用：编译进「自篡改探针」（模拟一次 inline hook），仅 -PselfTamperProbe=true 时开启。
+# 生产构建不定义该宏，探针代码不进 so。
+if(SELF_TAMPER_PROBE)
+    target_compile_definitions(appsecurity PRIVATE SELF_TAMPER_PROBE)
+endif()
+
+# 测试用：把 .text 首页置为 RWX（不改内容），验证 rwx 映射检测分支
+if(SELF_RWX_PROBE)
+    target_compile_definitions(appsecurity PRIVATE SELF_RWX_PROBE)
+endif()

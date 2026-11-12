@@ -36,6 +36,7 @@
 #include <sys/prctl.h>
 #include <sys/resource.h>
 #include <sys/ptrace.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 #include <array>
@@ -767,7 +768,22 @@ int countRootFiles() {
  *
  * @return 0=一致；1=不一致；-1=无法校验（文件/段缺失、自身基址拿不到）。
  */
-int verifySectionCrc(const std::string &soPath, const std::string &sectionName) {
+/**
+ * 逐页比对「磁盘 section」与「内存 section」的 CRC32。
+ *
+ * 为什么从「整段一次 CRC」改成逐页：
+ * - 整段 CRC 只能回答「有没有变」，逐页能定位**哪一页**变了（排查 hook 时这个信息最关键）；
+ * - CRC32 可构造碰撞，逐页把「让整段 CRC 相同」的难度提高到「每一页都要相同」；
+ * - 页粒度天然对齐 inline hook 的写入方式（mprotect 一页 → 改几个字节 → 恢复）。
+ *
+ * 同时检查自身映射里是否出现 **可写 + 可执行** 段：inline hook 常把 .text 改成 rw- 再改回，
+ * 若攻击者忘了恢复、或故意留下 rwx，这也是一条确定的证据。
+ *
+ * @return 0=一致；1=不一致（被改）；-1=无法校验
+ */
+bool isCodeRegionWritable(const void *codeAddr);
+
+int verifySectionCrc(const std::string &soPath, const std::string &sectionName, bool checkExecPerms) {
     // 用本文件内的 crc32Update 反查「自身 so」的加载基址。
     // 该函数在匿名 namespace 中（内部链接），但地址仍然有效，dladdr 能解析出所属 so。
     Dl_info info{};
@@ -790,7 +806,6 @@ int verifySectionCrc(const std::string &soPath, const std::string &sectionName) 
         fclose(fp);
         return -1;
     }
-
     std::vector<std::uint8_t> fileBuf(section.sh_size);
     const std::size_t read = fread(fileBuf.data(), 1, fileBuf.size(), fp);
     fclose(fp);
@@ -799,14 +814,128 @@ int verifySectionCrc(const std::string &soPath, const std::string &sectionName) 
     }
 
     const auto *memBase = reinterpret_cast<const std::uint8_t *>(info.dli_fbase) + section.sh_addr;
-    const std::uint32_t fileCrc = crc32Update(0, fileBuf.data(), fileBuf.size());
-    const std::uint32_t memCrc = crc32Update(0, memBase, section.sh_size);
-    SEC_LOGD("self so %s crc file=%08x mem=%08x size=%zu",
-             sectionName.c_str(), fileCrc, memCrc,
-             static_cast<std::size_t>(section.sh_size));
 
-    return fileCrc == memCrc ? 0 : 1;
+#ifdef SELF_RWX_PROBE
+    // 仅测试构建（-PselfRwxProbe=true）：把 section 首页改成 RWX 且**不恢复**，
+    // 用于验证「可写+可执行映射」这条检测分支（不修改任何字节，因此逐页 CRC 仍应通过）。
+    static bool rwxProbeDone = false;
+    if (!rwxProbeDone) {
+        rwxProbeDone = true;
+        const long ps = sysconf(_SC_PAGESIZE);
+        if (ps > 0) {
+            auto pageStart = reinterpret_cast<std::uintptr_t>(memBase) &
+                             ~static_cast<std::uintptr_t>(ps - 1);
+            if (mprotect(reinterpret_cast<void *>(pageStart),
+                         static_cast<std::size_t>(ps),
+                         PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
+                SEC_LOGW("self rwx probe: %s first page set to rwx", sectionName.c_str());
+            }
+        }
+    }
+#endif
+
+#ifdef SELF_TAMPER_PROBE
+    // 仅测试构建（-PselfTamperProbe=true）：模拟一次 inline hook ——
+    // 把 section 最后一页改成可写、翻转最后 1 字节、再恢复成可执行。
+    // 用于验证「逐页 CRC 能定位到哪一页被改」，生产构建不包含这段代码。
+    static bool probeDone = false;
+    if (!probeDone) {
+        probeDone = true;
+        const long pageSize = sysconf(_SC_PAGESIZE);
+        if (pageSize > 0) {
+            auto pageStart = reinterpret_cast<std::uintptr_t>(memBase + section.sh_size - 1) &
+                             ~static_cast<std::uintptr_t>(pageSize - 1);
+            if (mprotect(reinterpret_cast<void *>(pageStart),
+                         static_cast<std::size_t>(pageSize),
+                         PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
+                *const_cast<std::uint8_t *>(memBase + section.sh_size - 1) ^= 0xFF;
+                mprotect(reinterpret_cast<void *>(pageStart),
+                         static_cast<std::size_t>(pageSize),
+                         PROT_READ | PROT_EXEC);
+                SEC_LOGW("self tamper probe: flipped last byte of %s", sectionName.c_str());
+            }
+        }
+    }
+#endif
+
+    const long pageSize = sysconf(_SC_PAGESIZE);
+    const std::size_t step = pageSize > 0 ? static_cast<std::size_t>(pageSize) : 4096U;
+
+    std::size_t offset = 0;
+    std::size_t mismatched = 0;
+    std::size_t firstMismatch = 0;
+    bool hasFirst = false;
+    while (offset < section.sh_size) {
+        const std::size_t len = std::min(step, static_cast<std::size_t>(section.sh_size) - offset);
+        const std::uint32_t fileCrc = crc32Update(0, fileBuf.data() + offset, len);
+        const std::uint32_t memCrc = crc32Update(0, memBase + offset, len);
+        if (fileCrc != memCrc) {
+            ++mismatched;
+            if (!hasFirst) {
+                hasFirst = true;
+                firstMismatch = offset;
+            }
+        }
+        offset += len;
+    }
+
+    const std::size_t pages = (static_cast<std::size_t>(section.sh_size) + step - 1) / step;
+    SEC_LOGD("self so %s pages=%zu mismatched=%zu first=0x%zx",
+             sectionName.c_str(), pages, mismatched,
+             hasFirst ? firstMismatch : static_cast<std::size_t>(0));
+
+    if (mismatched > 0) {
+        return 1;
+    }
+
+    if (checkExecPerms && isCodeRegionWritable(memBase)) {
+        SEC_LOGW("self so %s has writable+executable mapping", sectionName.c_str());
+        return 1;
+    }
+    return 0;
 }
+
+/**
+ * 代码段所在映射是否「可写 + 可执行」。
+ *
+ * 为什么按**地址**判断而不是按文件名匹配 /proc/self/maps：
+ * Android 10+ 默认 `extractNativeLibs=false`，so 直接从 APK 内 mmap，
+ * maps 里的路径是 `.../base.apk`，根本不含 `libappsecurity.so` —— 按文件名匹配会永远失败
+ * （实测：rwx 探针把页改成 rwx，按文件名的版本一次都没检出）。
+ *
+ * 现在的做法：用本文件内函数地址反查它落在 maps 的哪个区间，再看该区间的权限。
+ * 这样无论 so 是解压到磁盘还是从 APK mmap，都能正确判定。
+ *
+ * @param codeAddr 自身代码段的某个地址（内部链接函数即可）
+ * @return true=该映射同时具备 w 与 x
+ */
+bool isCodeRegionWritable(const void *codeAddr) {
+    const auto addr = reinterpret_cast<std::uintptr_t>(codeAddr);
+    FILE *fp = fopen(lit::kProcSelfMaps.str().c_str(), "r");
+    if (fp == nullptr) {
+        return false;
+    }
+    char line[1024];
+    bool writable = false;
+    while (fgets(line, sizeof(line), fp) != nullptr) {
+        unsigned long start = 0;
+        unsigned long end = 0;
+        char perms[8] = {0};
+        if (std::sscanf(line, "%lx-%lx %7s", &start, &end, perms) < 3) {
+            continue;
+        }
+        if (addr < start || addr >= end) {
+            continue;
+        }
+        // perms[1] == 'w' 且 perms[2] == 'x'：可写可执行，正常 ELF 不会出现
+        writable = (perms[1] == 'w' && perms[2] == 'x');
+        break;
+    }
+    fclose(fp);
+    return writable;
+}
+
+
 
 }  // namespace
 
@@ -1079,7 +1208,7 @@ jint jniVerifySelfSoTextCrc(JNIEnv *env, jobject, jstring selfSoPath) {
     if (soPath.empty()) {
         return -1;
     }
-    return verifySectionCrc(soPath, lit::kTextSection.str());
+    return verifySectionCrc(soPath, lit::kTextSection.str(), true);
 }
 
 /**
@@ -1104,7 +1233,7 @@ jint jniVerifySelfSoDataCrc(JNIEnv *env, jobject, jstring selfSoPath) {
     if (soPath.empty()) {
         return -1;
     }
-    return verifySectionCrc(soPath, lit::kRodataSection.str());
+    return verifySectionCrc(soPath, lit::kRodataSection.str(), false);
 }
 
 /** Frida 特征线程数；-1=无法枚举。 */

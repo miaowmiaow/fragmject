@@ -48,6 +48,24 @@ android {
         minSdk = libMinSdk
         // 宿主 R8 会重命名 JNI 类与公开 API，规则必须由库自带
         consumerProguardFiles("consumer-rules.pro")
+
+        // 测试开关（只影响本模块的 native 编译）：
+        // -PselfTamperProbe=true 时编译进「自篡改探针」，用于验证逐页 CRC 能定位被改的页。
+        if (providers.gradleProperty("selfTamperProbe").map(String::toBoolean).getOrElse(false)) {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DSELF_TAMPER_PROBE=ON"
+                }
+            }
+        }
+        // 测试开关：把 .text 首页置为 RWX，验证「可写可执行映射」检测
+        if (providers.gradleProperty("selfRwxProbe").map(String::toBoolean).getOrElse(false)) {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DSELF_RWX_PROBE=ON"
+                }
+            }
+        }
     }
 
     compileOptions {

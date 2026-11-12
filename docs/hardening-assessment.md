@@ -1224,7 +1224,23 @@ Caused by: java.lang.IllegalAccessException: ... cannot access class jdk.interna
 **验证**：本地跑 CI 的完整命令 → `BUILD SUCCESSFUL`（3m46s），`:core:data-repository` 全绿，
 `:security` 40 例、`:app` 架构测试 30 例均通过。
 
-### 10.16 门禁与验证
+### 10.16 `:shell:lintDebug` 的三类问题（2026-11-12）
+
+CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。逐条处理：
+
+| 问题 | 判定 | 处理 |
+|---|---|---|
+| `NewApi`：`new InMemoryDexClassLoader(ByteBuffer[], ClassLoader)` "requires API 27" | **误报**：Android 8.0.0 实测可用（`payload chunks=2` → `real application class loaded`，两分片都加载成功），属 lint API 库与 ART 实现的偏差 | 把构造抽成 `createPayloadLoader()`，方法级 `@SuppressLint("NewApi")`，注释写明实测依据；不扩大抑制面 |
+| `DefaultLocale` ×2 | **真问题**：`.trim().toLowerCase()` 未指定 Locale（土耳其语等 i/I 规则会改字节） | 改为 `toLowerCase(Locale.US)`；十六进制格式化也统一 `String.format(Locale.US, …)` |
+| `PrivateApi` / `DiscouragedPrivateApi` | **不可避免**：壳要拿 `ActivityThread.currentActivityThread()` 才能替换 `mClassLoader` / `mInitialApplication`，无公开 API 替代 | `activityThread()` 方法级抑制，注释写明「字段被移除时会抛异常并 fail-closed」 |
+
+**一个反复踩的坑**：`DefaultLocale` 第一反应去查 `String.format`（那两处早已带 `Locale.US`），
+实际告警在 **`toLowerCase()`** —— lint 报告的 `startLine` 指向那行，先读报告再改，别凭经验猜。
+
+**验证**：`:shell:lintDebug` **0 issues**；全量 `lintDebug` 通过；
+重构后的壳包在 API 26 上回归正常（`shell dex check ok` / `payload chunks=2` / 类加载成功）。
+
+### 10.17 门禁与验证
 
 | 项 | 结果 |
 |---|---|

@@ -1,5 +1,6 @@
 package com.example.shell;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -8,6 +9,7 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -121,7 +123,7 @@ public class StubApplication extends Application {
         // ServiceLoader 声明），类解析会落到 payload 上。用 systemClassLoader 会导致
         // kotlinx-coroutines-android 的 MainDispatcherFactory 找不到，抛
         // “Module with the Main dispatcher is missing”。
-        ClassLoader payloadLoader = new InMemoryDexClassLoader(payload, getClassLoader());
+        ClassLoader payloadLoader = createPayloadLoader(payload);
         Class<?> realClass = Class.forName(REAL_APPLICATION, true, payloadLoader);
         Log.i(TAG, "real application class loaded: " + realClass.getName());
 
@@ -171,6 +173,22 @@ public class StubApplication extends Application {
     }
 
     /**
+     * 创建 payload 的 InMemoryDexClassLoader。
+     *
+     * 单独抽方法并 `@SuppressLint("NewApi")` 的原因：lint 认为
+     * `InMemoryDexClassLoader(ByteBuffer[], ClassLoader)` 需要 API 27，
+     * 但**在 Android 8.0.0（API 26）模拟器上实测可用**——
+     * 日志 `payload chunks=2` → `real application class loaded`，两个分片都正常加载。
+     * 属 lint 的 API 数据库与 ART 实际实现的偏差。
+     *
+     * 为保留 8.0 支持、又不扩大抑制范围，只在这个方法上抑制；方法体内只有这一句构造。
+     */
+    @SuppressLint("NewApi")
+    private ClassLoader createPayloadLoader(ByteBuffer[] payload) {
+        return new InMemoryDexClassLoader(payload, getClassLoader());
+    }
+
+    /**
      * 校验壳 dex 自身（H6/S2）。
      *
      * 期望值放在 `assets/payload/shell.txt`（打包任务写入），与业务载荷同一个信任域；
@@ -186,9 +204,9 @@ public class StubApplication extends Application {
                 Log.w(TAG, "no shell.txt, shell dex check skipped");
                 return;
             }
-            String expected = new String(expectedRaw, StandardCharsets.UTF_8).trim().toLowerCase();
+            String expected = new String(expectedRaw, StandardCharsets.UTF_8).trim().toLowerCase(Locale.US);
             int actual = crcOfEntry(getApplicationInfo().sourceDir, "classes.dex");
-            String actualHex = String.format("%08x", actual & 0xFFFFFFFFL);
+            String actualHex = String.format(Locale.US, "%08x", actual & 0xFFFFFFFFL);
             if (!actualHex.equals(expected)) {
                 Log.e(TAG, "shell dex crc mismatch: actual=" + actualHex + " expected=" + expected);
                 throw new IllegalStateException("shell dex integrity check failed");
@@ -269,7 +287,7 @@ public class StubApplication extends Application {
         if (expectedRaw == null) {
             throw new IOException("missing payload/sum.txt");
         }
-        String expected = new String(expectedRaw, StandardCharsets.UTF_8).trim().toLowerCase();
+        String expected = new String(expectedRaw, StandardCharsets.UTF_8).trim().toLowerCase(Locale.US);
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         for (byte[] chunk : chunks) {
             digest.update(chunk);
@@ -277,7 +295,7 @@ public class StubApplication extends Application {
         byte[] hashed = digest.digest();
         StringBuilder actual = new StringBuilder(hashed.length * 2);
         for (byte value : hashed) {
-            actual.append(String.format("%02x", value & 0xFF));
+            actual.append(String.format(Locale.US, "%02x", value & 0xFF));
         }
         if (!actual.toString().equals(expected)) {
             Log.e(TAG, "payload sum mismatch: payload modified");
@@ -333,6 +351,15 @@ public class StubApplication extends Application {
     // 反射工具
     // ------------------------------------------------------------------
 
+    /**
+     * 取 `ActivityThread.currentActivityThread()`。
+     *
+     * 抑制 `PrivateApi` / `DiscouragedPrivateApi`：壳必须拿到 ActivityThread 才能替换
+     * `LoadedApk.mClassLoader` 与 `mInitialApplication` —— 这两步没有公开 API 可替代，
+     * 是 DEX 壳方案的固有代价。已在 API 26 / 34 / 37 与真机 36 上验证可用；
+     * 若未来某版本移除这些字段，壳会在 `readField` 处抛异常并 fail-closed（不静默放行）。
+     */
+    @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
     private static Object activityThread() throws Exception {
         Class<?> clazz = Class.forName("android.app.ActivityThread");
         Method current = clazz.getDeclaredMethod("currentActivityThread");

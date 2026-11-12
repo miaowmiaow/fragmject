@@ -33,6 +33,8 @@
 #include <dlfcn.h>
 #include <elf.h>
 #include <signal.h>
+#include <sys/prctl.h>
+#include <sys/resource.h>
 #include <sys/ptrace.h>
 #include <unistd.h>
 
@@ -201,6 +203,7 @@ constexpr auto kNameVerifyLibcTextCrc = XorString("verifyLibcTextCrc");
 constexpr auto kNameVerifySelfSoTextCrc = XorString("verifySelfSoTextCrc");
 constexpr auto kNameVerifySelfSoDataCrc = XorString("verifySelfSoDataCrc");
 constexpr auto kNameKillSelf = XorString("killSelf");
+constexpr auto kNameHardenProcess = XorString("hardenProcess");
 constexpr auto kSigInt = XorString("()I");
 constexpr auto kSigVoid = XorString("()V");
 constexpr auto kSigStringInt = XorString("(Ljava/lang/String;)I");
@@ -209,6 +212,8 @@ constexpr auto kSigStringInt = XorString("(Ljava/lang/String;)I");
 constexpr auto kLogFridaThread = XorString("thread sig hit");
 constexpr auto kLogFridaFile = XorString("file sig hit");
 constexpr auto kLogRootPath = XorString("root path hit");
+constexpr auto kLogHardenDone = XorString("process hardened: dumpable=0, core=0");
+constexpr auto kLogHardenFailed = XorString("prctl(PR_SET_DUMPABLE) failed");
 
 }  // namespace lit
 
@@ -1117,6 +1122,48 @@ jint jniFindRootFiles(JNIEnv *, jobject) {
  * 延迟窗口用于让 UI 展示提示（更友好），且不削弱阻断效果——
  * 终止动作最终仍由 native 完成。
  */
+/**
+ * 进程内存加固（H6/S2 反 dump 的**可做部分**，见 README/文档的边界说明）。
+ *
+ * 做两件事：
+ * 1. `prctl(PR_SET_DUMPABLE, 0)`：把 `/proc/self/*` 的所有者改成 root，
+ *    使**同 uid 或非 root 的读取者**（adb shell、同用户恶意应用、bugreport 现场采集）
+ *    无法再打开 `/proc/<pid>/mem`、`/proc/<pid>/maps`；
+ * 2. `setrlimit(RLIMIT_CORE, 0)`：禁止 core dump，避免崩溃时把内存镜像落到磁盘。
+ *
+ * ============================ 明确挡不住什么 ============================
+ * root 进程（BlackDex / FRIDA-DEXDump / 手工 gdb）仍然可以 ptrace 并读内存——
+ * PR_SET_DUMPABLE 只改变 `/proc` 的访问主体，不阻止 root。所谓「反 dump」在这里
+ * 是把「无 root 的取巧路径」堵死，而不是挡住专业脱壳。
+ *
+ * 副作用（已知、可接受、可回滚）：
+ * - ANR / tombstone 仍能生成（debuggerd 以 root 身份运行）；
+ * - 但 `am dumpheap`、部分厂商的现场采集工具可能取不到该进程数据；
+ * - 因此做成 [SecurityConfig.antiDump] 可关，默认开。
+ *
+ * @return 0=已加固；-1=prctl 失败（例如被 seccomp 拦截）。
+ */
+jint jniHardenProcess(JNIEnv *, jobject) {
+    // 1) 关闭 dumpable：/proc/self/* 归属 root
+    if (prctl(PR_SET_DUMPABLE, 0, 0, 0, 0) != 0) {
+        SEC_LOGW("%s", lit::kLogHardenFailed.str().c_str());
+        return -1;
+    }
+
+    // 2) 关闭 core dump：即使崩溃也不落内存镜像
+    struct rlimit noCore{};
+    noCore.rlim_cur = 0;
+    noCore.rlim_max = 0;
+    setrlimit(RLIMIT_CORE, &noCore);
+
+    // 读回内核里的真实状态：Android 各版本 /proc 归属策略不同，
+    // 「设置成功」不等于「生效」，把实际值打出来便于线上核对。
+    const int dumpable = prctl(PR_GET_DUMPABLE, 0, 0, 0, 0);
+    SEC_LOGD("process hardened: dumpable=%d core=0", dumpable);
+    (void) lit::kLogHardenDone;
+    return 0;
+}
+
 void jniKillSelf(JNIEnv *, jobject) {
     SEC_LOGW("jniKillSelf invoked");
     kill(getpid(), SIGKILL);
@@ -1158,6 +1205,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     static const std::string nameFindFridaFiles = lit::kNameFindFridaFiles.str();
     static const std::string nameFindRootFiles = lit::kNameFindRootFiles.str();
     static const std::string nameKillSelf = lit::kNameKillSelf.str();
+    static const std::string nameHardenProcess = lit::kNameHardenProcess.str();
     static const std::string sigNoArg = lit::kSigInt.str();
     static const std::string sigNoArgVoid = lit::kSigVoid.str();
     static const std::string sigStringArg = lit::kSigStringInt.str();
@@ -1196,6 +1244,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
             {const_cast<char *>(nameFindRootFiles.c_str()),
              const_cast<char *>(sigNoArg.c_str()),
              reinterpret_cast<void *>(jniFindRootFiles)},
+            {const_cast<char *>(nameHardenProcess.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniHardenProcess)},
             {const_cast<char *>(nameKillSelf.c_str()),
              const_cast<char *>(sigNoArgVoid.c_str()),
              reinterpret_cast<void *>(jniKillSelf)},

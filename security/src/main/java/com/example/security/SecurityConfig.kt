@@ -43,6 +43,20 @@ data class SecurityConfig(
     /** 关键资源 SHA-256 基线（APK entry 路径 -> 摘要）；空 = 不校验。 */
     val expectedResourceSha256: Map<String, String> = emptyMap(),
     /**
+     * 是否在启动时做进程内存加固（反 dump 的可做部分）。
+     *
+     * 打开后会执行 `prctl(PR_SET_DUMPABLE, 0)` 与 `setrlimit(RLIMIT_CORE, 0)`：
+     * - `/proc/<pid>/` 下的文件归属 root，**非 root 与同 uid 的读取者**（adb shell、
+     *   同用户恶意应用、现场采集工具）无法再读 `mem`/`maps`；
+     * - 崩溃时不落 core 文件（避免内存镜像被拷走）。
+     *
+     * **挡不住** root 进程的 ptrace 脱壳（BlackDex / FRIDA-DEXDump）——这是边界，不是缺陷。
+     *
+     * 副作用：个别厂商的现场采集 / `am dumpheap` 可能取不到数据。
+     * 因此可关（默认开）；debug 包走 [debugBypass] 不会执行。
+     */
+    val antiDump: Boolean = true,
+    /**
      * 匿名可执行段容忍阈值：命中数 **大于** 该值才判定。
      *
      * 默认 1 而不是 0：ART / 厂商运行时可能映射非 dalvik 命名的可执行匿名段

@@ -50,6 +50,16 @@ internal interface NativeChecks {
     /** 存在的 Root 相关文件数（su / Magisk 目录）。 */
     fun findRootFiles(): Int
 
+    /**
+     * 进程内存加固（反 dump 的可做部分）：关闭 `/proc` 可读性与 core dump。
+     *
+     * 为什么做成方法而不是构造时自动执行：失败要能降级、要能按配置关闭，
+     * 且 debug 包不该改动内核状态（调试器会连不上）。
+     *
+     * @return 0=成功；-1=失败（如被 seccomp 拦截）。
+     */
+    fun hardenProcess(): Int
+
     fun verifyLibcTextCrc(): Int
 
     fun verifySelfSoTextCrc(selfSoPath: String): Int
@@ -156,6 +166,8 @@ internal class SecurityNative(
     external override fun findFridaFiles(): Int
 
     external override fun findRootFiles(): Int
+
+    external override fun hardenProcess(): Int
 
     external override fun verifyLibcTextCrc(): Int
 

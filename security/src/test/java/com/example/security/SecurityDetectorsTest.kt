@@ -327,6 +327,8 @@ private class FakeNative(override var available: Boolean = true) : NativeChecks 
 
     override fun findRootFiles(): Int = rootFiles
 
+    override fun hardenProcess(): Int = 0
+
     override fun verifyLibcTextCrc(): Int = libcCrc
 
     override fun verifySelfSoTextCrc(selfSoPath: String): Int = selfSoCrc

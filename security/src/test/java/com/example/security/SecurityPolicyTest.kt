@@ -2,6 +2,7 @@ package com.example.security
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -64,5 +65,7 @@ class SecurityPolicyTest {
         assertEquals(1, config.anonExecThreshold)
         // 加密校验默认不启用（空集合 = 不校验），避免未配置的宿主全量误杀
         assertEquals(emptySet<String>(), config.expectedSignatureSha256)
+        // 反 dump 默认开启：收紧 /proc 权限是「做比不做好」的动作，且有配置可回滚
+        assertTrue(config.antiDump)
     }
 }

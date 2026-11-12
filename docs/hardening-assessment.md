@@ -523,13 +523,14 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 | `shell dex check=-1`（校验没生效） | CMake 参数新增后旧 `.cxx` 缓存未失效，头文件没进 include 路径 | 清 `app/.cxx` 重新配置 |
 
 **S2 剩余（仍未做）**：
-- 反 dump（内存 dex 仍可被 Frida/BlackDex 脱，壳只挡静态分析）；
+- 反 dump 的**可做部分已实现**（见 §10.7：`PR_SET_DUMPABLE=0` + 禁 core dump），
+  但 **root 下的 ptrace 脱壳仍挡不住**（BlackDex / FRIDA-DEXDump 照样能 dump 内存）；
 - 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
 - 更细的分片策略（当前 2 片一次性解压，>20MB dex 时需改按需加载）。
 
 **仍未做（完整 H6 / S2 范围）**：
 1. 载荷分片策略与多 dex 的启动耗时优化（当前 2 片一次性全解）；
-2. 反 dump（内存 dex 仍是可 dump 的，壳只挡静态分析）；
+2. 反 dump（非 root 路径已堵、core 已禁；**root ptrace 仍可脱**，见 §10.7）；
 3. 壳自身完整性校验、与 H1/H3 的联动（如壳被替换的检测）；
 4. 崩溃栈还原（mapping 只对应原始 dex，壳包崩溃需额外映射）；
 5. 体积/启动的严谨 A/B（当前样本只够证明「能跑」）。
@@ -861,7 +862,35 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 
 使用方式与注意事项见 `dex-shell-handover.md` 的「七点五、崩溃栈还原」。
 
-### 10.7 门禁与验证
+### 10.7 反 dump（2026-11-12，可做部分）
+
+**先说边界**：Android 上「反 dump」没有能挡住 root 的方案——脱壳机（BlackDex / FRIDA-DEXDump）
+以 root 身份 ptrace + 读内存，ART 又必须让 dex 在内存里可用。因此本次只做**能落地且可验证**的部分：
+
+| 措施 | 作用 | 挡不住 |
+|---|---|---|
+| `prctl(PR_SET_DUMPABLE, 0)` | `/proc/<pid>/` 收紧，非 root 与同 uid 读取者（adb shell、同用户恶意应用、现场采集工具）无法读 `mem`/`maps` | root 进程、更底层的内核模块 |
+| `setrlimit(RLIMIT_CORE, 0)` | 崩溃时不落 core 文件，避免「崩溃即拿到内存镜像」 | 主动 ptrace dump |
+
+实现：`security.cpp` 新增 `jniHardenProcess`（JNI 注册 12 → **13** 个方法），
+`SecurityEngine.start()` 在 `native.load()` 之后立即调用，**失败只告警不阻断**；
+`SecurityConfig.antiDump` 默认开、可关（个别厂商现场采集会受影响）。
+
+**实测（模拟器 API 37）**：
+
+| 检查点 | 证据 | 结论 |
+|---|---|---|
+| 内核状态真的改了 | `FragmjectSecurity: process hardened: dumpable=0 core=0`（`prctl(PR_GET_DUMPABLE)` 读回） | ✅ |
+| core dump 已禁 | `/proc/<pid>/limits` → `Max core file size 0 0 bytes`（对照 `system_server` 为 `0 unlimited`） | ✅ |
+| **不破坏崩溃上报** | 注入 `IllegalStateException` 后：`FATAL EXCEPTION: main` + `Caused by: ...` + 完整栈，被 `-b crash` 正常捕获 | ✅ 关键副作用已验证 |
+| 正常启动 | `warn: 检测到模拟器环境`，进程存活，无崩溃 | ✅ |
+
+**顺带**：用这次注入产生的**真实崩溃**跑了 retrace，`attachBaseContext(SourceFile:53)` →
+`attachBaseContext(FragmjectApplication.kt:77)`，说明 §10.6 的还原链路在真实数据上可用。
+
+**仍未做**：内存中 dex 的分片/按需解密（减少一次性暴露窗口）、对 root 脱壳的对抗（属 SO 加壳范畴，成本高收益低）。
+
+### 10.8 门禁与验证
 
 | 项 | 结果 |
 |---|---|

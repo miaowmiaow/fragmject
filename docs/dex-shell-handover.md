@@ -298,7 +298,9 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 
 ## 九、已知限制（交付时如实告知）
 
-1. **挡不住内存 dump**：脱壳机可直接 dump 解密后的 dex，壳只提高静态分析成本；
+1. **挡不住内存 dump**：脱壳机（root + ptrace）可直接 dump 解密后的 dex。
+   已做的缓解：`PR_SET_DUMPABLE=0` + 禁 core dump（堵住非 root/同 uid 读取与崩溃转储），
+   但这不改变「root 下可脱」的事实；
 2. **崩溃栈不完整**：`mapping.txt` 只对应原始 dex，壳包崩溃需配合映射还原；
 3. **载荷一次性全解**：当前 2 片一次性解压（约 +51 ms 启动开销），dex 超 20 MB 需改按需加载；
 4. **依赖 hidden API**：Android 大版本升级需复验（S0 已在 API 36/37 验证）；

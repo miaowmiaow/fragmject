@@ -40,6 +40,6 @@ enum class SecurityCheck {
     companion object {
         /** 默认全开：不传 `checks` 的老调用点行为不变。 */
         @JvmField
-        val ALL: Set<SecurityCheck> = values().toSet()
+        val ALL: Set<SecurityCheck> = entries.toSet()
     }
 }

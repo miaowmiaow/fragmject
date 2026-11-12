@@ -16,6 +16,15 @@ plugins {
 val configProperties = loadConfigProperties()
 
 /**
+ * 矩阵测试用的 ABI 覆盖（`-PmatrixAbi=x86_64`）。
+ *
+ * 默认只出 arm64-v8a：本机是 Apple Silicon，跑不了 x86 镜像；而 GitHub Actions 的 runner 是 x86，
+ * 只能跑 x86_64 模拟器。CI 的版本矩阵因此用这个参数单独出一份 x86_64 的壳包，
+ * 真实发布产物（不带该参数）不受影响。
+ */
+val matrixAbi: String? = providers.gradleProperty("matrixAbi").orNull
+
+/**
  * DEX 壳开关（H6/S1）：打开后 manifest 的 android:name 指向壳类，
  * 同时 build-logic 会注册 packShellRelease 把产物打成壳。
  * 两者必须成对出现，否则会得到「manifest 指向不存在的类」的包。
@@ -40,7 +49,12 @@ android {
         versionName = configProperties.getProperty("versionName")
         ndk {
             //noinspection ChromeOsAbiSupport
-            abiFilters += "arm64-v8a"
+            if (matrixAbi != null) {
+                // 矩阵构建：只带指定 ABI（CI 用 x86_64）
+                abiFilters += matrixAbi
+            } else {
+                abiFilters += "arm64-v8a"
+            }
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

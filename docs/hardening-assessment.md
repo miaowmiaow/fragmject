@@ -1037,7 +1037,35 @@ F 组随即命中。覆盖范围限于**精确同名**文件；带版本号的�
 结论：**不是真问题**。弹窗是探针包（含未对齐的 `libgadget.so` 与非 ELF 的 `libgadget.config.so`）安装时
 留下的缓存判定，勾选「Don't Show Again」或卸载重装即消失。正式包全部对齐。
 
-### 10.12 门禁与验证
+### 10.12 版本矩阵（arm64 本地 + x86_64 CI，2026-11-12）
+
+**为什么分两处跑**：开发机是 Apple Silicon，只能跑 arm64 镜像；GitHub runner 是 x86_64，
+只能用 x86_64 镜像。两者互补，覆盖「系统版本 × ABI」两个维度。
+
+| 环境 | ABI | API 级别 | 触发方式 |
+|---|---|---|---|
+| 本地模拟器 | arm64-v8a | 26 / 28 / 31 / 34 | 手动（`scripts/verify-shell-apk.sh`） |
+| CI（`security-matrix.yml`） | x86_64 | 26 / 28 / 31 / 34 | 每周二 + 手动 |
+| 真机 | arm64-v8a | 36 | 手动 |
+
+**ABI 覆盖参数**：发布产物默认只出 `arm64-v8a`；矩阵构建用 `-PmatrixAbi=x86_64` 单独出一份
+（`app/build.gradle.kts` 里由该属性决定 `abiFilters`），互不影响。实测
+`-PenableDexShell=true -PmatrixAbi=x86_64` 的壳包只含 `lib/x86_64/*`（5 个 so）。
+
+**统一断言脚本**：`scripts/verify-shell-apk.sh`，本地与 CI 跑**完全相同**的检查：
+
+1. APK 结构：有 `payload/dex-0.bin`、`sum.txt`、`shell.txt`，无 `classes2.dex`，`classes.dex < 100 KB`；
+2. 安装 + 启动（`am start -W` 必须 `Status: ok`）；
+3. 日志断言：`shell dex check ok`、`payload sum ok`、`registered 13 methods`、`process hardened`；
+4. 进程存活 + **无 `check hit`**（防误杀回归）；
+5. 失败时把 `build/verify-logs/` 落盘（CI 作为 artifact 上传）。
+
+本地实测（arm64 / API 37）：结构、安装、启动、四条日志、存活、无命中**全部通过**。
+
+**尚未覆盖**：x86_64 的真实运行结果要等 CI 首次跑（本地跑不了 x86 镜像）；
+以及 32 位 ABI（`armeabi-v7a` / `x86`）不在矩阵内 —— 库 AAR 里虽然有这些 so，但 app 未打包。
+
+### 10.13 门禁与验证
 
 | 项 | 结果 |
 |---|---|

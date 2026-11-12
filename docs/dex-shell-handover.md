@@ -212,6 +212,9 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
 | `Module with the Main dispatcher is missing` | `InMemoryDexClassLoader` 的 parent 用了 systemClassLoader | parent 必须是系统原本的 `PathClassLoader`（提供 `META-INF/services` 资源） |
 | `Hilt Activity must be attached to an @HiltAndroidApp Application` | `mInitialApplication` 在 `makeApplication` 之后被系统覆盖 | 已在 `StubApplication.onCreate` 二次替换；复现说明该逻辑被删 |
 | 启动直接 `ClassNotFoundException: com.google.mlkit…` | 壳安装失败后进程继续跑（fail-closed 的表现） | 看前面第一条 `shell install failed` 的真实原因 |
+| `security guard skipped (debugBypass)` | 当前是 debug 包（宿主编译期传入 `BuildConfig.DEBUG`） | 正常行为；release 包不应出现 |
+| `security check hit: 生产包被标记为可调试（疑似改包）` | 生产包 manifest 里被加了 `android:debuggable="true"`（apktool 改包常见手法） | 安全库判定为改包并终止；确认是否有人手工改过 manifest |
+| `native kill failed, fallback to Process.killProcess` | JNI `killSelf` 抛异常（so 被替换/方法被裁剪） | Java 兜底仍会终止进程；需排查 so 完整性 |
 
 常用命令：
 
@@ -238,6 +241,11 @@ adb shell pidof com.example.fragment.project
 5. so 必须以 STORED 打包且 4 字节/页对齐，否则 `INSTALL_FAILED_INVALID_APK`（手工重打包时最容易踩）；
 6. 包体优化经验：**先 deflate 再 XOR**。反过来（先 XOR）会让载荷变成高熵数据、zip 压不动，
    实测壳包从 11.70 MB 涨到 15.20 MB。
+7. **`SecurityConfig.debugBypass` 必须由宿主传 `BuildConfig.DEBUG`**：
+   壳包/常规包的 `debugBypass` 都是 false，因此 release 包若被改成 `debuggable`，会被判为改包并阻断
+   （实测 5s 内进程消失）。若宿主漏传（默认 false），本地 debug 也会跑完整检测，表现为「开发时启动就闪退」。
+8. **日志 TAG 已统一为 `AppSecurity`**（2026-11-12 起）：旧文档里的
+   `AppSecurityGuard` 是历史输出，`adb logcat -s AppSecurity` 才是当前过滤条件。
 
 ---
 
@@ -248,6 +256,10 @@ adb shell pidof com.example.fragment.project
 3. **载荷一次性全解**：当前 2 片一次性解压（约 +51 ms 启动开销），dex 超 20 MB 需改按需加载；
 4. **依赖 hidden API**：Android 大版本升级需复验（S0 已在 API 36/37 验证）；
 5. **不构成安全边界**：任何「客户端自证清白」都可被绕过，服务端校验不可省。
+6. **壳与安全库是两层，失败语义不同**：壳负责「业务 dex 不可静态读」，安全库负责「运行时自查」。
+   壳被换掉时由壳自身的 `shell.txt`/`payload sum` 拦截（fail-closed）；改签包由 H1 拦截；
+   manifest 改 `debuggable` 由安全库的「改包判定」拦截。三者互不替代，
+   但**都没有**防住内存 dump —— 见第 1 条。
 
 ---
 
@@ -264,3 +276,6 @@ adb shell pidof com.example.fragment.project
 | 壳 dex 篡改 | `shell dex crc mismatch: actual=97e55d8f expected=38ee772d` → 崩溃 |
 | 回滚（壳包 → 常规包） | 同签名覆盖安装成功，数据保留 |
 | 与资源混淆叠加 | `res/Dg` 短路径 + payload + 10 KB 壳 dex 同时存在，装机正常 |
+| 安全库 P0 修复（2026-11-12） | manifest 置 `debuggable=true` 而 `BuildConfig.DEBUG=false`：命中「生产包被标记为可调试（疑似改包）」，5s 内进程消失 |
+| 正常包回归（同日） | 仅 `security warn: 检测到模拟器环境`，进程存活，冷启动 1335ms |
+| debug 包（同日） | `security guard skipped (debugBypass)`，`AppSec-Check` 线程 0 |

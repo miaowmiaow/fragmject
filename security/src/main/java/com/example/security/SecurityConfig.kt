@@ -22,7 +22,15 @@ package com.example.security
  *
  * @see SecurityGuard 入口
  */
-data class SecurityConfig(
+data class SecurityConfig @JvmOverloads constructor(
+    /**
+     * 启用的检测维度（默认全开）。
+     *
+     * 宿主可按风控尺度裁剪，例如只关心调试与篡改：
+     * `checks = setOf(SecurityCheck.DEBUGGER, SecurityCheck.LIB_CRC)`。
+     * 注意：裁掉的维度**不会产生事件**，也不会执行对应 native 调用（省开销）。
+     */
+    val checks: Set<SecurityCheck> = SecurityCheck.ALL,
     /** 总开关：false 时 [SecurityGuard.install] 直接返回，不建线程、不注册回调。 */
     val enabled: Boolean = true,
     /**
@@ -84,12 +92,39 @@ data class SecurityConfig(
     val maxIntervalMs: Long = 60_000L,
     /** 连续多少轮干净后把间隔翻倍。 */
     val cleanRoundsToBackoff: Int = 3,
+    /**
+     * 注入类「重量级」扫描的降频间隔（Frida maps / 匿名可执行段）。
+     *
+     * 为什么单独降频：这两项都要解析整份 `/proc/self/maps`，实测单轮 13~37 ms；
+     * 每秒一次对低端机是明显负担。线程名/落地文件检查很便宜，仍每轮执行。
+     *
+     * 默认 5 s：既能让「新附加」在几秒内被发现，又把稳态 CPU 降下来。
+     */
+    val injectionScanIntervalMs: Long = 5_000,
     /** 端口扫描独立降频间隔。 */
     val portScanIntervalMs: Long = 60_000L,
     /** CRC 校验独立降频间隔。 */
     val crcCheckIntervalMs: Long = 30_000L,
     /** 命中后到终止进程的宽限时间（仅用于让 UI 展示提示）。 */
     val blockGraceMs: Long = 1_200L,
-    /** 命中回调（含 WARN 与 CRITICAL）；可能由检测线程触发，实现需自行保证线程安全。 */
+    /**
+     * 结构化事件回调（推荐接入点）。
+     *
+     * 可能由**检测线程**触发，实现需自行保证线程安全；不要在里面做重活。
+     * 与 [onHit] 的区别：这个带稳定 `code`，适合直接上报风控。
+     */
+    val onEvent: ((SecurityEvent) -> Unit)? = null,
+    /**
+     * 兼容回调（旧接口）：只给 [SecurityHit]，没有稳定 code。
+     *
+     * 新接入方请用 [onEvent]；两者同时配置时会各收到一次。
+     */
     val onHit: ((SecurityHit) -> Unit)? = null,
+    /**
+     * 诊断模式：输出「检测了什么、为什么没命中」的日志，供接入方排障。
+     *
+     * 默认关。打开后 release 包也会打 `security diag:` 日志（含 native 可用性、
+     * 启用的检测项、匿名段数量等），**仅供接入调试**，上线前应关闭。
+     */
+    val diagnosticMode: Boolean = false,
 )

@@ -122,6 +122,15 @@ object SecurityGuard {
     @JvmStatic
     fun securityEvents(): List<String> = engine?.recentEvents().orEmpty()
 
+    /**
+     * 最近的安全事件（结构化版本，带稳定 `code`，适合直接上报）。
+     *
+     * 与 [securityEvents] 的区别：那个是给人看的字符串，这个是给系统对接的；
+     * 上报口径应以 `code` 为准（文案会改）。
+     */
+    @JvmStatic
+    fun events(): List<SecurityEvent> = engine?.events().orEmpty()
+
     /** 进入前台：立即检测一次并重置退避（由生命周期回调调用）。 */
     @JvmStatic
     fun onForeground() {

@@ -1,10 +1,11 @@
 import com.example.fragmject.convention.loadConfigProperties
-import java.security.KeyStore
-import java.security.MessageDigest
 import java.util.Properties
+
 
 plugins {
     id("fragmject.android.application")
+    // 安全库宿主配置：构建期注入 BuildConfig.EXPECTED_SIG_SHA256（不再手写 40 行）
+    id("fragmject.security.config")
     id("fragmject.android.compose")
     id("fragmject.android.hilt")
     // consumer 侧：提供 :app:generateBaselineProfile，并把生成的 profile 落到
@@ -26,38 +27,6 @@ val keystoreProperties = Properties().apply {
     if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) }
 }
 
-/**
- * 从签名 keystore 计算证书 SHA-256（大写十六进制），用于运行期「APK 签名校验」。
- *
- * 为什么在构建期算：
- * - 摘要属于「产物的事实」，写死在源码常量里换证书/渠道重签就会过期；
- * - 但也不能让 native 或运行时自行取证（攻击者改包即可同时改掉校验目标）。
- *   把「期望值」编译进 dex 是最直接的对照基准。
- *
- * 失败时返回空串（无 keystore / 别名或密码不对 / 文件缺失）→ 运行期视为「不启用签名校验」，
- * 构建继续。这样本地无 keystore 的机器、CI 打包都不会被硬依赖卡住。
- */
-fun signingCertSha256(): String {
-    val storePath = keystoreProperties.getProperty("storeFile") ?: return ""
-    val alias = keystoreProperties.getProperty("keyAlias") ?: return ""
-    val storePassword = keystoreProperties.getProperty("storePassword") ?: return ""
-    val store = file(storePath)
-    if (!store.exists()) return ""
-
-    // JKS / PKCS12 都试一遍：扩展名不可靠，直接按类型探测更稳
-    val keyStore = listOf("JKS", "PKCS12").firstNotNullOfOrNull { type ->
-        runCatching {
-            KeyStore.getInstance(type).apply { load(store.inputStream(), storePassword.toCharArray()) }
-        }.getOrNull()
-    } ?: return ""
-
-    val cert = runCatching { keyStore.getCertificate(alias) }.getOrNull() ?: return ""
-    return MessageDigest.getInstance("SHA-256")
-        .digest(cert.encoded)
-        .joinToString("") { "%02X".format(it.toInt() and 0xFF) }
-}
-
-val expectedSigSha256: String = signingCertSha256()
 
 android {
     namespace = "com.example.fragmject.app"
@@ -84,9 +53,8 @@ android {
         } else {
             "com.example.fragmject.app.FragmjectApplication"
         }
-        // 运行期签名校验的期望值：空串 = 不启用（见 SecurityIntegrityChecks.verifySignature）。
-        // 多渠道重签时可在值里用逗号分隔多个证书摘要（宿主侧 SecurityConfig 按逗号拆分）。
-        buildConfigField("String", "EXPECTED_SIG_SHA256", "\"$expectedSigSha256\"")
+        // 签名期望值由 `fragmject.security.config` 插件注入 BuildConfig.EXPECTED_SIG_SHA256；
+        // 取不到证书时注入空串（运行期 = 不启用签名校验），构建不会失败。
     }
 
     buildFeatures {

@@ -21,6 +21,13 @@ data class SecurityHit(
     val reason: String,
     /** 严重级别；决定是否终止进程。 */
     val severity: Severity,
+    /**
+     * 稳定标识（见 [SecurityEvent] 的 code 表）。
+     *
+     * 与 [reason] 分开的原因：文案会改，上报口径不能改。
+     * 默认 `generic` 只用于调用方自造的命中（例如测试或宿主自定义检测）。
+     */
+    val code: String = "generic",
 ) {
     /**
      * 去重键：用于 WARN 级日志去重（同一问题只记一次）。

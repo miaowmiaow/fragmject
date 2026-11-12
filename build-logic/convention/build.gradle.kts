@@ -52,6 +52,11 @@ gradlePlugin {
             id = libs.plugins.fragmject.kotlin.serialization.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectKotlinSerializationPlugin"
         }
+        register("securityConfig") {
+            // 宿主侧注入签名摘要的插件；id 硬编码，避免与其它 fragmject.* 访问器前缀冲突
+            id = "fragmject.security.config"
+            implementationClass = "com.example.fragmject.convention.FragmjectSecurityConfigPlugin"
+        }
         register("androidHilt") {
             id = libs.plugins.fragmject.android.hilt.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectAndroidHiltPlugin"

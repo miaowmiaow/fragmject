@@ -67,5 +67,9 @@ class SecurityPolicyTest {
         assertEquals(emptySet<String>(), config.expectedSignatureSha256)
         // 反 dump 默认开启：收紧 /proc 权限是「做比不做好」的动作，且有配置可回滚
         assertTrue(config.antiDump)
+        // 检测项默认全开：老接入方不传 checks 时行为不变
+        assertEquals(SecurityCheck.ALL, config.checks)
+        // 诊断模式默认关：避免线上多打日志
+        assertFalse(config.diagnosticMode)
     }
 }

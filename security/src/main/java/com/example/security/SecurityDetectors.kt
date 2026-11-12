@@ -38,6 +38,7 @@ package com.example.security
  *
  * @param includePortScan 本轮是否执行端口扫描（由调用方按时间降频决定）。
  * @param includeCrc      本轮是否执行 CRC 校验（由调用方按时间降频决定）。
+ * @param includeInjectionScan 本轮是否执行「重量级注入扫描」（解析 maps 的 Frida 特征与匿名段）。
  */
 internal fun detectHit(
     facts: SecurityFacts,
@@ -45,11 +46,23 @@ internal fun detectHit(
     config: SecurityConfig,
     includePortScan: Boolean,
     includeCrc: Boolean,
-): SecurityHit? = detectDebugHit(facts, native)
-    ?: detectFridaHit(native, config)
-    ?: detectIntegrityHit(native, includeCrc)
-    ?: detectPortHit(facts, includePortScan)
-    ?: detectEnvironmentHit(facts, native, config)
+    includeInjectionScan: Boolean = true,
+): SecurityHit? {
+    // 按「启用的检测维度」逐项短路：裁掉的项不执行、也不产生事件（省掉对应 native 调用）
+    if (SecurityCheck.DEBUGGER in config.checks) {
+        detectDebugHit(facts, native)?.let { return it }
+    }
+    if (SecurityCheck.INJECTION in config.checks) {
+        detectFridaHit(native, config, includeInjectionScan)?.let { return it }
+    }
+    if (SecurityCheck.LIB_CRC in config.checks) {
+        detectIntegrityHit(native, includeCrc)?.let { return it }
+    }
+    if (SecurityCheck.PORT_SCAN in config.checks) {
+        detectPortHit(facts, includePortScan)?.let { return it }
+    }
+    return detectEnvironmentHit(facts, native, config)
+}
 
 /**
  * 1-2：调试器检测（CRITICAL）。
@@ -60,11 +73,15 @@ internal fun detectDebugHit(facts: SecurityFacts, native: NativeChecks): Securit
     if (native.available) {
         val tracerPid = native.readTracerPid()
         if (tracerPid > 0) {
-            return SecurityHit("检测到 Native 调试器附加（TracerPid=$tracerPid）", Severity.CRITICAL)
+            return SecurityHit(
+                reason = "检测到 Native 调试器附加（TracerPid=$tracerPid）",
+                severity = Severity.CRITICAL,
+                code = "debugger.native",
+            )
         }
     }
     if (facts.isDebuggerConnected() || facts.waitingForDebugger()) {
-        return SecurityHit("检测到 Java 层调试器（JDWP）", Severity.CRITICAL)
+        return SecurityHit("检测到 Java 层调试器（JDWP）", Severity.CRITICAL, code = "debugger.java")
     }
     return null
 }
@@ -78,24 +95,27 @@ internal fun detectDebugHit(facts: SecurityFacts, native: NativeChecks): Securit
 internal fun detectFridaHit(
     native: NativeChecks,
     config: SecurityConfig,
+    includeScan: Boolean = true,
 ): SecurityHit? {
-    if (native.available && native.findFridaInMaps() > 0) {
-        return SecurityHit("检测到 Frida 注入特征（内存映射）", Severity.CRITICAL)
+    // 重量级部分（解析 maps）按降频执行；线程名/落地文件很便宜，每轮都查
+    if (includeScan && native.available && native.findFridaInMaps() > 0) {
+        return SecurityHit("检测到 Frida 注入特征（内存映射）", Severity.CRITICAL, code = "injection.frida_maps")
     }
     if (hasFridaThread(native)) {
-        return SecurityHit("检测到 Frida 特征线程", Severity.CRITICAL)
+        return SecurityHit("检测到 Frida 特征线程", Severity.CRITICAL, code = "injection.frida_thread")
     }
     if (hasFridaFile(native)) {
-        return SecurityHit("检测到 Frida 落地文件", Severity.CRITICAL)
+        return SecurityHit("检测到 Frida 落地文件", Severity.CRITICAL, code = "injection.frida_file")
     }
 
-    if (native.available) {
+    if (includeScan && native.available) {
         // 带上实际段数：调 anonExecThreshold 时先看这个数字，比「命中/未命中」有用得多
         val segments = native.countAnonymousExecSegments()
         if (segments > config.anonExecThreshold) {
             return SecurityHit(
-                "检测到异常匿名可执行内存段（${segments} 段，阈值 ${config.anonExecThreshold}）",
-                Severity.CRITICAL,
+                reason = "检测到异常匿名可执行内存段（${segments} 段，阈值 ${config.anonExecThreshold}）",
+                severity = Severity.CRITICAL,
+                code = "injection.anon_segment",
             )
         }
     }
@@ -107,7 +127,11 @@ internal fun detectIntegrityHit(native: NativeChecks, includeCrc: Boolean): Secu
     if (!includeCrc) return null
     if (!native.available) return null
     if (native.verifyLibcTextCrc() != CRC_MISMATCH) return null
-    return SecurityHit("检测到 libc 代码段被篡改（疑似 inline hook）", Severity.CRITICAL)
+    return SecurityHit(
+        "检测到 libc 代码段被篡改（疑似 inline hook）",
+        Severity.CRITICAL,
+        code = "integrity.libc_crc",
+    )
 }
 
 /** 8：端口扫描（CRITICAL），只在 includePortScan 为 true（60s 降频）时执行，仅覆盖 frida-server 形态。 */
@@ -116,7 +140,11 @@ internal fun detectPortHit(facts: SecurityFacts, includePortScan: Boolean): Secu
     // 而且「本轮不做」与「做了但没命中」是两种语义，分开读更清楚。
     if (!includePortScan) return null
     if (!isFridaPortOpen(facts)) return null
-    return SecurityHit("检测到 Frida Server 监听端口（27042-27052）", Severity.CRITICAL)
+    return SecurityHit(
+        "检测到 Frida Server 监听端口（27042-27052）",
+        Severity.CRITICAL,
+        code = "injection.port",
+    )
 }
 
 /**
@@ -130,11 +158,13 @@ internal fun detectEnvironmentHit(
     native: NativeChecks,
     config: SecurityConfig,
 ): SecurityHit? {
-    if (config.rootAction != Action.IGNORE && hasRootSignals(facts, native)) {
-        return SecurityHit("检测到 Root 环境", severityOf(config.rootAction))
+    val rootEnabled = SecurityCheck.ROOT in config.checks && config.rootAction != Action.IGNORE
+    if (rootEnabled && hasRootSignals(facts, native)) {
+        return SecurityHit("检测到 Root 环境", severityOf(config.rootAction), code = "env.root")
     }
-    if (config.emulatorAction != Action.IGNORE && hasEmulatorSignals(facts)) {
-        return SecurityHit("检测到模拟器环境", severityOf(config.emulatorAction))
+    val emulatorEnabled = SecurityCheck.EMULATOR in config.checks && config.emulatorAction != Action.IGNORE
+    if (emulatorEnabled && hasEmulatorSignals(facts)) {
+        return SecurityHit("检测到模拟器环境", severityOf(config.emulatorAction), code = "env.emulator")
     }
     return null
 }

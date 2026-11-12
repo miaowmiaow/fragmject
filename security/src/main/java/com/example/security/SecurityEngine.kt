@@ -78,6 +78,10 @@ internal class SecurityEngine(
     @Volatile
     private var lastCrcCheckMs = 0L
 
+    /** 上次「重量级注入扫描」时间戳，用于按时间降频。 */
+    @Volatile
+    private var lastInjectionScanMs = 0L
+
     /** 上一轮的 WARN 去重键（见 [SecurityHit.dedupeKey]）；同一键不重复记录。 */
     @Volatile
     private var lastWarnKey: String? = null
@@ -89,7 +93,7 @@ internal class SecurityEngine(
      * 内存里留一小段历史，配合 [SecurityGuard.securityEvents] 导出，是成本最低的可观测性。
      */
     private val eventLock = Any()
-    private val recentEvents = ArrayDeque<Event>()
+    private val recentEvents = ArrayDeque<SecurityEvent>()
 
     /**
      * 后台检测线程：仅在真正启动后才创建，Debug / 跳过变体不产生任何开销。
@@ -140,13 +144,13 @@ internal class SecurityEngine(
         // 3) 先验签：未配置期望摘要时立即返回 true，不产生开销；
         //    配置了则是一次 PackageManager 查询（毫秒级），换「无法用 manifest 绕过」是值得的。
         if (!verifySignature(facts, config)) {
-            block(SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL))
+            block(SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL, code = "integrity.signature"))
             return
         }
 
         // 4) 生产包被标记为可调试：manifest 被改过（apktool 常干的事），直接阻断
         if (isDebuggableApp(context)) {
-            block(SecurityHit("生产包被标记为可调试（疑似改包）", Severity.CRITICAL))
+            block(SecurityHit("生产包被标记为可调试（疑似改包）", Severity.CRITICAL, code = "tamper.debuggable"))
             return
         }
 
@@ -156,6 +160,10 @@ internal class SecurityEngine(
 
         // 反 dump（可做部分）：尽早执行——越早把 /proc 权限收紧，暴露窗口越小
         applyAntiDump()
+
+        // 诊断模式：把「启用了什么、native 是否可用、签名是否已配置」打出来，
+        // 这是接入方排查「为什么没生效」最快的一条线索。
+        logDiagnostics()
 
         // start() 的契约是「主线程调用」：
         // - 唯一调用点 Application.attachBaseContext 由 ActivityThread 在主线程执行；
@@ -196,6 +204,23 @@ internal class SecurityEngine(
 
         handler.removeCallbacks(checkTask)
         handler.post(checkTask)
+    }
+
+    /**
+     * 诊断模式输出（默认关）。
+     *
+     * 用 `Log.e` 而不是 `Log.i`：release 会裁剪 v/d/i/w，诊断信息恰恰要在 release 包里可见。
+     * 内容只含「配置与能力状态」，不含用户数据。
+     */
+    private fun logDiagnostics() {
+        if (!config.diagnosticMode) return
+        Log.e(
+            SecurityGuard.TAG,
+            "security diag: checks=${config.checks.joinToString(",") { it.name }} " +
+                "native=${native.available} antiDump=${config.antiDump} " +
+                "signature=${config.expectedSignatureSha256.isNotEmpty()} " +
+                "buildType=${config.buildType.ifEmpty { "<unset>" }}",
+        )
     }
 
     /**
@@ -254,8 +279,16 @@ internal class SecurityEngine(
      */
     fun recentEvents(): List<String> = synchronized(eventLock) {
         val format = SimpleDateFormat("HH:mm:ss", Locale.US)
-        recentEvents.map { "${format.format(Date(it.at))} ${it.hit.severity} ${it.hit.reason}" }
+        recentEvents.map { "${format.format(Date(it.timestampMillis))} ${it.severity} ${it.reason}" }
     }
+
+    /**
+     * 最近的安全事件（结构化，时间正序，最多 [MAX_EVENTS] 条）。
+     *
+     * 与 [recentEvents] 的区别：这里给的是带稳定 `code` 的对象，适合接入上报；
+     * 上面的字符串版只用于展示/导出给用户。
+     */
+    fun events(): List<SecurityEvent> = synchronized(eventLock) { recentEvents.toList() }
 
     /**
      * 进入后台：暂停轮询。
@@ -292,9 +325,8 @@ internal class SecurityEngine(
         blockReason = hit.reason
         // 用 Log.e 而不是 Log.w：release 的 proguard 规则把 Log.v/d/i/w 全部当作无副作用裁剪掉了，
         // 用 w 会导致「线上误杀时没有任何日志」，排查无从下手。e 不在裁剪列表内。
-        Log.e(SecurityGuard.TAG, "security check hit: ${hit.reason}")
+        Log.e(SecurityGuard.TAG, "security check hit: [${hit.code}] ${hit.reason}")
         record(hit)
-        config.onHit?.invoke(hit)
 
         handler.postDelayed({
             // 先 native SIGKILL（不可捕获/不可 hook），无论它成功与否都必须执行 Java 兜底：
@@ -321,23 +353,34 @@ internal class SecurityEngine(
     fun warn(hit: SecurityHit) {
         if (lastWarnKey == hit.dedupeKey) return
         lastWarnKey = hit.dedupeKey
-        Log.e(SecurityGuard.TAG, "security warn: ${hit.reason}")
+        Log.e(SecurityGuard.TAG, "security warn: [${hit.code}] ${hit.reason}")
         record(hit)
-        config.onHit?.invoke(hit)
     }
 
-    /** 写入环形缓冲；满则丢最旧的一条。 */
+    /**
+     * 记录命中：写环形缓冲 + 触发回调。
+     *
+     * 回调在这里统一触发（[block] 与 [warn] 都走这条路径），保证宿主无论从哪个入口
+     * 收到事件，拿到的东西都与 [events] 里的一致。
+     */
     private fun record(hit: SecurityHit) {
+        val event = SecurityEvent(
+            code = hit.code,
+            reason = hit.reason,
+            severity = hit.severity,
+            timestampMillis = System.currentTimeMillis(),
+        )
         synchronized(eventLock) {
             if (recentEvents.size >= MAX_EVENTS) {
                 recentEvents.removeFirst()
             }
-            recentEvents.addLast(Event(System.currentTimeMillis(), hit))
+            recentEvents.addLast(event)
         }
+        // 新接口：带稳定 code，适合直接上报
+        config.onEvent?.invoke(event)
+        // 旧接口：保持兼容（两者同时配置会各收一次，注释里已说明）
+        config.onHit?.invoke(hit)
     }
-
-    /** 环形缓冲元素：时间戳 + 命中。 */
-    private data class Event(val at: Long, val hit: SecurityHit)
 
     private companion object {
         /** 环形缓冲上限：够定位最近一次误杀，又不会常驻占内存。 */
@@ -366,8 +409,29 @@ internal class SecurityEngine(
             val crcCheckDue = (now - lastCrcCheckMs >= config.crcCheckIntervalMs).also {
                 if (it) lastCrcCheckMs = now
             }
+            // maps 解析（Frida 特征 / 匿名段）单独降频：稳态 CPU 的主要来源
+            val injectionScanDue = (now - lastInjectionScanMs >= config.injectionScanIntervalMs).also {
+                if (it) lastInjectionScanMs = now
+            }
 
-            val hit = detectHit(facts, native, config, includePortScan = portScanDue, includeCrc = crcCheckDue)
+            val startedNs = if (config.diagnosticMode) System.nanoTime() else 0L
+            val hit = detectHit(
+                facts = facts,
+                native = native,
+                config = config,
+                includePortScan = portScanDue,
+                includeCrc = crcCheckDue,
+                includeInjectionScan = injectionScanDue,
+            )
+            if (config.diagnosticMode) {
+                // 性能基线：诊断模式下打印单轮耗时（含 port/crc 的那一轮会明显更久）
+                val costMs = (System.nanoTime() - startedNs) / 1_000_000.0
+                Log.e(
+                    SecurityGuard.TAG,
+                    "security diag: round cost=${"%.2f".format(costMs)}ms " +
+                        "portScan=$portScanDue crc=$crcCheckDue hit=${hit?.code ?: "none"}",
+                )
+            }
             if (hit != null) {
                 if (hit.severity == Severity.CRITICAL) {
                     block(hit)
@@ -421,14 +485,14 @@ internal class SecurityEngine(
 
         return when {
             !verifySelfSoIntegrity(native, soFile) ->
-                SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL)
+                SecurityHit("安全组件完整性异常，应用即将关闭", Severity.CRITICAL, code = "integrity.self_so")
 
             // 第二道独立校验：`.rodata`（常量表）。与上一项互不替代，patch 任何一处仍会被另一处抓到
             !verifySelfSoDataIntegrity(native, soFile) ->
-                SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL)
+                SecurityHit("安全组件常量表异常，应用即将关闭", Severity.CRITICAL, code = "integrity.self_so_data")
 
             !verifyResourceIntegrity(facts, config) ->
-                SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL)
+                SecurityHit("关键资源完整性异常，应用即将关闭", Severity.CRITICAL, code = "integrity.resource")
 
             else -> null
         }

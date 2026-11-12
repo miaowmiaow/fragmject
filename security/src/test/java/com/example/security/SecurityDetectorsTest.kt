@@ -178,6 +178,33 @@ class SecurityDetectorsTest {
     }
 
     @Test
+    fun `关闭 INJECTION 后不再检测 Frida`() {
+        val native = FakeNative().apply { fridaThreads = 1 }
+        val config = SecurityConfig(checks = SecurityCheck.ALL - SecurityCheck.INJECTION)
+
+        assertNull(detectHit(FakeFacts(), native, config, false, false))
+    }
+
+    @Test
+    fun `关闭 ROOT 与 EMULATOR 后环境类完全不检测`() {
+        val native = FakeNative().apply { rootFiles = 1 }
+        val config = SecurityConfig(
+            checks = SecurityCheck.ALL - SecurityCheck.ROOT - SecurityCheck.EMULATOR,
+        )
+
+        assertNull(detectHit(FakeFacts(), native, config, false, false))
+    }
+
+    @Test
+    fun `命中带稳定 code`() {
+        val native = FakeNative().apply { tracerPid = 42 }
+
+        val hit = detectHit(FakeFacts(), native, SecurityConfig(), false, false)
+
+        assertEquals("debugger.native", hit?.code)
+    }
+
+    @Test
     fun `干净环境不命中`() {
         assertNull(detectHit(FakeFacts(), FakeNative(), SecurityConfig(), true, true))
     }

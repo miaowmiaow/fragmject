@@ -1,27 +1,25 @@
-import com.example.fragmject.convention.loadConfigProperties
-import java.util.Properties
+import java.nio.file.Files
+import java.util.zip.ZipFile
 
 plugins {
     id("com.android.library")
 }
 
 /**
- * 配置来源与 `:app` 一致：根目录 `config.properties`（唯一事实来源）。
+ * ============================ 配置解耦（对外交付的前提） ============================
+ * 本库不再读宿主工程根目录的 `config.properties`：那是**某个应用**的构建配置，
+ * 库被拷到别的工程后不一定存在、语义也未必一致。
  *
- * 但本模块同时要满足「可被拷到其他工程单独构建」，所以：
- * - 读取失败（文件不存在）不抛错，退回空 Properties；
- * - 每个字段都有内置默认值，缺键时用默认值，不硬失败。
+ * 现在版本号由库自己声明，需要临时覆盖时用 Gradle 属性（`-PsecurityMinSdk=23`），
+ * 覆盖项只影响本模块，不会反向污染宿主配置。
  *
- * 这样在本仓库里改 `compileSdkVersion` / `minSdkVersion` / `ndkVersion` / `cmakeVersion`
- * 一处即可同时作用于 `:app` 与 `:security`，不会再出现两边版本漂移。
+ * 数值来源：`compileSdk` 取「能编译通过的最高已知版本」，`minSdk` 由
+ * `InMemoryDexClassLoader`（API 26）决定，NDK/CMake 取本仓库验证过的版本。
  */
-val buildSettings: Properties = runCatching { loadConfigProperties() }.getOrElse { Properties() }
-
-fun configInt(key: String, fallback: Int): Int =
-    buildSettings.getProperty(key)?.toIntOrNull() ?: fallback
-
-fun configString(key: String, fallback: String): String =
-    buildSettings.getProperty(key)?.takeIf { it.isNotBlank() } ?: fallback
+val libCompileSdk: Int = providers.gradleProperty("securityCompileSdk").map(String::toInt).getOrElse(37)
+val libMinSdk: Int = providers.gradleProperty("securityMinSdk").map(String::toInt).getOrElse(26)
+val libNdkVersion: String = providers.gradleProperty("securityNdkVersion").getOrElse("28.2.13676358")
+val libCmakeVersion: String = providers.gradleProperty("securityCmakeVersion").getOrElse("3.22.1")
 
 /**
  * 运行期安全防护库（从 `:app` 搬出，供其他项目复用）。
@@ -39,15 +37,15 @@ fun configString(key: String, fallback: String): String =
  */
 android {
     namespace = "com.example.security"
-    // 来自 config.properties（:app 用同一份），缺键时回退到内置默认值
-    compileSdk = configInt("compileSdkVersion", 37)
+    // 库自身声明，不读宿主配置
+    compileSdk = libCompileSdk
 
     // native 编译在这里发生；版本同样取自 config.properties，与 SDK 版本一起维护
-    ndkVersion = configString("ndkVersion", "28.2.13676358")
+    ndkVersion = libNdkVersion
 
     defaultConfig {
-        // InMemoryDexClassLoader 需要 API 26+（config.properties 里也是 26）
-        minSdk = configInt("minSdkVersion", 26)
+        // InMemoryDexClassLoader 需要 API 26+
+        minSdk = libMinSdk
         // 宿主 R8 会重命名 JNI 类与公开 API，规则必须由库自带
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -61,7 +59,7 @@ android {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
             // 与本地安装版本保持一致，覆盖在 config.properties 的 cmakeVersion
-            version = configString("cmakeVersion", "3.22.1")
+            version = libCmakeVersion
         }
     }
 
@@ -78,4 +76,99 @@ android {
 dependencies {
     // 库只依赖 Android 框架；检测项通过 SecurityFacts 抽象，可在纯 JVM 上测试
     testImplementation(libs.junit)
+}
+
+// ============================================================================================
+// 公共 API 基线（对外交付后，破坏性改 API 必须在评审里显式可见）
+//
+// 为什么不用第三方插件：binary-compatibility-validator 需要联网拉依赖，而本仓库的
+// 构建要能在离线环境跑通。这里用 JDK 自带的 javap 导出 public 签名，做文本基线对比，
+// 足够抓住「删方法 / 改签名 / 改常量」这类真正的破坏，也不会引入版本管理负担。
+//
+// 用法：
+//   ./gradlew :security:apiDump     # API 变更后更新基线（把 security/api/security.api 一起提交）
+//   ./gradlew :security:apiCheck    # CI/本地校验：与基线不一致即失败
+// ============================================================================================
+
+/**
+ * 用 object 而不是脚本顶层函数：Gradle 配置缓存下，`doLast` 里调用脚本函数会因为
+ * 「脚本实例不可序列化」而报 `this$0 is null`（本任务实测踩到过）。
+ */
+object PublicApiDumper {
+    fun dump(aar: File): String {
+        val work = Files.createTempDirectory("security-api-").toFile()
+        try {
+            val classesJar = File(work, "classes.jar")
+            ZipFile(aar).use { zip ->
+                val entry = zip.getEntry("classes.jar") ?: error("AAR 内没有 classes.jar：$aar")
+                zip.getInputStream(entry).use { input -> classesJar.outputStream().use { input.copyTo(it) } }
+            }
+            // 只导出 public 签名；R 类与合成类不参与基线（随实现变化，不是契约）
+            val classNames = ZipFile(classesJar).use { zip ->
+                zip.entries().asSequence()
+                    .map { it.name }
+                    .filter { it.endsWith(".class") }
+                    .map { it.removeSuffix(".class").replace('/', '.') }
+                    .filterNot { it.startsWith("com.example.security.R") || it.contains("\$r8\$") }
+                    .sorted()
+                    .toList()
+            }
+            val javap = File(System.getProperty("java.home"), "bin/javap").absolutePath
+            val builder = StringBuilder()
+            classNames.forEach { name ->
+                val process = ProcessBuilder(javap, "-public", "-classpath", classesJar.absolutePath, name)
+                    .redirectErrorStream(true)
+                    .start()
+                val text = process.inputStream.bufferedReader().use { it.readText() }
+                process.waitFor()
+                builder.append(text.trim()).append('\n').append('\n')
+            }
+            return builder.toString().trim() + "\n"
+        } finally {
+            work.deleteRecursively()
+        }
+    }
+}
+
+val apiBaselineFile = layout.projectDirectory.file("api/security.api").asFile
+val securityAarFile = layout.buildDirectory.file("outputs/aar/security-release.aar").get().asFile
+
+val apiDump by tasks.registering {
+    group = "verification"
+    description = "导出 :security 的公共 API 基线（api/security.api）"
+    dependsOn("assembleRelease")
+    // 必须在这里就捕获成局部变量：`doLast` 里再访问脚本属性会报
+    // `this$0 is null`（配置缓存下脚本实例不可用，实测踩到）
+    val baseline = apiBaselineFile
+    val aar = securityAarFile
+    inputs.file(aar)
+    outputs.file(baseline)
+    doLast {
+        baseline.parentFile.mkdirs()
+        baseline.writeText(PublicApiDumper.dump(aar))
+        logger.lifecycle("公共 API 基线已更新：${baseline.absolutePath}")
+    }
+}
+
+val apiCheck by tasks.registering {
+    group = "verification"
+    description = "校验 :security 的公共 API 是否与基线一致"
+    dependsOn("assembleRelease")
+    val baseline = apiBaselineFile
+    val aar = securityAarFile
+    inputs.file(aar)
+    inputs.file(baseline)
+    doLast {
+        check(baseline.exists()) {
+            "缺少 API 基线：${baseline.absolutePath}；首次请先运行 :security:apiDump 并提交该文件。"
+        }
+        val actual = PublicApiDumper.dump(aar)
+        if (actual.trim() != baseline.readText().trim()) {
+            throw GradleException(
+                "公共 API 与基线不一致（对外库的破坏性变更需要显式确认）。\n" +
+                    "若是有意变更：运行 ./gradlew :security:apiDump 并提交 api/security.api。",
+            )
+        }
+        logger.lifecycle("公共 API 与基线一致")
+    }
 }

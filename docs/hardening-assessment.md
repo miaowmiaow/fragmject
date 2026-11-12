@@ -890,7 +890,25 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 
 **仍未做**：内存中 dex 的分片/按需解密（减少一次性暴露窗口）、对 root 脱壳的对抗（属 SO 加壳范畴，成本高收益低）。
 
-### 10.8 门禁与验证
+### 10.8 库化改造（对外交付准备，2026-11-12）
+
+把 `:security` 从「应用内模块」推进到「可交付 SDK」。本轮完成：
+
+| 项 | 结果 |
+|---|---|
+| **配置解耦** | 库不再读宿主 `config.properties`（那是某个应用的配置）；改为库自身常量 + `-PsecurityCompileSdk/MinSdk/NdkVersion/CmakeVersion` 覆盖 |
+| **Java 友好** | `SecurityConfig` 加 `@JvmOverloads`（Java 可 `new SecurityConfig()`）；`SecurityGuard.install(context, config)` 保持 `@JvmStatic/@JvmOverloads`，Java 侧可 `install(this)` |
+| **签名摘要注入插件** | 新增 `fragmject.security.config` 插件：读 `keystore.properties` → 算证书 SHA-256 → 注入 `BuildConfig.EXPECTED_SIG_SHA256`；宿主从「抄 40 行」变成「加一行 `id(...)`」。取不到证书注入空串并告警，不阻断构建 |
+| **检测项开关** | `SecurityConfig.checks: Set<SecurityCheck>`（DEBUGGER / INJECTION / LIB_CRC / PORT_SCAN / ROOT / EMULATOR，默认全开） |
+| **结构化事件** | 新增 `SecurityEvent(code, reason, severity, timestampMillis)` + `SecurityConfig.onEvent` + `SecurityGuard.events()`；`code` 是稳定上报口径（`debugger.native` / `injection.frida_maps` / `integrity.signature` …），文案可变而 code 不变 |
+| **API 基线门禁** | `:security:apiDump` / `:security:apiCheck`（javap 导出 public 签名，基线 `security/api/security.api`，391 行）；破坏性改 API 必须显式更新基线 |
+| **诊断模式** | `SecurityConfig.diagnosticMode`：启动打印「启用了什么 / native 可用 / 签名是否配置」，每轮打印耗时与命中 code |
+| **性能回归修复** | 诊断模式暴露：每轮解析 3 次 maps（Frida / 匿名段 / root 注入），实测 **13~37 ms/轮**。新增 `injectionScanIntervalMs`（默认 5 s）对 maps 类检查降频，线程名/落地文件仍每轮；稳态降到 **5~8 ms/轮**（首轮含端口扫描 177 ms） |
+
+**未做（按决定暂缓）**：`maven-publish` 与对外 README（等库完全验证后再做）；
+CI 版本矩阵（需先给 release 打开 x86_64 ABI，当前只有 arm64 变体，可先在本地 AVD 跑）。
+
+### 10.9 门禁与验证
 
 | 项 | 结果 |
 |---|---|

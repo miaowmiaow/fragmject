@@ -807,7 +807,20 @@ E AppSecurity: security check hit: 生产包被标记为可调试（疑似改包
 | lint 1 条 `UnsafeDynamicallyLoadedCode` | 在 `loadByPath` 上 `@SuppressLint` 并说明路径来源，lint 现为 **0 issue** |
 | `TAG` 仍是历史值 `AppSecurityGuard` | 统一为 **`AppSecurity`**（日志过滤命令同步更新；历史实测记录保留旧值） |
 
-### 10.4 门禁与验证
+### 10.4 壳 × 安全库交叉验证（2026-11-12，模拟器 API 37）
+
+评审修复后重新打壳并做两组交叉验证，确认两层拦截互不干扰：
+
+| 场景 | 构造方式 | 实测 | 结论 |
+|---|---|---|---|
+| 正常壳包 | 直接安装 `app-release-shell.apk` | `shell dex check ok` / `payload sum ok` / `registered 12 methods` / 仅 `security warn: 检测到模拟器环境`，进程存活 | ✅ 壳与安全库共存正常 |
+| 壳包被改签 | 用另一张证书重签壳包（其余不变） | `security check hit: APK 签名异常，应用即将关闭` → 6s 内 `pid` 为空 | ✅ H1 在壳内依然生效 |
+| 壳 dex 被替换但**签名正确** | 改 `classes.dex` 追加 1 字节 → 用正式证书重签（H1 会放行） | `shell dex crc mismatch: actual=51af34c5 expected=7e5e8f17` → `shell dex integrity check failed` → 进程崩溃（fail-closed） | ✅ 壳自校验独立于 H1 |
+
+第三条是关键：**改壳 dex 用正式证书重签可以骗过 H1，但骗不过壳自己的 CRC 校验**；
+反过来改签包（壳 dex 不动）骗不过 H1。两者覆盖面互补。
+
+### 10.5 门禁与验证
 
 | 项 | 结果 |
 |---|---|

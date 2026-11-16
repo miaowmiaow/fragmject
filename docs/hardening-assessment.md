@@ -252,7 +252,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 - 删除依赖旧门禁的 4 个回归用例；`SecurityPolicyTest` 去掉 `debugBypass` 断言。
 - `security/api/security.api` 通过 `:security:apiDump` 重新生成。
 
-**已知影响与测量结论**：
+**已知影响与测量结论**（完整记录见 §10.20）：
 
 - **采集不受阻断**（模拟器，`generateBaselineProfile`，2026-11-16）：`nonMinifiedRelease` 安装了防护，但采集流程正常完成，`BaselineProfileGenerator.generate` 无失败；日志中只有模拟器的 `security warn: [env.emulator]`，没有 `integrity.signature` 命中，也没有 `jniKillSelf`。匿名可执行段检查的结果在 release 下不打日志，只能间接推断未超阈值。
 - **采集会改写已跟踪文件**：`app/src/release/generated/baselineProfiles/{baseline,startup}-prof.txt` 每次采集都会被覆盖，产生约 5 万行 diff。提交前需要人工确认，不应随采集一并入库。
@@ -377,7 +377,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 |---|---|
 | `security.cpp` | 新增 `countFridaThreads()` / `countFridaFiles()` / `countRootFiles()`：特征表全部搬到 native，Kotlin 只拿命中数 |
 | `security.cpp` | 抽出 `verifySectionCrc(path, section)`，`.text` 与 `.rodata` 共用；新增 `verifySelfSoDataCrc` |
-| `security.cpp` | JNI 注册从 8 个方法扩到 **12 个**（新增 3 个扫描 + 1 个 `.rodata` 校验） |
+| `security.cpp` | JNI 注册从 8 个方法扩到 **12 个**（新增 3 个扫描 + 1 个 `.rodata` 校验）；此后 `countPltHooks`（GOT 劫持检测，提交 `11b4e621`）与 `verifyApkSignature`（APK 签名校验，提交 `d6710941`）陆续加入，**当前为 15 个**，以 `JNI_OnLoad` 日志为准 |
 | `SecurityNative` / `NativeChecks` | 同步 4 个新方法；接口化便于单测 |
 | `SecurityEnvironmentChecks` | 改为调用 native 命中数；Kotlin 侧删除 `FRIDA_THREAD_SIGNATURES` / `FRIDA_FILE_SIGNATURES` / `ROOT_FILE_PATHS` / `MAGISK_PATHS` 四张表 |
 | `SecuritySignatures.kt` | 只剩 `FRIDA_PORTS`（Java 建 socket 需要）与 `ROOT_APP_PACKAGES`（PackageManager 查询需要） |
@@ -389,7 +389,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 
 | 检查点 | 实测 | 结论 |
 |---|---|---|
-| JNI 注册数 | `JNI_OnLoad: registered 12 methods` | ✅ |
+| JNI 注册数 | `JNI_OnLoad: registered 12 methods`（本次验收时的版本；当前版本为 15，见 2026-11-16 核对） | ✅ |
 | `.rodata` 校验执行 | `self so .rodata crc file=5b082546 mem=5b082546 size=15820` | ✅ |
 | dex 中特征串 | `frida-server` / `gum-js-loop` / `pool-frida` / `zygisk` / `/data/adb/magisk` / `/system/bin/su` **全部 0 命中**（改前可从 Java 表里读到） | ✅ |
 | 真机无副作用 | 启动 572ms、`warn=0`、`hit=0`、进程存活 | ✅ |
@@ -1374,3 +1374,33 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
 **过程中的两个教训**
 1. 用 `grep BUILD` 判断门禁结果是错误的：一次运行中单测 FAILED 后仍打印了 `BUILD SUCCESSFUL`（来自后续任务）。改为以退出码为准。
 2. 新增的 reason 文案移除 `TracerPid=` 字面量后，一条测试断言依赖了它。断言应检查稳定 `code` 与数值，而不是文案。
+
+### 10.20 ML Kit 修复与启动基准结论（2026-11-16）
+
+**一、添加账户页 NPE（release 包）**
+
+- **现象**：release 包进入添加账户页（默认扫码模式）即崩溃，`NullPointerException` 发生在 `BarcodeScanning.getClient`。
+- **根因（已由 mapping 证实）**：Firebase 组件发现按方法名 `getComponents` 反射调用注册类（`BarcodeRegistrar`、`VisionCommonRegistrar`、`CommonComponentRegistrar`）。R8 把这些方法名改为混淆名，发现机制找不到方法，返回空组件列表，ML Kit 内部字段为 null。
+- **为何库自带规则未覆盖**：ML Kit 的 AAR 自带 `proguard.txt`，只保护 proto 字段与 native 方法，不包含注册类的方法。
+- **修复**：`app/proguard-rules.pro` 新增 `com.google.mlkit.**`、`com.google.android.gms.internal.mlkit_vision_barcode.**`、`com.google.firebase.components.**` 的 keep 规则。
+- **验证**：mapping 中 `BarcodeRegistrar.getComponents` 不再被重命名（计数 0）；真机 PGEM10 连续两次进入添加页，进程存活，无 FATAL，扫码模式界面正常。
+- **未验证**：扫码对真实二维码的识别结果（只验证了页面不崩溃）。
+
+**二、签名阻断在 keep 规则改动后的复核**
+
+- 只读复核（不清数据）：设备安装包与构建产物 MD5 一致；dex 中 `SecurityNative` 与 `verifyApkSignature` 存在；mapping 中 15 个 native 方法名均未被改名；运行时日志 `JNI_OnLoad: registered 15 methods`，无 `UnsatisfiedLinkError`。
+- 端到端：用测试证书改签当前 release（14:01 构建）后安装，`security check hit: [integrity.signature]` → `jniKillSelf`（+1.2s）→ 进程消失。
+
+**三、Baseline Profile 采集**
+
+- 在模拟器（`nonMinifiedRelease`，安装了安全守卫）上 `generateBaselineProfile` 正常完成，只出现模拟器 WARN，未阻断。
+- 采集会整体改写 `app/src/release/generated/baselineProfiles/{baseline,startup}-prof.txt`（约 5 万行 diff），已随本次提交入库，后续再采集需人工确认。
+
+**四、启动基准**
+
+- Gradle 启动基准（`StartupBenchmark`）在真机 PGEM10 上不可用：perfetto `--background-wait` 无超时，厂商冻结器冻结测试进程后永久挂起。已终止并恢复设备设置。**不要在真机上再用该路径。**
+- 改用 `am start -S -W`（每次先强停），每条 adb 调用带超时：
+  - 真机 PGEM10（release，5 次）：TotalTime 706–747 ms，中位数约 717 ms。
+  - 模拟器（nonMinifiedRelease，5 次）：TotalTime 1360–2924 ms，中位数约 2169 ms。
+- 守卫的可观测同步部分：真机 `JNI_OnLoad` 到 `.rodata` 校验约 20 ms；模拟器约 233 ms，其中大部分是模拟器特有的 `env.emulator` Java 层检测，真机不存在该路径。
+- **局限**：没有不带守卫的对照组，守卫增量未测量，以上为上界估计；每组仅 5 次样本，只能看出稳定性，不足以做统计检验。

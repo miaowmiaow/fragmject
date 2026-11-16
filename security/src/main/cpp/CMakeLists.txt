@@ -31,8 +31,10 @@ target_compile_features(appsecurity PRIVATE cxx_std_17)
 
 # -O2：CRC32 与 maps 扫描在启动路径上执行，需要足够优化；
 # -Wall：保留常用告警，便于尽早发现未使用变量/类型转换等问题；
-# -fvisibility=hidden：动态注册后，jniXxx 实现函数不必出现在 .dynsym 里，
-#   只保留 JNI_OnLoad 一个对外符号（它带 JNIEXPORT）。这是动态注册的主要收益之一。
+# -fvisibility=hidden：动态注册后，jniXxx 实现函数不必出现在 .dynsym 里。
+#   实测（2026-11-16，release so）：本库自身代码导出的符号只有 JNI_OnLoad（带 JNIEXPORT）。
+#   .dynsym 中其余数百个导出符号是 C++ 运行时（_Z*、__cxa_*、std::*），来自 libc++ 静态链接，
+#   不是本库的代码。若要收敛这部分，需单独评估 STL 链接方式，目前未处理。
 target_compile_options(appsecurity PRIVATE -O2 -Wall -fvisibility=hidden)
 
 

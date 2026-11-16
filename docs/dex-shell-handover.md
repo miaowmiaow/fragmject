@@ -178,7 +178,7 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
    adb install -r $APK
    adb logcat -c && adb shell am start -n com.example.fragment.project/com.example.fragmject.app.MainActivity
    adb logcat -d -s DexShell:V FragmjectSecurity:V
-   # 期望：shell dex check ok / payload sum ok (N chunks) / registered 12 methods
+   # 期望：shell dex check ok / payload sum ok (N chunks) / registered 15 methods（2026-11-16 起；此前版本为 12）
    ```
 7. **冒烟 8 项**：首页列表与分页、登录与自动登录、收藏、搜索历史、WebView 详情、扫码、
    图片编辑、深链跳转（Nav3 typed routes）；
@@ -320,7 +320,7 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 | 载荷分片 | 2 片（约 1.8 MB + 1.8 MB 压缩后） |
 | 壳包 vs 常规包体积 | +36.7 KB（+0.3%） |
 | 冷启动（模拟器，5 次中位数） | 常规 933 ms / 壳包 984 ms（+51 ms，+5.5%） |
-| 正常启动日志 | `shell dex check ok` / `payload sum ok (2 chunks)` / `registered 12 methods` |
+| 正常启动日志 | `shell dex check ok` / `payload sum ok (2 chunks)` / `registered 15 methods`（2026-11-16 起） |
 | payload 篡改 | `payload sum mismatch` → 进程崩溃（fail-closed） |
 | 壳 dex 篡改 | `shell dex crc mismatch: actual=97e55d8f expected=38ee772d` → 崩溃 |
 | 回滚（壳包 → 常规包） | 同签名覆盖安装成功，数据保留 |

@@ -1285,3 +1285,28 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
 | 错误密码 | `无法打开 keystore（密码错误…）` 失败 |
 
 **仍需使用方注意**：密码不要写进 build 脚本，用 `-PsecurityStorePassword` 或 CI 环境变量传入。
+
+### 10.19 评审剩余项处理（2026-11-16）
+
+以下按评审清单逐项核对现状后处理。P0-1 按决定撤销（测试密钥入库是有意设计）。
+
+| 项 | 问题 | 处理 | 证据 |
+|---|---|---|---|
+| **P1-1** 降级绕过 | 降级后所有命中只告警，攻击者可 hook 检测使其抛异常来关掉全部阻断 | 降级只放松 `env.*` 与内部事件；`integrity./injection./debugger./tamper.` 命中始终阻断 | 单测 `核心类命中在降级期间仍阻断` |
+| **P1-2** native 静默缺失 | 阻止 so 加载即可关掉 native 检测，无任何信号 | 不可用记录 WARN 事件 `internal.native_unavailable`；新增 `SecurityConfig.requireNative`（true 则 CRITICAL 阻断）。判定抽为纯函数 `nativeUnavailableHit` | 单测 3 例；真机构造无 so 包：诊断输出 `native=false`，`load appsecurity failed, fallback to JVM checks` |
+| **P1-3** 日志泄露 | release 日志输出 reason 全文 | 日志只带稳定 `code`；文案走 `events()` / `onEvent` | 端口命中实测：`security check hit: [injection.port]` |
+| **P1-4** 库字符串未加密 | StringFog 只插桩 `com/example/fragmject/`，安全库不在范围内 | 新增插件 `fragmject.security.stringfog`，库自身构建插桩（默认开） | release dex：`injection.frida` 1→0，`frida` 3→0，`TracerPid=` 2→0 |
+| **P1-5** consumer 规则过宽 | `-keep class SecurityConfig { *; }` 等保留全部成员名，等于给攻击者开关清单 | 公开 API 不做 keep，只保留 JNI 桥 | 构建通过；枚举 name 来自构造字面量，不受影响 |
+
+**P1-4 未解决残留**：`const val` 字符串会被 Kotlin 直接内联为常量，ASM 插桩看不到。目前已知的是 `libappsecurity.so` 与 `/proc/self/fd` 这类**路径**常量。路径本身攻击者即可获知，不属于检测特征，影响有限，记为已知限制。
+
+**P0-2 / P0-3 未处理（需架构决策）**：
+- **P0-2** so 完整性缺构建期锚点：当前只校验 APK 内文件与内存一致，没有独立于 APK 的期望摘要；
+- **P0-3** 期望值与 `debugBypass`、`checks` 在客户端运行期可被 patch。
+需要服务端 attestation 或构建变体级的 no-op 实现，不能用小改动解决。
+
+**门禁**（以退出码核实，而非 grep 输出）：`:security:testDebugUnitTest` 45 例全绿；`detekt`、`apiCheck` 通过；release 壳包模拟器冒烟通过。
+
+**过程中的两个教训**
+1. 用 `grep BUILD` 判断门禁结果是错误的：一次运行中单测 FAILED 后仍打印了 `BUILD SUCCESSFUL`（来自后续任务）。改为以退出码为准。
+2. 新增的 reason 文案移除 `TracerPid=` 字面量后，一条测试断言依赖了它。断言应检查稳定 `code` 与数值，而不是文案。

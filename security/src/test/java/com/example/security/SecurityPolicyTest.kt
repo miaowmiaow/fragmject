@@ -2,6 +2,7 @@ package com.example.security
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -53,6 +54,41 @@ class SecurityPolicyTest {
         val hit = SecurityHit("检测到 Root 环境", Severity.WARN)
 
         assertEquals("检测到 Root 环境", hit.dedupeKey)
+    }
+
+    @Test
+    fun `核心类命中在降级期间仍阻断，环境类与内部事件放松`() {
+        assertTrue(SecurityHit("x", Severity.CRITICAL, code = "injection.frida_maps").isCoreCheck())
+        assertTrue(SecurityHit("x", Severity.CRITICAL, code = "integrity.libc_crc").isCoreCheck())
+        assertTrue(SecurityHit("x", Severity.CRITICAL, code = "debugger.native").isCoreCheck())
+        assertTrue(SecurityHit("x", Severity.CRITICAL, code = "tamper.debuggable").isCoreCheck())
+        assertFalse(SecurityHit("x", Severity.WARN, code = "env.root").isCoreCheck())
+        assertFalse(SecurityHit("x", Severity.WARN, code = "internal.degraded").isCoreCheck())
+    }
+
+    @Test
+    fun `native 可用时没有 native 相关命中`() {
+        assertNull(nativeUnavailableHit(available = true, requireNative = true))
+        assertNull(nativeUnavailableHit(available = true, requireNative = false))
+    }
+
+    @Test
+    fun `native 不可用默认产生 WARN 事件且不阻断`() {
+        val hit = nativeUnavailableHit(available = false, requireNative = false)
+        assertEquals("internal.native_unavailable", hit?.code)
+        assertEquals(Severity.WARN, hit?.severity)
+    }
+
+    @Test
+    fun `native 不可用且 requireNative 时 CRITICAL 阻断`() {
+        val hit = nativeUnavailableHit(available = false, requireNative = true)
+        assertEquals("internal.native_unavailable", hit?.code)
+        assertEquals(Severity.CRITICAL, hit?.severity)
+    }
+
+    @Test
+    fun `native 不可用默认只告警不阻断`() {
+        assertFalse(SecurityConfig().requireNative)
     }
 
     @Test

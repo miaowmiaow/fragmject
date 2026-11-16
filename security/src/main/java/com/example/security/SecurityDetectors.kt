@@ -77,7 +77,7 @@ internal fun detectDebugHit(facts: SecurityFacts, native: NativeChecks): Securit
         val tracerPid = native.readTracerPid()
         if (tracerPid > 0) {
             return SecurityHit(
-                reason = "检测到 Native 调试器附加（TracerPid=$tracerPid）",
+                reason = "检测到 Native 调试器附加（状态码=$tracerPid）",
                 severity = Severity.CRITICAL,
                 code = "debugger.native",
             )

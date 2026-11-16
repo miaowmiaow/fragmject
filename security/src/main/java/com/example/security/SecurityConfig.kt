@@ -141,4 +141,12 @@ data class SecurityConfig @JvmOverloads constructor(
      * 启用的检测项、匿名段数量等），**仅供接入调试**，上线前应关闭。
      */
     val diagnosticMode: Boolean = false,
+    /**
+     * 原生库（libfragmject_security.so）不可用时是否直接终止。
+     *
+     * 默认 false：记录 WARN 事件 `internal.native_unavailable`，JVM 侧检测照常工作。
+     * 设为 true：视为篡改，按 CRITICAL 阻断。阻止 so 加载即可关掉全部 native 检测，
+     * 宿主若确认 so 随包可靠，建议开启。
+     */
+    val requireNative: Boolean = false,
 )

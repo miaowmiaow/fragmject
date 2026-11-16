@@ -3,6 +3,8 @@ import java.util.zip.ZipFile
 
 plugins {
     id("com.android.library")
+    // 库自身的字符串插桩（检测特征串加密），见 FragmjectSecurityStringFogPlugin
+    id("fragmject.security.stringfog")
 }
 
 /**

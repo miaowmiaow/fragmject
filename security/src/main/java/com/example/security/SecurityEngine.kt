@@ -157,6 +157,7 @@ internal class SecurityEngine(
         // 5) native 库在跳过判定**之后**才加载：debug 包与采集变体不应产生任何 so 加载开销。
         //    加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
         native.load()
+        reportNativeAvailability()
 
         // 反 dump（可做部分）：尽早执行——越早把 /proc 权限收紧，暴露窗口越小
         applyAntiDump(config, native)
@@ -220,10 +221,10 @@ internal class SecurityEngine(
                 cause.javaClass.simpleName,
         )
         if (justDegraded) {
-            Log.e(SecurityGuard.TAG, "detection degraded to report-only (no blocking)")
+            Log.e(SecurityGuard.TAG, "detection degraded: env checks report-only, core checks still block")
             recorder.record(
                 SecurityHit(
-                    reason = "安全检测异常，已降级为只上报（不再阻断）",
+                    reason = "安全检测异常，环境类检测已降级为只上报（核心防护仍生效）",
                     severity = Severity.WARN,
                     code = "internal.degraded",
                 ),
@@ -231,8 +232,23 @@ internal class SecurityEngine(
         }
     }
 
+    /**
+     * 按 [nativeUnavailableHit] 的结果处理 native 可用性（阻断或记录）。
+     *
+     * 拆成独立方法：`start()` 已接近 detekt 的圈复杂度阈值，分支放在这里。
+     */
+    private fun reportNativeAvailability() {
+        val hit = nativeUnavailableHit(native.available, config.requireNative) ?: return
+        if (hit.severity == Severity.CRITICAL) {
+            block(hit)
+        } else {
+            recorder.record(hit)
+        }
+    }
+
     /** 一次成功检测会清零连续失败计数（偶发异常不应累积成降级）。 */
     private fun onDetectionSuccess() = health.onSuccess()
+
 
 
 
@@ -311,8 +327,10 @@ internal class SecurityEngine(
      * 该方法可能同时被轮询线程与完整性校验线程调用。
      */
     fun block(hit: SecurityHit) {
-        // 降级模式下只记录、不阻断：检测链路自身已不可信，不能拿它决定用户生死
-        if (degraded) {
+        // 降级只放松「环境类」判定。完整性 / 注入 / 调试器 / 篡改类命中始终阻断：
+        // 降级由检测异常触发，而异常可以被攻击者人为制造（hook 检测函数让它抛错），
+        // 不能借此关掉核心防护。
+        if (degraded && !hit.isCoreCheck()) {
             warn(hit)
             return
         }
@@ -320,7 +338,9 @@ internal class SecurityEngine(
         blockReason = hit.reason
         // 用 Log.e 而不是 Log.w：release 的 proguard 规则把 Log.v/d/i/w 全部当作无副作用裁剪掉了，
         // 用 w 会导致「线上误杀时没有任何日志」，排查无从下手。e 不在裁剪列表内。
-        Log.e(SecurityGuard.TAG, "security check hit: [${hit.code}] ${hit.reason}")
+        // 日志只带稳定 code：release 中原因文案会暴露检测细节（同机攻击者可据此定向绕过）。
+        // 文案通过 events() / onEvent 交给宿主，宿主自行决定是否展示或上报。
+        Log.e(SecurityGuard.TAG, "security check hit: [${hit.code}]")
         record(hit)
 
         handler.postDelayed({
@@ -348,7 +368,7 @@ internal class SecurityEngine(
     fun warn(hit: SecurityHit) {
         if (lastWarnKey == hit.dedupeKey) return
         lastWarnKey = hit.dedupeKey
-        Log.e(SecurityGuard.TAG, "security warn: [${hit.code}] ${hit.reason}")
+        Log.e(SecurityGuard.TAG, "security warn: [${hit.code}]")
         record(hit)
     }
 
@@ -479,6 +499,42 @@ internal class SecurityEngine(
  */
 internal fun shouldDegrade(failures: Int, limit: Int, alreadyDegraded: Boolean): Boolean =
     limit > 0 && failures >= limit && !alreadyDegraded
+
+/**
+ * native 库不可用时的判定（纯函数，便于单测）。
+ *
+ * - 可用：无命中；
+ * - 不可用且 [requireNative]：CRITICAL 阻断（视为篡改）；
+ * - 不可用且默认：WARN 事件，宿主可见，JVM 侧检测继续运行。
+ *
+ * 为什么必须可见：阻止 so 加载即可关掉 Frida / CRC / PLT 等全部 native 检测，
+ * 若只打一条日志，宿主与攻击者面对的都是「静默放行」。
+ */
+internal fun nativeUnavailableHit(available: Boolean, requireNative: Boolean): SecurityHit? {
+    if (available) return null
+    return if (requireNative) {
+        SecurityHit(
+            reason = "安全组件（native）不可用，应用即将关闭",
+            severity = Severity.CRITICAL,
+            code = "internal.native_unavailable",
+        )
+    } else {
+        SecurityHit(
+            reason = "安全组件（native）不可用，仅启用 JVM 侧检测",
+            severity = Severity.WARN,
+            code = "internal.native_unavailable",
+        )
+    }
+}
+
+/**
+ * 核心防护类命中：完整性 / 注入 / 调试器 / 篡改。
+ *
+ * 降级期间这些命中仍然阻断（见 [SecurityEngine.block]）；只有环境类（env.*）与内部事件放松。
+ */
+internal fun SecurityHit.isCoreCheck(): Boolean = CORE_CODE_PREFIXES.any { code.startsWith(it) }
+
+private val CORE_CODE_PREFIXES = listOf("integrity.", "injection.", "debugger.", "tamper.")
 
 /**
  * 退避策略：连续干净达到 [SecurityConfig.cleanRoundsToBackoff] 轮后把间隔翻倍，上限封顶。

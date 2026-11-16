@@ -26,7 +26,9 @@ class SecurityDetectorsTest {
 
         val hit = detectHit(facts, native, SecurityConfig(), includePortScan = false, includeCrc = false)
 
-        assertTrue(hit?.reason.orEmpty().contains("TracerPid=4242"))
+        // 断言稳定 code 与数值，而不是依赖文案（文案可以调整，code 是上报口径）
+        assertEquals("debugger.native", hit?.code)
+        assertTrue(hit?.reason.orEmpty().contains("4242"))
         assertEquals(Severity.CRITICAL, hit?.severity)
     }
 

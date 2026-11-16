@@ -9,6 +9,7 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.Variant
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -68,7 +69,13 @@ private const val DECODE_DESC = "(Ljava/lang/String;)Ljava/lang/String;"
 private const val MIN_CHARS = 4
 
 /** 只插桩本项目代码。 */
-private const val OWN_PACKAGE = "com/example/fragmject/"
+/**
+ * 插桩的包前缀。
+ * - `com/example/fragmject/`：应用自身（application / 普通 library 模块）；
+ * - `com/example/security/`：安全库自身。库的 AAR 不会被宿主的插桩任务触碰，
+ *   所以库的检测特征串必须在库自己的构建里加密（见 [configureStringFogForSecurityLibrary]）。
+ */
+private val OWN_PACKAGES = listOf("com/example/fragmject/", "com/example/security/")
 
 /** 不插桩的包 / 类。 */
 private val EXCLUDED_PREFIXES = listOf(
@@ -130,6 +137,34 @@ internal fun Project.configureStringFogForLibrary() {
     }
 }
 
+/**
+ * 安全库自身的插桩挂载点（由 `fragmject.security.stringfog` 调用）。
+ *
+ * 与普通 library 不同：默认开启（库的检测串是它的核心资产，不应依赖宿主是否打开开关）。
+ * `-PdisableStringFog=true` 可关闭（仅用于排查插桩问题）。
+ */
+internal fun Project.configureStringFogForSecurityLibrary() {
+    if (providers.gradleProperty("disableStringFog").map(String::toBoolean).getOrElse(false)) return
+    val key = providers.gradleProperty(PROP_KEY).map(String::toInt).getOrElse(DEFAULT_KEY)
+    extensions.getByType(LibraryAndroidComponentsExtension::class.java).onVariants { variant ->
+        variant.applyStringFog(key)
+    }
+}
+
+/**
+ * 安全库的字符串插桩插件（`fragmject.security.stringfog`）。
+ *
+ * 为什么是独立插件：`:security` 直接使用 `com.android.library`，不经过 `fragmject.android.library`，
+ * 之前库里的检测特征串一直是 dex 明文（实测 `injection.frida_*` 等命中码可直接 grep）。
+ */
+class FragmjectSecurityStringFogPlugin : Plugin<Project> {
+    override fun apply(target: Project) = with(target) {
+        pluginManager.withPlugin("com.android.library") {
+            configureStringFogForSecurityLibrary()
+        }
+    }
+}
+
 /** 开关关闭时返回 null（不注册任何 ASM 任务，零开销）。 */
 private fun Project.stringFogKeyOrNull(): Int? {
     val enabled = providers.gradleProperty(PROP_ENABLE).map(String::toBoolean).getOrElse(false)
@@ -159,7 +194,7 @@ abstract class FogVisitorFactory : AsmClassVisitorFactory<FogParameters> {
 
     override fun isInstrumentable(classData: ClassData): Boolean {
         val name = classData.className.replace('.', '/')
-        if (!name.startsWith(OWN_PACKAGE)) return false
+        if (OWN_PACKAGES.none { name.startsWith(it) }) return false
         if (EXCLUDED_PREFIXES.any { name.startsWith(it) }) return false
         if (EXCLUDED_NAME_PARTS.any { name.contains(it) }) return false
         return true

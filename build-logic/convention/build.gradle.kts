@@ -52,6 +52,11 @@ gradlePlugin {
             id = libs.plugins.fragmject.kotlin.serialization.get().pluginId
             implementationClass = "com.example.fragmject.convention.FragmjectKotlinSerializationPlugin"
         }
+        register("securityStringFog") {
+            // 安全库自身的字符串插桩（默认开启），见 FragmjectSecurityStringFogPlugin
+            id = "fragmject.security.stringfog"
+            implementationClass = "com.example.fragmject.convention.FragmjectSecurityStringFogPlugin"
+        }
         register("securityConfig") {
             // 宿主侧注入签名摘要的插件；id 硬编码，避免与其它 fragmject.* 访问器前缀冲突
             id = "fragmject.security.config"

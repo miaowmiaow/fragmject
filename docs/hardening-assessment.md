@@ -1252,3 +1252,36 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
 
 > 说明：更早章节里的 `AppSecurityGuard: ...` 日志片段是当时的真实输出，保留原样；
 > 2026-11-12 起 TAG 为 `AppSecurity`。
+
+### 10.18 签名来源显式化（库交付语义，2026-11-16）
+
+**背景**：仓库内的 `keystore.properties` / `keystore.key` 是有意入库的**测试密钥**。
+交付态是引用库、由使用方提供签名，因此插件**不得**默认读取仓库内的 keystore。
+
+**改动**（`fragmject.security.config`）
+
+| 项 | 之前 | 现在 |
+|---|---|---|
+| 签名来源 | 隐式读取根目录 `keystore.properties` | 必须显式：`securityConfig { certSha256 / keystoreFile / keyAlias / keystorePassword }` 或 `-P` 属性覆盖 |
+| 未配置 | 注入空串，构建照常通过（**静默关闭签名校验**） | 生产变体（非 debuggable）构建**失败**；debug 变体告警后放行 |
+| 配置有误（路径不存在 / 密码错 / 别名不存在 / 摘要格式错） | 静默降级为空串 | **直接失败**，报错说明具体原因 |
+| 失败时机 | — | task graph 就绪后，仅当图中包含该生产变体任务（如 `assembleRelease`）时失败 |
+
+**为什么不在配置阶段失败**：Gradle 配置时会为所有变体执行 `onVariants`，在那里抛异常会连
+`assembleDebug` 也拦住。这是实测踩到的，故改到 task graph 阶段。
+
+**本仓库**：`app/build.gradle.kts` 显式声明自己的测试密钥（行为与改动前一致）。
+
+**验证**
+
+| 场景 | 结果 |
+|---|---|
+| 带测试密钥配置，`assembleRelease` | `EXPECTED_SIG_SHA256` 与之前相同（`0768F702…C2AC`）；壳包模拟器冒烟全绿 |
+| `-PsecurityCertSha256=<同值>` 覆盖 | 构建通过 |
+| 移除 app 配置 + `assembleRelease` | `生产变体缺少签名期望值…（任务 :app:preReleaseBuild）` 构建失败 |
+| 移除 app 配置 + `assembleDebug` | 告警后 `BUILD SUCCESSFUL` |
+| `-PsecurityCertSha256=XYZ` | `格式错误（需要 64 位 hex…）` 失败 |
+| `-PsecurityKeystoreFile=/nonexistent/x.key` | `keystore 不存在` 失败 |
+| 错误密码 | `无法打开 keystore（密码错误…）` 失败 |
+
+**仍需使用方注意**：密码不要写进 build 脚本，用 `-PsecurityStorePassword` 或 CI 环境变量传入。

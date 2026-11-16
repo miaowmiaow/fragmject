@@ -1,3 +1,4 @@
+import com.example.fragmject.convention.FragmjectSecurityConfigExtension
 import com.example.fragmject.convention.loadConfigProperties
 import java.util.Properties
 
@@ -34,6 +35,14 @@ val dexShellEnabled = providers.gradleProperty("enableDexShell").map(String::toB
 val keystoreFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
     if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) }
+}
+
+// 安全库签名来源：本仓库显式声明自己的【测试密钥】（有意入库，仅测试用）。
+// 使用方工程应在自己的 build 脚本里配置 securityConfig，不要依赖任何仓库内的 keystore。
+configure<FragmjectSecurityConfigExtension> {
+    keystoreFile = keystoreProperties.getProperty("storeFile")
+    keyAlias = keystoreProperties.getProperty("keyAlias")
+    keystorePassword = keystoreProperties.getProperty("storePassword")
 }
 
 
@@ -75,7 +84,7 @@ android {
             providers.gradleProperty("enablePltCheck").map(String::toBoolean).getOrElse(false).toString(),
         )
         // 签名期望值由 `fragmject.security.config` 插件注入 BuildConfig.EXPECTED_SIG_SHA256；
-        // 取不到证书时注入空串（运行期 = 不启用签名校验），构建不会失败。
+        // 生产变体取不到签名来源时构建失败（见插件说明）。
     }
 
     buildFeatures {

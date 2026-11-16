@@ -3,127 +3,191 @@ package com.example.fragmject.convention
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.execution.TaskExecutionGraph
 import java.io.File
 import java.security.KeyStore
 import java.security.MessageDigest
-import java.util.Properties
 
 /**
- * `security` 库的宿主侧配置注入插件（`fragmject.security.config`）。
+ * `securityConfig { }` 扩展：宿主声明签名来源。
  *
- * ============================ 解决什么问题 ============================
- * 安全库的签名校验需要「构建期算出的证书 SHA-256」。之前这段逻辑写在
- * `app/build.gradle.kts` 里（约 40 行：读 keystore.properties → 探测 JKS/PKCS12 →
- * 取证书 → SHA-256 → buildConfigField）。对外交付后，**每个接入方都要抄一遍**，
- * 抄错一处（比如别名不对）就会静默关掉签名校验。
+ * 二选一：
+ * - [certSha256]：直接给证书 SHA-256（hex，可含冒号，多个用逗号分隔）；
+ * - [keystoreFile] + [keyAlias] + [keystorePassword]：从 keystore 计算。
  *
- * 抽成插件后，接入方只需：
+ * 密码不要写进仓库，推荐用 `-PsecurityStorePassword=...` 或 CI 环境变量传入。
+ * 命令行 `-P` 属性优先级高于扩展配置，便于 CI 覆盖。
+ */
+open class FragmjectSecurityConfigExtension {
+    var certSha256: String? = null
+    var keystoreFile: String? = null
+    var keyAlias: String? = null
+    var keystorePassword: String? = null
+}
+
+/**
+ * 宿主侧注入签名期望值的插件（`fragmject.security.config`）。
  *
- * ```kotlin
- * plugins { id("fragmject.security.config") }
- * ```
+ * ============================ 交付语义 ============================
+ * 签名期望值**必须由使用方显式提供**，插件不再默认读取任何仓库内的 keystore：
+ * - 没有配置签名来源时，非 debuggable 变体（release 等）**构建失败**；
+ * - debuggable 变体没有配置时只告警，运行期签名校验不启用；
+ * - 配置了来源但无法使用（文件不存在、密码错误、别名不存在、摘要格式错误）**一律失败**，
+ *   不允许静默降级为空串——那会让「以为开了签名校验，其实没开」。
  *
- * 插件会读取根目录 `keystore.properties`（`storeFile` / `keyAlias` / `storePassword`），
- * 算出证书摘要并注入 `BuildConfig.EXPECTED_SIG_SHA256`。
+ * 解析优先级：`-PsecurityCertSha256` → `-PsecurityKeystoreFile`（别名/密码同理）
+ * → `securityConfig { certSha256 }` → `securityConfig { keystoreFile }`。
  *
- * ============================ 失败语义 ============================
- * 取不到证书（无 keystore / 密码错误 / 别名不存在）时注入**空串**，构建继续：
- * 运行期 `SecurityConfig.expectedSignatureSha256` 为空即「不启用签名校验」。
- * 这样做的好处是本地无 keystore 的机器也能构建；风险是「以为开了其实没开」——
- * 因此插件会打一条 warning，且诊断模式（`diagnosticMode`）会在运行时显示 `signature=false`。
- *
- * ============================ 可覆盖项 ============================
- * - `-PsecurityCertSha256=<hex[,hex]>`：直接指定摘要（多渠道/外部传入时用），跳过度取；
- * - `-PsecurityKeystoreFile=<path>` / `-PsecurityKeyAlias=<alias>` / `-PsecurityStorePassword=<>`：
- *   覆盖 `keystore.properties` 中的对应项。
+ * 结果注入 `BuildConfig.EXPECTED_SIG_SHA256`（application 与 library 模块均支持）。
  */
 class FragmjectSecurityConfigPlugin : Plugin<Project> {
 
     override fun apply(target: Project) = with(target) {
-        val digest = resolveCertDigest()
-        if (digest.isEmpty()) {
-            logger.warn(
-                "[security] 未能从 keystore 解析证书摘要，BuildConfig.EXPECTED_SIG_SHA256 将为空。" +
-                    "运行期签名校验不会启用——生产包请检查 keystore.properties 或用 -PsecurityCertSha256 指定。",
-            )
-        } else {
-            logger.lifecycle("[security] 签名证书摘要: $digest")
-        }
-
-        applyToApplication(digest)
-        applyToLibrary(digest)
+        val config = extensions.create("securityConfig", FragmjectSecurityConfigExtension::class.java)
+        val digest: Lazy<String> = lazy { resolveCertDigest(config) }
+        // 非 debuggable 变体名（配置阶段记录，供 task graph 阶段判断）
+        val productionVariants = mutableSetOf<String>()
+        applyToApplication(digest, productionVariants)
+        applyToLibrary(digest, productionVariants)
+        failIfProductionTaskWithoutDigest(digest, productionVariants)
     }
 
     /** application 模块：把摘要写进所有变体的 BuildConfig。 */
-    private fun Project.applyToApplication(digest: String) {
+    private fun Project.applyToApplication(digest: Lazy<String>, productionVariants: MutableSet<String>) {
         extensions.findByType(ApplicationAndroidComponentsExtension::class.java) ?: return
         extensions.getByType(ApplicationAndroidComponentsExtension::class.java).onVariants { variant ->
+            if (!variant.debuggable) productionVariants += variant.name
             variant.buildConfigFields?.put(
                 "EXPECTED_SIG_SHA256",
-                BuildConfigField("String", "\"$digest\"", "安全库签名校验的期望证书摘要（构建期注入）"),
+                BuildConfigField("String", "\"${digest.value}\"", "安全库签名校验的期望证书摘要（构建期注入）"),
             )
         }
     }
 
     /** library 模块同样支持（有些宿主把安全配置放在自己的 library 里）。 */
-    private fun Project.applyToLibrary(digest: String) {
+    private fun Project.applyToLibrary(digest: Lazy<String>, productionVariants: MutableSet<String>) {
         extensions.findByType(LibraryAndroidComponentsExtension::class.java) ?: return
         extensions.getByType(LibraryAndroidComponentsExtension::class.java).onVariants { variant ->
+            if (!variant.debuggable) productionVariants += variant.name
             variant.buildConfigFields?.put(
                 "EXPECTED_SIG_SHA256",
-                BuildConfigField("String", "\"$digest\"", "安全库签名校验的期望证书摘要（构建期注入）"),
+                BuildConfigField("String", "\"${digest.value}\"", "安全库签名校验的期望证书摘要（构建期注入）"),
             )
         }
     }
 
     /**
-     * 解析证书摘要。
+     * 生产变体缺摘要时，**只在真正要构建它时**失败。
      *
-     * 优先级：显式属性 → `keystore.properties`。解析失败返回空串（不阻断构建）。
+     * 为什么不在配置阶段失败：Gradle 配置时会为所有变体跑 onVariants，若在那里 throw，
+     * `assembleDebug` 也会被拦住——这是实测踩到的。这里改为 task graph 就绪后检查：
+     * 图中包含该生产变体的任务（如 `assembleRelease`）才失败；debug 构建不受影响。
      */
-    private fun Project.resolveCertDigest(): String {
-        val explicit = providers.gradleProperty("securityCertSha256").orNull
-        if (!explicit.isNullOrBlank()) {
-            return explicit.split(',').joinToString(",") { it.trim().uppercase() }
+    private fun Project.failIfProductionTaskWithoutDigest(
+        digest: Lazy<String>,
+        productionVariants: MutableSet<String>,
+    ) {
+        val projectPath = path
+        gradle.taskGraph.whenReady {
+            checkGraph(this, projectPath, digest, productionVariants)
+        }
+    }
+
+    private fun checkGraph(
+        graph: TaskExecutionGraph,
+        projectPath: String,
+        digest: Lazy<String>,
+        productionVariants: Set<String>,
+    ) {
+        if (productionVariants.isEmpty() || digest.value.isNotEmpty()) return
+        val hit = graph.allTasks.firstOrNull { task ->
+            task.path.startsWith("$projectPath:") &&
+                productionVariants.any { variant -> task.name.contains(variant.replaceFirstChar { it.uppercase() }) }
+        } ?: return
+        throw GradleException(
+            "[security] 生产变体缺少签名期望值（任务 ${hit.path}），构建中止。\n" +
+                "请在 build 脚本中配置：\n" +
+                "  securityConfig { keystoreFile = \"...\"; keyAlias = \"...\" }\n" +
+                "或命令行传入：-PsecurityCertSha256=<hex> / -PsecurityKeystoreFile=<path>。\n" +
+                "签名校验是安全库的核心能力，不允许静默关闭。",
+        )
+    }
+
+    /**
+     * 解析证书摘要，结果已归一化（大写 hex、无冒号、逗号分隔多个）。
+     *
+     * 未配置任何来源时返回空串（由 [failIfProductionTaskWithoutDigest] 决定是否失败）；
+     * 已配置但有任何错误都直接抛出，不返回空串。
+     */
+    private fun Project.resolveCertDigest(config: FragmjectSecurityConfigExtension): String {
+        val explicitDigest = providers.gradleProperty("securityCertSha256").orNull
+            ?: config.certSha256
+        if (!explicitDigest.isNullOrBlank()) {
+            return normalizeDigests(explicitDigest, "证书摘要（certSha256 / -PsecurityCertSha256）")
         }
 
-        val propsFile = rootProject.file("keystore.properties")
-        val props = Properties().apply {
-            if (propsFile.exists()) propsFile.inputStream().use { load(it) }
-        }
-
-        val storePath = providers.gradleProperty("securityKeystoreFile").orNull
-            ?: props.getProperty("storeFile")
-            ?: return ""
+        val storeFile = providers.gradleProperty("securityKeystoreFile").orNull
+            ?: config.keystoreFile
+            ?: run {
+                logger.warn("[security] 未配置签名来源（securityConfig）：生产变体将无法构建，debug 变体运行期签名校验不启用。")
+                return ""
+            }
         val alias = providers.gradleProperty("securityKeyAlias").orNull
-            ?: props.getProperty("keyAlias")
-            ?: return ""
-        val storePassword = providers.gradleProperty("securityStorePassword").orNull
-            ?: props.getProperty("storePassword")
-            ?: return ""
+            ?: config.keyAlias
+            ?: throw GradleException("[security] 配置了 keystore 但缺少 keyAlias（securityConfig.keyAlias / -PsecurityKeyAlias）")
+        val password = providers.gradleProperty("securityStorePassword").orNull
+            ?: config.keystorePassword
+            ?: throw GradleException("[security] 配置了 keystore 但缺少密码（-PsecurityStorePassword，或 CI 环境变量）")
 
-        // storeFile 的写法各工程不一样：绝对路径、相对模块目录（本仓库是 `../keystore.key`）、
-        // 相对仓库根。按「绝对 → 模块目录 → 仓库根」依次尝试，取第一个存在的。
+        return digestFromKeystore(storeFile, alias, password)
+    }
+
+    private fun Project.digestFromKeystore(storePath: String, alias: String, password: String): String {
+        // storeFile 的写法各工程不一样：绝对路径、相对模块目录、相对仓库根。依次尝试。
         val raw = File(storePath)
         val store = when {
             raw.isAbsolute -> raw
             file(storePath).exists() -> file(storePath)
             else -> rootProject.file(storePath)
         }
-        if (!store.exists()) return ""
+        if (!store.exists()) {
+            throw GradleException("[security] keystore 不存在：${store.absolutePath}")
+        }
 
-        // 不假设扩展名：JKS / PKCS12 都试一遍
+        // JKS / PKCS12 都试一遍，不假设扩展名
         val keyStore = listOf("JKS", "PKCS12").firstNotNullOfOrNull { type ->
             runCatching {
-                KeyStore.getInstance(type).apply { load(store.inputStream(), storePassword.toCharArray()) }
+                KeyStore.getInstance(type).apply { store.inputStream().use { load(it, password.toCharArray()) } }
             }.getOrNull()
-        } ?: return ""
+        } ?: throw GradleException("[security] 无法打开 keystore（密码错误或格式不支持）：${store.absolutePath}")
 
-        val cert = runCatching { keyStore.getCertificate(alias) }.getOrNull() ?: return ""
+        val cert = keyStore.getCertificate(alias)
+            ?: throw GradleException("[security] keystore 中不存在别名：$alias")
+
         return MessageDigest.getInstance("SHA-256")
             .digest(cert.encoded)
             .joinToString("") { "%02X".format(it.toInt() and 0xFF) }
+    }
+
+    /** 校验并归一化摘要字符串：每个都必须是 32 字节（64 位 hex）。 */
+    private fun Project.normalizeDigests(raw: String, source: String): String {
+        val parts = raw.split(',')
+            .map { it.replace(":", "").replace(" ", "").trim().uppercase() }
+            .filter { it.isNotEmpty() }
+        if (parts.isEmpty()) {
+            throw GradleException("[security] $source 为空")
+        }
+        val bad = parts.firstOrNull { !HEX64.matches(it) }
+        if (bad != null) {
+            throw GradleException("[security] $source 格式错误（需要 64 位 hex，多个用逗号分隔）：$bad")
+        }
+        return parts.joinToString(",")
+    }
+
+    private companion object {
+        val HEX64 = Regex("^[0-9A-F]{64}$")
     }
 }

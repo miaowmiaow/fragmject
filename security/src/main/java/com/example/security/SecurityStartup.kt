@@ -34,7 +34,6 @@ internal fun logDiagnostics(config: SecurityConfig, native: NativeChecks) {
         SecurityGuard.TAG,
         "security diag: checks=${config.checks.joinToString(",") { it.name }} " +
             "native=${native.available} antiDump=${config.antiDump} " +
-            "signature=${config.expectedSignatureSha256.isNotEmpty()} " +
-            "buildType=${config.buildType.ifEmpty { "<unset>" }}",
+            "signature=${config.expectedSignatureSha256.isNotEmpty()}",
     )
 }

@@ -20,6 +20,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.feature.authenticator.components.AuthenticatorAppBar
+import com.example.fragmject.feature.authenticator.utils.SecureWindowEffect
 
 /**
  * 二维码展示页（导出流程第二步）：**全屏**展示二维码，不做选择交互。
@@ -33,6 +34,8 @@ fun AuthenticatorExportQrScreen(
     batch: Boolean,
     viewModel: AuthenticatorExportQrViewModel = hiltViewModel(),
 ) {
+    // 二维码即账户种子，导出页全程禁止截屏与录屏
+    SecureWindowEffect()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onNavigateUp = LocalOnNavigateUp.current
 

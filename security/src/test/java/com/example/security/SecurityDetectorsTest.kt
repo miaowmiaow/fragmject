@@ -273,6 +273,100 @@ class SecurityDetectorsTest {
     }
 
     @Test
+    fun `native 判定匹配时忽略 JVM 查询结果`() {
+        val facts = FakeFacts().apply { signatures = listOf("AABBCCDD") }
+        val native = FakeNative().apply { apkVerdict = 0 }
+
+        assertNull(signatureHit(native, facts, SecurityConfig(expectedSignatureSha256 = setOf("11223344"))))
+    }
+
+    @Test
+    fun `native 判定不匹配时阻断`() {
+        val native = FakeNative().apply { apkVerdict = 1 }
+        val hit = signatureHit(native, FakeFacts(), SecurityConfig())
+
+        assertEquals("integrity.signature", hit?.code)
+        assertEquals(Severity.CRITICAL, hit?.severity)
+    }
+
+    @Test
+    fun `native 无法判定时回退到 JVM 查询`() {
+        val native = FakeNative().apply { apkVerdict = -1 }
+        val mismatch = FakeFacts().apply { signatures = listOf("AABBCCDD") }
+        val match = FakeFacts().apply { signatures = listOf("AABBCCDD") }
+
+        assertEquals(
+            "integrity.signature",
+            signatureHit(native, mismatch, SecurityConfig(expectedSignatureSha256 = setOf("11223344")))?.code,
+        )
+        assertNull(
+            signatureHit(native, match, SecurityConfig(expectedSignatureSha256 = setOf("aa:bb:cc:dd"))),
+        )
+    }
+
+    @Test
+    fun `native 不可用时回退到 JVM 查询`() {
+        val native = FakeNative(available = false).apply { apkVerdict = 0 }
+        val facts = FakeFacts().apply { signatures = listOf("AABBCCDD") }
+
+        assertEquals(
+            "integrity.signature",
+            signatureHit(native, facts, SecurityConfig(expectedSignatureSha256 = setOf("11223344")))?.code,
+        )
+    }
+
+    @Test
+    fun `XposedBridge 可加载时命中 Hook 框架 WARN`() {
+        val facts = FakeFacts().apply { classes += "de.robv.android.xposed.XposedBridge" }
+        val hit = detectHit(facts, FakeNative(), SecurityConfig(), false, false, false)
+
+        assertEquals("env.hook_framework", hit?.code)
+        assertEquals(Severity.WARN, hit?.severity)
+    }
+
+    @Test
+    fun `LSPosed 管理器已安装时命中 Hook 框架`() {
+        val facts = FakeFacts().apply { installed += "org.lsposed.manager" }
+        val hit = detectHit(facts, FakeNative(), SecurityConfig(), false, false, false)
+
+        assertEquals("env.hook_framework", hit?.code)
+    }
+
+    @Test
+    fun `hookFrameworkAction 为 BLOCK 时 Hook 框架命中为 CRITICAL`() {
+        val facts = FakeFacts().apply { classes += "de.robv.android.xposed.XposedBridge" }
+        val hit = detectHit(
+            facts,
+            FakeNative(),
+            SecurityConfig(hookFrameworkAction = Action.BLOCK),
+            false,
+            false,
+            false,
+        )
+
+        assertEquals(Severity.CRITICAL, hit?.severity)
+    }
+
+    @Test
+    fun `Hook 检测为 IGNORE 或未启用 JAVA_HOOK 时不命中`() {
+        val facts = FakeFacts().apply { classes += "de.robv.android.xposed.XposedBridge" }
+
+        assertNull(
+            detectHit(facts, FakeNative(), SecurityConfig(hookFrameworkAction = Action.IGNORE), false, false, false),
+        )
+        assertNull(
+            detectHit(
+                facts,
+                FakeNative(),
+                SecurityConfig(checks = SecurityCheck.DEFAULT - SecurityCheck.JAVA_HOOK),
+                false,
+                false,
+                false,
+            ),
+        )
+    }
+
+    @Test
     fun `资源基线为空时放行`() {
         assertTrue(verifyResourceIntegrity(FakeFacts(), SecurityConfig()))
     }
@@ -325,6 +419,7 @@ private class FakeFacts : SecurityFacts {
     val installed = mutableSetOf<String>()
     val openPorts = mutableSetOf<Int>()
     val apkEntries = mutableMapOf<String, String>()
+    val classes = mutableSetOf<String>()
 
     override fun isDebuggerConnected(): Boolean = debugger
 
@@ -353,6 +448,8 @@ private class FakeFacts : SecurityFacts {
     override fun copyApkEntry(entryName: String, targetPath: String): Boolean = false
 
     override fun apkEntrySha256(entryName: String): String? = apkEntries[entryName]
+
+    override fun hasClass(name: String): Boolean = name in classes
 }
 
 /** 可控的假 native 层。 */
@@ -368,6 +465,7 @@ private class FakeNative(override var available: Boolean = true) : NativeChecks 
     var libcCrc = 0
     var selfSoCrc = 0
     var pltHooks = 0
+    var apkVerdict = -1
 
     override fun load(): Boolean = available
 
@@ -396,6 +494,8 @@ private class FakeNative(override var available: Boolean = true) : NativeChecks 
     override fun verifySelfSoTextCrc(selfSoPath: String): Int = selfSoCrc
 
     override fun verifySelfSoDataCrc(selfSoPath: String): Int = selfSoCrc
+
+    override fun verifyApkSignature(): Int = apkVerdict
 
     override fun killSelf() = Unit
 }

@@ -1,6 +1,5 @@
 package com.example.fragmject.feature.authenticator.ui.list
 
-import android.content.ClipData
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,8 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.toClipEntry
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,6 +61,8 @@ import com.example.fragmject.feature.authenticator.components.AppBarTextAction
 import com.example.fragmject.feature.authenticator.components.AuthenticatorAppBar
 import com.example.fragmject.feature.authenticator.components.EmptyState
 import com.example.fragmject.feature.authenticator.model.OtpCodeItem
+import com.example.fragmject.feature.authenticator.utils.SecureWindowEffect
+import com.example.fragmject.feature.authenticator.utils.SensitiveClipboard
 import kotlinx.coroutines.launch
 
 /** 弹窗动作集合：删除确认、详情里的复制/上移/下移与关闭。 */
@@ -89,6 +89,8 @@ fun AuthenticatorScreen(
 private fun AuthenticatorScreenContent(
     viewModel: AuthenticatorViewModel,
 ) {
+    // 列表展示验证码，详情对话框展示密钥：本页与其对话框都不允许截屏或录屏
+    SecureWindowEffect()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val navigators = LocalNavigators.current
     val onNavigateUp = LocalOnNavigateUp.current
@@ -96,16 +98,14 @@ private fun AuthenticatorScreenContent(
         remember(navigators) { { navigators.authenticator.openAuthenticatorTransfer() } }
     val onAddClick = remember(navigators) { { navigators.authenticator.openAuthenticatorAdd() } }
     val snackbarHostState = remember { SnackbarHostState() }
-    val clipboard = LocalClipboard.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var pendingDeleteId by remember { mutableStateOf<Long?>(null) }
     var detailItem by remember { mutableStateOf<OtpCodeItem?>(null) }
     val items = uiState.items
     val copyToClipboard: (String, String) -> Unit = { text, message ->
-        scope.launch {
-            clipboard.setClipEntry(ClipData.newPlainText(text, text).toClipEntry())
-            snackbarHostState.showSnackbar(message)
-        }
+        SensitiveClipboard.copy(context, text)
+        scope.launch { snackbarHostState.showSnackbar(message) }
     }
     AuthenticatorDialogs(
         pendingDeleteId = pendingDeleteId,
@@ -264,7 +264,10 @@ private fun DeleteConfirmDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("删除账户") },
-        text = { Text("确定删除「$issuer」吗？删除后需要重新扫码或手输密钥才能恢复。") },
+        text = {
+            SecureWindowEffect()
+            Text("确定删除「$issuer」吗？删除后需要重新扫码或手输密钥才能恢复。")
+        },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text("删除", color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
@@ -290,6 +293,7 @@ private fun AccountDetailDialog(
         onDismissRequest = onDismiss,
         title = { Text(item.account.displayIssuer) },
         text = {
+            SecureWindowEffect()
             Column {
                 DetailRow("账户名", item.account.accountName, onCopy)
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))

@@ -37,6 +37,12 @@ enum class SecurityCheck {
     EMULATOR,
 
     /**
+     * Java 层 Hook 框架（Xposed / LSPosed）：框架类可加载或管理器应用已安装。
+     * 处置级别由 [SecurityConfig.hookFrameworkAction] 决定（默认 WARN）。
+     */
+    JAVA_HOOK,
+
+    /**
      * GOT/PLT 劫持检测（导入函数指针被改写）。
      *
      * **默认不启用**：不同厂商 ROM / 不同 Android 版本对 IFUNC、符号版本的处理有差异，

@@ -191,6 +191,14 @@ internal fun detectEnvironmentHit(
     if (emulatorEnabled && hasEmulatorSignals(facts)) {
         return SecurityHit("检测到模拟器环境", severityOf(config.emulatorAction), code = "env.emulator")
     }
+    val hookEnabled = SecurityCheck.JAVA_HOOK in config.checks && config.hookFrameworkAction != Action.IGNORE
+    if (hookEnabled && hasHookFrameworkSignals(facts)) {
+        return SecurityHit(
+            "检测到 Java 层 Hook 框架（Xposed / LSPosed）",
+            severityOf(config.hookFrameworkAction),
+            code = "env.hook_framework",
+        )
+    }
     return null
 }
 

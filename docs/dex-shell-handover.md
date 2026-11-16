@@ -77,8 +77,8 @@ rm -rf app/.cxx app/build/generated/shell
 ./gradlew :app:assembleRelease -PenableStringFog=true -PstringFogKey=4660
 ```
 
-签名摘要（H1）**没有开关**：构建期从 `keystore.properties` 自动计算并注入
-`BuildConfig.EXPECTED_SIG_SHA256`，release 恒开。
+签名摘要（H1）**没有开关**：构建期从 `keystore.properties` 计算，经 CMake 宏编译进 `libappsecurity.so`
+（`SEC_EXPECTED_SIG_SHA256`，2026-11-16 起不再进入 `BuildConfig`），release 恒开。
 
 > ⚠️ **开壳后 `app-release.apk` 与 `app-release-resobf.apk` 不可发布**：它们的 manifest 已被替换为
 > `com.example.shell.StubApplication`，但里面没有壳 dex，装上必然启动即崩。
@@ -212,7 +212,7 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
 | `Module with the Main dispatcher is missing` | `InMemoryDexClassLoader` 的 parent 用了 systemClassLoader | parent 必须是系统原本的 `PathClassLoader`（提供 `META-INF/services` 资源） |
 | `Hilt Activity must be attached to an @HiltAndroidApp Application` | `mInitialApplication` 在 `makeApplication` 之后被系统覆盖 | 已在 `StubApplication.onCreate` 二次替换；复现说明该逻辑被删 |
 | 启动直接 `ClassNotFoundException: com.google.mlkit…` | 壳安装失败后进程继续跑（fail-closed 的表现） | 看前面第一条 `shell install failed` 的真实原因 |
-| `security guard skipped (debugBypass)` | 当前是 debug 包（宿主编译期传入 `BuildConfig.DEBUG`） | 正常行为；release 包不应出现 |
+| （debug 包不再打印 `security guard skipped`） | debug 包由 `FragmjectApplication` 直接不调用 `SecurityGuard.install`（2026-11-16 起） | 正常行为；debug 包无防护日志 |
 | `security check hit: 生产包被标记为可调试（疑似改包）` | 生产包 manifest 里被加了 `android:debuggable="true"`（apktool 改包常见手法） | 安全库判定为改包并终止；确认是否有人手工改过 manifest |
 | `native kill failed, fallback to Process.killProcess` | JNI `killSelf` 抛异常（so 被替换/方法被裁剪） | Java 兜底仍会终止进程；需排查 so 完整性 |
 
@@ -288,9 +288,9 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 5. so 必须以 STORED 打包且 4 字节/页对齐，否则 `INSTALL_FAILED_INVALID_APK`（手工重打包时最容易踩）；
 6. 包体优化经验：**先 deflate 再 XOR**。反过来（先 XOR）会让载荷变成高熵数据、zip 压不动，
    实测壳包从 11.70 MB 涨到 15.20 MB。
-7. **`SecurityConfig.debugBypass` 必须由宿主传 `BuildConfig.DEBUG`**：
-   壳包/常规包的 `debugBypass` 都是 false，因此 release 包若被改成 `debuggable`，会被判为改包并阻断
-   （实测 5s 内进程消失）。若宿主漏传（默认 false），本地 debug 也会跑完整检测，表现为「开发时启动就闪退」。
+7. **debug 包不安装防护**：`FragmjectApplication.attachBaseContext` 在 `BuildConfig.DEBUG` 为 true 时直接返回，
+   release 中该分支被 R8 折叠，因此 release 包若被改成 `debuggable`，会被判为改包并阻断
+   （实测 5s 内进程消失）。库内已无 `debugBypass` 开关（2026-11-16 起，见 hardening-assessment H1 补丁）。
 8. **日志 TAG 已统一为 `AppSecurity`**（2026-11-12 起）：旧文档里的
    `AppSecurityGuard` 是历史输出，`adb logcat -s AppSecurity` 才是当前过滤条件。
 
@@ -327,4 +327,4 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 | 与资源混淆叠加 | `res/Dg` 短路径 + payload + 10 KB 壳 dex 同时存在，装机正常 |
 | 安全库 P0 修复（2026-11-12） | manifest 置 `debuggable=true` 而 `BuildConfig.DEBUG=false`：命中「生产包被标记为可调试（疑似改包）」，5s 内进程消失 |
 | 正常包回归（同日） | 仅 `security warn: 检测到模拟器环境`，进程存活，冷启动 1335ms |
-| debug 包（同日） | `security guard skipped (debugBypass)`，`AppSec-Check` 线程 0 |
+| debug 包（同日） | 无防护日志（debug 不安装），`AppSec-Check` 线程 0 |

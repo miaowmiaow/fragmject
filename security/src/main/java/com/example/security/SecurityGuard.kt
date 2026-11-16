@@ -12,12 +12,12 @@ import android.content.Context
  * ```
  * override fun attachBaseContext(base: Context) {
  *     super.attachBaseContext(base)
- *     SecurityGuard.install(this, SecurityConfig(buildType = BuildConfig.BUILD_TYPE))
+ *     if (!BuildConfig.DEBUG) SecurityGuard.install(this)
  * }
  * ```
  *
- * 可调试包（`FLAG_DEBUGGABLE`）与 [SecurityConfig.skipBuildTypes] 中的构建类型会自动跳过；
- * 是否跳过由引擎判定，调用方无需关心。
+ * 库内**没有**跳过开关：是否安装由宿主决定。宿主应只在 debug 包中不调用 [install]，
+ * release 包无条件安装。跳过分支若存在于 dex 中，改一个常量即可关掉签名校验，因此不提供。
  *
  * ============================ 能力概览 ============================
  * 检测：Java/JDWP 调试、native TracerPid、Frida（maps / 线程名 / 落地文件 / 端口扫描）、
@@ -71,8 +71,7 @@ object SecurityGuard {
             if (engine != null) return
             val appContext = context.applicationContext ?: context
             val facts = AndroidSecurityFacts(appContext)
-            // 这里刻意**不**加载 native：debug 包与被跳过的变体不应产生 so 加载开销，
-            // 加载动作由 SecurityEngine.start() 在跳过判定之后执行。
+            // 这里刻意**不**加载 native：加载动作由 SecurityEngine.start() 在验签通过后执行。
             engine = SecurityEngine(
                 config = config,
                 facts = facts,

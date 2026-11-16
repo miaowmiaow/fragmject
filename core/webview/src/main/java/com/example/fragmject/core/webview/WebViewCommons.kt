@@ -31,6 +31,22 @@ object WebViewCommons {
     fun isLoadableUrl(value: String): Boolean = isHttpUrl(value) || assetPathOf(value) != null
 
     /**
+     * 页面发起的非 http(s) 外部跳转（intent: / weixin: / 自定义 scheme 等）能否交给系统处理。
+     *
+     * 只放行「用户手势触发」的 tel / mailto / sms；其余一律拒绝（默认拒绝）。
+     * 不放行 intent:，它可携带任意 Component 与 extras，是拉起内部或第三方组件的常用通道。
+     *
+     * 注意：这是 WebView 攻击面收敛，属于应用安全，与反逆向 / 反篡改的加固无关。
+     */
+    fun isExternalIntentAllowed(value: String, hasUserGesture: Boolean): Boolean {
+        if (!hasUserGesture) return false
+        val scheme = value.substringBefore(':', missingDelimiterValue = "").lowercase()
+        return scheme in EXTERNAL_INTENT_SCHEMES
+    }
+
+    private val EXTERNAL_INTENT_SCHEMES = setOf("tel", "mailto", "sms")
+
+    /**
      * 由 assets URL 解析 assets 内的相对路径——**URL 路径即 assets 相对路径**
      * （如 `file:///android_asset/html/a.html` → `html/a.html`）。
      *

@@ -15,7 +15,15 @@ project(appsecurity LANGUAGES CXX)
 # SHARED：JNI 需要以动态库形式被 System.loadLibrary 加载。
 # 库名决定 Java 侧加载名：add_library(appsecurity ...) -> libappsecurity.so
 # -> System.loadLibrary("appsecurity")
-add_library(appsecurity SHARED security.cpp)
+add_library(appsecurity SHARED security.cpp apk_signature.cpp)
+
+# 期望的 APK 签名证书 SHA-256（十六进制，逗号分隔多个，冒号与大小写不限）。
+# 由 :security/build.gradle.kts 经 -DSEC_EXPECTED_SIG_SHA256=... 传入，编译进 so，不进入 dex。
+# 为空时 native 签名校验返回「无法判定」，由 JVM 侧回退处理。
+set(SEC_EXPECTED_SIG_SHA256 "" CACHE STRING "Expected APK signing cert SHA-256 list")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/expected_sig.h"
+     "#pragma once\n#define SEC_EXPECTED_SIG_SHA256 \"${SEC_EXPECTED_SIG_SHA256}\"\n")
+target_include_directories(appsecurity PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 # C++17 是硬性要求：security.cpp 里的 XorString 依赖类模板参数推导（CTAD），
 # 即 `XorString("literal")` 能自动推导出 N。低于 C++17 会编译失败。

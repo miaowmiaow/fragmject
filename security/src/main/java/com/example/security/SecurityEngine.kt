@@ -96,7 +96,7 @@ internal class SecurityEngine(
     private var lastWarnKey: String? = null
 
     /**
-     * 后台检测线程：仅在真正启动后才创建，Debug / 跳过变体不产生任何开销。
+     * 后台检测线程：仅在真正启动后才创建，未启动的引擎不产生任何开销。
      *
      * 用 lazy 持有而不是直接 `by lazy`：`stop()` 需要判断「线程是否真的创建过」，
      * 避免为一个从未启动的引擎创建线程再退出。
@@ -113,51 +113,40 @@ internal class SecurityEngine(
      * 启动检测。应在 `Application.attachBaseContext` 中（经 [SecurityGuard.install]）调用。
      *
      * 执行顺序及原因：
-     * 1. `debugBypass`（宿主编译期声明是 debug 包）→ 直接返回，只影响本地开发；
-     * 2. 跳过采集变体：见 [SecurityConfig.skipBuildTypes] 的说明；
-     * 3. **先验签**：签名校验必须早于任何跳过判定，否则改一行 manifest 就能把整条链关掉；
-     * 4. 生产包却带 `debuggable` 标记 → 判为改包并阻断（见 [isDebuggableApp]）；
-     * 5. native 占坑 ptrace：必须早于任何可能被附加的时机；
-     * 6. 首轮**同步**轻量检测：在进入应用主流程前判断「启动前是否已被附加/注入」；
-     * 7. 异步完整性校验：so `.text` / `.rodata` 与资源基线只需一次；
-     * 8. 注册生命周期回调 + 启动轮询：覆盖运行期新附加的情况。
+     * 1. **native 加载**：签名校验等 native 检测的前提；
+     * 2. **验签**（见 [signatureHit]）：库内没有任何跳过分支，验签是启动后的第一道检查；
+     * 3. 生产包却带 `debuggable` 标记 → 判为改包并阻断（见 [isDebuggableApp]）；
+     * 4. native 占坑 ptrace：必须早于任何可能被附加的时机；
+     * 5. 首轮**同步**轻量检测：在进入应用主流程前判断「启动前是否已被附加/注入」；
+     * 6. 异步完整性校验：so `.text` / `.rodata` 与资源基线只需一次；
+     * 7. 注册生命周期回调 + 启动轮询：覆盖运行期新附加的情况。
      *
      * 首轮有意**不**执行 CRC 与端口扫描：端口扫描最坏 11 × 50ms 超时会拖慢冷启动，
      * CRC 需要读数 MB 数据。两者由后台轮询第一次执行立即补上（`lastXxxMs` 初值为 0，
      * 首轮必然 due），所以不会漏掉「启动前已被 inline hook」的场景。
      */
     fun start(context: Context) {
-        // 1) 编译期声明的 debug 包：整条链跳过
-        if (config.debugBypass) {
-            Log.i(SecurityGuard.TAG, "security guard skipped (debugBypass)")
-            return
-        }
-        // 2) 采集变体（buildType 由宿主注入，属可信输入）
-        if (config.buildType in config.skipBuildTypes) {
-            Log.i(SecurityGuard.TAG, "security guard skipped for ${config.buildType} (collection build type)")
-            return
-        }
         if (started) return
         started = true
         active = true
 
-        // 3) 先验签：未配置期望摘要时立即返回 true，不产生开销；
-        //    配置了则是一次 PackageManager 查询（毫秒级），换「无法用 manifest 绕过」是值得的。
-        if (!verifySignature(facts, config)) {
-            block(SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL, code = "integrity.signature"))
+        // 1) native 先加载：签名校验优先走 native（期望摘要编译在 so 中，见 signatureHit）。
+        //    加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
+        native.load()
+        reportNativeAvailability()
+        if (blocked) return
+
+        // 2) 验签：启动后的第一道检查，库内没有任何跳过分支
+        signatureHit(native, facts, config)?.let {
+            block(it)
             return
         }
 
-        // 4) 生产包被标记为可调试：manifest 被改过（apktool 常干的事），直接阻断
+        // 3) 生产包被标记为可调试：manifest 被改过（apktool 常干的事），直接阻断
         if (isDebuggableApp(context)) {
             block(SecurityHit("生产包被标记为可调试（疑似改包）", Severity.CRITICAL, code = "tamper.debuggable"))
             return
         }
-
-        // 5) native 库在跳过判定**之后**才加载：debug 包与采集变体不应产生任何 so 加载开销。
-        //    加载失败不阻断启动，engine 依据 available 自动走 JVM 降级路径。
-        native.load()
-        reportNativeAvailability()
 
         // 反 dump（可做部分）：尽早执行——越早把 /proc 权限收紧，暴露窗口越小
         applyAntiDump(config, native)
@@ -194,7 +183,7 @@ internal class SecurityEngine(
             warn(firstHit)
         }
 
-        // 6) 一次性完整性校验（签名已在第 3 步同步完成，这里只剩 so 与资源）
+        // 一次性完整性校验（签名已在启动早期同步完成，这里只剩 so 与资源）
         startOneShotIntegrityChecks()
 
         // 7) 只有拿到 Application 且在主线程时，才能安全注册 Activity 生命周期回调；
@@ -455,10 +444,10 @@ internal class SecurityEngine(
     /**
      * 一次性完整性校验：so `.text` + so `.rodata` + 资源基线。
      *
-     * 签名校验不在这里——它已前移到 [start] 的同步路径（必须早于任何跳过判定）。
+     * 签名校验不在这里——它已前移到 [start] 的同步路径（启动第一步）。
      *
      * 拆成独立方法的两个原因：
-     * - `start()` 已经承担跳过判定、native 加载、首轮检测、生命周期注册，
+     * - `start()` 已经承担 native 加载、首轮检测、生命周期注册，
      *   再塞多个分支会超过 detekt 的圈复杂度阈值；
      * - 这几项都是「进程生命周期内只做一次」的同类工作，放一起便于按需增删。
      */
@@ -479,75 +468,8 @@ internal class SecurityEngine(
      * 是否是可调试应用（读 `ApplicationInfo.FLAG_DEBUGGABLE`）。
      *
      * 注意：这个标志由 manifest 的 `android:debuggable` 决定，**攻击者可以改**。
-     * 因此它只用于「生产包被改成 debuggable」的**篡改判定**，
-     * 绝不能作为「跳过全部检测」的依据——后者只看宿主编译期传入的
-     * [SecurityConfig.debugBypass]。
+     * 它只用于「生产包被改成 debuggable」的**篡改判定**。库内没有任何依据它跳过检测的分支。
      */
     private fun isDebuggableApp(context: Context): Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 }
-
-/**
- * 是否应当降级为「只上报」。
- *
- * 抽成纯函数的原因：[SecurityEngine] 依赖 Handler/Looper，无法在 JVM 里构造；
- * 而「连续失败达到阈值才降级」这条规则是安全语义的关键，必须有单测兜住。
- *
- * @param failures 当前连续失败次数
- * @param limit 阈值；<=0 表示不降级（保持原有「命中即阻断」语义）
- * @param alreadyDegraded 已降级则不重复触发（避免重复事件）
- */
-internal fun shouldDegrade(failures: Int, limit: Int, alreadyDegraded: Boolean): Boolean =
-    limit > 0 && failures >= limit && !alreadyDegraded
-
-/**
- * native 库不可用时的判定（纯函数，便于单测）。
- *
- * - 可用：无命中；
- * - 不可用且 [requireNative]：CRITICAL 阻断（视为篡改）；
- * - 不可用且默认：WARN 事件，宿主可见，JVM 侧检测继续运行。
- *
- * 为什么必须可见：阻止 so 加载即可关掉 Frida / CRC / PLT 等全部 native 检测，
- * 若只打一条日志，宿主与攻击者面对的都是「静默放行」。
- */
-internal fun nativeUnavailableHit(available: Boolean, requireNative: Boolean): SecurityHit? {
-    if (available) return null
-    return if (requireNative) {
-        SecurityHit(
-            reason = "安全组件（native）不可用，应用即将关闭",
-            severity = Severity.CRITICAL,
-            code = "internal.native_unavailable",
-        )
-    } else {
-        SecurityHit(
-            reason = "安全组件（native）不可用，仅启用 JVM 侧检测",
-            severity = Severity.WARN,
-            code = "internal.native_unavailable",
-        )
-    }
-}
-
-/**
- * 核心防护类命中：完整性 / 注入 / 调试器 / 篡改。
- *
- * 降级期间这些命中仍然阻断（见 [SecurityEngine.block]）；只有环境类（env.*）与内部事件放松。
- */
-internal fun SecurityHit.isCoreCheck(): Boolean = CORE_CODE_PREFIXES.any { code.startsWith(it) }
-
-private val CORE_CODE_PREFIXES = listOf("integrity.", "injection.", "debugger.", "tamper.")
-
-/**
- * 退避策略：连续干净达到 [SecurityConfig.cleanRoundsToBackoff] 轮后把间隔翻倍，上限封顶。
- *
- * 抽成顶层纯函数是为了能在 JVM 单测里覆盖（[SecurityEngine] 本身依赖 Handler/Looper）。
- *
- * @param currentMs 当前间隔
- * @param cleanRounds 本轮结束后的连续干净轮数（已自增）
- * @param config 配置（提供阈值与上限）
- */
-internal fun nextIntervalMs(currentMs: Long, cleanRounds: Int, config: SecurityConfig): Long =
-    if (cleanRounds >= config.cleanRoundsToBackoff) {
-        minOf(currentMs * 2, config.maxIntervalMs)
-    } else {
-        currentMs
-    }

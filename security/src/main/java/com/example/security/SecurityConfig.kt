@@ -11,11 +11,8 @@ package com.example.security
  *   **默认值与原常量完全一致**，行为不变。
  *
  * ============================ 字段约定 ============================
- * - [buildType]：由宿主注入（一般是 `BuildConfig.BUILD_TYPE`）。库自身**不读取**宿主的
- *   BuildConfig——库模块的 BuildConfig 是库自己的，读不到宿主的变体；
- * - [skipBuildTypes]：默认跳过 `nonMinifiedRelease`（`androidx.baselineprofile` 插件创建的
- *   采集变体）。该变体不参与发布，且模拟器 ART/JIT 会产生匿名可执行段，命中
- *   [anonExecThreshold] 后进程会在 [blockGraceMs] 内被 SIGKILL，导致采集失败；
+ * - 库内**没有任何跳过开关**：是否安装防护由宿主决定（见 [SecurityGuard.install] 的调用方）。
+ *   跳过开关若存在于 dex 中，apktool 改一个常量即可整体关闭签名校验，因此已移除；
  * - [expectedSignatureSha256]：空集合 = 不校验（默认）。未配置时强行校验会把所有正常安装包
  *   误杀；配置方式与多签名处理见 [verifySignature]；
  * - [onHit]：命中回调，供宿主上报或展示提示；默认 null（只写日志）。
@@ -33,19 +30,6 @@ data class SecurityConfig @JvmOverloads constructor(
     val checks: Set<SecurityCheck> = SecurityCheck.DEFAULT,
     /** 总开关：false 时 [SecurityGuard.install] 直接返回，不建线程、不注册回调。 */
     val enabled: Boolean = true,
-    /**
-     * 是否允许「可调试包直接跳过全部检测」。
-     *
-     * **必须由宿主传 `BuildConfig.DEBUG`**，不要用库自己读的 `FLAG_DEBUGGABLE` 决定：
-     * `android:debuggable` 是 manifest 属性，用 `apktool` 改一行就能把整条防护链关掉
-     * （签名校验也在链上）。只有当「宿主在编译期就声明这是 debug 包」时才跳过，
-     * 生产包传 false —— 此时即使 manifest 被改成 debuggable，也会被判为篡改并阻断。
-     */
-    val debugBypass: Boolean = false,
-    /** 宿主构建类型，仅用于与 [skipBuildTypes] 比对。 */
-    val buildType: String = "",
-    /** 需要跳过防护的构建类型。 */
-    val skipBuildTypes: Set<String> = setOf("nonMinifiedRelease"),
     /** 期望签名证书 SHA-256（十六进制，忽略大小写与冒号）；空 = 不校验。 */
     val expectedSignatureSha256: Set<String> = emptySet(),
     /** 关键资源 SHA-256 基线（APK entry 路径 -> 摘要）；空 = 不校验。 */
@@ -61,7 +45,7 @@ data class SecurityConfig @JvmOverloads constructor(
      * **挡不住** root 进程的 ptrace 脱壳（BlackDex / FRIDA-DEXDump）——这是边界，不是缺陷。
      *
      * 副作用：个别厂商的现场采集 / `am dumpheap` 可能取不到数据。
-     * 因此可关（默认开）；debug 包走 [debugBypass] 不会执行。
+     * 因此可关（默认开）；debug 包由宿主不安装防护，因此不会执行。
      */
     val antiDump: Boolean = true,
     /**
@@ -149,4 +133,11 @@ data class SecurityConfig @JvmOverloads constructor(
      * 宿主若确认 so 随包可靠，建议开启。
      */
     val requireNative: Boolean = false,
+    /**
+     * Java 层 Hook 框架（Xposed / LSPosed）的处置方式。
+     *
+     * 默认 [Action.WARN]：LSPosed 有大量合法的辅助模块用户，直接阻断误杀成本高；
+     * 风控要求高的业务可改为 [Action.BLOCK]。
+     */
+    val hookFrameworkAction: Action = Action.WARN,
 )

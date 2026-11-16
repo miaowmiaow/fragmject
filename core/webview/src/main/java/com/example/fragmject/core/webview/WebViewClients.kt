@@ -121,10 +121,16 @@ internal class PooledWebViewClient(
             return true
         }
         if (!URLUtil.isValidUrl(requestUrl)) {
-            try {
-                view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
-            } catch (e: Exception) {
-                Log.e("WebView", "shouldOverrideUrlLoading failed: ${request.url}", e)
+            // 外部跳转默认拒绝，仅放行用户手势触发的 tel / mailto / sms（见 WebViewCommons）。
+            // 日志只记 scheme，不记完整 URL，避免跳转参数进入日志。
+            if (WebViewCommons.isExternalIntentAllowed(requestUrl, request.hasGesture())) {
+                try {
+                    view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                } catch (e: Exception) {
+                    Log.e("WebView", "external intent failed: ${request.url.scheme}", e)
+                }
+            } else {
+                Log.w("WebView", "拒绝外部 scheme 跳转：${request.url.scheme}")
             }
             return true
         }

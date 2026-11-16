@@ -51,6 +51,9 @@
 #include <string>
 #include <vector>
 
+#include "apk_signature.h"
+#include "expected_sig.h"
+
 // 统一日志前缀，便于在 logcat 中按 "FragmjectSecurity" 过滤。
 // 注意：Release 包也保留日志，方便线上排查误杀；如需彻底静默可改为空实现。
 #define SEC_TAG "FragmjectSecurity"
@@ -207,6 +210,7 @@ constexpr auto kNameVerifySelfSoDataCrc = XorString("verifySelfSoDataCrc");
 constexpr auto kNameKillSelf = XorString("killSelf");
 constexpr auto kNameHardenProcess = XorString("hardenProcess");
 constexpr auto kNameCountPltHooks = XorString("countPltHooks");
+constexpr auto kNameVerifyApkSignature = XorString("verifyApkSignature");
 constexpr auto kSigInt = XorString("()I");
 constexpr auto kSigVoid = XorString("()V");
 constexpr auto kSigStringInt = XorString("(Ljava/lang/String;)I");
@@ -1564,6 +1568,30 @@ jint jniHardenProcess(JNIEnv *, jobject) {
     return 0;
 }
 
+/**
+ * APK 签名证书比对。
+ *
+ * 期望摘要来自构建期编译进 so 的 SEC_EXPECTED_SIG_SHA256（不在 dex 中）；
+ * APK 路径由 dladdr 从本库的真实加载位置推导，不取 Java 传入的 sourceDir。
+ *
+ * @return 0=匹配；1=不匹配；-1=无法判定（未配置期望摘要、路径推导失败、签名块结构异常）。
+ */
+jint jniVerifyApkSignature(JNIEnv *, jobject) {
+    static const std::vector<apksig::Digest> expected = [] {
+        std::vector<apksig::Digest> out;
+        if (!apksig::parseDigestList(SEC_EXPECTED_SIG_SHA256, out)) {
+            out.clear();
+        }
+        return out;
+    }();
+    if (expected.empty()) return apksig::kUnknown;
+
+    static const std::string apkPath =
+            apksig::resolveApkPathFromLibrary(reinterpret_cast<const void *>(&jniVerifyApkSignature));
+    if (apkPath.empty()) return apksig::kUnknown;
+    return apksig::verifyApkCertificates(apkPath, expected);
+}
+
 void jniKillSelf(JNIEnv *, jobject) {
     SEC_LOGW("jniKillSelf invoked");
     kill(getpid(), SIGKILL);
@@ -1607,6 +1635,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     static const std::string nameKillSelf = lit::kNameKillSelf.str();
     static const std::string nameHardenProcess = lit::kNameHardenProcess.str();
     static const std::string nameCountPltHooks = lit::kNameCountPltHooks.str();
+    static const std::string nameVerifyApkSignature = lit::kNameVerifyApkSignature.str();
     static const std::string sigNoArg = lit::kSigInt.str();
     static const std::string sigNoArgVoid = lit::kSigVoid.str();
     static const std::string sigStringArg = lit::kSigStringInt.str();
@@ -1651,6 +1680,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
             {const_cast<char *>(nameHardenProcess.c_str()),
              const_cast<char *>(sigNoArg.c_str()),
              reinterpret_cast<void *>(jniHardenProcess)},
+            {const_cast<char *>(nameVerifyApkSignature.c_str()),
+             const_cast<char *>(sigNoArg.c_str()),
+             reinterpret_cast<void *>(jniVerifyApkSignature)},
             {const_cast<char *>(nameKillSelf.c_str()),
              const_cast<char *>(sigNoArgVoid.c_str()),
              reinterpret_cast<void *>(jniKillSelf)},

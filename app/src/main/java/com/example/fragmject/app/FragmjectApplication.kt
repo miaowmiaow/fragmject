@@ -49,26 +49,26 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
      *   - 异步签名校验时读取 PackageManager。
      * 两者都不依赖「资源已 attach」的前提，因此在此时调用是安全的。
      *
-     * ============================ 代价与跳过 ============================
+     * ============================ 代价与 debug 包 ============================
      * 首轮检测是**同步**执行的（几十毫秒量级），会略微增加冷启动耗时；
      * 这是「尽早发现」与「启动速度」之间的有意取舍。
-     * 可调试包会在引擎内部直接返回（读 `FLAG_DEBUGGABLE`），不影响本地开发调试。
+     * debug 包不安装防护（见 [attachBaseContext]），不影响本地开发调试。
      *
-     * ============================ 为什么把 buildType / 签名摘要传进去 ============================
-     * 库侧刻意不读宿主的 `BuildConfig`（库模块的 BuildConfig 属于库自己）。
-     * - `debugBypass`：编译期声明 debug 包，库据此跳过全部检测（生产包恒为 false）；
-     * - `buildType`：采集变体（`nonMinifiedRelease`）需要在 `SecurityConfig.skipBuildTypes` 里被跳过；
-     * - `expectedSignatureSha256`：由 `app/build.gradle.kts` 在构建期从签名 keystore 算出并注入
-     *   `BuildConfig.EXPECTED_SIG_SHA256`，这里是「期望值」进入运行期的唯一入口。
-     *   摘要为空串时签名校验不启用（见 `SecurityIntegrityChecks.verifySignature`）。
+     * ============================ 为什么不再传 debugBypass / buildType ============================
+     * 旧实现把「是 debug 包」「是采集变体」作为 `SecurityConfig` 参数传入库，由库决定跳过。
+     * 这两个值是 dex 中的常量，apktool 改一个就能让签名校验整体不执行，因此已移除。
+     * 现在：debug 包在本类中直接不调用 install（`BuildConfig.DEBUG` 在 release 中是常量 false，
+     * R8 折叠掉该分支，release dex 中不存在跳过开关）。
+     *
+     * 签名期望摘要由 `:security` 在构建期编译进 native（`SEC_EXPECTED_SIG_SHA256`），不经过本类，
+     * 也不进入 dex（见 `SecurityIntegrityChecks.signatureHit`）。
      */
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
+        if (BuildConfig.DEBUG) return
         SecurityGuard.install(
             this,
             SecurityConfig(
-                // 只有「编译期就知道是 debug 包」时才允许跳过全部检测。
-                // 不能用库自己读的 FLAG_DEBUGGABLE：那是 manifest 属性，改一行就能关掉整条链。
                 // PLT/GOT 检测默认关闭（误报会直接杀用户）；矩阵构建用 -PenablePltCheck=true 打开，
                 // 目的是在 4 个系统版本上拿「hooks=0」的数据，作为能否默认开启的依据。
                 checks = if (BuildConfig.ENABLE_PLT_CHECK) {
@@ -76,9 +76,6 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
                 } else {
                     SecurityCheck.DEFAULT
                 },
-                debugBypass = BuildConfig.DEBUG,
-                buildType = BuildConfig.BUILD_TYPE,
-                expectedSignatureSha256 = BuildConfig.EXPECTED_SIG_SHA256.toDigestSet(),
             ),
         )
     }
@@ -159,12 +156,3 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
     }
 
 }
-
-/**
- * 把构建期注入的摘要串（逗号分隔，兼容多渠道重签）拆成集合。
- *
- * 空串 → 空集合 → [SecurityConfig.expectedSignatureSha256] 为空 → 签名校验不启用。
- * 这一步刻意放在组合根：库只管「按集合比对」，不关心摘要从哪来。
- */
-private fun String.toDigestSet(): Set<String> =
-    split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()

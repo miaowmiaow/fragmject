@@ -65,6 +65,7 @@ import com.example.fragmject.feature.authenticator.components.ScanFrameOverlay
 import com.example.fragmject.feature.authenticator.components.ScanLineAnimation
 import com.example.fragmject.feature.authenticator.components.ScanStatusIndicator
 import com.example.fragmject.feature.authenticator.model.ScanState
+import com.example.fragmject.feature.authenticator.utils.SecureWindowEffect
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -84,6 +85,8 @@ fun AuthenticatorAddScreen(
 private fun AuthenticatorAddScreenContent(
     viewModel: AuthenticatorAddViewModel,
 ) {
+    // 手输页面会出现密钥，扫码页会取景含二维码（种子），两种模式都不允许截屏或录屏
+    SecureWindowEffect()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onNavigateUp = LocalOnNavigateUp.current
     val snackbarHostState = remember { SnackbarHostState() }

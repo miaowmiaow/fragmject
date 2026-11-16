@@ -67,6 +67,11 @@ internal interface SecurityFacts {
 
     /** 当前 APK 内指定 entry 的 SHA-256（大写十六进制）；entry 不存在或读取失败返回 null。 */
     fun apkEntrySha256(entryName: String): String?
+
+    /**
+     * 类是否可加载（不初始化）。用于探测 Hook 框架的框架类是否在当前进程可见。
+     */
+    fun hasClass(name: String): Boolean
 }
 
 /** 设备 Build 特征快照（模拟器判定用）。 */
@@ -181,6 +186,10 @@ internal class AndroidSecurityFacts(private val context: Context) : SecurityFact
         return true
     }
 
+    override fun hasClass(name: String): Boolean =
+        classExists(name, AndroidSecurityFacts::class.java.classLoader) ||
+            classExists(name, ClassLoader.getSystemClassLoader())
+
     override fun apkEntrySha256(entryName: String): String? = try {
         ZipFile(apkPath()).use { zip ->
             val entry = zip.getEntry(entryName) ?: return null
@@ -198,6 +207,16 @@ internal class AndroidSecurityFacts(private val context: Context) : SecurityFact
  * `it.toInt() and 0xFF` 是必要的：Kotlin 的 Byte 是有符号的，
  * 直接格式化负数会得到 "-1" 之类的错误结果。
  */
+/** 类能否按名加载（不初始化）。找不到或链接失败都视为不存在。 */
+private fun classExists(name: String, loader: ClassLoader?): Boolean = try {
+    Class.forName(name, false, loader)
+    true
+} catch (_: ClassNotFoundException) {
+    false
+} catch (_: LinkageError) {
+    false
+}
+
 internal fun digestHex(bytes: ByteArray, algorithm: String): String {
     val digest = MessageDigest.getInstance(algorithm)
     digest.update(bytes)

@@ -173,11 +173,9 @@ class SecurityPolicyTest {
     )
 
     @Test
-    fun `默认配置不跳过检测且匿名段阈值留出容忍度`() {
+    fun `默认配置匿名段阈值留出容忍度`() {
         val config = SecurityConfig()
 
-        // 生产包默认不跳过；跳过只由宿主编译期传入的 debugBypass 决定
-        assertFalse(config.debugBypass)
         // 默认 1（大于才判定）：曾因 ART JIT 段名变更误杀，留一段容忍
         assertEquals(1, config.anonExecThreshold)
         // 加密校验默认不启用（空集合 = 不校验），避免未配置的宿主全量误杀

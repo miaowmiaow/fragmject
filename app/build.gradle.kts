@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
     id("fragmject.android.application")
-    // 安全库宿主配置：构建期注入 BuildConfig.EXPECTED_SIG_SHA256（不再手写 40 行）
+    // 安全库宿主配置：构建期校验签名来源（生产变体缺失则构建失败），摘要由 :security 编译进 native
     id("fragmject.security.config")
     id("fragmject.android.compose")
     id("fragmject.android.hilt")
@@ -83,8 +83,8 @@ android {
             "ENABLE_PLT_CHECK",
             providers.gradleProperty("enablePltCheck").map(String::toBoolean).getOrElse(false).toString(),
         )
-        // 签名期望值由 `fragmject.security.config` 插件注入 BuildConfig.EXPECTED_SIG_SHA256；
-        // 生产变体取不到签名来源时构建失败（见插件说明）。
+        // 签名来源由 `fragmject.security.config` 校验（生产变体缺失时构建失败）；
+        // 期望摘要由 :security 编译进 native，不再注入 BuildConfig。
     }
 
     buildFeatures {

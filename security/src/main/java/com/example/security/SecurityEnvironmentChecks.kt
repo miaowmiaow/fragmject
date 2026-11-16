@@ -117,6 +117,31 @@ internal fun hasEmulatorSignals(facts: SecurityFacts): Boolean {
     return score >= EMULATOR_SCORE_THRESHOLD
 }
 
+/** Xposed 系框架的框架类（LSPosed 同样提供该包名的兼容 API）。需真机样本核对。 */
+private val HOOK_FRAMEWORK_CLASSES = listOf(
+    "de.robv.android.xposed.XposedBridge",
+    "de.robv.android.xposed.XposedHelpers",
+)
+
+/** Xposed 与 LSPosed 管理器应用包名。查询需要 manifest 的 `<queries>` 声明（Android 11+）。 */
+private val HOOK_MANAGER_PACKAGES = listOf(
+    "de.robv.android.xposed.installer",
+    "org.lsposed.manager",
+)
+
+/**
+ * Java 层 Hook 框架判定（第一期）。
+ *
+ * 任一信号即命中：框架类可加载，或管理器应用已安装。
+ *
+ * 局限：
+ * - 框架类可能只注入到框架类加载器，应用类加载器与系统加载器都看不到，此时漏检；
+ * - 管理器可能被改包名或卸载；
+ * - 方法入口完整性（第二期）未做，需要依赖 ART 内部结构，见 hardening 文档。
+ */
+internal fun hasHookFrameworkSignals(facts: SecurityFacts): Boolean =
+    HOOK_FRAMEWORK_CLASSES.any(facts::hasClass) || HOOK_MANAGER_PACKAGES.any(facts::isPackageInstalled)
+
 /** 命中任一关键字即视为可疑特征（模拟器指纹/型号/产品名共用）。 */
 private fun String.containsAny(vararg hints: String): Boolean = hints.any { contains(it) }
 

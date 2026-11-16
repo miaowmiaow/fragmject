@@ -74,6 +74,13 @@ internal interface NativeChecks {
     /** 自身 so 的 `.rodata` 校验（常量表是否被改写）。 */
     fun verifySelfSoDataCrc(selfSoPath: String): Int
 
+    /**
+     * APK 签名证书比对：期望摘要编译在 so 中，APK 路径由 so 从自身加载位置推导。
+     *
+     * @return 0=匹配；1=不匹配；-1=无法判定（期望摘要未配置、路径推导失败、签名块异常）。
+     */
+    fun verifyApkSignature(): Int
+
 
     fun killSelf()
 }
@@ -183,6 +190,8 @@ internal class SecurityNative(
     external override fun verifySelfSoTextCrc(selfSoPath: String): Int
 
     external override fun verifySelfSoDataCrc(selfSoPath: String): Int
+
+    external override fun verifyApkSignature(): Int
 
 
     external override fun killSelf()

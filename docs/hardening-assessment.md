@@ -2,7 +2,7 @@
 
 本文对商业加固方案常见的六项能力（DEX 保护、数据文件加密、SO 保护、资源文件加密、反调试/反篡改、运行环境安全）逐项评估**实现难度**与**对本项目的实际价值**，给出做/不做的结论与优先级。
 
-结论先行：这六项是加固厂商的**打包能力清单**，不是按收益排序的建议。对本项目而言，**只有两项值得投入**（签名保护 + SO 保护），两项近乎零收益（数据文件加密、assets 加密），一项成本极高收益有限（DEX 壳），一项已完成转入维护（运行环境检测）。
+结论先行：这六项是加固厂商的**打包能力清单**，不是按收益排序的建议。对本项目而言，**只有两项值得投入**（签名保护 + SO 保护），一项近乎零收益（assets 加密），数据文件加密**全库不做、字段级按需**（OTP 密钥已字段级加密），一项成本极高收益有限（DEX 壳），一项已完成转入维护（运行环境检测）。
 
 导航：
 - 现有实现：`app/src/main/java/com/example/fragmject/app/security/`
@@ -36,7 +36,7 @@
 | 3 | SO 文件保护 | L3 部分、L2 部分 | 3 | 4 | 1.33 | **做**（中等强度） |
 | 6 | 运行环境安全（Root/模拟器） | 环境风险 | 2 | 3 | 1.5 | 已完成分级处置（H5），转维护 |
 | 1 | DEX 文件保护（壳/分离/VMP） | L1 批量工具 | 5 | 2 | 0.4 | 条件触发（被二次打包再做） |
-| 2 | 数据文件加密 | 本地取证（需 root） | 2 | 1.5 | 0.75 | **不做** |
+| 2 | 数据文件加密 | 本地取证（需 root） | 2 | 1.5 | 0.75 | **全库不做**；字段级按需（OTP 密钥已加密，§3.5） |
 | 4 | 资源文件加密（assets） | 资源盗用 | 2 | 1 | 0.5 | **不做**（release 无 assets）；已用资源混淆（H4）替代 |
 
 排序（建议投入顺序）：**5 → 3 → 6（维护）→ 1（条件）→ 2 / 4（不做）**。
@@ -63,7 +63,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 2. 组合根 `FragmjectApplication` 把注入值按逗号拆成 `Set<String>` 传给 `SecurityConfig`
    （多签名 / 渠道重签就用逗号分隔）。
 3. 运行期 `verifySignature` 按集合比对，忽略大小写与冒号；查询失败判失败（宁可误杀不放行）。
-4. `nonMinifiedRelease` 采集变体仍整体跳过，不受影响。
+4. 采集变体与 debug 包不安装防护（见 H1 节补丁）；库内不再存在跳过开关，签名校验对所有安装的防护都先于其他检测执行。
 
 **实测（PGEM10 / Android 16）**：
 
@@ -142,17 +142,18 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 
 **作用**：本地文件、数据库、缓存加密，防止设备被 root 后数据被读取。
 
-**本项目现状**：
-- 登录态：Cookie 由系统 `CookieManager`（WebView）与 OkHttp `CookieJar` 管理，不在应用自建明文文件里；
-- 结构化数据：Room（`AppDatabase` / `KVDatabase`）存收藏、搜索历史、KV 缓存；
-- 缓存：图片/网页缓存（`CacheUtils`、`WebResourceCacheManager`）。
+**本项目现状**（2026-11-16 核对）：
+- **已做字段级加密（OTP 密钥）**：Authenticator 的 `secret`（Base32 种子）入库前经 `KeystoreSecretCipher` 加密（AES-256-GCM，密钥由 Android Keystore 持有，不导出，随机 IV），Room 表 `otp_account` 中只存 `secret_cipher` 密文列，数据库文件与 Entity 中均无明文。实现见 `core/android-platform/.../crypto/KeystoreSecretCipher.kt` 与 `core/database/.../OtpAccountRepositoryImpl.kt`。
+- **登录态**：Cookie 由系统 `CookieManager`（WebView）与 OkHttp `CookieJar` 管理，不在应用自建明文文件里。`User.token` 标注了 `@Ignore`，不落库。
+- **其余结构化数据为明文**：Room（`AppDatabase` / `KVDatabase`）存收藏、搜索历史、用户资料、KV 缓存等。
+- **缓存**：图片/网页缓存（`CacheUtils`、`WebResourceCacheManager`）为明文。
 
-**为什么价值低**：
+**为什么全库加密价值低**：
 1. 加密密钥必须存在客户端，root 设备上依然可拿到（`EncryptedFile`/SQLCipher 的密钥最终来自 Android Keystore，但 Keystore 只在"硬件支持 + 未 root"时提供真实隔离）；
-2. 数据本身低敏感：收藏与浏览历史不构成账号风险，且服务端才是权威数据源；
+2. 其余数据本身低敏感：收藏与浏览历史不构成账号风险，且服务端才是权威数据源；
 3. 引入 SQLCipher 会带来约 2~4 MB 包体、Room3 集成适配、迁移风险，收益与成本严重倒挂。
 
-**结论**：**不做**。若未来出现"本地存 token / 生物识别凭据 / 支付凭证"，只对**该字段**用 Android Keystore 包装，不做全库加密。
+**结论**：**全库加密不做；字段级加密按敏感度逐项决定**。OTP 密钥已是字段级加密的首个落地（H-OTP，见下）。若未来出现"本地存 token / 支付凭证"等新敏感字段，同样只对**该字段**用 Keystore 包装。
 
 ### 3.6 资源文件加密（难度 2 / 价值 1）
 
@@ -174,7 +175,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 | P1 | SO 加固：动态注册 JNI、常量下沉、多处完整性校验 | `security.cpp` + `proguard-rules.pro` + `SecurityGuard` | 1~2 周 | `-keep` 收窄到类名；patch 单点不再绕过；真机冒烟 |
 | P2 | 环境检测误报治理 + 分级处置 | `SecurityConfig` + 上报通道 | 持续 | 误报率可观测；主链路不被阻断 |
 | P3 | DEX 最小壳（条件触发） | 新增 `:shell` 模块 + 后处理任务 | 2~4 周 | Hilt/Compose/Nav3/WebView 全量回归 |
-| — | 数据文件加密、assets 加密 | — | — | 不做 |
+| — | 数据文件全库加密 | — | — | 不做（字段级见 §3.5） |
 
 ## 五、复用已有结论：与三项具体手段的关系
 
@@ -205,7 +206,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 | **H5** | 环境检测分级处置 + 误报观测 | 运行环境安全 | 3 | 2 | 3 人日 | 无 | **已完成（2026-11-11）** |
 | **H6** | DEX 最小壳（不含 VMP） | DEX 保护 | 2 | 5 | 15~20 人日 | H1、H3 | **已完成 S0+S1+S2（最小壳 + 三重校验 + 交付说明 + CI 出包）** |
 | **H7** | 库化前置改造（阶段一） | 交付形态 | 4 | 2 | 2 人日 | 无 | **已完成（见 §九）** |
-| — | 数据文件加密 | 数据保护 | 1.5 | 2 | — | — | 不立项 |
+| — | 数据文件全库加密 | 数据保护 | 1.5 | 2 | — | — | 不立项（OTP 字段级加密已落地，见 §3.5） |
 | — | assets 资源加密 | 资源保护 | 1 | 2 | — | — | 不立项 |
 
 合计立项投入：约 **20 人日**（不含 H6）。**H1~H7 全部完成**：H6 的 S0/S1/S2 均已落地并在 Android 16/17 双端验证，CI 每周自动出壳包。
@@ -233,16 +234,79 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 - ✅ `assembleRelease` 后 `BuildConfig.EXPECTED_SIG_SHA256 = "0768F702…C2AC"`，与 `apksigner verify --print-certs` 输出的证书摘要一致；
 - ✅ 正常包真机启动：`security check hit` 计数 0、进程存活；
 - ✅ 用另一张证书改签后安装：`security check hit: APK 签名异常，应用即将关闭` → `jniKillSelf invoked`（+1.2s）→ 进程消失；
-- ✅ `nonMinifiedRelease` 仍整体跳过；
+- ✅ `nonMinifiedRelease` 不再整体跳过：方案 B 移除库内跳过开关后，该变体会安装防护（见下方「已知影响」）；
 - ✅ `detekt` + `:app:testDebugUnitTest` 通过。
 
 **风险与回滚**：
 - 渠道重签未登记摘要 → 上线即全部误杀。**上线前必须逐渠道核对证书**，多渠道时把多个摘要写进 `EXPECTED_SIG_SHA256`（逗号分隔）；仍保留「空串 = 不启用」作为发版级回滚开关。
 - 与 H4 的耦合：H4 重签必须使用**同一张证书**，否则 H1 会阻断自己的产物。
 
----
+**补丁（2026-11-16）：移除「跳过开关」，签名校验不再可被绕过（方案 B）**
 
-### H2 字符串加密（价值 4 / 4 人日）— **已完成**
+原实现中，`SecurityEngine.start()` 先判断 `debugBypass` 与 `skipBuildTypes`，之后才调用 `verifySignature`。这两个开关是 dex 内的编译期常量，apktool 可改写。改写后签名校验不会执行，改包即可绕过 H1。
+
+改动：
+- **库内移除所有跳过开关**：`SecurityConfig` 删除 `debugBypass` / `buildType` / `skipBuildTypes`；`SecurityEngine.start()` 启动后第一步即验签，没有任何跳过分支。
+- **跳过改由宿主在编译期决定**：`FragmjectApplication.attachBaseContext` 在 `BuildConfig.DEBUG` 为 true 时直接不调用 `SecurityGuard.install`。release 中 `DEBUG` 为常量 false，R8 折叠该分支，**release dex 中不存在跳过开关**。
+- 清理引用：`SecurityStartup` 诊断输出、`SecurityGuard` / `SecurityConfig` 文档、`consumer-rules.pro` 注释。
+- 删除依赖旧门禁的 4 个回归用例；`SecurityPolicyTest` 去掉 `debugBypass` 断言。
+- `security/api/security.api` 通过 `:security:apiDump` 重新生成。
+
+**已知影响与测量结论**：
+
+- **采集不受阻断**（模拟器，`generateBaselineProfile`，2026-11-16）：`nonMinifiedRelease` 安装了防护，但采集流程正常完成，`BaselineProfileGenerator.generate` 无失败；日志中只有模拟器的 `security warn: [env.emulator]`，没有 `integrity.signature` 命中，也没有 `jniKillSelf`。匿名可执行段检查的结果在 release 下不打日志，只能间接推断未超阈值。
+- **采集会改写已跟踪文件**：`app/src/release/generated/baselineProfiles/{baseline,startup}-prof.txt` 每次采集都会被覆盖，产生约 5 万行 diff。提交前需要人工确认，不应随采集一并入库。
+- **Gradle 启动基准不可用于真机**：`StartupBenchmark` 的 perfetto 步骤在 PGEM10 上会无限挂起（厂商冻结器导致），需要改用 `am start -W`。
+- **启动开销**（`am start -W`，每次先强停，5 次冷启动）：
+  - 真机 PGEM10（release）：TotalTime 706–747 ms，中位数约 717 ms。`JNI_OnLoad` 到 `.rodata` 校验之间约 20 ms。
+  - 模拟器（nonMinifiedRelease）：TotalTime 1360–2924 ms，中位数约 2169 ms。守卫的 native 部分约 233 ms，其中大部分是模拟器特有的 `env.emulator` Java 层检测，真机不存在该路径。
+  - 守卫的同步部分在真机上约 20 ms 量级，但加载阶段的成本无法从日志中单独拆出。**没有不带守卫的对照组，守卫增量未测量，以上为上界估计。**
+  - 样本量各 5 次，只能看出稳定性，不足以做统计检验。
+
+验证（2026-11-16，方案 B 落地后）：
+- 全量 `testDebugUnitTest` 通过：408 例，0 失败；`detekt` 通过；`:security:apiDump` 已刷新，基线不含 `debugBypass` / `buildType` / `skipBuildTypes`。
+- release 包（14:01 构建，已覆盖方案 B 代码）：dex 字节中不存在 `debugBypass`、`skipBuildTypes`、`StartupGate`、`evaluateStartupGate`（仅 `EmojiCompat.buildTypeface` 子串，与本模块无关）。该检查基于字符串表，未做 baksmali 反汇编。
+- 真机改签阻断：用 14:01 release 改签后安装，`security check hit: [integrity.signature]` → `jniKillSelf`（+1.2s）→ 进程消失。该包即为方案 B 代码，改签测试已覆盖当前实现。
+- **未**做 apktool 修改 dex 字节码后重签的端到端测试。改签阻断与之走同一条 native 验签路径，因此视为等价覆盖，未单独执行。
+
+**剩余边界（更正）**：客户端检测无法做到"不可绕过"。本补丁只是**移除了 release 中的跳过开关**，让改包需要改动的内容变多。期望摘要 `EXPECTED_SIG_SHA256` 仍是 dex 常量，攻击者可以同时改写它并用自有证书重签。把它迁到 native 侧只能**提高成本**，不能封堵：so 的磁盘副本与内存副本在重打包后一致，CRC 无法发现重打包。真正的信任根在 APK 之外，即服务端校验或设备认证（如 Play Integrity），本项目因 baseUrl 为第三方公共 API，目前无法提供。
+
+**补丁（2026-11-16 续）：期望摘要迁入 native；Java 层 Hook 框架检测第一期**
+
+1. **期望签名摘要迁入 native**
+   - `:security/build.gradle.kts` 用与 `:app` 相同的签名来源（根目录 `keystore.properties` 或 `-PsecurityCertSha256`）算出摘要，经 `-DSEC_EXPECTED_SIG_SHA256=...` 传给 CMake，生成 `expected_sig.h` 并编译进 so。
+   - `fragmject.security.config` 插件不再向 `BuildConfig` 注入摘要（之前是 dex 常量）；生产变体缺摘要时仍在构建期失败。
+   - native 新增 `apk_signature.cpp`：APK 路径由 `dladdr` 从 so 的真实加载位置推导（不取 Java 传入的 `sourceDir`）；读取 APK 签名块（优先 v3，其次 v2）中的证书，SHA-256 后与期望摘要比对。返回 0 匹配 / 1 不匹配 / -1 无法判定。
+   - 门禁顺序：`native.load()` → `signatureHit`（native 优先；-1 时回退 JVM `PackageManager` 查询）→ `debuggable` 判定 → 其余检测。
+   - 库内仍保留 `SecurityConfig.expectedSignatureSha256`，作为回退路径的期望集合；宿主不传则回退时放行。
+
+2. **Java 层 Hook 框架检测（Xposed / LSPosed）第一期**
+   - 新增检测项 `SecurityCheck.JAVA_HOOK`（默认启用）与配置 `SecurityConfig.hookFrameworkAction`（默认 `WARN`，事件码 `env.hook_framework`）。
+   - 信号：框架类 `de.robv.android.xposed.XposedBridge` / `XposedHelpers` 可加载（应用类加载器或系统类加载器），或管理器应用（`de.robv.android.xposed.installer`、`org.lsposed.manager`）已安装。
+   - manifest 增加 `<queries>` 声明（Android 11+ 包可见性）。
+   - **未采用的方案**：原计划的"调用栈特征"信号已删除。检测在后台线程执行，Xposed hook 的帧不会出现在该线程的调用栈中，该信号无效。
+   - 第二期（方法入口完整性检查）未做，依赖 ART 内部结构，需按 Android 版本实测后再定。
+
+3. **虚拟化检测**：按决定暂不做。
+
+**验证（2026-11-16，单次统一执行 `:security:apiDump :security:testDebugUnitTest :app:compileReleaseKotlin`）**
+- 构建成功；`SecurityDetectorsTest` 38 例、`SecurityPolicyTest` 15 例，0 失败。
+- `security.api` 已重新生成，包含 `JAVA_HOOK`、`getHookFrameworkAction`。
+- AAR 的 arm64 so 含期望摘要 `0768F702…C2AC`（与 keystore 证书指纹一致）；生成的 `BuildConfig` 不再含 `EXPECTED_SIG_SHA256`。
+- APK 解析与 SHA-256 在仓库外用独立程序验证（不触发 Gradle）：SHA-256 标准向量全部通过；对已有的 `app-release.apk` 返回匹配，对错误摘要返回不匹配。注意：debug 变体同样使用该测试 keystore 签名，因此 debug APK 也匹配，这是预期。
+- **真机验证（PGEM10 / Android 16，2026-11-16）**：
+  - 原 release 包（测试证书 `0768F702…C2AC`）安装启动：进程存活，无 `integrity.signature` 命中。
+  - 同一 APK 用测试证书 `dfd3987d…` 改签（v3 签名）后，卸载原应用并安装：`E AppSecurity: security check hit: [integrity.signature]`，`W FragmjectSecurity: jniKillSelf invoked`（约 1.2s 后），进程消失。
+  - 该命中只能来自 native 验签：`FragmjectApplication` 已不传期望摘要，JVM 回退路径此时放行。
+  - **仍未验证**：Xposed 信号的真实命中；release dex 中是否还有旧开关。
+
+**已知限制与需要决策的事项**
+- **回退路径变弱（已决策：接受残余风险）**：签名期望值已不在 dex 中，因此 `BuildConfig` 不再提供回退用的期望摘要。若 native 未加载（`requireNative=false` 时仅记录 WARN），签名门禁会退化为放行。此前 native 缺失时 JVM 仍会校验签名，这是本次的回归。暂不设置 `requireNative = true`，也不接入事件上报；残余风险是 so 加载失败时签名校验静默关闭。
+- **对外交付**：期望摘要随 AAR 固化。外部宿主需用自己的签名重新构建 `:security`，或传入 `-PsecurityCertSha256`，不能直接使用本仓库发布的 AAR。
+- **仍可绕过**：摘要以明文存在于 so 的 `.rodata` 中，攻击者可改写后重打包。CRC 只能发现运行期内存补丁，无法发现重打包。信任根仍在 APK 之外（服务端或设备认证）。
+- **Root 包检测存在既有缺口（已决策：暂不处理）**：`ROOT_APP_PACKAGES` 的查询在 Android 11+ 未声明 `<queries>` 时会失败并返回"未安装"，实际上检测不到 root 管理应用。`env.root` 默认 WARN，su 文件与 maps 检测不受影响。暂不补 `<queries>`，待 Play 政策核对后再定。
+
+---
 
 **目标**：release dex 中不出现业务明文（URL、提示文案、检测特征串）；运行时透明解密，业务代码零改动。
 

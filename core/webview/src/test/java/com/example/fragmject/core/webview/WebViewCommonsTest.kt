@@ -91,4 +91,34 @@ class WebViewCommonsTest {
             "",
         ).forEach { assertNull("should yield no path: $it", WebViewCommons.assetPathOf(it)) }
     }
+
+    @Test
+    fun `external intent allowed only for gesture-triggered tel mailto sms`() {
+        assertTrue(WebViewCommons.isExternalIntentAllowed("tel:10086", hasUserGesture = true))
+        assertTrue(WebViewCommons.isExternalIntentAllowed("mailto:a@b.c", hasUserGesture = true))
+        assertTrue(WebViewCommons.isExternalIntentAllowed("SMS:10086", hasUserGesture = true))
+    }
+
+    @Test
+    fun `external intent denied without user gesture`() {
+        assertFalse(WebViewCommons.isExternalIntentAllowed("tel:10086", hasUserGesture = false))
+        assertFalse(WebViewCommons.isExternalIntentAllowed("mailto:a@b.c", hasUserGesture = false))
+    }
+
+    @Test
+    fun `external intent denies intent and custom app schemes even with gesture`() {
+        listOf(
+            "intent://scan/#Intent;scheme=zxing;end",
+            "intent:#Intent;component=com.example/.Internal;end",
+            "weixin://dl/business",
+            "alipays://platformapi/startapp",
+            "market://details?id=com.example",
+            "javascript:alert(1)",
+            "content://com.example.provider/file",
+            "file:///data/data/app/secret",
+            "",
+        ).forEach {
+            assertFalse("should deny: $it", WebViewCommons.isExternalIntentAllowed(it, hasUserGesture = true))
+        }
+    }
 }

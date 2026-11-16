@@ -24,6 +24,12 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
+    <!-- Android 11+ 包可见性：查询 Hook 框架管理器应用需要显式声明（见 SecurityEnvironmentChecks） -->
+    <queries>
+        <package android:name="de.robv.android.xposed.installer" />
+        <package android:name="org.lsposed.manager" />
+    </queries>
+
     <application
         android:name="${applicationName}"
         android:allowBackup="false"

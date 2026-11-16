@@ -38,6 +38,36 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
     return actual.any { it.normalizeSha256() in expected }
 }
 
+/** [NativeChecks.verifyApkSignature] 的返回值：匹配 / 不匹配 / 无法判定。 */
+private const val SIG_MATCH = 0
+private const val SIG_MISMATCH = 1
+private const val SIG_UNKNOWN = -1
+
+/**
+ * APK 签名门禁：native 判定优先，无法判定时回退到 JVM（PackageManager）查询。
+ *
+ * 为什么 native 优先：PackageManager 的返回值与 [SecurityConfig.expectedSignatureSha256] 都可被
+ * Java 层 hook 或改写；native 从 so 的真实加载位置推导 APK 路径，并自行解析签名块，期望摘要编译在 so 中。
+ *
+ * 回退条件（无法判定）：native 不可用、期望摘要未编译进 so、APK 路径推导失败或签名块结构异常。
+ * 回退时由 [verifySignature] 判定；其期望集合默认为空，即放行。
+ *
+ * @return 命中则返回 CRITICAL 结果，否则 null。
+ */
+internal fun signatureHit(native: NativeChecks, facts: SecurityFacts, config: SecurityConfig): SecurityHit? {
+    val verdict = if (native.available) native.verifyApkSignature() else SIG_UNKNOWN
+    val mismatch = when (verdict) {
+        SIG_MATCH -> false
+        SIG_MISMATCH -> true
+        else -> !verifySignature(facts, config)
+    }
+    return if (mismatch) {
+        SecurityHit("APK 签名异常，应用即将关闭", Severity.CRITICAL, code = "integrity.signature")
+    } else {
+        null
+    }
+}
+
 /**
  * 自身 so 完整性校验。
  *

@@ -301,3 +301,12 @@
 -keepclassmembers class * extends android.app.Application {
     <init>();
 }
+
+# ---- ML Kit 条码扫描（添加账户页扫码，release 实测 NPE）----
+# Firebase 组件发现按类名反射调用注册类的 getComponents()；R8 会把该方法名改成混淆名，
+# 发现机制找不到方法，返回空组件列表，ML Kit 内部字段为 null，BarcodeScanning.getClient 抛 NPE。
+# ML Kit 的 AAR 自带 proguard.txt 只保护 proto 字段与 native 方法，不覆盖这一点。
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_barcode.** { *; }
+-keep class com.google.firebase.components.** { *; }
+-dontwarn com.google.mlkit.**

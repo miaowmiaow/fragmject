@@ -1,4 +1,7 @@
+import com.example.fragmject.convention.FragmjectSecurityConfigExtension
+import com.example.fragmject.convention.resolveSecurityCertDigest
 import java.nio.file.Files
+import java.util.Properties
 import java.util.zip.ZipFile
 
 plugins {
@@ -22,6 +25,25 @@ val libCompileSdk: Int = providers.gradleProperty("securityCompileSdk").map(Stri
 val libMinSdk: Int = providers.gradleProperty("securityMinSdk").map(String::toInt).getOrElse(26)
 val libNdkVersion: String = providers.gradleProperty("securityNdkVersion").getOrElse("28.2.13676358")
 val libCmakeVersion: String = providers.gradleProperty("securityCmakeVersion").getOrElse("3.22.1")
+
+/**
+ * 期望的 APK 签名证书摘要：与 :app 使用同一套签名来源（根目录 keystore.properties 或 -P 属性），
+ * 经 CMake 宏编译进 native，不进入 dex。
+ *
+ * 注意：该值随 AAR 固化。对外交付时，宿主需用自己的签名重新构建本库（或传 -PsecurityCertSha256）。
+ */
+val expectedSigDigest: String = run {
+    val keystoreProps = Properties()
+    val keystoreFile = rootProject.file("keystore.properties")
+    if (keystoreFile.exists()) keystoreFile.inputStream().use { keystoreProps.load(it) }
+    resolveSecurityCertDigest(
+        FragmjectSecurityConfigExtension().apply {
+            this.keystoreFile = keystoreProps.getProperty("storeFile")
+            keyAlias = keystoreProps.getProperty("keyAlias")
+            keystorePassword = keystoreProps.getProperty("storePassword")
+        },
+    )
+}
 
 /**
  * 运行期安全防护库（从 `:app` 搬出，供其他项目复用）。
@@ -50,6 +72,13 @@ android {
         minSdk = libMinSdk
         // 宿主 R8 会重命名 JNI 类与公开 API，规则必须由库自带
         consumerProguardFiles("consumer-rules.pro")
+
+        // 期望签名摘要编译进 native（见 CMakeLists.txt 的 SEC_EXPECTED_SIG_SHA256）
+        externalNativeBuild {
+            cmake {
+                arguments += "-DSEC_EXPECTED_SIG_SHA256=$expectedSigDigest"
+            }
+        }
 
         // 测试开关（只影响本模块的 native 编译）：
         // -PselfTamperProbe=true 时编译进「自篡改探针」，用于验证逐页 CRC 能定位被改的页。

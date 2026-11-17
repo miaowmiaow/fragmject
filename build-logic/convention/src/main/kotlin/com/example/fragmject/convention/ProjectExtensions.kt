@@ -67,6 +67,15 @@ fun Project.loadConfigProperties(): Properties =
  * 报告落在 `build/reports/jacoco/unitTestCoverageReport/`。
  * 若升级 AGP 后产物路径变化，报告会变空——CI 里以"报告里有类"作为校验点。
  */
+/** 根目录 `keystore.properties`（不存在则为空）。app 与 :security 共用，避免两处解析各自漂移。 */
+fun Project.loadKeystoreProperties(): Properties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+/** 全工程统一的 Java 编译目标（shell / security / benchmark 共用，不再各自硬编码）。 */
+val FRAGMJECT_JAVA_VERSION: org.gradle.api.JavaVersion = org.gradle.api.JavaVersion.VERSION_21
+
 internal fun Project.configureUnitTestCoverage() {
     pluginManager.apply("jacoco")
 

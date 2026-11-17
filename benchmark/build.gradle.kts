@@ -1,3 +1,4 @@
+import com.example.fragmject.convention.FRAGMJECT_JAVA_VERSION
 import com.example.fragmject.convention.loadConfigProperties
 
 plugins {
@@ -38,8 +39,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = FRAGMJECT_JAVA_VERSION
+        targetCompatibility = FRAGMJECT_JAVA_VERSION
     }
 
     // 被测目标：AGP 会把 :app 的 APK 一同安装到设备上

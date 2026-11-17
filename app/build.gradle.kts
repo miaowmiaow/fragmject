@@ -1,5 +1,6 @@
 import com.example.fragmject.convention.FragmjectSecurityConfigExtension
 import com.example.fragmject.convention.loadConfigProperties
+import com.example.fragmject.convention.loadKeystoreProperties
 import java.util.Properties
 
 
@@ -32,10 +33,7 @@ val matrixAbi: String? = providers.gradleProperty("matrixAbi").orNull
  */
 val dexShellEnabled = providers.gradleProperty("enableDexShell").map(String::toBoolean).getOrElse(false)
 
-val keystoreFile = rootProject.file("keystore.properties")
-val keystoreProperties = Properties().apply {
-    if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) }
-}
+val keystoreProperties = loadKeystoreProperties()
 
 // 安全库签名来源：本仓库显式声明自己的【测试密钥】（有意入库，仅测试用）。
 // 使用方工程应在自己的 build 脚本里配置 securityConfig，不要依赖任何仓库内的 keystore。

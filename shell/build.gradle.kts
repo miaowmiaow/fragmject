@@ -1,6 +1,11 @@
+import com.example.fragmject.convention.FRAGMJECT_JAVA_VERSION
+import com.example.fragmject.convention.loadConfigProperties
+
 plugins {
     id("com.android.library")
 }
+
+val configProperties = loadConfigProperties()
 
 /**
  * DEX 壳的「壳代码」模块（H6 / S1）。
@@ -14,15 +19,15 @@ plugins {
  */
 android {
     namespace = "com.example.shell"
-    compileSdk = 37
+    compileSdk = configProperties.getProperty("compileSdkVersion").toInt()
 
     defaultConfig {
         minSdk = 26
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = FRAGMJECT_JAVA_VERSION
+        targetCompatibility = FRAGMJECT_JAVA_VERSION
     }
 
     // 壳代码不需要 buildConfig / 资源，关掉以减少产物噪音

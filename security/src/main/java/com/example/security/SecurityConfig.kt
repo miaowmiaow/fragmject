@@ -128,11 +128,12 @@ data class SecurityConfig @JvmOverloads constructor(
     /**
      * 原生库（libfragmject_security.so）不可用时是否直接终止。
      *
-     * 默认 false：记录 WARN 事件 `internal.native_unavailable`，JVM 侧检测照常工作。
-     * 设为 true：视为篡改，按 CRITICAL 阻断。阻止 so 加载即可关掉全部 native 检测，
-     * 宿主若确认 so 随包可靠，建议开启。
+     * 默认 true：视为篡改，按 CRITICAL 阻断。阻止 so 加载即可关掉全部 native 检测，
+     * 且签名期望摘要只存在于 so 中，so 缺失时签名校验会静默退化为放行，因此默认必须阻断。
+     * 设为 false：仅记录 WARN 事件 `internal.native_unavailable`，JVM 侧检测照常工作，
+     * 仅适用于确认无法随包提供 so 的特殊宿主，且需接受签名校验失效的风险。
      */
-    val requireNative: Boolean = false,
+    val requireNative: Boolean = true,
     /**
      * Java 层 Hook 框架（Xposed / LSPosed）的处置方式。
      *

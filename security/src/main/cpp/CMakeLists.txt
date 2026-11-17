@@ -15,7 +15,14 @@ project(appsecurity LANGUAGES CXX)
 # SHARED：JNI 需要以动态库形式被 System.loadLibrary 加载。
 # 库名决定 Java 侧加载名：add_library(appsecurity ...) -> libappsecurity.so
 # -> System.loadLibrary("appsecurity")
-add_library(appsecurity SHARED security.cpp apk_signature.cpp)
+add_library(appsecurity SHARED
+    security.cpp
+    sec_integrity.cpp
+    sec_maps.cpp
+    sec_scan.cpp
+    sec_plt.cpp
+    apk_signature.cpp
+)
 
 # 期望的 APK 签名证书 SHA-256（十六进制，逗号分隔多个，冒号与大小写不限）。
 # 由 :security/build.gradle.kts 经 -DSEC_EXPECTED_SIG_SHA256=... 传入，编译进 so，不进入 dex。
@@ -35,7 +42,10 @@ target_compile_features(appsecurity PRIVATE cxx_std_17)
 #   实测（2026-11-16，release so）：本库自身代码导出的符号只有 JNI_OnLoad（带 JNIEXPORT）。
 #   .dynsym 中其余数百个导出符号是 C++ 运行时（_Z*、__cxa_*、std::*），来自 libc++ 静态链接，
 #   不是本库的代码。若要收敛这部分，需单独评估 STL 链接方式，目前未处理。
-target_compile_options(appsecurity PRIVATE -O2 -Wall -fvisibility=hidden)
+# 拆分后每个翻译单元都包含公共混淆常量（sec_common.h），未被该单元用到的常量与内联函数属预期，
+# 屏蔽对应告警以免淹没真正的问题。
+target_compile_options(appsecurity PRIVATE -O2 -Wall -fvisibility=hidden
+    -Wno-unused-const-variable -Wno-unused-function)
 
 
 # log：__android_log_print 依赖 liblog。

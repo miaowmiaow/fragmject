@@ -1,7 +1,9 @@
 import com.example.fragmject.convention.FragmjectSecurityConfigExtension
+import com.example.fragmject.convention.FRAGMJECT_JAVA_VERSION
+import com.example.fragmject.convention.loadConfigProperties
+import com.example.fragmject.convention.loadKeystoreProperties
 import com.example.fragmject.convention.resolveSecurityCertDigest
 import java.nio.file.Files
-import java.util.Properties
 import java.util.zip.ZipFile
 
 plugins {
@@ -21,8 +23,10 @@ plugins {
  * 数值来源：`compileSdk` 取「能编译通过的最高已知版本」，`minSdk` 由
  * `InMemoryDexClassLoader`（API 26）决定，NDK/CMake 取本仓库验证过的版本。
  */
-val libCompileSdk: Int = providers.gradleProperty("securityCompileSdk").map(String::toInt).getOrElse(37)
-val libMinSdk: Int = providers.gradleProperty("securityMinSdk").map(String::toInt).getOrElse(26)
+val libCompileSdk: Int = providers.gradleProperty("securityCompileSdk").map(String::toInt)
+    .getOrElse(loadConfigProperties().getProperty("compileSdkVersion").toInt())
+val libMinSdk: Int = providers.gradleProperty("securityMinSdk").map(String::toInt)
+    .getOrElse(loadConfigProperties().getProperty("minSdkVersion").toInt())
 val libNdkVersion: String = providers.gradleProperty("securityNdkVersion").getOrElse("28.2.13676358")
 val libCmakeVersion: String = providers.gradleProperty("securityCmakeVersion").getOrElse("3.22.1")
 
@@ -33,9 +37,7 @@ val libCmakeVersion: String = providers.gradleProperty("securityCmakeVersion").g
  * 注意：该值随 AAR 固化。对外交付时，宿主需用自己的签名重新构建本库（或传 -PsecurityCertSha256）。
  */
 val expectedSigDigest: String = run {
-    val keystoreProps = Properties()
-    val keystoreFile = rootProject.file("keystore.properties")
-    if (keystoreFile.exists()) keystoreFile.inputStream().use { keystoreProps.load(it) }
+    val keystoreProps = loadKeystoreProperties()
     resolveSecurityCertDigest(
         FragmjectSecurityConfigExtension().apply {
             this.keystoreFile = keystoreProps.getProperty("storeFile")
@@ -108,8 +110,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = FRAGMJECT_JAVA_VERSION
+        targetCompatibility = FRAGMJECT_JAVA_VERSION
     }
 
     externalNativeBuild {

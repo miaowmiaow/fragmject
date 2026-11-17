@@ -87,11 +87,6 @@ class SecurityPolicyTest {
     }
 
     @Test
-    fun `native 不可用默认只告警不阻断`() {
-        assertFalse(SecurityConfig().requireNative)
-    }
-
-    @Test
     fun `连续失败达到阈值才降级`() {
         assertFalse(shouldDegrade(failures = 1, limit = 3, alreadyDegraded = false))
         assertFalse(shouldDegrade(failures = 2, limit = 3, alreadyDegraded = false))
@@ -171,6 +166,12 @@ class SecurityPolicyTest {
         severity = Severity.WARN,
         timestampMillis = millis,
     )
+
+    @Test
+    fun `默认配置要求原生库可用（缺失即阻断）`() {
+        assertTrue(SecurityConfig().requireNative)
+        assertEquals(Severity.CRITICAL, nativeUnavailableHit(available = false, requireNative = SecurityConfig().requireNative)?.severity)
+    }
 
     @Test
     fun `默认配置匿名段阈值留出容忍度`() {

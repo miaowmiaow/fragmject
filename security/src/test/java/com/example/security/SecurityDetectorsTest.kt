@@ -378,6 +378,17 @@ class SecurityDetectorsTest {
     }
 
     @Test
+    fun `模拟器与 Hook 框架同时命中时两者都返回，Hook 不被遮住`() {
+        val facts = FakeFacts().apply {
+            build = baseBuild.copy(hardware = "ranchu", product = "sdk_gphone64_arm64")
+            classes += "de.robv.android.xposed.XposedBridge"
+        }
+        val codes = detectAllHits(facts, FakeNative(), SecurityConfig(), false, false, false).map { it.code }
+
+        assertEquals(listOf("env.emulator", "env.hook_framework"), codes)
+    }
+
+    @Test
     fun `Root 为 BLOCK 时 Hook 框架 WARN 不会遮住它`() {
         val facts = FakeFacts().apply {
             installed += "com.topjohnwu.magisk"

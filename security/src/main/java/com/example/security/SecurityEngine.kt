@@ -91,9 +91,12 @@ internal class SecurityEngine(
     /** 是否已降级为「只上报、不阻断」；见 [DetectionHealth]。 */
     val degraded: Boolean get() = health.degraded
 
-    /** 上一轮的 WARN 去重键（见 [SecurityHit.dedupeKey]）；同一键不重复记录。 */
-    @Volatile
-    private var lastWarnKey: String? = null
+    /**
+     * 已记录过的 WARN 去重键集合（见 [SecurityHit.dedupeKey]）；同一键不重复记录。
+     * 用集合而非单值：同一轮可能同时有多个环境类 WARN（如 Root 与 Hook 框架并存），
+     * 单值会互相覆盖，导致每轮重复记录。
+     */
+    private val lastWarnKeys: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
 
     /**
      * 后台检测线程：仅在真正启动后才创建，未启动的引擎不产生任何开销。
@@ -172,16 +175,14 @@ internal class SecurityEngine(
             Log.w(SecurityGuard.TAG, "ptrace self-trace failed (already attached?)")
         }
 
-        val firstHit = detectHit(facts, native, config, includePortScan = false, includeCrc = false)
-        if (firstHit != null) {
-            // 只有 CRITICAL 才终止；WARN（Root / 模拟器默认）记录后继续正常启动流程，
-            // 否则一次环境特征就会让应用在启动阶段闪退。
-            if (firstHit.severity == Severity.CRITICAL) {
-                block(firstHit)
-                return
-            }
-            warn(firstHit)
+        val hits = detectAllHits(facts, native, config, includePortScan = false, includeCrc = false)
+        // 只有 CRITICAL 才终止；WARN（Root / 模拟器 / Hook 框架，默认）逐条记录后继续正常启动流程，
+        // 否则一次环境特征就会让应用在启动阶段闪退。
+        hits.firstOrNull { it.severity == Severity.CRITICAL }?.let {
+            block(it)
+            return
         }
+        hits.forEach { warn(it) }
 
         // 一次性完整性校验（签名已在启动早期同步完成，这里只剩 so 与资源）
         startOneShotIntegrityChecks()
@@ -250,7 +251,7 @@ internal class SecurityEngine(
     fun stop() {
         active = false
         started = false
-        lastWarnKey = null
+        lastWarnKeys.clear()
         if (handlerHolder.isInitialized()) {
             handler.removeCallbacksAndMessages(null)
             handler.looper.quitSafely()
@@ -299,7 +300,7 @@ internal class SecurityEngine(
         // 离开前台时清掉 WARN 去重：用户切回来若环境仍异常，会再记录一条，
         // 便于复现「只有切回前台才出现」的问题；放在这里而不是 onForeground，
         // 是为了避免启动阶段 start() 与首次 onForeground 各记一次造成重复。
-        lastWarnKey = null
+        lastWarnKeys.clear()
         handler.removeCallbacks(checkTask)
     }
 
@@ -355,8 +356,7 @@ internal class SecurityEngine(
      * 去重键用 [SecurityHit.dedupeKey]（已去掉运行期数字），避免段数变化导致重复刷屏。
      */
     fun warn(hit: SecurityHit) {
-        if (lastWarnKey == hit.dedupeKey) return
-        lastWarnKey = hit.dedupeKey
+        if (!lastWarnKeys.add(hit.dedupeKey)) return
         Log.e(SecurityGuard.TAG, "security warn: [${hit.code}]")
         record(hit)
     }
@@ -397,8 +397,8 @@ internal class SecurityEngine(
             }
 
             val startedNs = if (config.diagnosticMode) System.nanoTime() else 0L
-            val hit = runCatching {
-                detectHit(
+            val hits = runCatching {
+                detectAllHits(
                     facts = facts,
                     native = native,
                     config = config,
@@ -408,23 +408,21 @@ internal class SecurityEngine(
                 )
             }.onFailure { onDetectionFailure(it) }
                 .onSuccess { onDetectionSuccess() }
-                .getOrNull()
+                .getOrNull().orEmpty()
             if (config.diagnosticMode) {
                 // 性能基线：诊断模式下打印单轮耗时（含 port/crc 的那一轮会明显更久）
                 val costMs = (System.nanoTime() - startedNs) / 1_000_000.0
                 Log.e(
                     SecurityGuard.TAG,
                     "security diag: round cost=${"%.2f".format(costMs)}ms " +
-                        "portScan=$portScanDue crc=$crcCheckDue hit=${hit?.code ?: "none"}",
+                        "portScan=$portScanDue crc=$crcCheckDue hit=${hits.firstOrNull()?.code ?: "none"}",
                 )
             }
-            if (hit != null) {
-                if (hit.severity == Severity.CRITICAL) {
-                    block(hit)
-                    return
-                }
-                warn(hit)
+            hits.firstOrNull { it.severity == Severity.CRITICAL }?.let {
+                block(it)
+                return
             }
+            hits.forEach { warn(it) }
 
             // 指数退避：连续干净后逐步拉长间隔（1s → 2s → 4s … → 上限封顶）。
             consecutiveCleanRounds++

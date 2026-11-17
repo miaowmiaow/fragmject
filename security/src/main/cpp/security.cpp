@@ -34,6 +34,7 @@
 #include <link.h>
 #include <elf.h>
 #include <signal.h>
+#include <pthread.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
 #include <sys/ptrace.h>
@@ -59,6 +60,7 @@
 #define SEC_TAG "FragmjectSecurity"
 #define SEC_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, SEC_TAG, __VA_ARGS__)
 #define SEC_LOGW(...) __android_log_print(ANDROID_LOG_WARN, SEC_TAG, __VA_ARGS__)
+#define SEC_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, SEC_TAG, __VA_ARGS__)
 
 // bionic 的 <elf.h> 不一定提供 glibc 风格的 ElfW 宏（本工程在 NDK 28 上即缺失），
 // 这里按位宽补齐：64 位展开为 Elf64_Shdr，32 位展开为 Elf32_Shdr。
@@ -1576,7 +1578,35 @@ jint jniHardenProcess(JNIEnv *, jobject) {
  *
  * @return 0=匹配；1=不匹配；-1=无法判定（未配置期望摘要、路径推导失败、签名块结构异常）。
  */
-jint jniVerifyApkSignature(JNIEnv *, jobject) {
+namespace {
+
+/** 原生守护线程的复验间隔（秒）。间隔越短，运行期被替换后的暴露时间越短。 */
+constexpr unsigned kSignatureGuardIntervalSec = 5;
+
+/**
+ * 判定为篡改后的终止延迟（毫秒），与 SecurityConfig.blockGraceMs 对齐。
+ *
+ * 为什么不立即终止：若在 JNI_OnLoad（Application 启动早期）就 SIGKILL，界面尚未显示，
+ * ActivityManager 会把它当作启动失败并反复拉起，实测 12 秒内 86 次。延迟到界面显示之后再终止，
+ * 与 Java 侧阻断路径的行为一致，只产生一次启动。
+ */
+constexpr unsigned kMismatchKillDelayMs = 1200;
+
+void terminateAfterGrace() {
+    usleep(kMismatchKillDelayMs * 1000);
+    kill(getpid(), SIGKILL);
+}
+
+/**
+ * APK 签名证书比对的核心实现，供 JNI 入口与原生守护线程共用。
+ *
+ * 期望摘要来自构建期编译进 so 的 SEC_EXPECTED_SIG_SHA256；
+ * APK 路径由 dladdr 从本库的真实加载位置推导，不取 Java 传入的 sourceDir。
+ *
+ * 只有 kMismatch 才会触发终止；kUnknown（无法判定）只由调用方决定如何处理，
+ * 避免在个别 ROM 或特殊安装形式下因读取失败而误杀。
+ */
+int verifyApkSignatureNative() {
     static const std::vector<apksig::Digest> expected = [] {
         std::vector<apksig::Digest> out;
         if (!apksig::parseDigestList(SEC_EXPECTED_SIG_SHA256, out)) {
@@ -1587,9 +1617,59 @@ jint jniVerifyApkSignature(JNIEnv *, jobject) {
     if (expected.empty()) return apksig::kUnknown;
 
     static const std::string apkPath =
-            apksig::resolveApkPathFromLibrary(reinterpret_cast<const void *>(&jniVerifyApkSignature));
+            apksig::resolveApkPathFromLibrary(reinterpret_cast<const void *>(&verifyApkSignatureNative));
     if (apkPath.empty()) return apksig::kUnknown;
     return apksig::verifyApkCertificates(apkPath, expected);
+}
+
+/**
+ * 原生守护线程：不经过 Java 层，周期性复验签名。
+ *
+ * 为什么需要：Java 侧的阻断判定位于 dex 中，apktool 可以删除分支后重签（已在模拟器上复现）。
+ * 守护线程在 native 中独立执行终止，不依赖 Java 分支。
+ */
+void *signatureGuardLoop(void *) {
+    SEC_LOGD("signature guard started, interval=%us", kSignatureGuardIntervalSec);
+    for (;;) {
+        if (verifyApkSignatureNative() == apksig::kMismatch) {
+            SEC_LOGE("native signature mismatch, terminating after %ums", kMismatchKillDelayMs);
+            terminateAfterGrace();
+        }
+        sleep(kSignatureGuardIntervalSec);
+    }
+    return nullptr;
+}
+
+/**
+ * 在 JNI_OnLoad 中启动守护：分离线程周期复验。线程首次复验不等待，因此加载后立即检查。
+ * 若线程无法创建，则同步校验一次并按宽限期终止，保证篡改包仍会被拦截。
+ */
+void startSignatureGuard() {
+    static bool started = false;
+    if (started) return;
+    started = true;
+
+    pthread_attr_t attr;
+    if (pthread_attr_init(&attr) != 0) {
+        SEC_LOGW("signature guard: pthread_attr_init failed");
+        if (verifyApkSignatureNative() == apksig::kMismatch) terminateAfterGrace();
+        return;
+    }
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_t thread;
+    const int rc = pthread_create(&thread, &attr, signatureGuardLoop, nullptr);
+    pthread_attr_destroy(&attr);
+    if (rc != 0) {
+        SEC_LOGW("signature guard: pthread_create failed rc=%d, falling back to one-shot check", rc);
+        if (verifyApkSignatureNative() == apksig::kMismatch) terminateAfterGrace();
+    }
+}
+
+}  // namespace
+
+/** JNI 入口：保持与 [SecurityNative.verifyApkSignature] 的契约（0/1/-1）。 */
+jint jniVerifyApkSignature(JNIEnv *, jobject) {
+    return verifyApkSignatureNative();
 }
 
 void jniKillSelf(JNIEnv *, jobject) {
@@ -1695,6 +1775,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
         return JNI_ERR;
     }
     SEC_LOGD("JNI_OnLoad: registered %d methods", count);
+    startSignatureGuard();
     return JNI_VERSION_1_6;
 }
 

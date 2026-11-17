@@ -5,7 +5,7 @@ package com.example.security
  *
  * 拆出原因：调度（何时检测、命中后怎么办）在 [SecurityEngine]；单项判定在
  * `SecurityEnvironmentChecks` / `SecurityIntegrityChecks`；这里只负责「按什么顺序问、
- * 问到第一个命中就停」。
+ * 问到第一个命中就停」。环境类例外：它们逐项独立检测，全部命中都会返回（见 [detectAllHits]）。
  *
  * 全部是纯函数，依赖由参数传入，可在 JVM 单测中构造任意设备状态。
  */
@@ -15,14 +15,16 @@ package com.example.security
  *
  * 排序原则：**明确攻击特征优先，环境类信号垫底**。
  * - 前四项（调试器 / Frida / CRC / 端口）命中即 [Severity.CRITICAL]；
- * - Root / 模拟器放在最后，其级别由 [SecurityConfig.rootAction] /
- *   [SecurityConfig.emulatorAction] 决定（默认 WARN，不终止进程）。
+ * - Root / 模拟器 / Hook 框架放在最后，其级别由各自的 `*Action` 决定（默认 WARN，不终止进程）。
  *
  * 这样排序的两个原因：
  * 1. native 判定优先：返回值不走 Java 方法调用，Frida 的 Java hook 打不到，
  *    尽早命中就能尽早阻断，减少后续检测在「已被控制的环境」里执行；
  * 2. 环境类检测需要查文件、查包名（binder 调用），成本高于读一个小文件，
  *    放在 CRITICAL 项之后可以避免「已确认被注入还要把 root 检查跑完」。
+ *
+ * 注意：本函数只返回一个结果，供兼容调用方使用。引擎应使用 [detectAllHits]，
+ * 否则环境类的 WARN 会遮住其后的 WARN（例如 Root 遮住 Hook 框架）。
  *
  * 各检测项说明与已知局限：
  * 1. TracerPid：覆盖 ptrace/lldb/调试壳；对 Java 调试无效（由第 2 项覆盖）。
@@ -33,8 +35,7 @@ package com.example.security
  * 6. 匿名可执行段：对内存注入最通用；受 ROM/JIT 差异影响，阈值需可调。
  * 7. libc `.text` CRC：覆盖 inline hook；对 PLT/GOT hook、Java hook 无效。
  * 8. 端口扫描：只覆盖 frida-server 形态；gadget 不监听端口。
- * 9. Root：多信号综合（su/Magisk/root 管理应用/maps 注入），存在定制 ROM 误报。
- * 10. 模拟器：Build 多字段 + QEMU 设备，Score >= 2 才判定，降低误报。
+ * 9-11. 环境类（Root / 模拟器 / Java 层 Hook 框架），见 [detectEnvironmentHits]。
  *
  * @param includePortScan 本轮是否执行端口扫描（由调用方按时间降频决定）。
  * @param includeCrc      本轮是否执行 CRC 校验（由调用方按时间降频决定）。
@@ -47,6 +48,36 @@ internal fun detectHit(
     includePortScan: Boolean,
     includeCrc: Boolean,
     includeInjectionScan: Boolean = true,
+): SecurityHit? =
+    detectNonEnvironmentHit(facts, native, config, includePortScan, includeCrc, includeInjectionScan)
+        ?: detectEnvironmentHits(facts, native, config).firstOrNull()
+
+/**
+ * 返回本轮**全部**命中：非环境类的首个命中（如有），以及每个启用的环境类命中。
+ *
+ * 为什么不只返回一个：环境类命中默认都是 WARN。若只返回第一个，Root 或模拟器命中会遮住
+ * Java 层 Hook 框架命中，导致 LSPosed 不被报告（真机 + 模拟器上已复现）。
+ * 非环境类仍按短路返回首个命中：它们是攻击特征，且多数为 CRITICAL，首个即足以阻断。
+ */
+internal fun detectAllHits(
+    facts: SecurityFacts,
+    native: NativeChecks,
+    config: SecurityConfig,
+    includePortScan: Boolean,
+    includeCrc: Boolean,
+    includeInjectionScan: Boolean = true,
+): List<SecurityHit> =
+    listOfNotNull(
+        detectNonEnvironmentHit(facts, native, config, includePortScan, includeCrc, includeInjectionScan),
+    ) + detectEnvironmentHits(facts, native, config)
+
+private fun detectNonEnvironmentHit(
+    facts: SecurityFacts,
+    native: NativeChecks,
+    config: SecurityConfig,
+    includePortScan: Boolean,
+    includeCrc: Boolean,
+    includeInjectionScan: Boolean,
 ): SecurityHit? {
     // 按「启用的检测维度」逐项短路：裁掉的项不执行、也不产生事件（省掉对应 native 调用）
     if (SecurityCheck.DEBUGGER in config.checks) {
@@ -64,7 +95,7 @@ internal fun detectHit(
     if (SecurityCheck.PORT_SCAN in config.checks) {
         detectPortHit(facts, includePortScan)?.let { return it }
     }
-    return detectEnvironmentHit(facts, native, config)
+    return null
 }
 
 /**
@@ -173,33 +204,36 @@ internal fun detectPortHit(facts: SecurityFacts, includePortScan: Boolean): Secu
 }
 
 /**
- * 9-10：Root / 模拟器（级别由配置决定，默认 WARN）。
+ * 9-11：环境类检测（Root / 模拟器 / Java 层 Hook 框架），级别由各自的 `*Action` 决定，默认 WARN。
  *
- * 这两项是**环境特征**而非攻击证据：定制 ROM、云手机、自动化测试都会命中，
+ * 这些是**环境特征**而非攻击证据：定制 ROM、云手机、自动化测试都会命中，
  * 一律杀进程的误杀成本高于收益，因此默认只记录、不阻断。
+ *
+ * 每一项独立判定，全部命中都会返回（不做短路）。
  */
-internal fun detectEnvironmentHit(
+internal fun detectEnvironmentHits(
     facts: SecurityFacts,
     native: NativeChecks,
     config: SecurityConfig,
-): SecurityHit? {
+): List<SecurityHit> {
+    val hits = mutableListOf<SecurityHit>()
     val rootEnabled = SecurityCheck.ROOT in config.checks && config.rootAction != Action.IGNORE
     if (rootEnabled && hasRootSignals(facts, native)) {
-        return SecurityHit("检测到 Root 环境", severityOf(config.rootAction), code = "env.root")
+        hits += SecurityHit("检测到 Root 环境", severityOf(config.rootAction), code = "env.root")
     }
     val emulatorEnabled = SecurityCheck.EMULATOR in config.checks && config.emulatorAction != Action.IGNORE
     if (emulatorEnabled && hasEmulatorSignals(facts)) {
-        return SecurityHit("检测到模拟器环境", severityOf(config.emulatorAction), code = "env.emulator")
+        hits += SecurityHit("检测到模拟器环境", severityOf(config.emulatorAction), code = "env.emulator")
     }
     val hookEnabled = SecurityCheck.JAVA_HOOK in config.checks && config.hookFrameworkAction != Action.IGNORE
     if (hookEnabled && hasHookFrameworkSignals(facts)) {
-        return SecurityHit(
+        hits += SecurityHit(
             "检测到 Java 层 Hook 框架（Xposed / LSPosed）",
             severityOf(config.hookFrameworkAction),
             code = "env.hook_framework",
         )
     }
-    return null
+    return hits
 }
 
 /** [Action.BLOCK] → CRITICAL（终止进程）；[Action.WARN] → WARN（只记录）。 */

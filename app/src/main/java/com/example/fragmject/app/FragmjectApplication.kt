@@ -76,6 +76,9 @@ class FragmjectApplication : Application(), ImageLoaderFactory {
                 } else {
                     SecurityCheck.DEFAULT
                 },
+                // native 不可用（so 缺失或加载失败）即阻断。否则 native 侧的签名守护与 CRC 全部失效，
+                // 而签名比对会退化为 JVM 回退路径（期望集合为空，会放行）。
+                requireNative = true,
             ),
         )
     }

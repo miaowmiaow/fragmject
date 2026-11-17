@@ -63,7 +63,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 2. 组合根 `FragmjectApplication` 把注入值按逗号拆成 `Set<String>` 传给 `SecurityConfig`
    （多签名 / 渠道重签就用逗号分隔）。
 3. 运行期 `verifySignature` 按集合比对，忽略大小写与冒号；查询失败判失败（宁可误杀不放行）。
-4. 采集变体与 debug 包不安装防护（见 H1 节补丁）；库内不再存在跳过开关，签名校验对所有安装的防护都先于其他检测执行。
+4. 采集变体与 debug 包不安装防护（见 H1 节补丁）；库内不再存在跳过开关。签名校验由 native 守护线程独立执行终止（2026-11-16），不再仅依赖 Java 分支（见 H1 节修复验证）。
 
 **实测（PGEM10 / Android 16）**：
 
@@ -269,7 +269,32 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 - 真机改签阻断：用 14:01 release 改签后安装，`security check hit: [integrity.signature]` → `jniKillSelf`（+1.2s）→ 进程消失。该包即为方案 B 代码，改签测试已覆盖当前实现。
 - **未**做 apktool 修改 dex 字节码后重签的端到端测试。改签阻断与之走同一条 native 验签路径，因此视为等价覆盖，未单独执行。
 
-**剩余边界（更正）**：客户端检测无法做到"不可绕过"。本补丁只是**移除了 release 中的跳过开关**，让改包需要改动的内容变多。期望摘要 `EXPECTED_SIG_SHA256` 仍是 dex 常量，攻击者可以同时改写它并用自有证书重签。把它迁到 native 侧只能**提高成本**，不能封堵：so 的磁盘副本与内存副本在重打包后一致，CRC 无法发现重打包。真正的信任根在 APK 之外，即服务端校验或设备认证（如 Play Integrity），本项目因 baseUrl 为第三方公共 API，目前无法提供。
+**剩余边界（更正，2026-11-16 复核）**：客户端检测无法做到"不可绕过"。本补丁只是**移除了 release 中的跳过开关**。期望摘要 `EXPECTED_SIG_SHA256` 仍是 dex 常量，攻击者可以同时改写它并用自有证书重签。把它迁到 native 侧只能**提高成本**，不能封堵：so 的磁盘副本与内存副本在重打包后一致，CRC 无法发现重打包。
+
+**已验证的绕过路径（模拟器，apktool，修复前）**：反编译 release，把签名判定的 `if-eq v1, v0, :cond_*`（native 返回"不匹配"时进入阻断的分支）替换为 `nop`，重新打包并用任意证书重签，**包可正常启动，不触发 `integrity.signature`**。对照组（未修改、同证书重签）两次均被阻断并终止。阻断决定由 dex 中可删除的 Java 分支做出。
+
+**修复（2026-11-16）：native 守护 + requireNative**
+
+- **native 守护线程**（`security.cpp`）：`JNI_OnLoad` 注册完成后启动分离线程，每 5 秒复验 APK 签名；检测到 `kMismatch` 即输出 `native signature mismatch` 并在 1200 ms 后 `SIGKILL`。该终止路径不经过 Java，删除 Java 分支不影响它。只有明确不匹配才终止，`kUnknown`（无法判定）只记日志，避免误杀。
+- **延迟终止的原因**：实测若在 `JNI_OnLoad` 中立即终止，界面尚未显示，ActivityManager 会反复拉起进程（12 秒内 86 次）。延迟到与 Java 路径一致的 1200 ms 后只产生一次启动。
+- **requireNative = true**（`FragmjectApplication`，2026-11-17 确认保留）：so 缺失或加载失败即阻断（`internal.native_unavailable`），残余风险消除。已验证：模拟器删除 so 后命中并终止；真机 PGEM10 release 正常启动，无误阻断。未覆盖其他 ROM 与 ABI 的 so 加载失败场景。
+
+**修复后的验证结果**（模拟器，每组两次冷启动，或另注）：
+
+| 组别 | 结果 | Java 命中 |
+|---|---|---|
+| 篡改包（删除 Java 阻断分支并重签） | 每次 1 次启动，native 终止，进程消失 | 0 |
+| 对照包（未修改、重签） | 1 次启动，native 与 Java 均命中并终止 | 1 |
+| 合法 keystore 签名 release | 存活 20 秒，守护启动，无不匹配 | 0 |
+| 删除 `libappsecurity.so` 并用 keystore 重签 | `load appsecurity failed` → `internal.native_unavailable` → 进程消失 | 1 |
+| 真机 PGEM10，冷启动（`am start -S`） | 注册 15 个方法，守护启动，存活 20 秒，无阻断 | 0 |
+
+**仍然存在的边界**：
+
+- 攻击者可以 patch `libappsecurity.so`（修改守护的终止调用或验签函数），这需要逆向 so，成本高于修改 smali，但并未封死。
+- 攻击者可以同时删除 `loadLibrary` 调用、`requireNative` 分支，以及 native 守护本身。这需要多处协同修改，被视为提高成本，而非强制。
+- 复验间隔为 5 秒，替换后的篡改存在最多 5 秒的暴露时间（启动时的首次检查立即执行）。
+- 真正的信任根仍在 APK 之外（服务端或设备认证）。
 
 **补丁（2026-11-16 续）：期望摘要迁入 native；Java 层 Hook 框架检测第一期**
 
@@ -298,12 +323,20 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
   - 原 release 包（测试证书 `0768F702…C2AC`）安装启动：进程存活，无 `integrity.signature` 命中。
   - 同一 APK 用测试证书 `dfd3987d…` 改签（v3 签名）后，卸载原应用并安装：`E AppSecurity: security check hit: [integrity.signature]`，`W FragmjectSecurity: jniKillSelf invoked`（约 1.2s 后），进程消失。
   - 该命中只能来自 native 验签：`FragmjectApplication` 已不传期望摘要，JVM 回退路径此时放行。
-  - **仍未验证**：Xposed 信号的真实命中；release dex 中是否还有旧开关。
+  - **Hook 包名信号（真机 PGEM10，正式 release，冷启动 A/B）**：无探针时无 WARN；安装 `org.lsposed.manager` 空壳探针（仅清单、测试证书签名）后输出 `security warn: [env.hook_framework]`，进程存活。探针验证后已卸载。
+  - **模拟器 A/B 在修复前无效**：`env.emulator` 先命中并返回，Hook 分支未执行。根因是环境检测只返回第一个命中，已修复为逐项独立判定并全部返回（`detectAllHits`）。修复后模拟器同时输出 `env.emulator` 与 `env.hook_framework`，真机仅 `env.hook_framework`。
+  - **单测**：`SecurityDetectorsTest` 40 例（含 Root 与 Hook 同时命中、BLOCK 不被遮挡 2 例），`SecurityPolicyTest` 15 例，全部通过。全量 408 例的结果是修复前的。
+  - **未验证**：`XposedBridge` 类信号（探针不含该类）；LSPosed 真实 hook（未安装框架，模拟器 root 需 Magisk/Zygisk 修补，rootAVD 在 macOS 上依赖额外二进制，已停止）；Root 设备上 Hook 不被遮挡（仅用模拟器 `env.emulator` 代替验证）。
+  - **dex 中无旧开关**：仅做了字符串表检查，未做 baksmali 反汇编。
 
 **已知限制与需要决策的事项**
-- **回退路径变弱（已决策：接受残余风险）**：签名期望值已不在 dex 中，因此 `BuildConfig` 不再提供回退用的期望摘要。若 native 未加载（`requireNative=false` 时仅记录 WARN），签名门禁会退化为放行。此前 native 缺失时 JVM 仍会校验签名，这是本次的回归。暂不设置 `requireNative = true`，也不接入事件上报；残余风险是 so 加载失败时签名校验静默关闭。
+- **回退路径（已修复，2026-11-16 设置，2026-11-17 确认保留）**：`FragmjectApplication` 设置 `requireNative = true`，so 缺失或加载失败即阻断。此前"接受残余风险"的决定已推翻。
 - **对外交付**：期望摘要随 AAR 固化。外部宿主需用自己的签名重新构建 `:security`，或传入 `-PsecurityCertSha256`，不能直接使用本仓库发布的 AAR。
-- **仍可绕过**：摘要以明文存在于 so 的 `.rodata` 中，攻击者可改写后重打包。CRC 只能发现运行期内存补丁，无法发现重打包。信任根仍在 APK 之外（服务端或设备认证）。
+- **仍可绕过（修复后仍存在）**：
+  1. 删除 Java 阻断分支：已由 native 守护覆盖，删除 Java 分支不再足以放行（见 H1 节修复验证）。
+  2. 修改 `libappsecurity.so`：可 patch 守护的终止调用或验签函数，成本高于修改 smali，但并未封死。
+  3. 改写摘要常量并重签：摘要以明文存在于 so 的 `.rodata` 中（未加密），攻击者可改写后重打包。CRC 只能发现运行期内存补丁，无法发现重打包。
+  4. 信任根仍在 APK 之外（服务端或设备认证）。
 - **Root 包检测存在既有缺口（已决策：暂不处理）**：`ROOT_APP_PACKAGES` 的查询在 Android 11+ 未声明 `<queries>` 时会失败并返回"未安装"，实际上检测不到 root 管理应用。`env.root` 默认 WARN，su 文件与 maps 检测不受影响。暂不补 `<queries>`，待 Play 政策核对后再定。
 
 ---
@@ -410,7 +443,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
    避免符号名泄露。
 
 复测结果：`strings` 中 `frida` / `magisk` / `zygisk` / `lsposed` / `gum-js` / `linjector` /
-`/data/adb` / `/system/bin/su` **全部 0 命中**；运行期 `registered 12 methods` 正常，
+`/data/adb` / `/system/bin/su` **全部 0 命中**；运行期 `registered 12 methods`（当时版本，当前为 15）正常，
 `.text`/`.rodata` CRC 一致。唯一残留是错误日志里的类名 `SecurityNative`（仅 `JNI_OnLoad` 失败分支）。
 
 这条经验已写进 `security.cpp` 的 `XorString` 注释：**敏感串必须用 `lit` 常量，`XS` 只用于非敏感文案**。
@@ -1389,7 +1422,8 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
 **二、签名阻断在 keep 规则改动后的复核**
 
 - 只读复核（不清数据）：设备安装包与构建产物 MD5 一致；dex 中 `SecurityNative` 与 `verifyApkSignature` 存在；mapping 中 15 个 native 方法名均未被改名；运行时日志 `JNI_OnLoad: registered 15 methods`，无 `UnsatisfiedLinkError`。
-- 端到端：用测试证书改签当前 release（14:01 构建）后安装，`security check hit: [integrity.signature]` → `jniKillSelf`（+1.2s）→ 进程消失。
+- **端到端（真机 PGEM10，2026-11-16，keep 规则生效后的 release）**：用测试证书改签后卸载原包（清除数据）并安装，`security check hit: [integrity.signature]` → `jniKillSelf`（约 1.2s）→ 进程消失。原正式包安装后进程存活，无命中。
+- **局限（已修复）**：上述改签测试只覆盖"改签"。apktool 删除签名判定分支并重签后，包可正常启动（已复现）。该问题已由 native 守护线程修复，见 H1 节"修复后的验证结果"。
 
 **三、Baseline Profile 采集**
 

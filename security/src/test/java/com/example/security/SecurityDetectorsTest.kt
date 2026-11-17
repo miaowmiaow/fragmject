@@ -367,6 +367,36 @@ class SecurityDetectorsTest {
     }
 
     @Test
+    fun `Root 与 Hook 框架同时命中时两者都返回`() {
+        val facts = FakeFacts().apply {
+            installed += "com.topjohnwu.magisk"
+            classes += "de.robv.android.xposed.XposedBridge"
+        }
+        val codes = detectAllHits(facts, FakeNative(), SecurityConfig(), false, false, false).map { it.code }
+
+        assertEquals(listOf("env.root", "env.hook_framework"), codes)
+    }
+
+    @Test
+    fun `Root 为 BLOCK 时 Hook 框架 WARN 不会遮住它`() {
+        val facts = FakeFacts().apply {
+            installed += "com.topjohnwu.magisk"
+            classes += "de.robv.android.xposed.XposedBridge"
+        }
+        val hits = detectAllHits(
+            facts,
+            FakeNative(),
+            SecurityConfig(rootAction = Action.BLOCK),
+            false,
+            false,
+            false,
+        )
+
+        assertEquals(Severity.CRITICAL, hits.first { it.code == "env.root" }.severity)
+        assertEquals(Severity.WARN, hits.first { it.code == "env.hook_framework" }.severity)
+    }
+
+    @Test
     fun `资源基线为空时放行`() {
         assertTrue(verifyResourceIntegrity(FakeFacts(), SecurityConfig()))
     }

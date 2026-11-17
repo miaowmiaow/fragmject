@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * 检测引擎：负责「何时检测、命中后怎么办」，不负责「怎么判定」。
  *
- * 判定逻辑在 [detectHit] 及两个 Checks 文件；入口与生命周期在 [SecurityGuard]。
+ * 判定逻辑在 [detectAllHits] 及两个 Checks 文件；入口与生命周期在 [SecurityGuard]。
  *
  * ============================ 状态作用域 ============================
  * 所有可变状态都是进程级 @Volatile 字段，没有持久化：

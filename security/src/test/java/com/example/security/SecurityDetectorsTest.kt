@@ -24,7 +24,7 @@ class SecurityDetectorsTest {
         val facts = FakeFacts().apply { debugger = true }
         val native = FakeNative().apply { tracerPid = 4242 }
 
-        val hit = detectHit(facts, native, SecurityConfig(), includePortScan = false, includeCrc = false)
+        val hit = detectAllHits(facts, native, SecurityConfig(), includePortScan = false, includeCrc = false).firstOrNull()
 
         // 断言稳定 code 与数值，而不是依赖文案（文案可以调整，code 是上报口径）
         assertEquals("debugger.native", hit?.code)
@@ -34,7 +34,7 @@ class SecurityDetectorsTest {
 
     @Test
     fun `Java 调试器命中且为 CRITICAL`() {
-        val hit = detectHit(FakeFacts().apply { debugger = true }, FakeNative(), SecurityConfig(), false, false)
+        val hit = detectAllHits(FakeFacts().apply { debugger = true }, FakeNative(), SecurityConfig(), false, false).firstOrNull()
 
         assertEquals("检测到 Java 层调试器（JDWP）", hit?.reason)
         assertEquals(Severity.CRITICAL, hit?.severity)
@@ -45,7 +45,7 @@ class SecurityDetectorsTest {
         // H3 之后线程名匹配在 native，Kotlin 只拿命中数
         val native = FakeNative().apply { fridaThreads = 1 }
 
-        val hit = detectHit(FakeFacts(), native, SecurityConfig(), false, false)
+        val hit = detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull()
 
         assertEquals("检测到 Frida 特征线程", hit?.reason)
         assertEquals(Severity.CRITICAL, hit?.severity)
@@ -55,7 +55,7 @@ class SecurityDetectorsTest {
     fun `Frida 落地文件命中`() {
         val native = FakeNative().apply { fridaFiles = 1 }
 
-        val hit = detectHit(FakeFacts(), native, SecurityConfig(), false, false)
+        val hit = detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull()
 
         assertEquals("检测到 Frida 落地文件", hit?.reason)
     }
@@ -65,10 +65,10 @@ class SecurityDetectorsTest {
         val facts = FakeFacts()
         val native = FakeNative().apply { anonymousSegments = 1 }
 
-        assertNull(detectHit(facts, native, SecurityConfig(anonExecThreshold = 1), false, false))
+        assertNull(detectAllHits(facts, native, SecurityConfig(anonExecThreshold = 1), false, false).firstOrNull())
 
         native.anonymousSegments = 2
-        val hit = detectHit(facts, native, SecurityConfig(anonExecThreshold = 1), false, false)
+        val hit = detectAllHits(facts, native, SecurityConfig(anonExecThreshold = 1), false, false).firstOrNull()
         // 命中原因带实际段数与阈值：线上误杀时靠这两个数字调参
         assertTrue(hit?.reason.orEmpty().contains("2 段"))
         assertTrue(hit?.reason.orEmpty().contains("阈值 1"))
@@ -79,7 +79,7 @@ class SecurityDetectorsTest {
     fun `Root 默认 WARN`() {
         val native = FakeNative().apply { rootFiles = 1 }
 
-        val hit = detectHit(FakeFacts(), native, SecurityConfig(), false, false)
+        val hit = detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull()
 
         assertEquals("检测到 Root 环境", hit?.reason)
         assertEquals(Severity.WARN, hit?.severity)
@@ -89,7 +89,7 @@ class SecurityDetectorsTest {
     fun `Root 配置 BLOCK 后升级为 CRITICAL`() {
         val native = FakeNative().apply { rootFiles = 1 }
 
-        val hit = detectHit(FakeFacts(), native, SecurityConfig(rootAction = Action.BLOCK), false, false)
+        val hit = detectAllHits(FakeFacts(), native, SecurityConfig(rootAction = Action.BLOCK), false, false).firstOrNull()
 
         assertEquals(Severity.CRITICAL, hit?.severity)
     }
@@ -98,25 +98,25 @@ class SecurityDetectorsTest {
     fun `Root 配置 IGNORE 后完全不检测`() {
         val native = FakeNative().apply { rootFiles = 1 }
 
-        assertNull(detectHit(FakeFacts(), native, SecurityConfig(rootAction = Action.IGNORE), false, false))
+        assertNull(detectAllHits(FakeFacts(), native, SecurityConfig(rootAction = Action.IGNORE), false, false).firstOrNull())
     }
 
     @Test
     fun `Root 管理应用命中`() {
         val facts = FakeFacts().apply { installed += "com.topjohnwu.magisk" }
 
-        assertEquals("检测到 Root 环境", detectHit(facts, FakeNative(), SecurityConfig(), false, false)?.reason)
+        assertEquals("检测到 Root 环境", detectAllHits(facts, FakeNative(), SecurityConfig(), false, false).firstOrNull()?.reason)
     }
 
     @Test
     fun `模拟器需要两个独立信号且默认 WARN`() {
         val single = FakeFacts().apply { build = baseBuild.copy(hardware = "ranchu") }
-        assertNull(detectHit(single, FakeNative(), SecurityConfig(), false, false))
+        assertNull(detectAllHits(single, FakeNative(), SecurityConfig(), false, false).firstOrNull())
 
         val double = FakeFacts().apply {
             build = baseBuild.copy(hardware = "ranchu", product = "sdk_gphone64_arm64")
         }
-        val hit = detectHit(double, FakeNative(), SecurityConfig(), false, false)
+        val hit = detectAllHits(double, FakeNative(), SecurityConfig(), false, false).firstOrNull()
         assertEquals("检测到模拟器环境", hit?.reason)
         assertEquals(Severity.WARN, hit?.severity)
     }
@@ -127,7 +127,7 @@ class SecurityDetectorsTest {
             build = baseBuild.copy(hardware = "ranchu", product = "sdk_gphone64_arm64")
         }
 
-        val hit = detectHit(facts, FakeNative(), SecurityConfig(emulatorAction = Action.BLOCK), false, false)
+        val hit = detectAllHits(facts, FakeNative(), SecurityConfig(emulatorAction = Action.BLOCK), false, false).firstOrNull()
 
         assertEquals(Severity.CRITICAL, hit?.severity)
     }
@@ -139,7 +139,7 @@ class SecurityDetectorsTest {
         }
 
         assertNull(
-            detectHit(facts, FakeNative(), SecurityConfig(emulatorAction = Action.IGNORE), false, false),
+            detectAllHits(facts, FakeNative(), SecurityConfig(emulatorAction = Action.IGNORE), false, false).firstOrNull(),
         )
     }
 
@@ -151,7 +151,7 @@ class SecurityDetectorsTest {
             fridaThreads = 1
         }
 
-        val hit = detectHit(FakeFacts(), native, SecurityConfig(), false, false)
+        val hit = detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull()
 
         assertEquals("检测到 Frida 特征线程", hit?.reason)
         assertEquals(Severity.CRITICAL, hit?.severity)
@@ -161,10 +161,10 @@ class SecurityDetectorsTest {
     fun `端口扫描仅在 includePortScan 为 true 时执行`() {
         val facts = FakeFacts().apply { openPorts += 27042 }
 
-        assertNull(detectHit(facts, FakeNative(), SecurityConfig(), includePortScan = false, includeCrc = false))
+        assertNull(detectAllHits(facts, FakeNative(), SecurityConfig(), includePortScan = false, includeCrc = false).firstOrNull())
         assertEquals(
             "检测到 Frida Server 监听端口（27042-27052）",
-            detectHit(facts, FakeNative(), SecurityConfig(), includePortScan = true, includeCrc = false)?.reason,
+            detectAllHits(facts, FakeNative(), SecurityConfig(), includePortScan = true, includeCrc = false).firstOrNull()?.reason,
         )
     }
 
@@ -172,10 +172,10 @@ class SecurityDetectorsTest {
     fun `libc CRC 不一致命中且只在 includeCrc 时执行`() {
         val native = FakeNative().apply { libcCrc = 1 }
 
-        assertNull(detectHit(FakeFacts(), native, SecurityConfig(), false, false))
+        assertNull(detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull())
         assertEquals(
             "检测到 libc 代码段被篡改（疑似 inline hook）",
-            detectHit(FakeFacts(), native, SecurityConfig(), false, true)?.reason,
+            detectAllHits(FakeFacts(), native, SecurityConfig(), false, true).firstOrNull()?.reason,
         )
     }
 
@@ -184,7 +184,7 @@ class SecurityDetectorsTest {
         val native = FakeNative().apply { fridaThreads = 1 }
         val config = SecurityConfig(checks = SecurityCheck.ALL - SecurityCheck.INJECTION)
 
-        assertNull(detectHit(FakeFacts(), native, config, false, false))
+        assertNull(detectAllHits(FakeFacts(), native, config, false, false).firstOrNull())
     }
 
     @Test
@@ -194,14 +194,14 @@ class SecurityDetectorsTest {
             checks = SecurityCheck.ALL - SecurityCheck.ROOT - SecurityCheck.EMULATOR,
         )
 
-        assertNull(detectHit(FakeFacts(), native, config, false, false))
+        assertNull(detectAllHits(FakeFacts(), native, config, false, false).firstOrNull())
     }
 
     @Test
     fun `命中带稳定 code`() {
         val native = FakeNative().apply { tracerPid = 42 }
 
-        val hit = detectHit(FakeFacts(), native, SecurityConfig(), false, false)
+        val hit = detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull()
 
         assertEquals("debugger.native", hit?.code)
     }
@@ -211,7 +211,7 @@ class SecurityDetectorsTest {
         val native = FakeNative().apply { pltHooks = 3 }
 
         // 默认 checks 不含 PLT_HOOK：即使 native 报劫持也不命中
-        assertNull(detectHit(FakeFacts(), native, SecurityConfig(), false, true))
+        assertNull(detectAllHits(FakeFacts(), native, SecurityConfig(), false, true).firstOrNull())
     }
 
     @Test
@@ -219,7 +219,7 @@ class SecurityDetectorsTest {
         val native = FakeNative().apply { pltHooks = 3 }
         val config = SecurityConfig(checks = SecurityCheck.ALL)
 
-        val hit = detectHit(FakeFacts(), native, config, false, true)
+        val hit = detectAllHits(FakeFacts(), native, config, false, true).firstOrNull()
 
         assertEquals("integrity.plt_hook", hit?.code)
     }
@@ -230,22 +230,22 @@ class SecurityDetectorsTest {
         val config = SecurityConfig(checks = SecurityCheck.ALL)
 
         // includeCrc=false：本轮不做该检查
-        assertNull(detectHit(FakeFacts(), native, config, false, false))
+        assertNull(detectAllHits(FakeFacts(), native, config, false, false).firstOrNull())
         // 无法解析（-1）：放行
         native.pltHooks = -1
-        assertNull(detectHit(FakeFacts(), native, config, false, true))
+        assertNull(detectAllHits(FakeFacts(), native, config, false, true).firstOrNull())
     }
 
     @Test
     fun `干净环境不命中`() {
-        assertNull(detectHit(FakeFacts(), FakeNative(), SecurityConfig(), true, true))
+        assertNull(detectAllHits(FakeFacts(), FakeNative(), SecurityConfig(), true, true).firstOrNull())
     }
 
     @Test
     fun `native 不可用时不影响 JVM 侧检测`() {
         val native = FakeNative(available = false).apply { tracerPid = 999 }
 
-        assertNull(detectHit(FakeFacts(), native, SecurityConfig(), false, false))
+        assertNull(detectAllHits(FakeFacts(), native, SecurityConfig(), false, false).firstOrNull())
     }
 
     @Test
@@ -318,7 +318,7 @@ class SecurityDetectorsTest {
     @Test
     fun `XposedBridge 可加载时命中 Hook 框架 WARN`() {
         val facts = FakeFacts().apply { classes += "de.robv.android.xposed.XposedBridge" }
-        val hit = detectHit(facts, FakeNative(), SecurityConfig(), false, false, false)
+        val hit = detectAllHits(facts, FakeNative(), SecurityConfig(), false, false, false).firstOrNull()
 
         assertEquals("env.hook_framework", hit?.code)
         assertEquals(Severity.WARN, hit?.severity)
@@ -327,7 +327,7 @@ class SecurityDetectorsTest {
     @Test
     fun `LSPosed 管理器已安装时命中 Hook 框架`() {
         val facts = FakeFacts().apply { installed += "org.lsposed.manager" }
-        val hit = detectHit(facts, FakeNative(), SecurityConfig(), false, false, false)
+        val hit = detectAllHits(facts, FakeNative(), SecurityConfig(), false, false, false).firstOrNull()
 
         assertEquals("env.hook_framework", hit?.code)
     }
@@ -335,14 +335,14 @@ class SecurityDetectorsTest {
     @Test
     fun `hookFrameworkAction 为 BLOCK 时 Hook 框架命中为 CRITICAL`() {
         val facts = FakeFacts().apply { classes += "de.robv.android.xposed.XposedBridge" }
-        val hit = detectHit(
+        val hit = detectAllHits(
             facts,
             FakeNative(),
             SecurityConfig(hookFrameworkAction = Action.BLOCK),
             false,
             false,
             false,
-        )
+        ).firstOrNull()
 
         assertEquals(Severity.CRITICAL, hit?.severity)
     }
@@ -352,17 +352,17 @@ class SecurityDetectorsTest {
         val facts = FakeFacts().apply { classes += "de.robv.android.xposed.XposedBridge" }
 
         assertNull(
-            detectHit(facts, FakeNative(), SecurityConfig(hookFrameworkAction = Action.IGNORE), false, false, false),
+            detectAllHits(facts, FakeNative(), SecurityConfig(hookFrameworkAction = Action.IGNORE), false, false, false).firstOrNull(),
         )
         assertNull(
-            detectHit(
+            detectAllHits(
                 facts,
                 FakeNative(),
                 SecurityConfig(checks = SecurityCheck.DEFAULT - SecurityCheck.JAVA_HOOK),
                 false,
                 false,
                 false,
-            ),
+            ).firstOrNull(),
         )
     }
 

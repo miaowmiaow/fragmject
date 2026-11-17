@@ -118,7 +118,7 @@ long long monotonicMs() {
  * @return 快照内容；读取失败返回空串。
  */
 const std::string &mapsSnapshot() {
-    // 100ms：一次 detectHit 内三个调用紧邻，远小于轮询间隔（最短 1s）
+    // 100ms：一轮检测内三个调用紧邻，远小于轮询间隔（最短 1s）
     constexpr long long kCacheWindowMs = 100;
     static std::string snapshot;
     static long long cachedAtMs = 0;

@@ -4,14 +4,19 @@ package com.example.security
  * 安全检测的**编排层**：检测顺序、短路逻辑与严重级别判定。
  *
  * 拆出原因：调度（何时检测、命中后怎么办）在 [SecurityEngine]；单项判定在
- * `SecurityEnvironmentChecks` / `SecurityIntegrityChecks`；这里只负责「按什么顺序问、
- * 问到第一个命中就停」。环境类例外：它们逐项独立检测，全部命中都会返回（见 [detectAllHits]）。
+ * `SecurityEnvironmentChecks` / `SecurityIntegrityChecks`；这里只负责「按什么顺序问」。
+ * 非环境类（攻击特征）按顺序短路，问到第一个命中就停；环境类（Root / 模拟器 / Hook 框架）
+ * 逐项独立检测，全部命中都返回（见 [detectAllHits]）。
  *
  * 全部是纯函数，依赖由参数传入，可在 JVM 单测中构造任意设备状态。
  */
 
 /**
- * 返回首个命中的检测项；未命中返回 null。
+ * 返回本轮**全部**命中：非环境类的首个命中（如有），以及每个启用的环境类命中。
+ *
+ * 为什么不只返回一个：环境类命中默认都是 WARN。若只返回第一个，Root 或模拟器命中会遮住
+ * Java 层 Hook 框架命中，导致 LSPosed 不被报告（真机 + 模拟器上已复现）。
+ * 非环境类仍按短路返回首个命中：它们是攻击特征，且多数为 CRITICAL，首个即足以阻断。
  *
  * 排序原则：**明确攻击特征优先，环境类信号垫底**。
  * - 前四项（调试器 / Frida / CRC / 端口）命中即 [Severity.CRITICAL]；
@@ -22,9 +27,6 @@ package com.example.security
  *    尽早命中就能尽早阻断，减少后续检测在「已被控制的环境」里执行；
  * 2. 环境类检测需要查文件、查包名（binder 调用），成本高于读一个小文件，
  *    放在 CRITICAL 项之后可以避免「已确认被注入还要把 root 检查跑完」。
- *
- * 注意：本函数只返回一个结果，供兼容调用方使用。引擎应使用 [detectAllHits]，
- * 否则环境类的 WARN 会遮住其后的 WARN（例如 Root 遮住 Hook 框架）。
  *
  * 各检测项说明与已知局限：
  * 1. TracerPid：覆盖 ptrace/lldb/调试壳；对 Java 调试无效（由第 2 项覆盖）。
@@ -40,24 +42,6 @@ package com.example.security
  * @param includePortScan 本轮是否执行端口扫描（由调用方按时间降频决定）。
  * @param includeCrc      本轮是否执行 CRC 校验（由调用方按时间降频决定）。
  * @param includeInjectionScan 本轮是否执行「重量级注入扫描」（解析 maps 的 Frida 特征与匿名段）。
- */
-internal fun detectHit(
-    facts: SecurityFacts,
-    native: NativeChecks,
-    config: SecurityConfig,
-    includePortScan: Boolean,
-    includeCrc: Boolean,
-    includeInjectionScan: Boolean = true,
-): SecurityHit? =
-    detectNonEnvironmentHit(facts, native, config, includePortScan, includeCrc, includeInjectionScan)
-        ?: detectEnvironmentHits(facts, native, config).firstOrNull()
-
-/**
- * 返回本轮**全部**命中：非环境类的首个命中（如有），以及每个启用的环境类命中。
- *
- * 为什么不只返回一个：环境类命中默认都是 WARN。若只返回第一个，Root 或模拟器命中会遮住
- * Java 层 Hook 框架命中，导致 LSPosed 不被报告（真机 + 模拟器上已复现）。
- * 非环境类仍按短路返回首个命中：它们是攻击特征，且多数为 CRITICAL，首个即足以阻断。
  */
 internal fun detectAllHits(
     facts: SecurityFacts,

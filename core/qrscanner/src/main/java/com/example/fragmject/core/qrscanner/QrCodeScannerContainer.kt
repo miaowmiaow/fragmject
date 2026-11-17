@@ -26,6 +26,14 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 
 /**
+ * 从识别结果取出对外回调的内容（纯函数，不依赖 ML Kit 类型，便于 JVM 单测）。
+ *
+ * URL 类型优先取解析后的 URL；若没有解析出 URL，回退到原始值，避免丢失内容。
+ */
+internal fun resolveQrContent(isUrl: Boolean, url: String?, rawValue: String?): String? =
+    if (isUrl) url ?: rawValue else rawValue
+
+/**
  * 二维码扫描容器：CameraX + ML Kit，只识别 [Barcode.FORMAT_QR_CODE]。
  *
  * 归属 core 引擎层（与 `core:webview` / `core:image-editor` 同类）：feature 之间不能互相
@@ -93,11 +101,11 @@ fun QrCodeScannerContainer(
                         ) { result: MlKitAnalyzer.Result? ->
                             val barcode = result?.getValue(barcodeScanner)?.firstOrNull()
                                 ?: return@MlKitAnalyzer
-                            val content = if (barcode.valueType == Barcode.TYPE_URL) {
-                                barcode.url?.url ?: barcode.rawValue
-                            } else {
-                                barcode.rawValue
-                            }
+                            val content = resolveQrContent(
+                                isUrl = barcode.valueType == Barcode.TYPE_URL,
+                                url = barcode.url?.url,
+                                rawValue = barcode.rawValue,
+                            )
                             val rect = barcode.boundingBox
                             if (drawBoundingBox && rect != null) {
                                 previewView.overlay.clear()

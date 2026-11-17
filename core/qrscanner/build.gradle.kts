@@ -16,4 +16,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlin.stdlib)
+
+    testImplementation(libs.junit)
 }

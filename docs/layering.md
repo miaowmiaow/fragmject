@@ -148,7 +148,7 @@ feature/{name}/impl/.../
 
 ```bash
 ./gradlew verifyModuleDependencies --no-configuration-cache       # Gradle 守卫
-./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"      # Konsist 守卫
+./gradlew :app:testDebugUnitTest --tests "*Architecture*"      # Konsist 守卫
 ```
 
 ### Gradle 守卫（`FragmjectAndroidDependencyGuardPlugin.kt`）
@@ -164,7 +164,7 @@ feature/{name}/impl/.../
 | R8/R9 | feature → core 白名单；`feature:*:api` → core 仅 `navigation-contract` |
 | core→core | `CORE_ALLOWED_DEPENDENCIES` 正向矩阵 |
 
-### Konsist 守卫（`app/src/test/.../ArchitectureTest.kt`）
+### Konsist 守卫（`app/src/test/.../architecture/`）
 
 - 规则 1–11：分层方向 + Android framework 白名单/黑名单
   （含「domain 仅用 paging-common 不用 paging-runtime」、「契约层不得依赖 Android framework」）

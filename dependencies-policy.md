@@ -147,8 +147,8 @@
 若 impl 用 `api()` 把契约层传递给 app，白名单对 api 层就形同虚设——app 不声明也能编译，删掉声明也不会被发现。
 降级后「少声明一条即编译失败」，白名单才真正生效。
 
-**B. 源码与 API 回归规则** — `app/src/test/.../ArchitectureTest.kt`，含 Konsist import 检查、公开 WebView 容器参数检查与选择器守卫
-运行：`./gradlew :app:testDebugUnitTest --tests "*ArchitectureTest"`
+**B. 源码与 API 回归规则** — `app/src/test/.../architecture/`（按主题拆分为 `ArchitectureLayeringTest` / `ArchitecturePlatformApiTest` / `ArchitectureUiContractTest` / `ArchitectureModelTest` / `ArchitectureGuardTest`，共享逻辑在 `ArchitectureSupport`），含 Konsist import 检查、公开 WebView 容器参数检查与选择器守卫
+运行：`./gradlew :app:testDebugUnitTest --tests "*Architecture*"`
 
 规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、16（feature api 仅依赖导航契约）、17（database 领域端口例外白名单）、**18/19（业务成功码与 `runCatching`）**、**20（导航契约完整接入：方法禁止默认实现 + `Navigators` 字段/`noop()`/app 实现必须齐全）**、**21（`:app` 不得引用数据实现层，白名单登记制）**、**22（`core:designsystem` 不得 import 任何项目内模块，只放颜色/间距/主题）**、**23（`core:ui` 不得下探 data/network/database）**、**24（`feature:*:impl` 不得硬编码 `Color(0x...)`，见 §6.7）**，以及公开 WebView 容器参数回归检查与 `boundary selectors match real files`（防止选择器写错导致规则空转）。
 
@@ -276,5 +276,5 @@ core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）
 - [ ] 新增的 `android.*` 导入是否落在规则 9/10/11 的白名单内？
 - [ ] Gradle 矩阵与 Konsist 规则是否同步更新？
 - [ ] 若新增例外：是否在 §6.6 登记并写明理由？
-- [ ] `./gradlew verifyModuleDependencies` 与 `--tests "*ArchitectureTest"` 均通过
+- [ ] `./gradlew verifyModuleDependencies` 与 `--tests "*Architecture*"` 均通过
 - [ ] **反向验证**：故意构造一处违规，确认对应规则确实 fail（证明非空转）

@@ -325,8 +325,12 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
   - 该命中只能来自 native 验签：`FragmjectApplication` 已不传期望摘要，JVM 回退路径此时放行。
   - **Hook 包名信号（真机 PGEM10，正式 release，冷启动 A/B）**：无探针时无 WARN；安装 `org.lsposed.manager` 空壳探针（仅清单、测试证书签名）后输出 `security warn: [env.hook_framework]`，进程存活。探针验证后已卸载。
   - **模拟器 A/B 在修复前无效**：`env.emulator` 先命中并返回，Hook 分支未执行。根因是环境检测只返回第一个命中，已修复为逐项独立判定并全部返回（`detectAllHits`）。修复后模拟器同时输出 `env.emulator` 与 `env.hook_framework`，真机仅 `env.hook_framework`。
-  - **单测**：`SecurityDetectorsTest` 40 例（含 Root 与 Hook 同时命中、BLOCK 不被遮挡 2 例），`SecurityPolicyTest` 15 例，全部通过。全量 408 例的结果是修复前的。
-  - **未验证**：`XposedBridge` 类信号（探针不含该类）；LSPosed 真实 hook（未安装框架，模拟器 root 需 Magisk/Zygisk 修补，rootAVD 在 macOS 上依赖额外二进制，已停止）；Root 设备上 Hook 不被遮挡（仅用模拟器 `env.emulator` 代替验证）。
+  - **单测**：`SecurityDetectorsTest` 41 例（含 Root 与 Hook 同时命中、模拟器与 Hook 同时命中、BLOCK 不被遮挡共 3 例），`SecurityPolicyTest` 15 例，全部通过。全量 408 例的结果是修复前的。
+  - **受环境限制，暂不可验证**（2026-11-17 确认）：当前没有可用的 root 设备。真机 PGEM10 未 root，解锁 bootloader 会清空数据并修改分区，不在本轮范围内；模拟器的 Magisk/Zygisk 修补依赖 rootAVD 仓库中的 macOS busybox，未引入。以下两项因此无法在真实框架下验证：
+    - LSPosed 真实 hook 命中（`env.hook_framework` 在框架真正注入时的表现）；
+    - Root 设备上 Hook 不被 root 分支遮挡（实际由单测覆盖，见上）。
+  - **替代覆盖**：包名信号已在真机 PGEM10 上验证（空壳探针）；`XposedBridge` 类信号仅有单测覆盖（探针不含该类，未做真机验证）；多命中遮挡问题由 `detectAllHits` 的单测覆盖（模拟器 + Hook、Root + Hook 两组）。
+  - **恢复条件**：具备可 root 的测试设备，或允许修补模拟器镜像并引入 rootAVD 的 macOS 工具链后，再补做真实 hook 验证。
   - **dex 中无旧开关**：仅做了字符串表检查，未做 baksmali 反汇编。
 
 **已知限制与需要决策的事项**
@@ -1093,8 +1097,8 @@ adb logcat -s DexShell:V AppSecurity:V | grep -E "gadget|check hit|jniKillSelf"
 F 组随即命中。覆盖范围限于**精确同名**文件；带版本号的名字（`frida-server-17.x-android-arm64`）
 仍不覆盖，需要用户改名或后续加前缀匹配。
 
-**仍未覆盖**：真实 `frida-server` 进程（需 root 设备）。端口扫描与落地文件两条分支已用替身验证，
-但「root 下 frida-server 常驻 + 以非常规端口/改名运行」的组合仍缺真机证据。
+**仍未覆盖（受环境限制，暂不可验证）**：真实 `frida-server` 进程（需 root 设备，当前无可用设备）。端口扫描与落地文件两条分支已用替身验证，
+但「root 下 frida-server 常驻 + 以非常规端口/改名运行」的组合仍缺真机证据。恢复条件同 H1 节的 Hook 项。
 
 
 

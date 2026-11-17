@@ -164,9 +164,11 @@
 | `:app` 组合根使用 lifecycle 的 `viewModel()` | 规则 14 仅过滤 `/feature/` | `AppNavViewModel` 在 `NavDisplay` 之外，本就应是 Activity 作用域 |
 | 大屏 DetailPane 用 `ProvideDetailPaneViewModelStore` 自建 owner | `core:navigation-runtime` | DetailPane 不在 `NavEntry` 内，拿不到 entry 级 store，需按 key 提供等价作用域 |
 | `CookieStore` 实现放 `core:webview`，由 `:app` 聚合注入 | Gradle 守卫矩阵 + Konsist 规则 15 | network 不得依赖 webview；实现必须经 Hilt 绑定，network 只允许注入使用 |
-| `core:database` 直接实现 `History/Schedule/Theme/OtpAccount` 四个 domain 端口 | `LocalDataSourceModule` + 守卫矩阵注释 | 四条链均无中间透传层（domain 端口与 KV/Room 适配器签名一致）。`OtpAccount` 的额外理由：密钥须在落库前用 Keystore 加密，而 `data-repository` 不得依赖 `database`（R5），**加密与 DAO 无法同处一层**，故实现必须落在 database。**禁止继续扩散**：除上述四条外，其他 domain 端口的实现仍必须落在 `core:data-repository` |
+| `core:database` 依赖 `core:domain`（直接实现 `History/Schedule/Theme/OtpAccount` 四个端口） | `LocalDataSourceModule` + 守卫矩阵注释 | 四条链均无中间透传层（domain 端口与 KV/Room 适配器签名一致）。`OtpAccount` 的额外理由：密钥须在落库前用 Keystore 加密，而 `data-repository` 不得依赖 `database`（R5），**加密与 DAO 无法同处一层**，故实现必须落在 database。**禁止继续扩散**：除上述四条外，其他 domain 端口的实现仍必须落在 `core:data-repository` |
 | 新增引擎模块 `core:qrscanner` | `settings.gradle.kts` + 守卫矩阵 | §6.2 门槛 + §6.10 引擎类别：CameraX / ML Kit 为第三方 SDK 需集中持有；扫码属平台相关 UI 能力，且需被 demo 与 Authenticator 复用（feature 之间不得互相依赖），必须有共享落点 |
 | `core:ui` 依赖 `core:model` / `core:domain` | 守卫矩阵注释 + Konsist 规则 23 | `ArticleFeedMapper`（Article → FeedCardUIState）与 `CollectInteraction`（CollectState）需要这两个零 Android 依赖的契约层；此前仅依赖 designsystem 导致 4 个 feature 各复制一份映射。**限定条件**：只允许这三条边，业务文案与图标必须参数化可覆盖（`ArticleFeedLabels` / `FeedCard` 的 `toggleCheckedIconRes`），且不得下探 data/network/database（规则 23） |
+| `core:network` 依赖 `core:domain`（`CookieStore` 端口） | Gradle 守卫矩阵注释 + 守卫例外 | Cookie 持久化契约定义在 `core:domain`，network 的 CookieJar 适配需引用它；实现仍只在 `core:webview`，经 Hilt 绑定注入 |
+| `core:testing` 依赖 `core:domain` | Gradle 守卫矩阵注释（仅测试配置） | 共享认证测试 fake 需要领域端口类型（AuthGateway / UserRepository / CookieStore）；本模块只被 `testImplementation` 消费，不进生产包 |
 | `:app` 的 `FragmjectApplication` import `core.network.di.ImageOkHttpClient` | 规则 21 白名单 `APP_DATA_IMPORT_ALLOWLIST` | Coil 需要「图片专用」OkHttpClient 的 qualifier。彻底消除需把 ImageLoader 装配下沉到同时可见 coil 与 network 的 core 模块，属独立重构 |
 | `:benchmark` 不参与 Gradle 依赖方向校验 | 守卫 `TEST_ONLY_MODULES` | `com.android.test` 模块经 `baselineProfile` 配置被 `:app` 驱动，又经 `targetProjectPath` 反向持有 `:app` 的 testedApk，这条边既非运行期依赖，也会被环检测误判成 `:app ↔ :benchmark`。测试模块不产出生产代码，方向校验对其无意义 |
 

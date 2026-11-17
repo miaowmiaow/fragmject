@@ -338,8 +338,32 @@ private val APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(
     ":feature:picture:api",
 )
 
-/** core 模块间允许的依赖矩阵（正向声明）。未声明的 core→core 边一律失败。 */
-private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
+/**
+ * core→core 登记例外（边的字面量）。每一条都必须在 `dependencies-policy.md` §6.6 有登记行，
+ * 由 ArchitectureTest 规则 31 双向校验：新增例外未登记即失败；§6.6 中残留的已删除例外也失败。
+ *
+ * 常规允许边在 [CORE_BASE_DEPENDENCIES]；守卫实际使用的矩阵由两者合并得到（见 [CORE_ALLOWED_DEPENDENCIES]），
+ * 因此任何 core 例外都必须经过本集合，无法绕过登记。
+ */
+private val CORE_EXCEPTION_EDGES: Set<Pair<String, String>> = setOf(
+    // database 直接实现 domain 端口（History/Schedule/Theme/OtpAccount 均无中间透传层），
+    // domain 为纯契约层（仅依赖 model），数据实现依赖领域抽象方向正确。
+    ":core:database" to ":core:domain",
+    // network 依赖 domain 仅为引用 CookieStore 这一共享会话契约（WebView 登录后由 OkHttp 复用）。
+    // network 不得因此依赖 webview；实现唯一在 core:webview（经 Hilt @Binds 绑定），network 只允许注入使用。
+    // 规则 15 在源码层二次拦截 network 内出现 CookieStore 实现类。
+    ":core:network" to ":core:domain",
+    // core:ui 依赖 model / domain 是登记过的例外（2026-10 边界评审）：
+    // ArticleFeedMapper 展示领域模型；CollectInteraction 引用 domain 的 CollectState 契约。
+    // 只允许这两条例外边，且业务文案/图标必须参数化可覆盖，不得下探到 data-repository / network / database。
+    ":core:ui" to ":core:model",
+    ":core:ui" to ":core:domain",
+    // 测试工具模块：认证用例的共享 fake 需要领域端口类型，只被各模块 testImplementation 消费，不进生产包。
+    ":core:testing" to ":core:domain",
+)
+
+/** core 模块间的常规允许边（不含登记例外）。未声明的 core→core 边一律失败。 */
+private val CORE_BASE_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     ":core:model" to emptySet(),
     ":core:android-platform" to emptySet(),
     ":core:navigation-contract" to emptySet(),
@@ -347,53 +371,38 @@ private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> = mapOf(
     ":core:designsystem" to emptySet(),
     ":core:data-contract" to setOf(":core:model"),
     ":core:domain" to setOf(":core:model"),
-    // database 直接实现 domain 端口（History/Schedule/Theme/OtpAccount 均无中间透传层），
-    // domain 为纯契约层（仅依赖 model），数据实现依赖领域抽象方向正确。
     // android-platform：OTP 密钥落库前需 Keystore 静态加密（KeystoreSecretCipher），
     // 与「加密必须与存储同层」一致——data-repository 可用 android-platform 但不可见 DAO。
-    ":core:database" to setOf(
-        ":core:android-platform",
-        ":core:data-contract",
-        ":core:domain",
-        ":core:model",
-    ),
-    // 说明：network 依赖 domain 仅为引用 CookieStore 这一共享会话契约（WebView 登录后由 OkHttp 复用）。
-    // network 不得因此依赖 webview；SslConfig 等网络配置契约仍放在 data-contract。
-    //
-    // 【实现归属】CookieStore 的唯一实现是 core:webview 的 WebViewCookieStore，
-    // 由 core:webview/di/CookieStoreModule 经 @Binds 绑定，再由 :app 组合根聚合注入。
-    // network 只允许注入使用（CookieJar），不得自行实现——本矩阵已禁止 network → webview，
-    // 就地实现会绕过该约束并造成「第二个会话真相源」。
-    // 该约束由 ArchitectureTest 规则 15 在源码层二次拦截（检测 network 内出现 CookieStore 实现类）。
-    ":core:network" to setOf(
-        ":core:android-platform",
-        ":core:data-contract",
-        ":core:domain",
-        ":core:model",
-    ),
+    ":core:database" to setOf(":core:android-platform", ":core:data-contract", ":core:model"),
+    ":core:network" to setOf(":core:android-platform", ":core:data-contract", ":core:model"),
     ":core:data-repository" to setOf(
         ":core:domain",
         ":core:android-platform",
         ":core:data-contract",
         ":core:model",
     ),
-    // core:ui 依赖 model / domain 是**登记过的例外**（2026-10 边界评审结论）：
-    // - ArticleFeedMapper 展示领域模型（Article → FeedCardUIState）；此前仅依赖 designsystem，
-    //   导致 4 个 feature 各复制一份该映射，属更糟的重复。
-    // - CollectInteraction 引用 domain 的 CollectState 契约（零 Android 依赖，无传递污染）。
-    // 约束：只允许这三条边，且业务文案/图标必须参数化可覆盖（见 ArticleFeedLabels / FeedCard 图标参数），
-    // 不得继续下探到 data-repository / network / database。
-    ":core:ui" to setOf(":core:designsystem", ":core:model", ":core:domain"),
+    ":core:ui" to setOf(":core:designsystem"),
     ":core:image-editor" to setOf(":core:domain", ":core:android-platform"),
     // qrscanner 只依赖 CameraX / ML Kit 等外部 SDK，不依赖其他 core 模块：
-    // 这些 SDK 由本引擎独占持有，feature 不得各自引入一份
+    // 这些 SDK 由本引擎独占持有，feature 不得各自引入一份。
     ":core:qrscanner" to emptySet(),
     ":core:webview" to setOf(":core:android-platform", ":core:domain"),
-    // 测试工具模块：认证用例的共享 fake 需要领域端口类型（AuthGateway / UserRepository / CookieStore），
-    // 故单向前置依赖 domain。本模块只被各模块 testImplementation 消费，不进生产包；
-    // 反向依赖（domain/test 之外的模块依赖它）由「仅测试配置」的约定约束。
-    ":core:testing" to setOf(":core:domain"),
+    ":core:testing" to emptySet(),
 )
+
+/** 守卫实际使用的 core 允许矩阵：常规边 ∪ 登记例外。语义与合并前的单一 map 完全一致。 */
+private val CORE_ALLOWED_DEPENDENCIES: Map<String, Set<String>> =
+    mergeCoreEdges(CORE_BASE_DEPENDENCIES, CORE_EXCEPTION_EDGES)
+
+private fun mergeCoreEdges(
+    base: Map<String, Set<String>>,
+    exceptions: Set<Pair<String, String>>,
+): Map<String, Set<String>> {
+    val merged = mutableMapOf<String, MutableSet<String>>()
+    base.forEach { (from, tos) -> merged.getOrPut(from) { mutableSetOf() }.addAll(tos) }
+    exceptions.forEach { (from, to) -> merged.getOrPut(from) { mutableSetOf() }.add(to) }
+    return merged.mapValues { it.value.toSet() }
+}
 
 /**
  * feature 模块允许依赖的 core 模块白名单（正向声明）。

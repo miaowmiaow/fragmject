@@ -1448,3 +1448,16 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
   - 模拟器（nonMinifiedRelease，5 次）：TotalTime 1360–2924 ms，中位数约 2169 ms。
 - 守卫的可观测同步部分：真机 `JNI_OnLoad` 到 `.rodata` 校验约 20 ms；模拟器约 233 ms，其中大部分是模拟器特有的 `env.emulator` Java 层检测，真机不存在该路径。
 - **局限**：没有不带守卫的对照组，守卫增量未测量，以上为上界估计；每组仅 5 次样本，只能看出稳定性，不足以做统计检验。
+
+### 10.21 剪贴板自动清空：删除，仅保留敏感标记（2026-11-19）
+
+- **决定**：删除复制后 30 秒自动清空（`SensitiveClipboard.CLEAR_DELAY_MS` 及延迟任务），只保留 `ClipDescription.EXTRA_IS_SENSITIVE`（API 33+，系统剪贴板预览不显示明文）。
+- **原因（真机观察）**：复制验证码后切到其他应用粘贴，30 秒时应用在后台，Android 10+ 读取剪贴板得到 `null`，清除条件不成立而被跳过，验证码仍可粘贴。原设计标注为"最佳努力"，实际效果接近不生效。
+- **未验证**：删除后的真机行为未单独复测（剪贴板内容无法从 adb shell 读取）；代码层面编译与 `:feature:authenticator:impl` 单测 23 例、lint、detekt 通过。
+
+### 10.22 守护线程心跳（2026-11-19）
+
+- **目的**：现有的 `signature guard started` 只说明启动过一次，无法区分"线程存活"与"线程已退出 / 被挂起"。心跳每 12 次复验（约 60 秒）输出一条 `signature guard heartbeat: checks=N interval=5s`，N 为线程内复验计数。
+- **约束**：心跳只读线程内局部计数，不改变复验与 `kMismatch` 终止分支；输出为固定格式数字，不含任何特征串，最终 `libappsecurity.so` 的明文特征串仍为 0，导出符号仍只有 `JNI_OnLoad`。
+- **验证（真机 PGEM10，正式 release，覆盖安装保留数据）**：守卫启动、注册 15 方法、自身 so 与 libc 校验 mismatched=0、无致命异常；心跳节奏为 13:49:23（checks=24）→ 13:50:23（checks=36），间隔 60 秒，每次递增 12。
+- **说明**：`started` 与首次心跳之间的日志缺失是采集时 `logcat -c` 清空缓冲所致，不是守卫缺失。

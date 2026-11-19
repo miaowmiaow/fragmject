@@ -166,4 +166,58 @@ class GuardRulesTest {
         val cycles = detectCycles(mapOf(":a" to setOf(":a")))
         assertFalse(cycles.isEmpty())
     }
+
+    // ---- 隐式外部依赖：androidx.core 子包解析与判定 ----
+
+    @Test
+    fun `解析 androidx core 的子包名`() {
+        assertEquals("net", parseCoreImportPackage("import androidx.core.net.toUri"))
+        assertEquals("splashscreen", parseCoreImportPackage("import androidx.core.splashscreen.SplashScreen"))
+    }
+
+    @Test
+    fun `非 androidx core 的 import 解析为 null`() {
+        assertNull(parseCoreImportPackage("import androidx.compose.ui.Modifier"))
+        assertNull(parseCoreImportPackage("val x = 1"))
+    }
+
+    @Test
+    fun `缩进的 import 也能解析`() {
+        assertEquals("view", parseCoreImportPackage("    import androidx.core.view.isVisible"))
+    }
+
+    @Test
+    fun `普通子包所需构件为 core-ktx 或 core`() {
+        assertEquals(setOf("core-ktx", "core"), requiredCoreArtifacts("net"))
+    }
+
+    @Test
+    fun `splashscreen 所需构件为 core-splashscreen`() {
+        assertEquals(setOf("core-splashscreen"), requiredCoreArtifacts("splashscreen"))
+    }
+
+    @Test
+    fun `已声明所需构件之一则不算未满足`() {
+        assertTrue(unmetCoreImports(setOf("net"), setOf("core-ktx")).isEmpty())
+        assertTrue(unmetCoreImports(setOf("net"), setOf("core")).isEmpty())
+    }
+
+    @Test
+    fun `只声明 core-ktx 不满足 splashscreen`() {
+        val unmet = unmetCoreImports(setOf("splashscreen"), setOf("core-ktx"))
+        assertEquals(1, unmet.size)
+        assertEquals("splashscreen", unmet.single().first)
+        assertEquals(setOf("core-splashscreen"), unmet.single().second)
+    }
+
+    @Test
+    fun `未使用任何 core 子包时没有未满足项`() {
+        assertTrue(unmetCoreImports(emptySet(), emptySet()).isEmpty())
+    }
+
+    @Test
+    fun `同时使用多个子包时只报告未满足的那个`() {
+        val unmet = unmetCoreImports(setOf("net", "splashscreen"), setOf("core-ktx"))
+        assertEquals(listOf("splashscreen"), unmet.map { it.first })
+    }
 }

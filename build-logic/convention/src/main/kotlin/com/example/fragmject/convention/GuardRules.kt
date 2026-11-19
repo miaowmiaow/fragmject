@@ -276,3 +276,48 @@ internal fun detectCycles(edges: Map<String, Set<String>>): List<String> {
     }
     return cycles.distinct()
 }
+
+/**
+ * 匹配 `import androidx.core.<pkg>.X`，捕获其中的子包名。
+ *
+ * 例：`import androidx.core.net.toUri` → `net`；`import androidx.core.splashscreen.SplashScreen` → `splashscreen`。
+ */
+internal val CORE_IMPORT_REGEX = Regex("""import androidx\.core\.([A-Za-z0-9_]+)\.""")
+
+/**
+ * `androidx.core.*` 子包 → 可提供该子包的构件（命中其一即视为已显式声明）。
+ *
+ * 只有**不属于** core/core-ktx 的独立构件才需要列在这里；未列出的子包走 [CORE_DEFAULT_ARTIFACTS]。
+ */
+internal val CORE_ARTIFACT_BY_PACKAGE: Map<String, Set<String>> = mapOf(
+    // androidx.core.splashscreen 是独立发布单元，core-ktx 不包含它
+    "splashscreen" to setOf("core-splashscreen"),
+)
+
+/**
+ * 其余 `androidx.core.*` 子包（net / view / content / graphics / os / app / widget / text ...）
+ * 由 `core-ktx` 或 `core` 提供——core-ktx 依赖 core，因此声明任一即可。
+ */
+internal val CORE_DEFAULT_ARTIFACTS = setOf("core-ktx", "core")
+
+/** 解析一行源码：若是 `androidx.core.<pkg>.` 的 import，返回子包名，否则返回 null。 */
+internal fun parseCoreImportPackage(line: String): String? =
+    CORE_IMPORT_REGEX.find(line.trim())?.groupValues?.get(1)
+
+/** 某子包需要的构件集合：命中 [CORE_ARTIFACT_BY_PACKAGE] 则用之，否则回落到 [CORE_DEFAULT_ARTIFACTS]。 */
+internal fun requiredCoreArtifacts(pkg: String): Set<String> =
+    CORE_ARTIFACT_BY_PACKAGE[pkg] ?: CORE_DEFAULT_ARTIFACTS
+
+/**
+ * 找出源码用到、但声明中不包含任何所需构件的子包。
+ *
+ * 返回 (子包名, 所需构件集合) 列表，顺序与 [usedPackages] 的遍历顺序一致。
+ */
+internal fun unmetCoreImports(
+    usedPackages: Set<String>,
+    declared: Set<String>,
+): List<Pair<String, Set<String>>> =
+    usedPackages.mapNotNull { pkg ->
+        val required = requiredCoreArtifacts(pkg)
+        if (declared.none { it in required }) pkg to required else null
+    }

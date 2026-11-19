@@ -122,23 +122,18 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
                 .forEach { file ->
                     file.useLines { lines ->
                         lines.forEach { line ->
-                            CORE_IMPORT_REGEX.find(line.trim())?.let {
-                                usedPackages.add(it.groupValues[1])
-                            }
+                            parseCoreImportPackage(line)?.let { usedPackages.add(it) }
                         }
                     }
                 }
             if (usedPackages.isEmpty()) continue
 
             val declared = declaredAndroidxCoreArtifacts(sub)
-            for (pkg in usedPackages) {
-                val required = CORE_ARTIFACT_BY_PACKAGE[pkg] ?: CORE_DEFAULT_ARTIFACTS
-                if (declared.none { it in required }) {
-                    violations.add(
-                        "${sub.path} 源码使用 androidx.core.$pkg.*，但未显式声明 $required" +
-                            "（禁止依赖传递路径：上游调整传递关系即编译失败）"
-                    )
-                }
+            unmetCoreImports(usedPackages, declared).forEach { (pkg, required) ->
+                violations.add(
+                    "${sub.path} 源码使用 androidx.core.$pkg.*，但未显式声明 $required" +
+                        "（禁止依赖传递路径：上游调整传递关系即编译失败）"
+                )
             }
         }
         return violations
@@ -173,26 +168,3 @@ class FragmjectAndroidDependencyGuardPlugin : Plugin<Project> {
  * 因此整条边（两个方向）都不参与方向校验。
  */
 private val TEST_ONLY_MODULES: Set<String> = setOf(":benchmark")
-
-/**
- * 匹配 `import androidx.core.<pkg>.X`，捕获其中的子包名。
- *
- * 例：`import androidx.core.net.toUri` → `net`；`import androidx.core.splashscreen.SplashScreen` → `splashscreen`。
- */
-private val CORE_IMPORT_REGEX = Regex("""import androidx\.core\.([A-Za-z0-9_]+)\.""")
-
-/**
- * `androidx.core.*` 子包 → 可提供该子包的构件（命中其一即视为已显式声明）。
- *
- * 只有**不属于** core/core-ktx 的独立构件才需要列在这里；未列出的子包走 [CORE_DEFAULT_ARTIFACTS]。
- */
-private val CORE_ARTIFACT_BY_PACKAGE: Map<String, Set<String>> = mapOf(
-    // androidx.core.splashscreen 是独立发布单元，core-ktx 不包含它
-    "splashscreen" to setOf("core-splashscreen"),
-)
-
-/**
- * 其余 `androidx.core.*` 子包（net / view / content / graphics / os / app / widget / text ...）
- * 由 `core-ktx` 或 `core` 提供——core-ktx 依赖 core，因此声明任一即可。
- */
-private val CORE_DEFAULT_ARTIFACTS = setOf("core-ktx", "core")

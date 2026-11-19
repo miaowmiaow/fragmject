@@ -9,6 +9,7 @@
 - 测试数量、覆盖范围等**会随代码变化的数字**不在本文维护，以对应测试类为准（`security/src/test/.../SecurityDetectorsTest.kt`、`SecurityPolicyTest.kt`，以及 `app/src/test/.../architecture/` 下的 `Architecture*Test`）；
 - 带日期的章节（如 §九、§十）是当时的验证快照，原文保留作为证据，不随后续改动回写；
 - 早期提到的 `ArchitectureTest` 已于 2026-11-17 拆分为五个主题类，下文的 `ArchitectureTest N 例` 指拆分前的单类。
+- **已接受的测试空白（2026-11-19 决定）**：`shell` 模块（DEX 壳加载与解密）不做单元测试，其行为只通过真机回归验证。该决定与 `core:model`、`core:navigation-contract`、`core:designsystem` 无 JVM 可测分支的判断一致，不为凑数补测。
 
 导航：
 - 现有实现：`security/src/main/java/com/example/security/`（自 2026-11-11 起由 `app` 迁入，见 §9.6）
@@ -321,7 +322,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 3. **虚拟化检测**：按决定暂不做。
 
 **验证（2026-11-16，单次统一执行 `:security:apiDump :security:testDebugUnitTest :app:compileReleaseKotlin`）**
-- 构建成功；`SecurityDetectorsTest` 38 例、`SecurityPolicyTest` 15 例，0 失败。
+- 构建成功；`SecurityDetectorsTest` 38 例、`SecurityPolicyTest` 15 例，0 失败。（2026-11-16 快照：此后又增至 41 例，现行数量以测试类为准）
 - `security.api` 已重新生成，包含 `JAVA_HOOK`、`getHookFrameworkAction`。
 - AAR 的 arm64 so 含期望摘要 `0768F702…C2AC`（与 keystore 证书指纹一致）；生成的 `BuildConfig` 不再含 `EXPECTED_SIG_SHA256`。
 - APK 解析与 SHA-256 在仓库外用独立程序验证（不触发 Gradle）：SHA-256 标准向量全部通过；对已有的 `app-release.apk` 返回匹配，对错误摘要返回不匹配。注意：debug 变体同样使用该测试 keystore 签名，因此 debug APK 也匹配，这是预期。
@@ -691,6 +692,8 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 
 ## 九、H7 完成记录：库化前置改造（阶段一）
 
+> 快照标注：本节记录 2026-11-10 至 11-11 的 H7 完成与验证，其中的数字与结论以当时为准，原文保留。
+
 **完成时间**：2026-11-10 ｜ **范围**：`:app/security` 内部解耦，**未**新建模块、**未**改包名与 so 名（留到阶段二搬家时一次改完，避免两次大范围改名）。
 
 ### 9.1 结构变化
@@ -861,13 +864,15 @@ security check hit: 检测到异常匿名可执行内存段（2 段，阈值 0�
 
 | 场景 | 结果 |
 |---|---|
-| `:security` 单测 24 例 + `ArchitectureTest` 30 例 + `detekt` | ✅ |
+| `:security` 单测 24 例 + `ArchitectureTest` 30 例 + `detekt`（快照：`ArchitectureTest` 此后拆为五个主题类，现 33 条规则） | ✅ |
 | debug 包 | 线程 0、日志 0（`FLAG_DEBUGGABLE` 跳过逻辑未受搬家影响） |
 | 常规 release | 启动正常，APK 内含 `lib/arm64-v8a/libappsecurity.so` |
 | 壳包（三开关） | 模拟器与真机均可启动：`shell dex check ok` / `payload sum ok` / `registered 12 methods` / `security warn`（模拟器） |
 | 壳 dex 篡改（追加 1 字节） | `shell dex crc mismatch: actual=51af34c5 expected=7e5e8f17` → fail-closed |
 
 ## 十、2026-11-12 安全评审与缺陷修复
+
+> 快照标注：本节及子节记录 2026-11-12 至 11-19 的评审与验证。其中的测试数量为当时数字，现行数量以对应测试类为准，原文保留。
 
 对 `:security` 做了一次完整评审（12 个 Kotlin 文件 + 1146 行 cpp + 构建配置 + 单测），
 发现 1 个 P0、4 个 P1、8 个 P2，本次已全部修复。
@@ -1286,7 +1291,7 @@ CI 矩阵构建带 `-PenablePltCheck=true`，等于每次回归都自动跑这�
 **单测**：`shouldDegrade()` 抽成纯函数（引擎依赖 Handler/Looper，无法直接构造），
 覆盖「未达阈值 / 达到阈值 / 已降级不重复 / 阈值为 0」。
 
-**库单测总数**：30（检测）+ 10（策略/事件）= **40 例**。
+**库单测总数**：30（检测）+ 10（策略/事件）= **40 例**。（2026-11-12 快照）
 
 > 2026-11-12 拆分：`SecurityEngine` 涨到 605 行触发架构守卫（单文件 <500），
 > 抽出 `SecurityEventRecorder`（记录/分发/回调隔离）、`DetectionHealth`（健康度与降级）、
@@ -1329,7 +1334,7 @@ Caused by: java.lang.IllegalAccessException: ... cannot access class jdk.interna
 另把 Robolectric 缓存键从 `4.16` 更正为 `4.17`。
 
 **验证**：本地跑 CI 的完整命令 → `BUILD SUCCESSFUL`（3m46s），`:core:data-repository` 全绿，
-`:security` 40 例、`:app` 架构测试 30 例均通过。
+`:security` 40 例、`:app` 架构测试 30 例均通过。（2026-11-12 快照；现行：安全模块 41 + 15 例，架构测试 33 条）
 
 ### 10.16 `:shell:lintDebug` 的三类问题（2026-11-12）
 
@@ -1351,7 +1356,7 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
 
 | 项 | 结果 |
 |---|---|
-| `:security:testDebugUnitTest` | **30 例**（Detectors 24 + Policy 6）全绿 |
+| `:security:testDebugUnitTest` | **30 例**（Detectors 24 + Policy 6）全绿（2026-11-12 快照，现行 41 + 15 例） |
 | `:app:testDebugUnitTest`（含架构测试） | 通过 |
 | `detekt` | 通过 |
 | `:security:lintDebug` | **0 issue**（原 1 条 informational 已抑制） |

@@ -26,6 +26,9 @@ dependencies {
     // tree API（MethodNode / InsnList）是独立构件 asm-tree，只依赖 asm 会缺包
     implementation(libs.asm)
     implementation(libs.asm.tree)
+
+    // 守卫判定规则（GuardRules）的纯 JVM 单测，不进入任何运行时 classpath
+    testImplementation(libs.junit)
 }
 
 gradlePlugin {

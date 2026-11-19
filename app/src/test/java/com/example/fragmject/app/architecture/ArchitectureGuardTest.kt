@@ -2,7 +2,7 @@ package com.example.fragmject.app.architecture
 
 import com.example.fragmject.app.architecture.ArchitectureSupport.APP_DATA_ALLOWLIST_CAP
 import com.example.fragmject.app.architecture.ArchitectureSupport.APP_DATA_IMPORT_ALLOWLIST
-import com.example.fragmject.app.architecture.ArchitectureSupport.GUARD_PLUGIN_PATH
+import com.example.fragmject.app.architecture.ArchitectureSupport.GUARD_RULES_PATH
 import com.example.fragmject.app.architecture.ArchitectureSupport.MAX_FILE_LINES
 import com.example.fragmject.app.architecture.ArchitectureSupport.WARN_FILE_LINES
 import com.example.fragmject.app.architecture.ArchitectureSupport.isFeatureApi
@@ -159,7 +159,7 @@ class ArchitectureGuardTest {
      */
     @Test
     fun `core exception edges are registered in dependencies policy both ways`() {
-        val guardSource = java.io.File(GUARD_PLUGIN_PATH).readText()
+        val guardSource = java.io.File(GUARD_RULES_PATH).readText()
         val block = guardSource
             .substringAfter("CORE_EXCEPTION_EDGES: Set<Pair<String, String>> = setOf(", "")
             .substringBefore("\n)")

@@ -31,9 +31,9 @@ internal object ArchitectureSupport {
         "FragmjectApplication.kt" to setOf("com.example.fragmject.core.network.di.ImageOkHttpClient"),
     )
 
-    /** 守卫插件源码路径（规则 31 读取其中的 CORE_EXCEPTION_EDGES）。 */
-    const val GUARD_PLUGIN_PATH =
-        "../build-logic/convention/src/main/kotlin/com/example/fragmject/convention/FragmjectAndroidDependencyGuardPlugin.kt"
+    /** 守卫判定规则源码路径（规则 31 读取其中的 CORE_EXCEPTION_EDGES）。 */
+    const val GUARD_RULES_PATH =
+        "../build-logic/convention/src/main/kotlin/com/example/fragmject/convention/GuardRules.kt"
 
     /** 通过项目根目录读取源码文本，兼容 Gradle 以模块目录为工作目录的情况。 */
     fun readSource(file: KoFileDeclaration): String {

@@ -44,7 +44,7 @@ import org.objectweb.asm.tree.MethodNode
  *
  * ============================ 白名单 ============================
  * - 只处理 `com/example/fragmject/` 下的类，三方库不碰；
- * - 跳过 `com/example/fragmject/app/security/`：安全检测的特征串与判定逻辑不接受改写；
+ * - 不再有排除前缀（原 `app/security/` 已搬迁至 `com/example/security/`，该库的特征串必须插桩）；
  * - 跳过长度 < [MIN_CHARS] 的常量（`":"`、`"/"` 这类多半是协议分隔符，收益低风险高）；
  * - 跳过紧随其后的**反射/按名查找**调用（`Class.forName`、`Enum.valueOf`、`getIdentifier` 等），
  *   这些 API 的语义就是「名字必须是明文」。
@@ -77,10 +77,14 @@ private const val MIN_CHARS = 4
  */
 private val OWN_PACKAGES = listOf("com/example/fragmject/", "com/example/security/")
 
-/** 不插桩的包 / 类。 */
-private val EXCLUDED_PREFIXES = listOf(
-    "com/example/fragmject/app/security/",
-)
+/**
+ * 不插桩的包 / 类。
+ *
+ * 当前为空：原先的 `com/example/fragmject/app/security/` 已在 H7 阶段二搬迁到顶层 `:security`
+ * （包名 `com/example/security/`，由 [OWN_PACKAGES] 覆盖，且必须插桩）。若将来 app 下重新出现
+ * 不允许改写字符串的包，在此登记前缀即可。
+ */
+private val EXCLUDED_PREFIXES: List<String> = emptyList()
 
 /**
  * 不插桩的类名片段：**Hilt 生成的聚合类**。

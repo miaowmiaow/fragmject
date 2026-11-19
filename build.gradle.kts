@@ -103,19 +103,26 @@ tasks.register("verifyUnitTestCoverage") {
             }
         }
 
-        val featureRoot = File(coverageRoot, "feature")
-        var featureCovered = 0
-        var featureMissed = 0
-        var featureModules = 0
-        featureRoot.listFiles()?.filter { it.isDirectory }?.sortedBy { it.name }?.forEach { feature ->
-            val ratio = lineRatio(File(feature, "impl")) ?: return@forEach
-            featureCovered += ratio.first
-            featureMissed += ratio.second
-            featureModules++
+        // 静默跳过的修复：feature 实现模块必须全部有报告。缺失即失败并列出路径，
+        // 避免因聚合遗漏而只统计到部分模块，表现为一个不可信的百分比。
+        val featureImpls = File(coverageRoot, "feature").listFiles()
+            ?.filter { it.isDirectory }
+            ?.map { File(it, "impl") }
+            ?.filter { File(it, "build.gradle.kts").isFile }
+            ?.sortedBy { it.path }
+            .orEmpty()
+        if (featureImpls.isEmpty()) {
+            throw GradleException("未找到任何 feature/*/impl 模块，覆盖率门槛无法校验")
         }
-        if (featureModules == 0) {
-            throw GradleException("未找到 feature 覆盖率报告，请先执行 ./gradlew unitTestCoverageReport")
+        val missingFeatureReports = featureImpls.filter { lineRatio(it) == null }
+        if (missingFeatureReports.isNotEmpty()) {
+            throw GradleException(
+                "以下 feature 实现模块缺少覆盖率报告（请先执行 ./gradlew unitTestCoverageReport）：\n" +
+                    missingFeatureReports.joinToString("\n") { "  - ${it.relativeTo(coverageRoot).path}" },
+            )
         }
+        val featureCovered = featureImpls.sumOf { lineRatio(it)!!.first }
+        val featureMissed = featureImpls.sumOf { lineRatio(it)!!.second }
         check("feature 逻辑层", featureCovered, featureMissed, gate = 50.0)
 
         lineRatio(File(coverageRoot, "core/data-repository"))

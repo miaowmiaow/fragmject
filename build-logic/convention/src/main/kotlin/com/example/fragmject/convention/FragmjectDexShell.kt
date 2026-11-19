@@ -82,6 +82,12 @@ internal fun Project.configureDexShell() {
     val resObfEnabled = providers.gradleProperty("enableResObf").map(String::toBoolean).getOrElse(false)
     val obfApk = layout.buildDirectory.file("outputs/apk/release/app-release-resobf.apk")
 
+    // 只有显式开启探针时才给 gadgetDir 赋值：`@InputDirectory` 上的 `@Optional` 只表示
+    // 「属性可以未设置」，一旦**设置成不存在的目录**，任务仍在输入校验阶段直接失败
+    // （CI 上 `tools/frida-gadget` 是 gitignore 的，weekly release 就因此挂掉）。
+    // 未开启时不赋值 → `gadgetDir.orNull == null`，而任务侧只在 `gadgetProbe=true` 时才读它。
+    val gadgetProbeEnabled = providers.gradleProperty("enableGadgetProbe").map(String::toBoolean).getOrElse(false)
+
     val packTask = tasks.register<PackShellTask>("packShellRelease") {
         group = "build"
         description = "把 release APK 打成 DEX 壳（H6/S1）"
@@ -91,8 +97,10 @@ internal fun Project.configureDexShell() {
         signingPropertiesFile.set(rootProject.layout.projectDirectory.file("keystore.properties"))
         signingBaseDir.set(baseDir)
         outputApk.set(shelledApk)
-        gadgetProbe.set(providers.gradleProperty("enableGadgetProbe").map(String::toBoolean).getOrElse(false))
-        gadgetDir.set(rootProject.layout.projectDirectory.dir("tools/frida-gadget"))
+        gadgetProbe.set(gadgetProbeEnabled)
+        if (gadgetProbeEnabled) {
+            gadgetDir.set(rootProject.layout.projectDirectory.dir("tools/frida-gadget"))
+        }
         dependsOn(tasks.named(if (resObfEnabled) "obfuscateReleaseResources" else "packageRelease"))
         dependsOn(generateTask)
     }

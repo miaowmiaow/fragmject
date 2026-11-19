@@ -418,7 +418,7 @@ CI 执行的步骤都能在本地跑（与 `.github/workflows/ci.yml` 一致）�
 # 需要 JDK 21+；macOS 上可直接用 Android Studio 自带的 JBR
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 
-# 1. 架构守卫：依赖方向 + Compose 稳定性（与单测分开执行，同一次调用会丢弃配置缓存）
+# 1. 架构守卫：依赖方向 + Compose 稳定性（与单测分开执行只为失败时定位更快，两者都兼容配置缓存）
 ./gradlew verifyModuleDependencies verifyComposeStabilityConfig
 
 # 2. 单元测试（含 app 模块的 33 条架构规则，类名以 Architecture 开头）

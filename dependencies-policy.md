@@ -143,7 +143,7 @@
 
 **组合根必须显式声明契约层**：`feature:*:impl` 对自身 api 一律用 `implementation(...)`，**不得用 `api(...)`**；
 `:app` 需要 NavKey 装配导航图，因此同时声明 9 条 `implementation(project(":feature:x:api"))`，
-两类边都在 `APP_ALLOWED_DEPENDENCIES` 内。原因：Gradle 守卫 `buildEdges` 只收集**直接** `ProjectDependency`，
+两类边都在 `APP_ALLOWED_DEPENDENCIES` 内。原因：Gradle 守卫的依赖边采集（`declaredProjectDependencies`）只收集**直接** `ProjectDependency`，
 若 impl 用 `api()` 把契约层传递给 app，白名单对 api 层就形同虚设——app 不声明也能编译，删掉声明也不会被发现。
 降级后「少声明一条即编译失败」，白名单才真正生效。
 

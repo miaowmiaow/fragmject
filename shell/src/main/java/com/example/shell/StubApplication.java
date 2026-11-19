@@ -17,7 +17,6 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.zip.CRC32;
-import java.util.zip.Inflater;
 import java.util.List;
 
 import dalvik.system.InMemoryDexClassLoader;
@@ -48,9 +47,6 @@ public class StubApplication extends Application {
 
     /** 真实 Application 的全限定名（与 :app 保持一致）。 */
     private static final String REAL_APPLICATION = "com.example.fragmject.app.FragmjectApplication";
-
-    /** 与打包任务一致的 XOR 密钥基值。 */
-    private static final int XOR_BASE = 0x5A;
 
     private Application real;
 
@@ -275,8 +271,9 @@ public class StubApplication extends Application {
 
         List<ByteBuffer> buffers = new ArrayList<>(chunks.size());
         for (byte[] chunk : chunks) {
-            // 与打包任务相反的顺序：先 XOR 还原，再 inflate 得到原始 dex
-            buffers.add(ByteBuffer.wrap(inflate(decode(chunk))));
+            // 与打包任务相反的顺序：先 XOR 还原，再 inflate 得到原始 dex。
+            // 协议实现在 ShellCodec（打包端有跨侧一致性单测，改它必须同步跑单测）
+            buffers.add(ByteBuffer.wrap(ShellCodec.decode(chunk)));
         }
         return buffers.toArray(new ByteBuffer[0]);
     }
@@ -316,35 +313,6 @@ public class StubApplication extends Application {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    /** 与打包任务的 deflate 对应：载荷是「先压缩再混淆」的，需先解码再解压。 */
-    private static byte[] inflate(byte[] compressed) throws Exception {
-        Inflater inflater = new Inflater();
-        inflater.setInput(compressed);
-        ByteArrayOutputStream out = new ByteArrayOutputStream(compressed.length * 3);
-        byte[] buffer = new byte[64 * 1024];
-        while (!inflater.finished()) {
-            int read = inflater.inflate(buffer);
-            if (read == 0) {
-                if (inflater.needsInput() || inflater.needsDictionary()) {
-                    break;
-                }
-            } else {
-                out.write(buffer, 0, read);
-            }
-        }
-        inflater.end();
-        return out.toByteArray();
-    }
-
-    /** 与打包任务对应的可逆混淆（不是密码学加密，只阻止 `unzip` 后直接 jadx）。 */
-    private static byte[] decode(byte[] data) {
-        byte[] out = new byte[data.length];
-        for (int i = 0; i < data.length; i++) {
-            out[i] = (byte) (data[i] ^ (XOR_BASE + i));
-        }
-        return out;
     }
 
     // ------------------------------------------------------------------

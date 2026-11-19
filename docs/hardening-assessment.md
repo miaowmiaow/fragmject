@@ -370,7 +370,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 |---|---|
 | `gradle/libs.versions.toml` | 新增 `asm = "9.9"`、`asm` / `asm-tree` 两个构建期依赖 |
 | `build-logic/convention/build.gradle.kts` | `implementation(libs.asm)` + `implementation(libs.asm.tree)` |
-| `build-logic/.../FragmjectStringFogPlugin.kt`（新） | 开关 `-PenableStringFog`、密钥 `-PstringFogKey`；`transformClassesWith(FogVisitorFactory, InstrumentationScope.PROJECT)`；`COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES` |
+| `build-logic/.../FragmjectStringFogPlugin.kt`（新） | 开关 `-PenableStringFog`、密钥 `-PstringFogKey`；`transformClassesWith(FogVisitorFactory, InstrumentationScope.PROJECT)`；`COMPUTE_FRAMES_FOR_INSTRUMENTED_CLASSES`（白名单/反射表/编解密口径已于 2026-11-19 抽到 `StringFogPolicy.kt`，见 §10.24） |
 | `FragmjectAndroidApplicationPlugin` / `...LibraryPlugin` | 各加一行挂载，保证 `:app` 与所有 library 模块同时插桩 |
 | `app/src/main/cpp/security.cpp` | **未改**（方案调整后不需要 native 解密） |
 
@@ -563,8 +563,9 @@ sdk_gphone16k_arm64 / Android 17（API 37，16 KB page）双端各跑一次：
 新增 `:shell`（纯 Java、零依赖）与 `packShellRelease` 打包任务，链路为：
 抽 `classes*.dex` → XOR 混淆写入 `assets/payload/dex-<n>.bin` → 删除原 dex →
 塞入壳 `classes.dex` → `zipalign -p 4` → 同证书重签。
-manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符，开壳时构建期替换为
-`com.example.shell.StubApplication`。
+manifest 只有 `android:name` 走占位符：使用 `${applicationName}`，开壳时构建期替换为
+`com.example.shell.StubApplication`；`android:appComponentFactory` 则必须由打包器**二进制剔除**
+（2026-11-19，见下方第 5 条）。
 
 | 检查点 | 实测 | 结论 |
 |---|---|---|
@@ -576,7 +577,7 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 | 安全模块在壳内可用 | `JNI_OnLoad: registered 12 methods`、双段 CRC 一致、`security warn` 正常 | ✅ |
 | 签名校验 | 重签后与 H1 期望摘要一致，`check hit` = 0 | ✅ |
 
-过程中修掉 4 个真实问题（都值得记住）：
+过程中修掉 5 个真实问题（都值得记住；第 5 条为 2026-11-19 补）：
 
 | 现象 | 根因 | 处理 |
 |---|---|---|
@@ -584,6 +585,7 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 | `UnsatisfiedLinkError: couldn't find libfragmject_security.so` | 业务 dex 由 `InMemoryDexClassLoader` 加载，它没有 APK 的 native 搜索路径 | `SecurityNative.load()` 增加 `nativeLibraryDir` 与 `apk!/lib/<abi>/` 兜底 |
 | `Hilt Activity must be attached to an @HiltAndroidApp Application. Found: StubApplication` | 系统在 `makeApplication` 返回后会执行 `mInitialApplication = <stub>`，把壳在 `attachBaseContext` 里的替换覆盖掉 | 在 `StubApplication.onCreate` 再替换一次 `LoadedApk.mApplication` / `mInitialApplication` |
 | `Module with the Main dispatcher is missing` | parent 用了 `systemClassLoader`，`ServiceLoader` 找不到 APK 里的 `META-INF/services` | parent 改为系统原本的 `PathClassLoader`（只提供资源，类仍从 payload 解析） |
+| `E LoadedApk: Unable to instantiate appComponentFactory`（每次冷启动一条，进程不崩） | `androidx.core:core` 的 manifest 注入了该属性，指向的类随业务 dex 进了载荷；`LoadedApk.createAppFactory` 早于 `StubApplication.attachBaseContext`，按名加载必然失败 | 打包器用 `ShellManifest` 二进制剔除该属性（删一条 20 字节 attribute 记录 + 回填两级 chunk size）；系统回落默认 factory。见 `dex-shell-handover.md` §七/§九 |
 
 **S2 第一阶段（2026-11-11，已完成）**：
 
@@ -605,6 +607,8 @@ manifest 不改二进制：`android:name` 使用 `${applicationName}` 占位符�
 
 1. 新增 `generateShellDex` 任务：d8 产出壳 dex 后，把它整包的 **CRC32 写成 C 头文件**
    （`shell_crc.h`），并在构建图上排在 native 编译之前（`preReleaseBuild` 依赖它）；
+   > 已被后续方案取代：so 迁入 `:security` 后不再注入该常量，改由 `assets/payload/shell.txt`
+   > 承载（见 §9「搬家导致的架构调整」）。本条仅保留为过程记录。
 2. `security.cpp` 用 `__has_include` 引入该常量，新增 JNI `verifyShellDexCrc(int)`；
    头文件缺失（未打壳）时返回 `-1`，即「不启用」，不影响普通构建；
 3. 壳启动时（payload loader 建好之后）算自己 `classes.dex` 的 CRC32，通过反射调用
@@ -1328,10 +1332,10 @@ Caused by: java.lang.IllegalAccessException: ... cannot access class jdk.interna
 
 放在约定插件而不是单个模块，是为了新模块自动继承，避免再踩一次。
 
-**顺带**：CI 把「守卫任务」与「单测」拆成两步——`verifyModuleDependencies` 需遍历全部子项目依赖图，
-声明了 `notCompatibleWithConfigurationCache`，与单测同一次调用会让整个配置缓存条目被丢弃
-（日志里的 `Configuration cache entry discarded with 1 problem`）；拆开后单测这步能命中缓存。
-另把 Robolectric 缓存键从 `4.16` 更正为 `4.17`。
+**顺带**：CI 把「守卫任务」与「单测」拆成两步，便于失败时定位；另把 Robolectric 缓存键从 `4.16` 更正为 `4.17`。
+当时拆分还有另一个原因——`verifyModuleDependencies` 声明了 `notCompatibleWithConfigurationCache`，
+与单测同一次调用会让整个配置缓存条目被丢弃（日志里的 `Configuration cache entry discarded with 1 problem`）。
+该限制已于 2026-11-19 消除，见 §10.23。
 
 **验证**：本地跑 CI 的完整命令 → `BUILD SUCCESSFUL`（3m46s），`:core:data-repository` 全绿，
 `:security` 40 例、`:app` 架构测试 30 例均通过。（2026-11-12 快照；现行：安全模块 41 + 15 例，架构测试 33 条）
@@ -1466,3 +1470,147 @@ CI 在 `lintDebug` 步骤失败：`StubApplication.java` 1 error + 4 warnings。
 - **约束**：心跳只读线程内局部计数，不改变复验与 `kMismatch` 终止分支；输出为固定格式数字，不含任何特征串，最终 `libappsecurity.so` 的明文特征串仍为 0，导出符号仍只有 `JNI_OnLoad`。
 - **验证（真机 PGEM10，正式 release，覆盖安装保留数据）**：守卫启动、注册 15 方法、自身 so 与 libc 校验 mismatched=0、无致命异常；心跳节奏为 13:49:23（checks=24）→ 13:50:23（checks=36），间隔 60 秒，每次递增 12。
 - **说明**：`started` 与首次心跳之间的日志缺失是采集时 `logcat -c` 清空缓冲所致，不是守卫缺失。
+
+### 10.23 `verifyModuleDependencies` 改为配置缓存兼容（2026-11-19）
+
+**背景**：§10.15 的临时处置（CI 拆两步 + 局部 `--no-configuration-cache`）只是绕开症状。
+`build.gradle.kts` 把该任务挂到了 `check`，于是任何「统一验证」都会整批丢弃配置缓存条目。
+
+**根因**：`doLast` 在执行阶段遍历 `root.subprojects` 与 `configurations` 构建依赖边。
+这是配置缓存明确禁止的**执行期 Project 访问**，只能用 `notCompatibleWithConfigurationCache` 兜住。
+
+**改法**：把 Gradle 模型读取整体前移到配置阶段，并抽成显式任务类 `VerifyModuleDependenciesTask`。
+
+| 项 | 之前 | 现在 |
+|---|---|---|
+| 依赖边 / 已声明 `androidx.core` 构件 / 模块目录映射 | 执行期遍历 Project | `projectsEvaluated` 采集为 `@Input` 纯字符串数据 |
+| 源码扫描（隐式依赖） | 执行期遍历 `projectDir/src/main` | `@InputFiles` + `PathSensitivity.RELATIVE` 的根目录 `**/src/main/**/*.kt` 文件树 |
+| 任务形态 | 匿名任务 + `doLast` 闭包 | 抽象任务类，执行期只读输入 |
+| 配置缓存 | 不兼容 | 兼容，`check` 可与任意任务同批执行 |
+
+**采集点为什么是 `projectsEvaluated`**：根插件 apply 时子项目尚未配置，读不到各模块最终声明的依赖；
+`afterEvaluate` 挂在根项目上同样太早，而 `projectsEvaluated` 在全部项目配置完成后、任务图计算前触发，
+属于配置阶段，不触发配置缓存不兼容（已用 `--warning-mode all` 确认无相关弃用告警）。
+
+**两处刻意 fail-loud**（避免改造后守卫"静默空跑"，这比报错更危险）：
+依赖图采集为空直接失败；源码文件无法归属到任何模块（目录映射失效）直接失败而非跳过。
+
+**验证**（本地，JDK 21 / Gradle 9.8.1）：
+
+| 场景 | 结果 |
+|---|---|
+| 临时给 `:core:model` 加 `implementation(project(":core:domain"))` | `verifyModuleDependencies` **FAILED**，报「检测到依赖环 `:core:model -> :core:domain -> :core:model`」+「core 模块依赖超出白名单」——说明采集到的图是真实的，规则仍在生效 |
+| 撤销临时依赖，`./gradlew verifyModuleDependencies verifyComposeStabilityConfig` | `BUILD SUCCESSFUL`，`Configuration cache entry stored` |
+| 原样再跑一次 | `Reusing configuration cache` + `2 actionable tasks: 2 executed`——任务照常执行，配置阶段复用 |
+| `./gradlew check --dry-run` | `BUILD SUCCESSFUL`，`Configuration cache entry stored`（**无** `discarded with N problem`） |
+
+**同步改掉的口径**：`docs/layering.md` 的 `--no-configuration-cache` 已删除；`README.md` / `.github/workflows/ci.yml`
+里「同一次调用会丢弃配置缓存」的说法改为「拆步只为定位更快」；CI 的两步结构保留（不构成限制）。
+
+### 10.24 StringFog / DexShell 的策略层拆分与单测（2026-11-19）
+
+**背景**：这两个能力会改字节码、会产出唯一可发布的壳包，但此前**零单测**——验收全靠 release dex 里 grep
+特征串计数与真机冒烟。且两处「对称协议」没有任何机制约束：
+
+- `encrypt()` 与注入的 `$fog$d` 字节码（同一文件，两份表达）；
+- `encode()/deflate()` 与 `:shell` 的 `decode()/inflate()`（跨模块、跨语言）。
+
+任一侧漂移都会得到「能打包但装不上 / 装上即崩」的产物，且只有真机能发现。
+
+**拆分（不改插件 id、不改 `-P` 开关语义、不新增构建工程）**
+
+| 文件 | 职责 |
+|---|---|
+| `StringFogPolicy.kt`（新） | 白名单 / 排除片段 / 反射 API 表 / `shouldEncrypt` / `encrypt` / `decrypt`（纯逻辑） |
+| `FragmjectStringFogPlugin.kt` | 只留 Gradle+AGP+ASM 编排；`FogClassVisitor` 改 `internal` 供单测搭真实链路 |
+| `ShellPayload.kt`（新） | 载荷协议：`encode/deflate/inflate`、分片命名、`sum.txt`/`shell.txt`、旧签名剔除、gadget 资源、`repack` |
+| `FragmjectDexShell.kt` | 只留任务注册、路径解析、进程调用（d8/zipalign/apksigner）、签名读取；两个任务重复的 `resolveBuildTools` 合并 |
+
+**新增单测**（`build-logic/convention/src/test`，JVM，不需要 Android SDK）
+
+| 类 | 例数 | 关键断言 |
+|---|---|---|
+| `StringFogPolicyTest` | 15 | 编解密往返（含中文/代理对/密钥轮换 0x5A3C·4660·0·0xFFFF）；白名单与 Hilt 聚合类排除；`Class.forName`/`Enum.valueOf`/`getIdentifier` 保留明文；**字节码级真实执行**：生成样例类 → `FogClassVisitor` → `defineClass` → 调用返回原文，同时锁死「insert 在 LDC 之后」「解密方法注入」「无替换不留死方法」；`-PstringFogKey` 参数校验（§10.26 新增 3 例） |
+| `ShellPayloadTest` | 9 | 先 deflate 再 XOR 的可逆性与体积优势；`repack` 抽走业务 dex、分片顺序可还原、`sum.txt` 覆盖全部密文分片、`shell.txt` 与壳 dex CRC 一致、旧签名文件剔除、STORED/DEFLATED 保真；gadget 三态（有配置 / 缺配置仅告警 / 未开启不写） |
+| `ShellCodecParityTest` | 3 | 跨侧一致性（见 §10.25）：现编译 `:shell` 的 `ShellCodec.java`，与 `ShellPayload` 逐字节比对 |
+
+**验证**：`:build-logic:convention:test` **57 例全绿**（GuardRules 30 + StringFogPolicy 15 + ShellPayload 9 +
+ShellCodecParity 3）；`verifyModuleDependencies` 仍通过；`./gradlew :app:packShellRelease --dry-run
+-PenableDexShell=true -PenableStringFog=true` 任务图正常解析（`generateShellDex` / `packShellRelease` 均在图中），
+配置缓存正常存储；真实壳包构建与真机冒烟见 §10.25「三」。
+
+**仍未覆盖（保持原验收口径）**：d8 / zipalign / apksigner、hidden API 反射与 `InMemoryDexClassLoader`
+加载只能集成/真机验证，仍以 `dex-shell-handover.md` §五 清单为准。双侧编解码的一致性已在 §10.25 收敛。
+
+### 10.25 壳端协议收敛与描述漂移修正（2026-11-19）
+
+**一、`ShellCodec`：协议从「两份实现」变成「一份实现 + 一致性测试」**
+
+`encode/deflate`（build-logic，Kotlin）与 `decode/inflate`（`:shell`，Java）此前各写一份，
+任一侧改动只有真机「装上即崩」才能发现。现在：
+
+- `shell/src/main/java/com/example/shell/ShellCodec.java`（新）——壳端唯一实现，纯 Java、零依赖，
+  `StubApplication` 的 `decode`/`inflate` 私有方法与 `XOR_BASE` 常量已删除，改为调用它；
+- `ShellCodecParityTest`（新）——测试运行时用 `javax.tools.JavaCompiler` **现编译该 Java 源码**，
+  反射调用后与 `ShellPayload` 逐字节比对（`XOR_BASE`、`deflate`、`encode` 三项 + 双向可解包），
+  覆盖空载荷/单字节/高压缩率/64 KB 随机/中文。源码路径由 `build.gradle.kts` 的
+  `systemProperty("fragmject.shellCodecSource")` 传入，路径失配直接失败而不是静默跳过。
+
+代价：壳 dex 增加一个约 1 KB 的类（`classes.dex` 仍远低于 CI 的 100 KB 阈值）。
+
+**二、描述漂移**
+
+| 位置 | 修正 |
+|---|---|
+| `FragmjectDexShell` 的 `generateShellDex` 任务描述 / KDoc | 不再声称生成 `shell_crc.h`；说明只输出 `shell.dex`，CRC 清单由 `assets/payload/shell.txt` 承担 |
+| `docs/hardening-assessment.md` §9 S2 过程记录 | 标注「已被后续方案取代」，指向「搬家导致的架构调整」 |
+| `docs/dex-shell-handover.md` §八 | 新增维护须知：改 `ShellCodec` 必须跑 `:build-logic:convention:test` |
+
+**三、真实壳包验证（2026-11-19，三项加固全开）**
+
+`./gradlew :app:assembleRelease -PenableStringFog=true -PenableResObf=true -PenableDexShell=true`
+
+| 项 | 结果 |
+|---|---|
+| 构建 | `BUILD SUCCESSFUL`（3m18s，1317 tasks），`app-release-shell.apk` 12 MB |
+| 壳 dex | 11,476 B（+980 B，来自新增 `ShellCodec`），CRC `0x11c04ed9` |
+| 载荷 | 2 片（1,837,471 + 2,736,257 B），`sum.txt` 与实算 SHA-256 一致 |
+| 壳 dex 清单 | `shell.txt=11c04ed9`，与 APK 内 `classes.dex` 的 CRC32 一致 |
+| 载荷可还原 | 分片 0 解 XOR + inflate → 3,818,980 B（dex 魔数正常） |
+| 业务 dex 抽离 | 列表只有 `classes.dex`（11,476 B），无 `classes2.dex`；`strings | grep -c wanandroid` = **0** |
+| 对齐 / 签名 | `zipalign -c -p 4` 通过；`apksigner` 证书 SHA-256 `0768f702…14c2ac`（与 H1 期望一致） |
+| 真机冒烟 | `scripts/verify-shell-apk.sh` 全绿：`shell dex check ok` / `payload sum ok` / `registered N methods` / `process hardened` / 进程存活 / 无 `check hit` |
+
+> 这一步同时是 `ShellCodec` 的端到端证明：壳能解开新打包任务产出的载荷，说明「一份实现 + 一致性测试」
+> 没有改变线上格式。
+
+### 10.26 插桩纳入 CI 冒烟 + 密钥参数校验（2026-11-19）
+
+**一、`security-matrix` 补 `-PenableStringFog=true`**
+
+排查 CI 覆盖面时发现一个真空：`release-weekly` 虽然三项加固全开，但**只校验结构与签名、不启动**；
+唯一「真的装包并启动」的是 `security-matrix`，而它此前只带 `-PenableDexShell`。
+也就是说字符串插桩把字节码改坏时（AGP 升级、`insert` 位置被误改），CI 全程看不见——
+必须是运行期 verify error 才会暴露。现已在 `security-matrix` 的构建命令加上该开关，
+插桩后的壳包会在模拟器矩阵里真实启动并跑 `scripts/verify-shell-apk.sh`。
+
+**二、`-PstringFogKey` 非法值给出可定位报错**
+
+原实现是 `providers.gradleProperty(...).map(String::toInt)`，`-PstringFogKey=abc` 只会抛
+`NumberFormatException`，没有属性名。现在：
+
+- 抽出纯函数 `parseStringFogKey(raw)`（有单测）：空/未设置 → 默认密钥；十进制 → 解析；
+  其余 → `GradleException`，文案带属性名、原值与取值口径（`0x1234` 需写成 `4660`）；
+- 解析放在「判断开关」之前：**未开启插桩时**写错参数也会失败，避免参数被静默忽略。
+
+**验证**
+
+| 场景 | 结果 |
+|---|---|
+| `./gradlew help -PenableStringFog=true -PstringFogKey=abc` | FAILED：`-PstringFogKey=abc 不是合法整数：只接受十进制（例如 4660；…）` |
+| `./gradlew help -PstringFogKey=abc`（未开插桩） | FAILED，同一文案（不再静默忽略） |
+| `./gradlew help -PenableStringFog=true -PstringFogKey=4660` | `BUILD SUCCESSFUL` |
+| `:build-logic:convention:test` | **57 例全绿**（StringFogPolicy 由 12 增至 15，新增密钥参数 3 例） |
+
+> `security-matrix` 的改动只能在 CI 上验证（本轮未触发远端流水线）；本地已确认该开关组合
+> 能正常出包（§10.25 三、就是同一组开关的 x86_64 同构构建路径）。

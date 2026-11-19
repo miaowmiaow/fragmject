@@ -52,10 +52,15 @@ jobs:
           ls "$ANDROID_HOME/platforms" | tail -3
 
       # 只出 x86_64：默认产物仍是 arm64-v8a，矩阵构建用 -PmatrixAbi 覆盖
+      #
+      # 必须带 -PenableStringFog=true：本 workflow 是唯一「真的装包并启动」的 release 链路。
+      # 字符串插桩改的是字节码，坏掉的表现是运行时 verify error / 崩溃，
+      # release-weekly 那套结构+签名检查完全看不见；只在这里构建才可能被抓到。
       - name: Assemble x86_64 shell APK
         run: |
           ./gradlew :app:assembleRelease \
             -PenableDexShell=true \
+            -PenableStringFog=true \
             -PmatrixAbi=x86_64 \
             -PenablePltCheck=true \
             --stacktrace

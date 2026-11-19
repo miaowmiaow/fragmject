@@ -147,9 +147,12 @@ feature/{name}/impl/.../
 `implementation(project(...))` 不产生 import 时 Konsist 感知不到；反之 Gradle 看不到越界引用。二者必须同时维护。
 
 ```bash
-./gradlew verifyModuleDependencies --no-configuration-cache       # Gradle 守卫
+./gradlew verifyModuleDependencies                             # Gradle 守卫（配置缓存兼容）
 ./gradlew :app:testDebugUnitTest --tests "*Architecture*"      # Konsist 守卫
 ```
+
+两个守卫都可与 `check` 同批执行，不需要 `--no-configuration-cache`：依赖图在配置阶段采集成任务输入，
+执行阶段不访问 `Project`。
 
 ### Gradle 守卫（`FragmjectAndroidDependencyGuardPlugin.kt`）
 

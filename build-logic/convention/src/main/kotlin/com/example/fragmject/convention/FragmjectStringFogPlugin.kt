@@ -9,6 +9,7 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.Variant
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
@@ -25,7 +26,7 @@ import org.objectweb.asm.tree.MethodNode
 /**
  * 字符串加密插桩（H2）。
  *
- * ============================ 做法 ============================
+ * ============================ 做什么 ============================
  * 在 R8 **之前**（`Instrumentation.transformClassesWith`）把 `LDC "明文"` 换成：
  *
  * ```
@@ -38,16 +39,15 @@ import org.objectweb.asm.tree.MethodNode
  * - 每个模块独立插桩，不需要跨模块共享字符串表；
  * - 代价是每个含字符串的类多一个几十字节的静态方法，R8 之后可忽略。
  *
+ * ============================ 分工 ============================
+ * 本文件只负责 **Gradle / AGP / ASM 编排**：
+ * 开关与密钥读取、变体挂载、类筛选入口、方法级改写、字节码注入。
+ * 白名单、反射 API 表、编解密口径这类「策略与协议」在 [StringFogPolicy]（纯逻辑，有单测）。
+ * 两者的边界不能含糊：`$fog$d` 的字节码必须与 [StringFogPolicy.encrypt] 逐字符对应。
+ *
  * ============================ 为什么默认关闭 ============================
  * 插桩会改变字节码，任何「按字符串名查找」的代码都可能被打断。
  * 因此默认由 `-PenableStringFog=true` 显式开启，且 release 以外的验证先跑冒烟。
- *
- * ============================ 白名单 ============================
- * - 只处理 `com/example/fragmject/` 下的类，三方库不碰；
- * - 不再有排除前缀（原 `app/security/` 已搬迁至 `com/example/security/`，该库的特征串必须插桩）；
- * - 跳过长度 < [MIN_CHARS] 的常量（`":"`、`"/"` 这类多半是协议分隔符，收益低风险高）；
- * - 跳过紧随其后的**反射/按名查找**调用（`Class.forName`、`Enum.valueOf`、`getIdentifier` 等），
- *   这些 API 的语义就是「名字必须是明文」。
  */
 
 /** 插桩开关：`-PenableStringFog=true` 才生效。 */
@@ -55,75 +55,6 @@ private const val PROP_ENABLE = "enableStringFog"
 
 /** 解密密钥：可用 `-PstringFogKey=<int>` 覆盖；同一次构建内所有类共用。 */
 private const val PROP_KEY = "stringFogKey"
-
-/** 默认密钥：只是「不让密文一眼看穿」，不是密码学密钥。 */
-private const val DEFAULT_KEY = 0x5A3C
-
-/** 注入的解密方法名（加 `$` 前缀，避免与业务方法冲突）。 */
-private const val DECODE_METHOD = "\$fog\$d"
-
-/** 解密方法描述符。 */
-private const val DECODE_DESC = "(Ljava/lang/String;)Ljava/lang/String;"
-
-/** 只加密长度 ≥ 4 的常量。 */
-private const val MIN_CHARS = 4
-
-/** 只插桩本项目代码。 */
-/**
- * 插桩的包前缀。
- * - `com/example/fragmject/`：应用自身（application / 普通 library 模块）；
- * - `com/example/security/`：安全库自身。库的 AAR 不会被宿主的插桩任务触碰，
- *   所以库的检测特征串必须在库自己的构建里加密（见 [configureStringFogForSecurityLibrary]）。
- */
-private val OWN_PACKAGES = listOf("com/example/fragmject/", "com/example/security/")
-
-/**
- * 不插桩的包 / 类。
- *
- * 当前为空：原先的 `com/example/fragmject/app/security/` 已在 H7 阶段二搬迁到顶层 `:security`
- * （包名 `com/example/security/`，由 [OWN_PACKAGES] 覆盖，且必须插桩）。若将来 app 下重新出现
- * 不允许改写字符串的包，在此登记前缀即可。
- */
-private val EXCLUDED_PREFIXES: List<String> = emptyList()
-
-/**
- * 不插桩的类名片段：**Hilt 生成的聚合类**。
- *
- * `HiltModules_*` / `*_LazyMapKey` 里的字符串是 R8 `-identifiernamestring` 的目标
- * （`lazyClassKeyName = "com.example...XxxViewModel"`）。一旦被替换成解密调用，
- * R8 就无法追踪「哪些标识符字符串流入该字段」，警告原文：
- * `Cannot determine what identifier string flows to ... lazyClassKeyName`，
- * 后果是多模块 Hilt 聚合在运行时找不到模块。
- */
-private val EXCLUDED_NAME_PARTS = listOf(
-    "_Hilt",
-    "LazyMapKey",
-)
-
-/**
- * 「名字必须是明文」的 API：命中时保留原字符串。
- *
- * 只收真正按名查找的入口，宁可少加密也不要线上崩：
- * `Class.forName` / `getDeclaredMethod` 一类反射、`Enum.valueOf`、按名取资源。
- */
-private val REFLECTIVE_APIS: Set<Pair<String, String>> = buildSet {
-    val classLookups = listOf(
-        "forName",
-        "getMethod",
-        "getDeclaredMethod",
-        "getField",
-        "getDeclaredField",
-        "getConstructor",
-        "getDeclaredConstructor",
-        "getResource",
-        "getResourceAsStream",
-    )
-    classLookups.forEach { add("java/lang/Class" to it) }
-    listOf("loadClass", "findClass", "findLibrary", "getResource", "getResourceAsStream")
-        .forEach { add("java/lang/ClassLoader" to it) }
-    add("java/lang/Enum" to "valueOf")
-    add("android/content/res/Resources" to "getIdentifier")
-}
 
 /** application 模块挂载点（由 `FragmjectAndroidApplicationPlugin` 调用）。 */
 internal fun Project.configureStringFogForApplication() {
@@ -149,7 +80,7 @@ internal fun Project.configureStringFogForLibrary() {
  */
 internal fun Project.configureStringFogForSecurityLibrary() {
     if (providers.gradleProperty("disableStringFog").map(String::toBoolean).getOrElse(false)) return
-    val key = providers.gradleProperty(PROP_KEY).map(String::toInt).getOrElse(DEFAULT_KEY)
+    val key = stringFogKey()
     extensions.getByType(LibraryAndroidComponentsExtension::class.java).onVariants { variant ->
         variant.applyStringFog(key)
     }
@@ -171,9 +102,29 @@ class FragmjectSecurityStringFogPlugin : Plugin<Project> {
 
 /** 开关关闭时返回 null（不注册任何 ASM 任务，零开销）。 */
 private fun Project.stringFogKeyOrNull(): Int? {
+    // 先解析再判开关：参数写错一律失败，避免「-PstringFogKey=abc 但构建照过」的静默
+    val key = stringFogKey()
     val enabled = providers.gradleProperty(PROP_ENABLE).map(String::toBoolean).getOrElse(false)
-    if (!enabled) return null
-    return providers.gradleProperty(PROP_KEY).map(String::toInt).getOrElse(DEFAULT_KEY)
+    return if (enabled) key else null
+}
+
+private fun Project.stringFogKey(): Int =
+    parseStringFogKey(providers.gradleProperty(PROP_KEY).orNull)
+
+/**
+ * 解析 `-P[stringFogKey]` 的原始值。
+ *
+ * 合法：未设置 / 空串 → [StringFogPolicy.DEFAULT_KEY]；十进制整数（如 `4660`）。
+ * 非法：报错必须带上**属性名与实际值**。原实现直接用 `String::toInt`，`-PstringFogKey=abc`
+ * 只会抛一个没有上下文的 `NumberFormatException`，排查时看不出是哪个参数写错了。
+ */
+internal fun parseStringFogKey(raw: String?): Int {
+    val value = raw?.trim().orEmpty()
+    if (value.isEmpty()) return StringFogPolicy.DEFAULT_KEY
+    return value.toIntOrNull() ?: throw GradleException(
+        "-P$PROP_KEY=$value 不是合法整数：只接受十进制（例如 4660；" +
+            "十六进制请先换算，如 0x1234 写成 4660）",
+    )
 }
 
 /** 给单个变体注册 ASM 访问器。 */
@@ -196,20 +147,21 @@ interface FogParameters : InstrumentationParameters {
 /** 访问器工厂：决定哪些类进入插桩。 */
 abstract class FogVisitorFactory : AsmClassVisitorFactory<FogParameters> {
 
-    override fun isInstrumentable(classData: ClassData): Boolean {
-        val name = classData.className.replace('.', '/')
-        if (OWN_PACKAGES.none { name.startsWith(it) }) return false
-        if (EXCLUDED_PREFIXES.any { name.startsWith(it) }) return false
-        if (EXCLUDED_NAME_PARTS.any { name.contains(it) }) return false
-        return true
-    }
+    override fun isInstrumentable(classData: ClassData): Boolean =
+        // AGP 给的是 `.` 分隔的全限定名，策略层统一用 `/` 分隔的内部名
+        StringFogPolicy.shouldInstrument(classData.className.replace('.', '/'))
 
     override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor =
         FogClassVisitor(nextClassVisitor, parameters.get().key.get())
 }
 
-/** 类级访问器：改方法 + 在需要时注入解密方法。 */
-private class FogClassVisitor(
+/**
+ * 类级访问器：改方法 + 在需要时注入解密方法。
+ *
+ * `internal` 而非 `private`：单测需要自己搭 `ClassReader -> 本访问器 -> ClassWriter` 的链路，
+ * 验证「插桩后的类真的能加载并返回原文」（见 `StringFogPolicyTest`）。
+ */
+internal class FogClassVisitor(
     next: ClassVisitor,
     private val key: Int,
 ) : ClassVisitor(Opcodes.ASM9, next) {
@@ -264,12 +216,13 @@ private class FogClassVisitor(
      *     return new String(c);
      * }
      * ```
+     * 口径必须与 [StringFogPolicy.encrypt] 一致（`StringFogPolicyTest` 会真实执行这段字节码）。
      */
     private fun emitDecodeMethod() {
         val mv = super.visitMethod(
             Opcodes.ACC_PRIVATE or Opcodes.ACC_STATIC or Opcodes.ACC_SYNTHETIC,
-            DECODE_METHOD,
-            DECODE_DESC,
+            StringFogPolicy.DECODE_METHOD,
+            StringFogPolicy.DECODE_DESC,
             null,
             null,
         )
@@ -326,6 +279,10 @@ private class FogClassVisitor(
 /**
  * 把方法内所有明文常量替换为「密文 + 解密调用」。
  *
+ * 注意 `InsnList.insert(location, insn)` 是插在 `location` **之后**：
+ * 用成 `insertBefore` 会让解密调用拿到栈上别的值，产物直接 verify error。
+ * 该契约由 `StringFogPolicyTest` 的「插桩后真实执行」用例兜底。
+ *
  * @return 是否至少替换了一处（决定是否需要注入解密方法）。
  */
 private fun rewriteStrings(node: MethodNode, owner: String, key: Int): Boolean {
@@ -337,11 +294,17 @@ private fun rewriteStrings(node: MethodNode, owner: String, key: Int): Boolean {
         val insn = insns[index]
         if (insn is LdcInsnNode) {
             val plain = insn.cst as? String
-            if (plain != null && plain.length >= MIN_CHARS && !isReflectiveUse(insns, index)) {
-                insn.cst = encrypt(plain, key)
+            if (StringFogPolicy.shouldEncrypt(plain) && !isReflectiveUse(insns, index)) {
+                insn.cst = StringFogPolicy.encrypt(plain!!, key)
                 insns.insert(
                     insn,
-                    MethodInsnNode(Opcodes.INVOKESTATIC, owner, DECODE_METHOD, DECODE_DESC, false),
+                    MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        owner,
+                        StringFogPolicy.DECODE_METHOD,
+                        StringFogPolicy.DECODE_DESC,
+                        false,
+                    ),
                 )
                 changed = true
                 index++ // 跳过刚插入的解密调用
@@ -356,13 +319,5 @@ private fun rewriteStrings(node: MethodNode, owner: String, key: Int): Boolean {
 private fun isReflectiveUse(insns: InsnList, index: Int): Boolean {
     val next: AbstractInsnNode = insns[index].next ?: return false
     if (next !is MethodInsnNode) return false
-    return (next.owner to next.name) in REFLECTIVE_APIS
-}
-
-/** 与注入的解密方法逐字符对应：`c[i] ^ (key + i)`。 */
-private fun encrypt(plain: String, key: Int): String {
-    val chars = CharArray(plain.length) { i ->
-        ((plain[i].code xor (key + i)) and 0xFFFF).toChar()
-    }
-    return String(chars)
+    return StringFogPolicy.isReflectiveCall(next.owner, next.name)
 }

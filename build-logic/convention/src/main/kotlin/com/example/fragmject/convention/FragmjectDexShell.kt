@@ -8,19 +8,15 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.register
 import org.gradle.process.ExecOperations
 import java.io.File
-import java.io.FileOutputStream
-import java.security.MessageDigest
 import java.util.Properties
-import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 
 /**
@@ -32,8 +28,18 @@ import javax.inject.Inject
  * 2. 删除原 dex，塞入壳模块编译出的 `classes.dex`（[StubApplication]）；
  * 3. 重新对齐、用发布证书重签（与 H1 的签名校验、H4 的重签流程一致）。
  *
- * manifest 不需要二进制改写：`:app` 的 `android:name` 使用 `${applicationName}` 占位符，
+ * manifest 的 `android:name` 不需要二进制改写：`:app` 使用 `${applicationName}` 占位符，
  * 开启壳时在构建期替换为 `com.example.shell.StubApplication`。
+ *
+ * 但 `android:appComponentFactory` **必须**改写：它由 `androidx.core:core` 的 manifest 注入，
+ * 指向的类随业务 dex 一起进了载荷，而系统在 `LoadedApk.createAppFactory`（早于
+ * `StubApplication.attachBaseContext`）就会按名加载 → 必然 `ClassNotFoundException`
+ * （logcat：`Unable to instantiate appComponentFactory`）。剔除逻辑在 [ShellManifest]。
+ *
+ * ============================ 分工 ============================
+ * 本文件只做**构建编排**：路径解析、任务注册、进程调用（d8 / zipalign / apksigner）、
+ * 签名材料读取。载荷的字节层面协议（deflate → XOR、分片命名、`sum.txt` / `shell.txt`、
+ * 旧签名剔除、gadget 资源）全部在 [ShellPayload]（纯逻辑，有单测）。
  *
  * ============================ 开关 ============================
  * `-PenableDexShell=true` 才会注册任务，同时才会把 manifest 占位符指向 stub。
@@ -58,11 +64,11 @@ internal fun Project.configureDexShell() {
 
     val shellGenDir = layout.buildDirectory.dir("generated/shell")
 
-    // 壳 dex 必须**先**产出：native 侧要把它的 CRC 作为编译期常量写进 so，
-    // 而 so 又是在打包 APK 之前编译的。顺序错了就变成「校验一个还没生成的 dex」。
+    // 壳 dex 必须**先**产出：打包任务要把它原样塞进 APK，且 assets/payload/shell.txt
+    // 里的 CRC 必须与这次产出的字节一一对应。顺序错了就变成「校验一个还没生成的 dex」。
     val generateTask = tasks.register<GenerateShellDexTask>("generateShellDex") {
         group = "build"
-        description = "d8 编译壳 dex，并生成 native 侧期望的 CRC 头文件"
+        description = "d8 编译壳 dex（供 packShellRelease 塞进 APK）"
         shellAarFile.set(shellAar)
         sdkDir.set(sdkDirectory)
         platformJarDirName.set(platformJarName)
@@ -138,14 +144,24 @@ abstract class PackShellTask : DefaultTask() {
     @TaskAction
     fun run() {
         val work = temporaryDir.apply { deleteRecursively(); mkdirs() }
-        val tools = resolveBuildTools()
+        val tools = resolveBuildTools(sdkDir.get().asFile, "d8 / zipalign / apksigner")
         val shellDex = shellDexFile.get().asFile
         check(shellDex.exists()) { "缺少壳 dex：${shellDex.absolutePath}（先运行 generateShellDex）" }
 
-        // 重排 zip：原 dex 换成加密载荷 + 壳 dex
+        // 重排 zip：原 dex 换成加密载荷 + 壳 dex（字节层面全部在 ShellPayload）
         val rebuilt = File(work, "rebuilt.apk")
-        val payloadCount = repack(inputApk.get().asFile, shellDex, rebuilt)
-        logger.lifecycle("载荷分片：$payloadCount 个")
+        val result = ShellPayload.repack(
+            source = inputApk.get().asFile,
+            target = rebuilt,
+            shellDex = shellDex.readBytes(),
+            gadget = resolveGadgetPayload(),
+            warn = { message -> logger.warn(message) },
+        )
+        logger.lifecycle("载荷分片：${result.payloadChunks} 个")
+        // 壳包 manifest 里指向载荷的 appComponentFactory 已剔除（见 ShellManifest）
+        result.removedAppComponentFactory?.let {
+            logger.lifecycle("已剔除 appComponentFactory（原值：$it）")
+        }
 
         // 3. 对齐 + 重签
         val aligned = File(work, "aligned.apk")
@@ -174,135 +190,19 @@ abstract class PackShellTask : DefaultTask() {
         logger.lifecycle("DEX 壳完成：${outputApk.get().asFile.absolutePath}")
     }
 
-    /** @return 载荷分片数量。 */
-    private fun repack(source: File, shellDex: File, target: File): Int {
-        ZipFile(source).use { zip ->
-            val dexNames = zip.entries().asSequence()
-                .map { it.name }
-                .filter { DEX_NAME_REGEX.matches(it) }
-                .toList()
-
-            ZipOutputStream(FileOutputStream(target)).use { out ->
-                zip.entries().asSequence()
-                    .filter { !it.isDirectory }
-                    .filter { it.name !in dexNames }
-                    .filter { !isSignatureFile(it.name) }
-                    .forEach { entry -> copyEntry(zip, entry, out) }
-
-                // 顺序很关键：**先 deflate 再 XOR**。
-                // 反过来（先 XOR）会让载荷变成高熵数据，zip 完全压不动，
-                // 实测壳包会从 11.7MB 涨到 15.2MB（+30%）。
-                val digest = MessageDigest.getInstance("SHA-256")
-                dexNames.forEachIndexed { index, name ->
-                    val raw = zip.getInputStream(zip.getEntry(name)).use { it.readBytes() }
-                    val encoded = encode(deflate(raw))
-                    digest.update(encoded)
-                    // 已经是压缩数据，用 STORED 避免 zip 再压一遍白耗 CPU
-                    writeStored(out, "assets/payload/dex-$index.bin", encoded)
-                }
-                val sum = digest.digest().joinToString("") { "%02x".format(it) }
-                writeEntry(out, "assets/payload/sum.txt", sum.toByteArray(Charsets.UTF_8))
-
-                // 壳 dex 自己的 CRC32：壳启动时读取并比对（防随手替换壳代码）。
-                // 注意这是**同信任域**的校验（清单与壳 dex 同在 APK 内），
-                // 真正的锚是 H1 的签名校验；这里只提高「顺手改包」的成本。
-                val shellCrc = java.util.zip.CRC32()
-                    .apply { update(shellDex.readBytes()) }
-                    .value
-                writeEntry(
-                    out,
-                    "assets/payload/shell.txt",
-                    "%08x".format(shellCrc).toByteArray(Charsets.UTF_8),
-                )
-                // Frida Gadget 探针（仅测试包）：把 gadget 作为 lib/arm64-v8a/libgadget.so 塞进 APK，
-                // 并写 marker 让壳启动后 loadLibrary("gadget")。生产构建不会带任何一项。
-                if (gadgetProbe.get()) {
-                    val dir = gadgetDir.orNull?.asFile
-                        ?: error("启用 gadget 探针但未提供 gadgetDir（默认 tools/frida-gadget）")
-                    val so = File(dir, "lib/arm64-v8a/libgadget.so")
-                    check(so.exists()) {
-                        "缺少 gadget：${so.absolutePath}；先下载 frida-gadget-<ver>-android-arm64.so 并改名"
-                    }
-                    writeStored(out, "lib/arm64-v8a/libgadget.so", so.readBytes())
-                    // 配置里 on_load=resume：否则 gadget 会阻塞在「等待客户端连接」上
-                    val config = File(dir, "lib/arm64-v8a/libgadget.config.so")
-                    if (config.exists()) {
-                        writeStored(out, "lib/arm64-v8a/libgadget.config.so", config.readBytes())
-                    } else {
-                        logger.warn("[shell] 缺少 libgadget.config.so，gadget 可能阻塞启动")
-                    }
-                    writeEntry(out, "assets/payload/gadget.txt", "1".toByteArray(Charsets.UTF_8))
-                }
-
-                writeEntry(out, "classes.dex", shellDex.readBytes())
-            }
-            return dexNames.size
+    /** gadget 探针（仅测试包）：把 so 与配置读成内存数据交给 [ShellPayload.repack]。 */
+    private fun resolveGadgetPayload(): ShellPayload.GadgetPayload? {
+        if (!gadgetProbe.get()) return null
+        val dir = gadgetDir.orNull?.asFile
+            ?: error("启用 gadget 探针但未提供 gadgetDir（默认 tools/frida-gadget）")
+        val so = File(dir, "lib/arm64-v8a/libgadget.so")
+        check(so.exists()) {
+            "缺少 gadget：${so.absolutePath}；先下载 frida-gadget-<ver>-android-arm64.so 并改名"
         }
+        // 配置里 on_load=resume：否则 gadget 会阻塞在「等待客户端连接」上
+        val config = File(dir, "lib/arm64-v8a/libgadget.config.so")
+        return ShellPayload.GadgetPayload(so.readBytes(), config.takeIf { it.exists() }?.readBytes())
     }
-
-    private fun copyEntry(zip: ZipFile, entry: ZipEntry, out: ZipOutputStream) {
-        val copy = ZipEntry(entry.name).apply {
-            method = entry.method
-            time = entry.time
-            if (entry.method == ZipEntry.STORED) {
-                size = entry.size
-                crc = entry.crc
-            }
-        }
-        out.putNextEntry(copy)
-        zip.getInputStream(entry).use { it.copyTo(out) }
-        out.closeEntry()
-    }
-
-    private fun writeEntry(out: ZipOutputStream, name: String, data: ByteArray) {
-        out.putNextEntry(ZipEntry(name))
-        out.write(data)
-        out.closeEntry()
-    }
-
-    private fun isSignatureFile(name: String): Boolean {
-        val upper = name.uppercase()
-        return uppercaseSignaturePrefixes.any { upper.startsWith("META-INF/") && upper.endsWith(it) }
-    }
-
-    /** 与 [com.example.shell.StubApplication] 的 decode 对应。 */
-    private fun encode(data: ByteArray): ByteArray = ByteArray(data.size) { i ->
-        (data[i].toInt() xor (XOR_BASE + i)).toByte()
-    }
-
-    /** 与壳侧的 inflate 对应：deflate 压缩原始 dex。 */
-    private fun deflate(data: ByteArray): ByteArray {
-        val deflater = java.util.zip.Deflater(java.util.zip.Deflater.BEST_COMPRESSION)
-        deflater.setInput(data)
-        deflater.finish()
-        val out = java.io.ByteArrayOutputStream(data.size / 2)
-        val buffer = ByteArray(64 * 1024)
-        while (!deflater.finished()) {
-            out.write(buffer, 0, deflater.deflate(buffer))
-        }
-        deflater.end()
-        return out.toByteArray()
-    }
-
-    /** 以 STORED 方式写入（数据已压缩，避免二次压缩）。 */
-    private fun writeStored(out: ZipOutputStream, name: String, data: ByteArray) {
-        val crc = java.util.zip.CRC32().apply { update(data) }
-        val entry = ZipEntry(name).apply {
-            method = ZipEntry.STORED
-            size = data.size.toLong()
-            compressedSize = data.size.toLong()
-            this.crc = crc.value
-        }
-        out.putNextEntry(entry)
-        out.write(data)
-        out.closeEntry()
-    }
-
-    private fun resolveBuildTools(): File =
-        sdkDir.get().asFile.resolve("build-tools").listFiles()
-            ?.filter { it.isDirectory && File(it, "d8").exists() }
-            ?.maxByOrNull { it.name }
-            ?: error("未找到 build-tools（需要 d8 / zipalign / apksigner）")
 
     private data class Signing(
         val storeFile: String,
@@ -325,24 +225,21 @@ abstract class PackShellTask : DefaultTask() {
             keyPassword = props.getProperty("keyPassword").orEmpty(),
         )
     }
-
-    private companion object {
-        val DEX_NAME_REGEX = Regex("classes\\d*\\.dex")
-        val uppercaseSignaturePrefixes = listOf(".SF", ".RSA", ".DSA", ".EC", ".MF")
-        const val XOR_BASE = 0x5A
-    }
 }
 
 /**
- * 生成壳 dex，并把它的 CRC32 写成 C 头文件（供 native 编译期使用）。
+ * 生成壳 dex。
  *
  * 为什么单独一个任务：
- * - 壳 dex 的 CRC 必须作为**编译期常量**进入 so，才能在运行时校验「壳代码有没有被替换」；
- * - 而 so 是在 APK 打包之前编译的，所以壳 dex 必须比 native 构建更早产出。
+ * - 打包任务要把它**原样**塞进 APK，`assets/payload/shell.txt` 里的 CRC 必须与这份字节对应；
+ * - 顺序错了（先 pack 后 generate）就会得到一个「清单与 dex 不是同一次生成」的包，
+ *   壳启动校验直接 fail-closed。
  *
- * 输出两个文件：
- * - `shell.dex`：打包任务原样塞进 APK（必须与算 CRC 的字节完全一致）；
- * - `shell_crc.h`：`#define SHELL_DEX_CRC 0x????????`，由 `security.cpp` include。
+ * 输出只有一个文件：`shell.dex`。
+ *
+ * 历史上的 `shell_crc.h`（把 CRC 作为编译期常量注入 native）已随 so 迁入 `:security`
+ * 而废弃——库不该内置某个宿主 App 的壳 dex 摘要，改由 `assets/payload/shell.txt`
+ * 承担同信任域校验（见 `docs/hardening-assessment.md` §9 与 `StubApplication.verifyShellDex`）。
  */
 abstract class GenerateShellDexTask : DefaultTask() {
 
@@ -366,7 +263,7 @@ abstract class GenerateShellDexTask : DefaultTask() {
     fun run() {
         val out = outputDir.get().asFile.apply { mkdirs() }
         val work = temporaryDir.apply { deleteRecursively(); mkdirs() }
-        val tools = resolveBuildTools()
+        val tools = resolveBuildTools(sdkDir.get().asFile, "d8")
         val androidJar = resolveAndroidJar()
 
         val shellJar = File(work, "shell-classes.jar")
@@ -413,10 +310,15 @@ abstract class GenerateShellDexTask : DefaultTask() {
         checkNotNull(chosen) { "找不到任何 android.jar（platforms 目录为空）" }
         return File(chosen, "android.jar")
     }
-
-    private fun resolveBuildTools(): File =
-        sdkDir.get().asFile.resolve("build-tools").listFiles()
-            ?.filter { it.isDirectory && File(it, "d8").exists() }
-            ?.maxByOrNull { it.name }
-            ?: error("未找到 build-tools（需要 d8）")
 }
+
+/**
+ * 定位 SDK build-tools：取含 `d8` 的最高版本目录。
+ *
+ * 两个任务原本各自复制了一份，[requirement] 只用于还原各自的错误文案。
+ */
+private fun resolveBuildTools(sdkDir: File, requirement: String): File =
+    sdkDir.resolve("build-tools").listFiles()
+        ?.filter { it.isDirectory && File(it, "d8").exists() }
+        ?.maxByOrNull { it.name }
+        ?: error("未找到 build-tools（需要 $requirement）")

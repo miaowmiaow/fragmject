@@ -70,7 +70,7 @@ rm -rf app/.cxx app/build/generated/shell
 
 | 参数 | 作用 | 默认 |
 |---|---|---|
-| `-PstringFogKey=<int>` | 字符串加密密钥（同一次构建内所有类共用），换版本时可轮换 | `0x5A3C` |
+| `-PstringFogKey=<int>` | 字符串加密密钥（同一次构建内所有类共用），换版本时可轮换。**只接受十进制**（`0x1234` 要写成 `4660`）；非法值直接构建失败并提示属性名与原值 | `0x5A3C` |
 
 ```bash
 # 指定密钥（十进制；示例 4660 == 0x1234）
@@ -215,6 +215,7 @@ APK=app/build/outputs/apk/release/app-release-shell.apk
 | （debug 包不再打印 `security guard skipped`） | debug 包由 `FragmjectApplication` 直接不调用 `SecurityGuard.install`（2026-11-16 起） | 正常行为；debug 包无防护日志 |
 | `security check hit: 生产包被标记为可调试（疑似改包）` | 生产包 manifest 里被加了 `android:debuggable="true"`（apktool 改包常见手法） | 安全库判定为改包并终止；确认是否有人手工改过 manifest |
 | `native kill failed, fallback to Process.killProcess` | JNI `killSelf` 抛异常（so 被替换/方法被裁剪） | Java 兜底仍会终止进程；需排查 so 完整性 |
+| `E LoadedApk: Unable to instantiate appComponentFactory`（非致命，进程继续启动） | 壳包 manifest 仍带 `android:appComponentFactory`，而该类在载荷里；系统在壳安装载荷前就解析它 | 2026-11-19 起的包已由 `ShellManifest` 在打包时剔除该属性，**正常不应再出现**；若出现且 `DexShell` 日志正常，说明拿到了旧包或 `ShellManifest` 改写失败（构建日志会有 `manifest 未改写` 告警） |
 
 常用命令：
 
@@ -275,7 +276,8 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 
 ## 八、维护须知
 
-1. **AGP / R8 / aapt2 升级后必须重跑**「打壳构建 + 装机冒烟」。历史踩坑：
+1. **AGP / R8 / aapt2 升级后必须重跑**「打壳构建 + 装机冒烟」（`security-matrix` 已开启
+   `-PenableStringFog=true`，插桩把字节码改坏会在那里的模拟器冒烟中暴露）。历史踩坑：
    `-keepclasseswithmembernames` 不阻止裁剪（native 方法被删 → RegisterNatives 失败）、
    proguard 注释只认 `#`、AGP 9 的 `FramesComputationMode` 枚举改名；
 2. **keep 规则分两处**：
@@ -293,6 +295,18 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
    （实测 5s 内进程消失）。库内已无 `debugBypass` 开关（2026-11-16 起，见 hardening-assessment H1 补丁）。
 8. **日志 TAG 已统一为 `AppSecurity`**（2026-11-12 起）：旧文档里的
    `AppSecurityGuard` 是历史输出，`adb logcat -s AppSecurity` 才是当前过滤条件。
+9. **载荷编解码只有一份实现**：`shell/src/main/java/com/example/shell/ShellCodec.java`
+   （`decode`/`inflate`/`XOR_BASE`）。打包端的 Kotlin 同名算法由
+   `:build-logic:convention:test` 里的 `ShellCodecParityTest` 逐字节比对——
+   **改这里（或改 `ShellPayload`）必须跑该测试**，否则只有真机「装上即崩」才能发现。
+10. **`generateShellDex` 只输出 `shell.dex`**：`shell_crc.h` 方案已随 so 迁入 `:security` 废弃，
+   壳 dex 的 CRC 清单改由 `assets/payload/shell.txt` 承载（见 hardening-assessment §9 / §10.25）。
+11. **壳包 manifest 会被改写一次**：打包时由 `ShellManifest` 删掉 `android:appComponentFactory`
+   （`androidx.core:core` 注入，指向的类在载荷里）。改 `ShellManifest` 或升级 AGP / androidx 后，
+   必须跑 `:build-logic:convention:test --tests "*ShellManifest*"`；
+   验证产物可用 `aapt2 dump xmltree --file AndroidManifest.xml app-release-shell.apk | grep appComponentFactory`
+   确认输出为空。改写的失败语义是 **warn 不 fail**（保留原属性、壳仍可启动），
+   因此构建日志出现 `manifest 未改写` 时要当回事，不要忽略。
 
 ---
 
@@ -305,7 +319,10 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 3. **载荷一次性全解**：当前 2 片一次性解压（约 +51 ms 启动开销），dex 超 20 MB 需改按需加载；
 4. **依赖 hidden API**：Android 大版本升级需复验（S0 已在 API 36/37 验证）；
 5. **不构成安全边界**：任何「客户端自证清白」都可被绕过，服务端校验不可省。
-6. **壳与安全库是两层，失败语义不同**：壳负责「业务 dex 不可静态读」，安全库负责「运行时自查」。
+6. **壳包不再带 `appComponentFactory`**（2026-11-19 起）：该属性指向的类随业务 dex 进了载荷，
+   系统在壳安装载荷之前就会解析它，只能剔除。副作用是失去 `androidx.core` 的
+   `CompatWrapped` 包装能力（本项目无实现方，常规包不受影响）；
+7. **壳与安全库是两层，失败语义不同**：壳负责「业务 dex 不可静态读」，安全库负责「运行时自查」。
    壳被换掉时由壳自身的 `shell.txt`/`payload sum` 拦截（fail-closed）；改签包由 H1 拦截；
    manifest 改 `debuggable` 由安全库的「改包判定」拦截。三者互不替代，
    但**都没有**防住内存 dump —— 见第 1 条。
@@ -316,7 +333,7 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
 
 | 项 | 数据 |
 |---|---|
-| 壳 dex 体积 | 10,496 B |
+| 壳 dex 体积 | 10,496 B（2026-11-11）；11,476 B（2026-11-19，`ShellCodec` 收敛后重建，+980 B） |
 | 载荷分片 | 2 片（约 1.8 MB + 1.8 MB 压缩后） |
 | 壳包 vs 常规包体积 | +36.7 KB（+0.3%） |
 | 冷启动（模拟器，5 次中位数） | 常规 933 ms / 壳包 984 ms（+51 ms，+5.5%） |

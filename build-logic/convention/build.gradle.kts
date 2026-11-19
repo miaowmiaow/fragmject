@@ -31,6 +31,18 @@ dependencies {
     testImplementation(libs.junit)
 }
 
+// 跨构建共享协议：ShellCodecParityTest 在测试运行时用 JavaCompiler 现编译
+// `:shell` 的 ShellCodec.java，再与打包端（ShellPayload）逐字节比对。
+// 该文件属于另一个构建，无法用依赖表达，因此显式传绝对路径（测试里会断言它存在）。
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "fragmject.shellCodecSource",
+        layout.projectDirectory
+            .file("../../shell/src/main/java/com/example/shell/ShellCodec.java")
+            .asFile.absolutePath,
+    )
+}
+
 gradlePlugin {
     plugins {
         register("androidApplication") {

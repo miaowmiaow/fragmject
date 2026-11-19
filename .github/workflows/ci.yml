@@ -48,10 +48,8 @@ jobs:
             exit 1
           fi
 
-      # 守卫任务与单测拆开两步：verifyModuleDependencies 需要遍历全部子项目依赖图，
-      # 声明了 notCompatibleWithConfigurationCache —— 与单测同一次调用会让整个配置缓存条目被丢弃
-      # （CI 日志里的「Configuration cache entry discarded with 1 problem」就是这个）。
-      # 拆开后：守卫那步照旧全量配置，单测这步能命中/写入缓存。
+      # 守卫任务与单测拆开两步，只为失败时快速定位（守卫红 = 依赖方向/稳定性配置问题，
+      # 不必翻单测日志）。两者都与配置缓存兼容，合并成一次调用也不会再丢弃缓存条目。
       - name: Architecture guards
         run: >
           ./gradlew

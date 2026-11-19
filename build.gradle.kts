@@ -44,8 +44,8 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 }
 
 // 将架构守卫任务挂载到 check，确保本地/CI 全量构建时强制校验依赖方向与稳定性配置。
-// 注：verifyModuleDependencies 声明了 notCompatibleWithConfigurationCache，
-// 挂载后会使 check 与配置缓存不兼容；如遇缓存问题可改为在 CI 单独触发。
+// 两个守卫都与 Configuration Cache 兼容：verifyModuleDependencies 的依赖图与源码范围
+// 在配置阶段采集为任务输入，执行期不访问 Project（见 FragmjectAndroidDependencyGuardPlugin）。
 tasks.matching { it.name == "check" }.configureEach {
     dependsOn("verifyModuleDependencies", "verifyComposeStabilityConfig")
 }

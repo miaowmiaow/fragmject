@@ -52,6 +52,9 @@ internal object SensitiveClipboard {
             ?.getItemAt(0)
             ?.text
             ?.toString()
-        if (current == copied) clipboard.clearPrimaryClip()
+        // clearPrimaryClip 自 API 28 起可用；minSdk 为 26，低版本跳过清除（与「最佳努力」的约定一致）。
+        if (current == copied && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            clipboard.clearPrimaryClip()
+        }
     }
 }

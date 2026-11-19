@@ -38,8 +38,11 @@
 
 ## 开发环境
 - **JDK 21 及以上**：构建逻辑（`build-logic`）以 JVM 21 为目标编译，Gradle 需运行在 JDK 21 或更高版本上，低版本会在配置阶段报 `requires at least JVM runtime version 21`。Android Studio 请在 `Settings > Build Tools > Gradle` 中选择 `Android Studio default JDK`（内置 JBR 满足要求）；命令行请让 `JAVA_HOME` 指向 JDK 21+。项目未配置 toolchain 自动下载，也不强制某个精确版本。
+- **Android SDK**：`compileSdkVersion` / `targetSdkVersion` 为 37，`minSdkVersion` 为 26（见 `config.properties`），需在 SDK Manager 中安装 Android 37 平台。
+- **NDK 与 CMake**：`:security` 模块编译原生 so，需安装 NDK `28.2.13676358` 与 CMake `3.22.1`（见 `config.properties` 中的 `ndkVersion` / `cmakeVersion`）。
+- **构建工具链**：Gradle 9.8.1（由 Wrapper 自动下载，无需本地安装）、AGP 9.5.1、Kotlin 2.4.21，版本统一维护在 `gradle/libs.versions.toml`。
 - **签名配置**：仓库内的 `keystore.properties` / `keystore.key` 是**测试专用**密钥，入库为有意设计；正式发布请使用独立的私有签名。
-- **CI**：`.github/workflows/ci.yml` 会在 PR 与主分支上运行模块依赖守卫、Compose 稳定性校验和全部单元测试（含 `ArchitectureTest`）。
+- **CI**：`.github/workflows/ci.yml` 在 PR 与主分支上依次执行：凭据扫描、模块依赖守卫与 Compose 稳定性校验、单元测试、覆盖率报告与门槛、`lintDebug`、`detekt`、`assembleDebug`。
 
 为了您能正常运行本项目，请先更新你的 `Android Studio` (可能需要梯子)。   
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio?hl=zh-cn)   
@@ -303,94 +306,81 @@ plugins {
 }
 ```
 
-## 图片编辑器（feature/picture）
-[自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)
+## 图片编辑器（core:image-editor + feature/picture）
+[自己动手撸一个图片编辑器（支持长图）](https://juejin.cn/post/7013274417766039560)（早期实现的文章，当前 API 已变化，以下示例以现有代码为准）
 
 ### 截图展示
 | ![5.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/5.webp) | ![6.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/6.gif) | ![7.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/7.gif) |
 |-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
-#### 源码位置
+### 模块结构
+- **`core:image-editor`**：图片编辑引擎，不依赖业务。
+  - `ImageEditorEngine`：加载位图（路径或 Uri），并保存编辑结果。`save(bitmap)` 返回 `SaveResult`（缓存文件路径与相册 uri）。
+  - `components`：Compose 画布。`PictureEditorCanvas`（涂鸦 / 马赛克 / 贴纸）与 `PictureClipCanvas`（裁剪），分别配套 `rememberPictureEditorState()` 与 `rememberPictureClipState()` 状态。
+- **`feature/picture`**：页面与路由，`api` 只含路由（NavKey），`impl` 含页面实现。
+  - 路由：`PictureSelectorNavKey`（选择器）、`PicturePreviewNavKey`（预览，可多选）、`PictureEditorNavKey(oldUriString)`（编辑）。
+  - 页面：`PictureSelectorScreen`、`PictureEditorScreen`。
+- 其他 feature 通过 `core:navigation-contract` 的 `PictureNavigator` 进入图片流程，不直接依赖 `feature:picture:impl`。
+
 ```
-└── feature
-    └── picture
-       ├── api      API 层
-       └── impl     实现层
+core/image-editor/src/main/java/com/example/fragmject/core/image/editor
+├── ImageEditorEngine.kt      引擎接口与默认实现（加载 / 保存）
+├── components                Compose 画布（编辑 / 裁剪）与各图层
+└── model                     贴纸、涂鸦路径等数据模型
 ```
 
-#### 快速使用
-```
-PictureEditorDialog.newInstance()
-    .setBitmapPath(path)
-    .setEditorFinishCallback(object : EditorFinishCallback {
-        override fun onFinish(path: String) {
-            val bitmap = BitmapFactory.decodeFile(path, BitmapFactory.Options())
-        }
-    })
-    .show(childFragmentManager)
+### 编辑工具
+| 工具 | 模式 | 说明 |
+|---|---|---|
+| 涂鸦 | `EditorMode.GRAFFITI` | 可设置画笔颜色，支持撤销 |
+| 马赛克 | `EditorMode.MOSAIC` | 支持撤销 |
+| 贴纸 | `EditorMode.STICKER` | 添加、拖动，拖到回收站删除 |
+| 裁剪 | `PictureClipCanvas` | 旋转、重置，保存裁剪框内的图片 |
+
+### 快速使用（Compose）
+```kotlin
+val editorState = rememberPictureEditorState()
+
+// 1. 设置底图（路径或 Uri 二选一）
+LaunchedEffect(path) { editorState.setBitmapPathOrUri(path, null) }
+
+// 2. 放置画布
+PictureEditorCanvas(state = editorState, modifier = Modifier.fillMaxSize())
+
+// 3. 编辑操作
+editorState.setMode(EditorMode.GRAFFITI)
+editorState.setGraffitiColor(android.graphics.Color.WHITE)
+editorState.setSticker(StickerAttrs(bitmap))
+editorState.graffitiUndo()
+editorState.mosaicUndo()
+
+// 4. 导出编辑后的位图（如需落盘，交给 ImageEditorEngine.save）
+val edited: Bitmap? = editorState.saveBitmap()
 ```
 如上所示：
-1. 通过 `PictureEditorDialog` 调用图片编辑器。
-2. 通过 `setBitmapPath(path)` 传入图片路径。
-3. 通过 `setEditorFinishCallback(callback)` 获取编辑后的图片地址。
+1. 通过 `setBitmapPathOrUri(path, uri)` 传入底图，路径与 Uri 二选一。
+2. 通过 `setMode(mode)` 切换编辑模式：涂鸦、马赛克、贴纸。
+3. 通过 `setGraffitiColor(color)` 设置涂鸦颜色，通过 `setSticker(StickerAttrs(bitmap))` 添加贴纸。
+4. 通过 `graffitiUndo()` / `mosaicUndo()` 分别撤销涂鸦与马赛克。
+5. 通过 `saveBitmap()` 获取编辑后的位图。
 
-如果觉得 `PictureEditorDialog` 不能满足需求，还可以通过 `PictureEditorView` 来自定义样式。
+#### 图片裁剪（Compose）
+```kotlin
+val clipState = rememberPictureClipState()
+clipState.setBitmap(bitmap)
 
-#### 自定义使用
-```
-<com.example.miaow.picture.editor.PictureEditorView
-    android:id="@+id/pic_editor"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
-```
-```
-picEditor.setBitmapPath(path)
-picEditor.setMode(PictureEditorView.Mode.STICKER)
-picEditor.setGraffitiColor(Color.parseColor("#ffffff"))
-picEditor.setSticker(StickerAttrs(bitmap))
-picEditor.graffitiUndo()
-picEditor.mosaicUndo()
-picEditor.saveBitmap()
-```
-如上所示：
-1. 通过 `setBitmapPath(path)` 传入图片路径。
-2. 通过 `setMode(mode)` 设置编辑模式，分别有：涂鸦，橡皮擦，马赛克，贴纸。
-3. 通过 `setGraffitiColor(color)` 设置涂鸦画笔颜色。
-4. 通过 `setSticker(StickerAttrs(bitmap))` 设置贴纸。
-5. 通过 `graffitiUndo()` 涂鸦撤销。
-6. 通过 `mosaicUndo()` 马赛克撤销。
-7. 通过 `saveBitmap()` 保存编辑图片。
+PictureClipCanvas(state = clipState, modifier = Modifier.fillMaxSize())
 
-`PictureEditorView` 就介绍到这里，具体使用请查看 `PictureEditorDialog`。
+clipState.rotate()
+clipState.reset()
+val cropped: Bitmap? = clipState.saveBitmap()
+```
 
-#### 图片裁剪
-```
-<com.example.miaow.picture.editor.PictureClipView
-    android:id="@+id/clip"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
-```
-```
-clip.setBitmapResource(bitmap)
-clip.rotate()
-clip.reset()
-clip.saveBitmap()
-```
-如上所示：
-1. 通过 `setBitmapResource(bitmap)` 传入裁剪图片。
-2. 通过 `clip.rotate()` 图片旋转。
-3. 通过 `clip.reset()` 图片重置。
-4. 通过 `clip.saveBitmap()` 保存裁剪框内图片。
-
-`PictureClipView` 就介绍到这里，具体使用请查看 `PictureClipDialog`。
-
-#### 图片选择
-```
-if (context is AppCompatActivity) {
-    PictureSelectorDialog.newInstance()
-        ...省略部分代码
-        .show(context.supportFragmentManager)
-}
+#### 进入图片流程
+在 feature 中注入 `PictureNavigator`（`core:navigation-contract`）后调用：
+```kotlin
+pictureNavigator.openPictureSelector()
+pictureNavigator.openPictureEditor(uriString)
 ```
 
 ## Calendar
@@ -422,27 +412,30 @@ Calendar(
 
 ## 本地复现 CI
 
-CI 执行的全部步骤都能在本地跑，排查失败时按顺序执行：
+CI 执行的步骤都能在本地跑（与 `.github/workflows/ci.yml` 一致），排查失败时按顺序执行：
 
 ```bash
 # 需要 JDK 21+；macOS 上可直接用 Android Studio 自带的 JBR
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 
-# 1. 依赖方向守卫 + Compose 稳定性检查
+# 1. 架构守卫：依赖方向 + Compose 稳定性（与单测分开执行，同一次调用会丢弃配置缓存）
 ./gradlew verifyModuleDependencies verifyComposeStabilityConfig
 
-# 2. 单元测试（含 app 模块的 27 条架构规则）
+# 2. 单元测试（含 app 模块的 33 条架构规则，类名以 Architecture 开头）
 ./gradlew testDebugUnitTest
 
-# 3. 覆盖率（AGP 9 已移除内置能力，由 build-logic 的 JaCoCo 配置提供）
-./gradlew unitTestCoverageReport
+# 3. 覆盖率报告与门槛（AGP 9 已移除内置覆盖率，由 build-logic 的 JaCoCo 配置提供）
+./gradlew unitTestCoverageReport verifyUnitTestCoverage
 # 报告：<module>/build/reports/jacoco/unitTestCoverageReport/html/index.html
 
 # 4. Lint（无 baseline：新增 error 会阻断，warning 只报告）
 ./gradlew lintDebug
 # 报告：<module>/build/reports/lint-results-debug.html
 
-# 5. 打包链路（资源合并 / R8 / NDK / 签名）
+# 5. detekt 静态分析
+./gradlew detekt
+
+# 6. 打包链路（资源合并 / R8 / NDK / 签名）
 ./gradlew assembleDebug
 ```
 

@@ -4,10 +4,16 @@
 
 结论先行：这六项是加固厂商的**打包能力清单**，不是按收益排序的建议。对本项目而言，**只有两项值得投入**（签名保护 + SO 保护），一项近乎零收益（assets 加密），数据文件加密**全库不做、字段级按需**（OTP 密钥已字段级加密），一项成本极高收益有限（DEX 壳），一项已完成转入维护（运行环境检测）。
 
+**阅读指引（2026-11-19 增补）**：本文是跨多个时期的记录，按章节日期区分快照与现行结论。
+- 各立项的**现行状态**以 §七 的状态表为准；
+- 测试数量、覆盖范围等**会随代码变化的数字**不在本文维护，以对应测试类为准（`security/src/test/.../SecurityDetectorsTest.kt`、`SecurityPolicyTest.kt`，以及 `app/src/test/.../architecture/` 下的 `Architecture*Test`）；
+- 带日期的章节（如 §九、§十）是当时的验证快照，原文保留作为证据，不随后续改动回写；
+- 早期提到的 `ArchitectureTest` 已于 2026-11-17 拆分为五个主题类，下文的 `ArchitectureTest N 例` 指拆分前的单类。
+
 导航：
-- 现有实现：`app/src/main/java/com/example/fragmject/app/security/`
+- 现有实现：`security/src/main/java/com/example/security/`（自 2026-11-11 起由 `app` 迁入，见 §9.6）
   （入口 `SecurityGuard`、引擎 `SecurityEngine`、配置 `SecurityConfig`、事实抽象 `SecurityFacts`、
-  native 桥 `SecurityNative`，以及 Detectors / Environment / Integrity / Signatures / Lifecycle 五个文件）
+  native 桥 `SecurityNative`，以及 Detectors / Environment / Integrity / Signatures / Lifecycle 等文件）
 - 混淆基线：`app/proguard-rules.pro`、`app/build.gradle.kts`（AGP 9.5.1 / minSdk 26 / release 仅 arm64-v8a）
 
 ## 一、评估口径
@@ -264,7 +270,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
   - 样本量各 5 次，只能看出稳定性，不足以做统计检验。
 
 验证（2026-11-16，方案 B 落地后）：
-- 全量 `testDebugUnitTest` 通过：408 例，0 失败；`detekt` 通过；`:security:apiDump` 已刷新，基线不含 `debugBypass` / `buildType` / `skipBuildTypes`。
+- 全量 `testDebugUnitTest` 通过（2026-11-16 快照：408 例，0 失败；现行数量以测试类为准）；`detekt` 通过；`:security:apiDump` 已刷新，基线不含 `debugBypass` / `buildType` / `skipBuildTypes`。
 - release 包（14:01 构建，已覆盖方案 B 代码）：dex 字节中不存在 `debugBypass`、`skipBuildTypes`、`StartupGate`、`evaluateStartupGate`（仅 `EmojiCompat.buildTypeface` 子串，与本模块无关）。该检查基于字符串表，未做 baksmali 反汇编。
 - 真机改签阻断：用 14:01 release 改签后安装，`security check hit: [integrity.signature]` → `jniKillSelf`（+1.2s）→ 进程消失。该包即为方案 B 代码，改签测试已覆盖当前实现。
 - **未**做 apktool 修改 dex 字节码后重签的端到端测试。改签阻断与之走同一条 native 验签路径，因此视为等价覆盖，未单独执行。
@@ -368,7 +374,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 | `app/src/main/cpp/security.cpp` | **未改**（方案调整后不需要 native 解密） |
 
 **插桩规则**：
-- 只处理 `com/example/fragmject/` 下的类；跳过 `app/security/`（检测特征串不改写）；
+- 只处理 `com/example/fragmject/` 下的类；（H2 原始设计曾跳过 `app/security/`，检测特征串不改写。**此规则已被 §10.2 P1-4 推翻**：安全库的 AAR 不经宿主插桩，其特征串改由库自身构建加密，现行 `com/example/security/` 属于插桩范围）；
 - 跳过长度 < 4 的常量（`":"`、`"/"` 这类多半是协议分隔符）；
 - 跳过紧随其后的「按名查找」调用：`Class.forName/getMethod/getDeclaredMethod/getField/...`、
   `ClassLoader.loadClass/findClass`、`Enum.valueOf`、`Resources.getIdentifier`；

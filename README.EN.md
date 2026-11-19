@@ -1,5 +1,5 @@
 # Locales & Contributors
-- de_en English  *by DeepSeek-V4-Pro*
+- de_en English  *by LLM*
 
 # Preface
 At first glance learning Kotlin was quite difficult, tutorials and videos focused on knowledge points but lacked practical project examples. To overcome this hurdle I created fragmject which provides an example app that demonstrates core features of both Kotlin and Jetpack Compose while keeping things simple enough for beginners to grasp quickly. Special thanks goes out to Wan Android who provide their open API for use with this project!
@@ -26,9 +26,12 @@ By working through this project you'll gain valuable insights into several areas
 - Advanced topics like bytecode manipulation via ASM library
 
 ## Development Environment
-- **JDK 21 or newer is required.** The convention plugins in `build-logic` target JVM 21, so Gradle must run on JDK 21+. Older JDKs fail at configuration time with `requires at least JVM runtime version 21`. In Android Studio, choose `Android Studio default JDK` under `Settings > Build Tools > Gradle` (the bundled JBR qualifies); on the command line, point `JAVA_HOME` at JDK 21+. The project does not configure toolchain auto-download and does not pin an exact version.
+- **JDK 21 or newer is required.** The convention plugins in `build-logic` target JVM 21, so Gradle must run on JDK 21 or newer. Older JDKs fail at configuration time with `requires at least JVM runtime version 21`. In Android Studio, choose `Android Studio default JDK` under `Settings > Build Tools > Gradle` (the bundled JBR qualifies); on the command line, point `JAVA_HOME` at JDK 21+. The project does not configure toolchain auto-download and does not pin an exact version.
+- **Android SDK:** `compileSdkVersion` and `targetSdkVersion` are 37, and `minSdkVersion` is 26 (see `config.properties`). Install the Android 37 platform in SDK Manager.
+- **NDK and CMake:** the `:security` module builds native code, so install NDK `28.2.13676358` and CMake `3.22.1` (`ndkVersion` / `cmakeVersion` in `config.properties`).
+- **Toolchain:** Gradle 9.8.1 (downloaded automatically by the wrapper), AGP 9.5.1 and Kotlin 2.4.21, all maintained in `gradle/libs.versions.toml`.
 - **Signing:** `keystore.properties` / `keystore.key` in the repository are **test-only** keys and are committed on purpose. Use a separate private keystore for real releases.
-- **CI** (`.github/workflows/ci.yml`) runs the module dependency guard, the Compose stability check and all unit tests (including `ArchitectureTest`) on pull requests and the main branch.
+- **CI** (`.github/workflows/ci.yml`) runs on pull requests and the main branch: credential scan, module dependency guard and Compose stability check, unit tests, coverage report and gates, `lintDebug`, `detekt`, and `assembleDebug`.
 
 In order for you to run this project normally, please use the latest preview version of Android Studio. You can download it at the following address:
 [Download Android Studio | Android Developer](https://developer.android.google.cn/studio/preview?hl=en)
@@ -190,65 +193,81 @@ SharedFlowBus.onSticky(objectKey: Class<T>).observe(owner){ it ->
 }
 ```
 
-## Picture editor（feature/picture）
+## Image editor (core:image-editor + feature/picture)
+[Build an image editor from scratch (long image support)](https://juejin.cn/post/7013274417766039560) (a Chinese article about an earlier implementation; the APIs have changed, so the examples below follow the current code)
 
 ### Screenshot display
 | ![5.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/5.webp) | ![6.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/6.gif) | ![7.gif](https://raw.githubusercontent.com/miaowmiaow/fragmject/master/screenshot/7.gif) |
 |-------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 
-#### Quick access
+### Module structure
+- **`core:image-editor`**: the image editing engine, with no business dependencies.
+  - `ImageEditorEngine`: loads bitmaps (from a path or a Uri) and saves results. `save(bitmap)` returns a `SaveResult` with the cached file path and the album uri.
+  - `components`: Compose canvases. `PictureEditorCanvas` (graffiti / mosaic / sticker) and `PictureClipCanvas` (crop), each with its state from `rememberPictureEditorState()` and `rememberPictureClipState()`.
+- **`feature/picture`**: screens and routes. `api` holds the routes (NavKey), `impl` holds the implementation.
+  - Routes: `PictureSelectorNavKey` (selector), `PicturePreviewNavKey` (preview, multi-select), `PictureEditorNavKey(oldUriString)` (editor).
+  - Screens: `PictureSelectorScreen`, `PictureEditorScreen`.
+- Other features enter the picture flow through `PictureNavigator` in `core:navigation-contract`, and do not depend on `feature:picture:impl` directly.
+
 ```
-PictureEditorDialog.newInstance()
-    .setBitmapPath(path)
-    .setEditorFinishCallback(object : EditorFinishCallback {
-        override fun onFinish(path: String) {
-            val bitmap = BitmapFactory.decodeFile(path, BitmapFactory.Options())
-        }
-    })
-    .show(childFragmentManager)
+core/image-editor/src/main/java/com/example/fragmject/core/image/editor
+├── ImageEditorEngine.kt      engine interface and default implementation (load / save)
+├── components                Compose canvases (editing / crop) and layers
+└── model                     data models such as stickers and graffiti paths
 ```
 
-If you feel that PictureEditorDialog cannot meet the requirements, you can also customize the style through PictureEditorView.
-#### Custom usage
+### Editing tools
+| Tool | Mode | Notes |
+|---|---|---|
+| Graffiti | `EditorMode.GRAFFITI` | Brush color can be set; supports undo |
+| Mosaic | `EditorMode.MOSAIC` | Supports undo |
+| Sticker | `EditorMode.STICKER` | Add and drag; drop on the bin to delete |
+| Crop | `PictureClipCanvas` | Rotate, reset, and save the area inside the crop box |
+
+### Quick access (Compose)
+```kotlin
+val editorState = rememberPictureEditorState()
+
+// 1. Set the base image (a path or a Uri, one of them)
+LaunchedEffect(path) { editorState.setBitmapPathOrUri(path, null) }
+
+// 2. Place the canvas
+PictureEditorCanvas(state = editorState, modifier = Modifier.fillMaxSize())
+
+// 3. Editing operations
+editorState.setMode(EditorMode.GRAFFITI)
+editorState.setGraffitiColor(android.graphics.Color.WHITE)
+editorState.setSticker(StickerAttrs(bitmap))
+editorState.graffitiUndo()
+editorState.mosaicUndo()
+
+// 4. Export the edited bitmap (to save it to disk, pass it to ImageEditorEngine.save)
+val edited: Bitmap? = editorState.saveBitmap()
 ```
-<com.example.miaow.picture.editor.PictureEditorView
-    android:id="@+id/pic_editor"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
-```
-```
-picEditor.setBitmapPath(path)
-picEditor.setMode(PictureEditorView.Mode.STICKER)
-picEditor.setGraffitiColor(Color.parseColor("#ffffff"))
-picEditor.setSticker(StickerAttrs(bitmap))
-picEditor.graffitiUndo()
-picEditor.mosaicUndo()
-picEditor.saveBitmap()
+As shown above:
+1. `setBitmapPathOrUri(path, uri)` sets the base image; use a path or a Uri.
+2. `setMode(mode)` switches the editing mode: graffiti, mosaic or sticker.
+3. `setGraffitiColor(color)` sets the graffiti color, and `setSticker(StickerAttrs(bitmap))` adds a sticker.
+4. `graffitiUndo()` and `mosaicUndo()` undo graffiti and mosaic respectively.
+5. `saveBitmap()` returns the edited bitmap.
+
+#### Crop (Compose)
+```kotlin
+val clipState = rememberPictureClipState()
+clipState.setBitmap(bitmap)
+
+PictureClipCanvas(state = clipState, modifier = Modifier.fillMaxSize())
+
+clipState.rotate()
+clipState.reset()
+val cropped: Bitmap? = clipState.saveBitmap()
 ```
 
-That's all for PictureEditorView. For specific usage, please refer to PictureEditorDialogs.
-#### Picture cropping
-```
-<com.example.miaow.picture.editor.PictureClipView
-    android:id="@+id/clip"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
-```
-```
-clip.setBitmapResource(bitmap)
-clip.rotate()
-clip.reset()
-clip.saveBitmap()
-```
-
-That's all for PictureClipView. For specific usage, please refer to PictureClipDialogs.
-#### Picture selection
-```
-if (context is AppCompatActivity) {
-    PictureSelectorDialog.newInstance()
-        ...
-        .show(context.supportFragmentManager)
-}
+#### Entering the picture flow
+Inject `PictureNavigator` (from `core:navigation-contract`) in a feature and call:
+```kotlin
+pictureNavigator.openPictureSelector()
+pictureNavigator.openPictureEditor(uriString)
 ```
 
 ## Calendar

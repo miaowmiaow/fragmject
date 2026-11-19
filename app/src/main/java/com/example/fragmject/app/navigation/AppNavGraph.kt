@@ -421,6 +421,11 @@ private fun AppNavDisplay(
                 slideInHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { -it } togetherWith
                         slideOutHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { it }
             },
+            // 预测性返回（系统返回手势）与按钮返回保持同一转场，避免库默认的 fade+scale 与滑动不一致
+            predictivePopTransitionSpec = { _ ->
+                slideInHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { -it } togetherWith
+                        slideOutHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { it }
+            },
             entryProvider = entryProvider {
                 registry.forEach { clazz, renderer ->
                     addEntryProvider(clazz) { key ->

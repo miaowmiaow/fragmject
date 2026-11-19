@@ -1,6 +1,13 @@
 package com.example.fragmject.feature.home.ui.main
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,6 +45,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -60,6 +68,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import com.example.fragmject.feature.home.impl.R
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.ui.components.LoopVerticalPager
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.ui.components.BottomNavItem
@@ -318,34 +327,37 @@ private fun ExpandedMainScreen(
             }
         }
     ) {
-        if (selectedDetailKey != null) {
-            BackHandler { onClearDetail() }
-            Row(modifier = Modifier.fillMaxSize()) {
-                // ── 左侧：列表 (50%) ──
-                ContentPane(
-                    navItems = navItems,
-                    navIndex = navIndex,
-                    hotKeyResult = hotKeyResult,
-                    homeListState = homeListState,
-                    modifier = Modifier.weight(0.5f).fillMaxHeight(),
-                )
-                // ── 右侧：详情面板 (50%) ──
-                Column(
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .fillMaxHeight()
-                ) {
-                    detailContent(selectedDetailKey)
-                }
-            }
-        } else {
+        val detailOpen = selectedDetailKey != null
+        // 收起过程中详情面板仍需渲染上一次的 key，否则退出动画期间内容会被清空
+        var shownDetailKey by remember { mutableStateOf(selectedDetailKey) }
+        if (selectedDetailKey != null) shownDetailKey = selectedDetailKey
+        // 列表占比 1 → 0.5 与详情面板宽度 0 → 0.5 由同一个动画值驱动，保证两侧始终和为整宽
+        val listFraction by animateFloatAsState(
+            targetValue = if (detailOpen) 0.5f else 1f,
+            animationSpec = tween(NAV_TRANSITION_DURATION_MS),
+            label = "expandedListFraction",
+        )
+        BackHandler(enabled = detailOpen) { onClearDetail() }
+        Row(modifier = Modifier.fillMaxSize().clipToBounds()) {
             ContentPane(
                 navItems = navItems,
                 navIndex = navIndex,
                 hotKeyResult = hotKeyResult,
                 homeListState = homeListState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth(listFraction).fillMaxHeight(),
             )
+            AnimatedVisibility(
+                visible = detailOpen,
+                modifier = Modifier.fillMaxWidth(1f - listFraction).fillMaxHeight(),
+                enter = slideInHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { it } +
+                        fadeIn(tween(NAV_TRANSITION_DURATION_MS)),
+                exit = slideOutHorizontally(tween(NAV_TRANSITION_DURATION_MS)) { it } +
+                        fadeOut(tween(NAV_TRANSITION_DURATION_MS)),
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    shownDetailKey?.let { detailContent(it) }
+                }
+            }
         }
     }
 }

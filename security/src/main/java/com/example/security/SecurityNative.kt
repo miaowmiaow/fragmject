@@ -89,7 +89,7 @@ internal interface NativeChecks {
  * JNI 实现。
  *
  * ============================ 为什么改动态注册 ============================
- * 原实现用**静态注册**：C++ 函数名必须是 `Java_com_example_fragmject_app_security_AppSecurityGuard_xxx`，
+ * 早期实现用**静态注册**：C++ 函数名必须是 `Java_<包名>_<类名>_<方法名>`（旧包路径 `app.security` 时代的命名），
  * 于是 `proguard-rules.pro` 必须 `-keep` 整个类（类名 + 所有成员名），检测逻辑完全不可混淆，
  * 且符号会出现在 `.dynsym` 里，`nm -D` 一看就知道有哪些检测能力。
  *

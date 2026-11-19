@@ -19,6 +19,14 @@ namespace {
 constexpr unsigned kSignatureGuardIntervalSec = 5;
 
 /**
+ * 守护线程心跳周期（以复验次数计）。12 次 × 5 秒 ≈ 60 秒输出一条。
+ *
+ * 心跳证明守护线程仍在周期性运行：现有的 `signature guard started` 只说明启动过一次，
+ * 无法区分「线程存活」与「线程已退出 / 被挂起」。心跳只读计数，不影响复验与终止路径。
+ */
+constexpr unsigned kSignatureGuardHeartbeatEvery = 12;
+
+/**
  * 判定为篡改后的终止延迟（毫秒），与 SecurityConfig.blockGraceMs 对齐。
  *
  * 为什么不立即终止：若在 JNI_OnLoad（Application 启动早期）就 SIGKILL，界面尚未显示，
@@ -67,10 +75,16 @@ int verifyApkSignatureNative() {
  */
 void *signatureGuardLoop(void *) {
     SEC_LOGD("signature guard started, interval=%us", kSignatureGuardIntervalSec);
+    // 线程内局部计数：只有本线程读写，无需加锁。
+    unsigned checks = 0;
     for (;;) {
         if (verifyApkSignatureNative() == apksig::kMismatch) {
             SEC_LOGE("native signature mismatch, terminating after %ums", kMismatchKillDelayMs);
             terminateAfterGrace();
+        }
+        ++checks;
+        if (checks % kSignatureGuardHeartbeatEvery == 0) {
+            SEC_LOGD("signature guard heartbeat: checks=%u interval=%us", checks, kSignatureGuardIntervalSec);
         }
         sleep(kSignatureGuardIntervalSec);
     }
@@ -163,7 +177,7 @@ jint jniInstallAntiPtrace(JNIEnv *, jobject) {
  * 进程内存加固（H6/S2 反 dump 的**可做部分**，见 README/文档的边界说明）。
  *
  * 做两件事：
- * 1. `prctl(PR_SET_DUMPABLE, 0)`：把 `/proc/self/*` 的所有者改成 root，
+ * 1. `prctl(PR_SET_DUMPABLE, 0)`：把 `/proc/self` 下各文件的所有者改成 root，
  *    使**同 uid 或非 root 的读取者**（adb shell、同用户恶意应用、bugreport 现场采集）
  *    无法再打开 `/proc/<pid>/mem`、`/proc/<pid>/maps`；
  * 2. `setrlimit(RLIMIT_CORE, 0)`：禁止 core dump，避免崩溃时把内存镜像落到磁盘。

@@ -7,7 +7,6 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import kotlin.math.sqrt
 
 /**
  * 按目标宽度解码文件路径对应的 Bitmap，带 inSampleSize 降采样。
@@ -18,8 +17,7 @@ fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
         if (targetWidth != 0) {
             option.inJustDecodeBounds = true
             BitmapFactory.decodeFile(path, option)
-            val scale = (option.outWidth * 1f / targetWidth)
-            option.inSampleSize = if (scale > 1) sqrt(scale).toInt() else 1
+            option.inSampleSize = calculateInSampleSize(option.outWidth, targetWidth)
             option.inJustDecodeBounds = false
         }
         option.inPreferredConfig = Bitmap.Config.ARGB_8888
@@ -81,11 +79,22 @@ private fun Context.decodeScaledFromUri(uri: Uri, targetWidth: Int): Bitmap? {
     contentResolver.openInputStream(uri)?.use {
         BitmapFactory.decodeStream(it, null, option)
     }
-    val scale = option.outWidth * 1f / targetWidth
-    option.inSampleSize = if (scale > 1) sqrt(scale).toInt() else 1
+    option.inSampleSize = calculateInSampleSize(option.outWidth, targetWidth)
     option.inJustDecodeBounds = false
     option.inPreferredConfig = Bitmap.Config.ARGB_8888
     return contentResolver.openInputStream(uri)?.use {
         BitmapFactory.decodeStream(it, null, option)
     }
+}
+
+/**
+ * 计算 [BitmapFactory.Options.inSampleSize]。
+ *
+ * 取 `源宽 / 目标宽` 的整数部分：解码结果的宽度仍不小于目标宽（不会糊），
+ * 同时避免 sqrt 启发式在缩放比较小时退化为 1——例如 4032 像素宽的图按 1080 目标
+ * 用 sqrt 算出 1.93 取整为 1，等于不做降采样，直接按原图占内存。
+ */
+private fun calculateInSampleSize(sourceWidth: Int, targetWidth: Int): Int {
+    if (sourceWidth <= 0 || targetWidth <= 0) return 1
+    return (sourceWidth / targetWidth).coerceAtLeast(1)
 }

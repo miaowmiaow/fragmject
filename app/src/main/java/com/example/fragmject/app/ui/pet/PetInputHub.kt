@@ -1,4 +1,4 @@
-package com.example.fragmject.app.ui
+package com.example.fragmject.app.ui.pet
 
 import android.os.SystemClock
 import androidx.compose.runtime.Composable

@@ -1,4 +1,4 @@
-package com.example.fragmject.app.ui
+package com.example.fragmject.app.ui.pet
 
 /**
  * 「这次页面切换是否由刚才那次点击引起」的判定。

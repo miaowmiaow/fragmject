@@ -83,6 +83,25 @@ class FishSpaceTest {
     }
 
     @Test
+    fun `恢复的起点超出新容器时被夹回安全区`() {
+        // 全屏时的坐标（1200×1600）在分屏后（1000×600）已经落在容器外，
+        // 不夹紧的话鱼第一帧会被画到边外，只露半个身子。
+        val restoredFromFullscreen = FishSpace.restoreStart(Offset(1200f, 1600f), bounds, margin)
+        assertEquals(bounds.width - margin, restoredFromFullscreen.x, 0.01f)
+        assertEquals(bounds.height - margin, restoredFromFullscreen.y, 0.01f)
+
+        // 容器没变（切深色模式）时位置原样保留
+        val inside = Offset(400f, 200f)
+        assertEquals(inside, FishSpace.restoreStart(inside, bounds, margin))
+
+        // 没有历史位置（首次出现）时用容器中心
+        assertEquals(
+            Offset(bounds.width / 2f, bounds.height / 2f),
+            FishSpace.restoreStart(Offset.Zero, bounds, margin),
+        )
+    }
+
+    @Test
     fun `随机方向是单位向量`() {
         repeat(20) {
             val direction = FishSpace.randomDirection()

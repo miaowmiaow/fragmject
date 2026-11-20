@@ -1,4 +1,4 @@
-package com.example.fragmject.app.ui
+package com.example.fragmject.app.ui.pet
 
 import androidx.compose.ui.geometry.Offset
 import org.junit.Assert.assertEquals

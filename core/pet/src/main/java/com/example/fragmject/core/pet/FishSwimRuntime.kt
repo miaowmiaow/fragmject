@@ -198,11 +198,8 @@ internal class FishSwimRuntime(
             // 从「鱼当前所在位置」续上，而不是从容器中心重新出发：
             // 改大小/速度、旋转屏幕都会重建本运行时（metrics/bounds 变），
             // 若在这里硬置中心，用户会看到鱼突然瞬移到屏幕中间。
-            val start = if (motion.middle != Offset.Zero) {
-                motion.middle
-            } else {
-                Offset(bounds.width / 2f, bounds.height / 2f)
-            }
+            // 恢复的是旧尺寸下的坐标，进分屏/折叠后容器变小需夹回安全区（见 FishSpace.restoreStart）。
+            val start = FishSpace.restoreStart(motion.middle, bounds, marginPx)
             state = FishSwimState(start, motion.angle, motion.speed)
             if (motion.target == Offset.Zero) motion.target = metrics.randomTarget(bounds)
             // 与启动图标衔接：**首次**出现（motion 为空，而不是旋转屏幕/改尺寸导致的重建）

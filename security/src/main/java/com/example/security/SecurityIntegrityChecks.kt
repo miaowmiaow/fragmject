@@ -31,8 +31,8 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 
     val expected = config.expectedSignatureSha256.map { it.normalizeSha256() }.toSet()
     val actual = facts.packageSignatureSha256()
+    // 查询失败（空集合）时判失败：宁可误杀也不放行；若线上出现误杀，可改为「失败放行 + 上报」
     return actual.isNotEmpty() && actual.any { it.normalizeSha256() in expected }
-    // 查询失败时判失败：宁可误杀也不放行；若线上出现误杀，可改为「失败放行 + 上报」
 }
 
 /** [NativeChecks.verifyApkSignature] 的返回值：匹配 / 不匹配 / 无法判定。 */

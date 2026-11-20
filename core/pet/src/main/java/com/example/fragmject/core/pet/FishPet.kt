@@ -207,7 +207,8 @@ internal class FishMotion {
  *   都是几秒内自收敛的瞬时表现，重建后从头开始看不出异常。
  *
  * 已知限制：存的是 px，若进程重建时密度变了，位置会按旧密度还原（`configChanges` 已含 `density`，
- * 常规场景不会触发）。
+ * 常规场景不会触发）。恢复后由 `FishSpace.restoreStart` 按**新容器**夹回安全区，
+ * 所以进分屏 / 折叠屏折叠导致容器变小时不会把鱼画到边外。
  */
 private val FishMotionSaver: Saver<FishMotion, FloatArray> = Saver(
     save = { motion -> floatArrayOf(motion.middle.x, motion.middle.y, motion.angle, motion.speed) },
@@ -232,7 +233,7 @@ private val FishMotionSaver: Saver<FishMotion, FloatArray> = Saver(
  * }
  * ```
  * 观察器为什么必须在父容器上，见 `fishPointerObserver`；事件为什么由外部组装，见
- * `app/ui/PetInputHub.kt`（本库只上报位置，不持有可写状态）。
+ * `app/ui/pet/PetInputHub.kt`（本库只上报位置，不持有可写状态）。
  *
  * ============================ 行为 ============================
  * 打盹 / 惊醒 / 受惊（僵直→逃逸→回头→恢复）/ 跃起 / 好奇绕圈 / 原地打转 / 三段冲刺，

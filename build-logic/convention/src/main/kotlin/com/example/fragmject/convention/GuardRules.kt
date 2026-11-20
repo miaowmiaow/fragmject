@@ -27,7 +27,7 @@ internal val APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(
     ":core:navigation-contract",
     ":core:network",
     ":core:webview",
-    // 组合根需要挂「跨全部页面」的全局装饰层（漂浮宠物，见 app/ui/FloatingPet.kt）。
+    // 组合根需要挂「跨全部页面」的全局装饰层（漂浮宠物，见 app/ui/pet/FloatingPet.kt）。
     // 只有组合根能同时覆盖首页/详情/WebView，feature 之间不允许互相依赖（R2/R3）。
     // 落地为独立模块 :core:pet，并且**不**进 FEATURE_ALLOWED_CORE_DEPENDENCIES：
     // 「只有组合根能用宠物」由 Gradle 强制，不再依赖文档约定。

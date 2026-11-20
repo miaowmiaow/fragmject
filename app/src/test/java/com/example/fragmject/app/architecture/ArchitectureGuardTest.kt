@@ -230,8 +230,9 @@ class ArchitectureGuardTest {
      * （这些边是 Hilt 聚合与导航装配的必需品，无需逐条写理由），剩下的每条 `:core:x` 边
      * 都必须在 §6.6 有一行登记。
      *
-     * 新增聚合模块时把模块加进 [APP_CORE_AGGREGATE_MODULES] 即可；新增**能力型** core 边
-     * （如装饰层、引擎）则应写进 §6.6，说明「为什么不用契约」。
+     * 新增 core 边先登记到 §6.6；**能力型**边（如装饰层、引擎）只写登记行即可，说明「为什么不用契约」。
+     * 确属 Hilt / 导航装配的聚合边，登记之外还要把 [APP_CORE_AGGREGATE_CAP] 调高——上限只允许收缩
+     * （见 `app core aggregate allowlist only shrinks`），放宽是必须写明理由的动作，不能只往集合里加一行。
      */
     @Test
     fun `app core edges are either aggregates or registered in dependencies policy`() {
@@ -258,7 +259,7 @@ class ArchitectureGuardTest {
             }
         assertTrue(
             "app→core 的能力型依赖未在 dependencies-policy.md §6.6 登记：$unregistered。" +
-                "若是数据/Hilt 聚合模块，请加入 APP_CORE_AGGREGATE_MODULES 并说明理由。",
+                "若是数据/Hilt 聚合模块，先登记到 §6.6，并同时调高 APP_CORE_AGGREGATE_CAP（PR 中说明理由）。",
             unregistered.isEmpty(),
         )
     }

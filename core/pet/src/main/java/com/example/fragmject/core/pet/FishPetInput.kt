@@ -32,7 +32,7 @@ private const val SWIPE_SPEED_DP_PER_SECOND = 800f
  * 指针观察器：在 `PointerEventPass.Initial` 阶段读取轻点与快速划过，**不消费**事件。
  *
  * 只上报位置，不持有事件状态：id 自增、时间戳、字段语义都由调用方的输入中枢组装
- * （组合根见 `app/ui/PetInputHub.kt`）。这样本库不需要 `SystemClock`，也不会把
+ * （组合根见 `app/ui/pet/PetInputHub.kt`）。这样本库不需要 `SystemClock`，也不会把
  * 可写状态交给调用方。
  *
  * ============================ 必须挂在父容器上 ============================

@@ -1,4 +1,4 @@
-package com.example.fragmject.app.ui
+package com.example.fragmject.app.ui.pet
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

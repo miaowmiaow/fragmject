@@ -44,6 +44,16 @@ internal object FishSpace {
         y = point.y.coerceIn(-overshoot, bounds.height + overshoot),
     )
 
+    /**
+     * 续用上一次的位置作为起始点；没有历史位置（首次出现）时用容器中心。
+     *
+     * 恢复来的是**旧尺寸下的 px 坐标**：进分屏、折叠屏折叠、旋转后容器可能变小，旧坐标会落在
+     * 新容器之外，鱼第一帧被画到边外只露半个身子。所以这里必须按**新的** [bounds] 夹回安全区，
+     * 与「首次出现从中心起步」分成两个分支表达，别把判断散落在调用方。
+     */
+    fun restoreStart(middle: Offset, bounds: Size, margin: Float): Offset =
+        if (middle != Offset.Zero) clamp(middle, bounds, margin) else Offset(bounds.width / 2f, bounds.height / 2f)
+
     /** 屏幕外的目标点：随机一条边，落在边外 [overshoot] 处（巡航时偶尔用，鱼会出界一趟再回来）。 */
     fun randomEdgeTarget(
         bounds: Size,

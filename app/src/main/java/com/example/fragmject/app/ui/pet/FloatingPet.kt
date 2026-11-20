@@ -1,4 +1,4 @@
-package com.example.fragmject.app.ui
+package com.example.fragmject.app.ui.pet
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect

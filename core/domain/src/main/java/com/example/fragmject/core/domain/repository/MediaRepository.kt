@@ -35,5 +35,6 @@ interface MediaRepository {
      */
     suspend fun finishImageUri(uri: String): Boolean
 
-    suspend fun deleteImageUri(uri: String)
+    /** 删除媒体记录；若平台删除失败返回 false，已不存在也视为成功（幂等）。 */
+    suspend fun deleteImageUri(uri: String): Boolean
 }

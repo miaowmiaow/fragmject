@@ -109,10 +109,8 @@ class MediaRepositoryImpl @Inject constructor(
         MediaStoreUtils.finishImageUri(context, uri)
     }
 
-    override suspend fun deleteImageUri(uri: String) {
-        withContext(Dispatchers.IO) {
-            MediaStoreUtils.deleteImageUri(context, uri)
-        }
+    override suspend fun deleteImageUri(uri: String): Boolean = withContext(Dispatchers.IO) {
+        MediaStoreUtils.deleteImageUri(context, uri)
     }
 
     /** 把字节写入临时 PNG 文件；写入失败或交接前被取消时删除该文件。 */

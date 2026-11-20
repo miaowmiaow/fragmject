@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,8 +52,14 @@ class CollectStateImpl @Inject constructor(
     private val _collectFailed = MutableSharedFlow<String>(extraBufferCapacity = 1)
     override val collectFailed: SharedFlow<String> = _collectFailed.asSharedFlow()
 
-    /** 每篇文章的最新用户意图（UI 目标值），由 [toggle] 覆盖写入。 */
-    private val pending = ConcurrentHashMap<String, Boolean>()
+    /** 每篇文章的最新用户意图；revision 可区分值相同但先后不同的点按。 */
+    private data class PendingIntent(val collect: Boolean, val revision: Long)
+
+    private val pending = ConcurrentHashMap<String, PendingIntent>()
+    private val nextRevision = AtomicLong()
+
+    /** 将意图写入与失败回滚短暂串行化，避免旧请求失败覆盖新的 UI 意图。 */
+    private val intentLock = Any()
 
     /** 最近一次写成功的意图；用于「已收敛则跳过」与失败回滚。 */
     private val confirmed = ConcurrentHashMap<String, Boolean>()
@@ -67,9 +74,12 @@ class CollectStateImpl @Inject constructor(
     private val locks = ConcurrentHashMap<String, Mutex>()
 
     override fun toggle(id: String, collect: Boolean) {
-        _overrides.update { it + (id to collect) }
+        synchronized(intentLock) {
+            // revision 使 true → false → true 仍能识别为新意图，而非旧请求的相同值。
+            pending[id] = PendingIntent(collect, nextRevision.incrementAndGet())
+            _overrides.update { it + (id to collect) }
+        }
         // 只登记意图，不取消在途请求（取消拦不住服务端，见类注释）
-        pending[id] = collect
         appScope.launch { flush(id) }
     }
 
@@ -85,24 +95,32 @@ class CollectStateImpl @Inject constructor(
      * @return 失败时返回要提示的文案；成功或无需发送时返回 null。
      */
     private suspend fun sendPendingIntent(id: String): String? {
-        val target = pending[id] ?: return null
-        if (confirmed[id] == target) {
-            // 期间已有请求把服务端带到这个状态（典型的「点回来又点回去」），不必再发
-            pending.remove(id, target)
+        val intent = pending[id] ?: return null
+        if (confirmed[id] == intent.collect) {
+            // 期间已有请求把服务端带到这个状态，无需重复发送。
+            pending.remove(id, intent)
             return null
         }
 
-        val result = collectArticle(id, target)
+        val result = collectArticle(id, intent.collect)
         if (!result.success) {
-            // 失败即停：丢掉可能存在的更新意图，并把覆盖层回滚到服务端已知状态
-            pending.remove(id)
-            rollback(id)
-            return result.message.ifBlank { "操作失败" }
+            // 仅失败的 revision 仍是最新意图时才回滚；值相同的后续点按也必须保留并补发。
+            val intentWasCurrent = synchronized(intentLock) {
+                if (pending.remove(id, intent)) {
+                    rollback(id)
+                    true
+                } else {
+                    false
+                }
+            }
+            return if (intentWasCurrent) result.message.ifBlank { "操作失败" } else null
         }
 
-        confirmed[id] = target
-        // 只清除「已发送的这个意图」：若期间用户又点了，留给下一个排队中的 flush 处理
-        pending.remove(id, target)
+        synchronized(intentLock) {
+            confirmed[id] = intent.collect
+            // 只清除本次发送的 revision；期间更新的最新意图留给排队的 flush。
+            pending.remove(id, intent)
+        }
         return null
     }
 

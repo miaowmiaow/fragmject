@@ -122,6 +122,15 @@ class MosaicLayer(private val state: PictureEditorState) : ILayer {
         return isEnabled
     }
 
+    fun installPreparedBitmap(bitmap: Bitmap, sourceBitmap: Bitmap) {
+        parentBitmap = sourceBitmap
+        rectF.set(0f, 0f, sourceBitmap.width.toFloat(), sourceBitmap.height.toFloat())
+        mosaicBitmap = bitmap
+        mosaicCanvas.setBitmap(bitmap)
+        paintPaths.forEach { mosaicCanvas.drawPath(it.path, it.paint) }
+        if (paintPaths.isNotEmpty()) state.invalidate()
+    }
+
     override fun onSizeChanged(
         viewWidth: Int,
         viewHeight: Int,
@@ -131,15 +140,9 @@ class MosaicLayer(private val state: PictureEditorState) : ILayer {
         rectF.set(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat())
         mosaicBitmap = createBitmap(bitmapWidth, bitmapHeight)
         mosaicCanvas.setBitmap(mosaicBitmap)
-        parentBitmap?.let {
-            mosaicCanvas.drawBitmap(it, null, rectF, null)
-        }
-        if (paintPaths.isNotEmpty()) {
-            for (linePath in paintPaths) {
-                mosaicCanvas.drawPath(linePath.path, linePath.paint)
-            }
-            state.invalidate()
-        }
+        parentBitmap?.let { mosaicCanvas.drawBitmap(it, null, rectF, null) }
+        paintPaths.forEach { mosaicCanvas.drawPath(it.path, it.paint) }
+        if (paintPaths.isNotEmpty()) state.invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {

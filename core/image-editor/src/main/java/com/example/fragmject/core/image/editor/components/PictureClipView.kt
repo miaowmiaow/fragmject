@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.values
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
@@ -44,6 +46,8 @@ fun rememberPictureClipState(): PictureClipState {
 class PictureClipState {
     var orgBitmap: Bitmap? by mutableStateOf(null)
     private var _bitmap by mutableStateOf<Bitmap?>(null)
+    var isRotating by mutableStateOf(false)
+        private set
     var viewSize by mutableStateOf(IntSize.Zero)
     var refreshTrigger by mutableLongStateOf(0L)
 
@@ -65,6 +69,7 @@ class PictureClipState {
     private var downY = 0f
 
     fun setBitmap(bitmap: Bitmap) {
+        if (isRotating) return
         this.orgBitmap = bitmap
         this._bitmap = bitmap
         computeBitmapRectF()
@@ -84,6 +89,7 @@ class PictureClipState {
     }
 
     fun reset() {
+        if (isRotating) return
         orgBitmap?.let { bmp ->
             _bitmap = bmp
             bitmapMatrix.reset()
@@ -95,22 +101,31 @@ class PictureClipState {
         }
     }
 
-    fun rotate() {
-        val bmp = _bitmap ?: return
-        bitmapMatrix.setRotate(-90f, clipRectF.centerX(), clipRectF.centerY())
-        bitmapMatrix.mapRect(bitmapRectF)
-        bitmapMatrix.mapRect(clipRectF)
-        val rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, bitmapMatrix, true)
-        bitmapMatrix.reset()
-        _bitmap = rotated
-        bitmapRectF.set(0f, 0f, rotated.width.toFloat(), rotated.height.toFloat())
-        computeBitmapRectF()
-        computeDragRectF()
-        clipBorderCenter()
-        refreshTrigger++
+    suspend fun rotate() {
+        if (isRotating) return
+        val bitmap = _bitmap ?: return
+        val rotation = Matrix().apply {
+            setRotate(-90f, clipRectF.centerX(), clipRectF.centerY())
+        }
+        isRotating = true
+        try {
+            val rotated = withContext(Dispatchers.Default) {
+                Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, rotation, true)
+            }
+            bitmapMatrix.reset()
+            _bitmap = rotated
+            bitmapRectF.set(0f, 0f, rotated.width.toFloat(), rotated.height.toFloat())
+            computeBitmapRectF()
+            computeDragRectF()
+            clipBorderCenter()
+            refreshTrigger++
+        } finally {
+            isRotating = false
+        }
     }
 
     fun handleTouchDown(x: Float, y: Float) {
+        if (isRotating) return
         downX = x
         downY = y
         isLeftDrag = leftDragRectF.contains(x, y)
@@ -120,7 +135,7 @@ class PictureClipState {
     }
 
     fun handleTouchMove(x: Float, y: Float) {
-        if (isScaling) return
+        if (isRotating || isScaling) return
         var changed = false
         if (!isBitmapDrag) {
             if (isLeftDrag) { clipRectF.left = min(x, rightDragRectF.left); changed = true }
@@ -156,12 +171,14 @@ class PictureClipState {
     }
 
     fun handleTouchUp() {
+        if (isRotating) return
         resetBitmapRectF()
         clipBorderCenter()
         resetState()
     }
 
     fun handleScale(scaleFactor: Float, focusX: Float, focusY: Float) {
+        if (isRotating) return
         val currScale = bitmapMatrix.values()[0]
         var factor = scaleFactor
         if (currScale * factor <= MINIMUM_SCALE) factor = MINIMUM_SCALE / currScale

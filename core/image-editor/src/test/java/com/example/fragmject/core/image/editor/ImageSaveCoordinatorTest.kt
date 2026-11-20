@@ -69,5 +69,5 @@ private class FakeMediaRepository(
     override suspend fun notifyMediaAdded(filePath: String): MediaSaveResult = saveResult
     override suspend fun createImageUri(): String = ""
     override suspend fun finishImageUri(uri: String): Boolean = true
-    override suspend fun deleteImageUri(uri: String) = Unit
+    override suspend fun deleteImageUri(uri: String): Boolean = true
 }

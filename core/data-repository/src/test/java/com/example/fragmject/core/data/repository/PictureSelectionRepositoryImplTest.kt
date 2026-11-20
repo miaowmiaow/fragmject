@@ -1,6 +1,7 @@
 package com.example.fragmject.core.data.repository
 
 import com.example.fragmject.core.data.contract.local.KeyValueLocalDataSource
+import com.example.fragmject.core.domain.repository.PictureSelectionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -50,6 +51,21 @@ class PictureSelectionRepositoryImplTest {
         )
     }
 
+    @Test
+    fun `待处理拍照 URI 可持久化并清除`() = runTest {
+        val repository = PictureSelectionRepositoryImpl(FakeLocalDataSource())
+        val uri = "content://media/external/images/media/42"
+
+        val capture = PictureSelectionRepository.PendingCapture(
+            uri,
+            PictureSelectionRepository.CaptureDisposition.PUBLISH,
+        )
+        assertEquals(true, repository.savePendingCapture(capture))
+        assertEquals(capture, repository.loadPendingCapture())
+        assertEquals(true, repository.savePendingCapture(null))
+        assertEquals(null, repository.loadPendingCapture())
+    }
+
     /** 内存版本地端口：按 key 存字符串，模拟 KV 的「缺键返回空串」语义。 */
     private class FakeLocalDataSource(
         initial: Map<String, String> = emptyMap(),
@@ -59,8 +75,9 @@ class PictureSelectionRepositoryImplTest {
         override fun observeValue(key: String): Flow<String> =
             MutableStateFlow(values.toMap()).map { it[key] ?: "" }
 
-        override suspend fun setValue(key: String, value: String) {
+        override suspend fun setValue(key: String, value: String): Boolean {
             values[key] = value
+            return true
         }
     }
 }

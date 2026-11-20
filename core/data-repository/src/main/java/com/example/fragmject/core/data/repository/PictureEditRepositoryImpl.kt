@@ -3,6 +3,7 @@ package com.example.fragmject.core.data.repository
 import com.example.fragmject.core.data.contract.local.KeyValueLocalDataSource
 import com.example.fragmject.core.domain.repository.PictureEditRepository
 import kotlinx.coroutines.flow.first
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,7 +20,9 @@ class PictureEditRepositoryImpl @Inject constructor(
 ) : PictureEditRepository {
 
     override suspend fun recordReplacement(oldUri: String, newUri: String) {
-        local.setValue(keyOf(oldUri), newUri)
+        if (!local.setValue(keyOf(oldUri), newUri)) {
+            throw IOException("Unable to persist edited image URI replacement")
+        }
     }
 
     override suspend fun findReplacement(oldUri: String): String? =

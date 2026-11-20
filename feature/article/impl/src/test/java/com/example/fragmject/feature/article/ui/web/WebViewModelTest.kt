@@ -185,5 +185,5 @@ private class FakeMediaRepository : MediaRepository {
 
     override suspend fun finishImageUri(uri: String): Boolean = true
 
-    override suspend fun deleteImageUri(uri: String) = Unit
+    override suspend fun deleteImageUri(uri: String): Boolean = true
 }

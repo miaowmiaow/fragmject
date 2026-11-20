@@ -6,6 +6,8 @@ import androidx.core.net.toUri
 import com.example.fragmject.core.domain.repository.AlbumRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.domain.repository.PictureSelectionRepository
+import com.example.fragmject.core.domain.repository.PictureSelectionRepository.CaptureDisposition
+import com.example.fragmject.core.domain.repository.PictureSelectionRepository.PendingCapture
 import com.example.fragmject.feature.picture.model.Album
 import com.example.fragmject.feature.picture.model.MediaItem
 import javax.inject.Inject
@@ -19,6 +21,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -74,6 +78,8 @@ class PictureFlowState @Inject constructor(
     val queryError: StateFlow<Boolean> = _queryError.asStateFlow()
     private val _takePictureUri = MutableStateFlow<Uri?>(null)
     val takePictureUri: StateFlow<Uri?> = _takePictureUri.asStateFlow()
+    private var inMemoryCaptureDisposition: CaptureDisposition? = null
+    private val takePictureMutex = Mutex()
 
     /** 预览快照：进入预览时由 [startPreview] 一次性解析，预览页只读此快照，不随相册切换漂移。 */
     private val _previewSource = MutableStateFlow<List<MediaItem>>(emptyList())
@@ -127,35 +133,157 @@ class PictureFlowState @Inject constructor(
         _hasPermission.value = granted
     }
 
-    suspend fun createTakePictureUri(): Uri? {
+    suspend fun createTakePictureUri(): Uri? = takePictureMutex.withLock {
+        // 当前进程正在等待拍照结果时不能覆盖 URI。
+        val inMemoryUri = _takePictureUri.value
+        if (inMemoryUri != null) {
+            val persisted = selectionRepository.loadPendingCapture()
+            if (persisted?.uri == inMemoryUri.toString()) {
+                val disposition = inMemoryCaptureDisposition ?: persisted.disposition
+                if (disposition == CaptureDisposition.AWAITING_RESULT) return@withLock null
+                if (!recoverPersistedCapture()) return@withLock null
+                _takePictureUri.value = null
+                inMemoryCaptureDisposition = null
+            } else {
+                // 写入持久状态失败且清理也失败时，保留内存引用并在下一次尝试重试删除。
+                if (!deleteCapture(inMemoryUri.toString())) return@withLock null
+                _takePictureUri.value = null
+                inMemoryCaptureDisposition = null
+            }
+        }
+        // 重建后遗留的结果/取消记录先幂等恢复或清理；仍在等待 Activity Result 时不覆盖 URI。
+        if (!recoverPersistedCapture()) return@withLock null
+
         val uriString = mediaRepository.createImageUri()
-        if (uriString.isEmpty()) return null
+        if (uriString.isEmpty()) return@withLock null
         val uri = uriString.toUri()
+        if (!selectionRepository.savePendingCapture(PendingCapture(uriString, CaptureDisposition.AWAITING_RESULT))) {
+            _takePictureUri.value = uri
+            inMemoryCaptureDisposition = CaptureDisposition.DELETE
+            if (deleteCapture(uriString)) {
+                _takePictureUri.value = null
+                inMemoryCaptureDisposition = null
+            } else {
+                Log.e("PictureFlowState", "Unable to persist or clean pending capture URI: $uri")
+            }
+            return@withLock null
+        }
         _takePictureUri.value = uri
-        return uri
+        inMemoryCaptureDisposition = CaptureDisposition.AWAITING_RESULT
+        uri
+    }
+
+    private suspend fun recoverPersistedCapture(): Boolean {
+        val persisted = selectionRepository.loadPendingCapture() ?: return true
+        val capture = if (_takePictureUri.value?.toString() == persisted.uri) {
+            inMemoryCaptureDisposition?.let { persisted.copy(disposition = it) } ?: persisted
+        } else {
+            persisted
+        }
+        val uri = capture.uri.toUri()
+        if (capture.disposition == CaptureDisposition.AWAITING_RESULT) return false
+        val published = if (capture.disposition == CaptureDisposition.PUBLISH) {
+            try {
+                mediaRepository.finishImageUri(capture.uri)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w("PictureFlowState", "Unable to recover pending capture by publishing: $uri", e)
+                false
+            }
+        } else {
+            false
+        }
+        val resolved = published || deleteCapture(capture.uri)
+        if (!resolved) return false
+        if (!selectionRepository.savePendingCapture(null)) {
+            Log.e("PictureFlowState", "Unable to clear recovered capture URI: $uri")
+            return false
+        }
+        if (_takePictureUri.value?.toString() == capture.uri) {
+            _takePictureUri.value = null
+            inMemoryCaptureDisposition = null
+        }
+        return true
     }
 
     /**
-     * 拍照成功：清除 pending 状态，让照片对系统相册与查询可见。
-     *
-     * @return 是否发布成功。失败时**立即删除**该记录：pending 记录在相册里不可见，
-     * 而 uri 引用马上要被清空，不在这里删就再也没有机会清理，只会永久残留。
+     * 拍照成功：先从内存或持久记录恢复 URI，再清除 pending 状态。
+     * 发布失败时尝试删除；删除失败则保留持久 URI，以便后续重试清理。
      */
-    suspend fun finishTakePictureUri(): Boolean {
-        val uri = _takePictureUri.value ?: return false
-        val published = mediaRepository.finishImageUri(uri.toString())
-        if (!published) {
-            Log.e("PictureFlowState", "finishTakePictureUri failed, drop pending record: $uri")
-            mediaRepository.deleteImageUri(uri.toString())
+    suspend fun finishTakePictureUri(): Boolean = takePictureMutex.withLock {
+        val uri = pendingCaptureUri() ?: return@withLock false
+        inMemoryCaptureDisposition = CaptureDisposition.PUBLISH
+        val savedResult = selectionRepository.savePendingCapture(
+            PendingCapture(uri.toString(), CaptureDisposition.PUBLISH),
+        )
+        if (!savedResult) {
+            // 仍尝试发布；当前进程保留 PUBLISH 意图，供持久状态写入失败后的重试使用。
+            Log.e("PictureFlowState", "Unable to persist capture result before publishing: $uri")
         }
-        _takePictureUri.value = null
-        return published
+        val published = try {
+            mediaRepository.finishImageUri(uri.toString())
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("PictureFlowState", "finishTakePictureUri failed: $uri", e)
+            false
+        }
+        if (published) {
+            clearPendingCapture(uri)
+            return@withLock true
+        }
+
+        Log.e("PictureFlowState", "finishTakePictureUri failed, deleting pending record: $uri")
+        inMemoryCaptureDisposition = CaptureDisposition.DELETE
+        selectionRepository.savePendingCapture(PendingCapture(uri.toString(), CaptureDisposition.DELETE))
+        if (deleteCapture(uri.toString())) {
+            clearPendingCapture(uri)
+        } else {
+            Log.e("PictureFlowState", "Unable to delete pending capture URI; retaining it for retry: $uri")
+        }
+        false
     }
 
-    suspend fun deleteTakePictureUri() {
-        val uri = _takePictureUri.value ?: return
-        mediaRepository.deleteImageUri(uri.toString())
-        _takePictureUri.value = null
+    suspend fun deleteTakePictureUri(): Boolean = takePictureMutex.withLock {
+        val uri = pendingCaptureUri() ?: return@withLock true
+        inMemoryCaptureDisposition = CaptureDisposition.DELETE
+        selectionRepository.savePendingCapture(PendingCapture(uri.toString(), CaptureDisposition.DELETE))
+        val deleted = deleteCapture(uri.toString())
+        if (deleted) {
+            clearPendingCapture(uri)
+        } else {
+            Log.e("PictureFlowState", "Unable to delete pending capture URI; retaining it for retry: $uri")
+        }
+        deleted
+    }
+
+    private suspend fun pendingCaptureUri(): Uri? {
+        _takePictureUri.value?.let { return it }
+        val capture = selectionRepository.loadPendingCapture() ?: return null
+        return capture.uri.takeIf { it.isNotBlank() }?.toUri()?.also {
+            _takePictureUri.value = it
+            inMemoryCaptureDisposition = capture.disposition
+        }
+    }
+
+    private suspend fun deleteCapture(uri: String): Boolean = try {
+        mediaRepository.deleteImageUri(uri)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Log.e("PictureFlowState", "Unable to delete pending capture URI: $uri", e)
+        false
+    }
+
+    private suspend fun clearPendingCapture(uri: Uri) {
+        if (!selectionRepository.savePendingCapture(null)) {
+            Log.e("PictureFlowState", "Unable to clear persisted pending capture URI: $uri")
+        }
+        if (_takePictureUri.value == uri) {
+            _takePictureUri.value = null
+            inMemoryCaptureDisposition = null
+        }
     }
 
     /**
@@ -171,8 +299,16 @@ class PictureFlowState @Inject constructor(
         // 内存态同步更新：预览页在 onFinish 后立刻可见，新图必须当场生效
         updateMediaUri(oldUri, newUri)
         flowScope.launch {
-            // 先落库（进程重建后仍能解析）再删原图（删除不可逆）
-            editedUriResolver.persist(oldUri.toString(), newUri.toString())
+            try {
+                // 先落库（进程重建后仍能解析）再删原图（删除不可逆）
+                editedUriResolver.persist(oldUri.toString(), newUri.toString())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // 替换关系没有可靠落库前必须保留原图，避免进程重建后路由指向已删除 URI。
+                Log.e("PictureFlowState", "Unable to persist edited image URI; keeping original: $oldUri", e)
+                return@launch
+            }
             deleteMedia(oldUri)
         }
     }

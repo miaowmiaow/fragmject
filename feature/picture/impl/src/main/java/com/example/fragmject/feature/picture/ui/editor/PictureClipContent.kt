@@ -25,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.image.editor.components.PictureClipCanvas
 import com.example.fragmject.core.image.editor.components.rememberPictureClipState
+import kotlinx.coroutines.launch
 
 @Composable
 fun PictureClipContent(
@@ -46,11 +48,13 @@ fun PictureClipContent(
     val state = rememberPictureClipState()
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val isBusy = isSaving || state.isRotating
     LaunchedEffect(bitmap) {
         state.setBitmap(bitmap)
     }
     val onConfirm: () -> Unit = {
-        if (!isSaving) {
+        if (!isSaving && !state.isRotating) {
             if (!state.isBitmapReady) {
                 Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
             } else {
@@ -79,22 +83,25 @@ fun PictureClipContent(
                 .padding(top = 90.dp, bottom = 140.dp)
         )
         ClipTopBar(
-            isSaving = isSaving,
+            isBusy = isBusy,
             onDismiss = onDismiss,
-            onRotate = { state.rotate() },
+            onRotate = { scope.launch { state.rotate() } },
             onReset = { state.reset() },
             onConfirm = onConfirm,
         )
         ClipBottomHint()
         // 保存（含裁剪合成 + PNG 编码）全程在后台线程，遮罩必须真正拦截手势
-        EditorSavingOverlay(visible = isSaving, text = "正在保存...")
+        EditorSavingOverlay(
+            visible = isBusy,
+            text = if (state.isRotating) "正在旋转..." else "正在保存...",
+        )
     }
 }
 
 /** 顶部工具栏：取消 / 旋转 / 重置 / 确定。 */
 @Composable
 private fun BoxScope.ClipTopBar(
-    isSaving: Boolean,
+    isBusy: Boolean,
     onDismiss: () -> Unit,
     onRotate: () -> Unit,
     onReset: () -> Unit,
@@ -119,14 +126,14 @@ private fun BoxScope.ClipTopBar(
                 Text("取消", color = AppColors.editorOnBackground, fontSize = 16.sp)
             }
             Row {
-                IconButton(onClick = onRotate) {
+                IconButton(onClick = onRotate, enabled = !isBusy) {
                     Icon(
                         Icons.AutoMirrored.Filled.RotateRight,
                         contentDescription = "旋转",
                         tint = AppColors.editorOnBackground
                     )
                 }
-                IconButton(onClick = onReset) {
+                IconButton(onClick = onReset, enabled = !isBusy) {
                     Icon(
                         Icons.Filled.Refresh,
                         contentDescription = "重置",
@@ -136,7 +143,7 @@ private fun BoxScope.ClipTopBar(
             }
             TextButton(
                 onClick = onConfirm,
-                enabled = !isSaving
+                enabled = !isBusy
             ) {
                 Text("确定", color = AppColors.editorOnBackground, fontSize = 16.sp)
             }

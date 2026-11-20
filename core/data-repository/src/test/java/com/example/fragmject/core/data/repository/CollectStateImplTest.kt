@@ -207,6 +207,79 @@ class CollectStateImplTest {
     }
 
     @Test
+    fun `在途请求失败时保留并补发期间产生的最新意图`() = runBlocking {
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
+        val firstCall = CompletableDeferred<Unit>()
+        val releaseFirst = CompletableDeferred<Unit>()
+        val latestCall = CompletableDeferred<Unit>()
+        val repo = FakeMyRepository().apply {
+            action = { id, collect ->
+                calls += id to collect
+                if (calls.size == 1) {
+                    firstCall.complete(Unit)
+                    releaseFirst.await()
+                    SimpleResult(false, "旧意图失败")
+                } else {
+                    latestCall.complete(Unit)
+                    SimpleResult(true, "ok")
+                }
+            }
+        }
+
+        withState(repo) { state ->
+            state.toggle("a8", true)
+            withTimeout(5_000) { firstCall.await() }
+            state.toggle("a8", false)
+
+            releaseFirst.complete(Unit)
+            withTimeout(5_000) { latestCall.await() }
+            withTimeout(5_000) {
+                while (state.overrides.value["a8"] != false) delay(10)
+            }
+
+            assertEquals(listOf("a8" to true, "a8" to false), calls.toList())
+            assertEquals(mapOf("a8" to false), state.overrides.value)
+        }
+    }
+
+    @Test
+    fun `同值 ABA 意图不会被旧失败请求清除`() = runBlocking {
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
+        val firstCall = CompletableDeferred<Unit>()
+        val releaseFirst = CompletableDeferred<Unit>()
+        val retryCall = CompletableDeferred<Unit>()
+        val repo = FakeMyRepository().apply {
+            action = { id, collect ->
+                calls += id to collect
+                if (calls.size == 1) {
+                    firstCall.complete(Unit)
+                    releaseFirst.await()
+                    SimpleResult(false, "旧请求失败")
+                } else {
+                    retryCall.complete(Unit)
+                    SimpleResult(true, "ok")
+                }
+            }
+        }
+
+        withState(repo) { state ->
+            state.toggle("a9", true)
+            withTimeout(5_000) { firstCall.await() }
+            state.toggle("a9", false)
+            state.toggle("a9", true)
+
+            releaseFirst.complete(Unit)
+            withTimeout(5_000) { retryCall.await() }
+            withTimeout(5_000) {
+                while (state.overrides.value["a9"] != true || calls.size < 2) delay(10)
+            }
+
+            assertEquals(listOf("a9" to true, "a9" to true), calls.toList())
+            assertEquals(mapOf("a9" to true), state.overrides.value)
+        }
+    }
+
+    @Test
     fun `写失败回滚到最近一次成功状态，而不是列表快照`() = runBlocking {
         val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
         val repo = FakeMyRepository().apply {

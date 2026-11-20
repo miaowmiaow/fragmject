@@ -80,8 +80,9 @@ class PetSettingsRepositoryImplTest {
         override fun observeValue(key: String): Flow<String> =
             MutableStateFlow(values.toMap()).map { it[key] ?: "" }
 
-        override suspend fun setValue(key: String, value: String) {
+        override suspend fun setValue(key: String, value: String): Boolean {
             values[key] = value
+            return true
         }
     }
 }

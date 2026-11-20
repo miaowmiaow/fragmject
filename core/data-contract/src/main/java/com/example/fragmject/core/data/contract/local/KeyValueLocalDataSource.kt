@@ -23,5 +23,6 @@ interface KeyValueLocalDataSource {
 
     fun observeValue(key: String): Flow<String>
 
-    suspend fun setValue(key: String, value: String)
+    /** 写入成功返回 true；存储层拒绝写入或发生可恢复的数据库错误时返回 false。 */
+    suspend fun setValue(key: String, value: String): Boolean
 }

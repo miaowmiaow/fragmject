@@ -102,6 +102,13 @@ class GraffitiLayer(private val state: PictureEditorState) : ILayer {
         return isEnabled
     }
 
+    fun installPreparedBitmap(bitmap: Bitmap) {
+        graffitiBitmap = bitmap
+        graffitiCanvas.setBitmap(bitmap)
+        paintPaths.forEach { graffitiCanvas.drawPath(it.path, it.paint) }
+        if (paintPaths.isNotEmpty()) state.invalidate()
+    }
+
     override fun onSizeChanged(
         viewWidth: Int,
         viewHeight: Int,
@@ -110,13 +117,8 @@ class GraffitiLayer(private val state: PictureEditorState) : ILayer {
     ) {
         graffitiBitmap = createBitmap(bitmapWidth, bitmapHeight)
         graffitiCanvas.setBitmap(graffitiBitmap)
-        if (paintPaths.isNotEmpty()) {
-            graffitiCanvas.drawColor(0, PorterDuff.Mode.CLEAR)
-            for (linePath in paintPaths) {
-                graffitiCanvas.drawPath(linePath.path, linePath.paint)
-            }
-            state.invalidate()
-        }
+        paintPaths.forEach { graffitiCanvas.drawPath(it.path, it.paint) }
+        if (paintPaths.isNotEmpty()) state.invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {

@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.example.fragmject.feature.picture.state.PictureFlowState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
@@ -46,10 +47,17 @@ internal fun rememberTakePictureAction(flowState: PictureFlowState): () -> Unit 
     fun launchCamera() {
         scope.launch {
             val uri = flowState.createTakePictureUri()
-            if (uri != null) {
-                takePictureLauncher.launch(uri)
-            } else {
+            if (uri == null) {
                 Toast.makeText(context, "无法创建照片文件", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            try {
+                takePictureLauncher.launch(uri)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                flowState.deleteTakePictureUri()
+                Toast.makeText(context, "无法启动相机", Toast.LENGTH_SHORT).show()
             }
         }
     }

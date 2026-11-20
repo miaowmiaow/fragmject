@@ -46,6 +46,12 @@ class PictureEditorState {
     var isBin by mutableStateOf(false)
     var refreshTrigger by mutableLongStateOf(0L)
 
+    private data class PreparedBitmapLayers(
+        val mosaicPreview: Bitmap,
+        val mosaicBase: Bitmap,
+        val graffitiBase: Bitmap,
+    )
+
     private val bitmapMatrix = Matrix()
     private val bitmapRectF = RectF()
     private var mosaicBitmap: Bitmap? = null
@@ -390,11 +396,24 @@ class PictureEditorState {
                     else -> null
                 }
             } ?: return@launch
-            setupBitmap(bitmap, w, h)
+            val preparedLayers = withContext(Dispatchers.Default) { prepareBitmapLayers(bitmap) }
+            setupBitmap(bitmap, preparedLayers, w, h)
         }
     }
 
-    private fun setupBitmap(bitmap: Bitmap, w: Int, h: Int) {
+    private fun prepareBitmapLayers(bitmap: Bitmap): PreparedBitmapLayers {
+        val mosaicPreview = bitmap.scale(
+            max(bitmap.width / MOSAIC_COEFFICIENT, 1),
+            max(bitmap.height / MOSAIC_COEFFICIENT, 1),
+            false,
+        )
+        val mosaicBase = createBitmap(bitmap.width, bitmap.height)
+        Canvas(mosaicBase).drawBitmap(bitmap, 0f, 0f, null)
+        val graffitiBase = createBitmap(bitmap.width, bitmap.height)
+        return PreparedBitmapLayers(mosaicPreview, mosaicBase, graffitiBase)
+    }
+
+    private fun setupBitmap(bitmap: Bitmap, preparedLayers: PreparedBitmapLayers, w: Int, h: Int) {
         bitmapMatrix.reset()
         initScaleX = 1f
         initScaleY = 1f
@@ -414,14 +433,9 @@ class PictureEditorState {
         if (currBitmapHeight < h) {
             bitmapMatrix.postTranslate(0f, (h - currBitmapHeight) * 0.5f - currTranslateY())
         }
-        mosaicBitmap = bitmap.scale(
-            bitmap.width / MOSAIC_COEFFICIENT,
-            bitmap.height / MOSAIC_COEFFICIENT,
-            false
-        )
-        mosaicLayer.setParentBitmap(bitmap)
-        mosaicLayer.onSizeChanged(w, h, bitmap.width, bitmap.height)
-        graffitiLayer.onSizeChanged(w, h, bitmap.width, bitmap.height)
+        mosaicBitmap = preparedLayers.mosaicPreview
+        mosaicLayer.installPreparedBitmap(preparedLayers.mosaicBase, bitmap)
+        graffitiLayer.installPreparedBitmap(preparedLayers.graffitiBase)
         syncStickerLayersParentMatrix()
         computeBinRectF()
         invalidate()

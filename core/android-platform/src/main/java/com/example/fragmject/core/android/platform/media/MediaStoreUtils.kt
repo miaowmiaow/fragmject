@@ -241,34 +241,40 @@ object MediaStoreUtils {
      */
     fun finishImageUri(context: Context, uri: String): Boolean {
         // Q 以下没有 pending 概念，无需发布
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true
-        return publishImageRecord(context, uri.toUri())
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || publishImageRecord(context, uri.toUri())
     }
 
     /** 清除 pending 状态；返回是否成功（失败仅记日志，由调用方决定是否回收记录）。 */
     private fun publishImageRecord(context: Context, uri: Uri): Boolean {
         return try {
+            val row = context.contentResolver.query(
+                uri,
+                arrayOf(MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.IS_PENDING),
+                null,
+                null,
+                null,
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) cursor.getLong(0) to cursor.getInt(1) else null
+            } ?: return false
+            if (row.first <= 0L) return false
+            // 重试必须幂等：进程可能在成功发布后、清除持久状态前退出。
+            if (row.second == 0) return true
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.IS_PENDING, 0)
             }
-            context.contentResolver.update(uri, values, null, null)
-            true
+            context.contentResolver.update(uri, values, null, null) > 0
         } catch (e: Exception) {
             Log.e(TAG, "finishImageUri failed: $uri", e)
             false
         }
     }
 
-    /** 删除预创建但未写入数据的图片记录（拍照取消/失败时清理，避免残留透明图）。 */
-    fun deleteImageUri(context: Context, uri: String) {
-        try {
-            context.contentResolver.delete(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                "${MediaStore.Images.Media._ID} = ?",
-                arrayOf(uri.substringAfterLast('/')),
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "deleteImageUri failed", e)
-        }
+    /** 删除图片记录；已经不存在时按幂等成功处理，异常时返回 false 供调用方保留重试信息。 */
+    fun deleteImageUri(context: Context, uri: String): Boolean = try {
+        context.contentResolver.delete(uri.toUri(), null, null)
+        true
+    } catch (e: Exception) {
+        Log.e(TAG, "deleteImageUri failed", e)
+        false
     }
 }

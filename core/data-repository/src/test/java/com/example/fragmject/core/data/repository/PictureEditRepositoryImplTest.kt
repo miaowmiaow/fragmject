@@ -5,8 +5,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
+import java.io.IOException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.fail
 import org.junit.Test
 
 /**
@@ -51,17 +53,31 @@ class PictureEditRepositoryImplTest {
         assertEquals(setOf("picture_edit_replacement:content://media/1"), local.values.keys)
     }
 
+    @Test
+    fun `写入失败时向调用方报告错误`() = runTest {
+        val local = FakeLocalDataSource(writeSucceeds = false)
+        try {
+            PictureEditRepositoryImpl(local).recordReplacement("content://media/1", "content://media/2")
+            fail("应将持久化失败传给调用方")
+        } catch (_: IOException) {
+            assertEquals(emptyMap<String, String>(), local.values)
+        }
+    }
+
     /** 内存版本地端口：按 key 存字符串，模拟 KV 的「缺键返回空串」语义。 */
     private class FakeLocalDataSource(
         initial: Map<String, String> = emptyMap(),
+        private val writeSucceeds: Boolean = true,
     ) : KeyValueLocalDataSource {
         val values = initial.toMutableMap()
 
         override fun observeValue(key: String): Flow<String> =
             MutableStateFlow(values.toMap()).map { it[key] ?: "" }
 
-        override suspend fun setValue(key: String, value: String) {
+        override suspend fun setValue(key: String, value: String): Boolean {
+            if (!writeSucceeds) return false
             values[key] = value
+            return true
         }
     }
 }

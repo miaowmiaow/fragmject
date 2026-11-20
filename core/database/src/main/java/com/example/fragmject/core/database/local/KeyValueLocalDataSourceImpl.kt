@@ -10,9 +10,8 @@ import javax.inject.Singleton
 /**
  * [KeyValueLocalDataSource] 的 KV 适配器：只转发读写，不做任何字段解释。
  *
- * 写入结果**不再丢弃**：[KVDatabase.setValue] 用 `id > -1` 表示成功（失败时它已记一条 error），
- * 这里再补一条 warn 并带上 key，避免「设置页点了没反应」时无从排查——
- * 上层是 fire-and-forget 调用（设置项不阻塞 UI），没有返回值可传，日志是唯一线索。
+ * 写入结果透传给 repository，由业务层决定是否需要中断流程；这里再补一条带 key 的 warn，
+ * 避免「设置页点了没反应」时无从排查。
  */
 @Singleton
 class KeyValueLocalDataSourceImpl @Inject constructor(
@@ -21,10 +20,12 @@ class KeyValueLocalDataSourceImpl @Inject constructor(
 
     override fun observeValue(key: String): Flow<String> = kvDatabase.observeValue(key)
 
-    override suspend fun setValue(key: String, value: String) {
-        if (!kvDatabase.setValue(key, value)) {
+    override suspend fun setValue(key: String, value: String): Boolean {
+        val saved = kvDatabase.setValue(key, value)
+        if (!saved) {
             Log.w(TAG, "写入失败（key=$key）：KVDatabase 返回 false，本次设置不会生效")
         }
+        return saved
     }
 
     private companion object {

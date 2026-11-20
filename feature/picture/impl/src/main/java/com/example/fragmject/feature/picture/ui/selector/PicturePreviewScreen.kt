@@ -39,7 +39,7 @@ fun PicturePreviewScreen(
     var showNavBar by remember { mutableStateOf(true) }
 
     // 预览快照：进入预览前由 PictureFlowState.startPreview 一次性解析，
-    // 跨相册选择也能正确命中，编辑保存后经 updateMediaUri 同步更新，不随相册切换漂移。
+    // 跨相册选择也能正确命中，编辑保存后经 applyEditResult 同步更新，不随相册切换漂移。
     val data = previewSource
 
     val pagerState = rememberPagerState(

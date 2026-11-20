@@ -54,7 +54,10 @@ object PictureNavContentContributor : NavContentContributor {
             val onNavigateUp = LocalOnNavigateUp.current
             // 预览快照统一在这里解析（调用方只传 uri 列表，无需接触 PictureFlowState）：
             // 选图流程传的是本地媒体 uri，信息流封面传的是网络 URL，两者都能解析出 MediaItem。
-            LaunchedEffect(navKey) { pictureFlowState.startPreview(navKey.uris) }
+            LaunchedEffect(navKey) {
+                // selectable = 选图流程态：返回栈重建后必须恢复选中态（纯看图没有选中态可言）
+                pictureFlowState.startPreview(navKey.uris, restoreSelection = navKey.selectable)
+            }
             PicturePreviewScreen(
                 // 选图态 = SELECT（带缩略图条、选择框与编辑入口）；纯看图 = NORM，只保留缩放/滑动
                 mode = if (navKey.selectable) PreviewMode.SELECT else PreviewMode.NORM,
@@ -77,10 +80,9 @@ object PictureNavContentContributor : NavContentContributor {
                 onFinish = { _, newUri ->
                     // 防御：仅当保存成功产生有效新 URI 时才替换/删除原图，
                     // 避免失败路径以空 URI 误删原图。
+                    // 替换关系落库与删原图都在 applyEditResult 内按序完成（进程级 scope）
                     if (newUri.toString().isNotBlank()) {
-                        pictureFlowState.updateMediaUri(oldUri, newUri)
-                        // 挂进程级 flowScope：页面随即出栈，组合作用域会被取消导致原图残留
-                        pictureFlowState.deleteMediaAsync(oldUri)
+                        pictureFlowState.applyEditResult(oldUri, newUri)
                     }
                     onNavigateUp()
                 },

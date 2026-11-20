@@ -14,6 +14,8 @@ import com.example.fragmject.core.data.repository.MyRepositoryImpl
 import com.example.fragmject.core.data.repository.HomeNavRepositoryImpl
 import com.example.fragmject.core.data.repository.PetSettingsRepositoryImpl
 import com.example.fragmject.core.data.repository.PetSettingsStateImpl
+import com.example.fragmject.core.data.repository.PictureEditRepositoryImpl
+import com.example.fragmject.core.data.repository.PictureSelectionRepositoryImpl
 import com.example.fragmject.core.data.repository.ProjectRepositoryImpl
 import com.example.fragmject.core.data.repository.SearchRepositoryImpl
 import com.example.fragmject.core.data.repository.SystemRepositoryImpl
@@ -35,6 +37,8 @@ import com.example.fragmject.core.domain.repository.MyRepository
 import com.example.fragmject.core.domain.repository.HomeNavRepository
 import com.example.fragmject.core.domain.pet.PetSettingsState
 import com.example.fragmject.core.domain.repository.PetSettingsRepository
+import com.example.fragmject.core.domain.repository.PictureEditRepository
+import com.example.fragmject.core.domain.repository.PictureSelectionRepository
 import com.example.fragmject.core.domain.repository.ProjectRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.repository.SystemRepository
@@ -131,6 +135,18 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPictureEditRepository(
+        impl: PictureEditRepositoryImpl,
+    ): PictureEditRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPictureSelectionRepository(
+        impl: PictureSelectionRepositoryImpl,
+    ): PictureSelectionRepository
 
     @Binds
     @Singleton

@@ -55,6 +55,9 @@ internal fun SelectorPermissionEffect(
         if (!flowReset) {
             flowState.reset()
             flowReset = true
+        } else {
+            // 重建后回到选择器（进程重建/旋转）：进程内选中态已丢，按持久记录恢复
+            flowState.restorePersistedSelection()
         }
         val granted = storagePermissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED

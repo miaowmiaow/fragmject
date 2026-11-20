@@ -2,6 +2,7 @@ package com.example.fragmject.feature.demo.ui.calendar
 
 import androidx.compose.material3.CalendarLocale
 import java.time.LocalDate
+import java.time.temporal.WeekFields
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -64,16 +65,55 @@ class CalendarModelTest {
     }
 
     @Test
+    fun `year-based offsets match every month across the supported range`() {
+        val firstDayOfWeek = WeekFields.of(CalendarLocale("en-US")).firstDayOfWeek.value
+        var expectedOffset = 0
+        for (year in model.startYear()..model.lastYear()) {
+            for (month in 1..12) {
+                val firstDate = LocalDate.of(year, month, 1)
+                val firstDayOffset =
+                    (firstDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
+                val weekCount =
+                    (firstDate.lengthOfMonth() + firstDayOffset + DAYS_IN_WEEK - 1) / DAYS_IN_WEEK
+                val lastWeekIndex = expectedOffset + weekCount - 1
+
+                assertEquals(expectedOffset, model.weekModeIndexByDate(year, month))
+                assertEquals(year, model.yearByWeekModeIndex(lastWeekIndex))
+                assertEquals(month, model.monthByWeekModeIndex(lastWeekIndex))
+                assertEquals(weekCount - 1, model.weekByWeekModeIndex(lastWeekIndex))
+                expectedOffset += weekCount
+            }
+        }
+        assertEquals(expectedOffset, model.weekModeCount())
+    }
+
+    @Test
     fun `construction does not prebuild any month`() {
         val fresh = CalendarModel(CalendarLocale("en-US"))
-        assertEquals("构造只应算索引，不应生成月份数据", 0, fresh.builtMonthCount())
+        assertEquals("构造只应算索引，不应生成月份数据", 0, fresh.cachedMonthCount())
 
         assertNotNull(fresh.monthModeByIndex(0))
-        assertEquals(1, fresh.builtMonthCount())
+        assertEquals(1, fresh.cachedMonthCount())
 
         // 同一索引返回缓存实例，重复访问不再重建
         fresh.monthModeByIndex(0)
-        assertEquals(1, fresh.builtMonthCount())
+        assertEquals(1, fresh.cachedMonthCount())
+    }
+
+    @Test
+    fun `month cache stays bounded and evicts least recently used entries`() {
+        val fresh = CalendarModel(CalendarLocale("en-US"))
+        val firstMonth = fresh.monthModeByIndex(0)
+
+        for (index in 1..MAX_CACHED_MONTHS) {
+            fresh.monthModeByIndex(index)
+        }
+
+        assertEquals(MAX_CACHED_MONTHS, fresh.cachedMonthCount())
+        val rebuiltFirstMonth = fresh.monthModeByIndex(0)
+        assertNotNull(rebuiltFirstMonth)
+        assertTrue(firstMonth !== rebuiltFirstMonth)
+        assertEquals(MAX_CACHED_MONTHS, fresh.cachedMonthCount())
     }
 
     @Test

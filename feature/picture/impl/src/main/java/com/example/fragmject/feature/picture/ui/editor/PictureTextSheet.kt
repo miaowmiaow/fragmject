@@ -23,6 +23,9 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +50,9 @@ import androidx.core.graphics.createBitmap
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.image.editor.model.StickerAttrs
 import com.example.fragmject.feature.picture.utils.ColorUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun PictureTextSheet(
@@ -53,8 +60,13 @@ fun PictureTextSheet(
     onFinish: (StickerAttrs) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var text by remember { mutableStateOf(attrs?.description ?: "") }
+    val textFieldState = rememberTextFieldState(
+        initialText = attrs?.description.orEmpty().takeCodePoints(MAX_TEXT_CODE_POINTS),
+    )
+    val text = textFieldState.text.toString()
     var selectedColorIndex by remember { mutableIntStateOf(0) }
+    var isBuildingSticker by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -69,15 +81,37 @@ fun PictureTextSheet(
     ) {
         TextSheetTopBar(
             canConfirm = text.isNotBlank(),
+            isBuilding = isBuildingSticker,
             onDismiss = onDismiss,
-            onConfirm = { onFinish(buildTextSticker(text, selectedColorIndex)) },
+            onConfirm = {
+                if (!isBuildingSticker) {
+                    val colorSnapshot = selectedColorIndex
+                    isBuildingSticker = true
+                    scope.launch {
+                        try {
+                            val sticker = withContext(Dispatchers.Default) {
+                                buildTextSticker(text, colorSnapshot)
+                            }
+                            onFinish(sticker)
+                        } finally {
+                            isBuildingSticker = false
+                        }
+                    }
+                }
+            },
         )
         Spacer(modifier = Modifier.height(32.dp))
         TextInputField(
-            text = text,
+            state = textFieldState,
             colorIndex = selectedColorIndex,
             focusRequester = focusRequester,
-            onValueChange = { text = it },
+            enabled = !isBuildingSticker,
+        )
+        Text(
+            text = "${text.codePointCount(0, text.length)}/$MAX_TEXT_CODE_POINTS",
+            modifier = Modifier.align(Alignment.End),
+            color = AppColors.editorOnBackground.copy(alpha = 0.6f),
+            fontSize = 12.sp,
         )
         Spacer(modifier = Modifier.height(24.dp))
         ColorPickerRow(
@@ -92,6 +126,7 @@ fun PictureTextSheet(
 @Composable
 private fun TextSheetTopBar(
     canConfirm: Boolean,
+    isBuilding: Boolean,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
@@ -100,14 +135,19 @@ private fun TextSheetTopBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        TextButton(onClick = onDismiss) {
+        TextButton(onClick = onDismiss, enabled = !isBuilding) {
             Text("返回", color = AppColors.editorOnBackground, fontSize = 16.sp)
         }
         TextButton(
             onClick = onConfirm,
-            enabled = canConfirm
+            enabled = canConfirm && !isBuilding
         ) {
-            Text("完成", color = AppColors.editorOnBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(
+                if (isBuilding) "处理中..." else "完成",
+                color = AppColors.editorOnBackground,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
@@ -115,14 +155,15 @@ private fun TextSheetTopBar(
 /** 文字输入区，占满剩余高度，带占位提示。 */
 @Composable
 private fun ColumnScope.TextInputField(
-    text: String,
+    state: TextFieldState,
     colorIndex: Int,
     focusRequester: FocusRequester,
-    onValueChange: (String) -> Unit,
+    enabled: Boolean,
 ) {
     BasicTextField(
-        value = text,
-        onValueChange = onValueChange,
+        state = state,
+        inputTransformation = TextCodePointLimitTransformation,
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .weight(1f)
@@ -133,9 +174,9 @@ private fun ColumnScope.TextInputField(
             fontSize = 24.sp,
             fontWeight = FontWeight.Medium
         ),
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             Box {
-                if (text.isEmpty()) {
+                if (state.text.isEmpty()) {
                     Text(
                         "请输入文字...",
                         color = AppColors.editorOnBackground.copy(alpha = 0.4f),
@@ -179,6 +220,21 @@ private fun ColorPickerRow(
 }
 
 /** 把输入文字按当前颜色渲染成透明底 bitmap 贴图。 */
+private const val MAX_TEXT_CODE_POINTS = 80
+
+private val TextCodePointLimitTransformation = InputTransformation {
+    val currentText = asCharSequence().toString()
+    val limitedText = currentText.takeCodePoints(MAX_TEXT_CODE_POINTS)
+    if (limitedText.length != length) {
+        replace(0, length, limitedText)
+    }
+}
+
+private fun String.takeCodePoints(maxCodePoints: Int): String {
+    val count = codePointCount(0, length)
+    return if (count <= maxCodePoints) this else substring(0, offsetByCodePoints(0, maxCodePoints))
+}
+
 private fun buildTextSticker(text: String, colorIndex: Int): StickerAttrs {
     val paint = Paint().apply {
         isAntiAlias = true

@@ -11,6 +11,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -32,6 +34,8 @@ class CalendarViewModel @Inject constructor(
     private val _selectedDate = MutableStateFlow<LocalDate?>(null)
     val selectedDate: StateFlow<LocalDate?> = _selectedDate.asStateFlow()
 
+    private val scheduleMutex = Mutex()
+
     init {
         val today = LocalDate.now()
         _selectedDate.value = today
@@ -46,41 +50,42 @@ class CalendarViewModel @Inject constructor(
 
     fun loadSchedule(date: LocalDate) {
         viewModelScope.launch {
-            val list = scheduleRepository.getSchedule(date.year, date.monthValue, date.dayOfMonth)
-            _scheduleMap.update { it + (date to list) }
-        }
-    }
-
-    fun addSchedule(date: LocalDate, text: String) {
-        viewModelScope.launch {
-            val previous = _scheduleMap.value
-            val updated = previous[date].orEmpty().toMutableList().apply { add(text) }
-            _scheduleMap.update { it + (date to updated) }
-            try {
-                scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                // 落盘失败（含 Room 的 SQLiteException）必须回滚，类型不收敛以免漏掉真实失败
-                Log.e("CalendarViewModel", "setSchedule failed", e)
-                _scheduleMap.value = previous
+            scheduleMutex.withLock {
+                val list = scheduleRepository.getSchedule(date.year, date.monthValue, date.dayOfMonth)
+                _scheduleMap.update { it + (date to list) }
             }
         }
     }
 
+    fun addSchedule(date: LocalDate, text: String) {
+        updateSchedule(date) { it + text }
+    }
+
     fun removeSchedule(date: LocalDate, text: String) {
+        updateSchedule(date) { it.toMutableList().apply { remove(text) } }
+    }
+
+    private fun updateSchedule(date: LocalDate, transform: (List<String>) -> List<String>) {
         viewModelScope.launch {
-            val previous = _scheduleMap.value
-            val updated = previous[date].orEmpty().toMutableList().apply { remove(text) }
-            _scheduleMap.update { it + (date to updated) }
-            try {
-                scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                // 落盘失败（含 Room 的 SQLiteException）必须回滚，类型不收敛以免漏掉真实失败
-                Log.e("CalendarViewModel", "setSchedule failed", e)
-                _scheduleMap.value = previous
+            scheduleMutex.withLock {
+                val previous = _scheduleMap.value[date]?.toList()
+                val updated = transform(previous.orEmpty())
+                _scheduleMap.update { it + (date to updated) }
+                var persisted = false
+                try {
+                    scheduleRepository.setSchedule(date.year, date.monthValue, date.dayOfMonth, updated)
+                    persisted = true
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e("CalendarViewModel", "setSchedule failed", e)
+                } finally {
+                    if (!persisted) {
+                        _scheduleMap.update { current ->
+                            if (previous == null) current - date else current + (date to previous)
+                        }
+                    }
+                }
             }
         }
     }

@@ -5,13 +5,12 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
-import kotlin.math.ceil
 
 /**
  * 日历数据模型：1900–2100 年的月/周两种索引。
  *
- * 构造时**不生成任何月份数据**，只按 locale 算好星期名、今天，以及每月的周数
- * （纯整数数组）。整月的周格与 [CalendarDate] 推迟到首次访问该月时才构建并缓存：
+ * 构造时**不生成任何月份数据**；每月周数由 14 种年份类型模板计算，只按年累计周页偏移。
+ * 整月的周格与 [CalendarDate] 推迟到首次访问该月时才构建并缓存：
  *
  * 旧实现在 `remember(defaultLocale)` 里同步遍历 201×12 个月、构造约 9 万个
  * [CalendarDate]（每个还带一个 [LocalDate]），首帧与 locale 切换都要在主线程付这笔钱；
@@ -32,23 +31,35 @@ class CalendarModel(
 
     private val monthCount: Int = YEAR_RANGE.count() * MONTHS_PER_YEAR
 
-    /**
-     * 每月的周数（含首尾补齐格），只有整数。
-     *
-     * 周模式的总页数与「(年月, 周) → 页码」换算都依赖它，所以必须预先算好；
-     * 但它只涉及每月一次的日历算术，不产生任何日期对象。
-     */
-    private val weeksPerMonth: IntArray = IntArray(monthCount)
+    /** 按「1 月 1 日星期 × 是否闰年」缓存一年内各月的周数，避免逐月创建日期对象。 */
+    private val weekCountsByYearType: Array<IntArray> = Array(YEAR_TYPE_COUNT) { type ->
+        var firstDayOfMonth = type / 2 + 1
+        val leapYear = type % 2 == 1
+        IntArray(MONTHS_PER_YEAR) { monthIndex ->
+            val daysInMonth = daysInMonth(monthIndex + 1, leapYear)
+            val firstDayOffset = (firstDayOfMonth - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
+            val weeks = (daysInMonth + firstDayOffset + DAYS_IN_WEEK - 1) / DAYS_IN_WEEK
+            firstDayOfMonth = (firstDayOfMonth + daysInMonth - 1) % DAYS_IN_WEEK + 1
+            weeks
+        }
+    }
 
-    /** 每月周模式的起始页码，长度 [monthCount] + 1，末位即周模式总页数。 */
-    private val weekOffsets: IntArray = IntArray(monthCount + 1)
+    private val weeksPerYearType: IntArray = IntArray(YEAR_TYPE_COUNT) { type ->
+        weekCountsByYearType[type].sum()
+    }
+
+    /** 每年的周模式起始页码，长度为年数 + 1，末位即周模式总页数。 */
+    private val yearWeekOffsets: IntArray = IntArray(YEAR_RANGE.count() + 1)
+
+    /** 各年对应的「1 月 1 日星期 × 是否闰年」类型。 */
+    private val yearTypes: ByteArray = ByteArray(YEAR_RANGE.count())
 
     /**
-     * 已构建的月份（月模式索引 → 月份数据）。
+     * 最近访问的月份（月模式索引 → 月份数据）；按访问顺序淘汰，限制长期浏览的内存占用。
      *
-     * 只在主线程访问（组合阶段与 ViewModel 的翻页同步都在主线程），故用普通 HashMap。
+     * 只在主线程访问（组合阶段与 ViewModel 的翻页同步都在主线程）。
      */
-    private val monthCache: HashMap<Int, CalendarMonth> = HashMap()
+    private val monthCache = LinkedHashMap<Int, CalendarMonth>(MAX_CACHED_MONTHS, 0.75f, true)
 
     init {
         val weekdays = with(locale) {
@@ -69,22 +80,40 @@ class CalendarModel(
         localDay = today.dayOfMonth
 
         var offset = 0
-        var index = 0
-        for (year in YEAR_RANGE) {
-            for (month in 1..MONTHS_PER_YEAR) {
-                val firstDate = LocalDate.of(year, month, 1)
-                val firstDayOfMonth =
-                    (firstDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
-                val weeks = ceil(
-                    (firstDate.lengthOfMonth() + firstDayOfMonth).toDouble() / DAYS_IN_WEEK,
-                ).toInt()
-                weeksPerMonth[index] = weeks
-                weekOffsets[index] = offset
-                offset += weeks
-                index++
-            }
+        for ((yearIndex, year) in YEAR_RANGE.withIndex()) {
+            val firstDayOfYear = LocalDate.of(year, 1, 1).dayOfWeek.value
+            val isLeapYear = year.isLeapYear()
+            val yearType = (firstDayOfYear - 1) * 2 + if (isLeapYear) 1 else 0
+            yearTypes[yearIndex] = yearType.toByte()
+            yearWeekOffsets[yearIndex] = offset
+            offset += weeksPerYearType[yearType]
         }
-        weekOffsets[monthCount] = offset
+        yearWeekOffsets[yearTypes.size] = offset
+    }
+
+    private fun Int.isLeapYear(): Boolean = this % 4 == 0 && (this % 100 != 0 || this % 400 == 0)
+
+    private fun daysInMonth(month: Int, leapYear: Boolean): Int = when (month) {
+        2 -> if (leapYear) 29 else 28
+        4, 6, 9, 11 -> 30
+        else -> 31
+    }
+
+    private fun weeksInMonth(monthIndex: Int): Int {
+        val yearIndex = monthIndex / MONTHS_PER_YEAR
+        val monthOfYear = monthIndex % MONTHS_PER_YEAR
+        return weekCountsByYearType[yearTypes[yearIndex].toInt()][monthOfYear]
+    }
+
+    private fun weekOffsetForMonth(monthIndex: Int): Int {
+        val yearIndex = monthIndex / MONTHS_PER_YEAR
+        val monthOfYear = monthIndex % MONTHS_PER_YEAR
+        val weeksByMonth = weekCountsByYearType[yearTypes[yearIndex].toInt()]
+        var offset = yearWeekOffsets[yearIndex]
+        for (month in 0 until monthOfYear) {
+            offset += weeksByMonth[month]
+        }
+        return offset
     }
 
     private fun adjustYearAndMonth(year: Int, month: Int, delta: Int): Pair<Int, Int> {
@@ -113,7 +142,7 @@ class CalendarModel(
             (firstDateOfMonth.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
         val daysInMonth = firstDateOfMonth.lengthOfMonth()
         val daysInLastMonth = firstDateOfMonth.minusMonths(1).lengthOfMonth()
-        val weeksInMonth = weeksPerMonth[index]
+        val weeksInMonth = weeksInMonth(index)
         val weeksData = ArrayList<MutableList<CalendarDate>>(weeksInMonth)
         val daysData = ArrayList<CalendarDate>(daysInMonth)
         var cellIndex = 0
@@ -167,7 +196,7 @@ class CalendarModel(
     }
 
     fun weekModeCount(): Int {
-        return weekOffsets[monthCount]
+        return yearWeekOffsets[yearTypes.size]
     }
 
     private fun monthModeByDate(year: Int, month: Int): CalendarMonth? {
@@ -182,11 +211,16 @@ class CalendarModel(
      */
     fun monthModeByIndex(index: Int): CalendarMonth? {
         if (index !in 0 until monthCount) return null
-        return monthCache.getOrPut(index) {
-            val year = YEAR_RANGE.first + index / MONTHS_PER_YEAR
-            val month = index % MONTHS_PER_YEAR + 1
-            buildMonth(index, year, month)
+        monthCache[index]?.let { return it }
+
+        val year = YEAR_RANGE.first + index / MONTHS_PER_YEAR
+        val month = index % MONTHS_PER_YEAR + 1
+        val calendarMonth = buildMonth(index, year, month)
+        monthCache[index] = calendarMonth
+        if (monthCache.size > MAX_CACHED_MONTHS) {
+            monthCache.remove(monthCache.entries.iterator().next().key)
         }
+        return calendarMonth
     }
 
     /**
@@ -202,8 +236,8 @@ class CalendarModel(
      */
     fun weekModeIndexByDate(year: Int, month: Int, week: Int = 0): Int {
         val index = monthIndex(year, month) ?: return 0
-        if (week !in 0 until weeksPerMonth[index]) return 0
-        return weekOffsets[index] + week
+        if (week !in 0 until weeksInMonth(index)) return 0
+        return weekOffsetForMonth(index) + week
     }
 
     fun weekModeIndexByLocalDate(): Int {
@@ -211,15 +245,22 @@ class CalendarModel(
         return weekModeIndexByDate(localYear, localMonth, week)
     }
 
-    /** 已构建的月份数；仅供测试验证「构造时不预生成全量月份」。 */
-    internal fun builtMonthCount(): Int = monthCache.size
+    /** 当前保留在 LRU 缓存中的月份数，供测试验证惰性构建与缓存上限。 */
+    internal fun cachedMonthCount(): Int = monthCache.size
 
-    /** 周模式页码 → 月索引（[weekOffsets] 上做二分）；越界返回 null。 */
+    /** 周模式页码 → 月索引：先定位年份，再在该年最多 12 个月内查找。 */
     private fun monthIndexByWeekModeIndex(index: Int): Int? {
         if (index < 0 || index >= weekModeCount()) return null
-        val position = weekOffsets.binarySearch(index, 0, monthCount)
-        // 命中即该月起点；未命中时插入点的前一位才是「最后一个起始页 <= index」的月份
-        return if (position >= 0) position else -position - 2
+        val position = yearWeekOffsets.binarySearch(index, 0, yearTypes.size)
+        val yearIndex = if (position >= 0) position else -position - 2
+        val weeksByMonth = weekCountsByYearType[yearTypes[yearIndex].toInt()]
+        var weekInYear = index - yearWeekOffsets[yearIndex]
+        val firstMonthIndex = yearIndex * MONTHS_PER_YEAR
+        for (month in weeksByMonth.indices) {
+            if (weekInYear < weeksByMonth[month]) return firstMonthIndex + month
+            weekInYear -= weeksByMonth[month]
+        }
+        return null
     }
 
     fun yearByWeekModeIndex(index: Int): Int {
@@ -234,7 +275,7 @@ class CalendarModel(
 
     fun weekByWeekModeIndex(index: Int): Int {
         val monthIndex = monthIndexByWeekModeIndex(index) ?: return 0
-        return index - weekOffsets[monthIndex]
+        return index - weekOffsetForMonth(monthIndex)
     }
 
     fun startYear(): Int {
@@ -249,6 +290,8 @@ class CalendarModel(
 internal val YEAR_RANGE = IntRange(1900, 2100)
 internal const val DAYS_IN_WEEK = 7
 internal const val MONTHS_PER_YEAR = 12
+internal const val MAX_CACHED_MONTHS = 36
+private const val YEAR_TYPE_COUNT = DAYS_IN_WEEK * 2
 
 data class CalendarMonth(
     val year: Int,

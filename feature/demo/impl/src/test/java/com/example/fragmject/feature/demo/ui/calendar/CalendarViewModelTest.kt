@@ -4,6 +4,7 @@ import com.example.fragmject.core.domain.repository.ScheduleRepository
 import com.example.fragmject.core.testing.MainDispatcherRule
 import java.io.IOException
 import java.time.LocalDate
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -28,6 +29,23 @@ class CalendarViewModelTest {
 
         assertEquals(today, viewModel.selectedDate.value)
         assertEquals(listOf("站会"), viewModel.scheduleMap.value[today])
+    }
+
+    @Test
+    fun `add schedule waits for an in-flight load before using its baseline`() = runTest {
+        val date = LocalDate.now()
+        val readGate = CompletableDeferred<Unit>()
+        val repo = FakeScheduleRepository(
+            seed = mapOf(date to listOf("站会")),
+            readGate = readGate,
+        )
+        val viewModel = CalendarViewModel(repo)
+
+        viewModel.addSchedule(date, "评审")
+        readGate.complete(Unit)
+
+        assertEquals(listOf("站会", "评审"), viewModel.scheduleMap.value[date])
+        assertEquals(listOf("站会", "评审"), repo.setCalls.single().second)
     }
 
     @Test
@@ -110,6 +128,7 @@ class CalendarViewModelTest {
 
 private class FakeScheduleRepository(
     seed: Map<LocalDate, List<String>> = emptyMap(),
+    private val readGate: CompletableDeferred<Unit>? = null,
 ) : ScheduleRepository {
 
     private val store = seed.toMutableMap()
@@ -128,6 +147,7 @@ private class FakeScheduleRepository(
     override suspend fun getSchedule(year: Int, month: Int, day: Int): List<String> {
         val date = LocalDate.of(year, month, day)
         getCalls += date
+        readGate?.await()
         return store[date].orEmpty()
     }
 }

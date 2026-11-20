@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -74,14 +75,18 @@ internal fun MonthPager(
     val synchronizer = remember(model, pagerStates, callbacks) {
         CalendarPagerSynchronizer(model, pagerStates, callbacks) { selectedWeek = it }
     }
+    val currentSynchronizer by rememberUpdatedState(synchronizer)
+    val currentIsWeekMode by rememberUpdatedState(isWeekMode)
+    val currentSelectedDate by rememberUpdatedState(selectedDate)
+    val currentSelectedWeek by rememberUpdatedState(selectedWeek)
     //周模式和月模式联动
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collectLatest { page ->
-            synchronizer.sync(
+            currentSynchronizer.sync(
                 page = page,
-                isWeekMode = isWeekMode,
-                selectedDate = selectedDate,
-                selectedWeek = selectedWeek,
+                isWeekMode = currentIsWeekMode,
+                selectedDate = currentSelectedDate,
+                selectedWeek = currentSelectedWeek,
                 scope = scope,
             )
         }

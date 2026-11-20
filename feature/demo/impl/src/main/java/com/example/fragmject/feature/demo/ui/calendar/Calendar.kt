@@ -11,9 +11,12 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +48,25 @@ fun Calendar(
     val monthModePagerState = rememberCalendarPagerState(
         initialPage = (model.localYear - model.startYear()) * 12 + model.localMonth - 1
     ) { model.monthModeCount() }
+    val pagerStates = remember(monthModePagerState, weekModePagerState) {
+        CalendarPagerStates(monthModePagerState, weekModePagerState)
+    }
+    val dateCallbacks = remember(onSelectDate, onRemoveSchedule, onSelectedDateChange) {
+        CalendarDateCallbacks(onSelectDate, onRemoveSchedule, onSelectedDateChange)
+    }
+
+    LaunchedEffect(model) {
+        val date = selectedDate ?: model.localCalendarDate()?.localDate
+        date?.let {
+            val calendarDate = model.calendarDate(it) ?: return@LaunchedEffect
+            weekModePagerState.scrollToPage(
+                model.weekModeIndexByDate(it.year, it.monthValue, calendarDate.week),
+            )
+            monthModePagerState.scrollToPage(
+                (it.year - model.startYear()) * MONTHS_PER_YEAR + it.monthValue - 1,
+            )
+        }
+    }
 
     Column(modifier = modifier) {
         YearPicker(
@@ -71,17 +93,17 @@ fun Calendar(
         MonthPager(
             state = state,
             model = model,
-            pagerStates = CalendarPagerStates(monthModePagerState, weekModePagerState),
+            pagerStates = pagerStates,
             scheduleMap = scheduleMap,
             selectedDate = selectedDate,
-            callbacks = CalendarDateCallbacks(onSelectDate, onRemoveSchedule, onSelectedDateChange),
+            callbacks = dateCallbacks,
         )
     }
 }
 
 @Stable
 class CalendarState {
-    var mode = CalendarMode.Week
+    var mode by mutableStateOf(CalendarMode.Week)
 }
 
 @Composable

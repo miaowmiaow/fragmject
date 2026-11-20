@@ -155,7 +155,7 @@ private fun YearPickerGrid(
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        items(model.lastYear() - model.startYear()) {
+        items(model.lastYear() - model.startYear() + 1) {
             val localYear = it + model.startYear()
             YearCell(
                 localYear = localYear,

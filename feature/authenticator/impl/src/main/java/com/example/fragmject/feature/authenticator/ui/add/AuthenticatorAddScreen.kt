@@ -104,6 +104,11 @@ private fun AuthenticatorAddScreenContent(
                     snackbarHostState.showSnackbar("已导入 ${event.count} 个账户")
                     onNavigateUp()
                 }
+                is AuthenticatorAddEvent.Failed -> {
+                    // 失败时停留原页：表单页可重试保存，扫码页恢复取景以便重扫
+                    scanState = ScanState.Scanning
+                    snackbarHostState.showSnackbar(event.message)
+                }
             }
         }
     }

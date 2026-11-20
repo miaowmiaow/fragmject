@@ -128,6 +128,8 @@ private class FakeOtpAccountRepository(initial: List<OtpAccount>) : OtpAccountRe
     override fun observeAll() = accounts
     override suspend fun getById(id: Long): OtpAccount? = accounts.value.firstOrNull { it.id == id }
     override suspend fun add(account: OtpAccount): Long = 0L
+    override suspend fun addAll(accounts: List<OtpAccount>): List<Long> =
+        accounts.map { add(it) }
     override suspend fun update(account: OtpAccount) = Unit
     override suspend fun delete(id: Long) = Unit
 }

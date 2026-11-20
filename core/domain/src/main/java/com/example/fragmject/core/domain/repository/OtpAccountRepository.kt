@@ -19,6 +19,14 @@ interface OtpAccountRepository {
     /** 新增账户并返回新 id；sort_order 由实现统一追加到末尾，调用方无需关心。 */
     suspend fun add(account: OtpAccount): Long
 
+    /**
+     * 批量新增（单事务）：要么全部写入，要么全部回滚，不会留下部分导入结果。
+     *
+     * 用于二维码批量导入这类「要么都进、要么都别进」的场景；失败时抛异常。
+     * 返回新 id 列表，顺序与 [accounts] 一致。
+     */
+    suspend fun addAll(accounts: List<OtpAccount>): List<Long>
+
     suspend fun update(account: OtpAccount)
 
     suspend fun delete(id: Long)

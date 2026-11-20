@@ -1,5 +1,6 @@
 package com.example.fragmject.feature.authenticator.ui.add
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.domain.otp.Base32
@@ -10,6 +11,7 @@ import com.example.fragmject.core.domain.otp.OtpMigrationUri
 import com.example.fragmject.core.domain.otp.OtpType
 import com.example.fragmject.core.domain.repository.OtpAccountRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +42,14 @@ sealed interface AuthenticatorAddEvent {
 
     /** 批量导入成功，UI 提示后返回列表页。 */
     data class Imported(val count: Int) : AuthenticatorAddEvent
+
+    /**
+     * 落盘失败（如磁盘满、数据库异常）。
+     *
+     * 不并入 [Saved]/[Imported] 的返回码：失败时页面必须**停留**并允许重试，
+     * 与成功路径的「提示后返回」是不同的导航行为。
+     */
+    data class Failed(val message: String) : AuthenticatorAddEvent
 }
 
 /**
@@ -110,7 +120,16 @@ class AuthenticatorAddViewModel @Inject constructor(
                 return ScanOutcome.Filled
             }
             viewModelScope.launch {
-                accounts.forEach { repository.add(it) }
+                try {
+                    // 单事务批量写入：失败则一条都不落库，避免「导入了一半」
+                    repository.addAll(accounts)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "applyScan import failed, count=${accounts.size}", e)
+                    _events.send(AuthenticatorAddEvent.Failed("导入失败，未写入任何账户"))
+                    return@launch
+                }
                 _events.send(AuthenticatorAddEvent.Imported(accounts.size))
             }
             return ScanOutcome.Imported(accounts.size)
@@ -168,19 +187,29 @@ class AuthenticatorAddViewModel @Inject constructor(
 
         _uiState.update { it.copy(saving = true) }
         viewModelScope.launch {
-            repository.add(
-                OtpAccount(
-                    issuer = state.issuer.trim(),
-                    accountName = accountName,
-                    secret = secret,
-                    algorithm = state.algorithm,
-                    digits = state.digits,
-                    period = period,
-                    type = state.type,
-                ),
-            )
-            _events.send(AuthenticatorAddEvent.Saved)
+            try {
+                repository.add(
+                    OtpAccount(
+                        issuer = state.issuer.trim(),
+                        accountName = accountName,
+                        secret = secret,
+                        algorithm = state.algorithm,
+                        digits = state.digits,
+                        period = period,
+                        type = state.type,
+                    ),
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // 落盘失败必须复位 saving 并明确告知：否则按钮永久禁用、数据看起来已保存
+                Log.e(TAG, "save failed", e)
+                _uiState.update { it.copy(saving = false) }
+                _events.send(AuthenticatorAddEvent.Failed("保存失败，请重试"))
+                return@launch
+            }
             _uiState.update { it.copy(saving = false) }
+            _events.send(AuthenticatorAddEvent.Saved)
         }
     }
 
@@ -192,4 +221,8 @@ class AuthenticatorAddViewModel @Inject constructor(
      */
     private fun normalizeSecret(value: String): String =
         value.replace(" ", "").replace("-", "").uppercase().trimEnd('=')
+
+    private companion object {
+        const val TAG = "AuthenticatorAddViewModel"
+    }
 }

@@ -17,6 +17,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.io.IOException
 
 /**
  * 新增账户页：校验先于落库、密钥归一化、扫码填表与批量导入的边界。
@@ -169,6 +170,35 @@ class AuthenticatorAddViewModelTest {
     }
 
     @Test
+    fun `save failure resets saving and reports the failure`() = runTest {
+        val repo = FakeOtpRepository(failOnAdd = true)
+        val viewModel = AuthenticatorAddViewModel(repo)
+        viewModel.updateAccountName("alice")
+        viewModel.updateSecret("JBSWY3DPEHPK3PXP")
+
+        viewModel.save()
+
+        // saving 必须复位：否则提交按钮永久禁用（enabled = !saving）
+        assertEquals(false, viewModel.uiState.value.saving)
+        assertTrue(viewModel.events.first() is AuthenticatorAddEvent.Failed)
+        assertTrue(repo.added.isEmpty())
+    }
+
+    @Test
+    fun `failed batch import writes nothing and reports the failure`() = runTest {
+        val repo = FakeOtpRepository(failOnAddAll = true)
+        val viewModel = AuthenticatorAddViewModel(repo)
+        val raw = OtpMigrationUri.generate(
+            listOf(account("a@example.com"), account("b@example.com")),
+        ).first()
+
+        assertTrue(viewModel.applyScan(raw) is ScanOutcome.Imported)
+
+        assertTrue("批量导入失败不应留下半份结果", repo.added.isEmpty())
+        assertTrue(viewModel.events.first() is AuthenticatorAddEvent.Failed)
+    }
+
+    @Test
     fun `unrecognized content is reported instead of filling the form`() = runTest {
         val viewModel = AuthenticatorAddViewModel(FakeOtpRepository())
 
@@ -187,6 +217,8 @@ class AuthenticatorAddViewModelTest {
 
 private class FakeOtpRepository(
     private val addGate: CompletableDeferred<Unit>? = null,
+    private val failOnAdd: Boolean = false,
+    private val failOnAddAll: Boolean = false,
 ) : OtpAccountRepository {
     private val accounts = MutableStateFlow<List<OtpAccount>>(emptyList())
     val added = mutableListOf<OtpAccount>()
@@ -195,9 +227,16 @@ private class FakeOtpRepository(
     override suspend fun getById(id: Long): OtpAccount? = accounts.value.firstOrNull { it.id == id }
 
     override suspend fun add(account: OtpAccount): Long {
+        if (failOnAdd) throw IOException("disk full")
         added += account
         addGate?.await()
         return added.size.toLong()
+    }
+
+    /** 模拟单事务批量写入：失败时一条都不写入。 */
+    override suspend fun addAll(accounts: List<OtpAccount>): List<Long> {
+        if (failOnAddAll) throw IOException("disk full")
+        return accounts.map { add(it) }
     }
 
     override suspend fun update(account: OtpAccount) = Unit

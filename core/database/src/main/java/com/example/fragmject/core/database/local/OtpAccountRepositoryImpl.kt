@@ -37,21 +37,20 @@ class OtpAccountRepositoryImpl @Inject constructor(
     }
 
     override suspend fun add(account: OtpAccount): Long = withContext(Dispatchers.IO) {
-        otpAccountDao.insert(
-            OtpAccountEntity(
-                issuer = account.issuer,
-                accountName = account.accountName,
-                secretCipher = KeystoreSecretCipher.encrypt(account.secret),
-                algorithm = account.algorithm.ordinal,
-                digits = account.digits,
-                period = account.period,
-                type = account.type.ordinal,
-                counter = account.counter,
-                sortOrder = otpAccountDao.maxSortOrder() + 1,
-                createdAt = System.currentTimeMillis(),
-            )
-        )
+        val now = System.currentTimeMillis()
+        otpAccountDao.insertAllAppendingSort(listOf(account.toEntity(sortOrder = 0, createdAt = now)))
+            .single()
     }
+
+    override suspend fun addAll(accounts: List<OtpAccount>): List<Long> =
+        withContext(Dispatchers.IO) {
+            if (accounts.isEmpty()) return@withContext emptyList()
+            val now = System.currentTimeMillis()
+            // 加密在事务外完成：任何一条加密失败都不会先写入其它账户，
+            // 真正的多条 insert 由 DAO 的单事务方法保证原子性
+            val entities = accounts.map { it.toEntity(sortOrder = 0, createdAt = now) }
+            otpAccountDao.insertAllAppendingSort(entities)
+        }
 
     override suspend fun update(account: OtpAccount) = withContext(Dispatchers.IO) {
         // created_at 不属于领域模型，沿用库中原有值
@@ -76,6 +75,25 @@ class OtpAccountRepositoryImpl @Inject constructor(
     override suspend fun delete(id: Long) = withContext(Dispatchers.IO) {
         otpAccountDao.deleteById(id)
     }
+
+    /**
+     * 领域模型 → Entity（仅新增路径）。
+     *
+     * [sortOrder] 传 0 作占位，实际序号由 `OtpAccountDao.insertAllAppendingSort` 在事务内续接。
+     */
+    private fun OtpAccount.toEntity(sortOrder: Int, createdAt: Long): OtpAccountEntity =
+        OtpAccountEntity(
+            issuer = issuer,
+            accountName = accountName,
+            secretCipher = KeystoreSecretCipher.encrypt(secret),
+            algorithm = algorithm.ordinal,
+            digits = digits,
+            period = period,
+            type = type.ordinal,
+            counter = counter,
+            sortOrder = sortOrder,
+            createdAt = createdAt,
+        )
 
     private fun OtpAccountEntity.toDomain(): OtpAccount = OtpAccount(
         id = id,

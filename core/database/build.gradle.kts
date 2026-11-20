@@ -25,6 +25,6 @@ dependencies {
     // 迁移测试：Room Gradle 插件会把 schemas/ 自动加入 androidTest assets
     androidTestImplementation(libs.androidx.room3.testing)
     androidTestImplementation(libs.androidx.test.runner)
+    // junit:junit 由 androidx.test.ext:junit 传递提供，重复声明只会触发 IDE 重复依赖告警
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.junit)
 }

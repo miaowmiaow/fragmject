@@ -59,6 +59,7 @@ fun SettingScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val articleNavigator = LocalNavigators.current.article
     val homeNavigator = LocalNavigators.current.home
+    val userNavigator = LocalNavigators.current.user
     val onNavigateUp = LocalOnNavigateUp.current
     val cacheSize by viewModel.cacheSizeText.collectAsStateWithLifecycle()
     val isClearing by viewModel.isClearing.collectAsStateWithLifecycle()
@@ -94,44 +95,80 @@ fun SettingScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         content = { innerPadding ->
             LoadingContent(uiState.isLoading) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    SettingSwitchRow(
-                        label = "深色模式",
-                        checked = uiState.darkTheme,
-                        onCheckedChange = viewModel::updateDarkTheme,
-                    )
-                    HorizontalDivider()
-                    ArrowRightItem("隐私政策") {
-                        articleNavigator.openArticle("file:///android_asset/html/privacy_policy.html")
-                    }
-                    HorizontalDivider()
-                    ArrowRightItem("问题反馈") {
-                        articleNavigator.openArticle("https://github.com/miaowmiaow/fragmject/issues")
-                    }
-                    HorizontalDivider()
-                    SettingCacheRow(
-                        cacheSize = cacheSize,
-                        isClearing = isClearing,
-                        onClick = { showDialog = true },
-                    )
-                    HorizontalDivider()
-                    ArrowRightItem("关于玩Android") {
-                        articleNavigator.openArticle("https://wanandroid.com")
-                    }
-                    Spacer(Modifier.height(20.dp))
-                    if (uiState.user != null) {
-                        SettingLogoutButton(onClick = viewModel::logout)
-                    }
-                }
+                SettingItems(
+                    innerPadding = innerPadding,
+                    uiState = uiState,
+                    cacheSize = cacheSize,
+                    isClearing = isClearing,
+                    actions = SettingActions(
+                        onDarkThemeChange = viewModel::updateDarkTheme,
+                        onPetSettingClick = userNavigator::openPetSetting,
+                        onClearCacheClick = { showDialog = true },
+                        onArticleClick = articleNavigator::openArticle,
+                        onLogoutClick = viewModel::logout,
+                    ),
+                )
             }
         }
     )
+}
+
+/** 设置项的行内动作集合：收敛成 1 个参数，避免私有 composable 的参数列表超限。 */
+private class SettingActions(
+    val onDarkThemeChange: (Boolean) -> Unit,
+    val onPetSettingClick: () -> Unit,
+    val onClearCacheClick: () -> Unit,
+    val onArticleClick: (String) -> Unit,
+    val onLogoutClick: () -> Unit,
+)
+
+/** 设置项列表：拆出来后 [SettingScreen] 只负责 Scaffold / 事件收集 / 弹窗。 */
+@Composable
+private fun SettingItems(
+    innerPadding: PaddingValues,
+    uiState: SettingUiState,
+    cacheSize: String,
+    isClearing: Boolean,
+    actions: SettingActions,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        SettingSwitchRow(
+            label = "深色模式",
+            checked = uiState.darkTheme,
+            onCheckedChange = actions.onDarkThemeChange,
+        )
+        HorizontalDivider()
+        // 宠物配置单独一页：三个滑杆 + 实时预览，塞进设置页会让这一屏过长
+        ArrowRightItem(title = "漂浮宠物", onClick = actions.onPetSettingClick)
+        HorizontalDivider()
+        ArrowRightItem("隐私政策") {
+            actions.onArticleClick("file:///android_asset/html/privacy_policy.html")
+        }
+        HorizontalDivider()
+        ArrowRightItem("问题反馈") {
+            actions.onArticleClick("https://github.com/miaowmiaow/fragmject/issues")
+        }
+        HorizontalDivider()
+        SettingCacheRow(
+            cacheSize = cacheSize,
+            isClearing = isClearing,
+            onClick = actions.onClearCacheClick,
+        )
+        HorizontalDivider()
+        ArrowRightItem("关于玩Android") {
+            actions.onArticleClick("https://wanandroid.com")
+        }
+        Spacer(Modifier.height(20.dp))
+        if (uiState.user != null) {
+            SettingLogoutButton(onClick = actions.onLogoutClick)
+        }
+    }
 }
 
 /** 设置项：左标题 + 右侧开关。 */

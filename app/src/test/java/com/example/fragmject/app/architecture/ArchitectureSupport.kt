@@ -31,6 +31,37 @@ internal object ArchitectureSupport {
         "FragmjectApplication.kt" to setOf("com.example.fragmject.core.network.di.ImageOkHttpClient"),
     )
 
+    /**
+     * 规则 31b allowlist 的条目数上限：只允许收缩，新增必须走 §6.6 登记。
+     *
+     * 没有上限时这个集合会变成「自我豁免名单」——往里加一行就能绕过登记流程，
+     * 规则 31b 等于可以自己给自己开口子。与 [APP_DATA_ALLOWLIST_CAP] 同一思路。
+     */
+    const val APP_CORE_AGGREGATE_CAP = 7
+
+    /**
+     * 规则 31b：`APP_ALLOWED_DEPENDENCIES` 中属于「数据 / 运行时聚合」的 core 边。
+     *
+     * 这些边是 Hilt 聚合与导航装配的必需品（app 源码往往零 import），不需要逐条写理由，
+     * 因此不必进 §6.6。判据是「**有没有直接使用能力**」，不是「是不是 core 模块」：
+     * - 在名单内：`:app` 只是为了装配（`@Module` / 导航渲染器 / 主题包装），源码里不调用具体能力；
+     * - 不在名单内（如 `:core:pet`、`:core:webview`）：`:app` 直接调用了它的能力
+     *   （`webViewPool.prepare()` / `setDebuggingEnabled()`、`FishPet`），必须在 §6.6 登记并写理由。
+     *
+     * 条目数受 [APP_CORE_AGGREGATE_CAP] 约束（只允许减少）。
+     */
+    val APP_CORE_AGGREGATE_MODULES: Set<String> = setOf(
+        // Hilt 聚合：@Module/@InstallIn 需要进入 SingletonComponent
+        ":core:data-repository",
+        ":core:database",
+        ":core:network",
+        // 应用级装配：主题/窗口尺寸/语义导航
+        ":core:designsystem",
+        ":core:domain",
+        ":core:navigation-contract",
+        ":core:navigation-runtime",
+    )
+
     /** 守卫判定规则源码路径（规则 31 读取其中的 CORE_EXCEPTION_EDGES）。 */
     const val GUARD_RULES_PATH =
         "../build-logic/convention/src/main/kotlin/com/example/fragmject/convention/GuardRules.kt"
@@ -47,6 +78,18 @@ internal object ArchitectureSupport {
 
     fun KoFileDeclaration.isFeatureImpl(): Boolean =
         projectPath.contains("/feature/") && projectPath.contains("/impl/")
+
+    /**
+     * UI 层选择器：`core:ui`（通用组件）与 `core:pet`（漂浮宠物，2026-11 拆出的独立模块）。
+     *
+     * 两条约束按同一口径作用于两者——「UI 层不得下探数据层」「UI 层不得混入数据/媒体提供类 API」。
+     * 抽成共用判定而不是各写一份 `contains("/core/ui/")`，是为了以后再加 UI 层模块时不再漏一处
+     * （宠物拆模块时正是因此差点让规则 11 / 23 对宠物静默失效）。
+     *
+     * 允许依赖不同：`core:ui` 另有 model / domain 两条登记例外，`core:pet` 只允许 designsystem。
+     */
+    fun KoFileDeclaration.isUiLayerFile(): Boolean =
+        projectPath.contains("/core/ui/") || projectPath.contains("/core/pet/")
 
     fun KoFileDeclaration.isFeatureApi(): Boolean =
         projectPath.contains("/feature/") && projectPath.contains("/api/")

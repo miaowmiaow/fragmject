@@ -15,6 +15,9 @@ android {
 
     // 与本工程其它模块保持一致（config.properties 是唯一来源，勿在此硬编码）
     compileSdk = configProperties.getProperty("compileSdkVersion").toInt()
+    // minor 版本（37.1）：本模块的 Compose 测试依赖同样要求 compileSdk ≥ 37.1
+    configProperties.getProperty("compileSdkMinorVersion")?.trim()?.takeIf { it.isNotEmpty() }
+        ?.let { compileSdkMinor = it.toInt() }
 
     defaultConfig {
         // Macrobenchmark 的下限是 API 28；BaselineProfileRule 在未 root 的设备上需要 API 33+

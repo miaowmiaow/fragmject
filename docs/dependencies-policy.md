@@ -52,7 +52,7 @@
 - **结果类型选型**（新增端口按此选，不再新造）：带数据的查询/刷新用 `DomainResult`；无数据写操作（分享、收藏、下载、清缓存）用 `SimpleResult`；登录/注册用 `AuthResult`；媒体保存用 `MediaSaveResult`。网络调用统一经 `fetchAsDomainResult` / `fetchAsSimpleResult`，不在仓库里手写 try/catch；`core:data-repository` 不得使用 `runCatching`（会吞掉协程取消，`ArchitectureTest` 规则 19 守卫），也不得对外暴露 `kotlin.Result`。
 - 「失败可降级为无数据」的读取（如用户积分）约定为：失败返回 `null`，由 UI 展示默认值；业务失败即使携带 data 也不视为有效数据。
 - `core:domain` 源码不依赖 Android framework 类型，但当前仍使用 Android library 插件，并公开接受 `PagingData` 耦合；不等同于完全技术无关的领域核心。
-- `core:model` 是**共享协议模型**的唯一落点；DTO / 领域模型 / UI 模型三套拆分已被 [ADR-0001](docs/adr/0001-shared-protocol-model.md) 定案否决（`core:domain` 只能依赖 `core:model`，拆分必然产生双份同构模型）。重启条件与举证要求见该 ADR §5/§6，**评审中不再重复论证**；试图新增 `*Dto` 会被 `ArchitectureTest` 规则 29 拦截。
+- `core:model` 是**共享协议模型**的唯一落点；DTO / 领域模型 / UI 模型三套拆分已被 [ADR-0001](adr/0001-shared-protocol-model.md) 定案否决（`core:domain` 只能依赖 `core:model`，拆分必然产生双份同构模型）。重启条件与举证要求见该 ADR §5/§6，**评审中不再重复论证**；试图新增 `*Dto` 会被 `ArchitectureTest` 规则 29 拦截。
 - 平台相关 UI 引擎保留在对应 core 模块。WebView 对业务层只提供脚本文本、图片长按等语义能力，不通过公开容器回调暴露原生 WebView。
 - 显式退出以本地用户与业务 Cookie 清理完成为成功；远端退出尽力执行。服务端 `-1001` 的全局失效、跨账户状态清理与 Cookie 过期检测尚未统一，不能把本地用户存在等同于服务端会话有效。
 - 导航图绑定必须有所有权并在组合退出时释放。登录回跳与详情目标保留至 Activity 配置变更，不承诺进程死亡恢复。
@@ -136,10 +136,10 @@
 | R4/R7 | `core` 不得反向依赖 `feature`；core/feature 不得依赖 `:app` |
 | R1/R5 | `domain` 不依赖 data/network/database；`data-repository` 不依赖 network/database |
 | R2/R3/R6 | feature impl 不依赖其他 feature 的 impl/api；feature api 不依赖 feature impl |
-| R8 | feature → core 必须在 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 内 |
+| R8 | feature → core 必须在 `FEATURE_ALLOWED_CORE_DEPENDENCIES` 内（该表**不含** `:core:pet`：宠物是全局装饰层，只有组合根能挂） |
 | R9 | `feature:*:api` → core 走 `FEATURE_API_ALLOWED_CORE_DEPENDENCIES` 正向声明（当前仅 `:core:navigation-contract`）；`feature:*:impl` → core 走 `FEATURE_ALLOWED_CORE_DEPENDENCIES`（更宽）。契约层不得引入 domain/ui/runtime 等机制模块 |
 | R10 | `feature:*:api` 不得依赖其他 `feature:*:api`（契约层禁横向边；补 Gradle R2/R3 与 Konsist 规则 3 的交叉盲区） |
-| core→core 矩阵 | `CORE_ALLOWED_DEPENDENCIES` 正向声明；`core:ui` 三条边属登记例外，见 §6.6 |
+| core→core 矩阵 | `CORE_ALLOWED_DEPENDENCIES` 正向声明；`core:ui` → `model` / `domain` 两条属登记例外，`core:pet` 只有 `designsystem` 一条常规边，见 §6.6 |
 
 **组合根必须显式声明契约层**：`feature:*:impl` 对自身 api 一律用 `implementation(...)`，**不得用 `api(...)`**；
 `:app` 需要 NavKey 装配导航图，因此同时声明 9 条 `implementation(project(":feature:x:api"))`，
@@ -150,7 +150,7 @@
 **B. 源码与 API 回归规则** — `app/src/test/.../architecture/`（按主题拆分为 `ArchitectureLayeringTest` / `ArchitecturePlatformApiTest` / `ArchitectureUiContractTest` / `ArchitectureModelTest` / `ArchitectureGuardTest`，共享逻辑在 `ArchitectureSupport`），含 Konsist import 检查、公开 WebView 容器参数检查与选择器守卫
 运行：`./gradlew :app:testDebugUnitTest --tests "*Architecture*"`
 
-规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、16（feature api 仅依赖导航契约）、17（database 领域端口例外白名单）、**18/19（业务成功码与 `runCatching`）**、**20（导航契约完整接入：方法禁止默认实现 + `Navigators` 字段/`noop()`/app 实现必须齐全）**、**21（`:app` 不得引用数据实现层，白名单登记制）**、**22（`core:designsystem` 不得 import 任何项目内模块，只放颜色/间距/主题）**、**23（`core:ui` 不得下探 data/network/database）**、**24（`feature:*:impl` 不得硬编码 `Color(0x...)`，见 §6.7）**，以及公开 WebView 容器参数回归检查与 `boundary selectors match real files`（防止选择器写错导致规则空转）。
+规则 1–7（分层方向）、8–11（Android framework 白名单/黑名单）、**12（feature 不得依赖数据平台与数据实现）**、**13（`android.webkit.*` 仅限 `core:webview`）**、**14（feature 内必须使用 `hiltViewModel()`）**、**15（`CookieStore` 实现仅限 `core:webview`）**、16（feature api 仅依赖导航契约）、17（database 领域端口例外白名单）、**18/19（业务成功码与 `runCatching`）**、**20（导航契约完整接入：方法禁止默认实现 + `Navigators` 字段/`noop()`/app 实现必须齐全）**、**21（`:app` 不得引用数据实现层，白名单登记制）**、**22（`core:designsystem` 不得 import 任何项目内模块，只放颜色/间距/主题）**、**23（UI 层 `core:ui` / `core:pet` 不得下探 data/network/database）**、**24（`feature:*:impl` 不得硬编码 `Color(0x...)`，见 §6.7）**、**31（`CORE_EXCEPTION_EDGES` 与 §6.6 双向一致）**、**31b（`app` → `core:*` 的能力型边必须在 §6.6 登记，聚合边除外）**，以及公开 WebView 容器参数回归检查与 `boundary selectors match real files`（防止选择器写错导致规则空转）。
 
 > Gradle 守卫与 Konsist 互补：`implementation(project(...))` 不产生 import 时 Konsist 感知不到；反之 Gradle 看不到源码内的越界引用。二者必须同时维护。
 
@@ -166,7 +166,9 @@
 | `CookieStore` 实现放 `core:webview`，由 `:app` 聚合注入 | Gradle 守卫矩阵 + Konsist 规则 15 | network 不得依赖 webview；实现必须经 Hilt 绑定，network 只允许注入使用 |
 | `core:database` 依赖 `core:domain`（直接实现 `History/Schedule/Theme/OtpAccount` 四个端口） | `LocalDataSourceModule` + 守卫矩阵注释 | 四条链均无中间透传层（domain 端口与 KV/Room 适配器签名一致）。`OtpAccount` 的额外理由：密钥须在落库前用 Keystore 加密，而 `data-repository` 不得依赖 `database`（R5），**加密与 DAO 无法同处一层**，故实现必须落在 database。**禁止继续扩散**：除上述四条外，其他 domain 端口的实现仍必须落在 `core:data-repository` |
 | 新增引擎模块 `core:qrscanner` | `settings.gradle.kts` + 守卫矩阵 | §6.2 门槛 + §6.10 引擎类别：CameraX / ML Kit 为第三方 SDK 需集中持有；扫码属平台相关 UI 能力，且需被 demo 与 Authenticator 复用（feature 之间不得互相依赖），必须有共享落点 |
-| `core:ui` 依赖 `core:model` / `core:domain` | 守卫矩阵注释 + Konsist 规则 23 | `ArticleFeedMapper`（Article → FeedCardUIState）与 `CollectInteraction`（CollectState）需要这两个零 Android 依赖的契约层；此前仅依赖 designsystem 导致 4 个 feature 各复制一份映射。**限定条件**：只允许这三条边，业务文案与图标必须参数化可覆盖（`ArticleFeedLabels` / `FeedCard` 的 `toggleCheckedIconRes`），且不得下探 data/network/database（规则 23） |
+| `core:ui` 依赖 `core:model` / `core:domain` | 守卫矩阵注释 + Konsist 规则 23 | `ArticleFeedMapper`（Article → FeedCardUIState）与 `CollectInteraction`（CollectState）需要这两个零 Android 依赖的契约层；此前仅依赖 designsystem 导致 4 个 feature 各复制一份映射。**限定条件**：依赖边一共三条——`designsystem` 为常规边（`CORE_BASE_DEPENDENCIES`），本行登记的只有 `model` / `domain` 两条；业务文案与图标必须参数化可覆盖（`ArticleFeedLabels` / `FeedCard` 的 `toggleCheckedIconRes`），且不得下探 data/network/database（规则 23） |
+| `app` → `core:webview`（WebView 池预热） | `APP_ALLOWED_DEPENDENCIES`；不在规则 31b 的聚合白名单内 | 组合根在启动后预热 WebView 池（`webViewPool.prepare()`）并在调试包开 `setDebuggingEnabled(true)`，属于**直接使用能力**，不是 Hilt 装配。不放 `APP_CORE_AGGREGATE_MODULES`：那个名单的判据是「`:app` 只装配、不调用能力」，否则名单会变成能力型边的自我豁免入口（条目数受 `APP_CORE_AGGREGATE_CAP` 约束，只允许减少） |
+| `app` → `core:pet`（全局装饰层） | `APP_ALLOWED_DEPENDENCIES` + 守卫矩阵注释 | 漂浮宠物必须挂在组合根：只有 `:app` 能同时覆盖首页/详情/WebView，而 feature 之间禁止互相依赖（R2/R3）。feature 侧由 `FEATURE_ALLOWED_CORE_DEPENDENCIES`**不收录** `:core:pet` 强制，不再只是文档约定。**依据是 §6.2 条件②（需要 Gradle 层可执行的约束），不是 §6.10 引擎模块**——引擎模块要求「被 feature 直接调用」，宠物恰好相反，也不持有平台 API / 第三方 SDK |
 | `core:network` 依赖 `core:domain`（`CookieStore` 端口） | Gradle 守卫矩阵注释 + 守卫例外 | Cookie 持久化契约定义在 `core:domain`，network 的 CookieJar 适配需引用它；实现仍只在 `core:webview`，经 Hilt 绑定注入 |
 | `core:testing` 依赖 `core:domain` | Gradle 守卫矩阵注释（仅测试配置） | 共享认证测试 fake 需要领域端口类型（AuthGateway / UserRepository / CookieStore）；本模块只被 `testImplementation` 消费，不进生产包 |
 | `:app` 的 `FragmjectApplication` import `core.network.di.ImageOkHttpClient` | 规则 21 白名单 `APP_DATA_IMPORT_ALLOWLIST` | Coil 需要「图片专用」OkHttpClient 的 qualifier。彻底消除需把 ImageLoader 装配下沉到同时可见 coil 与 network 的 core 模块，属独立重构 |
@@ -182,6 +184,9 @@
 | 允许内容 | `AppColors` / `AppSpacing` / `AppTheme` / `LocalWindowSizeClass` | `components/` / `mapper/` / `utils/` |
 | 禁止 | import 任何项目内模块；出现 Composable 组件 | 下探 `data-repository` / `network` / `database` |
 | 允许依赖 | 仅第三方（Compose / Material3） | `designsystem` + 例外 `model` / `domain` |
+
+另有 `core:pet`（漂浮宠物）：遵守与 `core:ui` 相同的禁止项（不下探数据层、色值入 `AppColors`），
+但**允许依赖只有 `designsystem`**——不进 model / domain，且只被 `:app` 消费（§6.6 已登记）。
 
 约定：
 
@@ -252,6 +257,9 @@ core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）
 > 该能力不再有承载场景，保留一个无消费者的引擎模块只会增加维护面。
 
 **准入条件**（满足其一，且需被 feature 直接调用；否则按 §6.3 走「domain 端口 + data 实现」路径）：
+
+> `core:pet` **不属于**本类别：引擎模块要求「被 feature 直接调用」，而宠物恰恰**禁止** feature 使用
+> （全局装饰层只能由组合根挂一次），也不持有平台 API / 第三方 SDK。它的成模块依据是 §6.2 条件②。
 
 1. 需要 Android platform API 或第三方 SDK API，**且该能力以 UI 形态存在**（画布、相机等），无法用 domain 端口表达；
 2. 该能力若做成 domain 端口，会导致端口签名里出现平台类型（历史上 `MediaEditor` / `ImageHandle` / `ImageSource` 三个端口正是因此被 `core:image-editor` 取代，见 §6.4 注）。

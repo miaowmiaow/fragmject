@@ -31,11 +31,8 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 
     val expected = config.expectedSignatureSha256.map { it.normalizeSha256() }.toSet()
     val actual = facts.packageSignatureSha256()
-    if (actual.isEmpty()) {
-        // 查询失败时判失败：宁可误杀也不放行；若线上出现误杀，可改为「失败放行 + 上报」
-        return false
-    }
-    return actual.any { it.normalizeSha256() in expected }
+    return actual.isNotEmpty() && actual.any { it.normalizeSha256() in expected }
+    // 查询失败时判失败：宁可误杀也不放行；若线上出现误杀，可改为「失败放行 + 上报」
 }
 
 /** [NativeChecks.verifyApkSignature] 的返回值：匹配 / 不匹配 / 无法判定。 */
@@ -84,8 +81,7 @@ internal fun signatureHit(native: NativeChecks, facts: SecurityFacts, config: Se
  *   避免重复 `exists` + 读 key 文件的 IO）。null 表示解压失败，按降级处理。
  */
 internal fun verifySelfSoIntegrity(native: NativeChecks, soFile: File?): Boolean {
-    if (!native.available || soFile == null) return true
-    return native.verifySelfSoTextCrc(soFile.absolutePath) != CRC_MISMATCH
+    return !native.available || soFile == null || native.verifySelfSoTextCrc(soFile.absolutePath) != CRC_MISMATCH
 }
 
 /**
@@ -98,8 +94,7 @@ internal fun verifySelfSoIntegrity(native: NativeChecks, soFile: File?): Boolean
  * 避免「patch 一处校验点即可全绕过」。
  */
 internal fun verifySelfSoDataIntegrity(native: NativeChecks, soFile: File?): Boolean {
-    if (!native.available || soFile == null) return true
-    return native.verifySelfSoDataCrc(soFile.absolutePath) != CRC_MISMATCH
+    return !native.available || soFile == null || native.verifySelfSoDataCrc(soFile.absolutePath) != CRC_MISMATCH
 }
 
 /**
@@ -139,9 +134,7 @@ internal fun extractSelfSo(facts: SecurityFacts): File? {
  * 资源完整性在密码学上已被保证；本方法是「签名校验被绕过」时的二次兜底。
  */
 internal fun verifyResourceIntegrity(facts: SecurityFacts, config: SecurityConfig): Boolean {
-    if (config.expectedResourceSha256.isEmpty()) return true
-
-    return config.expectedResourceSha256.all { (entryName, expected) ->
+    return config.expectedResourceSha256.isEmpty() || config.expectedResourceSha256.all { (entryName, expected) ->
         val actual = facts.apkEntrySha256(entryName) ?: return false
         actual.normalizeSha256() == expected.normalizeSha256()
     }

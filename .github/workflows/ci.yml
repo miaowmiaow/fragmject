@@ -28,6 +28,20 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      # Compose 1.13 起，AAR 元数据要求 compileSdk ≥ 37.1（本项目：compileSdkVersion=37 +
+      # compileSdkMinorVersion=1 → android-37.1）。运行器镜像的预装平台列表不会自动跟随，
+      # 缺平台时 checkDebugAarMetadata 直接失败，而 lintDebug / assembleDebug 都在它下游。
+      # sdkmanager 幂等：平台已存在时直接返回成功。
+      - name: Install Android 37.1 platform
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            echo "::error::未找到 sdkmanager（$SDKMANAGER），无法安装 platforms;android-37.1"
+            exit 1
+          fi
+          yes | "$SDKMANAGER" "platforms;android-37.1"
+
       # Robolectric 的 android-all 运行时（约 150MB）默认下载到 ~/.m2，不在 Gradle 缓存内；
       # 不缓存会导致每次 CI 都重新拉取。
       - name: Cache Robolectric runtime
@@ -47,6 +61,13 @@ jobs:
             echo "::error::发现疑似凭据，请从文件与 remote URL 中移除后再提交"
             exit 1
           fi
+
+      # 开屏 AVD（AnimatedVectorDrawable）的失败模式是**静默**的：
+      # 某个 <target> 找不到同名节点、或 pathData 形变两侧命令序列不一致时，
+      # 整份动画都不播，但编译、lint、打包全部通过——只能在运行时肉眼发现。
+      # 这条检查零依赖、秒级返回，放在构建之前。
+      - name: Verify splash AVD
+        run: python3 scripts/verify-splash-avd.py
 
       # 守卫任务与单测拆开两步，只为失败时快速定位（守卫红 = 依赖方向/稳定性配置问题，
       # 不必翻单测日志）。两者都与配置缓存兼容，合并成一次调用也不会再丢弃缓存条目。

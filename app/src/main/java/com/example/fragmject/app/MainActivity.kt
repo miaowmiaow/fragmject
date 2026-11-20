@@ -1,6 +1,7 @@
 package com.example.fragmject.app
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,11 +22,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import android.view.animation.DecelerateInterpolator
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.deeplink.DeepLinkRequest
 import com.example.fragmject.core.webview.WebViewPool
 import com.example.fragmject.core.domain.ThemeState
+import com.example.fragmject.core.domain.pet.PetSettingsState
 import com.example.fragmject.core.domain.repository.HomeRepository
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.designsystem.AppTheme
@@ -35,8 +39,50 @@ import com.example.fragmject.app.navigation.resolveDeepLinkBackStack
 import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.contract.Navigators
+import com.example.fragmject.app.ui.PetHost
+import com.example.fragmject.app.ui.rememberPetInputHub
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
+/**
+ * 安装 splash 并注册**渐隐退出**：鱼在内容出现时淡出，而不是被"啪"地盖掉。
+ *
+ * 取舍（这里踩过坑，写清楚免得下次又删一遍）：
+ * - 之前是 150ms 的 alpha + 缩放，代价有两层：首屏被多盖 150ms；
+ *   Macrobenchmark 的 fullyDrawnReported 容易落在 launching 窗口外，
+ *   导致整轮被 "didn't capture all metrics" 丢弃。
+ * - 现在只做 **alpha**（不做缩放），时长压到 [SPLASH_FADE_MS]：视觉上够"渐隐"，
+ *   开销只多一次图层 alpha 动画。
+ */
+private fun ComponentActivity.installSplashWithFade() {
+    // 只在可调试包做渐隐：release 首帧就绪即移除，避免 140ms 的体感延迟，
+    // 也避免 Macrobenchmark 的 fullyDrawnReported 落到 launching 窗口之外
+    val fadeMs = if (isDebuggable()) SPLASH_FADE_MS else 0L
+    installSplashScreen().setOnExitAnimationListener { provider ->
+        if (fadeMs <= 0L) {
+            provider.remove()
+            return@setOnExitAnimationListener
+        }
+        provider.view.animate()
+            .alpha(0f)
+            .setDuration(fadeMs)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction { provider.remove() }
+            .start()
+    }
+}
+
+/** 可调试包是否可调（`debuggable` 标志，不依赖 BuildConfig 是否开启）。 */
+private fun ComponentActivity.isDebuggable(): Boolean =
+    (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+/**
+ * 开屏图标的渐隐时长（毫秒），**仅对可调试包生效**；release 恒为 0（首帧就绪立刻移除）。
+ *
+ * 需要在本机对比启动耗时（Macrobenchmark）时，用 debug 包并把这个值置 0，
+ * 或者直接在 release 包上测（它本来就是 0）。
+ */
+private const val SPLASH_FADE_MS = 140L
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -59,17 +105,14 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var homeRepository: HomeRepository
 
+    @Inject
+    lateinit var petSettingsState: PetSettingsState
+
     /** 运行时深层链接请求（onNewIntent 触发），首次启动走 onCreate 的 initialBackStack。 */
     private val pendingDeepLink = mutableStateOf<DeepLinkRequest?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 不注册自定义退出动画：SplashScreen 在首帧绘制完成后立即移除（系统默认行为）。
-        // 原先这里是 150ms 的 alpha + 缩放淡出，代价有两层：
-        // 1. 首屏内容被 splash 继续覆盖 150ms，用户感知到的启动更慢；
-        // 2. Macrobenchmark 的 fullyDrawnReported 更容易落在 launching 窗口之外，
-        //    使该轮被 "didn't capture all metrics" 整轮丢弃（实测 5 轮里丢 3~4 轮，
-        //    连 timeToInitialDisplay 都拿不到）。
-        installSplashScreen()
+        installSplashWithFade()
         super.onCreate(savedInstanceState)
         // 安全库命中阻断时，进程会在 blockGraceMs（默认 1.2s）后被 native SIGKILL。
         // 这里不再搭建业务 UI（避免 1.2s 内闪现半截首页），改为展示明确的关闭提示，
@@ -93,19 +136,29 @@ class MainActivity : ComponentActivity() {
                 }
                 return@setContent
             }
+            // 宠物设置读应用级状态（StateFlow，Eagerly）：Activity 重建后首帧就是真实值，
+            // 不会先按「关闭」渲染一帧（鱼不会闪一下再出现）。
+            // 注意它只管「开关读得准」：鱼的位置延续由 core:pet 自己的 FishMotionSaver 负责。
+            // 冷启动首帧仍可能读到默认「关闭」，那是 Room 异步首发射的已知限制（见 PetSettingsState KDoc）。
+            val petSettings by petSettingsState.settings.collectAsStateWithLifecycle()
             AppTheme(window = window, darkTheme = darkTheme) {
                 rememberWindowSizeClass {
                     CompositionLocalProvider(LocalNavigators provides navigators) {
-                        AppNavGraph(
-                            navigationDispatcher = navigationDispatcher,
-                            navContributors = navContributors,
-                            initialBackStack = initialBackStack,
-                            pendingDeepLink = pendingDeepLink.value,
-                            onDeepLinkConsumed = { pendingDeepLink.value = null },
-                            // 栈内仅剩首页时的返回出口：退到后台而非直接销毁，
-                            // 保留任务栈以便再次进入时恢复现场
-                            onExit = { moveTaskToBack(true) },
-                        )
+                        val petInput = rememberPetInputHub()
+                        // 触摸观察与装饰层都封装在 PetHost 里（挂哪一层、为什么，见该文件注释）
+                        PetHost(settings = petSettings, input = petInput) {
+                            AppNavGraph(
+                                navigationDispatcher = navigationDispatcher,
+                                navContributors = navContributors,
+                                initialBackStack = initialBackStack,
+                                pendingDeepLink = pendingDeepLink.value,
+                                onDeepLinkConsumed = { pendingDeepLink.value = null },
+                                // 栈内仅剩首页时的返回出口：退到后台而非直接销毁，
+                                // 保留任务栈以便再次进入时恢复现场
+                                onExit = { moveTaskToBack(true) },
+                                onRouteChanged = petInput::notifyRouteChanged,
+                            )
+                        }
                     }
                 }
             }

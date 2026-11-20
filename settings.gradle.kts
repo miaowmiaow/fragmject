@@ -51,6 +51,8 @@ include(":core:model")
 include(":core:navigation-runtime")
 include(":core:navigation-contract")
 include(":core:network")
+// 漂浮宠物：跨全部页面的全局装饰层，由组合根挂载，feature 不得使用（见 core/pet 与守卫矩阵）
+include(":core:pet")
 include(":core:qrscanner")
 include(":core:testing")
 include(":core:ui")

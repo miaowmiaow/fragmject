@@ -4,7 +4,7 @@
 
 - [分层架构指南](docs/layering.md) —— 模块分层、依赖方向、feature 内部目录约定、守卫规则清单（**新增代码该放哪里**）
 - [导航分层与新增导航指南](docs/navigation.md) —— NavKey、Navigator 契约、注册与跨域跳转
-- [依赖策略与例外管理](dependencies-policy.md) —— 新增模块门槛、core→core 矩阵、例外登记
+- [依赖策略与例外管理](docs/dependencies-policy.md) —— 新增模块门槛、core→core 矩阵、例外登记
 - [架构决策记录（ADR）](docs/adr/0001-shared-protocol-model.md) —— 已定案且**不再重复论证**的议题：模型分层（`core:model` 为共享协议模型唯一落点）
 
 ## 前言
@@ -38,7 +38,7 @@
 
 ## 开发环境
 - **JDK 21 及以上**：构建逻辑（`build-logic`）以 JVM 21 为目标编译，Gradle 需运行在 JDK 21 或更高版本上，低版本会在配置阶段报 `requires at least JVM runtime version 21`。Android Studio 请在 `Settings > Build Tools > Gradle` 中选择 `Android Studio default JDK`（内置 JBR 满足要求）；命令行请让 `JAVA_HOME` 指向 JDK 21+。项目未配置 toolchain 自动下载，也不强制某个精确版本。
-- **Android SDK**：`compileSdkVersion` / `targetSdkVersion` 为 37，`minSdkVersion` 为 26（见 `config.properties`），需在 SDK Manager 中安装 Android 37 平台。
+- **Android SDK**：`compileSdkVersion` 为 37 + `compileSdkMinorVersion=1`（即 android-37.1，Compose 1.13 起要求 ≥ 37.1），`targetSdkVersion` 为 37，`minSdkVersion` 为 26（见 `config.properties`），需在 SDK Manager 中安装 **Android 37.1** 平台。
 - **NDK 与 CMake**：`:security` 模块编译原生 so，需安装 NDK `28.2.13676358` 与 CMake `3.22.1`（见 `config.properties` 中的 `ndkVersion` / `cmakeVersion`）。
 - **构建工具链**：Gradle 9.8.1（由 Wrapper 自动下载，无需本地安装）、AGP 9.5.1、Kotlin 2.4.21，版本统一维护在 `gradle/libs.versions.toml`。
 - **签名配置**：仓库内的 `keystore.properties` / `keystore.key` 是**测试专用**密钥，入库为有意设计；正式发布请使用独立的私有签名。

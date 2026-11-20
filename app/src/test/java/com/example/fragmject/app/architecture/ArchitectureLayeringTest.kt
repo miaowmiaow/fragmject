@@ -6,6 +6,7 @@ import com.example.fragmject.app.architecture.ArchitectureSupport.hasOtherFeatur
 import com.example.fragmject.app.architecture.ArchitectureSupport.hasOtherFeatureImplImport
 import com.example.fragmject.app.architecture.ArchitectureSupport.isFeatureApi
 import com.example.fragmject.app.architecture.ArchitectureSupport.isFeatureImpl
+import com.example.fragmject.app.architecture.ArchitectureSupport.isUiLayerFile
 import com.example.fragmject.app.architecture.ArchitectureSupport.productionFiles
 import com.example.fragmject.app.architecture.ArchitectureSupport.readSource
 import com.lemonappdev.konsist.api.verify.assertFalse
@@ -193,6 +194,7 @@ class ArchitectureLayeringTest {
                     when {
                         imp.name.startsWith("com.example.fragmject.core.domain.") -> true
                         imp.name.startsWith("com.example.fragmject.core.ui.") -> true
+                        imp.name.startsWith("com.example.fragmject.core.pet.") -> true
                         imp.name.startsWith("com.example.fragmject.core.designsystem.") -> true
                         imp.name.startsWith("com.example.fragmject.core.navigation.runtime.") -> true
                         else -> false
@@ -289,18 +291,23 @@ class ArchitectureLayeringTest {
     }
 
     /**
-     * 规则 23：`core:ui` 不得下探数据实现层。
+     * 规则 23：UI 层（`core:ui` / `core:pet`）不得下探数据实现层。
      *
      * `core:ui` 依赖 `core:model` / `core:domain` 是登记过的例外（见 Gradle 守卫
      * `CORE_ALLOWED_DEPENDENCIES`），但**仅此而已**：一旦开始 import 数据实现层，
      * 通用 UI 组件就会绑死具体数据来源，且会绕过 R1/R5 的分层约束。
+     *
+     * 选择器用 [isUiLayerFile]（同时匹配 `core:ui` 与 `core:pet`）：宠物拆出独立模块后，
+     * 若只按 `/core/ui/` 过滤，这条规则会对宠物静默失效。`core:pet` 的允许依赖更窄
+     * （仅 designsystem），更不可能出现数据层 import。
      */
     @Test
-    fun `core ui does not depend on data implementation`() {
+    fun `ui layer does not depend on data implementation`() {
         productionFiles
-            .filter { it.projectPath.contains("/core/ui/") }
+            .filter { it.isUiLayerFile() }
             .assertFalse(
-                additionalMessage = "core:ui 不得依赖 core:data-repository / network / database（只允许 designsystem / model / domain）",
+                additionalMessage = "UI 层（core:ui / core:pet）不得依赖 core:data-repository / network / database" +
+                    "（core:ui 另允许 designsystem / model / domain；core:pet 只允许 designsystem）",
             ) { file ->
                 file.hasImport { imp ->
                     imp.name.startsWith("com.example.fragmject.core.data.") ||

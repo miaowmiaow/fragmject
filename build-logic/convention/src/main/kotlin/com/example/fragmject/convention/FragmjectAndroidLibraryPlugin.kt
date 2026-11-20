@@ -14,6 +14,8 @@ class FragmjectAndroidLibraryPlugin : Plugin<Project> {
         configure<LibraryExtension> {
             namespace = defaultNamespace()
             compileSdk = config.compileSdk
+            // minor 版本（如 37.1）：Compose 1.13 起的 AAR 元数据要求 compileSdk ≥ 37.1
+            config.compileSdkMinor?.let { compileSdkMinor = it }
             defaultConfig { minSdk = config.minSdk }
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_21

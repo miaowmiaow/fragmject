@@ -12,6 +12,8 @@ import com.example.fragmject.core.data.repository.MediaRepositoryImpl
 import com.example.fragmject.core.data.repository.MyCollectRepositoryImpl
 import com.example.fragmject.core.data.repository.MyRepositoryImpl
 import com.example.fragmject.core.data.repository.HomeNavRepositoryImpl
+import com.example.fragmject.core.data.repository.PetSettingsRepositoryImpl
+import com.example.fragmject.core.data.repository.PetSettingsStateImpl
 import com.example.fragmject.core.data.repository.ProjectRepositoryImpl
 import com.example.fragmject.core.data.repository.SearchRepositoryImpl
 import com.example.fragmject.core.data.repository.SystemRepositoryImpl
@@ -31,6 +33,8 @@ import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.domain.repository.MyCollectRepository
 import com.example.fragmject.core.domain.repository.MyRepository
 import com.example.fragmject.core.domain.repository.HomeNavRepository
+import com.example.fragmject.core.domain.pet.PetSettingsState
+import com.example.fragmject.core.domain.repository.PetSettingsRepository
 import com.example.fragmject.core.domain.repository.ProjectRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.repository.SystemRepository
@@ -55,6 +59,14 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPetSettingsRepository(impl: PetSettingsRepositoryImpl): PetSettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPetSettingsState(impl: PetSettingsStateImpl): PetSettingsState
 
     @Binds
     @Singleton

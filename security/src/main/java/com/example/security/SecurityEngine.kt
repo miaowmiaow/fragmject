@@ -8,9 +8,6 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process
 import android.util.Log
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

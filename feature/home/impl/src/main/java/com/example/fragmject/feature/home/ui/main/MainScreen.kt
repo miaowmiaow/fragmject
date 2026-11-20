@@ -2,17 +2,17 @@ package com.example.fragmject.feature.home.ui.main
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,20 +54,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import com.example.fragmject.feature.home.impl.R
 import com.example.fragmject.core.designsystem.AppTheme
+import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 import com.example.fragmject.core.designsystem.NAV_TRANSITION_DURATION_MS
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.ui.components.BottomNavItem
+import com.example.fragmject.feature.home.impl.R
 import kotlinx.coroutines.launch
-import com.example.fragmject.feature.home.ui.my.MyScreen
-import com.example.fragmject.feature.home.ui.nav.NavScreen
-import com.example.fragmject.feature.home.ui.home.HomeScreen
-import com.example.fragmject.feature.home.ui.project.ProjectScreen
-import com.example.fragmject.core.designsystem.LocalWindowSizeClass
 
 // =====================================================================
 // 公共：渲染 Tab 内容
@@ -81,23 +77,9 @@ private fun MainContent(
     modifier: Modifier = Modifier,
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
-    Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
-        when (navIndex) {
-            0 -> saveableStateHolder.SaveableStateProvider(navItems[0].label) {
-                HomeScreen(listState = homeListState)
-            }
-
-            1 -> saveableStateHolder.SaveableStateProvider(navItems[1].label) {
-                NavScreen()
-            }
-
-            2 -> saveableStateHolder.SaveableStateProvider(navItems[2].label) {
-                ProjectScreen()
-            }
-
-            3 -> saveableStateHolder.SaveableStateProvider(navItems[3].label) {
-                MyScreen()
-            }
+    Box(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
+        saveableStateHolder.SaveableStateProvider(navItems[navIndex].label) {
+            TabContent(navIndex, homeListState)
         }
     }
 }

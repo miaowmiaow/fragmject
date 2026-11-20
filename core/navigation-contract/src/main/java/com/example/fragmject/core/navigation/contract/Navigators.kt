@@ -49,6 +49,7 @@ data class Navigators @Inject constructor(
             user = object : UserNavigator {
                 override fun openUserProfile(userId: String) = Unit
                 override fun openSetting() = Unit
+                override fun openPetSetting() = Unit
                 override fun openMyCoin() = Unit
                 override fun openBrowseHistory() = Unit
                 override fun openRank() = Unit

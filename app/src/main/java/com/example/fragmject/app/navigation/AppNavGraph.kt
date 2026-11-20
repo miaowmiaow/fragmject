@@ -9,15 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSerializable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -77,6 +73,13 @@ fun AppNavGraph(
     onDeepLinkConsumed: () -> Unit = {},
     /** 栈内仅剩首页时的返回出口（交由 Activity 结束/退到后台）。 */
     onExit: () -> Unit = {},
+    /**
+     * 路由变化回调（只在 back stack 的 key 列表变化时触发一次）。
+     *
+     * 组合根用它通知全局装饰层（漂浮宠物）发起穿越：页面都换了，鱼不该再慢慢游过去横穿新页面。
+     * 底部 tab 不走这里——它只换同页内容。
+     */
+    onRouteChanged: () -> Unit = {},
 ) {
     val navViewModel: AppNavViewModel = viewModel()
     val authStatus by navViewModel.authStatus.collectAsStateWithLifecycle()
@@ -100,6 +103,11 @@ fun AppNavGraph(
         isExpanded = isExpanded,
         onExit = onExit,
     )
+
+    // 路由变化 → 通知组合根（只观察 key 列表，不订阅页面内容）
+    // 同时观察两条栈：大屏点条目走 placeKey，只改 selectedDetailKeys 而 backStack 不变，
+    // 只看 backStack 会让平板上的"页面切换"漏掉（装饰层就不会穿越）
+    LaunchedEffect(backStack.toList(), selectedDetailKeys.toList()) { onRouteChanged() }
 
     // ---- 副作用：选图结果清理 / 登录态放行 / 深链守卫 ----
     val hasPictureFlow = backStack.any { it is FlowScopedNavKey }
@@ -242,96 +250,6 @@ private fun rememberNavActions(
             navigateUp = navigateUp,
             popBackStack = popBackStack,
         )
-    }
-}
-
-/**
- * 图片流程退出期间清空上一次的选图结果。
- *
- * 结果只在「确认选择」时写入（PictureNavContentContributor.onConfirm），而系统返回/手势返回
- * 不会走选择器的取消回调，否则发起方下次进入仍会看到上一次选中的图片。
- * 在**进入**时清空比在退出时清空更可靠：退出时清空会把刚确认的结果一并擦掉。
- */
-@Composable
-private fun ClearPictureSelectionOnEnter(
-    hasPictureFlow: Boolean,
-    clearSelection: () -> Unit,
-) {
-    val currentClearSelection by rememberUpdatedState(clearSelection)
-    LaunchedEffect(hasPictureFlow) {
-        if (hasPictureFlow) currentClearSelection()
-    }
-}
-
-/** 登录态确定后放行暂存的受保护目标（未知时先暂存，确定后统一交给 navigate 守卫）。 */
-@Composable
-private fun ConsumeDeferredNavigation(
-    authStatus: AuthStatus,
-    deferredNavigation: MutableState<NavKey?>,
-    navigate: (NavKey) -> Unit,
-) {
-    val currentNavigate by rememberUpdatedState(navigate)
-    LaunchedEffect(authStatus) {
-        if (authStatus != AuthStatus.UNKNOWN) {
-            deferredNavigation.value?.let { key ->
-                deferredNavigation.value = null
-                currentNavigate(key)
-            }
-        }
-    }
-}
-
-/**
- * 冷启动深链守卫。
- *
- * 受保护目标一律经 navigate：未登录时跳转登录并在成功后回跳，登录态未知时先暂存。
- * 初始栈已剔除受保护目标与详情面板目标，这里只执行一次（rememberSaveable 覆盖配置变更与进程重建）。
- */
-@Composable
-private fun GuardInitialDeepLinks(
-    initialBackStack: List<NavKey>,
-    navigate: (NavKey) -> Unit,
-    placeKey: (NavKey) -> Unit,
-) {
-    var guarded by rememberSaveable { mutableStateOf(false) }
-    val currentNavigate by rememberUpdatedState(navigate)
-    val currentPlaceKey by rememberUpdatedState(placeKey)
-    LaunchedEffect(Unit) {
-        if (guarded) return@LaunchedEffect
-        guarded = true
-        initialBackStack.dropWhile { it == MainNavKey }.forEach { key ->
-            when (key) {
-                is RequiresAuth -> currentNavigate(key)
-                is DetailPaneNavKey -> currentPlaceKey(key)
-                // 全屏且无需登录的目标已直接进初始栈，此处无需处理
-            }
-        }
-    }
-}
-
-/** 运行时深层链接（onNewIntent 触发）：首次启动由初始栈处理，此处仅处理后续动态深层链接。 */
-@Composable
-private fun HandlePendingDeepLink(
-    pendingDeepLink: DeepLinkRequest?,
-    backStack: NavBackStack<NavKey>,
-    navigate: (NavKey) -> Unit,
-    placeKey: (NavKey) -> Unit,
-    onDeepLinkConsumed: () -> Unit,
-) {
-    val currentNavigate by rememberUpdatedState(navigate)
-    val currentPlaceKey by rememberUpdatedState(placeKey)
-    val currentOnConsumed by rememberUpdatedState(onDeepLinkConsumed)
-    LaunchedEffect(pendingDeepLink) {
-        val request = pendingDeepLink ?: return@LaunchedEffect
-        matchDeepLink(request)?.let { newStack ->
-            // 保留栈底 Main，避免用户在多层流程中时收到深链导致在途流程被整体丢弃
-            backStack.clear()
-            backStack.add(MainNavKey)
-            newStack.dropWhile { it == MainNavKey }.forEach { key ->
-                if (key is RequiresAuth) currentNavigate(key) else currentPlaceKey(key)
-            }
-        }
-        currentOnConsumed()
     }
 }
 

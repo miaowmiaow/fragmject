@@ -27,6 +27,11 @@ internal val APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(
     ":core:navigation-contract",
     ":core:network",
     ":core:webview",
+    // 组合根需要挂「跨全部页面」的全局装饰层（漂浮宠物，见 app/ui/FloatingPet.kt）。
+    // 只有组合根能同时覆盖首页/详情/WebView，feature 之间不允许互相依赖（R2/R3）。
+    // 落地为独立模块 :core:pet，并且**不**进 FEATURE_ALLOWED_CORE_DEPENDENCIES：
+    // 「只有组合根能用宠物」由 Gradle 强制，不再依赖文档约定。
+    ":core:pet",
     ":feature:article:impl",
     ":feature:authenticator:impl",
     ":feature:auth:impl",
@@ -93,6 +98,8 @@ internal val CORE_BASE_DEPENDENCIES: Map<String, Set<String>> = mapOf(
         ":core:data-contract",
         ":core:model",
     ),
+    // 宠物是纯 Compose 绘制层，只消费 designsystem 的颜色令牌；不进 model/domain。
+    ":core:pet" to setOf(":core:designsystem"),
     ":core:ui" to setOf(":core:designsystem"),
     ":core:image-editor" to setOf(":core:domain", ":core:android-platform"),
     // qrscanner 只依赖 CameraX / ML Kit 等外部 SDK，不依赖其他 core 模块：
@@ -144,6 +151,8 @@ internal val FEATURE_ALLOWED_CORE_DEPENDENCIES: Set<String> = setOf(
     ":core:ui",
     ":core:webview",
 )
+// 注意：**:core:pet 故意不在此白名单内**。宠物是「只有组合根挂载」的全局装饰层，
+// feature 使用它会让宠物被重复挂载（每页一条鱼）；这条约束靠 Gradle 强制，不是文档约定。
 
 /**
  * feature:*:api 允许依赖的 core 模块白名单（正向声明）。

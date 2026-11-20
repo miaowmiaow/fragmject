@@ -29,6 +29,7 @@ import com.example.fragmject.feature.picture.PictureSelectorNavKey
 import com.example.fragmject.feature.search.SearchNavKey
 import com.example.fragmject.feature.user.BrowseHistoryNavKey
 import com.example.fragmject.feature.user.MyCoinNavKey
+import com.example.fragmject.feature.user.PetSettingNavKey
 import com.example.fragmject.feature.user.RankNavKey
 import com.example.fragmject.feature.user.SettingNavKey
 import com.example.fragmject.feature.user.UserNavKey
@@ -59,6 +60,7 @@ class AppUserNavigator @Inject constructor(
 ) : UserNavigator {
     override fun openUserProfile(userId: String) = dispatcher.navigate(UserNavKey(userId))
     override fun openSetting() = dispatcher.navigate(SettingNavKey)
+    override fun openPetSetting() = dispatcher.navigate(PetSettingNavKey)
     override fun openMyCoin() = dispatcher.navigate(MyCoinNavKey)
     override fun openBrowseHistory() = dispatcher.navigate(BrowseHistoryNavKey)
     override fun openRank() = dispatcher.navigate(RankNavKey)

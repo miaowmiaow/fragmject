@@ -18,7 +18,7 @@ package com.example.security
  * @param alreadyDegraded 已降级则不重复触发（避免重复事件）
  */
 internal fun shouldDegrade(failures: Int, limit: Int, alreadyDegraded: Boolean): Boolean =
-    limit > 0 && failures >= limit && !alreadyDegraded
+    limit in 1..failures && !alreadyDegraded
 
 /**
  * native 库不可用时的判定（纯函数，便于单测）。

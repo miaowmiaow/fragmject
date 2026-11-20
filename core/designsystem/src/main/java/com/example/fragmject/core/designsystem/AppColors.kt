@@ -37,6 +37,9 @@ object AppColors {
     val menuContainer = Color(0xFF2B2B2B)
     val mediaPlaceholder = Color(0xFF333333)
 
+    /** 漂浮宠物鱼的主色（原「灵动的红鲤鱼」朱红），见 `core:ui/pet`。 */
+    val fishBody = Color(0xFFF45C47)
+
     // 图片编辑器/预览/选择器的沉浸式深色 UI：固定黑底白字，不随明暗主题（图片编辑器惯例）。
     // 遮罩 / 占位文字 / 选中描边等透明度变体，统一用这两个令牌就地 copy(alpha)。
     val editorBackground = Color(0xFF000000)

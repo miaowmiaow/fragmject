@@ -1,5 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ============================ 生成参数（改形状请同步这里） ============================
+    R（头半径）     = 34
+    SCALE（整体）   = 0.36      鱼长约 82px（画布 432），与轨道 95 的比例决定"圆不圆"
+    ORBIT_R（轨道） = 95        鱼头严格落在半径 95 的圆上
+    BEND（弯曲）    = 14° / 每体长，指数 1.0；两姿态 0.40 ↔ 1.00（同侧"呼吸"，不换向）
+    YAW（内切角）   = -8°       spin 82° → 442°，与 orbit 同周期线性
+    DURATION        = 1000ms    必须与 values/styles.xml 的 windowSplashScreenAnimationDuration 一致
+
+    这些坐标是按「头圆 + 两节尾柄 + 尾鳍 + 双鳍」的公式算出来的（比例照 core:ui 的 drawFish），
+    生成脚本未入库：需要大改形状时按上面的参数重算坐标，不要逐点手调。
+
+    ⚠️ 改完务必先跑 python3 scripts/verify-splash-avd.py
+       漏写 android:name、morph 两侧命令序列不一致，都**不会编译报错**，
+       只会表现为"动画不动"，之前已经踩过两次。
+-->
+<!--
+    启动图标的「鱼」：几何照搬 core/ui/pet/FishPainter.kt 的 drawFish
+    （头 R=34、体长 3.2R、尾柄 0.70R/0.42R/0.168R、尾鳍宽 swing·0.42R+0.6R、鳍长 1.3R），
+    活力 0.6、相位 60°；逐块半透明（头/尾 0.63、躯干 0.88、鳍 0.39）。
+
+    ============================ 三个动画 ============================
+    1) 绕圈：orbit 用 translateXY + 闭合圆路径（半径 95），线性、1000ms 一圈；
+    2) 转头：spin 同步 rotation 82 -> 442（切线 -8° 内切），线性同周期；
+    3) **鱼身弯曲**：每个部件都有"外弯 / 内弯"两个姿态（pathData），在两者之间插值
+       （accelerate_decelerate、1000ms、reverse 无限循环）。
+       两个姿态的生成规则：以**鱼头**为不动点，其余点绕鱼头旋转
+       `+14° × ((该点到鱼头的距离 / 体长) ^ 1.0)` —— 越靠尾旋转越多，
+       于是身体是真的弯成一道弧，而不是整体刚性旋转。
+
+    支点：place 把鱼头移到 group 原点，所以绕圈与转头都以鱼头为中心，
+    身体与尾巴被"甩"在后面并随弯曲形变。
+
+    尺寸：鱼头轨道半径 95，尾端最远约 129，落在启动图标直径 288 的圆形遮罩内。
+-->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
+
     <aapt:attr name="android:drawable">
         <vector
             android:width="432dp"
@@ -8,61 +45,244 @@
             android:viewportHeight="432">
 
             <group
-                android:name="_R_G_L_10_G_T_1"
-                android:translateX="100"
-                android:translateY="300"
-                android:scaleX="0.1"
-                android:scaleY="-0.1">
-                <path
-                    android:fillColor="#ff8b80"
-                    android:strokeWidth="1"
-                    android:pathData="M400 930 c-249 -46 -421 -281 -381 -523 29 -173 136 -302 306 -367 85 -32 225 -32 310 0 170 65 277 194 306 367 28 172 -57 361 -206 455 -94 59 -233 87 -335 68z m18 -282 c-3 -7 -17 -14 -31 -16 -26 -3 -27 -6 -27 -58 0 -51 1 -54 25 -54 14 0 25 -4 25 -10 0 -5 -11 -10 -25 -10 -24 0 -25 -2 -25 -70 l0 -70 26 10 c33 13 34 13 34 -4 0 -13 -41 -29 -132 -51 -41 -10 -36 18 5 30 l32 10 0 70 c0 69 0 70 -27 73 -38 4 -36 22 2 22 30 0 30 1 30 55 0 54 0 55 -30 55 -20 0 -30 5 -30 15 0 12 15 15 76 15 56 0 75 -3 72 -12z m262 2 c0 -6 -43 -10 -110 -10 -67 0 -110 4 -110 10 0 6 43 10 110 10 67 0 110 -4 110 -10z m30 -140 c0 -5 -20 -10 -45 -10 l-45 0 0 -105 c0 -89 3 -107 16 -112 24 -9 47 9 56 45 11 42 28 41 28 0 -1 -49 -20 -68 -68 -68 -55 0 -62 16 -62 139 l0 101 -34 0 -34 0 -11 -75 c-12 -82 -36 -129 -85 -163 -21 -15 -33 -19 -41 -11 -7 7 2 20 28 41 45 37 64 77 68 149 4 52 3 54 -23 57 -16 2 -28 8 -28 13 0 5 60 9 140 9 87 0 140 -4 140 -10z" />
+                android:name="orbit"
+                android:translateX="216"
+                android:translateY="216">
+                <group android:name="spin">
+                    <group
+                        android:name="sizing"
+                        android:scaleX="0.36"
+                        android:scaleY="0.36">
+                        <group
+                            android:name="place"
+                            android:translateX="-54.4"
+                            android:translateY="-0.0">
+                            <group android:name="fish">
+
+                                <path
+                                    android:name="head"
+                                    android:fillAlpha="0.63"
+                                    android:fillColor="#F45C47"
+                                    android:pathData="M20.4 0.0 a34.0 34.0 0 1 0 68.0 0 a34.0 34.0 0 1 0 -68.0 0 Z" />
+
+                                <path
+                                    android:name="bead1"
+                                    android:fillAlpha="0.63"
+                                    android:fillColor="#F45C47"
+                                    android:pathData="M-77.9 7.4 a23.8 23.8 0 1 0 47.6 0 a23.8 23.8 0 1 0 -47.6 0 Z" />
+
+                                <path
+                                    android:name="fin0"
+                                    android:fillAlpha="0.39"
+                                    android:fillColor="#F45C47"
+                                    android:pathData="M44.2 -28.9 Q-8.3 -89.6 0.1 -20.0 Z" />
+                                <path
+                                    android:name="fin1"
+                                    android:fillAlpha="0.39"
+                                    android:fillColor="#F45C47"
+                                    android:pathData="M43.6 28.6 Q4.6 97.4 0.8 21.8 Z" />
+
+                                <group android:name="tail" android:pivotX="-54.1" android:pivotY="7.4">
+                                    <path
+                                        android:name="quad1"
+                                        android:fillAlpha="0.63"
+                                        android:fillColor="#F45C47"
+                                        android:pathData="M-51.9 -16.3 L-56.4 31.1 L-93.2 23.6 L-90.4 -4.9 Z" />
+                                    <path
+                                        android:name="bead2"
+                                        android:fillAlpha="0.63"
+                                        android:fillColor="#F45C47"
+                                        android:pathData="M-106.1 9.4 a14.3 14.3 0 1 0 28.6 0 a14.3 14.3 0 1 0 -28.6 0 Z" />
+                                    <path
+                                        android:name="quad2"
+                                        android:fillAlpha="0.63"
+                                        android:fillColor="#F45C47"
+                                        android:pathData="M-92.8 -4.9 L-90.8 23.6 L-135.0 23.6 L-135.9 12.2 Z" />
+                                    <path
+                                        android:name="bead3"
+                                        android:fillAlpha="0.63"
+                                        android:fillColor="#F45C47"
+                                        android:pathData="M-141.2 17.9 a5.7 5.7 0 1 0 11.4 0 a5.7 5.7 0 1 0 -11.4 0 Z" />
+                                    <path
+                                        android:name="tail_in"
+                                        android:fillAlpha="0.63"
+                                        android:fillColor="#F45C47"
+                                        android:pathData="M-91.8 9.4 L-124.4 14.5 L-124.3 16.1 Z" />
+                                    <path
+                                        android:name="tail_out"
+                                        android:fillAlpha="0.63"
+                                        android:fillColor="#F45C47"
+                                        android:pathData="M-91.8 9.4 L-136.5 -5.5 L-134.3 41.8 Z" />
+                                </group>
+
+                                <path
+                                    android:name="body"
+                                    android:fillAlpha="0.88"
+                                    android:fillColor="#F45C47"
+                                    android:pathData="M60.6 -33.4 Q14.3 -45.9 -55.8 -16.0 L-52.4 31.4 Q16.2 47.4 60.1 33.5 Z" />
+                            </group>
+                        </group>
+                    </group>
+                </group>
             </group>
         </vector>
     </aapt:attr>
-    <target android:name="_R_G_L_10_G_T_1">
+
+    <target android:name="orbit">
         <aapt:attr name="android:animation">
-            <set android:ordering="together">
-                <objectAnimator
-                    android:duration="750"
-                    android:pathData="M 100,300 68,354"
-                    android:propertyName="translateXY"
-                    android:propertyXName="translateX"
-                    android:propertyYName="translateY"
-                    android:startOffset="0">
-                    <aapt:attr name="android:interpolator">
-                        <pathInterpolator android:pathData="M 0.0,0.0 1.0,1.0" />
-                    </aapt:attr>
-                </objectAnimator>
-            </set>
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/linear"
+                android:pathData="M311,216 A95,95 0 1 1 121,216 A95,95 0 1 1 311,216"
+                android:propertyName="translateXY"
+                android:propertyXName="translateX"
+                android:propertyYName="translateY"
+                android:repeatCount="infinite" />
         </aapt:attr>
     </target>
-    <target android:name="_R_G_L_10_G_T_1">
+
+    <target android:name="spin">
         <aapt:attr name="android:animation">
-            <set android:ordering="together">
-                <objectAnimator
-                    android:duration="750"
-                    android:propertyName="scaleX"
-                    android:startOffset="0"
-                    android:valueFrom="0.1"
-                    android:valueTo="0.3"
-                    android:valueType="floatType">
-                    <aapt:attr name="android:interpolator">
-                        <pathInterpolator android:pathData="M 0.0,0.0 c0,0 0,0.746 1.0,1.0" />
-                    </aapt:attr>
-                </objectAnimator>
-                <objectAnimator
-                    android:duration="750"
-                    android:propertyName="scaleY"
-                    android:startOffset="0"
-                    android:valueFrom="-0.1"
-                    android:valueTo="-0.3"
-                    android:valueType="floatType">
-                    <aapt:attr name="android:interpolator">
-                        <pathInterpolator android:pathData="M 0.0,0.0 c0,0 0,0.746 1.0,1.0" />
-                    </aapt:attr>
-                </objectAnimator>
-            </set>
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/linear"
+                android:propertyName="rotation"
+                android:repeatCount="infinite"
+                android:valueFrom="82"
+                android:valueTo="442"
+                android:valueType="floatType" />
         </aapt:attr>
     </target>
+
+    <target android:name="bead1">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-77.9 7.4 a23.8 23.8 0 1 0 47.6 0 a23.8 23.8 0 1 0 -47.6 0 Z"
+                android:valueTo="M-76.0 21.9 a23.8 23.8 0 1 0 47.6 0 a23.8 23.8 0 1 0 -47.6 0 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="quad1">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-51.9 -16.3 L-56.4 31.1 L-93.2 23.6 L-90.4 -4.9 Z"
+                android:valueTo="M-53.1 -1.9 L-51.3 45.7 L-87.2 49.8 L-88.3 21.2 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="bead2">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-106.1 9.4 a14.3 14.3 0 1 0 28.6 0 a14.3 14.3 0 1 0 -28.6 0 Z"
+                android:valueTo="M-102.0 35.5 a14.3 14.3 0 1 0 28.6 0 a14.3 14.3 0 1 0 -28.6 0 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="quad2">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-92.8 -4.9 L-90.8 23.6 L-135.0 23.6 L-135.9 12.2 Z"
+                android:valueTo="M-92.5 22.1 L-83.0 49.0 L-124.1 67.1 L-128.0 56.3 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="bead3">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-141.2 17.9 a5.7 5.7 0 1 0 11.4 0 a5.7 5.7 0 1 0 -11.4 0 Z"
+                android:valueTo="M-131.8 61.7 a5.7 5.7 0 1 0 11.4 0 a5.7 5.7 0 1 0 -11.4 0 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="tail_in">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-91.8 9.4 L-124.4 14.5 L-124.3 16.1 Z"
+                android:valueTo="M-87.7 35.5 L-116.8 53.4 L-116.4 55.0 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="tail_out">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M-91.8 9.4 L-136.5 -5.5 L-134.3 41.8 Z"
+                android:valueTo="M-87.7 35.5 L-132.5 39.3 L-119.0 85.3 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="body">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M60.6 -33.4 Q14.3 -45.9 -55.8 -16.0 L-52.4 31.4 Q16.2 47.4 60.1 33.5 Z"
+                android:valueTo="M59.1 -33.7 Q11.0 -42.7 -57.0 -0.8 L-47.1 45.8 Q19.8 50.2 61.5 33.3 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="fin0">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M44.2 -28.9 Q-8.3 -89.6 0.1 -20.0 Z"
+                android:valueTo="M43.2 -28.5 Q-19.8 -80.4 -1.2 -16.1 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+    <target android:name="fin1">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:duration="1000"
+                android:interpolator="@android:interpolator/accelerate_decelerate"
+                android:propertyName="pathData"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:valueFrom="M43.6 28.6 Q4.6 97.4 0.8 21.8 Z"
+                android:valueTo="M44.7 29.0 Q18.2 103.2 2.5 25.6 Z"
+                android:valueType="pathType" />
+        </aapt:attr>
+    </target>
+
 </animated-vector>

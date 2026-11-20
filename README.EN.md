@@ -27,7 +27,7 @@ By working through this project you'll gain valuable insights into several areas
 
 ## Development Environment
 - **JDK 21 or newer is required.** The convention plugins in `build-logic` target JVM 21, so Gradle must run on JDK 21 or newer. Older JDKs fail at configuration time with `requires at least JVM runtime version 21`. In Android Studio, choose `Android Studio default JDK` under `Settings > Build Tools > Gradle` (the bundled JBR qualifies); on the command line, point `JAVA_HOME` at JDK 21+. The project does not configure toolchain auto-download and does not pin an exact version.
-- **Android SDK:** `compileSdkVersion` and `targetSdkVersion` are 37, and `minSdkVersion` is 26 (see `config.properties`). Install the Android 37 platform in SDK Manager.
+- **Android SDK:** `compileSdkVersion` is 37 with `compileSdkMinorVersion=1` (i.e. android-37.1 — Compose 1.13 requires ≥ 37.1), `targetSdkVersion` is 37, and `minSdkVersion` is 26 (see `config.properties`). Install the **Android 37.1** platform in SDK Manager.
 - **NDK and CMake:** the `:security` module builds native code, so install NDK `28.2.13676358` and CMake `3.22.1` (`ndkVersion` / `cmakeVersion` in `config.properties`).
 - **Toolchain:** Gradle 9.8.1 (downloaded automatically by the wrapper), AGP 9.5.1 and Kotlin 2.4.21, all maintained in `gradle/libs.versions.toml`.
 - **Signing:** `keystore.properties` / `keystore.key` in the repository are **test-only** keys and are committed on purpose. Use a separate private keystore for real releases.

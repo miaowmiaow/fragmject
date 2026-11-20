@@ -15,6 +15,10 @@ data class UserNavKey(val userId: String) : DetailPaneNavKey
 @Serializable
 object SettingNavKey : DetailPaneNavKey
 
+/** 漂浮宠物配置页（入口在系统设置内）。 */
+@Serializable
+object PetSettingNavKey : DetailPaneNavKey
+
 @Serializable
 object MyCoinNavKey : RequiresAuth, DetailPaneNavKey
 

@@ -14,6 +14,9 @@ interface UserNavigator {
     /** 打开系统设置。 */
     fun openSetting()
 
+    /** 打开漂浮宠物配置页。 */
+    fun openPetSetting()
+
     /** 打开我的积分/金币。 */
     fun openMyCoin()
 

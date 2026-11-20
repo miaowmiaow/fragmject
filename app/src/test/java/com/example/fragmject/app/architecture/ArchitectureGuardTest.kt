@@ -1,5 +1,7 @@
 package com.example.fragmject.app.architecture
 
+import com.example.fragmject.app.architecture.ArchitectureSupport.APP_CORE_AGGREGATE_CAP
+import com.example.fragmject.app.architecture.ArchitectureSupport.APP_CORE_AGGREGATE_MODULES
 import com.example.fragmject.app.architecture.ArchitectureSupport.APP_DATA_ALLOWLIST_CAP
 import com.example.fragmject.app.architecture.ArchitectureSupport.APP_DATA_IMPORT_ALLOWLIST
 import com.example.fragmject.app.architecture.ArchitectureSupport.GUARD_RULES_PATH
@@ -47,6 +49,10 @@ class ArchitectureGuardTest {
         assertTrue(
             "core/ui 选择器匹配 0 文件，检查 projectPath 前缀",
             productionFiles.any { it.projectPath.contains("/core/ui/") },
+        )
+        assertTrue(
+            "core/pet 选择器匹配 0 文件，检查 projectPath 前缀（宠物已拆为 :core:pet）",
+            productionFiles.any { it.projectPath.contains("/core/pet/") },
         )
         assertTrue(
             "core/model 选择器匹配 0 文件，检查 projectPath 前缀",
@@ -147,6 +153,22 @@ class ArchitectureGuardTest {
     }
 
     /**
+     * 规则 31b 的 allowlist 只允许收缩：新增条目即违规（见 `APP_CORE_AGGREGATE_MODULES` 注释）。
+     *
+     * 没有这条上限，`APP_CORE_AGGREGATE_MODULES` 就退化成「自我豁免名单」——
+     * 往集合里加一行即可绕过 §6.6 登记，规则 31b 会永远通过。
+     */
+    @Test
+    fun `app core aggregate allowlist only shrinks`() {
+        val entries = APP_CORE_AGGREGATE_MODULES.size
+        assertTrue(
+            "规则 31b 聚合白名单条目数为 $entries，上限 $APP_CORE_AGGREGATE_CAP。" +
+                "新增能力型 core 边请登记到 dependencies-policy.md §6.6，不要往这个集合里加。",
+            entries <= APP_CORE_AGGREGATE_CAP,
+        )
+    }
+
+    /**
      * 规则 31：core→core 登记例外与 `dependencies-policy.md` §6.6 双向一致。
      *
      * 例外边的唯一来源是守卫文件中的 `CORE_EXCEPTION_EDGES`；守卫只从「常规边 ∪ 例外」的合并结果判定，
@@ -169,7 +191,7 @@ class ArchitectureGuardTest {
             .toSet()
         assertTrue("未从守卫解析到 CORE_EXCEPTION_EDGES，规则 31 选择器失效", edges.isNotEmpty())
 
-        val policy = java.io.File("../dependencies-policy.md").readText()
+        val policy = java.io.File("../docs/dependencies-policy.md").readText()
         val section = policy.substringAfter("### 6.6 例外管理", "").substringBefore("\n### ")
         val rows = section.lines().filter { it.startsWith("|") }
         assertTrue("dependencies-policy.md §6.6 表格未找到，规则 31 选择器失效", rows.isNotEmpty())
@@ -195,6 +217,49 @@ class ArchitectureGuardTest {
         assertTrue(
             "dependencies-policy.md §6.6 声明了守卫中不存在的 core 例外（残留或未同步）：$stale",
             stale.isEmpty(),
+        )
+    }
+
+    /**
+     * 规则 31b：`:app` → `core:*` 的**非聚合**边必须登记在 `dependencies-policy.md` §6.6。
+     *
+     * 规则 31 只覆盖 core→core 例外，app 侧新增的边没有登记流程——`app → core:pet` 一度只能靠
+     * `layering.md` 的一句说明和守卫注释，两处文档各写一半，删了注释也没人发现。
+     *
+     * 判定方式：从守卫源码解析 `APP_ALLOWED_DEPENDENCIES`，减去「数据 / 运行时聚合」白名单
+     * （这些边是 Hilt 聚合与导航装配的必需品，无需逐条写理由），剩下的每条 `:core:x` 边
+     * 都必须在 §6.6 有一行登记。
+     *
+     * 新增聚合模块时把模块加进 [APP_CORE_AGGREGATE_MODULES] 即可；新增**能力型** core 边
+     * （如装饰层、引擎）则应写进 §6.6，说明「为什么不用契约」。
+     */
+    @Test
+    fun `app core edges are either aggregates or registered in dependencies policy`() {
+        val guardSource = java.io.File(GUARD_RULES_PATH).readText()
+        val block = guardSource
+            .substringAfter("APP_ALLOWED_DEPENDENCIES: Set<String> = setOf(", "")
+            .substringBefore("\n)")
+        val appCoreEdges = Regex("\"(:core:[a-z-]+)\"")
+            .findAll(block)
+            .map { it.groupValues[1] }
+            .toSet()
+        assertTrue("未从守卫解析到 APP_ALLOWED_DEPENDENCIES 的 core 边，规则 31b 选择器失效", appCoreEdges.isNotEmpty())
+
+        val policy = java.io.File("../docs/dependencies-policy.md").readText()
+        val section = policy.substringAfter("### 6.6 例外管理", "").substringBefore("\n### ")
+        val rows = section.lines().filter { it.startsWith("|") }
+        assertTrue("dependencies-policy.md §6.6 表格未找到，规则 31b 选择器失效", rows.isNotEmpty())
+
+        val unregistered = appCoreEdges
+            .filterNot { it in APP_CORE_AGGREGATE_MODULES }
+            .filterNot { coreEdgeName ->
+                val name = "`${coreEdgeName.removePrefix(":")}`"
+                rows.any { "`app`" in it && name in it }
+            }
+        assertTrue(
+            "app→core 的能力型依赖未在 dependencies-policy.md §6.6 登记：$unregistered。" +
+                "若是数据/Hilt 聚合模块，请加入 APP_CORE_AGGREGATE_MODULES 并说明理由。",
+            unregistered.isEmpty(),
         )
     }
 }

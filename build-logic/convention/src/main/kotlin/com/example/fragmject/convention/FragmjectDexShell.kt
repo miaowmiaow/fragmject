@@ -60,7 +60,8 @@ internal fun Project.configureDexShell() {
     val shellAar = shellProject.layout.buildDirectory.file("outputs/aar/shell-release.aar")
     val releaseApk = layout.buildDirectory.file("outputs/apk/release/app-release.apk")
     val shelledApk = layout.buildDirectory.file("outputs/apk/release/app-release-shell.apk")
-    val platformJarName = "android-${config.compileSdk}"
+    // 平台目录名带 minor（android-37.1）；用配置里的拼装结果，避免这里写死 major
+    val platformJarName = config.compileSdkPlatformName
 
     val shellGenDir = layout.buildDirectory.dir("generated/shell")
 

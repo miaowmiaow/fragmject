@@ -21,14 +21,27 @@ internal val Project.libs: VersionCatalog
  */
 internal data class FragmjectConfig(
     val compileSdk: Int,
+    /**
+     * compileSdk 的 minor 版本（Android 37.1 起支持），对应 `compileSdkMinor`。
+     *
+     * 为什么单独一个字段：从 Compose 1.13 起，AAR 元数据要求 `compileSdk ≥ 37.1`，
+     * 只把 major 升到 38 会白拿一堆不需要的 API 面；minor 才是最小改动。
+     * `config.properties` 里留空表示不带 minor（回到 `android-37` 平台）。
+     */
+    val compileSdkMinor: Int?,
     val minSdk: Int,
     val targetSdk: Int,
 ) {
+    /** SDK 平台目录名：`android-37` / `android-37.1`。 */
+    val compileSdkPlatformName: String
+        get() = "android-$compileSdk" + (compileSdkMinor?.let { ".$it" }.orEmpty())
+
     companion object {
         fun load(project: Project): FragmjectConfig {
             val props = project.loadConfigProperties()
             return FragmjectConfig(
                 compileSdk = props.getProperty("compileSdkVersion").toInt(),
+                compileSdkMinor = props.getProperty("compileSdkMinorVersion")?.trim()?.takeIf { it.isNotEmpty() }?.toInt(),
                 minSdk = props.getProperty("minSdkVersion").toInt(),
                 targetSdk = props.getProperty("targetSdkVersion").toInt(),
             )

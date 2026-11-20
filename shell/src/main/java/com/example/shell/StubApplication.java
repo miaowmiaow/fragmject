@@ -23,10 +23,8 @@ import dalvik.system.InMemoryDexClassLoader;
 
 /**
  * DEX 壳的 stub（H6 / S1 最小实现）。
- *
  * ============================ 运行流程 ============================
  * 系统按 manifest 的 `android:name` 实例化本类（此时业务 dex 已被打包器加密进 assets）：
- *
  * 1. `attachBaseContext`：读出 `assets/payload/dex-*.bin` → 解密 → `InMemoryDexClassLoader`；
  * 2. 反射替换 `LoadedApk.mClassLoader`，让后续类解析（含 ContentProvider）走 payload loader；
  * 3. 用 payload loader 实例化真实 Application，并替换 `LoadedApk.mApplication` 与
@@ -35,7 +33,6 @@ import dalvik.system.InMemoryDexClassLoader;
  * 4. 把 `base` 交给真实 Application（`attachBaseContext`），`onCreate` 由本类在
  *    系统回调时转发；
  * 5. 其余生命周期回调（onTrimMemory / onLowMemory / onConfigurationChanged）一并转发。
- *
  * ============================ 已知边界（S1） ============================
  * - 只做「能启动 + Hilt 正常」，不做 DEX 分片、反 dump、二次校验；
  * - 载荷用固定 XOR 混淆（非加密），密钥与打包任务一致；
@@ -147,13 +144,10 @@ public class StubApplication extends Application {
 
     /**
      * 加载 Frida Gadget 探针（**只存在于测试包**）。
-     *
      * 触发条件：APK 内存在 `assets/payload/gadget.txt`（由 `-PenableGadgetProbe=true` 写入）。
      * 生产包不会带这个资产，因此这段代码永远不会执行。
-     *
      * 为什么用资产当开关而不是 BuildConfig：`:shell` 是纯 Java、零依赖模块，
      * 不引用 :app 的 BuildConfig；用「资产是否存在」判断最简单，也不会被 R8 影响。
-     *
      * 加载失败不阻断启动：探针只是为了造出「注入」现场，失败时应用照常运行。
      */
     private void maybeLoadGadgetProbe(Context base) {
@@ -170,13 +164,11 @@ public class StubApplication extends Application {
 
     /**
      * 创建 payload 的 InMemoryDexClassLoader。
-     *
      * 单独抽方法并 `@SuppressLint("NewApi")` 的原因：lint 认为
      * `InMemoryDexClassLoader(ByteBuffer[], ClassLoader)` 需要 API 27，
      * 但**在 Android 8.0.0（API 26）模拟器上实测可用**——
      * 日志 `payload chunks=2` → `real application class loaded`，两个分片都正常加载。
      * 属 lint 的 API 数据库与 ART 实际实现的偏差。
-     *
      * 为保留 8.0 支持、又不扩大抑制范围，只在这个方法上抑制；方法体内只有这一句构造。
      */
     @SuppressLint("NewApi")
@@ -186,11 +178,9 @@ public class StubApplication extends Application {
 
     /**
      * 校验壳 dex 自身（H6/S2）。
-     *
      * 期望值放在 `assets/payload/shell.txt`（打包任务写入），与业务载荷同一个信任域；
      * **不是**强锚点——真正的锚是 H1 的签名校验。这里的作用是让「只替换 classes.dex、
      * 顺手保留其余文件」这类粗糙改包直接失效（否则壳被换掉后连检测都不存在了）。
-     *
      * 失败语义：不一致直接抛异常（fail-closed），不加载业务代码。
      */
     private void verifyShellDex() {
@@ -249,7 +239,6 @@ public class StubApplication extends Application {
 
     /**
      * 读取、校验并解密全部载荷分片（`assets/payload/dex-<n>.bin`，从 0 开始连续）。
-     *
      * 先对**密文**算整体 SHA-256 与 `assets/payload/sum.txt` 比对，再解密：
      * - 摘要错了说明 payload 被替换（打包器与壳是同一次构建产出的，正常不会不匹配）；
      * - 失败时抛异常向上冒泡 → 壳不加载业务代码 → 应用启动即失败（fail-closed），
@@ -321,7 +310,6 @@ public class StubApplication extends Application {
 
     /**
      * 取 `ActivityThread.currentActivityThread()`。
-     *
      * 抑制 `PrivateApi` / `DiscouragedPrivateApi`：壳必须拿到 ActivityThread 才能替换
      * `LoadedApk.mClassLoader` 与 `mInitialApplication` —— 这两步没有公开 API 可替代，
      * 是 DEX 壳方案的固有代价。已在 API 26 / 34 / 37 与真机 36 上验证可用；

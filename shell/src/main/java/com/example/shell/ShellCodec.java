@@ -7,18 +7,15 @@ import java.util.zip.Inflater;
 
 /**
  * 载荷编解码协议：**壳端的唯一实现**。
- *
  * ============================ 为什么单独一个类 ============================
  * 打包端（`build-logic` 的 `ShellPayload`）必须与壳端逐字节一致，但两者分属不同构建、
  * 不同语言（Kotlin / Java）。此前各写一份，任一侧改动都只能靠真机「装上即崩」才发现。
  * 现在算法收敛到这里，并加了一条跨侧一致性单测：测试在运行时用 `javax.tools.JavaCompiler`
  * 现编译本文件，与 Kotlin 侧逐字节比对（见 `ShellCodecParityTest`）。
  * 因此：**改这个类等于改打包协议**，必须同时跑 `:build-logic:convention:test`。
- *
  * ============================ 顺序 ============================
  * 打包端：`encode(raw) = XOR(deflate(raw))`；壳端：`decode(chunk) = inflate(XOR(chunk))`。
  * 顺序不可反：先 XOR 会让载荷变成高熵数据、zip 压不动（实测壳包 11.70 MB → 15.20 MB）。
- *
  * 本类是纯 Java、零依赖（只用 `java.util.zip`），符合 `:shell` 模块「纯 Java、零依赖」的约束。
  */
 public final class ShellCodec {

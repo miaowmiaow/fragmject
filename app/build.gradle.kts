@@ -1,7 +1,6 @@
 import com.example.fragmject.convention.FragmjectSecurityConfigExtension
 import com.example.fragmject.convention.loadConfigProperties
 import com.example.fragmject.convention.loadKeystoreProperties
-import java.util.Properties
 
 
 plugins {
@@ -56,12 +55,8 @@ android {
         versionName = configProperties.getProperty("versionName")
         ndk {
             //noinspection ChromeOsAbiSupport
-            if (matrixAbi != null) {
-                // 矩阵构建：只带指定 ABI（CI 用 x86_64）
-                abiFilters += matrixAbi
-            } else {
-                abiFilters += "arm64-v8a"
-            }
+            abiFilters += // 矩阵构建：只带指定 ABI（CI 用 x86_64）
+                matrixAbi ?: "arm64-v8a"
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -145,6 +140,9 @@ dependencies {
     implementation(project(":core:navigation-contract"))
     implementation(project(":core:network"))
     implementation(project(":core:webview"))
+    // 全局装饰层（漂浮宠物）：叠在导航图之上，必须由组合根持有。
+    // 宠物已独立为 :core:pet（feature 白名单不含它）；组合根不再需要 :core:ui 全部组件。
+    implementation(project(":core:pet"))
     // feature:*:impl —— 组合根聚合 NavContent / Hilt 入口
     implementation(project(":feature:article:impl"))
     implementation(project(":feature:authenticator:impl"))

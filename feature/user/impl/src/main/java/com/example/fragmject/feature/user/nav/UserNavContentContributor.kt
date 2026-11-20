@@ -5,11 +5,13 @@ import com.example.fragmject.core.navigation.runtime.NavContentContributor
 import com.example.fragmject.core.navigation.runtime.NavContentRegistry
 import com.example.fragmject.feature.user.BrowseHistoryNavKey
 import com.example.fragmject.feature.user.MyCoinNavKey
+import com.example.fragmject.feature.user.PetSettingNavKey
 import com.example.fragmject.feature.user.RankNavKey
 import com.example.fragmject.feature.user.SettingNavKey
 import com.example.fragmject.feature.user.UserNavKey
 import com.example.fragmject.feature.user.ui.history.BrowseHistoryScreen
 import com.example.fragmject.feature.user.ui.mycoin.MyCoinScreen
+import com.example.fragmject.feature.user.ui.pet.PetSettingScreen
 import com.example.fragmject.feature.user.ui.rank.RankScreen
 import com.example.fragmject.feature.user.ui.setting.SettingScreen
 import com.example.fragmject.feature.user.ui.user.UserScreen
@@ -30,6 +32,9 @@ object UserNavContentContributor : NavContentContributor {
         }
         registry.register<SettingNavKey> {
             SettingScreen()
+        }
+        registry.register<PetSettingNavKey> {
+            PetSettingScreen()
         }
         registry.register<UserNavKey> { navKey ->
             key(navKey.userId) {

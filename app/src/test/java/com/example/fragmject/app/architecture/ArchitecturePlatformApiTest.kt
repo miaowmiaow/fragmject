@@ -1,5 +1,6 @@
 package com.example.fragmject.app.architecture
 
+import com.example.fragmject.app.architecture.ArchitectureSupport.isUiLayerFile
 import com.example.fragmject.app.architecture.ArchitectureSupport.productionFiles
 import com.example.fragmject.app.architecture.ArchitectureSupport.readSource
 import com.lemonappdev.konsist.api.verify.assertFalse
@@ -79,17 +80,21 @@ class ArchitecturePlatformApiTest {
     }
 
     /**
-     * 规则 11：`core:ui` 仅禁止数据 / 媒体提供类 API 混入。
+     * 规则 11：UI 层（`core:ui` / `core:pet`）仅禁止数据 / 媒体提供类 API 混入。
      * UI 组件库允许 BitmapFactory / android.text.Html / displayMetrics 等合法 UI 能力，
      * 但禁止 android.provider.* / android.content.ContentResolver / android.media.* / android.database.*，
      * 防止媒体查询或数据库代码误放进 UI 组件库。
+     *
+     * 选择器用 [isUiLayerFile]（同时匹配 `core:ui` 与 `core:pet`）：宠物拆出独立模块后，
+     * 若只按 `/core/ui/` 过滤，这条规则会对宠物静默失效。
      */
     @Test
-    fun `core ui does not depend on data provider apis`() {
+    fun `ui layer does not depend on data provider apis`() {
         productionFiles
-            .filter { it.projectPath.contains("/core/ui/") }
+            .filter { it.isUiLayerFile() }
             .assertFalse(
-                additionalMessage = "core:ui 不得依赖 android.provider.* / android.content.ContentResolver / android.media.* / android.database.*",
+                additionalMessage = "UI 层（core:ui / core:pet）不得依赖 android.provider.* / " +
+                    "android.content.ContentResolver / android.media.* / android.database.*",
             ) { file ->
                 file.hasImport { imp ->
                     imp.name.startsWith("android.provider.") ||

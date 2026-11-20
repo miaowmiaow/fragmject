@@ -8,6 +8,8 @@ import com.example.fragmject.core.domain.usecase.CollectArticleUseCase
 import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.Coin
 import com.example.fragmject.core.model.MyCoin
+import java.util.Collections
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.awaitCancellation
@@ -106,28 +108,128 @@ class CollectStateImplTest {
     }
 
     @Test
-    fun `a newer toggle on the same article supersedes the in-flight one`() {
+    fun `同 id 的请求串行发送：前一个未返回时不会并发发出新请求`() = runBlocking {
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
+        val firstCall = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
         val repo = FakeMyRepository().apply {
-            action = { _, collect ->
-                if (collect) awaitCancellation() else SimpleResult(true, "ok")
+            action = { id, collect ->
+                calls += id to collect
+                if (calls.size == 1) {
+                    firstCall.complete(Unit)
+                    // 模拟「请求已到达服务端，但客户端协程被取消也不会让服务端停下」
+                    release.await()
+                }
+                SimpleResult(true, "ok")
             }
         }
 
         withState(repo) { state ->
-            val events = Channel<String>(Channel.UNLIMITED)
-            val collector = launch(start = CoroutineStart.UNDISPATCHED) {
-                state.collectFailed.collect { events.send(it) }
-            }
-
             state.toggle("a3", true)
+            withTimeout(5_000) { firstCall.await() }
+
+            // 第一个请求仍在途中：此时连点两次，不能像旧实现那样「取消旧请求 + 立即发新请求」
             state.toggle("a3", false)
+            state.toggle("a3", true)
+            delay(200)
+            assertEquals("在途请求返回前不允许并发发请求", 1, calls.size)
 
-            // 旧请求被取消不应回滚新意图，也不应广播失败
+            release.complete(Unit)
+            // 放开后按序补发一次，且携带的是最后一个意图（true，与在途请求一致 → 合并，不再发）
+            delay(300)
+            assertEquals(listOf("a3" to true), calls.toList())
+            assertEquals(mapOf("a3" to true), state.overrides.value)
+        }
+    }
+
+    @Test
+    fun `在途请求返回后补发最新意图，服务端顺序与 UI 一致`() = runBlocking {
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
+        val firstCall = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val repo = FakeMyRepository().apply {
+            action = { id, collect ->
+                calls += id to collect
+                if (calls.size == 1) {
+                    firstCall.complete(Unit)
+                    release.await()
+                }
+                SimpleResult(true, "ok")
+            }
+        }
+
+        withState(repo) { state ->
+            state.toggle("a5", true)
+            withTimeout(5_000) { firstCall.await() }
+            state.toggle("a5", false)
+            delay(200)
+            assertEquals("第二次点按必须排队，不能并发发出", 1, calls.size)
+
+            release.complete(Unit)
+            withTimeout(5_000) {
+                while (calls.size < 2) delay(10)
+            }
+            assertEquals(listOf("a5" to true, "a5" to false), calls.toList())
+            assertEquals(mapOf("a5" to false), state.overrides.value)
+        }
+    }
+
+    @Test
+    fun `快速来回连点被合并为一次请求`() = runBlocking {
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
+        val firstCall = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val repo = FakeMyRepository().apply {
+            action = { id, collect ->
+                calls += id to collect
+                if (calls.size == 1) {
+                    firstCall.complete(Unit)
+                    release.await()
+                }
+                SimpleResult(true, "ok")
+            }
+        }
+
+        withState(repo) { state ->
+            state.toggle("a6", true)
+            withTimeout(5_000) { firstCall.await() }
+            // 来回点三次，最终意图与在途请求相同（true）
+            state.toggle("a6", false)
+            state.toggle("a6", true)
+            state.toggle("a6", false)
+            state.toggle("a6", true)
+
+            release.complete(Unit)
+            delay(300)
+            assertEquals("意图回落到在途请求的目标，无需补发", listOf("a6" to true), calls.toList())
+            assertEquals(mapOf("a6" to true), state.overrides.value)
+        }
+    }
+
+    @Test
+    fun `写失败回滚到最近一次成功状态，而不是列表快照`() = runBlocking {
+        val calls = Collections.synchronizedList(mutableListOf<Pair<String, Boolean>>())
+        val repo = FakeMyRepository().apply {
+            action = { id, collect ->
+                calls += id to collect
+                if (collect) SimpleResult(true, "ok") else SimpleResult(false, "取消收藏失败")
+            }
+        }
+
+        withState(repo) { state ->
+            state.toggle("a7", true)
+            withTimeout(5_000) {
+                while (state.overrides.value["a7"] != true || calls.size < 1) delay(10)
+            }
             delay(100)
-            assertEquals(mapOf("a3" to false), state.overrides.value)
-            assertTrue(events.tryReceive().isFailure)
 
-            collector.cancel()
+            state.toggle("a7", false)
+            withTimeout(5_000) {
+                // 失败后覆盖层回到上一次成功状态（已收藏），不会显示成未收藏
+                while (state.overrides.value["a7"] != true || calls.size < 2) delay(10)
+            }
+            assertEquals(listOf("a7" to true, "a7" to false), calls.toList())
+            assertEquals(mapOf("a7" to true), state.overrides.value)
         }
     }
 }

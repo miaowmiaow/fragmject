@@ -14,7 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,11 +27,19 @@ class SearchViewModel @Inject constructor(
     val collectState: CollectState,
 ) : ViewModel() {
 
-    /** 搜索词驱动搜索结果分页流，搜索词变化时重建 Pager。 */
+    /**
+     * 搜索词驱动搜索结果分页流，搜索词变化时重建 Pager。
+     *
+     * `null`（退出搜索结果）**必须**进 [flatMapLatest]，不能先用 `filterNotNull` 过滤掉：
+     * 那样退出时只会让下游收不到新值，旧的分页流不会被切换取消——页面仍收集着它，
+     * 进行中的分页请求会继续跑（结果区已经隐藏，纯属浪费，也把上一轮数据留在内存里）。
+     * 把 null 映射成空流后，切换即取消上一代 Pager。
+     */
     private val _searchKey = MutableStateFlow<String?>(null)
     val pagingFlow = _searchKey
-        .filterNotNull()
-        .flatMapLatest { key -> searchRepository.getSearchPagingData(key) }
+        .flatMapLatest { key ->
+            if (key == null) emptyFlow() else searchRepository.getSearchPagingData(key)
+        }
         .cachedIn(viewModelScope)
 
     private val _isShowingSearchResults = MutableStateFlow(false)

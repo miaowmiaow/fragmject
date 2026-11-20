@@ -13,9 +13,16 @@ import com.example.fragmject.core.model.Article
 import com.example.fragmject.core.model.History
 import com.example.fragmject.core.model.HotKey
 import com.example.fragmject.core.testing.MainDispatcherRule
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -107,6 +114,34 @@ class SearchViewModelTest {
         assertFalse(viewModel.isShowingSearchResults.value)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `退出搜索结果后旧分页流被取消`() = runTest {
+        val searchRepo = FakeSearchRepository().apply { trackPagingCollection = true }
+        val viewModel = SearchViewModel(searchRepo, FakeHistoryRepository(), FakeCollectState())
+        val collector = launch(start = CoroutineStart.UNDISPATCHED) {
+            viewModel.pagingFlow.collect { }
+        }
+
+        viewModel.submitSearch("kotlin")
+        assertEquals("提交搜索后应开始收集该关键词的分页流", 1, searchRepo.activePagingFlows)
+
+        viewModel.exitSearchResults()
+        advanceUntilIdle()
+
+        // 回归点：filterNotNull() 若留在 flatMapLatest 之前，null 不会切换内层流，
+        // 这里会停在 1（旧 Pager 继续被收集、分页请求继续跑）
+        assertEquals("退出搜索结果必须取消上一代分页流", 0, searchRepo.activePagingFlows)
+        assertEquals(listOf("kotlin"), searchRepo.requestedKeys)
+
+        // 再次搜索仍能重建分页流
+        viewModel.submitSearch("compose")
+        assertEquals(1, searchRepo.activePagingFlows)
+        assertEquals(listOf("kotlin", "compose"), searchRepo.requestedKeys)
+
+        collector.cancel()
+    }
+
     @Test
     fun `delete history - delegates to repository`() = runTest {
         val historyRepo = FakeHistoryRepository()
@@ -126,11 +161,30 @@ private class FakeSearchRepository(
 
     private val hotKeyFlow = MutableStateFlow(hotKeys)
 
+    /** 置 true 时返回「可观测收集状态」的流，用于验证退出搜索时旧分页流是否被取消。 */
+    var trackPagingCollection = false
+    val requestedKeys = mutableListOf<String>()
+    var activePagingFlows = 0
+
     override fun observeHotKey(): Flow<List<HotKey>> = hotKeyFlow
 
     override suspend fun refreshHotKey(): DomainResult<Unit> = refreshResult
 
-    override fun getSearchPagingData(key: String): Flow<PagingData<Article>> = Pager(
+    override fun getSearchPagingData(key: String): Flow<PagingData<Article>> {
+        requestedKeys += key
+        if (!trackPagingCollection) return realPagingFlow()
+        return flow {
+            activePagingFlows++
+            try {
+                // 模拟「分页流正在被收集、可能还有在途请求」
+                awaitCancellation()
+            } finally {
+                activePagingFlows--
+            }
+        }
+    }
+
+    private fun realPagingFlow(): Flow<PagingData<Article>> = Pager(
         config = PagingConfig(pageSize = 20),
         pagingSourceFactory = {
             object : PagingSource<Int, Article>() {

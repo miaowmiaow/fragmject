@@ -7,6 +7,12 @@ package com.example.fragmject.core.domain.repository
  * 由 data 层实现（底层为 KV 存储），避免 UI 组件库直接依赖 database 层。
  */
 interface ScheduleRepository {
+    /**
+     * 写入某天日程。
+     *
+     * 落盘失败时**必须抛异常**（而非静默返回）：调用方依赖异常回滚乐观更新，
+     * 静默失败会让界面显示已保存、重启后数据丢失。
+     */
     suspend fun setSchedule(year: Int, month: Int, day: Int, list: List<String>)
     suspend fun getSchedule(year: Int, month: Int, day: Int): List<String>
 }

@@ -6,6 +6,7 @@ import com.example.fragmject.core.database.model.JsonConverters
 import com.example.fragmject.core.domain.repository.ScheduleRepository
 import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,7 +26,12 @@ class ScheduleLocalDataSourceImpl @Inject constructor(
     private val scheduleListType = object : TypeToken<List<String>>() {}.type
 
     override suspend fun setSchedule(year: Int, month: Int, day: Int, list: List<String>) {
-        kvDatabase.setValue("${SCHEDULE_KEY_PREFIX}_${year}_${month}_${day}", gson.toJson(list))
+        val key = "${SCHEDULE_KEY_PREFIX}_${year}_${month}_${day}"
+        // KVDatabase 把 SQLite 异常吞成 false（内部已记 error）；本端口签名没有返回值，
+        // 只能抛出来让上层感知。否则 ViewModel 的乐观更新不会回滚，界面显示成功但重启后丢失。
+        if (!kvDatabase.setValue(key, gson.toJson(list))) {
+            throw IOException("setSchedule failed: key=$key")
+        }
     }
 
     override suspend fun getSchedule(year: Int, month: Int, day: Int): List<String> {

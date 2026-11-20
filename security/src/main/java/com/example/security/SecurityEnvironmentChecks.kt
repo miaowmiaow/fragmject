@@ -137,7 +137,7 @@ private val HOOK_MANAGER_PACKAGES = listOf(
  * 局限：
  * - 框架类可能只注入到框架类加载器，应用类加载器与系统加载器都看不到，此时漏检；
  * - 管理器可能被改包名或卸载；
- * - 方法入口完整性（第二期）未做，需要依赖 ART 内部结构，见 hardening 文档。
+ * - 方法入口完整性（第二期）未做，需要依赖 ART 内部结构，见 `docs/hardening-assessment.md` §七。
  */
 internal fun hasHookFrameworkSignals(facts: SecurityFacts): Boolean =
     HOOK_FRAMEWORK_CLASSES.any(facts::hasClass) || HOOK_MANAGER_PACKAGES.any(facts::isPackageInstalled)

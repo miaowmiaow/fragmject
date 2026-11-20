@@ -248,7 +248,7 @@ abstract class PackShellTask : DefaultTask() {
  *
  * 历史上的 `shell_crc.h`（把 CRC 作为编译期常量注入 native）已随 so 迁入 `:security`
  * 而废弃——库不该内置某个宿主 App 的壳 dex 摘要，改由 `assets/payload/shell.txt`
- * 承担同信任域校验（见 `docs/hardening-assessment.md` §9 与 `StubApplication.verifyShellDex`）。
+ * 承担同信任域校验（见 `StubApplication.verifyShellDex`）。
  */
 abstract class GenerateShellDexTask : DefaultTask() {
 

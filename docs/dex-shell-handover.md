@@ -1,7 +1,7 @@
 # DEX 壳交付说明（H6 / S0~S2）
 
 > 面向：发布负责人、值班同学、后续维护者。
-> 能力演进与实测明细见 [`hardening-assessment.md`](./hardening-assessment.md) 的 H6 小节；本文只讲**怎么用、怎么验、怎么回滚、出事怎么查**。
+> 能力评估与立项状态见 [`hardening-assessment.md`](./hardening-assessment.md)（§3.4 / §五 H6）；本文只讲**怎么用、怎么验、怎么回滚、出事怎么查**。
 > 最后验证：2026-11-11，Android 16（真机 PGEM10 / API 36）与 Android 17（模拟器 / API 37 / 16 KB page）。
 > 2026-11-11 起，安全库已从 `:app` 搬到顶层 **`:security`** 模块（`com.example.security`，so 名 `libappsecurity.so`）。
 
@@ -292,7 +292,8 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
    实测壳包从 11.70 MB 涨到 15.20 MB。
 7. **debug 包不安装防护**：`FragmjectApplication.attachBaseContext` 在 `BuildConfig.DEBUG` 为 true 时直接返回，
    release 中该分支被 R8 折叠，因此 release 包若被改成 `debuggable`，会被判为改包并阻断
-   （实测 5s 内进程消失）。库内已无 `debugBypass` 开关（2026-11-16 起，见 hardening-assessment H1 补丁）。
+   （实测 5s 内进程消失）。库内已无 `debugBypass` / `skipBuildTypes` 开关（2026-11-16 起，
+   见 hardening-assessment §3.1 的四层防线）。
 8. **日志 TAG 已统一为 `AppSecurity`**（2026-11-12 起）：旧文档里的
    `AppSecurityGuard` 是历史输出，`adb logcat -s AppSecurity` 才是当前过滤条件。
 9. **载荷编解码只有一份实现**：`shell/src/main/java/com/example/shell/ShellCodec.java`
@@ -300,7 +301,7 @@ adb logcat -d -b crash > app/build/outputs/crash/stack.txt
    `:build-logic:convention:test` 里的 `ShellCodecParityTest` 逐字节比对——
    **改这里（或改 `ShellPayload`）必须跑该测试**，否则只有真机「装上即崩」才能发现。
 10. **`generateShellDex` 只输出 `shell.dex`**：`shell_crc.h` 方案已随 so 迁入 `:security` 废弃，
-   壳 dex 的 CRC 清单改由 `assets/payload/shell.txt` 承载（见 hardening-assessment §9 / §10.25）。
+   壳 dex 的 CRC 清单改由 `assets/payload/shell.txt` 承载（见 `StubApplication.verifyShellDex`）。
 11. **壳包 manifest 会被改写一次**：打包时由 `ShellManifest` 删掉 `android:appComponentFactory`
    （`androidx.core:core` 注入，指向的类在载荷里）。改 `ShellManifest` 或升级 AGP / androidx 后，
    必须跑 `:build-logic:convention:test --tests "*ShellManifest*"`；

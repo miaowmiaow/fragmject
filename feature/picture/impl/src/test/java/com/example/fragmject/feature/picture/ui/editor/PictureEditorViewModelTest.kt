@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -106,6 +108,21 @@ class PictureEditorViewModelTest {
 
         assertTrue(failed)
         assertFalse(viewModel.isSaving.value)
+    }
+
+    @Test
+    fun `saveBitmap 在后台线程合成位图`() = runTest {
+        val viewModel = PictureEditorViewModel(NoopEngine())
+        val callerThread = Thread.currentThread()
+        var produceThread: Thread? = null
+
+        val result = viewModel.saveBitmap {
+            produceThread = Thread.currentThread()
+            null
+        }
+
+        assertNull(result)
+        assertNotSame("合成是全尺寸位图绘制，必须离开调用方（主）线程", callerThread, produceThread)
     }
 
     @Test

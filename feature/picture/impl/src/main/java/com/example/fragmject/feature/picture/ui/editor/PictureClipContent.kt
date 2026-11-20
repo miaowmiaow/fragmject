@@ -3,14 +3,11 @@ package com.example.fragmject.feature.picture.ui.editor
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,10 +18,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,12 +51,13 @@ fun PictureClipContent(
     }
     val onConfirm: () -> Unit = {
         if (!isSaving) {
-            val saved = state.saveBitmap()
-            if (saved == null) {
+            if (!state.isBitmapReady) {
                 Toast.makeText(context, "图片加载失败，请重试", Toast.LENGTH_SHORT).show()
             } else {
                 viewModel.save(
-                    saveAction = { viewModel.saveBitmap { saved } },
+                    // 裁剪合成（整块区域重绘）放进 saveAction：由 ViewModel 切到后台执行，
+                    // 不在点击回调（主线程）里做
+                    saveAction = { viewModel.saveBitmap { state.saveBitmap() } },
                     onSuccess = { result -> onFinish(result.path, result.uri.toUri()) },
                     onError = {
                         Toast.makeText(context, "保存失败，请重试", Toast.LENGTH_SHORT).show()
@@ -90,7 +86,8 @@ fun PictureClipContent(
             onConfirm = onConfirm,
         )
         ClipBottomHint()
-        ClipSavingOverlay(visible = isSaving)
+        // 保存（含裁剪合成 + PNG 编码）全程在后台线程，遮罩必须真正拦截手势
+        EditorSavingOverlay(visible = isSaving, text = "正在保存...")
     }
 }
 
@@ -166,24 +163,3 @@ private fun BoxScope.ClipBottomHint() {
     }
 }
 
-/** 保存中遮罩。 */
-@Composable
-private fun ClipSavingOverlay(visible: Boolean) {
-    AnimatedVisibility(visible = visible) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(AppColors.editorBackground.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    trackColor = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("正在保存...", color = AppColors.editorOnBackground)
-            }
-        }
-    }
-}

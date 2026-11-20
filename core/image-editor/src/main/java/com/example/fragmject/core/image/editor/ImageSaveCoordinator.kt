@@ -2,9 +2,11 @@ package com.example.fragmject.core.image.editor
 
 import android.graphics.Bitmap
 import com.example.fragmject.core.domain.repository.MediaRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,9 +29,17 @@ class ImageSaveCoordinator @Inject constructor(
     private val _saveProgress = MutableStateFlow(0f)
     val saveProgress: Flow<Float> = _saveProgress.asStateFlow()
 
-    /** 保存位图；成功返回 [SaveResult]，失败返回 null。 */
+    /**
+     * 保存位图；成功返回 [SaveResult]，失败返回 null。
+     *
+     * PNG 编码（[compressPng]）是纯 CPU 工作，大图可达数百毫秒：统一在 [Dispatchers.Default]
+     * 上执行，不依赖调用方所在线程（落盘由 [MediaRepository] 自己切 IO，编码后的字节要一次性
+     * 持有，不适合再切一次线程）。
+     */
     suspend fun save(bitmap: Bitmap): SaveResult? =
-        saveInternal(bitmap.width, bitmap.height) { compressPng(bitmap) }
+        withContext(Dispatchers.Default) {
+            saveInternal(bitmap.width, bitmap.height) { compressPng(bitmap) }
+        }
 
     /**
      * 核心保存流程（纯 JVM 可测，不依赖 android.graphics.Bitmap）：

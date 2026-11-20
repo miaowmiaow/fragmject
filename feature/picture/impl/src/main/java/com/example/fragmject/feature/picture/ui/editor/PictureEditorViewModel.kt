@@ -7,10 +7,12 @@ import com.example.fragmject.core.image.editor.ImageEditorEngine
 import com.example.fragmject.core.image.editor.SaveResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -58,9 +60,18 @@ class PictureEditorViewModel @Inject constructor(
         }
     }
 
-    /** 合成位图并交给引擎落盘；供 UI 在 [save] 的 [saveAction] 内组合使用。 */
+    /**
+     * 合成位图并交给引擎落盘；供 UI 在 [save] 的 [saveAction] 内组合使用。
+     *
+     * 整段都在 [Dispatchers.Default] 上执行：调用方是 `viewModelScope`（Main.immediate），
+     * 若在这里直接 `produce()`，全尺寸位图分配 + 图层绘制就跑在主线程（4000×3000 的图
+     * 可达上百毫秒），紧接着的 PNG 编码同样在主线程，足以掉帧甚至 ANR。
+     * 引擎自身也会切后台（[ImageEditorEngine.save]），这里再兜一层，避免今后换实现时回退。
+     */
     suspend fun saveBitmap(produce: () -> Bitmap?): SaveResult? =
-        produce()?.let { imageEditorEngine.save(it) }
+        withContext(Dispatchers.Default) {
+            produce()?.let { imageEditorEngine.save(it) }
+        }
 
     /** 贴纸选取：解码下沉到 [ImageEditorEngine]，不在 ActivityResult 回调里主线程解码。 */
     fun pickSticker(uriString: String, targetWidth: Int = 512, onLoaded: (Bitmap) -> Unit) {

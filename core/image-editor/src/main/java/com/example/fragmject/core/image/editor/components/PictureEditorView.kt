@@ -176,24 +176,32 @@ class PictureEditorState {
      *
      * 返回真实 Bitmap：原图未加载时返回 null，
      * 后续的尺寸校验、编码与落盘交由 ImageSaveCoordinator 处理。
+     *
+     * **不改写 [bitmapMatrix]**：本方法在后台线程执行（全尺寸合成是 CPU 重活），
+     * 若沿用「临时把矩阵置为单位矩阵、绘制完再恢复」的写法，就会与 UI 线程的 [draw]
+     * 争用同一份矩阵，画出错位的一帧。
      */
     fun saveBitmap(): Bitmap? {
         // 原图未加载（mosaicBitmap 为 null）时不产出有效位图，避免保存 1×1 透明图并误删原图。
         if (mosaicBitmap == null) return null
-        val tempMatrix = Matrix(bitmapMatrix)
-        bitmapMatrix.reset()
         val width = max(bitmapRectF.width().toInt(), 1)
         val height = max(bitmapRectF.height().toInt(), 1)
         val bitmap = createBitmap(width, height)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
-        draw(canvas)
-        bitmapMatrix.set(tempMatrix)
+        // 合成按单位矩阵 1:1 输出，与视图当前缩放/位移无关
+        canvas.setMatrix(Matrix())
+        drawContent(canvas)
         return bitmap
     }
 
     fun draw(canvas: Canvas) {
         canvas.setMatrix(bitmapMatrix)
+        drawContent(canvas)
+    }
+
+    /** 内容绘制：矩阵由调用方设置（视图绘制用视图矩阵，合成保存用单位矩阵）。 */
+    private fun drawContent(canvas: Canvas) {
         mosaicBitmap?.let { bitmap ->
             canvas.drawBitmap(bitmap, null, bitmapRectF, null)
             mosaicLayer.onDraw(canvas)

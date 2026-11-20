@@ -178,9 +178,14 @@ class PictureClipState {
         isScaling = false
     }
 
+    /** 源图是否已就绪：供 UI 在点击保存时判断「加载失败」而不是「保存失败」。 */
+    val isBitmapReady: Boolean get() = _bitmap != null
+
     /**
      * 合成裁剪结果，返回真实 Bitmap；未就绪返回 null，
      * 后续的尺寸校验、编码与落盘交由 ImageSaveCoordinator 处理。
+     *
+     * 只读内部状态（矩形做拷贝），不修改 [bitmapMatrix]，可在后台线程执行。
      */
     fun saveBitmap(): Bitmap? {
         val bmp = _bitmap ?: return null

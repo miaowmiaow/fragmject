@@ -183,7 +183,7 @@ private class FakeMediaRepository : MediaRepository {
 
     override suspend fun createImageUri(): String = error("unexpected call in WebViewModelTest")
 
-    override suspend fun finishImageUri(uri: String) = Unit
+    override suspend fun finishImageUri(uri: String): Boolean = true
 
     override suspend fun deleteImageUri(uri: String) = Unit
 }

@@ -26,6 +26,14 @@ interface MediaRepository {
     suspend fun saveVideoToAlbum(filePath: String): MediaSaveResult
     suspend fun notifyMediaAdded(filePath: String): MediaSaveResult
     suspend fun createImageUri(): String
-    suspend fun finishImageUri(uri: String)
+
+    /**
+     * 清除拍照预创建记录的 pending 状态。
+     *
+     * @return 是否发布成功。返回 false 时调用方**必须**调用 [deleteImageUri] 回收该记录：
+     * 记录一旦丢掉 uri 引用就无法再清理，会永久停在 pending（相册不可见且无法删除）。
+     */
+    suspend fun finishImageUri(uri: String): Boolean
+
     suspend fun deleteImageUri(uri: String)
 }

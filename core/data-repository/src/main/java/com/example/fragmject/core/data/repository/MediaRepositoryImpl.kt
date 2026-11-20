@@ -105,10 +105,8 @@ class MediaRepositoryImpl @Inject constructor(
         MediaStoreUtils.createImageUri(context)
     }
 
-    override suspend fun finishImageUri(uri: String) {
-        withContext(Dispatchers.IO) {
-            MediaStoreUtils.finishImageUri(context, uri)
-        }
+    override suspend fun finishImageUri(uri: String): Boolean = withContext(Dispatchers.IO) {
+        MediaStoreUtils.finishImageUri(context, uri)
     }
 
     override suspend fun deleteImageUri(uri: String) {

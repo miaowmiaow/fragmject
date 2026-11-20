@@ -133,6 +133,9 @@ object MediaStoreUtils {
     ): Pair<String, String> = suspendCancellableCoroutine { cont ->
         var out: OutputStream? = null
         var fis: FileInputStream? = null
+        // Q+ 已 insert 的 MediaStore 记录；只有真正写完数据（published）才保留
+        var insertedUri: Uri? = null
+        var published = false
         try {
             val mimeType = FileUtils.getFileMimeType(file)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -140,6 +143,9 @@ object MediaStoreUtils {
                     put(MediaStore.Images.ImageColumns.DISPLAY_NAME, file.name)
                     put(MediaStore.Images.ImageColumns.MIME_TYPE, mimeType)
                     put(MediaStore.Images.ImageColumns.RELATIVE_PATH, relativePath)
+                    // 先以 pending 状态插入：数据写完前对相册不可见，
+                    // 失败时删除该记录即可，不会在相册留下空条目
+                    put(MediaStore.MediaColumns.IS_PENDING, 1)
                 }
                 val uri = context.contentResolver.insert(collection, values)
                 if (uri == null) {
@@ -147,6 +153,7 @@ object MediaStoreUtils {
                     if (cont.isActive) cont.resume("" to "")
                     return@suspendCancellableCoroutine
                 }
+                insertedUri = uri
                 out = context.contentResolver.openOutputStream(uri)
                 if (out == null) {
                     file.delete()
@@ -155,6 +162,23 @@ object MediaStoreUtils {
                 }
                 fis = FileInputStream(file)
                 OsFileUtils.copy(fis, out)
+                // 先关流再发布，避免系统收到通知时数据还没刷完
+                FileUtils.quickClose(fis)
+                fis = null
+                FileUtils.quickClose(out)
+                out = null
+                // 复制期间被取消：不发布，finally 里删除记录，避免留下半截文件
+                if (!cont.isActive) {
+                    file.delete()
+                    return@suspendCancellableCoroutine
+                }
+                // 解除 pending 才算发布成功；失败则记录对相册不可见，按失败回收
+                published = publishImageRecord(context, uri)
+                if (!published) {
+                    file.delete()
+                    if (cont.isActive) cont.resume("" to "")
+                    return@suspendCancellableCoroutine
+                }
                 file.delete()
                 if (cont.isActive) cont.resume(context.getBitmapPathFromUri(uri) to uri.toString())
             } else {
@@ -173,6 +197,17 @@ object MediaStoreUtils {
         } finally {
             FileUtils.quickClose(fis)
             FileUtils.quickClose(out)
+            // 任一步失败/取消都回收已插入的记录（未发布 = 数据没写完）
+            if (!published) insertedUri?.let { deleteMediaRecord(context, it) }
+        }
+    }
+
+    /** 删除一条已插入的 MediaStore 记录（失败不影响主流程，仅记日志）。 */
+    private fun deleteMediaRecord(context: Context, uri: Uri) {
+        try {
+            context.contentResolver.delete(uri, null, null)
+        } catch (e: Exception) {
+            Log.e(TAG, "deleteMediaRecord failed: $uri", e)
         }
     }
 
@@ -198,16 +233,29 @@ object MediaStoreUtils {
         }
     }
 
-    /** 拍照成功后清除 pending 状态，使照片对系统相册与查询可见。 */
-    fun finishImageUri(context: Context, uri: String) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-        try {
+    /**
+     * 拍照成功后清除 pending 状态，使照片对系统相册与查询可见。
+     *
+     * @return 是否发布成功；失败时调用方必须删除该记录（[deleteImageUri]），
+     * 否则它永远停留在 pending —— 相册看不到，用户也没有入口清理。
+     */
+    fun finishImageUri(context: Context, uri: String): Boolean {
+        // Q 以下没有 pending 概念，无需发布
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true
+        return publishImageRecord(context, uri.toUri())
+    }
+
+    /** 清除 pending 状态；返回是否成功（失败仅记日志，由调用方决定是否回收记录）。 */
+    private fun publishImageRecord(context: Context, uri: Uri): Boolean {
+        return try {
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.IS_PENDING, 0)
             }
-            context.contentResolver.update(uri.toUri(), values, null, null)
+            context.contentResolver.update(uri, values, null, null)
+            true
         } catch (e: Exception) {
-            Log.e(TAG, "finishImageUri failed", e)
+            Log.e(TAG, "finishImageUri failed: $uri", e)
+            false
         }
     }
 

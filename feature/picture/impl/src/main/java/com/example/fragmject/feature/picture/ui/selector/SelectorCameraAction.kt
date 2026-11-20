@@ -28,8 +28,11 @@ internal fun rememberTakePictureAction(flowState: PictureFlowState): () -> Unit 
     ) { success ->
         scope.launch {
             if (success) {
-                // 清除 pending 状态，让真实照片对系统相册与查询可见
-                flowState.finishTakePictureUri()
+                // 清除 pending 状态，让真实照片对系统相册与查询可见；
+                // 失败时该方法已回收记录，这里只需告知用户照片没能入库
+                if (!flowState.finishTakePictureUri()) {
+                    Toast.makeText(context, "照片保存失败", Toast.LENGTH_SHORT).show()
+                }
                 // 重新查询相册，获取相机写入后的真实数据并按最新修改时间排序到头部
                 flowState.queryAlbum()
             } else {

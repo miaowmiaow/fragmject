@@ -110,10 +110,21 @@ class PictureFlowState @Inject constructor(
         return uri
     }
 
-    suspend fun finishTakePictureUri() {
-        val uri = _takePictureUri.value ?: return
-        mediaRepository.finishImageUri(uri.toString())
+    /**
+     * 拍照成功：清除 pending 状态，让照片对系统相册与查询可见。
+     *
+     * @return 是否发布成功。失败时**立即删除**该记录：pending 记录在相册里不可见，
+     * 而 uri 引用马上要被清空，不在这里删就再也没有机会清理，只会永久残留。
+     */
+    suspend fun finishTakePictureUri(): Boolean {
+        val uri = _takePictureUri.value ?: return false
+        val published = mediaRepository.finishImageUri(uri.toString())
+        if (!published) {
+            Log.e("PictureFlowState", "finishTakePictureUri failed, drop pending record: $uri")
+            mediaRepository.deleteImageUri(uri.toString())
+        }
         _takePictureUri.value = null
+        return published
     }
 
     suspend fun deleteTakePictureUri() {

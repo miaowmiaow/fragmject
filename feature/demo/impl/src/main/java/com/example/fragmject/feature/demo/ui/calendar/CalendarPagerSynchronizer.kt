@@ -72,7 +72,12 @@ internal class CalendarPagerSynchronizer(
     ) {
         val month = model.monthModeByIndex(page) ?: return
         var week = selectedWeek
-        val selected = month.weeks[week].firstOrNull { it.localDate == selectedDate }
+        // 原来的周序号来自上一个月份，新月份周数可能更少，必须先判越界再取周数据
+        val selected = if (week in month.weeks.indices) {
+            month.weeks[week].firstOrNull { it.localDate == selectedDate }
+        } else {
+            null
+        }
         if (selected == null) {
             week = 0
             onSelectedWeek(week)

@@ -112,3 +112,75 @@ collectionNavigator.openMyCollect()
 - **api 模块**：只能依赖 `:core:navigation-contract`（+ `androidx.navigation3.runtime` 以使用 `NavKey`）；依赖 `:core:navigation-runtime` 会被 R9 守卫规则在编译期拦截。
 - **impl 模块**：依赖 `:core:navigation-runtime` 注册渲染器/流程作用域；跨域导航只经 `LocalNavigators`，不直接 import 其他 feature 的 NavKey。
 - **app 组合根**：唯一「语义动作 → 具体 NavKey」的映射点（`AppNavigators.kt`），也是唯一聚合所有 feature 的地方。
+- **entry 内的 `rememberSaveable`**：只在 `NavEntry.contentKey` 跨进程稳定时才可靠，见 §四。
+
+## 四、进程重建：`contentKey` 陷阱与「页面状态不能只活在进程里」
+
+返回栈由 `rememberNavBackStack` 持久化，**进程被杀后能整栈恢复**，但恢复出来的只是一个空壳进程：
+所有 `@Singleton` 流程状态都是新实例。两类东西必须分开处理。
+
+### 4.1 `rememberSaveable` 依赖 `contentKey`，而 `object` NavKey 的默认值不稳定
+
+`rememberSaveable` 的状态由 `SaveableStateHolder` 以 `NavEntry.contentKey` 为键保存。库的默认值是：
+
+```kotlin
+"$key:${key::class}"
+```
+
+- `data class` NavKey（如 `PicturePreviewNavKey(uris, selectable)`）→ `toString()` 是**结构化**的，跨进程稳定 ✅
+- `object` NavKey（如 `PictureSelectorNavKey`）→ 走 `Any.toString()` = `类名@identityHash`，**每次进程重启都变号** ❌
+
+后果是静默的：该 entry 里所有 `rememberSaveable` 整批丢失（不报错、不崩溃），
+表现为「重建后某个标记位莫名回到初始值」。图片流程踩过一次：选择器用
+`rememberSaveable flowReset` 区分「新流程 / 流程内返回」，键不稳定 → 重建后回到选择器被当成新流程
+→ `reset()` 把刚恢复的选中态又清空。
+
+对策在组合根 `AppNavGraph`：注册 entry 时传入 `clazzContentKey = ::stableEntryContentKey`——
+单例 key 用类名（本身即唯一、跨进程稳定），带参数的 key 保持库默认的结构化字符串
+（**不能**退化成类名，否则同类的多个路由会共用同一份保存状态）。
+
+> 新增 `object` NavKey 时不需要额外操作（组合根统一处理）；但**不要**在 feature 里自行调用
+> `addEntryProvider` / `entry(...)` 绕过 `NavContentRegistry`，那样会拿不到这个稳定的 contentKey。
+
+### 4.2 恢复后 UI 依赖的状态，必须能自己重建
+
+判断标准：**「重建后的这一帧要读它吗？」要读，就不能只放在进程内的 `HashMap`/`StateFlow` 里。**
+
+两种可接受的重建来源：
+
+| 来源 | 适用 | 例子 |
+|---|---|---|
+| NavKey 携带的参数 | 路由本身的身份（页面该显示什么） | `PicturePreviewNavKey.uris` 决定预览哪几张图 |
+| 持久化（domain 端口 + KV/Room） | 流程中产生、但 NavKey 里没有的状态 | ① 编辑后的「原图 → 新图」替换关系；② 当前选中项列表 |
+
+图片流程的两个具体落点，可作为参考实现：
+
+- `PictureEditRepository`：旧图 → 新图（编辑保存后原图会被删除，返回栈里的 NavKey 仍持原始 uri，
+  不落库就会去解码一张已删除的图）；
+- `PictureSelectionRepository`：当前选中项（不落库则重建后「取消选择」退回「选择」、缩略图无勾选，
+  点「完成」还会把空列表报给调用方）。
+
+两条实现约定：
+
+- **落库顺序 = 因果顺序**：替换关系必须先写库、再删原图；反过来会在两者之间被进程退出打断，
+  丢掉「原图已删」的唯一证据；
+- **归零时机由流程入口决定**：`PictureFlowState.reset()`（进入选择器）除了清内存，也要清持久记录，
+  否则上一次流程的残留会在下次进程重建时被恢复出来。恢复动作本身必须幂等
+  （「内存非空就跳过」），避免覆盖进程内更新的状态。
+
+## 五、真机验证这类修复的最小手法
+
+`am kill` 只杀后台进程，任务栈与已保存的 saved state 仍在，是模拟「进程重建」最贴近真实的方式：
+
+```bash
+adb shell input keyevent KEYCODE_HOME
+adb shell am kill <applicationId>
+adb shell monkey -p <applicationId> -c android.intent.category.LAUNCHER 1   # 从最近任务恢复
+```
+
+排查时注意两点：
+
+- Coil 有磁盘缓存（本项目在 `Android/data/<pkg>/cache/coil`），本地图可能被缓存掩盖成「看起来正常」，
+  验证前先清掉；
+- `content://` 属于其它应用的媒体，删除会静默失败（分区存储），要复现「原图已删」的场景，
+  请用本应用自己写入相册的图片。

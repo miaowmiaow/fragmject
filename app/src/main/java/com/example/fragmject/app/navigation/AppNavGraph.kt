@@ -346,7 +346,7 @@ private fun AppNavDisplay(
             },
             entryProvider = entryProvider {
                 registry.forEach { clazz, renderer ->
-                    addEntryProvider(clazz) { key ->
+                    addEntryProvider(clazz, clazzContentKey = ::stableEntryContentKey) { key ->
                         CompositionLocalProvider(
                             LocalOnNavigateUp provides onBack,
                         ) {
@@ -357,6 +357,24 @@ private fun AppNavDisplay(
             }
         )
     }
+}
+
+/**
+ * NavEntry 的 `contentKey`（SaveableStateHolder 的键，决定 entry 内的 `rememberSaveable`
+ * 能否跨进程重建恢复）。
+ *
+ * 库默认值 `"$key:${key::class}"` 对 `data class` 是结构化字符串，跨进程稳定；
+ * 但 **`object` NavKey 走的是 `Any.toString()` = `类名@identityHash`**，每次进程重建都变号，
+ * 于是这类页面（如 `PictureSelectorNavKey`）里的 `rememberSaveable` 会整批静默丢失——
+ * 图片流程的「是否新流程」标记失效，回到选择器时把刚恢复的选中态又清空，就是它导致的。
+ *
+ * 单例 key 直接用类名作 contentKey：本身即唯一，且跨进程稳定。其余 key 保持库的默认行为
+ * （带参数的 key 必须按参数区分，不能退化成类名）。
+ */
+private fun stableEntryContentKey(key: NavKey): Any {
+    val kClass = key::class
+    val singletonName = kClass.qualifiedName?.takeIf { kClass.objectInstance != null }
+    return singletonName ?: "$key:$kClass"
 }
 
 /**

@@ -195,4 +195,5 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.konsist)
+    implementation(kotlin("reflect"))
 }

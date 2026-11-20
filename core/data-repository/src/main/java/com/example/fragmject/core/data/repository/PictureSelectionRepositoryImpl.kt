@@ -41,9 +41,10 @@ class PictureSelectionRepositoryImpl @Inject constructor(
                 PictureSelectionRepository.CaptureDisposition.AWAITING_RESULT,
             )
         }
-        val disposition = runCatching {
-            PictureSelectionRepository.CaptureDisposition.valueOf(encoded.substring(0, separator))
-        }.getOrNull() ?: return null
+        val dispositionName = encoded.substring(0, separator)
+        val disposition = PictureSelectionRepository.CaptureDisposition.values()
+            .firstOrNull { it.name == dispositionName }
+            ?: return null
         val uri = encoded.substring(separator + 1).takeIf { it.isNotBlank() } ?: return null
         return PictureSelectionRepository.PendingCapture(uri, disposition)
     }

@@ -24,6 +24,14 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        // Maven Central 的 Google 托管镜像，纯兜底：只有前面的仓库拿不到构件时才会请求。
+        // 起因：CI（GitHub Actions）上 lint 曾因 `com.google.errorprone:error_prone_annotations:2.30.0`
+        // （espresso-core 3.7.0 的传递依赖）在 repo.maven.apache.org 上解析不到而整条链路失败，
+        // 并进一步被配置缓存序列化放大成 BUILD FAILED。该构件在 Central 与这个镜像上都存在，
+        // 属于出口偶发缺失，因此不改版本、不排除依赖，只增加一个可获取的来源。
+        maven {
+            url = uri("https://maven-central.storage-download.googleapis.com/maven2/")
+        }
         maven {
             url = uri("https://jitpack.io")
         }

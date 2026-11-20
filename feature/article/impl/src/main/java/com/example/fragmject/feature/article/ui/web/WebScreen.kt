@@ -14,8 +14,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +45,9 @@ import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.runtime.LocalOnNavigateUp
 import com.example.fragmject.feature.article.impl.R
 import com.example.fragmject.core.webview.WebViewControl
+import com.example.fragmject.core.webview.di.WebViewPoolEntryPoint
 import com.example.fragmject.core.webview.rememberWebViewControl
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -58,13 +63,15 @@ fun WebScreen(
     val webViewModel: WebViewModel = hiltViewModel()
     var customView by remember { mutableStateOf<View?>(null) }
     var sheetValue by rememberSaveable { mutableStateOf(SheetValue.PartiallyExpanded) }
-    val bottomSheetState = rememberStandardBottomSheetState(
+    // initialValue 只参与首次创建：跨重建的停靠位置由 rememberSaveable 的 sheetValue 回填，
+    // confirmValueChange 负责把后续变化写回去。enabledValues 用默认值（Hidden/半展开/展开），
+    // 与旧 rememberStandardBottomSheetState(skipHiddenState = false) 等价。
+    val bottomSheetState = rememberBottomSheetState(
         initialValue = sheetValue,
         confirmValueChange = {
             sheetValue = it
             true
         },
-        skipHiddenState = false
     )
     val control = rememberWebViewControl()
     val mediaController = rememberWebMediaController()
@@ -73,6 +80,8 @@ fun WebScreen(
     val bookmark by webViewModel.bookmark.collectAsStateWithLifecycle()
     LaunchedEffect(url) { webViewModel.init(url) }
     WebSystemBarsEffect(customView = customView)
+
+    val snackbarHostState = rememberCredentialedCacheNotice()
 
     // 全屏视频：进入全屏时独占渲染，不再渲染 Scaffold/Sheet/进度条等下层内容
     val fullScreenView = customView
@@ -87,17 +96,9 @@ fun WebScreen(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .navigationBarsPadding(),
+        snackbarHost = { SnackbarHost(snackbarHostState) { data -> Snackbar(snackbarData = data) } },
         topBar = {
-            TitleBar(
-                title = title.toString(),
-                onNavigateUp = onNavigateUp,
-                actions = {
-                    WebSheetToggleAction(
-                        sheetValue = sheetValue,
-                        bottomSheetState = bottomSheetState,
-                        scope = scope,
-                    )
-                })
+            WebTopBar(title.toString(), sheetValue, bottomSheetState, scope, onNavigateUp)
         },
     ) { innerPadding ->
         Box(
@@ -198,6 +199,49 @@ private fun ArticleWebBody(
     WebMediaDialogs(
         controller = page.mediaController,
         onSaveImage = onSaveImage,
+    )
+}
+
+/**
+ * 首次用登录态缓存第三方资源时的一次性轻提示，返回供 Scaffold 使用的 [SnackbarHostState]。
+ *
+ * 为什么不是「逐资源弹窗」：缓存填充是 `shouldInterceptRequest` 的异步旁路，一篇文章页
+ * 有几十个资源，逐次询问会把阅读变成问卷，且弹窗时机与下载时序不可控。
+ * 选择权保留在设置页（「用登录态缓存图片」开关），这里只做一次知情提示。
+ */
+@Composable
+private fun rememberCredentialedCacheNotice(): SnackbarHostState {
+    val context = LocalContext.current
+    val cacheSettings = remember(context) {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            WebViewPoolEntryPoint::class.java,
+        ).webCacheSettings()
+    }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val notice by cacheSettings.credentialedNotice.collectAsStateWithLifecycle()
+    LaunchedEffect(notice) {
+        if (!notice) return@LaunchedEffect
+        cacheSettings.consumeCredentialedNotice()
+        snackbarHostState.showSnackbar("已用登录态缓存第三方图片，可在设置中关闭")
+    }
+    return snackbarHostState
+}
+
+/** 顶栏：标题 + 返回 + 「更多」面板开关（抽出以免 WebScreen 超过 LongMethod 上限）。 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WebTopBar(
+    title: String,
+    sheetValue: SheetValue,
+    bottomSheetState: SheetState,
+    scope: CoroutineScope,
+    onNavigateUp: () -> Unit,
+) {
+    TitleBar(
+        title = title,
+        onNavigateUp = onNavigateUp,
+        actions = { WebSheetToggleAction(sheetValue, bottomSheetState, scope) },
     )
 }
 

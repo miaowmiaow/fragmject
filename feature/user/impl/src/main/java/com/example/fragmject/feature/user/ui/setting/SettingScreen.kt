@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +52,15 @@ import com.example.fragmject.core.ui.components.StandardDialog
 import com.example.fragmject.core.designsystem.AppColors
 import com.example.fragmject.core.ui.components.TitleBar
 
+/**
+ * 设置行内开关的统一几何：两种开关（自绘的 [NightSwitchButton] 与系统 `Switch`）都按
+ * 52×32 绘制、距行尾 25dp 收边，这样「深色模式」和「用登录态缓存图片」两行开关的
+ * 轨道位置与宽度完全一致，不会出现左右错位。
+ */
+private val SettingSwitchWidth = 52.dp
+private val SettingSwitchHeight = 32.dp
+private val SettingSwitchEndPadding = 25.dp
+
 @Composable
 fun SettingScreen(
     viewModel: SettingViewModel = hiltViewModel(),
@@ -63,6 +72,7 @@ fun SettingScreen(
     val onNavigateUp = LocalOnNavigateUp.current
     val cacheSize by viewModel.cacheSizeText.collectAsStateWithLifecycle()
     val isClearing by viewModel.isClearing.collectAsStateWithLifecycle()
+    val credentialedCacheEnabled by viewModel.credentialedCacheEnabled.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -100,8 +110,10 @@ fun SettingScreen(
                     uiState = uiState,
                     cacheSize = cacheSize,
                     isClearing = isClearing,
+                    credentialedCacheEnabled = credentialedCacheEnabled,
                     actions = SettingActions(
                         onDarkThemeChange = viewModel::updateDarkTheme,
+                        onCredentialedCacheChange = viewModel::setCredentialedCacheEnabled,
                         onPetSettingClick = userNavigator::openPetSetting,
                         onClearCacheClick = { showDialog = true },
                         onArticleClick = articleNavigator::openArticle,
@@ -116,6 +128,7 @@ fun SettingScreen(
 /** 设置项的行内动作集合：收敛成 1 个参数，避免私有 composable 的参数列表超限。 */
 private class SettingActions(
     val onDarkThemeChange: (Boolean) -> Unit,
+    val onCredentialedCacheChange: (Boolean) -> Unit,
     val onPetSettingClick: () -> Unit,
     val onClearCacheClick: () -> Unit,
     val onArticleClick: (String) -> Unit,
@@ -129,6 +142,7 @@ private fun SettingItems(
     uiState: SettingUiState,
     cacheSize: String,
     isClearing: Boolean,
+    credentialedCacheEnabled: Boolean,
     actions: SettingActions,
 ) {
     Column(
@@ -142,6 +156,14 @@ private fun SettingItems(
             label = "深色模式",
             checked = uiState.darkTheme,
             onCheckedChange = actions.onDarkThemeChange,
+        )
+        HorizontalDivider()
+        // 登录态缓存：默认开启（体验优先）。关闭后只缓存匿名内容，并清掉已落盘的带凭据条目，
+        // 代价仅为「需要登录才能取到的图片」不再进缓存，展示走原生请求不受影响。
+        SettingStandardSwitchRow(
+            label = "用登录态缓存图片",
+            checked = credentialedCacheEnabled,
+            onCheckedChange = actions.onCredentialedCacheChange,
         )
         HorizontalDivider()
         // 宠物配置单独一页：三个滑杆 + 实时预览，塞进设置页会让这一屏过长
@@ -171,6 +193,38 @@ private fun SettingItems(
     }
 }
 
+/**
+ * 设置项：左标题 + 右侧**系统** [Switch]。
+ *
+ * 与深色模式用的 [NightSwitchButton] 区分：后者是带太阳/月亮自绘动画的主题专用控件，
+ * 只在「切主题」这一项需要；其余设置项用标准 `Switch`，状态语义、无障碍朗读与
+ * Material3 主题适配都由系统组件承担，不需要为每一项重复实现动画。
+ */
+@Composable
+private fun SettingStandardSwitchRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxWidth()
+            .height(45.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SettingRowLabel(label)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            // 与 NightSwitchButton 共用同一套尺寸/右边距，保证两行开关视觉对齐
+            modifier = Modifier
+                .padding(end = SettingSwitchEndPadding)
+                .size(width = SettingSwitchWidth, height = SettingSwitchHeight),
+        )
+    }
+}
+
 /** 设置项：左标题 + 右侧开关。 */
 @Composable
 private fun SettingSwitchRow(
@@ -189,9 +243,10 @@ private fun SettingSwitchRow(
         NightSwitchButton(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            modifier = Modifier.size(52.dp, 32.dp)
+            modifier = Modifier
+                .padding(end = SettingSwitchEndPadding)
+                .size(width = SettingSwitchWidth, height = SettingSwitchHeight),
         )
-        Spacer(Modifier.width(5.dp))
     }
 }
 

@@ -9,6 +9,7 @@ import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.system.SystemStorage
 import com.example.fragmject.core.domain.usecase.LogoutUseCase
 import com.example.fragmject.core.model.User
+import com.example.fragmject.core.webview.WebCacheSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -46,6 +47,7 @@ class SettingViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val themeRepo: ThemeRepository,
     private val systemStorage: SystemStorage,
+    private val webCacheSettings: WebCacheSettings,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SettingUiState>(SettingUiState.Success())
@@ -59,6 +61,14 @@ class SettingViewModel @Inject constructor(
 
     /** 是否正在清理缓存：用于禁用入口，避免重复触发清理。 */
     val isClearing: StateFlow<Boolean> get() = systemStorage.isClearing
+
+    /**
+     * 「用登录态缓存第三方图片」开关。
+     *
+     * 缓存策略归 `core:webview` 所有，这里只做透传：关闭后由缓存实现清掉已有的带凭据条目，
+     * 匿名条目不受影响（命中率只损失「需要登录才能拿到」的那部分）。
+     */
+    val credentialedCacheEnabled: StateFlow<Boolean> get() = webCacheSettings.credentialedCachingEnabled
 
     init {
         viewModelScope.launch {
@@ -76,6 +86,10 @@ class SettingViewModel @Inject constructor(
 
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch { themeRepo.setDarkTheme(darkTheme) }
+    }
+
+    fun setCredentialedCacheEnabled(enabled: Boolean) {
+        webCacheSettings.setCredentialedCachingEnabled(enabled)
     }
 
     /** 刷新缓存大小显示：读写经由 [SystemStorage]，UI 不接触缓存目录。 */

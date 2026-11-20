@@ -4,6 +4,7 @@ import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.result.AuthExchange
 import com.example.fragmject.core.domain.result.AuthResult
 import com.example.fragmject.core.domain.session.CookieStore
+import com.example.fragmject.core.domain.session.SessionCacheCleaner
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
@@ -21,10 +22,15 @@ import kotlinx.coroutines.withContext
  *   [AuthGateway] 只做 transport，编排可以被纯 JVM 单测直接覆盖（[AuthSessionCoordinatorTest]）。
  *
  * 并发模型：登录/注册/登出共用一把 [Mutex]，避免两次认证交错写 Cookie 与用户表。
+ *
+ * 本地清理包含三段：撤销 Cookie → 清用户 → 清会话残留缓存（[SessionCacheCleaner]）。
+ * 顺序固定：缓存必须在 Cookie 撤销之后清，否则清理窗口内仍可能发起带 Cookie 的请求，
+ * 把带身份的响应重新写回磁盘缓存。
  */
 class AuthSessionCoordinator @Inject constructor(
     private val cookies: CookieStore,
     private val users: UserRepository,
+    private val sessionCaches: SessionCacheCleaner = SessionCacheCleaner.NoOp,
 ) {
 
     private val mutex = Mutex()
@@ -135,11 +141,20 @@ class AuthSessionCoordinator @Inject constructor(
         try {
             users.clearUser()
         } catch (e: Exception) {
-            val cookieFailure = failure
-            if (cookieFailure == null) failure = e else cookieFailure.addSuppressed(e)
+            failure = failure.record(e)
+        }
+        // 最后清残留缓存：先撤 Cookie 才能保证清理窗口内不再产生新的带身份缓存。
+        try {
+            sessionCaches.clearSessionCaches()
+        } catch (e: Exception) {
+            failure = failure.record(e)
         }
         failure
     }
+
+    /** 首个失败作为主因保留，后续失败挂 suppressed，避免丢失任一异常。 */
+    private fun Exception?.record(failure: Exception): Exception =
+        this?.apply { addSuppressed(failure) } ?: failure
 
     private companion object {
         val SESSION_URLS = listOf("https://wanandroid.com/", "https://www.wanandroid.com/")

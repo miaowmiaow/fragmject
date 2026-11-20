@@ -25,7 +25,12 @@ object CacheDirs {
     /** WebView 二进制资源缓存。 */
     const val WEB = "web_cache"
 
-    /** WebView 主文档 HTML 缓存。 */
+    /**
+     * WebView 主文档 HTML 缓存。
+     *
+     * 与 [WEB] 不同：固定落在 **internal** `cacheDir`（见 `CacheUtils.getInternalDirPath`），
+     * 因为主文档内容可能含个人信息，而外置缓存目录在部分设备上对 shell / 备份工具可读。
+     */
     const val WEB_HTML = "web_html_cache"
 
     /**

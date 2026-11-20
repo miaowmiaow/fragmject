@@ -1,5 +1,6 @@
 package com.example.fragmject.core.data.contract.remote
 
+import com.example.fragmject.core.data.contract.model.DownloadFileResult
 import com.example.fragmject.core.data.contract.model.HttpResponse
 
 /**
@@ -15,4 +16,16 @@ interface DownloadRemoteDataSource {
         fileName: String,
         headers: Map<String, String> = emptyMap(),
     ): HttpResponse
+
+    /**
+     * 与 [download] 相同，但额外回传缓存决策所需的响应头（见 [DownloadFileResult]）。
+     *
+     * 默认实现退回 [download] 并留空响应头：拿不到响应头的调用方应把内容视为**不可缓存**。
+     */
+    suspend fun downloadWithHeaders(
+        url: String,
+        savePath: String,
+        fileName: String,
+        headers: Map<String, String> = emptyMap(),
+    ): DownloadFileResult = DownloadFileResult(download(url, savePath, fileName, headers))
 }

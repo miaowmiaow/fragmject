@@ -21,6 +21,8 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
     implementation(project(":core:domain"))
+    // 设置页需要「用登录态缓存图片」开关：策略归 core:webview 所有，这里只消费契约。
+    implementation(project(":core:webview"))
     implementation(project(":core:model"))
     implementation(project(":core:navigation-runtime"))
     implementation(project(":core:navigation-contract"))

@@ -2,6 +2,7 @@ package com.example.fragmject.core.domain.usecase
 
 import com.example.fragmject.core.domain.result.AuthExchange
 import com.example.fragmject.core.domain.result.AuthResult
+import com.example.fragmject.core.domain.session.SessionCacheCleaner
 import com.example.fragmject.core.model.User
 import com.example.fragmject.core.testing.FakeCookieStore
 import com.example.fragmject.core.testing.FakeUserRepository
@@ -9,6 +10,8 @@ import java.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -240,5 +243,77 @@ class AuthSessionCoordinatorTest {
         assertTrue(coordinator.logout { })
         assertNull("Cookie 清理失败不影响用户表清理", users.current())
         assertEquals(1, cookies.clearCalls)
+    }
+
+    @Test
+    fun `logout clears session caches after cookies are revoked`() = runBlocking {
+        val users = FakeUserRepository().apply { seed(User(id = 1, username = "alice")) }
+        val cookies = FakeCookieStore().apply { session = "session=alice" }
+        var sessionAtCacheClear: String? = "未调用"
+        val caches = FakeSessionCacheCleaner(onClear = { sessionAtCacheClear = cookies.session })
+        val coordinator = AuthSessionCoordinator(cookies, users, caches)
+
+        assertTrue(coordinator.logout { })
+
+        assertEquals(1, caches.clearCalls)
+        // 顺序不变式：缓存清理必须发生在 Cookie 撤销之后，
+        // 否则清理窗口内可能又发起带 Cookie 的请求，把带身份的响应写回磁盘
+        assertNull(sessionAtCacheClear)
+    }
+
+    @Test
+    fun `session cache cleanup failure alone keeps logout success`() = runBlocking {
+        val users = FakeUserRepository().apply { seed(User(id = 1, username = "alice")) }
+        val cookies = FakeCookieStore()
+        val caches = FakeSessionCacheCleaner().apply { failure = IOException("cache cleanup failed") }
+        val coordinator = AuthSessionCoordinator(cookies, users, caches)
+
+        // 与 Cookie 清理失败同一口径：远端已登出时不翻转成异常
+        assertTrue(coordinator.logout { })
+        assertEquals(1, caches.clearCalls)
+        assertNull(users.current())
+    }
+
+    @Test
+    fun `authentication failure with touched session clears session caches`() = runBlocking {
+        val users = FakeUserRepository()
+        val cookies = FakeCookieStore()
+        val caches = FakeSessionCacheCleaner()
+        val coordinator = AuthSessionCoordinator(cookies, users, caches)
+
+        val result = coordinator.authenticate {
+            AuthExchange.Failure("用户信息获取失败", sessionTouched = true)
+        }
+
+        assertEquals(AuthResult.Error("用户信息获取失败"), result)
+        assertEquals(1, caches.clearCalls)
+    }
+
+    @Test
+    fun `successful authentication keeps session caches`() = runBlocking {
+        val users = FakeUserRepository()
+        val caches = FakeSessionCacheCleaner()
+        val coordinator = AuthSessionCoordinator(FakeCookieStore(), users, caches)
+
+        coordinator.authenticate { AuthExchange.Success(User(id = 1, username = "alice"), "登录成功") }
+
+        assertEquals(0, caches.clearCalls)
+    }
+}
+
+/** 会话缓存清理替身：记录调用次数，可注入失败，并可在清理时观测外部状态以验证顺序。 */
+private class FakeSessionCacheCleaner(
+    private val onClear: (() -> Unit)? = null,
+) : SessionCacheCleaner {
+
+    var clearCalls = 0
+    var failure: Exception? = null
+
+    override suspend fun clearSessionCaches() {
+        // 与 FakeCookieStore 一致：取消必须先传播
+        currentCoroutineContext().ensureActive()
+        clearCalls++
+        onClear?.invoke()
+        failure?.let { throw it }
     }
 }

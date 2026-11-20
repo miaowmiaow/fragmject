@@ -9,14 +9,17 @@ import com.example.fragmject.core.testing.FakeAuthGateway
 import com.example.fragmject.core.testing.FakeCookieStore
 import com.example.fragmject.core.testing.FakeUserRepository
 import com.example.fragmject.core.testing.MainDispatcherRule
+import com.example.fragmject.core.webview.WebCacheSettings
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -76,16 +79,48 @@ class SettingViewModelTest {
         assertEquals(SettingEvent.CacheClearFailed("缓存目录不可写"), viewModel.events.first())
     }
 
+    @Test
+    fun `credentialed cache switch is forwarded to cache settings`() = runTest {
+        val cacheSettings = FakeWebCacheSettings()
+        val viewModel = createViewModel(cacheSettings = cacheSettings)
+
+        assertTrue("默认开启：缓存以体验为先", viewModel.credentialedCacheEnabled.value)
+
+        viewModel.setCredentialedCacheEnabled(false)
+
+        assertFalse(viewModel.credentialedCacheEnabled.value)
+        assertEquals(listOf(false), cacheSettings.writes)
+    }
+
     private fun createViewModel(
         gateway: FakeAuthGateway = FakeAuthGateway(),
         cookies: FakeCookieStore = FakeCookieStore(),
         storage: SystemStorage = FakeSystemStorage(),
+        cacheSettings: WebCacheSettings = FakeWebCacheSettings(),
     ): SettingViewModel = SettingViewModel(
         userRepo = FakeUserRepository(),
         logoutUseCase = LogoutUseCase(gateway, AuthSessionCoordinator(cookies, FakeUserRepository())),
         themeRepo = FakeThemeRepository(),
         systemStorage = storage,
+        webCacheSettings = cacheSettings,
     )
+}
+
+/** 缓存开关替身：只关心「写入了什么」，提示态与设置页无关。 */
+private class FakeWebCacheSettings : WebCacheSettings {
+    private val enabled = MutableStateFlow(true)
+    override val credentialedCachingEnabled: StateFlow<Boolean> = enabled
+    override val credentialedNotice: StateFlow<Boolean> = MutableStateFlow(false)
+    val writes = mutableListOf<Boolean>()
+
+    override fun setCredentialedCachingEnabled(enabled: Boolean) {
+        writes += enabled
+        this.enabled.value = enabled
+    }
+
+    override fun consumeCredentialedNotice() = Unit
+
+    override fun notifyCredentialedCacheUsed() = Unit
 }
 
 private class FakeThemeRepository : ThemeRepository {

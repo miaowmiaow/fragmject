@@ -7,42 +7,55 @@ import android.webkit.WebResourceResponse
 import com.example.fragmject.core.android.platform.app.AppCoroutineScope
 import com.example.fragmject.core.android.platform.cache.CacheDirs
 import com.example.fragmject.core.android.platform.cache.CacheUtils
+import com.example.fragmject.core.android.platform.file.FileUtils
 import com.example.fragmject.core.domain.repository.DownloadRepository
+import com.example.fragmject.core.domain.repository.DownloadResource
 import com.example.fragmject.core.domain.session.CookieStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
-import com.example.fragmject.core.android.platform.digest.DigestUtils
 import java.io.File
 import java.net.InetAddress
 import java.net.URI
+import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * WebView 资源缓存实现：本地静态资源磁盘缓存 + HTML 主文档缓存 + 加载优化。
  *
- * 从 [WebViewPoolManager] 拆出，使池管理与缓存职责各自独立：
- * - 静态资源（图片/样式/脚本/字体）按文件 mtime 淘汰，冷启动零开销；
+ * 缓存策略由 [WebCachePolicy] 的纯函数决定，本类只负责 IO 与生命周期：
+ * - 不设主机级例外：任何主机的内容都可缓存，身份隔离改由「HTML 键含 Cookie + 资源条目分级 + 同源闸」承担；
+ * - 静态资源按文件 mtime 淘汰，冷启动零开销；
  * - HTML 主文档采用 stale-while-revalidate：命中返回缓存并后台刷新，保证首屏提速的同时内容不永久陈旧。
+ *
+ * 与 WebView 原生 HTTP 缓存的边界（重要）：
+ * `shouldInterceptRequest` 在原生缓存之前接管请求，因此**源站的缓存指令必须由我们自己执行**。
+ * 落盘前的判定（`Cache-Control` / `Vary` / `Content-Type`）与命中后的响应头回填都不可省略，
+ * 否则就是在用一套私有策略覆盖 Chromium 的隐私规则。
  */
 @Singleton
 class WebResourceCacheManager @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val downloader: DownloadRepository,
     private val cookieStore: CookieStore,
+    private val fetcher: WebResourceFetcher,
+    private val settings: WebCacheSettings,
     private val appScope: AppCoroutineScope,
 ) : WebResourceCache {
 
     companion object {
         private const val TAG = "WebResourceCache"
         private const val DOWNLOAD_TIMEOUT_MS = 8_000L
-        private const val WEB_CACHE_DIR = CacheDirs.WEB
 
         /**
          * mtime 回写的最小间隔。
@@ -56,19 +69,7 @@ class WebResourceCacheManager @Inject constructor(
         /** 本地缓存文件数上限。超过时按 mtime 淘汰最旧文件，mtime 在每次命中时被 touch。 */
         private const val WEB_CACHE_MAX_FILES = 5000
 
-        private const val ACCEPT_IMAGE =
-            "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
-
-        private val CACHEABLE_EXTENSIONS = setOf(
-            "ico", "bmp", "gif", "jpeg", "jpg", "png", "svg", "webp",
-            "css", "js", "json",
-            "eot", "otf", "ttf", "woff"
-        )
-
-        /** HTML 主文档独立缓存目录，与静态资源缓存解耦（独立 TTL/上限）。 */
-        private const val HTML_CACHE_DIR = CacheDirs.WEB_HTML
-
-        /** HTML 缓存文件数上限，超过时按 mtime 淘汰最旧文件。 */
+        /** HTML 缓存文件数上限（不含 `.meta` 旁注文件），超过时按 mtime 淘汰最旧文件。 */
         private const val HTML_CACHE_MAX_FILES = 200
 
         /** HTML 硬过期时长：超过则强制回源，避免后台刷新持续失败导致内容永久陈旧。 */
@@ -83,29 +84,56 @@ class WebResourceCacheManager @Inject constructor(
          * 没有这层判断时，1 分钟内重复打开同一文章会触发 N 次完整 HTML 下载。
          */
         private const val HTML_MIN_REFRESH_INTERVAL_MS = 5L * 60 * 1000
+
+        /** HTML 缓存条目的旁注文件后缀：记录 Content-Type（含 charset）。 */
+        private const val META_SUFFIX = ".meta"
+
+        /** HTML 下载中的临时文件后缀（静态资源的临时文件由 [WebResourceFetcher] 管理）。 */
+        private const val HTML_TMP_SUFFIX = ".tmp"
+
+        private const val META_KEY_CONTENT_TYPE = "contentType"
+        private const val DEFAULT_HTML_MIME = "text/html"
     }
 
     /** 正在下载中的缓存任务，按缓存 key 去重，避免并发重复下载同一资源。 */
     private val inFlightDownloads: ConcurrentHashMap<String, Job> = ConcurrentHashMap()
 
     /**
-     * 缓存目录（解析一次）。
+     * 静态资源缓存目录（解析一次）。
      *
      * 每次拦截都调 CacheUtils.getDirPath 会执行 mkdirs 并产生多轮磁盘 stat，
      * 叠加在 shouldInterceptRequest 线程上拖慢首屏，故在此缓存。
      */
-    private val webCachePath: String by lazy { CacheUtils.getDirPath(appContext, WEB_CACHE_DIR) }
-    private val htmlCachePath: String by lazy { CacheUtils.getDirPath(appContext, HTML_CACHE_DIR) }
+    private val webCachePath: String by lazy { CacheUtils.getDirPath(appContext, CacheDirs.WEB) }
 
-    override fun isCacheableHtml(request: WebResourceRequest): Boolean {
-        if (!request.method.equals("GET", true)) return false
-        if (!request.isForMainFrame) return false
-        val url = request.url.toString()
-        if (!url.startsWith("http://") && !url.startsWith("https://")) return false
-        val accept = request.requestHeaders.entries
-            .firstOrNull { it.key.equals("Accept", true) }?.value ?: return false
-        return accept.contains("text/html", ignoreCase = true)
+    /**
+     * HTML 主文档缓存目录，固定落在 internal `cacheDir`。
+     *
+     * 与静态资源不同：主文档内容可能含个人信息（第三方站点同样可能带账号态），
+     * 而 `externalCacheDir` 在部分设备上对 shell / 备份工具可读，保护强度低于 internal storage。
+     */
+    private val htmlCachePath: String by lazy {
+        CacheUtils.getInternalDirPath(appContext, CacheDirs.WEB_HTML)
     }
+
+    init {
+        // 用户关闭「登录态缓存」后，已落盘的带凭据条目要立即清掉：
+        // 否则开关看似生效、磁盘上却仍留着上一账号的图片。
+        appScope.launch(Dispatchers.IO) {
+            settings.credentialedCachingEnabled
+                .drop(1)
+                .filter { enabled -> !enabled }
+                .collect { fetcher.purgeCredentialed(webCachePath) }
+        }
+    }
+
+    override fun isCacheableHtml(request: WebResourceRequest): Boolean =
+        WebCachePolicy.isCacheableHtml(
+            method = request.method,
+            isForMainFrame = request.isForMainFrame,
+            url = request.url.toString(),
+            accept = request.headerValue("Accept"),
+        )
 
     override fun cacheHtmlRequest(
         context: Context,
@@ -114,30 +142,27 @@ class WebResourceCacheManager @Inject constructor(
         return try {
             val url = request.url.toString()
             val cachePath = htmlCachePath
-            val fileName = htmlCacheKey(url)
-            val key = cachePath + File.separator + fileName
-            val file = File(key)
-            if (file.exists() && file.isFile && file.length() > 0L) {
-                val age = System.currentTimeMillis() - file.lastModified()
-                if (age >= HTML_HARD_EXPIRE_MS) {
-                    // 硬过期：强制回源，避免后台刷新持续失败导致永久陈旧
-                    file.delete()
-                    scheduleHtmlDownload(key, cachePath, fileName, url, request)
-                    return null
-                }
-                // 距上次成功刷新过近：直接返回缓存，不发起后台刷新。
-                // 否则「打开 → 返回 → 再打开」这类短时重复访问会各自触发一次完整 HTML 下载，
-                // 使缓存的收益被自身抵消；同时每次下载成功都会触发一次 evictByMtime 磁盘遍历。
-                if (age < HTML_MIN_REFRESH_INTERVAL_MS) {
-                    return WebResourceResponse("text/html", null, file.inputStream())
-                }
-                // 命中：直接返回缓存 + 后台异步刷新（stale-while-revalidate）
-                scheduleHtmlDownload(key, cachePath, fileName, url, request)
-                WebResourceResponse("text/html", null, file.inputStream())
-            } else {
-                scheduleHtmlDownload(key, cachePath, fileName, url, request)
-                null
+            val fileName = WebCachePolicy.htmlCacheKey(url, cookieStore.getCookie(url))
+            val file = File(cachePath, fileName)
+            if (!file.isFile || file.length() <= 0L) {
+                // 无缓存或是残留的空文件：回源，同时后台填充
+                if (file.exists()) file.delete()
+                scheduleHtmlDownload(cachePath, fileName, url, request)
+                return null
             }
+            val age = System.currentTimeMillis() - file.lastModified()
+            if (age >= HTML_HARD_EXPIRE_MS) {
+                // 硬过期：强制回源，避免后台刷新持续失败导致永久陈旧
+                file.delete()
+                metaFile(cachePath, fileName).delete()
+                scheduleHtmlDownload(cachePath, fileName, url, request)
+                return null
+            }
+            // 距上次成功刷新过近时不再后台刷新，否则短时重复访问会各自触发一次完整下载
+            if (age >= HTML_MIN_REFRESH_INTERVAL_MS) {
+                scheduleHtmlDownload(cachePath, fileName, url, request)
+            }
+            buildHtmlResponse(cachePath, fileName, file)
         } catch (e: Exception) {
             Log.e(TAG, "cacheHtmlRequest failed: ${request.url}", e)
             null
@@ -145,31 +170,23 @@ class WebResourceCacheManager @Inject constructor(
     }
 
     /**
-     * 计算 HTML 主文档的缓存 key。
+     * 用缓存文件构造响应：回填 `Content-Type`（含 charset）。
      *
-     * 以「URL + Cookie」的哈希作为键：当同一 URL 的内容随登录账号变化时，
-     * Cookie 不同则 key 不同，避免切换账号后命中前一账号的旧页面。
-     * 无 Cookie 时退化为纯 URL 哈希，保留无身份场景的缓存能力。
-     *
-     * 【设计使然，非刻意缓存登录态】Cookie 进 key 是**正确性**设计（防串号），不是为缓存带身份内容。
-     * 实际命中面很窄：会话 Cookie 只覆盖 wanandroid.com，而文章页绝大多数是第三方域，
-     * key 会退化成纯 URL 哈希。又因 `allowBackup=false`，缓存不会被 ADB 备份导出；
-     * 剩余威胁仅 root / 物理取证，且受 [HTML_HARD_EXPIRE_MS] 限制。
+     * 这一步不是可选优化——缓存命中时原始响应头已丢失，缺 charset 会让 GBK 等非 UTF-8 页面乱码。
+     * 同时**不回放 `Set-Cookie`**：缓存页不应写 Cookie，否则可能复活上一会话的凭证。
      */
-    private fun htmlCacheKey(url: String): String {
-        val cookie = cookieStore.getCookie(url).orEmpty()
-        val raw = if (cookie.isBlank()) url else "$url|$cookie"
-        return DigestUtils.md5Hex(raw)
+    private fun buildHtmlResponse(cachePath: String, fileName: String, file: File): WebResourceResponse {
+        val parsed = WebCachePolicy.parseContentType(readMetaContentType(cachePath, fileName))
+        val mimeType = parsed.mimeType.ifEmpty { DEFAULT_HTML_MIME }
+        return WebResourceResponse(mimeType, parsed.charset, file.inputStream())
     }
 
-    override fun isCacheableResource(request: WebResourceRequest): Boolean {
-        val extension = request.getExtensionFromUrl()
-        if (extension.isBlank()) {
-            val accept = request.requestHeaders["Accept"] ?: return false
-            return accept == ACCEPT_IMAGE && request.method.equals("GET", true)
-        }
-        return extension in CACHEABLE_EXTENSIONS
-    }
+    override fun isCacheableResource(request: WebResourceRequest): Boolean =
+        WebCachePolicy.isCacheableResource(
+            method = request.method,
+            extension = request.getExtensionFromUrl(),
+            accept = request.headerValue("Accept"),
+        )
 
     override fun cacheResourceRequest(
         context: Context,
@@ -179,35 +196,60 @@ class WebResourceCacheManager @Inject constructor(
         return try {
             val url = request.url.toString()
             val cachePath = webCachePath
-            val fileName = DigestUtils.md5Hex(url)
-            val key = cachePath + File.separator + fileName
-            val file = File(key)
-            if (file.isFile && file.length() > 0L) {
-                // 命中：仅在距上次 touch 超过 [MTIME_TOUCH_INTERVAL_MS] 时才回写 mtime。
-                // file.isFile 已隐含 exists 判断，无需再调一次 exists()。
-                // 原实现每次命中都写一次 utimes，100 资源的页面就是 100 次同步写系统调用。
-                val now = System.currentTimeMillis()
-                if (now - file.lastModified() > MTIME_TOUCH_INTERVAL_MS) {
-                    file.setLastModified(now)
-                }
-                val mimeType = request.getMimeTypeFromUrl()
-                WebResourceResponse(mimeType, null, file.inputStream()).apply {
-                    // 【业务需要，但实现偏宽】缓存命中时我们重建 WebResourceResponse，原始响应头
-                    // 会丢失；跨域 @font-face 字体要求响应带 CORS 头，缺失即加载失败，故此处补 "*"。
-                    // 代价是 JS / CSS / 图片也一并被放开给页面脚本（fetch 可读、canvas 不被污染）。
-                    // 收窄方向：只对字体类扩展名回显请求 Origin（不回 Allow-Credentials），
-                    // 其余资源不设置该头。改动前需回归「含自定义字体的文章页」字体是否正常。
-                    responseHeaders = mapOf("Access-Control-Allow-Origin" to "*")
-                }
-            } else {
-                // 未命中：return null 让 WebView 走自带 HTTP 缓存，同时后台异步下载填充 web_cache
-                scheduleAsyncDownload(key, file, cachePath, fileName, url, referer, request)
-                null
+            val file = firstCachedEntry(cachePath, url, referer, request)
+            if (file == null) {
+                // 未命中：return null 让 WebView 走自带 HTTP 缓存，同时后台异步填充
+                scheduleResourceDownload(cachePath, url, referer, request)
+                return null
             }
+            // 命中：仅在距上次 touch 超过 [MTIME_TOUCH_INTERVAL_MS] 时才回写 mtime。
+            // 原实现每次命中都写一次 utimes，100 资源的页面就是 100 次同步写系统调用。
+            val now = System.currentTimeMillis()
+            if (now - file.lastModified() > MTIME_TOUCH_INTERVAL_MS) {
+                file.setLastModified(now)
+            }
+            buildResourceResponse(request, file)
         } catch (e: Exception) {
             Log.e(TAG, "cacheResourceRequest failed: ${request.url}", e)
             null
         }
+    }
+
+    /**
+     * 找出可命中的缓存条目。
+     *
+     * 带凭据条目（`.cred`）只在**同源**请求下参与命中：内容可能属于当前账号，
+     * 交给其他站点读取就是跨站泄露。匿名条目与身份无关，任何来源都可命中。
+     *
+     * 同源时优先取带凭据条目（更贴近当前账号），没有再退到匿名条目。
+     */
+    private fun firstCachedEntry(
+        cachePath: String,
+        url: String,
+        referer: String?,
+        request: WebResourceRequest,
+    ): File? {
+        val sameHost = WebCachePolicy.isSameHost(referer ?: request.headerValue("Origin"), url)
+        return WebCachePolicy.resourceEntryNames(url, sameHost)
+            .asSequence()
+            .map { File(cachePath, it) }
+            .firstOrNull { it.isFile && it.length() > 0L }
+    }
+
+    /**
+     * 用缓存文件构造静态资源响应。
+     *
+     * 命中时原始响应头已丢失，必须补回 CORS 头，否则 `crossorigin` 图片 / 跨域 `@font-face`
+     * 会被浏览器判为 CORS 失败（页面表现为图片一直转圈）。
+     *
+     * 口径见 [WebCachePolicy.corsHeaders]：识别出合法 `Origin` 就精确回显，识别不出来（缺失 /
+     * `null` / 非法值）降级为 `*`——**fail-open**。因为 `Origin` 是否出现在拦截层属 WebView 实现细节，
+     * 按「看不到就当非 CORS」处理会重新踩回「二次进入图片转圈」的坑。
+     */
+    private fun buildResourceResponse(request: WebResourceRequest, file: File): WebResourceResponse {
+        val response = WebResourceResponse(request.getMimeTypeFromUrl(), null, file.inputStream())
+        response.responseHeaders = WebCachePolicy.corsHeaders(request.headerValue("Origin"))
+        return response
     }
 
     override fun prefetchDns(url: String) {
@@ -226,6 +268,9 @@ class WebResourceCacheManager @Inject constructor(
     override fun evictByMtimeIfNeeded(context: Context) {
         appScope.launch(Dispatchers.IO) {
             try {
+                // 旧版本把 HTML 缓存放在 externalCacheDir；改到 internal 后遗留目录不再被读取，
+                // 主动删除，避免升级后用户设备上一直留着一份明文网页缓存
+                appContext.externalCacheDir?.let { FileUtils.delete(File(it, CacheDirs.WEB_HTML)) }
                 evictByMtime(webCachePath, WEB_CACHE_MAX_FILES)
                 evictByMtime(htmlCachePath, HTML_CACHE_MAX_FILES)
             } catch (_: Exception) {
@@ -234,46 +279,45 @@ class WebResourceCacheManager @Inject constructor(
     }
 
     /**
-     * 后台异步下载资源到本地磁盘缓存。
+     * 清除全部本地缓存（含在途下载），用于登出 / 换号等会话变更。
      *
-     * 设计要点：
-     * - 不阻塞 [shouldInterceptRequest] 的调用线程，立即返回；
-     * - 通过 [inFlightDownloads] 按 key 去重，同一个资源只下载一次；
-     * - 下载在 [Dispatchers.IO] 上执行，不占用主线程；
-     * - 下载成功后 touch 文件 mtime 并检查是否触发按 mtime 淘汰。
+     * 先取消在途任务再删目录：否则已发出的下载会在删除后把响应重新写回磁盘，
+     * 清缓存变成「清了个寂寞」。目录随后续写入按需重建，这里立即重建以保持
+     * [webCachePath] / [htmlCachePath] 这类 `by lazy` 路径一直可用。
      */
-    private fun scheduleAsyncDownload(
-        key: String,
-        file: File,
+    override suspend fun clearAll(): Unit = withContext(Dispatchers.IO) {
+        inFlightDownloads.values.forEach { it.cancel() }
+        inFlightDownloads.clear()
+        // 主机结论属于上一个会话：换号后必须重新探测，否则会把「需要登录」错记成匿名
+        fetcher.reset()
+        FileUtils.delete(File(webCachePath))
+        FileUtils.delete(File(htmlCachePath))
+        CacheUtils.getDirFile(appContext, CacheDirs.WEB)
+        CacheUtils.getInternalDirFile(appContext, CacheDirs.WEB_HTML)
+    }
+
+    /**
+     * 后台填充一个静态资源。
+     *
+     * 具体策略（匿名优先 / 失败带凭据重试 / 按主机记忆结论）由 [WebResourceFetcher] 承担；
+     * 本类只负责按 URL 去重、不阻塞 `shouldInterceptRequest` 线程，以及与 HTML 缓存共用生命周期。
+     */
+    private fun scheduleResourceDownload(
         cachePath: String,
-        fileName: String,
         url: String,
         referer: String?,
         request: WebResourceRequest,
     ) {
-        // 组装下载请求头：透传 WebView 原始请求头 + 显式补充 Cookie / Referer。
-        // 虽 OkHttp 已通过 CookieJar 同步 Cookie，但显式补充可形成双保险，
-        // 并便于通过日志诊断 Cookie/Referer 是否真正生效。
-        val headers = buildDownloadHeaders(url, referer, request)
-        val partFileName = "$fileName.part"
-        val partFile = File(cachePath, partFileName)
+        val headers = request.requestHeaders
+        val host = request.url.host.orEmpty()
+        val key = cacheKey(cachePath, WebCachePolicy.resourceEntryName(url, credentialed = false))
         val job = appScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
             try {
-                val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
-                    downloader.download(url, cachePath, partFileName, headers)
-                }
-                if (result?.success == true && partFile.exists() && partFile.length() > 0L) {
-                    // 原子 rename：仅完整下载成功才覆盖目标，截断的 .part 不会成为缓存目标
-                    if (file.exists()) file.delete()
-                    partFile.renameTo(file)
-                    file.setLastModified(System.currentTimeMillis())
-                } else {
-                    // 超时/失败：无条件删除 .part，避免半截文件残留
-                    partFile.delete()
-                }
+                fetcher.fetch(cachePath, url, referer, headers, host)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e(TAG, "Async download failed: $url", e)
-                partFile.delete()
+                Log.e(TAG, "resource fill failed: $url", e)
             } finally {
                 // 仅当表项仍是本协程时才移除，防止被取消的协程误删正在运行的表项
                 coroutineContext[Job]?.let { inFlightDownloads.remove(key, it) }
@@ -289,46 +333,52 @@ class WebResourceCacheManager @Inject constructor(
     }
 
     /**
-     * 后台异步下载 HTML 主文档到本地磁盘缓存（stale-while-revalidate 的下载侧）。
+     * 后台异步下载 HTML 主文档（stale-while-revalidate 的下载侧）。
      *
      * - 复用 [inFlightDownloads] 按 key 去重，命中刷新与未命中下载共用；
-     * - 先写临时文件、成功后原子 rename 覆盖，避免下载失败损坏旧缓存；
-     * - 成功后 touch mtime 作为「最近一次成功刷新时间」，供 [HTML_HARD_EXPIRE_MS] 判断。
+     * - 先写临时文件、判定通过后原子 rename，避免下载失败损坏旧缓存，也避免源站
+     *   标记为不可缓存的响应（`no-store` / `private` / 无法复现的 `Vary`）落盘；
+     * - 成功后 touch mtime 作为「最近一次成功刷新时间」，供硬过期判断；
+     * - `Content-Type` 写入 `.meta` 旁注，命中时回填 mime + charset。
      */
     private fun scheduleHtmlDownload(
-        key: String,
         cachePath: String,
         fileName: String,
         url: String,
         request: WebResourceRequest,
     ) {
-        val headers = buildDownloadHeaders(url, null, request)
-        val tmpFileName = "$fileName.tmp"
+        val headers = htmlFillHeaders(url, request)
+        val tmpFileName = fileName + HTML_TMP_SUFFIX
+        val tmpFile = File(cachePath, tmpFileName)
         val job = appScope.launch(Dispatchers.IO, start = CoroutineStart.LAZY) {
             try {
-                val result = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
-                    downloader.download(url, cachePath, tmpFileName, headers)
+                val resource = withTimeoutOrNull(DOWNLOAD_TIMEOUT_MS.milliseconds) {
+                    downloader.downloadResource(url, cachePath, tmpFileName, headers)
                 }
-                val tmp = File(cachePath, tmpFileName)
+                val downloaded = resource.takeIfDownloaded(tmpFile)
+                if (downloaded == null || !isStorableHtml(downloaded.responseHeaders)) {
+                    tmpFile.delete()
+                    return@launch
+                }
                 val target = File(cachePath, fileName)
-                if (result?.success == true && tmp.exists() && tmp.length() > 0L) {
-                    if (target.exists()) target.delete()
-                    tmp.renameTo(target)
-                    target.setLastModified(System.currentTimeMillis())
-                    // HTML 缓存无独立淘汰时机，下载成功后同步检查并淘汰超出上限的文件
-                    evictByMtime(cachePath, HTML_CACHE_MAX_FILES)
-                } else {
-                    tmp.delete()
+                if (target.exists()) target.delete()
+                if (!tmpFile.renameTo(target)) {
+                    tmpFile.delete()
+                    return@launch
                 }
+                target.setLastModified(System.currentTimeMillis())
+                writeMetaContentType(cachePath, fileName, downloaded.responseHeaders.headerValue("Content-Type"))
+                // HTML 缓存无独立淘汰时机，下载成功后同步检查并淘汰超出上限的文件
+                evictByMtime(cachePath, HTML_CACHE_MAX_FILES)
             } catch (e: Exception) {
                 Log.e(TAG, "Html download failed: $url", e)
-                File(cachePath, tmpFileName).delete()
+                tmpFile.delete()
             } finally {
                 // 仅当表项仍是本协程时才移除，防止被取消的协程误删正在运行的表项
-                coroutineContext[Job]?.let { inFlightDownloads.remove(key, it) }
+                coroutineContext[Job]?.let { inFlightDownloads.remove(cacheKey(cachePath, fileName), it) }
             }
         }
-        val existing = inFlightDownloads.putIfAbsent(key, job)
+        val existing = inFlightDownloads.putIfAbsent(cacheKey(cachePath, fileName), job)
         if (existing != null) {
             job.cancel()
         } else {
@@ -336,39 +386,69 @@ class WebResourceCacheManager @Inject constructor(
         }
     }
 
-    /**
-     * 组装异步缓存下载的请求头。
-     *
-     * - 透传 [WebResourceRequest.requestHeaders]（含 User-Agent / Accept 等）；
-     * - 从 [android.webkit.CookieManager] 显式补充 Cookie，与 OkHttp 的 CookieJar 形成双保险；
-     * - 透传 [referer]（防盗链站点需要），WebView 的 requestHeaders 通常不含 Referer。
-     */
-    private fun buildDownloadHeaders(
-        url: String,
-        referer: String?,
-        request: WebResourceRequest,
-    ): Map<String, String> {
-        val headers = HashMap<String, String>()
-        request.requestHeaders.forEach { (k, v) -> headers[k] = v }
-        cookieStore.getCookie(url)?.let { cookie ->
-            if (cookie.isNotBlank()) headers["Cookie"] = cookie
-        }
-        if (!referer.isNullOrBlank()) headers["Referer"] = referer
-        return headers
-    }
+    /** 下载产出了可用的完整文件时返回结果，否则返回 null。 */
+    private fun DownloadResource?.takeIfDownloaded(file: File): DownloadResource? =
+        this?.takeIf { it.result.success && file.isFile && file.length() > 0L }
+
+    /** HTML 落盘闸门：源站策略 + 必须是 HTML 文档。 */
+    private fun isStorableHtml(headers: Map<String, String>): Boolean =
+        WebCachePolicy.allowsStorage(
+            cacheControl = headers.headerValue("Cache-Control"),
+            vary = headers.headerValue("Vary"),
+        ) && WebCachePolicy.isStorableHtml(headers.headerValue("Content-Type"))
 
     /**
-     * 当 `web_cache` 目录下文件数超过 [WEB_CACHE_MAX_FILES] 时，按文件最后修改时间（mtime）
-     * 升序删除最旧的一批文件，释放磁盘空间。
+     * HTML 主文档的缓存填充请求头。
      *
-     * mtime 在每次缓存命中（[cacheResourceRequest]）和下载完成（[scheduleAsyncDownload]）
-     * 时被 touch 为当前时间，因此越久未用的文件 mtime 越早，天然等价于 LRU 语义。
-     * 只在溢出时才执行文件系统遍历和排序，冷启动零开销。
+     * 与资源不同，HTML 允许带 Cookie：它的缓存键含 Cookie（[WebCachePolicy.htmlCacheKey]），
+     * 本身就是**按身份隔离**的，不存在「匿名条目被跨源复用」的问题。
+     * 请求头仍走白名单（[WebCachePolicy.cacheFillHeaders]），不再原样透传全部字段。
+     */
+    private fun htmlFillHeaders(url: String, request: WebResourceRequest): Map<String, String> =
+        WebCachePolicy.cacheFillHeaders(
+            source = request.requestHeaders,
+            referer = null,
+            cookie = cookieStore.getCookie(url)?.takeIf { it.isNotBlank() },
+        )
+
+    private fun cacheKey(cachePath: String, fileName: String): String =
+        cachePath + File.separator + fileName
+
+    private fun metaFile(cachePath: String, fileName: String): File =
+        File(cachePath, fileName + META_SUFFIX)
+
+    private fun writeMetaContentType(cachePath: String, fileName: String, contentType: String?) {
+        // 写入失败只影响 charset 回填，不影响缓存本身是否可用
+        runCatching {
+            val meta = Properties().apply { setProperty(META_KEY_CONTENT_TYPE, contentType.orEmpty()) }
+            metaFile(cachePath, fileName).outputStream().use { meta.store(it, null) }
+        }.onFailure { Log.w(TAG, "writeMeta failed: $fileName", it) }
+    }
+
+    private fun readMetaContentType(cachePath: String, fileName: String): String? = runCatching {
+        val meta = metaFile(cachePath, fileName)
+        if (!meta.isFile) {
+            null
+        } else {
+            Properties().apply { meta.inputStream().use { load(it) } }
+                .getProperty(META_KEY_CONTENT_TYPE)
+                ?.takeIf { it.isNotBlank() }
+        }
+    }.getOrNull()
+
+    /**
+     * 当目录下文件数超过 [maxFiles] 时，按文件最后修改时间（mtime）升序删除最旧的一批文件。
+     *
+     * mtime 在每次缓存命中或下载完成时被 touch 为当前时间，因此越久未用的文件 mtime 越早，
+     * 天然等价于 LRU 语义。只在溢出时才执行文件系统遍历和排序，冷启动零开销。
+     *
+     * `.meta` 旁注不单独计数：随所属数据文件一起删除，避免「数据没了、旁注还在」的孤儿堆积。
      */
     private fun evictByMtime(cachePath: String, maxFiles: Int) {
         try {
-            val dir = File(cachePath)
-            val files = dir.listFiles() ?: return
+            val files = File(cachePath).listFiles()
+                ?.filterNot { it.name.endsWith(META_SUFFIX) }
+                ?: return
             if (files.size <= maxFiles) return
 
             // 先一次性取出 mtime 再排序：sortedBy 的选择器会在**每次比较**时重新调用，
@@ -377,7 +457,10 @@ class WebResourceCacheManager @Inject constructor(
             val withMtime = files.map { it to it.lastModified() }
             withMtime.sortedBy { it.second }
                 .take(withMtime.size - maxFiles)
-                .forEach { it.first.delete() }
+                .forEach { (file, _) ->
+                    file.delete()
+                    metaFile(cachePath, file.name).delete()
+                }
         } catch (e: Exception) {
             Log.e(TAG, "evictByMtime failed", e)
         }

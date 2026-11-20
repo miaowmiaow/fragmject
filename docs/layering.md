@@ -59,7 +59,7 @@
 | 角色 | 落点 | 职责 |
 |---|---|---|
 | `AuthGateway` | `core:domain` 端口 / `core:data-repository` 的 `AuthGatewayImpl` | 发请求 + 把 `DataResponse` 翻译成 `AuthExchange`；不写库、不清 Cookie、不持锁 |
-| `AuthSessionCoordinator` | `core:domain/usecase` | Cookie 快照/回滚、落库时机、登出异常优先级（会话不变量都在这里） |
+| `AuthSessionCoordinator` | `core:domain/usecase` | Cookie 快照/回滚、落库时机、登出异常优先级、会话残留缓存清理（`SessionCacheCleaner`，必须在撤 Cookie 之后）（会话不变量都在这里） |
 | `UserRepository` | `core:domain` 端口 / `UserRepositoryImpl` | 仅 observe / save / clear 三个存储原子操作 |
 
 判断新代码归属：出现「失败要回滚」「写完要清理」「先后顺序有讲究」→ 属于 `usecase`；
@@ -254,6 +254,8 @@ python3 scripts/verify-splash-avd.py     # 退出码 0=通过
 - 规则 30：`core:model` 之外不得声明同名模型类（拦「原样复制」，与规则 29 拦「加后缀」互补）
 - 规则 31：`CORE_EXCEPTION_EDGES` 与 `dependencies-policy.md` §6.6 双向一致（新增 core 例外未登记即失败；已删除的例外残留在文档里也失败）
 - 规则 31b：`app` → `core:*` 的能力型边（非数据/Hilt 聚合）必须在 §6.6 登记，防止 app 侧新增例外只写在守卫注释里
+- 规则 32：认证屏幕（`feature:auth:impl` 的 `*Screen.kt`）不得使用 `rememberSaveable` / `rememberTextFieldState`（密码会经 `onSaveInstanceState` 进入 saved-state）
+- 规则 33：密码输入不得使用已废弃的 `PasswordVisualTransformation`（统一走 `core:ui` 的 `WhiteSecureTextField`）
 - 另：`boundary selectors match real files` 防止选择器写错导致规则空转
 
 ## 六、常见误判（本项目踩过的坑）

@@ -153,7 +153,7 @@ internal fun verifySignature(facts: SecurityFacts, config: SecurityConfig): Bool
 - **已做字段级加密（OTP 密钥）**：Authenticator 的 `secret`（Base32 种子）入库前经 `KeystoreSecretCipher` 加密（AES-256-GCM，密钥由 Android Keystore 持有，不导出，随机 IV），Room 表 `otp_account` 中只存 `secret_cipher` 密文列，数据库文件与 Entity 中均无明文。实现见 `core/android-platform/.../crypto/KeystoreSecretCipher.kt` 与 `core/database/.../OtpAccountRepositoryImpl.kt`。
 - **登录态**：Cookie 由系统 `CookieManager`（WebView）与 OkHttp `CookieJar` 管理，不在应用自建明文文件里。`User.token` 标注了 `@Ignore`，不落库。
 - **其余结构化数据为明文**：Room（`AppDatabase` / `KVDatabase`）存收藏、搜索历史、用户资料、KV 缓存等。
-- **缓存**：图片/网页缓存（`CacheUtils`、`WebResourceCacheManager`）为明文。
+- **缓存**：图片缓存（`CacheUtils` / Coil 与 OkHttp 的磁盘缓存）为明文。网页缓存（`WebResourceCacheManager`）为明文，但**按身份分区**：HTML 主文档的缓存键含 Cookie，静态资源分匿名 / `.cred` 两级且 `.cred` 仅同源命中；响应还需通过 `Cache-Control: no-store/private` 与 `Vary` 闸门（`WebCachePolicy`），HTML 固定落 internal `cacheDir`；登出/换号时由 `AuthSessionCoordinator` 经 `SessionCacheCleaner` 清空磁盘缓存与池化 WebView（2026-11-20，见 §10.27 / §10.32 / §10.33）。
 
 **为什么全库加密价值低**：
 1. 加密密钥必须存在客户端，root 设备上依然可拿到（`EncryptedFile`/SQLCipher 的密钥最终来自 Android Keystore，但 Keystore 只在"硬件支持 + 未 root"时提供真实隔离）；
@@ -1614,3 +1614,236 @@ ShellCodecParity 3）；`verifyModuleDependencies` 仍通过；`./gradlew :app:p
 
 > `security-matrix` 的改动只能在 CI 上验证（本轮未触发远端流水线）；本地已确认该开关组合
 > 能正常出包（§10.25 三、就是同一组开关的 x86_64 同构构建路径）。
+
+### 10.27 WebView 缓存收敛：会话域不落盘 + 尊重源站指令 + 登出清残留（2026-11-20）
+
+**背景**：评审提出「WebView 资源缓存可能导致登录态响应泄露」。核对后确认风险不在 WebView 原生 HTTP 缓存
+（Chromium 遵守 `Cache-Control` / `Vary`，按 profile 隔离），而在 `shouldInterceptRequest` 里自建的三层实现：
+
+1. 自建缓存**绕过**源站缓存指令——拦截发生在原生缓存之前，`no-store` / `private` / `Vary` 都不再生效；
+2. 静态资源 key 只有 URL（`md5(url)`），白名单含 `json`，扩展名分支不校验 `GET`，命中时统一回注
+   `Access-Control-Allow-Origin: *`（缓存内容对页面内任意脚本可读）；
+3. 登出只清 Cookie 与用户表，`web_cache` / `web_html_cache` 一直留到过期（最长 7 天）。
+
+**改法**（P0/P1/P2 全部落地）：
+
+| 层 | 改动 |
+|---|---|
+| `WebCachePolicy`（新，纯函数） | ~~会话域 `wanandroid.com` 及其子域完全不缓存~~（已被 §10.33 取消）；只缓存 `GET`；`no-store` / `private` / 无法复现的 `Vary` 维度不落盘；`json` 移出扩展名白名单 |
+| `WebResourceCacheManager` | 落盘改为「临时文件 → 源站判定 → 原子 rename」；HTML 写 `.meta` 旁注，命中时回填 `Content-Type` + charset（**不回放 `Set-Cookie`**）；CORS 只对 CORS 模式请求（带 `Origin`）回显该 `Origin`，不再无差别注入 `*`；HTML 固定 internal `cacheDir`，旧 external 目录顺带清理；新增 `clearAll()` |
+| `SessionCacheCleaner`（新 domain 端口） | core:webview 实现：清磁盘缓存（先取消在途下载）+ `WebViewPool.releaseAll()`；由 `AuthSessionCoordinator` 在**撤销 Cookie 之后**调用，顺序有单测锁定 |
+| 下载链路 | `DownloadRepository.downloadResource` / `DownloadRemoteDataSource.downloadWithHeaders` 回传 `Content-Type` / `Cache-Control` / `Vary`；默认实现返回空头，缓存侧据此 fail-closed |
+
+**为什么不是「带 Cookie 就不缓存」**：文章页绝大多数是第三方域，`__cf_bm` 这类追踪 Cookie 会让命中率归零。
+改为按**会话域**排除：本项目的登录态只在 `wanandroid.com`，第三方页面内容与账号无关（key 仍含 Cookie 防串号）。
+
+> **该「会话域整体排除」已于同日按产品决策取消，见 §10.33**：身份隔离改由「HTML 键含 Cookie + 资源条目分级 +
+> 同源闸 + 登出清目录」承担。本节以下内容保留当时的判断记录，但**不再描述当前实现**。
+
+**同日回归修正（CORS 收窄过度）**：首版把 `Access-Control-Allow-Origin` 收到「只给字体」，真机回归出现
+「部分文章页图片一直转圈」。原因是这些页面的图片走 CORS 模式加载（`crossorigin` / 脚本取图），
+命中缓存时原始响应头已丢失，缺 ACAO 即被浏览器判为 CORS 失败。
+最终口径为 `WebCachePolicy.corsHeaders`（**fail-open**）：识别出合法 `Origin`（`http(s)://host[:port]`）
+就精确回显；识别不出来（缺失 / `null` / `*` / 带路径 / 其他 scheme）一律降级为 `*`；永不输出 `Allow-Credentials`。
+
+为什么是 fail-open 而不是「看不到 `Origin` 就不给」：`Origin` 是否出现在 `shouldInterceptRequest` 的
+`requestHeaders` 属 WebView 实现细节（老版本 / 部分 ROM 会裁剪请求头）。一旦看不到就按「非 CORS」处理，
+等于重现「首次打开正常、二次进入命中缓存后图片转圈」这个坑。对非 CORS 请求而言 `*` 本就不生效，
+不构成额外暴露；真正的高危面在内容层，已由 P0/P1 的落盘闸门挡住。
+
+补充评估（同日）：ACAO 只在「命中缓存 + CORS 模式 + 跨源 + 字节交给脚本」四条同时成立时才有安全含义，
+而会话域、`no-store/private`、`json` / `text/html` 已全部挡在缓存之外，内容层不再含身份数据，
+因此**不再按资源类型收窄 ACAO**（无安全收益，只会打挂 `crossorigin` 图片与跨域字体）。
+保留的两条不变量是「只产出 ACAO 一个键 + 永不设 `Allow-Credentials`」与「只回显合法来源、其余降级为通配」，
+由 `WebCachePolicyTest` 的 `cors headers never grant credentialed reads` /
+`unrecognized origins fall back to wildcard instead of dropping the header` 反向锁住。
+「脚本可读的跨源读取」（`fetch` 缓存资源）是残留的低危面，代价是关掉会打断站点用 CDN 取图的流程，故保留。
+
+**验证**：`detekt` + `:core:webview:testDebugUnitTest`（21 例，新增 `WebCachePolicyTest`）+
+`:core:domain:testDebugUnitTest`（18 例，新增 4 例缓存清理/顺序用例）+ `:core:data-*` / `:core:network` 单测 +
+`:app:testDebugUnitTest`（架构守卫）+ `verifyModuleDependencies` → `BUILD SUCCESSFUL`。
+
+### 10.28 登录/注册表单退出 saved-state（2026-11-20）
+
+**问题**：`LoginScreen` / `RegisterScreen` 用 `rememberSaveable` 保存用户名与密码。
+`rememberSaveable` 的值进入 `Activity.onSaveInstanceState` 的 Bundle；应用退到后台、进程被回收时，
+系统会把这个 Bundle 持久化到任务快照（**应用沙箱之外**），进程重建时再回填。对密码而言，
+这等于把明文凭据写到磁盘，并把生命周期从「输入框销毁」延长到「任务被移除」。
+
+**改法**：
+
+| 项 | 内容 |
+|---|---|
+| UI 状态 | 两个屏幕的表单文本改回 `remember`（仅进程内），并在字段处写明理由 |
+| 代价评估 | 旋转等配置变更由 `MainActivity` 的 `configChanges` 自行处理，不会丢输入；只有进程重建才需要重新输入，可接受 |
+| 守卫 | 新增规则 32（`ArchitectureUiContractTest`）：`feature:auth:impl` 的 `*Screen.kt` 整文件禁止 `rememberSaveable`；选择器命中 0 文件时失败，避免规则空转 |
+
+**不做**：不引入 `rememberSaveable` 的自定义 `Saver`「加密后保存」——saved-state 会在进程重建时回填，
+密钥同样要落盘，收益不成立；凭据类输入本就不该跨进程重建。
+
+**验证**：`detekt` + `:app:testDebugUnitTest`（含架构守卫规则 32）+ `:feature:auth:impl:testDebugUnitTest` → `BUILD SUCCESSFUL`。
+
+### 10.29 Debug 日志不再打印请求体（2026-11-20）
+
+**问题**：`:core:network` 的 Debug 客户端用 `HttpLoggingInterceptor.Level.BODY`，会把
+登录 / 注册的**表单请求体原文**（`username=…&password=…`）打进 logcat。
+Release 包不安装该拦截器，所以影响面限于开发机与 beta 包的 logcat 缓冲，
+但「明文密码进系统日志」本身不该存在——同机其他进程、`adb bugreport`、日志采集工具都能读到。
+
+**改法**：新增 `DebugHttpLogger`（应用拦截器）替换 `HttpLoggingInterceptor`：
+
+| 维度 | 口径 |
+|---|---|
+| 请求体 | **一律不打印**（不依赖端点名单：将来新增敏感接口也不会漏） |
+| 凭据提交端点（`POST user/login`、`user/register`） | 额外屏蔽 URL query 与响应体（登录响应含用户资料与会话标识） |
+| 响应体 | 仅非凭据端点 + 文本类（text/json/xml/js），截断 4KB；下载 / 图片客户端完全关闭 |
+| 敏感头 | `Cookie` / `Set-Cookie` / `Authorization` / `Proxy-Authorization` 打 `<redacted>` |
+| 挂载位置 | 应用拦截器：请求侧看不到 CookieJar 注入的 Cookie，响应侧已完成 gzip 解压 |
+
+顺带移除 `core:network` 对 `okhttp-logging` 的依赖（唯一使用点已替换）。
+
+**代价**：调试时看不到请求体。凭据类本来就该看不到；其余请求体由代码可直接推导，
+实际调试最需要的响应体预览保留。
+
+**验证**：`detekt` + `:core:network:testDebugUnitTest`（新增 `DebugHttpLoggerTest` 4 例，
+覆盖端点识别与「方法必须是带体的 POST」）→ `BUILD SUCCESSFUL`。
+
+### 10.30 池化 WebView 的会话代次守卫（2026-11-20）
+
+**问题**：登出时 `WebSessionCacheCleaner` 已经清空 keep-alive 池（`releaseAll()`），
+但存在一个**迟到回收**的窄窗口：`releaseAll()` 只处理「此刻在池里」的实例；
+如果某次登出发生时还有一个 WebView 处于组合中（未回调 `onRelease`），它会在登出之后才走到
+`recycle()`，把上一个会话的页面（DOM + JS 上下文）原样放回池中。随后 `obtain()` 按 URL 命中它
+会**不重新加载**，等于把上一账号的页面显示给下一个人。
+
+**改法**：`WebViewPoolManager` 引入会话代次：
+
+| 时机 | 行为 |
+|---|---|
+| `obtain()` | 记录实例所属代次（`WeakHashMap<WebView, Int>`，实例销毁后条目自动消失） |
+| `releaseAll()`（登出 / 换号 / 极端缺内存） | `sessionEpoch++`，并销毁池内全部实例 |
+| `recycle()` | 代次落后 → 直接 `destroy()`，不入池 |
+
+**为什么不是「登出时把池里的页面清成 about:blank」**：那会牺牲 keep-alive 的核心收益
+（返回详情页不重载）；代次判定只丢弃**跨会话**的实例，同会话内仍然保留页面状态。
+
+**现状评估（诚实口径）**：正常情况下登出只能从设置页触发，此时没有 WebView 处于组合中，
+这条窗口在现有导航结构下几乎不可达；守卫是为「WebView 页面内可直接登出」这类后续演进兜底，
+成本 3 行状态、无额外开销。
+
+**验证**：`detekt` + `:core:webview:testDebugUnitTest` → `BUILD SUCCESSFUL`（池逻辑依赖真实 WebView，
+无法 JVM 单测，属已知覆盖缺口）。
+
+### 10.31 密码输入迁移到 SecureTextField（2026-11-20）
+
+**触发**：编译告警 —— `PasswordVisualTransformation` 已废弃，官方指向 `BasicSecureTextField` / `SecureTextField`。
+
+**为什么值得迁（不只是消警告）**：旧写法是「普通 `TextField` + 渲染层把字符换成圆点」，密码仍以普通文本存在，
+会进入文本撤销栈、无障碍节点文本等普通文本管线；`SecureTextField` 走平台安全输入通道，这两条面都收窄。
+
+**改法**：
+
+| 项 | 内容 |
+|---|---|
+| 新增组件 | `core:ui/components/WhiteSecureTextField.kt`：`SecureTextField` + 与 `WhiteTextField` 一致的配色，参数为 `TextFieldState` |
+| 调用点 | `LoginScreen` / `RegisterScreen` 的密码与确认密码；用户名保持原 `WhiteTextField` |
+| 状态创建 | **必须** `remember { TextFieldState() }`，不能用 `rememberTextFieldState()`——后者内部是 `rememberSaveable`，密码会重新进入 saved-state（§10.28 刚修掉的面） |
+| 守卫 | 规则 32 扩展为同时拦 `rememberTextFieldState`；新增规则 33 全量禁止 `PasswordVisualTransformation(` |
+
+**代价**：密码框从「String 状态」变成 `TextFieldState`，调用方取值为 `state.text.toString()`；
+`RegisterFields` 的受控参数由 `String + onChange` 收敛为直接传 `TextFieldState`（状态自持，反而少了两条回调）。
+
+**验证**：`detekt` + `:app:testDebugUnitTest`（含规则 32/33）+ `:feature:auth:impl` / `:core:ui` 编译 → `BUILD SUCCESSFUL`。
+
+### 10.32 资源缓存分级：匿名 / 带凭据 + 同源命中闸（2026-11-20）
+
+**问题（P1 评审）**：静态资源缓存键只按 URL，而缓存填充会读取 `CookieStore` 并把 Cookie
+附加到下载请求（还会原样透传全部 `requestHeaders`，含 `Authorization`）。于是「用登录态取到的
+响应」被按 URL 落盘，之后任何页面请求同一 URL 都会命中。虽然 CORS 只是 fail-open 回 `*`，
+但攻击页面（跨源）可以 `fetch` 该 URL 读到带身份的图片内容。
+
+**为什么没有采用「带 Cookie 就不缓存」**：第三方站点普遍存在匿名追踪 Cookie（`__cf_bm` 等），
+那样做等于关掉整个资源缓存，命中率归零——与「缓存是为体验」的目标冲突。
+
+**改法**：
+
+| 层 | 规则 |
+|---|---|
+| 条目分级 | 匿名条目（无后缀）/ 带凭据条目（`.cred` 后缀），由文件名区分，命中路径零额外 IO |
+| 命中闸 | 带凭据条目**只允许同源命中**（页面 host == 资源 host）；跨源只允许匿名条目 |
+| 填充策略 | 每主机**只探测一次**：先匿名下载；失败（401/403/异常）且该 URL 有 Cookie、开关允许时带凭据重试一次；结论记在内存，后续该主机按结论执行 |
+| 请求头 | 改为白名单转发（`User-Agent` / `Accept` / `Accept-Language` + `Referer`），身份只由 `cookie` 参数决定，`Authorization` 等不再透传 |
+| 开关 | 设置页「用登录态缓存图片」，**默认开**；关闭时清掉已有 `.cred` 条目，匿名条目保留 |
+| 提示 | 首次生成 `.cred` 条目时，文章页给一次 Snackbar（一次性），不做逐资源弹窗 |
+| 会话变更 | `clearAll()` 额外重置主机结论；换号后重新探测 |
+
+**取舍**：需要登录才能取到的资源会多一次失败请求（仅每个主机第一次）；
+若某主机首个被缓存的资源是公开的，该主机的登录态资源就不会进缓存（按 URL 键无法区分）。
+两者都是「命中率换确定性」的可接受代价，且不影响展示（未命中即走原生请求）。
+
+**验证**：`detekt` + `:core:webview:testDebugUnitTest`（25 例，新增条目分级 / 白名单头 / 同源判定）+
+`:feature:user:impl:testDebugUnitTest`（5 例，新增开关透传）+ `:app:testDebugUnitTest`（架构守卫）→ `BUILD SUCCESSFUL`。
+
+**仍未覆盖**：`WebResourceFetcher` 的探测状态机依赖真实网络与 OkHttp，只有纯函数部分有单测；
+主机结论是内存态，进程重启后重新探测一次。
+
+### 10.33 取消「会话域整体不缓存」的主机级例外（2026-11-20）
+
+**决策**：按产品要求移除 §10.27 引入的「`wanandroid.com` 及全部子域不缓存」限制，
+任何主机的内容都可以进入本地缓存；身份隔离不再靠主机名，而是靠**条目分区 + 命中闸**。
+
+**为什么可以不再按主机排除**（当前承担隔离的四层）：
+
+| 层 | 机制 |
+|---|---|
+| HTML 键 | `htmlCacheKey = md5(url \| cookie)`：换号 / 登出后 key 不同，不可能命中上一身份的页面 |
+| 资源条目 | 匿名条目（下载未带凭据，任何来源可命中）/ `.cred` 条目（带凭据，**仅同源可命中**，见 §10.32） |
+| 响应闸门 | `no-store` / `private` / 无法复现的 `Vary` / 非预期 `Content-Type` 一律不落盘 |
+| 会话变更 | 登出由 `SessionCacheCleaner` 删全部缓存目录 + 释放池；关闭开关会删掉 `.cred` 条目 |
+
+**移除后新增的暴露面（如实记录）**：
+
+1. **磁盘明文**：wanandroid 的个人页（收藏、个人中心等，若服务端未标注 `no-store`/`private`）
+   会以「按身份分区的条目」落到 `web_html_cache`（internal `cacheDir`）。仅 root / 物理取证可读，
+   登出即清；未做加密（同 §3.5 结论）。
+2. **同站可读**：`.cred` 资源条目对**所有 wanandroid 页面**可读，这就是同源模型本身，不算越界。
+3. **陈旧页面的功能风险**：登录表单类页面若把 CSRF token 内嵌在 HTML 里，命中缓存后提交可能失败
+   （最小刷新间隔 5 分钟、硬过期 7 天）。若线上出现「登录提交偶发失败」，第一处置是
+   对 `/user/**` 的 HTML 单独禁用缓存，而不是恢复整域排除。
+
+**回滚方式**：在 `WebCachePolicy.isCacheableHtml` / `isCacheableResource` 里恢复主机判定
+（`host == "wanandroid.com" || host.endsWith(".wanandroid.com")`）即可，其余机制无需改动；
+`WebCachePolicyTest` 的 `no host level exception - login domain html is cacheable too` 会在回滚时失败，
+提醒同步改测试。
+
+**验证**：`detekt` + `:core:webview:testDebugUnitTest`（23 例；原「会话域」两例替换为
+「登录域同样可缓存」的正向断言）+ `:app:testDebugUnitTest` → `BUILD SUCCESSFUL`。
+
+### 10.34 缓存决策响应头必须合并同名字段（2026-11-20）
+
+**问题**：`OkHttpFileDownloader` 用 `Response.header(name)` 取 `Cache-Control` / `Vary`，
+该方法**只返回最后一个值**。HTTP 允许把这两个头拆成多行，于是：
+
+```
+Cache-Control: no-store
+Cache-Control: max-age=600
+```
+
+被读成 `max-age=600`，缓存侧误判为「可缓存」→ 本应拒绝的响应被写进磁盘。
+`Vary: Cookie` 若不在最后一行，同样会被漏掉，进而绕过「无法复现的 Vary 维度不落盘」这条闸门。
+这是一个**静默放行**型缺陷：不报错、不崩溃，只让安全判定失效。
+
+**改法**：
+
+| 项 | 内容 |
+|---|---|
+| 提取 | 抽出可单测的 `Headers.cacheRelevantHeaders()`；`Cache-Control` / `Vary` 用 `values(name)` 全量取出后按 HTTP 语义以 `", "` 合并 |
+| `Content-Type` | 保持单值（重复出现本身非法，合并会破坏 mime/charset 解析） |
+| 解析侧 | `WebCachePolicy.allowsStorage` 本就按 `,` 拆分指令，合并后仍能识别 `no-store` / `private` / 非法 `Vary`，并补了防御性用例 |
+
+**不在本修复范围**：请求头方向的同名合并由 Chromium 完成（`WebResourceRequest.requestHeaders`
+拿到的是已合并的 `Map<String,String>`），应用侧无法干预。
+
+**验证**：`detekt` + `:core:network:testDebugUnitTest`（新增 `CacheRelevantHeadersTest` 6 例：
+多行 `Cache-Control`/`Vary` 合并、`Content-Type` 单值、缺失头、大小写）+ 
+`:core:webview:testDebugUnitTest`（24 例，新增「合并后仍被拒绝」）→ `BUILD SUCCESSFUL`。

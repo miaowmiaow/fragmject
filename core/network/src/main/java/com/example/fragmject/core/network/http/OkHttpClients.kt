@@ -10,7 +10,6 @@ import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
-import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -49,7 +48,7 @@ class OkHttpClients internal constructor(
     private val defaultHttpClient by lazy { baseBuilder(null).cache(sharedCache).build() }
     private val defaultNoCacheClient by lazy { buildNoCache(null) }
 
-    private fun baseBuilder(ssl: SslConfig?): OkHttpClient.Builder {
+    private fun baseBuilder(ssl: SslConfig?, logResponseBody: Boolean = true): OkHttpClient.Builder {
         val builder = sharedClient.newBuilder()
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -73,10 +72,15 @@ class OkHttpClients internal constructor(
 
         // 仅在 Debug 包添加日志拦截器；Release 包完全不添加，避免每个请求上的
         // 日志字符串拼接与拦截器链开销，同时从根上防止账号 / Cookie 等敏感数据经日志泄露。
+        //
+        // 用 [DebugHttpLogger] 而不是 HttpLoggingInterceptor.BODY：后者的 BODY 级会把请求体原文
+        // 打进 logcat，而登录 / 注册的密码就在表单体里。日志口径见该类的 KDoc：
+        // 请求体永不打印，凭据端点额外屏蔽响应体，敏感头一律打码。
+        //
+        // 挂在应用拦截器（addInterceptor）：请求侧看不到 CookieJar 注入的 Cookie，
+        // 响应侧已由 BridgeInterceptor 完成 gzip 解压（网络拦截器拿到的是压缩流）。
         if (BuildConfig.DEBUG) {
-            builder.addNetworkInterceptor(
-                HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-            )
+            builder.addInterceptor(DebugHttpLogger(logResponseBody = logResponseBody))
         }
         return builder
     }
@@ -89,17 +93,9 @@ class OkHttpClients internal constructor(
     fun noCache(ssl: SslConfig? = null): OkHttpClient =
         if (ssl == null) defaultNoCacheClient else buildNoCache(ssl)
 
-    private fun buildNoCache(ssl: SslConfig?): OkHttpClient = baseBuilder(ssl)
-        .apply {
-            if (BuildConfig.DEBUG) {
-                // 将 BODY 日志降级为 HEADERS，避免大体积响应刷屏。
-                networkInterceptors().removeAll { it is HttpLoggingInterceptor }
-                addNetworkInterceptor(
-                    HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS)
-                )
-            }
-        }
-        .build()
+    /** 流式下载 / 图片加载：只保留请求行与头部日志，不取响应体预览（大文件会刷屏）。 */
+    private fun buildNoCache(ssl: SslConfig?): OkHttpClient =
+        baseBuilder(ssl, logResponseBody = false).build()
 
     /** 智能判断：仅当服务端证书非空，或客户端证书 + 密码齐全时才返回 true。 */
     private fun hasSslConfig(ssl: SslConfig): Boolean {

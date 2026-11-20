@@ -16,10 +16,11 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.example.fragmject.core.android.platform.app.AppCoroutineScope
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import java.util.WeakHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * WebView 管理器：维护 WebView 池的完整生命周期。
@@ -70,6 +71,24 @@ class WebViewPoolManager @Inject constructor(
     @SuppressLint("StaticFieldLeak")
     private val keepAlivePool: LinkedHashMap<String, WebView> =
         LinkedHashMap(keepAliveCapacity, 0.75f, true)
+
+    /**
+     * 会话代次：[releaseAll] 时自增（登出 / 换号 / 会话失效）。
+     *
+     * [recycle] 时若实例的代次落后，说明它承载的是**清理前那个会话**的页面（DOM 与 JS 上下文都在），
+     * 直接销毁而不入池。没有这层判断时存在一个窄窗口：`releaseAll()` 先清空池，随后组合里那个
+     * 尚未释放的 WebView 才正常回调 [recycle]，旧页面又回到池中；下一个账号打开同 URL 时
+     * [obtain] 会命中它并直接复用（不重新加载），等于把上一账号的页面原样显示出来。
+     */
+    private var sessionEpoch = 0
+
+    /**
+     * 每个实例在 [obtain] 时所属的代次。
+     *
+     * 用弱引用：实例被 destroy 后条目自动消失，不额外持有 WebView。
+     * 读写在主线程（obtain / recycle / releaseAll 都只从主线程调用）。
+     */
+    private val obtainedEpoch = WeakHashMap<WebView, Int>()
 
     private fun create(context: Context): WebView {
         // 始终以 MutableContextWrapper 作为 baseContext，便于在 Activity 间切换而不持有 Activity 引用
@@ -185,6 +204,8 @@ class WebViewPoolManager @Inject constructor(
             webView.stopLoading()
             webView.clearHistory()
         }
+        // 记录本实例属于当前会话代次；登出后回收的旧实例会因代次落后被丢弃
+        obtainedEpoch[webView] = sessionEpoch
         return webView
     }
 
@@ -210,7 +231,8 @@ class WebViewPoolManager @Inject constructor(
             (webView.context as? MutableContextWrapper)?.let { wrapper ->
                 wrapper.baseContext = wrapper.baseContext.applicationContext
             }
-            if (!isSafeForSparePool(webView)) {
+            // 代次落后 = 承载的是已清理会话的页面，直接销毁（原因见 sessionEpoch）
+            if (!isSafeForSparePool(webView) || isFromClearedSession(webView)) {
                 webView.stopLoading()
                 webView.removeAllViews()
                 webView.destroy()
@@ -264,6 +286,16 @@ class WebViewPoolManager @Inject constructor(
     }
 
     /**
+     * 取出并比较代次：实例属于**已被清理的会话**时返回 true，调用方必须销毁而不是复用。
+     *
+     * 表中没有记录的实例（非 [obtain] 产出，或已因其他路径 destroy）视为非陈旧。
+     */
+    private fun isFromClearedSession(webView: WebView): Boolean {
+        val epoch = obtainedEpoch.remove(webView) ?: return false
+        return epoch != sessionEpoch
+    }
+
+    /**
      * 校验 WebView 当前的 baseContext 是否已切回 ApplicationContext，仅当满足该不变式时才允许进入空闲池。
      * 这是防止意外引入 Activity 引用的最后一道兜底。
      */
@@ -273,8 +305,15 @@ class WebViewPoolManager @Inject constructor(
         return base === base.applicationContext
     }
 
+    /**
+     * 释放全部实例（极端缺内存，或登出 / 换号后的会话清理）。
+     *
+     * 会话清理场景下会先自增 [sessionEpoch]：此后任何旧实例的回调 [recycle] 都只会被销毁，
+     * 不会把上一个会话的页面重新放回池中。
+     */
     override fun releaseAll() {
         try {
+            sessionEpoch++
             spareWebView?.let { destroyQuietly(it) }
             spareWebView = null
             keepAlivePool.values.forEach { destroyQuietly(it) }

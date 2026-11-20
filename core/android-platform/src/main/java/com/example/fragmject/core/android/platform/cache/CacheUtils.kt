@@ -21,6 +21,20 @@ object CacheUtils {
         return getDirFile(context, name).absolutePath
     }
 
+    /**
+     * 固定落在 internal `cacheDir` 的子目录（不随 SD 卡切换）。
+     *
+     * 用于**内容本身可能含身份信息**的缓存：外置缓存目录（`externalCacheDir`）在部分设备上
+     * 对 shell / 备份工具可读，保护强度低于 internal storage。
+     */
+    fun getInternalDirFile(context: Context, name: String): File {
+        return File(context.cacheDir, name).apply { mkdirs() }
+    }
+
+    fun getInternalDirPath(context: Context, name: String): String {
+        return getInternalDirFile(context, name).absolutePath
+    }
+
     suspend fun getTotalSize(context: Context): String {
         return withContext(Dispatchers.IO) {
             var cacheSize = FileUtils.getSize(context.cacheDir)

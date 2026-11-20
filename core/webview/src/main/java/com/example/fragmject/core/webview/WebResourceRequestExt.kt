@@ -19,3 +19,12 @@ internal fun WebResourceRequest.getMimeTypeFromUrl(): String =
         "json" -> "application/json"
         else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "*/*"
     }
+
+/**
+ * 大小写不敏感地取请求头。
+ *
+ * WebView 透传的 header key 大小写不保证统一（`Accept` / `accept` 都出现过），
+ * 直接 `map["Accept"]` 会漏读，导致缓存判定在部分机型上静默失效。
+ */
+internal fun WebResourceRequest.headerValue(name: String): String? =
+    requestHeaders.entries.firstOrNull { it.key.equals(name, ignoreCase = true) }?.value

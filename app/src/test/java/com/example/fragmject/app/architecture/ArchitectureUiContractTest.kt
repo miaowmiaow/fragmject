@@ -118,6 +118,60 @@ class ArchitectureUiContractTest {
         )
     }
 
+    /**
+     * 规则 32：认证表单不得把输入内容放进 saved-state。
+     *
+     * `rememberSaveable` 的值会写入 `Activity.onSaveInstanceState` 的 Bundle；应用退到后台、
+     * 进程被回收时，系统会把这个 Bundle 持久化到任务快照（**应用沙箱之外**），进程重建时再回填。
+     * 对密码而言，这等于把明文凭据写进磁盘并延长其生命周期。
+     *
+     * 登录 / 注册屏幕只有「输入中的用户名 / 密码」这种不值得跨进程重建的状态
+     * （旋转等配置变更由 MainActivity 的 `configChanges` 自己处理），因此整个文件禁止
+     * `rememberSaveable`；将来确有需要跨重建保留的 UI 状态时，按字段单独论证再放行。
+     */
+    @Test
+    fun `auth screens keep credentials out of saved state`() {
+        val screens = productionFiles.filter {
+            it.projectPath.contains("/feature/auth/impl/") && it.projectPath.endsWith("Screen.kt")
+        }
+        assertTrue("auth 屏幕选择器匹配 0 文件（选择器写错会让本规则空转）", screens.isNotEmpty())
+        // 只看代码、不看注释：本规则本身就要在字段处写明「为什么不用 rememberSaveable」，
+        // 直接全文匹配会把解释性注释当成违规。
+        //
+        // 同时拦住 `rememberTextFieldState`：它内部就是 rememberSaveable（TextFieldState.Saver），
+        // 换成 SecureTextField 后用它保存密码，等于把刚修掉的泄漏原样放回来。
+        val usage = Regex("""remember(Saveable|TextFieldState)\s*[({<]""")
+        val offenders = screens
+            .filter { file -> usage.containsMatchIn(codeWithoutComments(readSource(file))) }
+            .map { it.projectPath }
+        assertTrue(
+            "登录/注册屏幕不得使用 rememberSaveable / rememberTextFieldState（密码会进入 saved-state）：$offenders",
+            offenders.isEmpty(),
+        )
+    }
+
+    /**
+     * 规则 33：密码输入不得使用 `PasswordVisualTransformation`。
+     *
+     * 该 API 及其所属的「String + VisualTransformation」TextField 家族已废弃，官方迁移方向是
+     * `SecureTextField` / `BasicSecureTextField`（平台安全输入通道，密码不经过普通文本管线）。
+     * 本工程统一走 `core:ui` 的 `WhiteSecureTextField`，见规则 32 的同目录实现。
+     *
+     * 扫描范围是全量生产代码而非仅 auth：`WhiteTextField` / `ClearTextField` 仍暴露
+     * `visualTransformation` 参数（非密码场景的掩码是合法用法），因此这条 API 可以从任何模块被引用回来。
+     */
+    @Test
+    fun `password inputs do not use deprecated visual transformation`() {
+        val usage = Regex("""PasswordVisualTransformation\s*\(""")
+        val offenders = productionFiles
+            .filter { file -> usage.containsMatchIn(codeWithoutComments(readSource(file))) }
+            .map { it.projectPath }
+        assertTrue(
+            "密码输入不得使用已废弃的 PasswordVisualTransformation，请用 WhiteSecureTextField：$offenders",
+            offenders.isEmpty(),
+        )
+    }
+
     @Test
     fun `webview container does not expose native callbacks`() {
         val container = productionFiles.single {
@@ -132,3 +186,17 @@ class ArchitectureUiContractTest {
         )
     }
 }
+
+/**
+ * 去掉整行注释（行注释、块注释的续行与起始行），只保留代码文本。
+ *
+ * 不做「行尾注释截断」：字符串里的 `//`（URL）会被误伤，导致漏检；
+ * 行尾注释里提到 API 名不构成违规，无需处理。
+ */
+private fun codeWithoutComments(source: String): String =
+    source.lines()
+        .filterNot { line ->
+            val trimmed = line.trimStart()
+            trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")
+        }
+        .joinToString("\n")

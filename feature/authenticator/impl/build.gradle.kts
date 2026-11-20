@@ -4,6 +4,16 @@ plugins {
     id("fragmject.android.hilt")
 }
 
+android {
+    testOptions {
+        // AuthenticatorAddViewModel 的落盘失败分支会调用 android.util.Log.e；
+        // JVM 单测默认抛 "Method not mocked"，异常会打断「复位 saving + 发失败事件」，
+        // 表现为按钮永久禁用 / 事件收不到而挂到超时。Log 无副作用，返回默认值即可
+        // （与 feature:home:impl、feature:demo:impl 处理保持一致）。
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
 dependencies {
     // 组合根 :app 显式声明 :feature:authenticator:api（见 dependencies-policy.md §6.5）。
     // 此处用 implementation 而非 api()：否则 api 层会经 impl 传递进入 app，

@@ -4,6 +4,7 @@ import androidx.compose.material3.CalendarLocale
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -60,6 +61,36 @@ class CalendarModelTest {
         assertNotNull(month)
         assertEquals(2024, month!!.year)
         assertEquals(2, month.month)
+    }
+
+    @Test
+    fun `construction does not prebuild any month`() {
+        val fresh = CalendarModel(CalendarLocale("en-US"))
+        assertEquals("构造只应算索引，不应生成月份数据", 0, fresh.builtMonthCount())
+
+        assertNotNull(fresh.monthModeByIndex(0))
+        assertEquals(1, fresh.builtMonthCount())
+
+        // 同一索引返回缓存实例，重复访问不再重建
+        fresh.monthModeByIndex(0)
+        assertEquals(1, fresh.builtMonthCount())
+    }
+
+    @Test
+    fun `week mode index is consistent at the last month and out of range`() {
+        val lastIndex = model.weekModeCount() - 1
+        val month = model.weekModeByIndex(lastIndex)
+        assertNotNull(month)
+        assertEquals(2100, month!!.year)
+        assertEquals(12, month.month)
+        assertEquals(
+            lastIndex,
+            model.weekModeIndexByDate(2100, 12, month.weeksInMonth() - 1),
+        )
+
+        assertNull(model.weekModeByIndex(-1))
+        assertNull(model.weekModeByIndex(model.weekModeCount()))
+        assertNull(model.monthModeByIndex(model.monthModeCount()))
     }
 
     @Test

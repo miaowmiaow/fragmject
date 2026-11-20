@@ -7,6 +7,16 @@ import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import kotlin.math.ceil
 
+/**
+ * 日历数据模型：1900–2100 年的月/周两种索引。
+ *
+ * 构造时**不生成任何月份数据**，只按 locale 算好星期名、今天，以及每月的周数
+ * （纯整数数组）。整月的周格与 [CalendarDate] 推迟到首次访问该月时才构建并缓存：
+ *
+ * 旧实现在 `remember(defaultLocale)` 里同步遍历 201×12 个月、构造约 9 万个
+ * [CalendarDate]（每个还带一个 [LocalDate]），首帧与 locale 切换都要在主线程付这笔钱；
+ * 而一屏最多只用到相邻两三个月，绝大多数对象永远不会被显示。
+ */
 class CalendarModel(
     locale: CalendarLocale,
 ) {
@@ -16,15 +26,31 @@ class CalendarModel(
     var localYear: Int = 0
     var localMonth: Int = 0
     private var localDay: Int = 0
-    private val calendarMonthMap: MutableMap<Int, CalendarMonth> = mutableMapOf()
-    private val monthModeDateMappingIndex: MutableMap<String, Int> = mutableMapOf()
-    private val weekModeIndexMappingDate: MutableMap<Int, Pair<String, Int>> = mutableMapOf()
-    private val weekModeDateMappingIndex: MutableMap<Pair<String, Int>, Int> = mutableMapOf()
-    private var monthModeCount = 0
-    private var weekModeCount = 0
+
+    /** 当前 locale 一周的第一天（1 = 周一 … 7 = 周日）。 */
+    private val firstDayOfWeek: Int = WeekFields.of(locale).firstDayOfWeek.value
+
+    private val monthCount: Int = YEAR_RANGE.count() * MONTHS_PER_YEAR
+
+    /**
+     * 每月的周数（含首尾补齐格），只有整数。
+     *
+     * 周模式的总页数与「(年月, 周) → 页码」换算都依赖它，所以必须预先算好；
+     * 但它只涉及每月一次的日历算术，不产生任何日期对象。
+     */
+    private val weeksPerMonth: IntArray = IntArray(monthCount)
+
+    /** 每月周模式的起始页码，长度 [monthCount] + 1，末位即周模式总页数。 */
+    private val weekOffsets: IntArray = IntArray(monthCount + 1)
+
+    /**
+     * 已构建的月份（月模式索引 → 月份数据）。
+     *
+     * 只在主线程访问（组合阶段与 ViewModel 的翻页同步都在主线程），故用普通 HashMap。
+     */
+    private val monthCache: HashMap<Int, CalendarMonth> = HashMap()
 
     init {
-        val firstDayOfWeek = WeekFields.of(locale).firstDayOfWeek.value
         val weekdays = with(locale) {
             DayOfWeek.entries.map {
                 it.getDisplayName(TextStyle.FULL, this) to it.getDisplayName(TextStyle.NARROW, this)
@@ -36,53 +62,29 @@ class CalendarModel(
         for (i in 0 until firstDayOfWeek - 1) {
             dayNames.add(weekdays[i])
         }
-        var localDate = LocalDate.now()
-        localYear = localDate.year
-        localMonth = localDate.monthValue
-        localDay = localDate.dayOfMonth
-        for (year in YEAR_RANGE.first..YEAR_RANGE.last) {
-            for (month in 1..12) {
-                localDate = localDate.withYear(year).withMonth(month).withDayOfMonth(1)
-                //当月第一天的星期索引
+
+        val today = LocalDate.now()
+        localYear = today.year
+        localMonth = today.monthValue
+        localDay = today.dayOfMonth
+
+        var offset = 0
+        var index = 0
+        for (year in YEAR_RANGE) {
+            for (month in 1..MONTHS_PER_YEAR) {
+                val firstDate = LocalDate.of(year, month, 1)
                 val firstDayOfMonth =
-                    (localDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
-                val daysInMonth = localDate.lengthOfMonth()
-                val weeksInMonth =
-                    ceil((daysInMonth + firstDayOfMonth).toDouble() / DAYS_IN_WEEK).toInt()
-                val weeksData = mutableListOf<MutableList<CalendarDate>>()
-                val daysData = mutableListOf<CalendarDate>()
-                var cellIndex = 0
-                for (week in 0 until weeksInMonth) {
-                    val data = mutableListOf<CalendarDate>()
-                    repeat(DAYS_IN_WEEK) {
-                        if (cellIndex < firstDayOfMonth) {
-                            val lastMonth = localDate.minusMonths(1)
-                            val daysInLastMonth = lastMonth.lengthOfMonth()
-                            val d = daysInLastMonth - (firstDayOfMonth - cellIndex) + 1
-                            val (y, m) = adjustYearAndMonth(year, month, -1)
-                            data.add(CalendarDate(y, m, d, week))
-                        } else if (cellIndex >= (firstDayOfMonth + daysInMonth)) {
-                            val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
-                            val (y, m) = adjustYearAndMonth(year, month, 1)
-                            data.add(CalendarDate(y, m, d, week))
-                        } else {
-                            val d = cellIndex - firstDayOfMonth + 1
-                            val date = CalendarDate(year, month, d, week, true)
-                            data.add(date)
-                            daysData.add(date)
-                        }
-                        cellIndex++
-                    }
-                    weeksData.add(data)
-                    weekModeIndexMappingDate[weekModeCount] = Pair("${year}-${month}", week)
-                    weekModeDateMappingIndex[Pair("${year}-${month}", week)] = weekModeCount
-                    weekModeCount++
-                }
-                monthModeDateMappingIndex["${year}-${month}"] = monthModeCount
-                calendarMonthMap[monthModeCount] = CalendarMonth(year, month, weeksData, daysData)
-                monthModeCount++
+                    (firstDate.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
+                val weeks = ceil(
+                    (firstDate.lengthOfMonth() + firstDayOfMonth).toDouble() / DAYS_IN_WEEK,
+                ).toInt()
+                weeksPerMonth[index] = weeks
+                weekOffsets[index] = offset
+                offset += weeks
+                index++
             }
         }
+        weekOffsets[monthCount] = offset
     }
 
     private fun adjustYearAndMonth(year: Int, month: Int, delta: Int): Pair<Int, Int> {
@@ -96,6 +98,52 @@ class CalendarModel(
             m -= 12
         }
         return Pair(y, m)
+    }
+
+    /** 月模式下「年月 → 月索引」；超出 [YEAR_RANGE] 返回 null。 */
+    private fun monthIndex(year: Int, month: Int): Int? {
+        if (year !in YEAR_RANGE || month !in 1..MONTHS_PER_YEAR) return null
+        return (year - YEAR_RANGE.first) * MONTHS_PER_YEAR + (month - 1)
+    }
+
+    /** 按需构建某个月的周格与日期对象，结果由 [monthCache] 缓存。 */
+    private fun buildMonth(index: Int, year: Int, month: Int): CalendarMonth {
+        val firstDateOfMonth = LocalDate.of(year, month, 1)
+        val firstDayOfMonth =
+            (firstDateOfMonth.dayOfWeek.value - firstDayOfWeek + DAYS_IN_WEEK) % DAYS_IN_WEEK
+        val daysInMonth = firstDateOfMonth.lengthOfMonth()
+        val daysInLastMonth = firstDateOfMonth.minusMonths(1).lengthOfMonth()
+        val weeksInMonth = weeksPerMonth[index]
+        val weeksData = ArrayList<MutableList<CalendarDate>>(weeksInMonth)
+        val daysData = ArrayList<CalendarDate>(daysInMonth)
+        var cellIndex = 0
+        for (week in 0 until weeksInMonth) {
+            val data = ArrayList<CalendarDate>(DAYS_IN_WEEK)
+            repeat(DAYS_IN_WEEK) {
+                val date = when {
+                    // 上月补齐格
+                    cellIndex < firstDayOfMonth -> {
+                        val d = daysInLastMonth - (firstDayOfMonth - cellIndex) + 1
+                        val (y, m) = adjustYearAndMonth(year, month, -1)
+                        CalendarDate(y, m, d, week)
+                    }
+                    // 下月补齐格
+                    cellIndex >= (firstDayOfMonth + daysInMonth) -> {
+                        val d = cellIndex - (firstDayOfMonth + daysInMonth) + 1
+                        val (y, m) = adjustYearAndMonth(year, month, 1)
+                        CalendarDate(y, m, d, week)
+                    }
+                    else -> {
+                        val d = cellIndex - firstDayOfMonth + 1
+                        CalendarDate(year, month, d, week, true).also(daysData::add)
+                    }
+                }
+                data.add(date)
+                cellIndex++
+            }
+            weeksData.add(data)
+        }
+        return CalendarMonth(year, month, weeksData, daysData)
     }
 
     /**
@@ -115,39 +163,47 @@ class CalendarModel(
     }
 
     fun monthModeCount(): Int {
-        return monthModeCount
+        return monthCount
     }
 
     fun weekModeCount(): Int {
-        return weekModeCount
+        return weekOffsets[monthCount]
     }
 
     private fun monthModeByDate(year: Int, month: Int): CalendarMonth? {
-        val key = monthModeDateMappingIndex["${year}-${month}"] ?: 0
-        return calendarMonthMap[key]
+        val index = monthIndex(year, month) ?: return null
+        return monthModeByIndex(index)
     }
 
     /**
-     * 根据索引获取月模式的日历月份
+     * 根据索引获取月模式的日历月份。
+     *
+     * 该月的周格与日期对象在首次访问时才构建；越界返回 null。
      */
     fun monthModeByIndex(index: Int): CalendarMonth? {
-        return calendarMonthMap[index]
+        if (index !in 0 until monthCount) return null
+        return monthCache.getOrPut(index) {
+            val year = YEAR_RANGE.first + index / MONTHS_PER_YEAR
+            val month = index % MONTHS_PER_YEAR + 1
+            buildMonth(index, year, month)
+        }
     }
 
     /**
-     * 根据索引获取周模式的日历月份
+     * 根据索引获取周模式的日历月份；越界返回 null。
      */
     fun weekModeByIndex(index: Int): CalendarMonth? {
-        val year = yearByWeekModeIndex(index)
-        val month = monthByWeekModeIndex(index)
-        return monthModeByDate(year, month)
+        val monthIndex = monthIndexByWeekModeIndex(index) ?: return null
+        return monthModeByIndex(monthIndex)
     }
 
     /**
-     * 根据日期获取周模式的日历月份
+     * 根据日期获取周模式的页码；年月或周序号越界时返回 0。
      */
     fun weekModeIndexByDate(year: Int, month: Int, week: Int = 0): Int {
-        return weekModeDateMappingIndex[Pair("${year}-${month}", week)] ?: 0
+        val index = monthIndex(year, month) ?: return 0
+        if (week !in 0 until weeksPerMonth[index]) return 0
+        return weekOffsets[index] + week
     }
 
     fun weekModeIndexByLocalDate(): Int {
@@ -155,19 +211,30 @@ class CalendarModel(
         return weekModeIndexByDate(localYear, localMonth, week)
     }
 
+    /** 已构建的月份数；仅供测试验证「构造时不预生成全量月份」。 */
+    internal fun builtMonthCount(): Int = monthCache.size
+
+    /** 周模式页码 → 月索引（[weekOffsets] 上做二分）；越界返回 null。 */
+    private fun monthIndexByWeekModeIndex(index: Int): Int? {
+        if (index < 0 || index >= weekModeCount()) return null
+        val position = weekOffsets.binarySearch(index, 0, monthCount)
+        // 命中即该月起点；未命中时插入点的前一位才是「最后一个起始页 <= index」的月份
+        return if (position >= 0) position else -position - 2
+    }
+
     fun yearByWeekModeIndex(index: Int): Int {
-        val pair = weekModeIndexMappingDate[index] ?: return startYear()
-        return pair.first.split("-")[0].toInt()
+        val monthIndex = monthIndexByWeekModeIndex(index) ?: return startYear()
+        return YEAR_RANGE.first + monthIndex / MONTHS_PER_YEAR
     }
 
     fun monthByWeekModeIndex(index: Int): Int {
-        val pair = weekModeIndexMappingDate[index] ?: return 0
-        return pair.first.split("-")[1].toInt()
+        val monthIndex = monthIndexByWeekModeIndex(index) ?: return 0
+        return monthIndex % MONTHS_PER_YEAR + 1
     }
 
     fun weekByWeekModeIndex(index: Int): Int {
-        val pair = weekModeIndexMappingDate[index] ?: return 0
-        return pair.second
+        val monthIndex = monthIndexByWeekModeIndex(index) ?: return 0
+        return index - weekOffsets[monthIndex]
     }
 
     fun startYear(): Int {
@@ -181,6 +248,7 @@ class CalendarModel(
 
 internal val YEAR_RANGE = IntRange(1900, 2100)
 internal const val DAYS_IN_WEEK = 7
+internal const val MONTHS_PER_YEAR = 12
 
 data class CalendarMonth(
     val year: Int,

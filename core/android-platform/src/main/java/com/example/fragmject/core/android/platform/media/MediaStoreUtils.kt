@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import java.io.File
 import java.io.FileInputStream
 import java.io.OutputStream
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -125,80 +126,109 @@ object MediaStoreUtils {
             }
         }
 
+    /**
+     * 按系统版本分流：Q+ 走 pending 记录写入，Q 以下交给 MediaScanner 扫描已落盘文件。
+     * 异常统一在此兜底（结果为空串），是 [save] 唯一的分支与错误处理点。
+     */
     private suspend fun save(
         context: Context,
         file: File,
         collection: Uri,
         relativePath: String,
     ): Pair<String, String> = suspendCancellableCoroutine { cont ->
-        var out: OutputStream? = null
-        var fis: FileInputStream? = null
-        // Q+ 已 insert 的 MediaStore 记录；只有真正写完数据（published）才保留
-        var insertedUri: Uri? = null
-        var published = false
         try {
-            val mimeType = FileUtils.getFileMimeType(file)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val values = ContentValues().apply {
-                    put(MediaStore.Images.ImageColumns.DISPLAY_NAME, file.name)
-                    put(MediaStore.Images.ImageColumns.MIME_TYPE, mimeType)
-                    put(MediaStore.Images.ImageColumns.RELATIVE_PATH, relativePath)
-                    // 先以 pending 状态插入：数据写完前对相册不可见，
-                    // 失败时删除该记录即可，不会在相册留下空条目
-                    put(MediaStore.MediaColumns.IS_PENDING, 1)
-                }
-                val uri = context.contentResolver.insert(collection, values)
-                if (uri == null) {
-                    file.delete()
-                    if (cont.isActive) cont.resume("" to "")
-                    return@suspendCancellableCoroutine
-                }
-                insertedUri = uri
-                out = context.contentResolver.openOutputStream(uri)
-                if (out == null) {
-                    file.delete()
-                    if (cont.isActive) cont.resume("" to "")
-                    return@suspendCancellableCoroutine
-                }
-                fis = FileInputStream(file)
-                OsFileUtils.copy(fis, out)
-                // 先关流再发布，避免系统收到通知时数据还没刷完
-                FileUtils.quickClose(fis)
-                fis = null
-                FileUtils.quickClose(out)
-                out = null
-                // 复制期间被取消：不发布，finally 里删除记录，避免留下半截文件
-                if (!cont.isActive) {
-                    file.delete()
-                    return@suspendCancellableCoroutine
-                }
-                // 解除 pending 才算发布成功；失败则记录对相册不可见，按失败回收
-                published = publishImageRecord(context, uri)
-                if (!published) {
-                    file.delete()
-                    if (cont.isActive) cont.resume("" to "")
-                    return@suspendCancellableCoroutine
-                }
-                file.delete()
-                if (cont.isActive) cont.resume(context.getBitmapPathFromUri(uri) to uri.toString())
+                saveWithPendingRecord(context, file, collection, relativePath, cont)
             } else {
-                MediaScannerConnection.scanFile(
-                    context,
-                    arrayOf(file.absolutePath),
-                    arrayOf(mimeType),
-                ) { path, uri ->
-                    file.delete()
-                    if (cont.isActive) cont.resume((path ?: "") to (uri?.toString() ?: ""))
-                }
+                scanSavedFile(context, file, cont)
             }
         } catch (e: Exception) {
             Log.e(TAG, "save failed: ${file.absolutePath}", e)
             if (cont.isActive) cont.resume("" to "")
+        }
+    }
+
+    /**
+     * Q+ 路径：先插入 pending 记录再写数据，写完才解除 pending。
+     * 任一步失败/取消都回收已插入的记录，避免相册留下空条目或半截文件。
+     * 结果通过 [cont] 投递，异常抛给 [save] 统一兜底。
+     */
+    private fun saveWithPendingRecord(
+        context: Context,
+        file: File,
+        collection: Uri,
+        relativePath: String,
+        cont: CancellableContinuation<Pair<String, String>>,
+    ) {
+        var out: OutputStream? = null
+        var fis: FileInputStream? = null
+        // 已 insert 的 MediaStore 记录；只有真正写完数据（published）才保留
+        var insertedUri: Uri? = null
+        var published = false
+        try {
+            val values = ContentValues().apply {
+                put(MediaStore.Images.ImageColumns.DISPLAY_NAME, file.name)
+                put(MediaStore.Images.ImageColumns.MIME_TYPE, FileUtils.getFileMimeType(file))
+                put(MediaStore.Images.ImageColumns.RELATIVE_PATH, relativePath)
+                // 先以 pending 状态插入：数据写完前对相册不可见，
+                // 失败时删除该记录即可，不会在相册留下空条目
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val uri = context.contentResolver.insert(collection, values)
+            if (uri == null) {
+                file.delete()
+                if (cont.isActive) cont.resume("" to "")
+                return
+            }
+            insertedUri = uri
+            out = context.contentResolver.openOutputStream(uri)
+            if (out == null) {
+                file.delete()
+                if (cont.isActive) cont.resume("" to "")
+                return
+            }
+            fis = FileInputStream(file)
+            OsFileUtils.copy(fis, out)
+            // 先关流再发布，避免系统收到通知时数据还没刷完
+            FileUtils.quickClose(fis)
+            fis = null
+            FileUtils.quickClose(out)
+            out = null
+            // 复制期间被取消：不发布，finally 里删除记录，避免留下半截文件
+            if (!cont.isActive) {
+                file.delete()
+                return
+            }
+            // 解除 pending 才算发布成功；失败则记录对相册不可见，按失败回收
+            published = publishImageRecord(context, uri)
+            if (!published) {
+                file.delete()
+                if (cont.isActive) cont.resume("" to "")
+                return
+            }
+            file.delete()
+            if (cont.isActive) cont.resume(context.getBitmapPathFromUri(uri) to uri.toString())
         } finally {
             FileUtils.quickClose(fis)
             FileUtils.quickClose(out)
             // 任一步失败/取消都回收已插入的记录（未发布 = 数据没写完）
             if (!published) insertedUri?.let { deleteMediaRecord(context, it) }
+        }
+    }
+
+    /** Q 以下路径：文件已在公共目录，通知系统扫描使其在相册可见。 */
+    private fun scanSavedFile(
+        context: Context,
+        file: File,
+        cont: CancellableContinuation<Pair<String, String>>,
+    ) {
+        MediaScannerConnection.scanFile(
+            context,
+            arrayOf(file.absolutePath),
+            arrayOf(FileUtils.getFileMimeType(file)),
+        ) { path, uri ->
+            file.delete()
+            if (cont.isActive) cont.resume((path ?: "") to (uri?.toString() ?: ""))
         }
     }
 

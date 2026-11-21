@@ -12,16 +12,16 @@
         android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- 存储 -->
+    <!-- 存储：29 起走 MediaStore 分区存储，写公共目录不再需要权限，故只对 26~28 声明 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+        android:maxSdkVersion="28" />
+    <!-- 32 及以下用 READ_EXTERNAL_STORAGE，33 起用下面的媒体细分权限 -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- 只读图片：相册查询与图片选择器仅访问 Images；视频只写不读，音频不涉及 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <!-- Android 11+ 包可见性：查询 Hook 框架管理器应用需要显式声明（见 SecurityEnvironmentChecks） -->

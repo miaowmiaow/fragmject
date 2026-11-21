@@ -10,11 +10,14 @@
 
 | 依赖 | 现状 | 说明 |
 |---|---|---|
-| AGP | 9.4.1 | 高于正式版，使用 Canary/RC 分支 |
-| Kotlin | 2.4.20 | 跟随官方最新 |
+| AGP | 9.5.1 | 高于正式版，使用 Canary/RC 分支 |
+| Kotlin | 2.4.21 | 跟随官方最新 |
 | KSP | 2.3.6 | 需与 Kotlin 版本对齐 |
 | Room3 | 3.0.3 | `androidx.room3` 尚处 alpha，API 演进频繁 |
-| Compose BOM | 2026.09.00 | 跟随月度 BOM |
+| Compose BOM | 2026.11.01 | 跟随月度 BOM |
+
+> 版本以 `gradle/libs.versions.toml` 为唯一事实来源；本表只记录选型立场，升级后需同步，
+> 出现漂移以 toml 为准。
 
 ## 2. 升级原则
 
@@ -28,6 +31,12 @@
 - 配置文件：`.github/renovate.json`
 - 默认策略：`rangeStrategy = bump`，每周一自动开 PR。
 - 已分组：`Room3 (alpha)`、`AGP`、`Kotlin & KSP`、`Compose BOM`，便于分组 review 与回滚。
+- GitHub Actions 一律 pin 到 commit SHA（`.github/workflows/*.yml` 里形如
+  `uses: owner/action@<40 位 SHA> # vX.Y.Z`）。tag 可被上游移动，跟 tag 等于放弃
+  「CI 跑的是哪份代码」的可复现性；SHA 的升级由 `helpers:pinGitHubActionDigests` 预设维护，
+  它会把注释里的版本一起改掉，因此**不要手工把 SHA 改回 tag**。
+- Runner 镜像固定为 `ubuntu-24.04`（不用 `ubuntu-latest`）：镜像标签迁移会静默改变
+  JDK / KVM / GPU 行为，表现是「代码没动但 CI 变红」。
 
 ## 4. 升级 checklist
 
@@ -286,3 +295,14 @@ core:domain → domain:content   （文章 / 收藏 / 搜索 / 积分）
 - [ ] 若新增例外：是否在 §6.6 登记并写明理由？
 - [ ] `./gradlew verifyModuleDependencies` 与 `--tests "*Architecture*"` 均通过
 - [ ] **反向验证**：故意构造一处违规，确认对应规则确实 fail（证明非空转）
+
+## 7. 第三方许可清单
+
+随 APK 分发与仅构建期使用的第三方组件、版本与许可证，统一登记在
+[`third-party-licenses.md`](./third-party-licenses.md)。约定：
+
+- 新增**运行时**依赖（`implementation` / `api`）时，同一 PR 内登记该表；仅构建与测试的依赖
+  也要登记，但标注为「不进产物」。
+- 表中「许可证」列写 SPDX 标识；闭源 SDK 写明适用条款（如 Google ML Kit Terms），
+  不得含糊为「开源」。
+- 该表是合规台账，CI 目前**没有**自动校验（未接 license-report 任务），因此靠 PR 评审兜底。

@@ -451,6 +451,8 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 - [square/okhttp](https://github.com/square/okhttp)
 - [square/retrofit](https://github.com/square/retrofit)
 
+完整的第三方组件、版本与许可证清单见 [docs/third-party-licenses.md](./docs/third-party-licenses.md)。
+
 ## Gitee镜像
 - [fragmject](https://gitee.com/zhao.git/FragmentProject.git)
 

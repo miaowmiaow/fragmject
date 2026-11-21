@@ -12,6 +12,7 @@ import android.os.FileUtils as OsFileUtils
 import android.provider.MediaStore
 import android.util.Log
 import com.example.fragmject.core.android.platform.file.FileUtils
+import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import java.io.File
 import java.io.FileInputStream
@@ -152,7 +153,11 @@ object MediaStoreUtils {
      * Q+ 路径：先插入 pending 记录再写数据，写完才解除 pending。
      * 任一步失败/取消都回收已插入的记录，避免相册留下空条目或半截文件。
      * 结果通过 [cont] 投递，异常抛给 [save] 统一兜底。
+     *
+     * 版本守卫在 [save] 的分支里，这里显式声明 Q 下限：抽成独立方法后 lint 无法跨方法
+     * 推导守卫，会把 IS_PENDING / RELATIVE_PATH / FileUtils.copy 判成 NewApi 违规。
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun saveWithPendingRecord(
         context: Context,
         file: File,

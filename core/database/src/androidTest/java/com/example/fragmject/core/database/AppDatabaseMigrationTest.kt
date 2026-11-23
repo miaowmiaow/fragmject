@@ -173,18 +173,33 @@ class AppDatabaseMigrationTest {
     fun migration15To16EncryptsUserPii() = runBlocking {
         helper.createDatabase(15).use { db ->
             db.exec("INSERT INTO User (id, username, nickname, icon) VALUES (1, 'plain', 'Plain', 'icon.png')")
+            // icon 为 NULL 的历史行：Room3 的 SQLiteStatement.getText 对 NULL 列直接抛 NPE，
+            // 这个用例曾经让整段迁移崩掉并触发兜底清表（真机 / 模拟器实测）
+            db.exec("INSERT INTO User (id, username, nickname, icon) VALUES (2, NULL, NULL, NULL)")
         }
 
         helper.runMigrationsAndValidate(16, AppDatabase.MIGRATIONS.toList()).use { db ->
-            val row = db.query("SELECT username, nickname, icon FROM User") {
-                Triple(it.getText(0), it.getText(1), it.getText(2))
-            }.single()
-            listOf(row.first, row.second, row.third).forEach { stored ->
-                assertTrue("PII 字段应存密文（v1: 前缀），实际：$stored", stored.orEmpty().startsWith("v1:"))
+            val rows = db.query("SELECT id, username, nickname, icon FROM User ORDER BY id") { stmt ->
+                listOf(
+                    stmt.getLong(0),
+                    if (stmt.isNull(1)) null else stmt.getText(1),
+                    if (stmt.isNull(2)) null else stmt.getText(2),
+                    if (stmt.isNull(3)) null else stmt.getText(3),
+                )
             }
-            assertEquals("plain", cipher.decryptOrPlainText(row.first))
-            assertEquals("Plain", cipher.decryptOrPlainText(row.second))
-            assertEquals("icon.png", cipher.decryptOrPlainText(row.third))
+            assertEquals("两行都应保留", 2, rows.size)
+
+            val filled = rows[0]
+            listOf(filled[1], filled[2], filled[3]).forEach { stored ->
+                val text = stored as String?
+                assertTrue("PII 字段应存密文（v1: 前缀），实际：$text", text.orEmpty().startsWith("v1:"))
+            }
+            assertEquals("plain", cipher.decryptOrPlainText(filled[1] as String?))
+            assertEquals("Plain", cipher.decryptOrPlainText(filled[2] as String?))
+            assertEquals("icon.png", cipher.decryptOrPlainText(filled[3] as String?))
+
+            // 全 NULL 行迁移后仍应是 NULL：不能被解成空串，也不能因为异常被删除
+            assertEquals(listOf<Any?>(2L, null, null, null), rows[1])
         }
     }
 

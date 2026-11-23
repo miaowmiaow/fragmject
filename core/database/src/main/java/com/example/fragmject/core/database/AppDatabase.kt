@@ -354,9 +354,9 @@ abstract class AppDatabase : RoomDatabase() {
                     rows.add(
                         UserRow(
                             id = stmt.getLong(0),
-                            username = stmt.getText(1),
-                            nickname = stmt.getText(2),
-                            icon = stmt.getText(3),
+                            username = stmt.getTextOrNull(1),
+                            nickname = stmt.getTextOrNull(2),
+                            icon = stmt.getTextOrNull(3),
                         )
                     )
                 }
@@ -397,6 +397,14 @@ abstract class AppDatabase : RoomDatabase() {
         private fun SQLiteStatement.bindTextOrNull(index: Int, value: String?) {
             if (value == null) bindNull(index) else bindText(index, value)
         }
+
+        /**
+         * 可空读取：Room3 的 `SQLiteStatement.getText` 对 NULL 列直接抛
+         * `NullPointerException: getString(...) must not be null`（与 Cursor 语义不同），
+         * 必须先判 `isNull`。历史行的 `icon` 为 NULL 时曾因此让整段迁移崩掉。
+         */
+        private fun SQLiteStatement.getTextOrNull(index: Int): String? =
+            if (isNull(index)) null else getText(index)
 
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)

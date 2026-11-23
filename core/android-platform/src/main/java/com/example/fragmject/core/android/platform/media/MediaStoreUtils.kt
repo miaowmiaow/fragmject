@@ -150,7 +150,7 @@ object MediaStoreUtils {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 saveWithPendingRecord(context, file, collection, relativePath, cont)
             } else {
-                scanSavedFile(context, file, cont)
+                copyToPublicDirAndScan(context, file, relativePath, cont)
             }
         } catch (e: Exception) {
             Log.e(TAG, "save failed: ${LogSanitizer.path(file.absolutePath)}", e)
@@ -262,18 +262,45 @@ object MediaStoreUtils {
         return "$name.$extension"
     }
 
-    /** Q 以下路径：文件已在公共目录，通知系统扫描使其在相册可见。 */
-    private fun scanSavedFile(
+    /**
+     * Q 以下路径：系统媒体库不索引应用私有目录，必须先把文件复制到公共 Pictures / Movies，
+     * 再通知 MediaScanner 收录。
+     *
+     * 旧实现只对私有目录里的文件 `scanFile`，相册根本看不到（API 26~28 的「保存成功」是假的）。
+     * 复制到公共目录需要 WRITE_EXTERNAL_STORAGE —— manifest 已限定 `maxSdkVersion=28`，
+     * 运行时申请由 UI 层负责（见 `WebMediaDialogs`）。
+     */
+    @Suppress("DEPRECATION")
+    private fun copyToPublicDirAndScan(
         context: Context,
         file: File,
+        relativePath: String,
         cont: CancellableContinuation<Pair<String, String>>,
     ) {
+        val mimeType = FileUtils.getFileMimeType(file)
+        val targetDir = Environment.getExternalStoragePublicDirectory(relativePath)
+        if (!targetDir.isDirectory && !targetDir.mkdirs()) {
+            Log.e(TAG, "public dir unavailable: $relativePath")
+            file.delete()
+            if (cont.isActive) cont.resume("" to "")
+            return
+        }
+        val target = File(targetDir, displayNameWithExtension(file.name, mimeType))
+        try {
+            file.copyTo(target, overwrite = true)
+        } catch (e: Exception) {
+            Log.e(TAG, "copy to public dir failed: ${LogSanitizer.path(file.name)}", e)
+            target.delete()
+            file.delete()
+            if (cont.isActive) cont.resume("" to "")
+            return
+        }
+        file.delete()
         MediaScannerConnection.scanFile(
             context,
-            arrayOf(file.absolutePath),
-            arrayOf(FileUtils.getFileMimeType(file)),
+            arrayOf(target.absolutePath),
+            arrayOf(mimeType),
         ) { path, uri ->
-            file.delete()
             if (cont.isActive) cont.resume((path ?: "") to (uri?.toString() ?: ""))
         }
     }

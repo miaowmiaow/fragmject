@@ -172,6 +172,7 @@ release 包**几乎没有 assets**：`app` 模块自身没有 `src/main/assets`�
 | 33 | 密码明文进 logcat、进任务快照、进无障碍节点 | `HttpLoggingInterceptor.Level.BODY`；`rememberSaveable` 存密码；`TextField + PasswordVisualTransformation` | `DebugHttpLogger` 一律不打印请求体；表单改 `remember`（架构守卫规则 32 拦 `rememberSaveable` / `rememberTextFieldState`）；密码框改 `SecureTextField`（规则 33 禁 `PasswordVisualTransformation(`） |
 | 34 | 剪贴板"30 秒自动清空"实际接近不生效（真机验证） | 切到后台后读取剪贴板得到 null，清除条件不成立 | 已删除该功能，只保留 `EXTRA_IS_SENSITIVE`（系统预览不显示明文） |
 | 35 | 「保存图片到相册」在 ColorOS 上**必然失败**，日志只有 `publish rejected: size=0, pending=1`（真机验证 2026-11-23） | 该 ROM 在 `IS_PENDING=1` 期间不统计 `MediaColumns.SIZE`，用 SIZE 判断「数据是否写完」等于让所有 pending 写入判失败；同时无扩展名的临时文件名会让 MIME 推断先落空、再触发 MediaMetadataRetriever 对图片的必然异常 | 发布只认「解除 pending 成功」，数据完整性改由写入前的**源文件长度**校验保证（相机路径无源文件可校验，仍保留 SIZE 判据）；MIME 判定改为**文件头优先**；相册条目名按 MIME 补扩展名；失败分支补 `insert`/`publish` 日志 |
+| 36 | API 26~28 上「保存图片到相册」提示成功，相册里却没有 | 旧实现只对应用私有目录（`externalCacheDir/Pictures`）里的文件调 `MediaScannerConnection.scanFile`，而系统媒体库自 4.4 起不索引 `Android/data/<pkg>` | 先复制到 `Environment.getExternalStoragePublicDirectory(Pictures/Movies)` 再 scan；复制前由 UI 申请 `WRITE_EXTERNAL_STORAGE`（manifest 已限定 `maxSdkVersion=28`） |
 
 ## 七、已知限制与已接受的空白
 

@@ -12,6 +12,7 @@ import android.os.FileUtils as OsFileUtils
 import android.provider.MediaStore
 import android.util.Log
 import com.example.fragmject.core.android.platform.file.FileUtils
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import java.io.File
@@ -122,7 +123,7 @@ object MediaStoreUtils {
                     if (cont.isActive) cont.resume((path ?: "") to (uri?.toString() ?: ""))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "notifyAdded failed: ${file.absolutePath}", e)
+                Log.e(TAG, "notifyAdded failed: ${LogSanitizer.path(file.absolutePath)}", e)
                 if (cont.isActive) cont.resume("" to "")
             }
         }
@@ -138,13 +139,21 @@ object MediaStoreUtils {
         relativePath: String,
     ): Pair<String, String> = suspendCancellableCoroutine { cont ->
         try {
+            // 源文件为空说明下载/写出没成功：此时 insert + copy 只会在相册留下空条目，
+            // 直接按失败处理。数据完整性由此把关后，发布阶段就不再依赖 MediaStore 的 SIZE。
+            if (file.length() <= 0L) {
+                Log.w(TAG, "save: empty source file ${LogSanitizer.path(file.absolutePath)}")
+                file.delete()
+                if (cont.isActive) cont.resume("" to "")
+                return@suspendCancellableCoroutine
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 saveWithPendingRecord(context, file, collection, relativePath, cont)
             } else {
                 scanSavedFile(context, file, cont)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "save failed: ${file.absolutePath}", e)
+            Log.e(TAG, "save failed: ${LogSanitizer.path(file.absolutePath)}", e)
             if (cont.isActive) cont.resume("" to "")
         }
     }
@@ -171,9 +180,11 @@ object MediaStoreUtils {
         var insertedUri: Uri? = null
         var published = false
         try {
+            val mimeType = FileUtils.getFileMimeType(file)
+            val displayName = displayNameWithExtension(file.name, mimeType)
             val values = ContentValues().apply {
-                put(MediaStore.Images.ImageColumns.DISPLAY_NAME, file.name)
-                put(MediaStore.Images.ImageColumns.MIME_TYPE, FileUtils.getFileMimeType(file))
+                put(MediaStore.Images.ImageColumns.DISPLAY_NAME, displayName)
+                put(MediaStore.Images.ImageColumns.MIME_TYPE, mimeType)
                 put(MediaStore.Images.ImageColumns.RELATIVE_PATH, relativePath)
                 // 先以 pending 状态插入：数据写完前对相册不可见，
                 // 失败时删除该记录即可，不会在相册留下空条目
@@ -181,6 +192,8 @@ object MediaStoreUtils {
             }
             val uri = context.contentResolver.insert(collection, values)
             if (uri == null) {
+                // insert 静默返回 null 时没有异常栈，必须把入参记下来，否则线上只看到「保存失败」
+                Log.w(TAG, "insert returned null: name=$displayName, mime=$mimeType, path=$relativePath")
                 file.delete()
                 if (cont.isActive) cont.resume("" to "")
                 return
@@ -205,8 +218,10 @@ object MediaStoreUtils {
                 return
             }
             // 解除 pending 才算发布成功；失败则记录对相册不可见，按失败回收
-            published = publishImageRecord(context, uri)
+            published = publishImageRecord(context, uri, verifySize = false)
             if (!published) {
+                // 走到这里说明数据已写完但解除 pending 失败；不打日志就只剩「保存失败」四个字
+                Log.w(TAG, "publish failed: uri=$uri, name=$displayName, mime=$mimeType")
                 file.delete()
                 if (cont.isActive) cont.resume("" to "")
                 return
@@ -219,6 +234,32 @@ object MediaStoreUtils {
             // 任一步失败/取消都回收已插入的记录（未发布 = 数据没写完）
             if (!published) insertedUri?.let { deleteMediaRecord(context, it) }
         }
+    }
+
+    /**
+     * 相册条目名补扩展名。
+     *
+     * 图片下载后常以无扩展名的临时名交接（如 `image_<timestamp>`），而部分 ROM 的
+     * MediaStore 会因为没有扩展名拒绝 insert 或让相册无法预览。只对能确定扩展名的
+     * MIME 补，未知类型保持原名，避免伪造出错误后缀。
+     *
+     * internal 而非 private：这段是纯字符串逻辑，单测直接覆盖，避免再次出现
+     * 「无扩展名 → 相册条目异常」这类只在真机上暴露的回归。
+     */
+    internal fun displayNameWithExtension(name: String, mimeType: String): String {
+        if (name.contains('.')) return name
+        val extension = when (mimeType) {
+            "image/jpeg" -> "jpg"
+            "image/png" -> "png"
+            "image/gif" -> "gif"
+            "image/webp" -> "webp"
+            "video/mp4" -> "mp4"
+            "video/quicktime" -> "mov"
+            "video/x-msvideo" -> "avi"
+            "audio/x-wav" -> "wav"
+            else -> return name
+        }
+        return "$name.$extension"
     }
 
     /** Q 以下路径：文件已在公共目录，通知系统扫描使其在相册可见。 */
@@ -276,11 +317,26 @@ object MediaStoreUtils {
      */
     fun finishImageUri(context: Context, uri: String): Boolean {
         // Q 以下没有 pending 概念，无需发布
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || publishImageRecord(context, uri.toUri())
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+            publishImageRecord(context, uri.toUri(), verifySize = true)
     }
 
-    /** 清除 pending 状态；返回是否成功（失败仅记日志，由调用方决定是否回收记录）。 */
-    private fun publishImageRecord(context: Context, uri: Uri): Boolean {
+    /**
+     * 清除 pending 状态；返回是否成功（失败仅记日志，由调用方决定是否回收记录）。
+     *
+     * [verifySize] 决定是否把 `MediaColumns.SIZE` 当作失败判据：
+     * - 本应用自己 copy 数据时（[save]）传 false —— ColorOS（OPPO/OnePlus）等 ROM 在
+     *   `IS_PENDING=1` 期间 SIZE 恒为 0，即便 72 KB 的 webp 已写完也读不到（2026-11-23
+     *   实测 `publish rejected: size=0, pending=1`），用 SIZE 判失败会让「保存到相册」
+     *   在这类设备上必然失败；数据完整性由 [save] 写入前的源文件长度校验保证。
+     * - 外部相机写入时（[finishImageUri]）保持 true：那条路径没有前置校验，
+     *   只能靠 SIZE 兜住「相机没写完就返回」留下的空记录。
+     */
+    private fun publishImageRecord(
+        context: Context,
+        uri: Uri,
+        verifySize: Boolean,
+    ): Boolean {
         return try {
             val row = context.contentResolver.query(
                 uri,
@@ -291,13 +347,23 @@ object MediaStoreUtils {
             )?.use { cursor ->
                 if (cursor.moveToFirst()) cursor.getLong(0) to cursor.getInt(1) else null
             } ?: return false
-            if (row.first <= 0L) return false
             // 重试必须幂等：进程可能在成功发布后、清除持久状态前退出。
             if (row.second == 0) return true
+            if (row.first <= 0L) {
+                if (verifySize) {
+                    // 相机路径：pending 期间 SIZE 为 0 视为没拍成功，不发布空图
+                    Log.w(TAG, "publish rejected: size=${row.first}, pending=${row.second}, uri=$uri")
+                    return false
+                }
+                // 自有写入路径：SIZE 在 pending 期间不可靠，只记诊断
+                Log.w(TAG, "publish: pending record reports size=${row.first}, uri=$uri")
+            }
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.IS_PENDING, 0)
             }
-            context.contentResolver.update(uri, values, null, null) > 0
+            val updated = context.contentResolver.update(uri, values, null, null)
+            if (updated <= 0) Log.w(TAG, "publish update affected $updated rows, uri=$uri")
+            updated > 0
         } catch (e: Exception) {
             Log.e(TAG, "finishImageUri failed: $uri", e)
             false

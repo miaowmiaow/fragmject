@@ -10,6 +10,7 @@ import java.io.IOException
 import java.net.URLConnection
 import java.nio.file.Files
 import java.util.Locale
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 
 /**
  * FileUtils 拆分文件之三：MIME 推断 / 文件头解析。
@@ -59,7 +60,7 @@ internal fun readFileHeadStringInternal(file: File): String {
     val inputStream = try {
         FileInputStream(file)
     } catch (e: Exception) {
-        Log.e(TAG, "readFileHeadString open failed: ${file.absolutePath}", e)
+        Log.e(TAG, "readFileHeadString open failed: ${LogSanitizer.path(file.absolutePath)}", e)
         null
     }
     val bytes = readStreamBytesInternal(inputStream, 16)
@@ -70,7 +71,7 @@ internal fun readFileHeadStringInternal(context: Context, fileUri: Uri): String 
     val inputStream = try {
         context.contentResolver.openInputStream(fileUri)
     } catch (e: Exception) {
-        Log.e(TAG, "readFileHeadString open failed: $fileUri", e)
+        Log.e(TAG, "readFileHeadString open failed: ${LogSanitizer.url(fileUri.toString())}", e)
         null
     }
     val bytes = readStreamBytesInternal(inputStream, 16)
@@ -92,7 +93,7 @@ internal fun getFileMimeTypeInternal(context: Context, fileUri: Uri): String {
         mmr.setDataSource(context, fileUri)
         mimeType = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
     } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType(uri) MediaMetadataRetriever failed: $fileUri", e)
+        Log.e(TAG, "getFileMimeType(uri) MediaMetadataRetriever failed: ${LogSanitizer.url(fileUri.toString())}", e)
     }
     if (mimeType != null) {
         return mimeType
@@ -101,7 +102,7 @@ internal fun getFileMimeTypeInternal(context: Context, fileUri: Uri): String {
     try {
         mimeType = resolver.getType(fileUri)
     } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType(uri) contentResolver.getType failed: $fileUri", e)
+        Log.e(TAG, "getFileMimeType(uri) contentResolver.getType failed: ${LogSanitizer.url(fileUri.toString())}", e)
     }
     if (mimeType != null) {
         return mimeType
@@ -109,7 +110,7 @@ internal fun getFileMimeTypeInternal(context: Context, fileUri: Uri): String {
     try {
         mimeType = parseHeadCodeInternal(readFileHeadStringInternal(context, fileUri))
     } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType(uri) parseHeadCode failed: $fileUri", e)
+        Log.e(TAG, "getFileMimeType(uri) parseHeadCode failed: ${LogSanitizer.url(fileUri.toString())}", e)
     }
     return mimeType ?: "*/*"
 }
@@ -120,12 +121,23 @@ internal fun getFileMimeTypeInternal(file: File): String {
     }
     var mimeType: String? = null
     val filePath = file.absolutePath
+    // 文件头优先于扩展名：图片下载后常以无扩展名的临时名交接（如 `image_<timestamp>`），
+    // 扩展名推断必然落空，随后 MediaMetadataRetriever 对图片只会抛
+    // "setDataSource failed"（它面向音视频），既拿不到结果又刷一条错误日志。
+    // 魔数能确定媒体类型时直接返回，剩余链路只为非媒体文件保留。
+    val headMimeType = runCatching { getFileTypeCodeInternal(file) }.getOrDefault("*/*")
+    if (headMimeType.startsWith("image/") ||
+        headMimeType.startsWith("audio/") ||
+        headMimeType.startsWith("video/")
+    ) {
+        return headMimeType
+    }
     // 用 java.net.URLConnection 而非 android.webkit.MimeTypeMap：后者属 WebView 包，
     // 会让平台层莫名依赖 webkit（架构规则要求 webkit 只出现在 core:webview）。
     try {
         mimeType = URLConnection.guessContentTypeFromName(filePath)
     } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType guessContentType failed: $filePath", e)
+        Log.e(TAG, "getFileMimeType guessContentType failed: ${LogSanitizer.path(filePath)}", e)
     }
     if (mimeType != null) {
         return mimeType
@@ -135,7 +147,7 @@ internal fun getFileMimeTypeInternal(file: File): String {
         mmr.setDataSource(filePath)
         mimeType = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
     } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType MediaMetadataRetriever failed: $filePath", e)
+        Log.e(TAG, "getFileMimeType MediaMetadataRetriever failed: ${LogSanitizer.path(filePath)}", e)
     }
     if (mimeType != null) {
         return mimeType
@@ -143,15 +155,10 @@ internal fun getFileMimeTypeInternal(file: File): String {
     try {
         mimeType = Files.probeContentType(file.toPath())
     } catch (e: IOException) {
-        Log.e(TAG, "getFileMimeType probeContentType failed: $filePath", e)
+        Log.e(TAG, "getFileMimeType probeContentType failed: ${LogSanitizer.path(filePath)}", e)
     }
     if (mimeType != null) {
         return mimeType
     }
-    try {
-        mimeType = getFileTypeCodeInternal(file)
-    } catch (e: Exception) {
-        Log.e(TAG, "getFileMimeType getFileTypeCode failed: $filePath", e)
-    }
-    return mimeType ?: "*/*"
+    return headMimeType
 }

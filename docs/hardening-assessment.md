@@ -74,14 +74,15 @@
 
 ### 3.5 数据文件加密（价值 1.5，全库不做，字段级按需）
 
-**已做**：OTP `secret`（Base32 种子）入库前经 `KeystoreSecretCipher` 加密（AES-256-GCM，密钥由 Keystore 持有、不导出、随机 IV），Room 表 `otp_account` 只存密文列。登录态在系统 `CookieManager` 与 OkHttp `CookieJar`，`User.token` 标 `@Ignore` 不落库。
-**其余为明文**：Room（收藏 / 搜索历史 / 用户资料 / KV）与图片缓存；WebView 缓存的隔离靠"按身份分区 + 落盘闸门 + 登出清目录"（见 §六 #29~#33），不靠加密。
+**已做**：OTP `secret`（Base32 种子）入库前经 `KeystoreSecretCipher` 加密（AES-256-GCM，密钥由 Keystore 持有、不导出、随机 IV），Room 表 `otp_account` 只存密文列。`user` 表的 `username` / `nickname` / `icon` 同样按字段加密（`v1:` 前缀 + Base64 + 同一 Keystore 密钥），解密失败降级为 `null` 而不是抛异常。登录态在系统 `CookieManager` 与 OkHttp `CookieJar`，`User.token` 标 `@Ignore` 不落库。
+**加密的收敛边界**：`user` 行是登录后的展示缓存，本次改动**不升数据库版本、不做迁移**，老版本写入的明文行在用户下次登录/资料刷新时被覆盖成密文；在此之前仍为明文（威胁模型要求设备已被攻破，与 §3.5 的整体判断一致）。新增字段若含 PII，按同样方式走 `UserFieldCipher`。
+**其余为明文**：Room（收藏 / 搜索历史 / KV / 文章与导航缓存）与图片缓存；WebView 缓存的隔离靠"按身份分区 + 落盘闸门 + 登出清目录"（见 §六 #29~#33），不靠加密。
 **为什么全库不做**：密钥必须存在客户端，root 设备仍可取；这些数据本身低敏感且服务端才是权威源；SQLCipher 约带来 2~4 MB 包体 + Room 集成与迁移风险，收益成本倒挂。
 **规则**：将来出现"本地存 token / 支付凭证 / 生物识别"等新敏感字段，**只对该字段**用 Keystore 包装。
 
 ### 3.6 资源文件加密（价值 1，不做）
 
-release 包**没有 assets**（`app/src/main/assets` 不存在，只有 `app/src/debug/assets` 的 mock 数据），图片走网络 + Coil 不打包。对素材型应用（游戏 / 离线词典 / 漫画）价值高，对本项目不适用。真实诉求若是"防止 `res/` 布局与字符串被读"，那是**资源混淆**（H4），与 assets 加密是两件事。
+release 包**几乎没有 assets**：`app` 模块自身没有 `src/main/assets`（只有 `app/src/debug/assets` 的 mock 数据），随包分发的只有 `feature/user/impl` 与 `feature/authenticator/impl` 里的少量 HTML/JS 资产（隐私政策页等），不含素材型内容。图片走网络 + Coil 不打包。对素材型应用（游戏 / 离线词典 / 漫画）价值高，对本项目不适用。真实诉求若是"防止 `res/` 布局与字符串被读"，那是**资源混淆**（H4），与 assets 加密是两件事。
 
 ## 四、需要守住的边界
 
@@ -170,13 +171,17 @@ release 包**没有 assets**（`app/src/main/assets` 不存在，只有 `app/src
 | 32 | `Response.header()` 只返回最后一个同名头，`no-store` 被后面的 `max-age` 覆盖，静默放行 | HTTP 允许多行同名头 | `Headers.cacheRelevantHeaders()` 用 `values()` 全量取出后按 `", "` 合并（`Content-Type` 保持单值） |
 | 33 | 密码明文进 logcat、进任务快照、进无障碍节点 | `HttpLoggingInterceptor.Level.BODY`；`rememberSaveable` 存密码；`TextField + PasswordVisualTransformation` | `DebugHttpLogger` 一律不打印请求体；表单改 `remember`（架构守卫规则 32 拦 `rememberSaveable` / `rememberTextFieldState`）；密码框改 `SecureTextField`（规则 33 禁 `PasswordVisualTransformation(`） |
 | 34 | 剪贴板"30 秒自动清空"实际接近不生效（真机验证） | 切到后台后读取剪贴板得到 null，清除条件不成立 | 已删除该功能，只保留 `EXTRA_IS_SENSITIVE`（系统预览不显示明文） |
+| 35 | 「保存图片到相册」在 ColorOS 上**必然失败**，日志只有 `publish rejected: size=0, pending=1`（真机验证 2026-11-23） | 该 ROM 在 `IS_PENDING=1` 期间不统计 `MediaColumns.SIZE`，用 SIZE 判断「数据是否写完」等于让所有 pending 写入判失败；同时无扩展名的临时文件名会让 MIME 推断先落空、再触发 MediaMetadataRetriever 对图片的必然异常 | 发布只认「解除 pending 成功」，数据完整性改由写入前的**源文件长度**校验保证（相机路径无源文件可校验，仍保留 SIZE 判据）；MIME 判定改为**文件头优先**；相册条目名按 MIME 补扩展名；失败分支补 `insert`/`publish` 日志 |
 
 ## 七、已知限制与已接受的空白
 
 1. **CRC32 不是密码学哈希**，理论上可构造逐页碰撞；真正的锚是签名校验与 native 侧判定。
 2. **复验间隔 5s**：替换后的篡改最多有 5s 暴露时间（启动时首次检查立即执行）。
 3. **Hook 框架真实注入未验证**：当前无可用 root 设备（真机未 root，模拟器修补需要 rootAVD 的 macOS 工具链）。包名信号已用空壳探针在真机验证，`XposedBridge` 类信号只有单测覆盖；`frida-server` 常驻 + 非常规端口/改名的组合同样缺真机证据。恢复条件：具备可 root 的测试设备。
-4. **`ROOT_APP_PACKAGES` 在 Android 11+ 未声明 `<queries>` 时查不到**（已决策暂不处理，`env.root` 默认 WARN，su 文件与 maps 检测不受影响）。
+4. **`ROOT_APP_PACKAGES`（8 个 root 管理器包名）在 Android 11+ 未声明 `<queries>` 时查不到**（已决策暂不处理，
+   `env.root` 默认 WARN，su 文件与 maps 检测不受影响）。manifest 只声明了 Xposed / LSPosed 两个 Hook 框架包
+   （`de.robv.android.xposed.installer`、`org.lsposed.manager`），这是有意的：`<queries>` 会出现在应用商店的
+   审核材料里，只保留真正参与判定的条目。该查询的用途与「不读取应用列表、不采集应用标识」已在隐私政策第 1 节写明。
 5. **落地文件检测只覆盖精确同名**（`/data/local/tmp` 在 Android 10+ 不可列目录，改为 `access()` 探测），带版本号的文件名不覆盖。
 6. **方法入口完整性（Hook 检测第二期）未做**，依赖 ART 内部结构，需按 Android 版本实测后再定。
 7. **`shell` 模块不做单元测试**（2026-11-19 决定）：其行为只通过真机回归验证，与 `core:model` 等无 JVM 可测分支的模块同口径，不为凑数补测。池化 WebView 的池逻辑同样无 JVM 单测（依赖真实 WebView）。

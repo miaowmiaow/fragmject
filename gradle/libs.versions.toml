@@ -5,7 +5,7 @@
 #    AGP / Kotlin / KSP / Compose Compiler 之间存在编译期强绑定，
 #    单独抬其中一个会得到难以定位的 KSP 或 Compose 编译器错误。
 # 2. 每次升级按三步验证，缺一步不算完成：
-#    ./gradlew testDebugUnitTest        # 单测 + 27 条架构规则
+#    ./gradlew testDebugUnitTest        # 单测 + app 模块 33 条架构规则（编号以 app/src/test/.../architecture 为准）
 #    ./gradlew assembleDebug            # 资源合并 / NDK / 签名链路
 #    真机冒烟：登录、列表分页、WebView、扫码、图片编辑、安全检测
 # 3. 不要为了"最新"而升级；有明确收益（修复、性能、API 需求）才动版本。

@@ -57,7 +57,9 @@ jobs:
       # --continue：单模块失败后继续跑其余模块，一次 CI 拿全部失败项，避免「修一个冒一个」。
       # logcat：报告只写断言结果，崩溃 / ANR / 权限 / 时序问题必须看 logcat；模拟器销毁前抓一份。
       - name: Run instrumented tests
-        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        # 钉在 v2 指向的提交而不是最新 release v2.9.0：2026-11-22 的定时回归在 v2.9.0 上失败，
+        # 而此前用浮动 v2 的运行连续成功。升级前先手动 workflow_dispatch 跑一次验证。
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 36
           target: google_apis

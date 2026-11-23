@@ -109,6 +109,9 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --stacktrace
 
+      # 同时归档 XML：HTML 报告要点开看，`test-results/*.xml` 可以直接 grep 出失败用例与断言，
+      # 定位「哪个用例失败」时不必再翻页面（:app:testDebugUnitTest 曾出现一次未解释的偶发失败，
+      # 当时只归档了 HTML，无法快速取到失败用例名）。
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -116,6 +119,7 @@ jobs:
           name: test-reports
           path: |
             **/build/reports/tests/
+            **/build/test-results/
             build/reports/problems/
           if-no-files-found: ignore
 

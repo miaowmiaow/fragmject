@@ -66,7 +66,9 @@ jobs:
             --stacktrace
 
       - name: Smoke test on emulator
-        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        # 钉在 v2 指向的提交而不是最新 release v2.9.0：2026-11-22 的定时回归在 v2.9.0 上失败，
+        # 而此前用浮动 v2 的运行连续成功。升级前先手动 workflow_dispatch 跑一次验证。
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: ${{ matrix.api-level }}
           target: google_apis

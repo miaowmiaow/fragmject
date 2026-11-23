@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.domain.repository.DownloadResource
 import com.example.fragmject.core.domain.session.CookieStore
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -145,7 +146,7 @@ class WebResourceFetcher @Inject constructor(
             partFile.delete()
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "download failed: $url", e)
+            Log.e(TAG, "download failed: ${LogSanitizer.url(url)}", e)
             partFile.delete()
             false
         }

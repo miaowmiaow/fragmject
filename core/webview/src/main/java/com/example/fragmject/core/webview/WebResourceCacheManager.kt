@@ -11,6 +11,7 @@ import com.example.fragmject.core.android.platform.file.FileUtils
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.domain.repository.DownloadResource
 import com.example.fragmject.core.domain.session.CookieStore
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.net.InetAddress
@@ -164,7 +165,7 @@ class WebResourceCacheManager @Inject constructor(
             }
             buildHtmlResponse(cachePath, fileName, file)
         } catch (e: Exception) {
-            Log.e(TAG, "cacheHtmlRequest failed: ${request.url}", e)
+            Log.e(TAG, "cacheHtmlRequest failed: ${LogSanitizer.url(request.url.toString())}", e)
             null
         }
     }
@@ -210,7 +211,7 @@ class WebResourceCacheManager @Inject constructor(
             }
             buildResourceResponse(request, file)
         } catch (e: Exception) {
-            Log.e(TAG, "cacheResourceRequest failed: ${request.url}", e)
+            Log.e(TAG, "cacheResourceRequest failed: ${LogSanitizer.url(request.url.toString())}", e)
             null
         }
     }
@@ -317,7 +318,7 @@ class WebResourceCacheManager @Inject constructor(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e(TAG, "resource fill failed: $url", e)
+                Log.e(TAG, "resource fill failed: ${LogSanitizer.url(url)}", e)
             } finally {
                 // 仅当表项仍是本协程时才移除，防止被取消的协程误删正在运行的表项
                 coroutineContext[Job]?.let { inFlightDownloads.remove(key, it) }
@@ -371,7 +372,7 @@ class WebResourceCacheManager @Inject constructor(
                 // HTML 缓存无独立淘汰时机，下载成功后同步检查并淘汰超出上限的文件
                 evictByMtime(cachePath, HTML_CACHE_MAX_FILES)
             } catch (e: Exception) {
-                Log.e(TAG, "Html download failed: $url", e)
+                Log.e(TAG, "Html download failed: ${LogSanitizer.url(url)}", e)
                 tmpFile.delete()
             } finally {
                 // 仅当表项仍是本协程时才移除，防止被取消的协程误删正在运行的表项

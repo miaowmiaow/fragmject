@@ -15,6 +15,7 @@ import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 
 /**
  * FileUtils 拆分文件之二：流读写。
@@ -112,7 +113,7 @@ internal fun readFileBytesInternal(file: File): ByteArray? {
         fis = FileInputStream(file)
         readStreamBytesInternal(fis)
     } catch (e: Exception) {
-        Log.e(TAG, "readFileBytes failed: ${file.absolutePath}", e)
+        Log.e(TAG, "readFileBytes failed: ${LogSanitizer.path(file.absolutePath)}", e)
         null
     } finally {
         // 之前只在 catch 里关闭 fis，成功路径会泄露文件句柄。
@@ -140,7 +141,7 @@ internal fun readFileBytesRangeInternal(file: File, position: Int, length: Int):
             reads.copyOf(read)
         }
     } catch (e: Exception) {
-        Log.e(TAG, "readFileBytes(range) failed: ${file.absolutePath}", e)
+        Log.e(TAG, "readFileBytes(range) failed: ${LogSanitizer.path(file.absolutePath)}", e)
         null
     } finally {
         quickCloseInternal(accessFile)

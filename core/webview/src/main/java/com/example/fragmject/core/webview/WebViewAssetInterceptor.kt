@@ -5,6 +5,7 @@ import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import java.io.IOException
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 
 /**
  * WebView 本地 assets 资源拦截器。
@@ -29,7 +30,7 @@ object WebViewAssetInterceptor {
     fun assetsResourceRequest(context: Context, request: WebResourceRequest): WebResourceResponse? {
         val path = WebViewCommons.assetPathOf(request.url.toString())
         if (path == null) {
-            Log.w(TAG, "rejected asset request: ${request.url}")
+            Log.w(TAG, "rejected asset request: ${LogSanitizer.url(request.url.toString())}")
             return null
         }
         return try {
@@ -39,7 +40,7 @@ object WebViewAssetInterceptor {
                 responseHeaders = mapOf("Access-Control-Allow-Origin" to "*")
             }
         } catch (e: IOException) {
-            Log.e(TAG, "assetsResourceRequest failed: ${request.url}", e)
+            Log.e(TAG, "assetsResourceRequest failed: ${LogSanitizer.url(request.url.toString())}", e)
             null
         }
     }

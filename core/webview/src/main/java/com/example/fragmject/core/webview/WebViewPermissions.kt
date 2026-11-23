@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import android.webkit.PermissionRequest
 import androidx.core.net.toUri
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 
 internal val WEB_PERMISSIONS = mapOf(
     PermissionRequest.RESOURCE_VIDEO_CAPTURE to Manifest.permission.CAMERA,
@@ -50,7 +51,7 @@ internal fun handleDownload(context: Context, url: String) {
     // URL 来自页面的 DownloadListener，可能是 file:// / content:// / 自定义 scheme；
     // 直接 ACTION_VIEW 会把本地文件或应用私有内容交给外部 App，故只放行 http(s)。
     if (uri.scheme?.lowercase() !in ALLOWED_DOWNLOAD_SCHEMES) {
-        Log.w("WebView", "拒绝非 http(s) 下载 URL：$url")
+        Log.w("WebView", "拒绝非 http(s) 下载 URL：${LogSanitizer.url(url)}")
         return
     }
     try {
@@ -61,9 +62,9 @@ internal fun handleDownload(context: Context, url: String) {
         }
         context.startActivity(intent)
     } catch (e: android.content.ActivityNotFoundException) {
-        Log.e("WebView", "无应用可处理下载链接：$url", e)
+        Log.e("WebView", "无应用可处理下载链接：${LogSanitizer.url(url)}", e)
     } catch (e: Exception) {
-        Log.e("WebView", "setOnDownloadListener: open url failed: $url", e)
+        Log.e("WebView", "setOnDownloadListener: open url failed: ${LogSanitizer.url(url)}", e)
     }
 }
 

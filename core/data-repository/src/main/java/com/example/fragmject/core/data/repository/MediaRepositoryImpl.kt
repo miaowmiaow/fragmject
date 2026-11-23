@@ -11,6 +11,7 @@ import com.example.fragmject.core.data.repository.util.guardedMediaSave
 import com.example.fragmject.core.domain.repository.DownloadRepository
 import com.example.fragmject.core.domain.repository.MediaRepository
 import com.example.fragmject.core.domain.result.MediaSaveResult
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -46,7 +47,7 @@ class MediaRepositoryImpl @Inject constructor(
                 val ready = file.discardOnFailure {
                     val result = downloadRepository.download(url, savePath, fileName)
                     if (!result.success) {
-                        Log.w(TAG, "download image failed: $url, msg=${result.message}")
+                        Log.w(TAG, "download image failed: ${LogSanitizer.url(url)}, msg=${result.message}")
                         file.delete()
                         false
                     } else {

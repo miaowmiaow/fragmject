@@ -7,6 +7,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import com.example.fragmject.core.android.platform.log.LogSanitizer
 
 /**
  * 按目标宽度解码文件路径对应的 Bitmap，带 inSampleSize 降采样。
@@ -23,7 +24,7 @@ fun Context.getBitmapFromPath(path: String, targetWidth: Int = 0): Bitmap? {
         option.inPreferredConfig = Bitmap.Config.ARGB_8888
         return BitmapFactory.decodeFile(path, option)
     } catch (e: Exception) {
-        Log.e("BitmapDecoder", "getBitmapFromPath failed: $path", e)
+        Log.e("BitmapDecoder", "getBitmapFromPath failed: ${LogSanitizer.path(path)}", e)
     }
     return null
 }

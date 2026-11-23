@@ -6,6 +6,7 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.fragmject.core.database.crypto.UserFieldCipher
 import com.example.fragmject.core.database.model.UserEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -43,6 +44,9 @@ class AppDatabaseMigrationTest {
         driver = AndroidSQLiteDriver(),
         databaseClass = AppDatabase::class,
     )
+
+    /** 15→16 起 user 表 PII 落地为密文，断言前先解密（Keystore 在真机可用）。 */
+    private val cipher = UserFieldCipher()
 
     private val latestVersion = AppDatabase.MIGRATIONS.maxOf { it.endVersion }
 
@@ -156,9 +160,31 @@ class AppDatabaseMigrationTest {
                 ),
                 db.query("PRAGMA table_info(otp_account)") { it.getText(1) },
             )
-            // 已有数据不得丢失
-            assertEquals(listOf("keep"), db.query("SELECT username FROM User") { it.getText(0) })
+            // 已有数据不得丢失（15→16 起 username 是密文，解密后应还原）
+            assertEquals(
+                listOf("keep"),
+                db.query("SELECT username FROM User") { it.getText(0) }.map { cipher.decryptOrPlainText(it) },
+            )
             assertEquals(listOf("keepme"), db.query("SELECT value FROM History") { it.getText(0) })
+        }
+    }
+
+    @Test
+    fun migration15To16EncryptsUserPii() = runBlocking {
+        helper.createDatabase(15).use { db ->
+            db.exec("INSERT INTO User (id, username, nickname, icon) VALUES (1, 'plain', 'Plain', 'icon.png')")
+        }
+
+        helper.runMigrationsAndValidate(16, AppDatabase.MIGRATIONS.toList()).use { db ->
+            val row = db.query("SELECT username, nickname, icon FROM User") {
+                Triple(it.getText(0), it.getText(1), it.getText(2))
+            }.single()
+            listOf(row.first, row.second, row.third).forEach { stored ->
+                assertTrue("PII 字段应存密文（v1: 前缀），实际：$stored", stored.orEmpty().startsWith("v1:"))
+            }
+            assertEquals("plain", cipher.decryptOrPlainText(row.first))
+            assertEquals("Plain", cipher.decryptOrPlainText(row.second))
+            assertEquals("icon.png", cipher.decryptOrPlainText(row.third))
         }
     }
 
@@ -174,7 +200,12 @@ class AppDatabaseMigrationTest {
             assertEquals(
                 listOf(listOf<Any?>(7L, "tom", "Tom", "icon.png")),
                 db.query("SELECT id, username, nickname, icon FROM User") {
-                    listOf(it.getLong(0), it.getText(1), it.getText(2), it.getText(3))
+                    listOf(
+                        it.getLong(0),
+                        cipher.decryptOrPlainText(it.getText(1)),
+                        cipher.decryptOrPlainText(it.getText(2)),
+                        cipher.decryptOrPlainText(it.getText(3)),
+                    )
                 },
             )
             assertEquals(
@@ -225,7 +256,15 @@ class AppDatabaseMigrationTest {
         helper.closeWhenFinished(database)
 
         val user = database.userDao().get().first()
-        assertEquals(UserEntity(id = 9, username = "jerry", nickname = "Jerry"), user)
+        // 库里存的是密文，直接读 DAO 得到的是密文；解密后才与迁移前的明文一致
+        assertEquals(
+            UserEntity(id = 9, username = "jerry", nickname = "Jerry"),
+            user?.copy(
+                username = cipher.decryptOrPlainText(user.username),
+                nickname = cipher.decryptOrPlainText(user.nickname),
+                icon = cipher.decryptOrPlainText(user.icon),
+            ),
+        )
         database.close()
     }
 
@@ -253,7 +292,9 @@ class AppDatabaseMigrationTest {
     ) {
         assertEquals(
             listOf(listOf<Any?>(id, username)),
-            db.query("SELECT id, username FROM User") { listOf(it.getLong(0), it.getText(1)) },
+            db.query("SELECT id, username FROM User") {
+                listOf(it.getLong(0), cipher.decryptOrPlainText(it.getText(1)))
+            },
         )
         assertTrue("迁移后应已有 icon 列", db.query("SELECT icon FROM User") { it.isNull(0) }.single())
         assertEquals(

@@ -1,11 +1,14 @@
 package com.example.fragmject.core.database
 
 import android.content.Context
+import android.util.Log
 import androidx.room3.Database
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.SQLiteStatement
+import com.example.fragmject.core.database.crypto.UserFieldCipher
 import com.example.fragmject.core.database.dao.HistoryDao
 import com.example.fragmject.core.database.dao.HomeNavDao
 import com.example.fragmject.core.database.dao.HotKeyDao
@@ -31,7 +34,7 @@ import com.example.fragmject.core.database.model.UserEntity
         ProjectTreeEntity::class,
         OtpAccountEntity::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -45,6 +48,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun otpAccountDao(): OtpAccountDao
 
     companion object {
+
+        private const val TAG = "AppDatabase"
 
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override suspend fun migrate(connection: SQLiteConnection) {
@@ -323,6 +328,76 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * user 表 PII 字段加密（见 `UserFieldCipher`，密文以 `v1:` 开头）。
+         *
+         * 历史明文行就地加密；加密失败（Keystore 不可用、行内容异常）则删除该行。
+         * 整个流程再包一层兜底：**迁移失败绝不能让数据库打不开** —— user 行只是
+         * 登录后的展示缓存（`token` 本就不落库），清空后重新登录即可重建。
+         */
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                try {
+                    encryptExistingUserRows(connection)
+                } catch (e: Exception) {
+                    Log.e(TAG, "MIGRATION_15_16 failed, clear user table to keep db openable", e)
+                    executeSql(connection, "DELETE FROM user")
+                }
+            }
+        }
+
+        /** 把历史明文行就地加密；单行加密失败则删除该行，不把明文留在库里。 */
+        private fun encryptExistingUserRows(connection: SQLiteConnection) {
+            val rows = ArrayList<UserRow>()
+            connection.prepare("SELECT id, username, nickname, icon FROM user").use { stmt ->
+                while (stmt.step()) {
+                    rows.add(
+                        UserRow(
+                            id = stmt.getLong(0),
+                            username = stmt.getText(1),
+                            nickname = stmt.getText(2),
+                            icon = stmt.getText(3),
+                        )
+                    )
+                }
+            }
+            if (rows.isEmpty()) return
+            val cipher = UserFieldCipher()
+            rows.forEach { row ->
+                val encrypted = runCatching {
+                    listOf(row.username, row.nickname, row.icon).map { cipher.encryptToText(it) }
+                }.getOrNull()
+                if (encrypted == null) {
+                    connection.prepare("DELETE FROM user WHERE id=?").use { stmt ->
+                        stmt.bindLong(1, row.id)
+                        stmt.step()
+                    }
+                } else {
+                    connection.prepare(
+                        "UPDATE user SET username=?, nickname=?, icon=? WHERE id=?"
+                    ).use { stmt ->
+                        stmt.bindTextOrNull(1, encrypted[0])
+                        stmt.bindTextOrNull(2, encrypted[1])
+                        stmt.bindTextOrNull(3, encrypted[2])
+                        stmt.bindLong(4, row.id)
+                        stmt.step()
+                    }
+                }
+            }
+        }
+
+        /** user 表的待加密行（仅迁移期使用，不是 Room 实体）。 */
+        private data class UserRow(
+            val id: Long,
+            val username: String?,
+            val nickname: String?,
+            val icon: String?,
+        )
+
+        private fun SQLiteStatement.bindTextOrNull(index: Int, value: String?) {
+            if (value == null) bindNull(index) else bindText(index, value)
+        }
+
         private fun executeSql(connection: SQLiteConnection, sql: String) {
             val statement = connection.prepare(sql)
             statement.use { statement ->
@@ -346,6 +421,7 @@ abstract class AppDatabase : RoomDatabase() {
             MIGRATION_12_13,
             MIGRATION_13_14,
             MIGRATION_14_15,
+            MIGRATION_15_16,
         )
 
         /** 构建数据库实例（由 Hilt DatabaseModule 调用并持有单例）。 */

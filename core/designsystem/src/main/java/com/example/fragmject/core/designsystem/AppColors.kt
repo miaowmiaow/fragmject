@@ -47,6 +47,9 @@ object AppColors {
 }
 
 val AppDarkColorScheme = darkColorScheme(
+    // 显式给 primary：不写会落到 Material3 默认的紫色，Slider / Switch / 进度条等
+    // 直接读 colorScheme.primary 的组件会与项目主题色（橙 #FF8B80，与底部导航选中色一致）割裂
+    primary = Color(0xFFFF8B80),
     onPrimary = Color(0xFFCCCCCC),
     primaryContainer = Color(0xFF272A36),
     onPrimaryContainer = Color(0xFF999999),
@@ -75,6 +78,8 @@ val AppDarkColorScheme = darkColorScheme(
 )
 
 val AppLightColorScheme = lightColorScheme(
+    // 与深色同一强调色，见 AppDarkColorScheme 的说明
+    primary = Color(0xFFFF8B80),
     onPrimary = Color(0xFF333333),
     primaryContainer = Color(0xFF272A36),
     onPrimaryContainer = Color(0xFFFFFFFF),

@@ -46,6 +46,8 @@
 | JaCoCo（Gradle 内置覆盖率插件） | 随 Gradle | EPL-2.0 |
 | JUnit 4 | 4.13.2 | EPL-1.0 |
 | Robolectric | 4.18.1 | MIT |
+| Roborazzi（roborazzi / -compose / -junit-rule） | 1.79.0 | Apache-2.0 |
+| androidx.appcompat:appcompat | 1.7.0 | Apache-2.0 |
 | AndroidX Test（core / runner / ext-junit / uiautomator） | 1.7.0 / 1.7.0 / 1.3.0 / 2.4.1 | Apache-2.0 |
 | Compose ui-test（junit4 / manifest）与 ui-tooling | 随 Compose BOM | Apache-2.0 |
 | androidx.benchmark:benchmark-macro-junit4（仅基准测试 APK） | 1.5.0 | Apache-2.0 |

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fragmject.core.ui.R
@@ -43,13 +45,16 @@ fun ArrowRightItem(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(17.dp)
+                // 不写死高度：10sp 描述行在字号放大后会超过 17dp，固定高度会被裁
+                .heightIn(min = 17.dp)
                 .padding(end = 25.dp),
             contentAlignment = Alignment.BottomStart
         ) {
             Text(
                 text = description,
                 fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Image(

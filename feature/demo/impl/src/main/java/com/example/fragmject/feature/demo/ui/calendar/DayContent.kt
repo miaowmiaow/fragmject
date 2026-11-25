@@ -12,16 +12,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.example.fragmject.core.designsystem.LocalAppFontScale
 
 @Composable
 internal fun DayContent(
@@ -43,21 +47,37 @@ internal fun DayContent(
     val schedulePreview = remember(schedule) { schedule.take(2) }
     val festivalPreview = remember(festivals) { festivals.take(2) }
 
-    Column {
-        DayCircle(
-            date = date,
-            dayLabel = dayLabel,
-            isSelected = isSelected,
-            hasFestival = hasFestival,
-            isMonthFillMode = isMonthFillMode,
-            onClick = onClick,
-        )
-        schedulePreview.forEach { content ->
-            DayTag(content)
+    // 日历是密集表格：单元格是「列宽正方形 + 圆形裁剪」，行高由 WeekHeight 固定。
+    // 字号再叠加应用内倍率时，两行文字会超出正方形并被圆形切掉（实测 18sp 下农历只剩上半截）。
+    // 这里把应用内倍率还原掉，只保留系统字体缩放 —— 系统字号放大仍然生效（无障碍设置被尊重），
+    // 应用内的额外放大不作用于日历。见 LocalAppFontScale 的说明。
+    val density = LocalDensity.current
+    val appFontScale = LocalAppFontScale.current
+    val calendarDensity = remember(density, appFontScale) {
+        if (appFontScale <= 0f) {
+            density
+        } else {
+            Density(density.density, density.fontScale / appFontScale)
         }
-        if (isMonthFillMode) {
-            festivalPreview.forEach { content ->
+    }
+
+    CompositionLocalProvider(LocalDensity provides calendarDensity) {
+        Column {
+            DayCircle(
+                date = date,
+                dayLabel = dayLabel,
+                isSelected = isSelected,
+                hasFestival = hasFestival,
+                isMonthFillMode = isMonthFillMode,
+                onClick = onClick,
+            )
+            schedulePreview.forEach { content ->
                 DayTag(content)
+            }
+            if (isMonthFillMode) {
+                festivalPreview.forEach { content ->
+                    DayTag(content)
+                }
             }
         }
     }

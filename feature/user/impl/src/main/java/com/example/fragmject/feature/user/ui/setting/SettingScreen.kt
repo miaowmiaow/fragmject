@@ -24,12 +24,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,6 +52,7 @@ import com.example.fragmject.core.ui.components.LoadingContent
 import com.example.fragmject.core.ui.components.NightSwitchButton
 import com.example.fragmject.core.ui.components.StandardDialog
 import com.example.fragmject.core.designsystem.AppColors
+import com.example.fragmject.core.domain.text.FontScale
 import com.example.fragmject.core.ui.components.TitleBar
 
 /**
@@ -113,6 +116,7 @@ fun SettingScreen(
                     credentialedCacheEnabled = credentialedCacheEnabled,
                     actions = SettingActions(
                         onDarkThemeChange = viewModel::updateDarkTheme,
+                        onBodyFontSpChange = viewModel::updateBodyFontSp,
                         onCredentialedCacheChange = viewModel::setCredentialedCacheEnabled,
                         onPetSettingClick = userNavigator::openPetSetting,
                         onClearCacheClick = { showDialog = true },
@@ -128,6 +132,7 @@ fun SettingScreen(
 /** 设置项的行内动作集合：收敛成 1 个参数，避免私有 composable 的参数列表超限。 */
 private class SettingActions(
     val onDarkThemeChange: (Boolean) -> Unit,
+    val onBodyFontSpChange: (Float) -> Unit,
     val onCredentialedCacheChange: (Boolean) -> Unit,
     val onPetSettingClick: () -> Unit,
     val onClearCacheClick: () -> Unit,
@@ -156,6 +161,12 @@ private fun SettingItems(
             label = "深色模式",
             checked = uiState.darkTheme,
             onCheckedChange = actions.onDarkThemeChange,
+        )
+        HorizontalDivider()
+        // 字体大小：与深色模式同属「显示」类设置，放在一起；滑杆松手才提交（见 SettingFontScaleRow）
+        SettingFontScaleRow(
+            bodyFontSp = uiState.bodyFontSp,
+            onCommit = actions.onBodyFontSpChange,
         )
         HorizontalDivider()
         // 登录态缓存：默认开启（体验优先）。关闭后只缓存匿名内容，并清掉已落盘的带凭据条目，
@@ -246,6 +257,63 @@ private fun SettingSwitchRow(
             modifier = Modifier
                 .padding(end = SettingSwitchEndPadding)
                 .size(width = SettingSwitchWidth, height = SettingSwitchHeight),
+        )
+    }
+}
+
+/**
+ * 设置项：字体大小滑块（13~18sp，1sp 步进）。
+ *
+ * 拖动中只改本地值，松手才提交 —— 避免每移动一像素就往 Room 写一次；
+ * 全局生效点是 `MainActivity` 的 `AppTheme(fontScale = …)`，它改的是
+ * `LocalDensity.fontScale`（只放大文字，dp 尺寸不变）。
+ *
+ * 不写死行高：滑块本身约 48dp，字号调大后也不该被裁（对照规则 28 的最小高度约定）。
+ */
+// 旧重载被标记 deprecated，但其替代品（`SliderState` + `Slider(state = ...)`）在当前
+// Material3 版本里还不存在：`Slider` 没有 `state` 参数、`SliderState` 也没有 `valueRange`。
+// 依赖升级后再迁移；届时顺手把 `remember(bodyFontSp)` 换成 `LaunchedEffect` 同步。
+@Suppress("DEPRECATION")
+@Composable
+private fun SettingFontScaleRow(
+    bodyFontSp: Float,
+    onCommit: (Float) -> Unit,
+) {
+    var current by remember(bodyFontSp) { mutableFloatStateOf(bodyFontSp) }
+    Column(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxWidth(),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SettingRowLabel("字体大小")
+            Text(
+                text = "${current.toInt()}sp",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 25.dp),
+            )
+        }
+        Slider(
+            value = current,
+            onValueChange = { current = it },
+            onValueChangeFinished = { onCommit(current) },
+            valueRange = FontScale.MIN_BODY_SP..FontScale.MAX_BODY_SP,
+            // 13~20 共 8 档，1sp 步进：steps = 中间档位数 = 总档位 - 2
+            steps = (FontScale.MAX_BODY_SP - FontScale.MIN_BODY_SP).toInt() - 1,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 25.dp),
+        )
+        // 日历是密集表格（方形单元格 + 圆形裁剪），叠加应用内倍率会被裁；
+        // 它只跟随系统字体。写在界面上，避免用户以为设置失灵。
+        Text(
+            text = "日历等密集表格跟随系统字体，不随此处变化",
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(horizontal = 25.dp)
+                .padding(bottom = 8.dp),
         )
     }
 }

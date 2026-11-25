@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fragmject.core.ui.utils.updateSuccessFrom
+import com.example.fragmject.core.domain.repository.FontScaleRepository
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.repository.UserRepository
 import com.example.fragmject.core.domain.system.SystemStorage
+import com.example.fragmject.core.domain.text.FontScale
 import com.example.fragmject.core.domain.usecase.LogoutUseCase
 import com.example.fragmject.core.model.User
 import com.example.fragmject.core.webview.WebCacheSettings
@@ -27,6 +29,7 @@ sealed interface SettingUiState {
     data class Success(
         val user: User? = null,
         val darkTheme: Boolean = false,
+        val bodyFontSp: Float = FontScale.DEFAULT_BODY_SP,
     ) : SettingUiState
 }
 
@@ -39,6 +42,7 @@ sealed interface SettingEvent {
 // Screen accessors
 val SettingUiState.user get() = (this as? SettingUiState.Success)?.user
 val SettingUiState.darkTheme get() = (this as? SettingUiState.Success)?.darkTheme ?: false
+val SettingUiState.bodyFontSp get() = (this as? SettingUiState.Success)?.bodyFontSp ?: FontScale.DEFAULT_BODY_SP
 val SettingUiState.isLoading get() = this is SettingUiState.Loading
 
 @HiltViewModel
@@ -46,6 +50,7 @@ class SettingViewModel @Inject constructor(
     private val userRepo: UserRepository,
     private val logoutUseCase: LogoutUseCase,
     private val themeRepo: ThemeRepository,
+    private val fontScaleRepo: FontScaleRepository,
     private val systemStorage: SystemStorage,
     private val webCacheSettings: WebCacheSettings,
 ) : ViewModel() {
@@ -81,11 +86,21 @@ class SettingViewModel @Inject constructor(
                 _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it.copy(darkTheme = dark) }
             }
         }
+        viewModelScope.launch {
+            fontScaleRepo.observeBodyFontSp().collect { sp ->
+                _uiState.updateSuccessFrom({ SettingUiState.Success() }) { it.copy(bodyFontSp = sp) }
+            }
+        }
         viewModelScope.launch { systemStorage.refreshCacheSize() }
     }
 
     fun updateDarkTheme(darkTheme: Boolean) {
         viewModelScope.launch { themeRepo.setDarkTheme(darkTheme) }
+    }
+
+    /** 正文字号：滑块松手时提交，越界夹紧由 FontScaleRepository 兜住。 */
+    fun updateBodyFontSp(sp: Float) {
+        viewModelScope.launch { fontScaleRepo.setBodyFontSp(sp) }
     }
 
     fun setCredentialedCacheEnabled(enabled: Boolean) {

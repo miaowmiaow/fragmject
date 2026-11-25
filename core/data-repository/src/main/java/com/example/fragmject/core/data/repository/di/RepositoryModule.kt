@@ -7,6 +7,8 @@ import com.example.fragmject.core.data.repository.system.SystemStorageImpl
 import com.example.fragmject.core.data.repository.CoinRankRepositoryImpl
 import com.example.fragmject.core.data.repository.CollectStateImpl
 import com.example.fragmject.core.data.repository.DownloadRepositoryImpl
+import com.example.fragmject.core.data.repository.FontScaleRepositoryImpl
+import com.example.fragmject.core.data.repository.FontScaleStateImpl
 import com.example.fragmject.core.data.repository.HomeRepositoryImpl
 import com.example.fragmject.core.data.repository.MediaRepositoryImpl
 import com.example.fragmject.core.data.repository.MyCollectRepositoryImpl
@@ -43,7 +45,9 @@ import com.example.fragmject.core.domain.repository.ProjectRepository
 import com.example.fragmject.core.domain.repository.SearchRepository
 import com.example.fragmject.core.domain.repository.SystemRepository
 import com.example.fragmject.core.domain.repository.UserCenterRepository
+import com.example.fragmject.core.domain.repository.FontScaleRepository
 import com.example.fragmject.core.domain.repository.UserRepository
+import com.example.fragmject.core.domain.text.FontScaleState
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -83,6 +87,14 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindThemeState(impl: ThemeStateImpl): ThemeState
+
+    @Binds
+    @Singleton
+    abstract fun bindFontScaleRepository(impl: FontScaleRepositoryImpl): FontScaleRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFontScaleState(impl: FontScaleStateImpl): FontScaleState
 
     @Binds
     @Singleton

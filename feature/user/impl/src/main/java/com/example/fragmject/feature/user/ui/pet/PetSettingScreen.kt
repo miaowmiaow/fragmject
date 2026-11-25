@@ -137,7 +137,11 @@ private fun PetSwitchRow(
  *
  * [LaunchedEffect] 同步的是「外部已落库的值」：拖动中外部值不变，所以不会和手指打架；
  * 松手提交后外部值回流，再把本地值对齐一次（防止提交被夹紧后显示与库内不一致）。
+ *
+ * 用旧重载并显式 suppress：替代品（`SliderState` + `Slider(state = ...)`）在当前
+ * Material3 版本里还不存在（`Slider` 没有 `state` 参数），依赖升级后再迁移。
  */
+@Suppress("DEPRECATION")
 @Composable
 private fun PetSliderRow(
     label: String,

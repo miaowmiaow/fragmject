@@ -34,6 +34,8 @@ import com.example.fragmject.core.designsystem.AppTheme
 import com.example.fragmject.core.designsystem.rememberWindowSizeClass
 import com.example.fragmject.core.domain.ThemeState
 import com.example.fragmject.core.domain.pet.PetSettingsState
+import com.example.fragmject.core.domain.text.FontScale
+import com.example.fragmject.core.domain.text.FontScaleState
 import com.example.fragmject.core.domain.repository.HomeRepository
 import com.example.fragmject.core.navigation.contract.LocalNavigators
 import com.example.fragmject.core.navigation.contract.Navigators
@@ -107,6 +109,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var petSettingsState: PetSettingsState
 
+    @Inject
+    lateinit var fontScaleState: FontScaleState
+
     /** 运行时深层链接请求（onNewIntent 触发），首次启动走 onCreate 的 initialBackStack。 */
     private val pendingDeepLink = mutableStateOf<DeepLinkRequest?>(null)
 
@@ -129,8 +134,12 @@ class MainActivity : ComponentActivity() {
         val initialBackStack = resolveDeepLinkBackStack(intent)
         setContent {
             val darkTheme by themeState.darkTheme.collectAsStateWithLifecycle(initialValue = false)
+            // 字体缩放：应用级 StateFlow（Eagerly），Activity 重建后首帧就是真实值，
+            // 不会先按 1.0 倍渲染一帧再跳大（见 FontScaleState 的说明）
+            val bodyFontSp by fontScaleState.bodyFontSp.collectAsStateWithLifecycle()
+            val fontScale = FontScale.bodyFontScale(bodyFontSp)
             if (securityBlocked) {
-                AppTheme(window = window, darkTheme = darkTheme) {
+                AppTheme(window = window, darkTheme = darkTheme, fontScale = fontScale) {
                     SecurityBlockedScreen(blockMessage)
                 }
                 return@setContent
@@ -140,7 +149,7 @@ class MainActivity : ComponentActivity() {
             // 注意它只管「开关读得准」：鱼的位置延续由 core:pet 自己的 FishMotionSaver 负责。
             // 冷启动首帧仍可能读到默认「关闭」，那是 Room 异步首发射的已知限制（见 PetSettingsState KDoc）。
             val petSettings by petSettingsState.settings.collectAsStateWithLifecycle()
-            AppTheme(window = window, darkTheme = darkTheme) {
+            AppTheme(window = window, darkTheme = darkTheme, fontScale = fontScale) {
                 rememberWindowSizeClass {
                     CompositionLocalProvider(LocalNavigators provides navigators) {
                         val petInput = rememberPetInputHub()

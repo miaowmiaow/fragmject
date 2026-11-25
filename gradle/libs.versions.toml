@@ -45,6 +45,8 @@ okhttp = "5.5.1"
 paging = "3.5.3"
 retrofit = "3.0.0"
 robolectric = "4.18.1"
+roborazzi = "1.79.0"
+appcompat = "1.7.0"
 room3 = "3.0.3"
 
 [libraries]
@@ -97,6 +99,10 @@ coil-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
 coil-video = { group = "io.coil-kt", name = "coil-video", version.ref = "coil" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-junit-rule = { group = "io.github.takahirom.roborazzi", name = "roborazzi-junit-rule", version.ref = "roborazzi" }
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }

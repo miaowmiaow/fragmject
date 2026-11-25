@@ -109,6 +109,17 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --stacktrace
 
+      # 字号/布局的视觉基线：Roborazzi 在 JVM 上按 1.0x / 1.28x / 1.43x 渲染关键组件，
+      # 图落在各模块 build/screenshots/。成功时也上传，review 时直接看图判断有没有截断。
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: screenshots
+          path: "**/build/screenshots/"
+          if-no-files-found: ignore
+          retention-days: 14
+
       # 同时归档 XML：HTML 报告要点开看，`test-results/*.xml` 可以直接 grep 出失败用例与断言，
       # 定位「哪个用例失败」时不必再翻页面（:app:testDebugUnitTest 曾出现一次未解释的偶发失败，
       # 当时只归档了 HTML，无法快速取到失败用例名）。

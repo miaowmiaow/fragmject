@@ -9,6 +9,10 @@ android {
         // CalendarViewModel 在落盘失败分支调用 android.util.Log.e，JVM 单测默认会抛
         // "Method not mocked"；让 android.jar 的 mock 方法返回默认值（与 feature:home:impl 一致）。
         unitTests.isReturnDefaultValues = true
+        // 日历的视觉基线：Robolectric 渲染 Compose 需要 android 资源
+        unitTests.isIncludeAndroidResources = true
+        // 当前只出图不入基线对比（与 core:ui 的截图测试一致）
+        unitTests.all { it.systemProperty("roborazzi.test.record", "true") }
     }
 }
 
@@ -46,4 +50,11 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(project(":core:testing"))
     testImplementation(libs.kotlinx.coroutines.test)
+    // 视觉基线：Roborazzi + Robolectric 在 JVM 上渲染 Compose（见 DayContentScreenshotTest）
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.compose.ui.test.manifest)
 }

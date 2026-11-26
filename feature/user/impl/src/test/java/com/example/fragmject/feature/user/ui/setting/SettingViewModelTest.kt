@@ -1,9 +1,11 @@
 package com.example.fragmject.feature.user.ui.setting
 
+import com.example.fragmject.core.domain.repository.FontScaleRepository
 import com.example.fragmject.core.domain.repository.ThemeRepository
 import com.example.fragmject.core.domain.result.SimpleResult
 import com.example.fragmject.core.domain.system.SystemStorage
 import com.example.fragmject.core.domain.usecase.AuthSessionCoordinator
+import com.example.fragmject.core.domain.text.FontScale
 import com.example.fragmject.core.domain.usecase.LogoutUseCase
 import com.example.fragmject.core.testing.FakeAuthGateway
 import com.example.fragmject.core.testing.FakeCookieStore
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -92,15 +95,31 @@ class SettingViewModelTest {
         assertEquals(listOf(false), cacheSettings.writes)
     }
 
+    @Test
+    fun `body font size follows repository and forwards writes`() = runTest {
+        val repo = FakeFontScaleRepository(initial = 16f)
+        val viewModel = createViewModel(fontScale = repo)
+        advanceUntilIdle()
+
+        assertEquals("初始值应来自仓库", 16f, viewModel.uiState.value.bodyFontSp, 0.001f)
+
+        viewModel.updateBodyFontSp(18f)
+        advanceUntilIdle()
+
+        assertEquals("写入后应回流到 UI 状态", 18f, viewModel.uiState.value.bodyFontSp, 0.001f)
+    }
+
     private fun createViewModel(
         gateway: FakeAuthGateway = FakeAuthGateway(),
         cookies: FakeCookieStore = FakeCookieStore(),
         storage: SystemStorage = FakeSystemStorage(),
         cacheSettings: WebCacheSettings = FakeWebCacheSettings(),
+        fontScale: FontScaleRepository = FakeFontScaleRepository(),
     ): SettingViewModel = SettingViewModel(
         userRepo = FakeUserRepository(),
         logoutUseCase = LogoutUseCase(gateway, AuthSessionCoordinator(cookies, FakeUserRepository())),
         themeRepo = FakeThemeRepository(),
+        fontScaleRepo = fontScale,
         systemStorage = storage,
         webCacheSettings = cacheSettings,
     )
@@ -143,4 +162,17 @@ private class FakeSystemStorage(
     override suspend fun refreshCacheSize() = Unit
 
     override suspend fun clearCache(): SimpleResult = clearResult
+}
+
+/** 字号仓库替身：设置页只负责透传读写，不需要真实 KV。 */
+private class FakeFontScaleRepository(
+    initial: Float = FontScale.DEFAULT_BODY_SP,
+) : FontScaleRepository {
+    private val sp = MutableStateFlow(initial)
+
+    override fun observeBodyFontSp(): Flow<Float> = sp
+
+    override suspend fun setBodyFontSp(sp: Float) {
+        this.sp.value = sp
+    }
 }

@@ -7,6 +7,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import androidx.core.content.edit
 
 /**
  * [WebCacheSettings] 的 SharedPreferences 实现。
@@ -34,7 +35,7 @@ class SharedPreferencesWebCacheSettings @Inject constructor(
     override val credentialedNotice: StateFlow<Boolean> = _credentialedNotice.asStateFlow()
 
     override fun setCredentialedCachingEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_CREDENTIALED_CACHING, enabled).apply()
+        prefs.edit { putBoolean(KEY_CREDENTIALED_CACHING, enabled) }
         _credentialedCachingEnabled.value = enabled
     }
 

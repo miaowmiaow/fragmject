@@ -179,7 +179,7 @@ internal object WebCachePolicy {
 
     /** 条目名是否属于「带凭据」级别（关闭开关时需要定向清理）。 */
     fun isCredentialedEntry(fileName: String): Boolean =
-        fileName.endsWith(CREDENTIALED_SUFFIX) || fileName.endsWith(CREDENTIALED_SUFFIX + ".part")
+        fileName.endsWith(CREDENTIALED_SUFFIX) || fileName.endsWith("$CREDENTIALED_SUFFIX.part")
 
     /**
      * 组装缓存填充请求头：**白名单**转发，只带与内容协商有关的字段。
